@@ -4,7 +4,7 @@ from typing import TypeAlias
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
@@ -272,6 +272,35 @@ def api_pagerduty_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
+    # PagerdUty webhook signature verification
+    # Get the X-PagerDuty-Signature header from the HTTP request
+    pagerduty_signature = request.META.get("HTTP_X_PAGERDUTY_SIGNATURE")
+    if pagerduty_signature:
+        # Parse "v1=hex1,v1=hex2" format.
+        signatures = []
+        # Split the header value by commas to handle multiple signatures.
+        for sig_part in pagerduty_signature.split(","):
+            sig_part = sig_part.strip() # Remove leading/trailing whitespace.
+            if sig_part.startswith("v1="):
+                hex_signature = sig_part[3:] # Extract just the hex signature
+                signatures.append(hex_signature) # Add the extracted hex signature to list
+
+        if not signatures:
+            raise JsonableError(_("Webhook signature verification failed."))
+        # Try validating each signature in the list.
+        signature_valid = False
+        for signature in signatures:
+            try:
+                # validate using HMAC-SHA256
+                validate_webhook_signature(request, request.body.decode(), signature)
+                signature_valid = True
+                break
+            except JsonableError:
+                continue
+
+        if not signature_valid:
+            raise JsonableError(_("Webhook signature verification failed."))
+    
     messages = payload.get("messages")
     if messages:
         for message in messages:
@@ -303,7 +332,7 @@ def api_pagerduty_webhook(
             send_formatted_pagerduty(request, user_profile, message_event, format_dict)
     else:
         if "event" in payload:
-            # V3 has no "messages" field, and it has key "event" instead
+            # Pagerduty Webhook V3 
             event = payload["event"]
             event_type = event.get("event_type").tame(check_none_or(check_string))
 
