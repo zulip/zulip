@@ -610,6 +610,9 @@ INTEGRATIONS: dict[str, Integration] = {
     "jenkins": Integration("jenkins", ["continuous-integration"]),
     "jitsi": Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     "mastodon": Integration("mastodon", ["communication"]),
+    "nextcloud-talk": Integration(
+        "nextcloud-talk", ["communication"], display_name="Nextcloud Talk"
+    ),
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
     "puppet": Integration("puppet", ["deployment"]),
@@ -711,7 +714,7 @@ NO_SCREENSHOT_CONFIG = (
     # Outgoing integrations - Docs won't have a screenshot
     {"email", "onyx"}
     # Video call integrations - Docs won't have a screenshot
-    | {"big-blue-button", "jitsi", "zoom"}
+    | {"big-blue-button", "jitsi", "nextcloud-talk", "zoom"}
     # Integrations that require screenshots of message threads - support is yet to be added
     | {
         "errbot",

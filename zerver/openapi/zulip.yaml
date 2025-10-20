@@ -5519,6 +5519,7 @@ paths:
                                         - 3 = Zoom (User OAuth integration)
                                         - 4 = BigBlueButton
                                         - 5 = Zoom (Server to Server OAuth integration)
+                                        - 6 = Nextcloud Talk
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
@@ -19673,6 +19674,7 @@ paths:
                           - 3 = Zoom (User OAuth integration)
                           - 4 = BigBlueButton
                           - 5 = Zoom (Server to Server OAuth integration)
+                          - 6 = NextCloud Talk
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
@@ -25598,6 +25600,48 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
+                      }
+  /calls/nextcloud_talk/create:
+    get:
+      tags: ["channels"]
+      operationId: create-nextcloud-talk-video-call
+      summary: Create Nextcloud Talk video call
+      description: |
+        Create a Nextcloud Talk video call and return the guest-accessible URL.
+        Requires Nextcloud Talk to be configured by the server administrator.
+      parameters:
+        - in: query
+          name: meeting_name
+          schema:
+            type: string
+          required: true
+          description: |
+            Meeting name for the Nextcloud Talk conversation.
+          example: "test_channel meeting"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Nextcloud Talk conversation. Users can join as guests
+                          by visiting the URL.
+                        type: string
+                        example: "/index.php/calls/join/abc123xyz"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/index.php/calls/join/abc123xyz",
                       }
 
 components:
