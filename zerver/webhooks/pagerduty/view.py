@@ -200,6 +200,17 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
 
 
 def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
+    data_type = event["data"]["type"].tame(check_string)
+
+    # Route based on data structure type
+    if data_type == "service":
+        return build_service_formatdict_v3(event)
+    else:
+        # Handle all incident-related events (incident, incident_note, etc.)
+        return build_incident_formatdict_v3(event)
+
+def build_incident_formatdict_v3(event: WildValue) -> FormatDictType:
+    """Handle incident events with the original incident data structure"""
     format_dict: FormatDictType = {}
     format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V3[event["event_type"].tame(check_string)]
 
@@ -235,6 +246,32 @@ def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
 
     return format_dict
 
+def build_service_formatdict_v3(event: WildValue) -> FormatDictType:
+    """Handle service events with the service data structure"""
+    format_dict: FormatDictType = {}
+    format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V3[event["event_type"].tame(check_string)]
+
+    # Service events have different field structure
+    format_dict["service_id"] = event["data"]["id"].tame(check_string)
+    format_dict["service_name"] = event["data"]["summary"].tame(check_string)
+    format_dict["service_url"] = event["data"]["html_url"].tame(check_string)
+
+    # Service events don't have incident-specific fields
+    format_dict["incident_id"] = format_dict["service_id"]  # Reuse for compatibility
+    format_dict["incident_url"] = format_dict["service_url"]  # Reuse for compatibility
+    format_dict["incident_num_title"] = format_dict["service_name"]  # Use service name
+    format_dict["assignee_info"] = "nobody"  # Services don't have assignees
+    format_dict["trigger_message"] = ""
+
+    # Handle agent if present (for service update events)
+    agent = event.get("agent")
+    if agent:
+        format_dict["agent_info"] = AGENT_TEMPLATE.format(
+            username=agent["summary"].tame(check_string),
+            url=agent["html_url"].tame(check_string),
+        )
+
+    return format_dict
 
 def send_formatted_pagerduty(
     request: HttpRequest,
