@@ -2,13 +2,14 @@ from email.headerregistry import Address
 from typing import TypeAlias
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, validate_webhook_signature
 from zerver.models import UserProfile
 
 FormatDictType: TypeAlias = dict[str, str | int]
