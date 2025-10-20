@@ -1,13 +1,16 @@
+import hashlib
+import hmac
 import re
 from collections.abc import Callable
 from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.encoding import force_bytes
 from pydantic import Json
 from typing_extensions import override
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -1000,6 +1003,30 @@ IGNORED_TEAM_ACTIONS = [
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
+# TODO: Write a method to get signature from usre, was recomended to store it on BotConfigOption.
+def validate_webhook_signature(
+    request: HttpRequest, payload: str, signature: str, algorithm: str = "sha256"
+) -> None:
+
+    webhook_secret: str | None = "It's a Secret to Everybody"
+    if webhook_secret is None:
+        raise JsonableError(
+            _(
+                "The webhook secret is missing. Please set the webhook_secret while generating the URL."
+            )
+        )
+        
+    webhook_secret_bytes = force_bytes(webhook_secret)
+    payload_bytes = force_bytes(payload)
+
+    signed_payload = hmac.new(
+        webhook_secret_bytes,
+        payload_bytes,
+        algorithm,
+    ).hexdigest()
+
+    if signed_payload != signature:
+        raise JsonableError(_("Webhook signature verification failed."))
 
 @webhook_view("GitHub", notify_bot_owner_on_invalid_json=True, all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
@@ -1008,6 +1035,7 @@ def api_github_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
+    signature: str | None = None,
     branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
     ignore_private_repositories: Json[bool] = False,
@@ -1019,6 +1047,9 @@ def api_github_webhook(
     refine it based on the payload.
     """
     header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
+    signature256 = validate_extract_webhook_http_header(request, "X-Hub-Signature-256", "GitHub")
+
+    validate_webhook_signature(request, str(payload), signature256) 
 
     # Check if the repository is private and skip processing if ignore_private_repositories is True
     if (
