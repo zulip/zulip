@@ -307,13 +307,14 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             break;
         case "channel": {
             // Ensure first_operand is a string
-            const channel_id_str = String(first_operand);
+            const channel_id_str = first_operand;
 
             // Quick validation: must be only digits
             if (!/^\d+$/.test(channel_id_str)) {
                 return {
                     title: $t({
-                        defaultMessage: "This channel doesn't exist, or you are not allowed to view it.",
+                        defaultMessage:
+                            "This channel doesn't exist, or you are not allowed to view it.",
                     }),
                 };
             }
