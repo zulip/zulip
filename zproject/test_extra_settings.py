@@ -206,6 +206,10 @@ CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
 CONSTRUCTOR_GROUPS_ACCESS_KEY = "test-access-key"
 CONSTRUCTOR_GROUPS_SECRET_KEY = "test-secret-key"
 
+NEXTCLOUD_SERVER = "https://nextcloud.example.com"
+NEXTCLOUD_TALK_USERNAME = "username"
+NEXTCLOUD_TALK_PASSWORD = "password"
+
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False

@@ -656,9 +656,10 @@ class Realm(models.Model):
             "name": "Zoom",
             "id": 5,
         },
-        "constructor_groups": {
-            "name": "Constructor Groups",
-            "id": 6,
+        "constructor_groups": {"name": "Constructor Groups", "id": 6},
+        "nextcloud_talk": {
+            "name": "Nextcloud Talk",
+            "id": 7,
         },
     }
 
@@ -1083,6 +1084,12 @@ class Realm(models.Model):
                 settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is None
                 or settings.CONSTRUCTOR_GROUPS_SECRET_KEY is None
                 or settings.CONSTRUCTOR_GROUPS_URL is None
+            ):
+                continue
+            if provider == "nextcloud_talk" and (
+                settings.NEXTCLOUD_SERVER is None
+                or settings.NEXTCLOUD_TALK_USERNAME is None
+                or settings.NEXTCLOUD_TALK_PASSWORD is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]
