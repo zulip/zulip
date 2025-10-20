@@ -128,3 +128,24 @@ class PagerDutyHookTests(WebhookTestCase):
         with self.settings(VERIFY_WEBHOOK_SIGNATURES=True):
             result = self.client_post(url,payload,content_type="application/json",HTTP_X_PAGERDUTY_SIGNATURE=mixed_signatures,)
             self.assert_json_success(result)
+
+    def test_service_created_v3(self) -> None:
+        """Test service.created event from PagerDuty V3"""
+        expected_message = (
+            "Service [Test Service](https://pig208.pagerduty.com/services/PSERVICE1) created."
+        )
+        self.check_webhook("service_created_v3", "Service Test Service", expected_message)
+
+    def test_service_updated_v3(self) -> None:
+        """Test service.updated event from PagerDuty V3"""
+        expected_message = (
+            "Service [Test Service](https://pig208.pagerduty.com/services/PSERVICE1) updated."
+        )
+        self.check_webhook("service_updated_v3", "Service Test Service", expected_message)
+
+    def test_service_deleted_v3(self) -> None:
+        """Test service.deleted event from PagerDuty V3"""
+        expected_message = (
+            "Service [Test Service](https://pig208.pagerduty.com/services/PSERVICE1) deleted."
+        )
+        self.check_webhook("service_deleted_v3", "Service Test Service", expected_message)
