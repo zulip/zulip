@@ -582,13 +582,6 @@ h4.user_group_setting_subsection_title {
             .settings-empty-option-text {
                 color: var(--color-text-item);
             }
-
-            .upgrade-or-sponsorship-tip,
-            .upgrade-tip {
-                /* Center tip in parent container */
-                margin-left: auto;
-                margin-right: auto;
-            }
         }
     }
 

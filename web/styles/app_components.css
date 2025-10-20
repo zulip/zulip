@@ -489,26 +489,6 @@ input.settings_text_input {
     line-height: 38px;
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip {
-    width: fit-content;
-
-    &::before {
-        content: "\f135";
-        margin-right: 6px;
-    }
-}
-
-.upgrade-tip:hover {
-    color: hsl(0deg 0% 20%);
-    border: 1px solid hsl(49deg 20% 60%);
-    box-shadow: 0 0 4px hsl(199deg 79% 56% / 20%);
-
-    text-decoration: none;
-}
-
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip,
 .invite-stream-notice {
     position: relative;
@@ -530,8 +510,6 @@ input.settings_text_input {
     }
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip {
     margin: 10px 0;
 }

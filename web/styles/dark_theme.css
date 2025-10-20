@@ -155,8 +155,6 @@
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
     }
 
-    .upgrade-tip,
-    .upgrade-or-sponsorship-tip,
     .tip,
     .invite-stream-notice {
         color: inherit;
