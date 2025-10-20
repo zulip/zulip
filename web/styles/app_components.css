@@ -540,13 +540,6 @@ input.settings_text_input {
     margin-bottom: 10px;
 }
 
-#convert-demo-organization-form,
-#invite-user-form {
-    .banner-action-buttons {
-        padding: 0.085em 0;
-    }
-}
-
 .create-group-button-container {
     .upgrade-organization-banner-container {
         display: flex;
