@@ -279,24 +279,35 @@ def send_formatted_pagerduty(
     message_type: str,
     format_dict: FormatDictType,
 ) -> None:
-    if message_type in (
+    # Handle service events
+    if message_type in ("service.created", "service.updated", "service.deleted", "service.custom_field_values.updated"):
+        template = "Service [{incident_num_title}]({incident_url}) {action}."
+        topic_name = "Service {incident_num_title}".format(**format_dict)
+    # Handle incident trigger/unacknowledge events
+    elif message_type in (
         "incident.trigger",
         "incident.triggered",
         "incident.unacknowledge",
         "incident.unacknowledged",
     ):
         template = INCIDENT_WITH_SERVICE_AND_ASSIGNEE
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
+    # Handle incident resolution events
     elif message_type in ("incident.resolve", "incident.resolved"):
         if "agent_info" in format_dict:
             template = INCIDENT_RESOLVED_WITH_AGENT
         else:
             template = INCIDENT_RESOLVED
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
+    # Handle incident assignment/reassignment events
     elif message_type in ("incident.assign", "incident.reassigned"):
         template = INCIDENT_ASSIGNED
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
+    # Handle all other incident events
     else:
         template = INCIDENT_WITH_ASSIGNEE
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
 
-    topic_name = "Incident {incident_num_title}".format(**format_dict)
     body = template.format(**format_dict)
     assert isinstance(format_dict["action"], str)
     check_send_webhook_message(request, user_profile, topic_name, body, format_dict["action"])
