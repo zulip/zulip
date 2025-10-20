@@ -234,7 +234,6 @@
         box-shadow: var(--invalid-input-box-shadow);
     }
 
-
     &:focus,
     &:focus-within,
     &:hover {
@@ -283,7 +282,6 @@
     filter: none !important;
     text-shadow: none !important;
 }
-
 
 .pill,
 .pill:hover,
