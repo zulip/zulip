@@ -1402,6 +1402,33 @@ class RealmTest(ZulipTestCase):
             constructor_groups_provider_id,
         )
 
+        nextcloud_talk_provider_id = Realm.VIDEO_CHAT_PROVIDERS["nextcloud_talk"]["id"]
+        req = {"video_chat_provider": f"{nextcloud_talk_provider_id}"}
+        with self.settings(NEXTCLOUD_SERVER=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {nextcloud_talk_provider_id}"
+            )
+
+        with self.settings(NEXTCLOUD_TALK_USERNAME=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {nextcloud_talk_provider_id}"
+            )
+
+        with self.settings(NEXTCLOUD_TALK_PASSWORD=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {nextcloud_talk_provider_id}"
+            )
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            nextcloud_talk_provider_id,
+        )
+
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
 

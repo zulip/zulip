@@ -33,6 +33,7 @@ from zerver.lib.cache import (
     zoom_server_access_token_cache_key,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.message import truncate_content
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.partial import partial
 from zerver.lib.pysa import mark_sanitized
@@ -552,3 +553,55 @@ def make_constructor_groups_video_call(
         raise CreateVideoCallFailedError("Constructor Groups")
 
     return json_success(request, {"url": room_url})
+
+
+# Nextcloud Talk API limits room names to 255 characters.
+MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH = 255
+
+
+@typed_endpoint
+def create_nextcloud_talk_url(
+    request: HttpRequest, user: UserProfile, *, room_name: str
+) -> HttpResponse:
+    if (
+        settings.NEXTCLOUD_SERVER is None
+        or settings.NEXTCLOUD_TALK_USERNAME is None
+        or settings.NEXTCLOUD_TALK_PASSWORD is None
+    ):
+        raise JsonableError(_("Nextcloud Talk is not configured"))
+
+    room_name = truncate_content(room_name, MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH, "...")
+    # https://nextcloud-talk.readthedocs.io/en/stable/conversation/#creating-a-new-conversation
+    api_url = urljoin(settings.NEXTCLOUD_SERVER, "/ocs/v2.php/apps/spreed/api/v4/room")
+
+    payload = {
+        # Create a PUBLIC conversation (roomType=3) which allows guest access
+        # https://nextcloud-talk.readthedocs.io/en/latest/constants/#conversation-types
+        "roomType": 3,
+        "roomName": room_name,
+    }
+    username = str(settings.NEXTCLOUD_TALK_USERNAME)
+    password = str(settings.NEXTCLOUD_TALK_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "OCS-APIRequest": "true",
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    try:
+        response = VideoCallSession().post(api_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
+        raise JsonableError(_("Error connecting to the Nextcloud Talk server"))
+
+    try:
+        data = response.json()
+        token = data["ocs"]["data"]["token"]
+    except (KeyError, ValueError):
+        raise CreateVideoCallFailedError("Nextcloud Talk")
+
+    call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
+    return json_success(request, data={"url": call_url})

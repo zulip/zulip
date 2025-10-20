@@ -198,6 +198,10 @@ BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
 # Allow setting Constructor Groups URL in development.
 CONSTRUCTOR_GROUPS_URL = get_secret("constructor_groups_url", development_only=True)
 
+# Allow setting Nextcloud Talk settings in zulip-secrets.conf in
+# development; this is useful since there are no public Nextcloud Talk servers.
+NEXTCLOUD_SERVER = get_secret("nextcloud_server", development_only=True)
+
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
 USER_STATE_SIZE_LIMIT = 10000000

@@ -5511,11 +5511,15 @@ paths:
                                         - 4 = BigBlueButton
                                         - 5 = Zoom (Server to Server OAuth integration)
                                         - 6 = Constructor Groups
+                                        - 7 = Nextcloud Talk
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 12.0 (feature level 460), added the
+                                        **Changes**: In Zulip 12.0 (feature level 465), added the
+                                        Constructor Groups option.
+
+                                        In Zulip 12.0 (feature level 460), added the
                                         Constructor Groups option.
 
                                         In Zulip 10.0 (feature level 353), added the Zoom Server
@@ -19218,11 +19222,15 @@ paths:
                           - 4 = BigBlueButton
                           - 5 = Zoom (Server to Server OAuth integration)
                           - 6 = Constructor Groups
+                          - 7 = Nextcloud Talk
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 12.0 (feature level 460), added the
+                          **Changes**: In Zulip 12.0 (feature level 465), added the
+                          Nextcloud Talk option.
+
+                          In Zulip 12.0 (feature level 460), added the
                           Constructor Groups option.
 
                           In Zulip 10.0 (feature level 353), added the Zoom Server
@@ -25359,6 +25367,56 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
+                      }
+
+  /calls/nextcloud_talk/create:
+    post:
+      tags: ["channels"]
+      operationId: create-nextcloud-talk-video-call
+      summary: Create Nextcloud Talk video call
+      description: |
+        Create a video call URL for a Nextcloud Talk video call. Requires
+        [Nextcloud Talk](/integrations/nextcloud-talk) to be configured on the
+        Zulip server.
+
+        **Changes**: New in Zulip 12.0 (feature level 465).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - room_name
+              properties:
+                room_name:
+                  type: string
+                  description: |
+                    Room name for the Nextcloud Talk conversation.
+                  example: "#Test > team check-in"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Nextcloud Talk conversation.
+                        type: string
+                        example: "https://nextcloud.example.com/index.php/call/abc123xyz"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "https://nextcloud.example.com/index.php/call/abc123xyz",
                       }
 
   /calls/constructorgroups/create:

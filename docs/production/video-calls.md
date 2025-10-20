@@ -10,6 +10,7 @@ supported by Zulip are:
 - [Zoom](https://zulip.com/integrations/zoom)
 - [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 - [Constructor Groups](https://zulip.com/integrations/category/video-calling)
+- [Nextcloud Talk](https://zulip.com/integrations/category/video-calling)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
@@ -186,3 +187,11 @@ To use the [Constructor Groups](https://constructor.tech/products/learning/group
 video call integration on a self-hosted Zulip installation, you'll need to
 have a Constructor Groups account. See documentation to configure the Constructor
 Groups video call integration [here](https://zulip.com/integrations/category/video-calling).
+
+## Nextcloud Talk
+
+To use the [Nextcloud Talk](https://nextcloud.com/talk/) video call
+integration on a self-hosted Zulip installation, you'll need to have access
+to a Nextcloud server (version 22+) with the Talk app enabled. See
+documentation to configure the Nextcloud Talk video call integration
+[here](https://zulip.com/integrations/category/video-calling).
