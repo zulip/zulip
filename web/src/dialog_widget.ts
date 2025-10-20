@@ -1,3 +1,4 @@
+import flatpickr from "flatpickr";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -5,7 +6,6 @@ import assert from "minimalistic-assert";
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
 import type {AjaxRequestHandler} from "./channel.ts";
-import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import {$t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
@@ -152,8 +152,13 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
             }
 
             assert(typeof value === "string");
-            const date_str = new Date(value);
-            current_values[name] = custom_profile_fields_ui.format_date(date_str, "Y-m-d");
+            const date_obj = new Date(value);
+            // Format date using flatpickr (same logic as custom_profile_fields_ui.format_date)
+            if (date_obj.toString() === "Invalid Date") {
+                current_values[name] = "Invalid Date";
+            } else {
+                current_values[name] = flatpickr.formatDate(date_obj, "Y-m-d");
+            }
         }
     });
     return current_values;

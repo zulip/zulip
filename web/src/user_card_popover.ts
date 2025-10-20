@@ -18,6 +18,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import type {CustomProfileFieldData} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {is_overlay_hash} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
@@ -42,7 +43,6 @@ import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
-import type {CustomProfileFieldData} from "./user_profile.ts";
 import * as user_profile from "./user_profile.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -721,6 +721,24 @@ function register_click_handlers(): void {
     // Note: Message feeds and drafts have their own direct event listeners
     // that run before this one and call stopPropagation.
     $("body").on("click", ".messagebox .user-mention", unsaved_message_user_mention_event_handler);
+
+    // Handle clicks on user pills in custom profile fields (outside of .person_picker)
+    $("body").on("click", ".pill[data-user-id]", function (this: HTMLElement, e) {
+        // Skip if this is inside a person_picker (already handled)
+        if ($(this).closest(".person_picker").length > 0) {
+            return;
+        }
+        const user_id_attr = $(this).attr("data-user-id");
+        if (user_id_attr !== undefined) {
+            const user_id = Number.parseInt(user_id_attr, 10);
+            if (!Number.isNaN(user_id)) {
+                const user = people.get_by_user_id(user_id);
+                toggle_user_card_popover(this, user);
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        }
+    });
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));

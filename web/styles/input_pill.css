@@ -12,6 +12,8 @@
     align-items: center;
 
     cursor: text;
+    box-shadow: none !important;
+    filter: none !important;
 
     .pill {
         display: inline-flex;
@@ -29,6 +31,7 @@
         margin: 0;
 
         color: inherit;
+        border: none !important;
 
         border-radius: 4px;
         background-color: var(--color-background-input-pill);
@@ -37,17 +40,14 @@
         /* Not focus-visible, because we want to support mouse+backpace to
            delete pills */
         &:focus {
-            /* Box shadow instead of border, because user pills have avatars
-               that extend all the way to the edge of the pill. */
-            box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
-            outline: none;
+            /* Remove all focus effects */
+            box-shadow: none !important;
+            outline: none !important;
+            border: none !important;
 
-            /* For user pills with avatars, the avatar covers up the box
-               shadow, so we also have to make a border around the avatar. */
+            /* Remove avatar border effects */
             .pill-image-border {
-                border-right: none;
-                border-radius: 4px 0 0 4px;
-                border-color: var(--color-focus-outline-input-pill);
+                border: none !important;
             }
         }
 
@@ -62,9 +62,8 @@
             width: var(--height-input-pill);
             position: absolute;
             box-sizing: border-box;
-            border: 1px solid;
+            border: none !important;
             border-radius: 4px;
-            border-color: var(--color-border-input-pill-image);
         }
 
         .zulip-icon {
@@ -234,6 +233,127 @@
         border-color: var(--color-invalid-input-border);
         box-shadow: var(--invalid-input-box-shadow);
     }
+
+
+    &:focus,
+    &:focus-within,
+    &:hover {
+        box-shadow: none !important;
+        filter: none !important;
+        outline: none !important;
+    }
+}
+
+.pill {
+    cursor: pointer !important;
+    border: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+.pill:not(.not-editable):hover,
+.pill:not(.not-editable):focus,
+.pill:not(.not-editable):active {
+    background: var(--color-background-input-pill-hover) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.pill:focus,
+.pill:active,
+.pill:focus-visible,
+.pill *:focus,
+.pill *:focus-visible,
+.pill *:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.pill::-webkit-focus-ring,
+.pill *::-webkit-focus-ring {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.pill:focus {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+
+.pill,
+.pill:hover,
+.pill:focus,
+.pill:active,
+.pill:focus-visible,
+.pill:focus-within {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+    appearance: none !important;
+}
+
+.pill * {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+    appearance: none !important;
+}
+
+/* Ultra-aggressive override for any remaining effects */
+.pill-container .pill,
+.pill-container .pill:hover,
+.pill-container .pill:focus,
+.pill-container .pill:active {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+    appearance: none !important;
+}
+
+/* Remove effects from pill container child elements */
+.pill-container .pill * {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+    appearance: none !important;
+}
+
+/* Nuclear option - target everything that could possibly create a glow */
+*[class*="pill"],
+*[class*="pill"] *,
+*[class*="pill"]:hover,
+*[class*="pill"]:focus,
+*[class*="pill"]:active,
+*[class*="pill"]:focus-within {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+    appearance: none !important;
+}
+
+/* Remove effects from pill child elements */
+*[class*="pill"] * {
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+    appearance: none !important;
 }
 
 #compose-direct-recipient .pill-container {
