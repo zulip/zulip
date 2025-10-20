@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -85,3 +87,44 @@ class PagerDutyHookTests(WebhookTestCase):
                 "The 'incident.unsupported' event isn't currently supported by the PagerDuty webhook; ignoring",
                 result,
             )
+    # TEST FOR SIGNATURE VERIFICATION
+    def test_valid_signature(self) -> None:
+        """Test that webhooks with valid PagerDuty signature are accepted"""
+        payload = self.get_body("trigger_v2")
+        # Use a test webhook secret
+        webhook_secret = "test_webhook_secret_123"
+        # Generate valid signature using the webhook secret
+        signature = hmac.new(
+            webhook_secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+        # Build URL with webhook_secret parameter
+        url = self.build_webhook_url(webhook_secret=webhook_secret)
+        # Enable signature verification for this test
+        with self.settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            # Send webhook with valid signature
+            result = self.client_post(url,payload,content_type="application/json",HTTP_X_PAGERDUTY_SIGNATURE=f"v1={signature}",)
+            self.assert_json_success(result)
+
+    def test_invalid_signature(self) -> None:
+        """Test that webhooks with invalid PagerDuty signature are rejected"""
+        payload = self.get_body("trigger_v2")
+        webhook_secret = "test_webhook_secret_123"
+        invalid_signature = "0" * 64
+        url = self.build_webhook_url(webhook_secret=webhook_secret)t
+        with self.settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            result = self.client_post(url,payload,content_type="application/json",HTTP_X_PAGERDUTY_SIGNATURE=f"v1={invalid_signature}",)
+            self.assert_json_error(result, "Webhook signature verification failed.")
+            
+    def test_multiple_signatures_one_valid(self) -> None:
+        """Test that webhook accepts if at least one signature in comma-separated list is valid"""
+        payload = self.get_body("trigger_v2")
+        webhook_secret = "test_webhook_secret_123"
+        valid_signature = hmac.new(
+            webhook_secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+        invalid_signature = "0" * 64
+        mixed_signatures = f"v1={invalid_signature},v1={valid_signature}"
+        url = self.build_webhook_url(webhook_secret=webhook_secret)
+        with self.settings(VERIFY_WEBHOOK_SIGNATURES=True):
+            result = self.client_post(url,payload,content_type="application/json",HTTP_X_PAGERDUTY_SIGNATURE=mixed_signatures,)
+            self.assert_json_success(result)
