@@ -397,6 +397,10 @@
     opacity: 0.7;
 }
 
+#demo-owner-update-email-field-hint {
+    opacity: 0.7;
+}
+
 #sender_channel_email_address_widget {
     width: 12.875em; /* 206px at 16px/em */
 }
