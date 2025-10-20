@@ -1851,10 +1851,6 @@ label.preferences-radio-choice-label {
     margin-top: 13px;
     display: block;
 
-    .upgrade-tip {
-        width: auto;
-    }
-
     .tip::before {
         content: "\f135";
         margin-right: 8px;
