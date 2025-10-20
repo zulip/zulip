@@ -18,6 +18,7 @@ review-process
 continuing-unfinished-work
 zulipbot-usage
 reporting-bugs
+reporting-security-vulnerabilities
 suggesting-features
 counting-contributions
 licensing
