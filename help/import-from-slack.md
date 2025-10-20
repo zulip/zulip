@@ -63,8 +63,8 @@ in order to export direct message data.
    that in your profile, in a banner covering the bottom of your
    avatar.
 
-1. [Create a new Slack app](https://api.slack.com/apps). Choose the "From
-   scratch" creation option.
+1. [Create a new Slack app](https://api.slack.com/apps). Choose the **From
+   scratch** creation option.
 
 1. [Create a
    bot user](https://docs.slack.dev/app-management/quickstart-app-settings/#creating),
