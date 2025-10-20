@@ -40,3 +40,4 @@ in order to use this integration.
 - [Jitsi Meet integration](/integrations/jitsi)
 - [BigBlueButton integration](/integrations/big-blue-button)
 - [Constructor Groups integration](/integrations/constructor-groups)
+- [Nextcloud Talk integration](/integrations/nextcloud-talk)

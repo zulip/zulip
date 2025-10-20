@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 465**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Nextcloud Talk integration added as an option
+  for the realm setting `video_chat_provider`.
+* [`POST /calls/nextcloud_talk/create`](/api/create-nextcloud-talk-video-call):
+  Added a new endpoint to create a Nextcloud Talk video call URL.
+
 **Feature level 464**
 
 * [`GET /events`](/api/get-events): The server now sends a

@@ -749,6 +749,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## zulip-secrets.conf.
 # CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
 
+## Controls the Nextcloud Talk video call integration. You must also
+## set nextcloud_talk_username and nextcloud_talk_password in
+## zulip-secrets.conf.
+# NEXTCLOUD_SERVER = "https://nextcloud.example.com"
 
 ################
 ## AI Features

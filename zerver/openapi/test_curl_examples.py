@@ -35,6 +35,8 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "delete-reminder",
     # Would need Constructor Groups credentials configured to test this endpoint.
     "create-constructor-groups-video-call",
+    # Would need Nextcloud Talk server configured to test this endpoint.
+    "create-nextcloud-talk-video-call",
 }
 
 

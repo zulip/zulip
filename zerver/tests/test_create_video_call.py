@@ -1,6 +1,7 @@
 from unittest import mock
 
 import orjson
+import requests
 import responses
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
@@ -674,3 +675,142 @@ class ConstructorGroupsVideoCallTest(ZulipTestCase):
                 service._make_authenticated_request("GET", "/room/default")
             self.assertEqual(str(cm.exception.msg), "Failed to create Constructor Groups call")
             self.assertIn("Constructor Groups API request failed", error_log.output[0])
+
+
+class NextcloudVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+        self.nextcloud_api_url = "https://nextcloud.example.com/ocs/v2.php/apps/spreed/api/v4/room"
+
+    @responses.activate
+    def test_create_nextcloud_talk_video_call_success(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok", "statuscode": 200, "message": "OK"},
+                    "data": {
+                        "token": "abc123token",
+                        "name": "Test Meeting",
+                        "displayName": "Test Meeting",
+                        "type": 3,
+                    },
+                }
+            },
+            status=200,
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": "#Test > team check-in"}
+        )
+        self.assertEqual(responses.calls[0].request.url, self.nextcloud_api_url)
+
+        self.assertEqual(
+            responses.calls[0].request.headers["OCS-APIRequest"],
+            "true",
+        )
+        self.assertEqual(
+            responses.calls[0].request.headers["Accept"],
+            "application/json",
+        )
+        self.assertIn("Authorization", responses.calls[0].request.headers)
+        self.assertTrue(responses.calls[0].request.headers["Authorization"].startswith("Basic "))
+
+        assert responses.calls[0].request.body is not None
+        self.assertEqual(
+            orjson.loads(responses.calls[0].request.body),
+            {
+                "roomType": 3,
+                "roomName": "#Test > team check-in",
+            },
+        )
+
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+    def test_create_nextcloud_talk_not_configured(self) -> None:
+        for setting_name in [
+            "NEXTCLOUD_SERVER",
+            "NEXTCLOUD_TALK_USERNAME",
+            "NEXTCLOUD_TALK_PASSWORD",
+        ]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post(
+                    "/json/calls/nextcloud_talk/create",
+                    {"room_name": "#Test > team check-in"},
+                )
+                self.assert_json_error(response, "Nextcloud Talk is not configured")
+
+    @responses.activate
+    def test_create_nextcloud_talk_connection_error(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            body=requests.RequestException("Connection failed"),
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": "#Test > team check-in"}
+        )
+
+        self.assert_json_error(response, "Error connecting to the Nextcloud Talk server")
+
+    @responses.activate
+    def test_create_nextcloud_talk_invalid_response(self) -> None:
+        # Missing 'token' field
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok"},
+                    "data": {},
+                }
+            },
+            status=200,
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create",
+            {"room_name": "#Test > team check-in"},
+        )
+        self.assert_json_error(response, "Failed to create Nextcloud Talk call")
+
+    @responses.activate
+    def test_create_nextcloud_talk_truncates_long_room_name(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok", "statuscode": 200, "message": "OK"},
+                    "data": {
+                        "token": "abc123token",
+                        "name": "Truncated Conversation",
+                        "displayName": "Truncated Meeting",
+                        "type": 3,
+                    },
+                }
+            },
+            status=200,
+        )
+
+        long_room_name = "A" * 300
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": long_room_name}
+        )
+
+        from zerver.views.video_calls import MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH
+
+        assert responses.calls[0].request.body is not None
+        request_body = orjson.loads(responses.calls[0].request.body)
+        self.assert_length(request_body["roomName"], MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH)
+        self.assertTrue(request_body["roomName"].endswith("..."))
+
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
