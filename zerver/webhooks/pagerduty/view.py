@@ -209,6 +209,42 @@ def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
         # Handle all incident-related events (incident, incident_note, etc.)
         return build_incident_formatdict_v3(event)
 
+def build_incident_formatdict_v3(event: WildValue) -> FormatDictType:
+    """Handle incident events with the original incident data structure"""
+    format_dict: FormatDictType = {}
+    format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V3[event["event_type"].tame(check_string)]
+
+    format_dict["incident_id"] = event["data"]["id"].tame(check_string)
+    format_dict["incident_url"] = event["data"]["html_url"].tame(check_string)
+    format_dict["incident_num_title"] = NUM_TITLE.format(
+        incident_num=event["data"]["number"].tame(check_int),
+        incident_title=event["data"]["title"].tame(check_string),
+    )
+
+    format_dict["service_name"] = event["data"]["service"]["summary"].tame(check_string)
+    format_dict["service_url"] = event["data"]["service"]["html_url"].tame(check_string)
+
+    assignees = event["data"]["assignees"]
+    if assignees:
+        assignee = assignees[0]
+        format_dict["assignee_info"] = AGENT_TEMPLATE.format(
+            username=assignee["summary"].tame(check_string),
+            url=assignee["html_url"].tame(check_string),
+        )
+    else:
+        format_dict["assignee_info"] = "nobody"
+
+    agent = event.get("agent")
+    if agent is not None:
+        format_dict["agent_info"] = AGENT_TEMPLATE.format(
+            username=agent["summary"].tame(check_string),
+            url=agent["html_url"].tame(check_string),
+        )
+
+    # V3 doesn't have trigger_message
+    format_dict["trigger_message"] = ""
+
+    return format_dict
 
 def send_formatted_pagerduty(
     request: HttpRequest,
