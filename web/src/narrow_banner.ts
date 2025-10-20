@@ -306,10 +306,21 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             // fallthrough to default case if no match is found
             break;
         case "channel": {
-            const stream_sub = stream_data.get_sub_by_id_string(first_operand);
+            // Ensure first_operand is a string
+            const channel_id_str = String(first_operand);
+
+            // Quick validation: must be only digits
+            if (!/^\d+$/.test(channel_id_str)) {
+                return {
+                    title: $t({
+                        defaultMessage: "This channel doesn't exist, or you are not allowed to view it.",
+                    }),
+                };
+            }
+
+            const stream_sub = stream_data.get_sub_by_id_string(channel_id_str);
+
             if (!stream_sub?.subscribed) {
-                // You are narrowed to a channel that either does not exist,
-                // is private, or a channel you're not currently subscribed to.
                 if (page_params.is_spectator) {
                     spectators.login_to_access(true);
                     return SPECTATOR_STREAM_NARROW_BANNER;
@@ -324,15 +335,15 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     }),
                 };
             }
+
             assert(message_lists.current !== undefined);
             if (message_lists.current.visibly_empty() && !message_lists.current.empty()) {
-                // The current message list appears empty, but there are
-                // messages in muted topics.
                 return MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER;
             }
-            // else fallthrough to default case
+
             break;
         }
+
         case "search": {
             // You are narrowed to empty search results.
             return empty_search_query_banner(current_filter);
