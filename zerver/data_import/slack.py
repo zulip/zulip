@@ -7,7 +7,7 @@ import shutil
 import time
 import zipfile
 from collections import defaultdict
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from email.errors import HeaderDefect
@@ -22,6 +22,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
     build_attachment,
@@ -37,12 +38,12 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    download_and_export_upload_file,
     get_attachment_path_and_content,
     long_term_idle_helper,
     make_subscriber_map,
     process_avatars,
     process_emojis,
-    process_uploads,
     validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
@@ -56,6 +57,8 @@ from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
+from zerver.lib.parallel import run_parallel_queue
+from zerver.lib.partial import partial
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
 from zerver.models import (
@@ -800,6 +803,7 @@ def convert_slack_workspace_messages(
     domain_name: str,
     output_dir: str,
     convert_slack_threads: bool,
+    do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> tuple[list[ZerverFieldsT], list[ZerverFieldsT], list[ZerverFieldsT]]:
     """
@@ -846,6 +850,7 @@ def convert_slack_workspace_messages(
             domain_name,
             long_term_idle,
             convert_slack_threads,
+            do_download_and_export_upload_file,
         )
 
         message_json = dict(
@@ -1027,6 +1032,7 @@ def channel_message_to_zerver_message(
     domain_name: str,
     long_term_idle: set[int],
     convert_slack_threads: bool,
+    do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
 ) -> MessageConversionResult:
     zerver_message = []
     zerver_usermessage: list[ZerverFieldsT] = []
@@ -1127,6 +1133,7 @@ def channel_message_to_zerver_message(
             slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
+            do_download_and_export_upload_file=do_download_and_export_upload_file,
         )
 
         content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
@@ -1221,6 +1228,7 @@ def process_message_files(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
     zerver_attachment: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
+    do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
 ) -> dict[str, Any]:
     has_attachment = False
     has_image = False
@@ -1268,13 +1276,22 @@ def process_message_files(
                 UploadRecordData(
                     content_type=None,
                     last_modified=fileinfo["timestamp"],
-                    # Save Slack's URL here, which is used later while processing
-                    path=fileinfo["url_private"],
+                    path=attachment_data.path,
                     realm_id=realm_id,
                     s3_path=attachment_data.path,
                     size=fileinfo["size"],
                     user_profile_id=slack_user_id_to_zulip_user_id[slack_user_id],
                 )
+            )
+
+            do_download_and_export_upload_file(
+                UploadFileRequest(
+                    output_file_path=attachment_data.path,
+                    request_url=fileinfo["url_private"],
+                    params=None,
+                    headers=None,
+                    kwargs={},
+                ),
             )
 
             build_attachment(
@@ -1691,22 +1708,31 @@ def do_convert_directory(
         domain_name, realm_id, user_list, realm_subdomain, slack_data_dir, custom_emoji_list
     )
 
-    reactions, uploads_list, zerver_attachment = convert_slack_workspace_messages(
-        slack_data_dir,
-        user_list,
-        realm_id,
-        slack_user_id_to_zulip_user_id,
-        slack_recipient_name_to_zulip_recipient_id,
-        added_channels,
-        added_mpims,
-        dm_members,
-        realm,
-        realm["zerver_userprofile"],
-        realm["zerver_realmemoji"],
-        domain_name,
-        output_dir,
-        convert_slack_threads,
-    )
+    with run_parallel_queue(
+        partial(download_and_export_upload_file, output_dir),
+        processes,
+        initargs=tuple(),
+        catch=True,
+        report_every=100,
+        report=lambda count: logging.info("Downloaded %s attachments", count),
+    ) as do_download_and_export_upload_file:
+        reactions, uploads_list, zerver_attachment = convert_slack_workspace_messages(
+            slack_data_dir,
+            user_list,
+            realm_id,
+            slack_user_id_to_zulip_user_id,
+            slack_recipient_name_to_zulip_recipient_id,
+            added_channels,
+            added_mpims,
+            dm_members,
+            realm,
+            realm["zerver_userprofile"],
+            realm["zerver_realmemoji"],
+            domain_name,
+            output_dir,
+            convert_slack_threads,
+            do_download_and_export_upload_file,
+        )
 
     # Move zerver_reactions to realm.json file
     realm["zerver_reaction"] = reactions
@@ -1724,8 +1750,6 @@ def do_convert_directory(
         avatar_list, avatar_folder, realm_id, processes, size_url_suffix="-512"
     )
 
-    uploads_folder = os.path.join(output_dir, "uploads")
-    uploads_records = process_uploads(uploads_list, uploads_folder, processes)
     attachment = {"zerver_attachment": zerver_attachment}
 
     team_info_dict = get_slack_api_data("https://slack.com/api/team.info", "team", token=token)
@@ -1737,7 +1761,7 @@ def do_convert_directory(
     create_converted_data_files(realm, output_dir, "/realm.json")
     create_converted_data_files(emoji_records, output_dir, "/emoji/records.json")
     create_converted_data_files(avatar_records, output_dir, "/avatars/records.json")
-    create_converted_data_files(uploads_records, output_dir, "/uploads/records.json")
+    create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(realm_icon_records, output_dir, "/realm_icons/records.json")
     do_common_export_processes(output_dir)
