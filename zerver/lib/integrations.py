@@ -46,6 +46,7 @@ META_CATEGORY: dict[str, StrPromise] = {
 
 CATEGORIES: dict[str, StrPromise] = {
     **META_CATEGORY,
+    "video-calling": gettext_lazy("Video calling"),
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
     "deployment": gettext_lazy("Deployment"),
@@ -69,9 +70,11 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "capistrano",
     "codebase",
     "discourse",
+    "git",
     "github-actions",
     "google-calendar",
     "jenkins",
+    "jira-plugin",
     "mastodon",
     "mercurial",
     "nagios",
@@ -259,7 +262,7 @@ class PythonAPIIntegration(Integration):
 
 
 class WebhookIntegration(Integration):
-    DEFAULT_FUNCTION_PATH = "zerver.webhooks.{name}.view.api_{name}_webhook"
+    DEFAULT_FUNCTION_PATH = "zerver.webhooks.{dir_name}.view.api_{dir_name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
     DEFAULT_CLIENT_NAME = "Zulip{name}Webhook"
     DEFAULT_DOC_PATH = "{name}/doc.md"
@@ -296,8 +299,12 @@ class WebhookIntegration(Integration):
             url_options=url_options,
         )
 
+        if dir_name is None:
+            dir_name = self.name
+        self.dir_name = dir_name
+
         if function is None:
-            function = self.DEFAULT_FUNCTION_PATH.format(name=name)
+            function = self.DEFAULT_FUNCTION_PATH.format(dir_name=dir_name)
         self.function_name = function
 
         if url is None:
@@ -307,10 +314,6 @@ class WebhookIntegration(Integration):
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
-
-        if dir_name is None:
-            dir_name = self.name
-        self.dir_name = dir_name
 
     def get_function(self) -> Callable[[HttpRequest], HttpResponseBase]:
         return import_string(self.function_name)
@@ -497,8 +500,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "github",
         ["version-control"],
         display_name="GitHub",
-        function="zerver.webhooks.github.view.api_github_webhook",
-        stream_name="github",
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
@@ -510,7 +511,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="GitHub Sponsors",
         logo="images/integrations/logos/github.svg",
         dir_name="github",
-        function="zerver.webhooks.github.view.api_github_webhook",
         doc="github/githubsponsors.md",
         stream_name="github",
     ),
@@ -536,12 +536,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
     WebhookIntegration("heroku", ["deployment"]),
     WebhookIntegration("homeassistant", ["misc"], display_name="Home Assistant"),
-    WebhookIntegration(
-        "ifttt",
-        ["meta-integration"],
-        function="zerver.webhooks.ifttt.view.api_iftt_app_webhook",
-        display_name="IFTTT",
-    ),
+    WebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
     WebhookIntegration("insping", ["monitoring"]),
     WebhookIntegration("intercom", ["customer-support"]),
     # Avoid collision with jira-plugin's doc "jira/doc.md".
@@ -615,7 +610,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
 INTEGRATIONS: dict[str, Integration] = {
     "asana": Integration("asana", ["project-management"]),
     "big-blue-button": Integration(
-        "big-blue-button", ["communication"], display_name="BigBlueButton"
+        "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
     "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
     "discourse": Integration("discourse", ["communication"]),
@@ -630,13 +625,13 @@ INTEGRATIONS: dict[str, Integration] = {
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
     "jenkins": Integration("jenkins", ["continuous-integration"]),
-    "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
+    "jitsi": Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     "mastodon": Integration("mastodon", ["communication"]),
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
     "puppet": Integration("puppet", ["deployment"]),
     "redmine": Integration("redmine", ["project-management"]),
-    "zoom": Integration("zoom", ["communication"]),
+    "zoom": Integration("zoom", ["video-calling", "communication"]),
 }
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
@@ -723,13 +718,41 @@ for webhook_integration in WEBHOOK_INTEGRATIONS:
 for bot_integration in BOT_INTEGRATIONS:
     INTEGRATIONS[bot_integration.name] = bot_integration
 
-# Add integrations that don't have automated screenshots here
-NO_SCREENSHOT_WEBHOOKS = {
-    "beeminder",  # FIXME: fixture's goal.losedate needs to be modified dynamically
-    "ifttt",  # Docs don't have a screenshot
-    "slack_incoming",  # Docs don't have a screenshot
-    "zapier",  # Docs don't have a screenshot
-}
+# Add webhook integrations that don't have automated screenshots here
+NO_SCREENSHOT_WEBHOOKS = (
+    # FIXME: fixture's goal.losedate needs to be modified dynamically
+    {"beeminder"}
+    # Meta integrations - Docs won't have a screenshot
+    | {"ifttt", "slack_incoming", "zapier"}
+)
+
+hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add fixtureless integrations that don't have automated screenshots here
+NO_SCREENSHOT_CONFIG = (
+    # Outgoing integrations - Docs won't have a screenshot
+    {"email", "onyx"}
+    # Video call integrations - Docs won't have a screenshot
+    | {"big-blue-button", "jitsi", "zoom"}
+    # Integrations that require screenshots of message threads - support is yet to be added
+    | {
+        "errbot",
+        "github_detail",
+        "hubot",
+        "irc",
+        # Also requires a screenshot on the Matrix side of the bridge
+        "matrix",
+        "xkcd",
+    }
+    | {
+        # Doc doesn't have a screenshot
+        "giphy",
+        # the integration is planned to be removed
+        "twitter",
+    }
+    | NO_SCREENSHOT_WEBHOOKS
+    | hubot_integration_names
+)
 
 
 WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {

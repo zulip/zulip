@@ -866,7 +866,7 @@ deactivated groups.
 
 **Feature level 336**
 
-* [Markdown message formatting](/api/message-formatting#image-previews): Added
+* [Markdown message formatting](/api/message-formatting#images): Added
   `data-original-content-type` attribute to convey the type of the original
   image, and optional `data-transcoded-image` attribute for images with formats
   which are not widely supported by browsers.
@@ -1435,7 +1435,7 @@ deactivated groups.
 **Feature level 287**
 
 * [Markdown message
-  formatting](/api/message-formatting#image-previews): Added
+  formatting](/api/message-formatting#images): Added
   `data-original-dimensions` attributes to placeholder images
   (`image-loading-placeholder`), containing the dimensions of the
   original image. This change was also backported to the Zulip 9.x
@@ -1511,7 +1511,7 @@ releases.
 **Feature level 278**
 
 * [Markdown message
-  formatting](/api/message-formatting#image-previews): Added
+  formatting](/api/message-formatting#images): Added
   `data-original-dimensions` attributes to placeholder images
   (`image-loading-placeholder`), containing the dimensions of the
   original image. Backported change from feature level 287.
@@ -1524,7 +1524,7 @@ No changes; feature level used for Zulip 9.0 release.
 
 **Feature level 276**
 
-* [Markdown message formatting](/api/message-formatting#image-previews):
+* [Markdown message formatting](/api/message-formatting#images):
   Image preview elements not contain a `data-original-dimensions`
   attribute containing the dimensions of the original image.
 

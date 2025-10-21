@@ -172,10 +172,19 @@ review:
   </details>
   ```
 
-- Screencasts are difficult to review, so use them only when necessary to
-  demonstrate an interaction. Keep videos as short as possible. If your changes
-  can be seen on a screenshot, be sure to include screenshots in addition to any
-  videos.
+- Screenshots are much easier to review than screencast videos.
+  Wherever possible, use still screenshots instead of videos.
+  Use a video only when necessary to demonstrate an interaction,
+  and include screenshots too for any aspects of your changes
+  which can be seen on a still screenshot.
+
+  Keep any videos as short as possible, so that the reviewer can
+  quickly get to the relevant part.
+
+  In screencast videos, make sure a person watching your video
+  can see where on the screen you're touching or clicking.
+  Use the "show touches" or "include the mouse pointer" feature
+  of your screen-recording software.
 
 - For before and after images or videos of changes, using GithHub's table
   syntax renders them side-by-side for quick and clear comparison.

@@ -540,13 +540,6 @@ input.settings_text_input {
     margin-bottom: 10px;
 }
 
-#convert-demo-organization-form,
-#invite-user-form {
-    .banner-action-buttons {
-        padding: 0.085em 0;
-    }
-}
-
 .create-group-button-container {
     .upgrade-organization-banner-container {
         display: flex;
@@ -1163,9 +1156,13 @@ div.overlay .flex.overlay-content > .overlay-container,
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);
 
+    .setting-disabled-option-text,
     .setting-disabled-option-icon {
-        /* Values set to match text alignment in stream dropdown. */
-        padding: 0 5px 0 1px;
+        color: hsl(38deg 46% 54%);
+    }
+
+    .setting-disabled-option-icon {
+        align-self: center;
     }
 }
 

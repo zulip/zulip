@@ -20306,6 +20306,10 @@ paths:
                           names contained in this list, to obtain the desired
                           thumbnail size.
 
+                          See [Images in Markdown messages](/api/message-formatting#images)
+                          for details of how Zulip renders images, and how
+                          clients should handle them.
+
                           **Changes**: New in Zulip 9.0 (feature level 273).
                         type: array
                         items:
@@ -20332,7 +20336,7 @@ paths:
                               type: boolean
                               description: |
                                 If this file format is animated. These formats
-                                are only generated for uploaded imates which
+                                are only generated for uploaded images which
                                 themselves are animated.
                       server_avatar_changes_disabled:
                         type: boolean
