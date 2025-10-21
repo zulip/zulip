@@ -1,7 +1,5 @@
 import logging
 import os
-import random
-import secrets
 import uuid
 from collections import defaultdict
 from dataclasses import asdict
@@ -28,6 +26,7 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
+    get_attachment_path_and_content,
     make_subscriber_map,
     make_user_messages,
 )
@@ -417,23 +416,18 @@ def process_message_attachment(
         logging.info("Replacing too long attachment name with random uuid: %s", file_name)
         sanitized_name = uuid.uuid4().hex
 
-    s3_path = "/".join(
-        [
-            str(realm_id),
-            format(random.randint(0, 255), "x"),
-            secrets.token_urlsafe(18),
-            sanitized_name,
-        ]
+    attachment_data = get_attachment_path_and_content(
+        link_name=file_name, filename=file_name, realm_id=realm_id
     )
 
     # Build the attachment from chunks and save it to s3_path.
-    file_out_path = os.path.join(output_dir, "uploads", s3_path)
+    file_out_path = os.path.join(output_dir, "uploads", attachment_data.url)
     os.makedirs(os.path.dirname(file_out_path), exist_ok=True)
     with open(file_out_path, "wb") as upload_file:
         upload_file.write(b"".join(upload_file_data["chunk"]))
 
     attachment_content = (
-        f"{upload_file_data.get('description', '')}\n\n[{file_name}](/user_uploads/{s3_path})"
+        f"{upload_file_data.get('description', '')}\n\n{attachment_data.markdown_link}"
     )
 
     fileinfo = {
@@ -446,9 +440,9 @@ def process_message_attachment(
         UploadRecordData(
             content_type=upload["type"],
             last_modified=fileinfo["created"],
-            path=s3_path,
+            path=attachment_data.url,
             realm_id=realm_id,
-            s3_path=s3_path,
+            s3_path=attachment_data.url,
             size=fileinfo["size"],
             user_profile_id=user_id,
         )
@@ -459,7 +453,7 @@ def process_message_attachment(
         message_ids={message_id},
         user_id=user_id,
         fileinfo=fileinfo,
-        s3_path=s3_path,
+        s3_path=attachment_data.url,
         zerver_attachment=zerver_attachment,
     )
 
