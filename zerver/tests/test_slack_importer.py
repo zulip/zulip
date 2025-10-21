@@ -20,6 +20,7 @@ from confirmation.models import Confirmation, get_object_from_key
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
+    UploadFileRequest,
     ZerverFieldsT,
     build_defaultstream,
     build_recipient,
@@ -1268,15 +1269,16 @@ class SlackImporter(ZulipTestCase):
         zerver_usermessage: list[dict[str, Any]] = []
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
-
+        realm_id = 1
         (
             zerver_message,
             zerver_usermessage,
             attachment,
             uploads,
+            _upload_file_requests,
             reaction,
         ) = channel_message_to_zerver_message(
-            1,
+            realm_id,
             user_data,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -1354,7 +1356,8 @@ class SlackImporter(ZulipTestCase):
 
         # Test uploads
         self.assert_length(uploads, 1)
-        self.assertEqual(uploads[0]["path"], "https://files.slack.com/apple.png")
+        expected_file_name = "apple.png"
+        self.assertRegex(uploads[0]["path"], rf"{realm_id}/.*/.*/{expected_file_name}")
         self.assert_length(attachment, 1)
         self.assertEqual(attachment[0]["file_name"], "apple.png")
         self.assertEqual(attachment[0]["is_realm_public"], True)
@@ -1529,6 +1532,7 @@ class SlackImporter(ZulipTestCase):
             zerver_usermessage,
             attachment,
             uploads,
+            _upload_file_requests,
             _reaction,
         ) = channel_message_to_zerver_message(
             1,
@@ -1750,6 +1754,7 @@ class SlackImporter(ZulipTestCase):
             zerver_usermessage,
             attachment,
             uploads,
+            _upload_file_requests,
             _reaction,
         ) = channel_message_to_zerver_message(
             1,
@@ -1831,13 +1836,28 @@ by Pieter
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
         attachments: list[dict[str, Any]] = []
         uploads: list[dict[str, Any]] = []
+        upload_file_requests: list[UploadFileRequest] = []
 
         zerver_usermessage = [{"id": 3}, {"id": 5}, {"id": 6}, {"id": 9}]
 
         mock_get_messages_iterator.side_effect = fake_get_messages_iter
         mock_message.side_effect = [
-            [zerver_message[:1], zerver_usermessage[:2], attachments, uploads, reactions[:1]],
-            [zerver_message[1:2], zerver_usermessage[2:5], attachments, uploads, reactions[1:1]],
+            [
+                zerver_message[:1],
+                zerver_usermessage[:2],
+                attachments,
+                uploads,
+                upload_file_requests,
+                reactions[:1],
+            ],
+            [
+                zerver_message[1:2],
+                zerver_usermessage[2:5],
+                attachments,
+                uploads,
+                upload_file_requests,
+                reactions[1:1],
+            ],
         ]
 
         with self.assertLogs(level="INFO"):
@@ -1857,6 +1877,7 @@ by Pieter
                 "domain",
                 output_dir=output_dir,
                 convert_slack_threads=False,
+                threads=1,
                 chunk_size=1,
             )
 
@@ -2030,7 +2051,7 @@ by Pieter
 
         zerver_attachment: list[dict[str, Any]] = []
         uploads_list: list[dict[str, Any]] = []
-
+        upload_file_requests: list[UploadFileRequest] = []
         info = process_message_files(
             message=message,
             domain_name=domain_name,
@@ -2038,6 +2059,7 @@ by Pieter
             message_id=message_id,
             slack_user_id=slack_user_id,
             users=users,
+            upload_file_requests=upload_file_requests,
             slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
