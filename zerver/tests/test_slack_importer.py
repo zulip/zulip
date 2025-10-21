@@ -22,6 +22,7 @@ from zerver.actions.create_realm import do_create_realm, get_email_address_visib
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
+    UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
     build_defaultstream,
@@ -29,6 +30,7 @@ from zerver.data_import.import_util import (
     build_subscription,
     build_usermessages,
     build_zerver_realm,
+    download_and_export_upload_file,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
@@ -229,6 +231,7 @@ class SlackImporter(ZulipTestCase):
                 domain_name="domain",
                 long_term_idle=set(),
                 convert_slack_threads=convert_slack_threads,
+                do_download_and_export_upload_file=lambda request: None,
             )
 
     @responses.activate
@@ -1466,9 +1469,10 @@ class SlackImporter(ZulipTestCase):
         zerver_usermessage: list[dict[str, Any]] = []
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
+        realm_id = 1
 
         conversion_result = channel_message_to_zerver_message(
-            1,
+            realm_id,
             user_data,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -1480,6 +1484,7 @@ class SlackImporter(ZulipTestCase):
             "domain",
             set(),
             convert_slack_threads=False,
+            do_download_and_export_upload_file=lambda request: None,
         )
         zerver_message = conversion_result.zerver_message
         zerver_usermessage = conversion_result.zerver_usermessage
@@ -1560,7 +1565,8 @@ class SlackImporter(ZulipTestCase):
 
         # Test uploads
         self.assert_length(uploads, 1)
-        self.assertEqual(uploads[0].path, "https://files.slack.com/apple.png")
+        expected_file_name = "apple.png"
+        self.assertRegex(uploads[0].path, rf"{realm_id}/.*/.*/{expected_file_name}")
         self.assert_length(attachment, 1)
         self.assertEqual(attachment[0]["file_name"], "apple.png")
         self.assertEqual(attachment[0]["is_realm_public"], True)
@@ -1731,6 +1737,7 @@ class SlackImporter(ZulipTestCase):
             "domain",
             set(),
             convert_slack_threads=False,
+            do_download_and_export_upload_file=lambda request: None,
         )
 
         zerver_message = conversion_result.zerver_message
@@ -1800,9 +1807,11 @@ class SlackImporter(ZulipTestCase):
         # Test uploads
         attachment = conversion_result.zerver_attachment
         self.assert_length(conversion_result.uploads_list, 1)
-        self.assertEqual(
-            conversion_result.uploads_list[0].path, "https://files.slack.com/apple.png"
+        expected_file_name = "apple.png"
+        self.assertRegex(
+            conversion_result.uploads_list[0].path, rf"{realm_id}/.*/.*/{expected_file_name}"
         )
+
         self.assert_length(attachment, 1)
         self.assertEqual(attachment[0]["file_name"], "apple.png")
         self.assertEqual(attachment[0]["is_realm_public"], True)
@@ -2098,6 +2107,7 @@ class SlackImporter(ZulipTestCase):
             "domain",
             set(),
             convert_slack_threads=True,
+            do_download_and_export_upload_file=lambda request: None,
         )
 
         zerver_message = conversion_result.zerver_message
@@ -2211,6 +2221,7 @@ by Pieter
                 "domain",
                 output_dir=output_dir,
                 convert_slack_threads=False,
+                do_download_and_export_upload_file=lambda request: None,
                 chunk_size=1,
             )
 
@@ -2396,6 +2407,7 @@ by Pieter
             slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
+            do_download_and_export_upload_file=lambda request: None,
         )
         self.assert_length(zerver_attachment, 1)
         self.assert_length(uploads_list, 1)
@@ -3075,3 +3087,27 @@ by Pieter
                     "cancel_import": "true",
                 },
             )
+
+    @responses.activate
+    def test_download_and_export_upload_file_bad_requests(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/DEF.png?token=xoxe-AAA-BBB-CCC-DDD"
+
+        error_message = "The requested file could not be found."
+        responses.add(responses.GET, request_url, status=404, json=error_message)
+
+        with self.assertLogs(level="INFO") as logs, self.assertRaises(Exception) as e:
+            download_and_export_upload_file(
+                "",
+                UploadFileRequest(
+                    output_file_path="text.txt",
+                    request_url=request_url,
+                    params=None,
+                    headers=None,
+                    kwargs={},
+                ),
+            )
+        self.assertIn(
+            'INFO:root:HTTP error: 404, Response: "The requested file could not be found."',
+            logs.output,
+        )
+        self.assertEqual("Failed downloading file.", str(e.exception))
