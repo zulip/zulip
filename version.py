@@ -3,6 +3,7 @@ import os
 ZULIP_VERSION = "11.4+git"
 
 # Add information on number of commits and commit hash to version, if available
+ZULIP_VERSION_WITHOUT_COMMIT = ZULIP_VERSION
 zulip_git_version_file = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "zulip-git-version"
 )
