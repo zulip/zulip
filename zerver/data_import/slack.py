@@ -1320,7 +1320,9 @@ def process_message_files(
             has_link = True
             has_image = "image" in fileinfo["mimetype"]
 
-            s3_path, content_for_link = get_attachment_path_and_content(fileinfo, realm_id)
+            s3_path, content_for_link = get_attachment_path_and_content(
+                link_name=fileinfo["title"], filename=fileinfo["name"], realm_id=realm_id
+            )
             markdown_links.append(content_for_link)
 
             uploads_list.append(

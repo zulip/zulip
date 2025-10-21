@@ -882,7 +882,9 @@ def get_data_file(path: str) -> Any:
         return data
 
 
-def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> tuple[str, str]:
+def get_attachment_path_and_content(
+    link_name: str, filename: str, realm_id: int
+) -> tuple[str, str]:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
     # 'upload_message_attachment'
     s3_path = "/".join(
@@ -890,10 +892,10 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> t
             str(realm_id),
             format(random.randint(0, 255), "x"),
             secrets.token_urlsafe(18),
-            sanitize_name(fileinfo["name"]),
+            sanitize_name(filename),
         ]
     )
     attachment_path = f"/user_uploads/{s3_path}"
-    content = "[{}]({})".format(fileinfo["title"], attachment_path)
+    content = f"[{link_name}]({attachment_path})"
 
     return s3_path, content
