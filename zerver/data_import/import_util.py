@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import secrets
 import shutil
 import subprocess
 from collections import defaultdict
@@ -24,6 +25,7 @@ from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
+from zerver.lib.upload import sanitize_name
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -878,3 +880,20 @@ def get_data_file(path: str) -> Any:
     with open(path, "rb") as fp:
         data = orjson.loads(fp.read())
         return data
+
+
+def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> tuple[str, str]:
+    # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
+    # 'upload_message_attachment'
+    s3_path = "/".join(
+        [
+            str(realm_id),
+            format(random.randint(0, 255), "x"),
+            secrets.token_urlsafe(18),
+            sanitize_name(fileinfo["name"]),
+        ]
+    )
+    attachment_path = f"/user_uploads/{s3_path}"
+    content = "[{}]({})".format(fileinfo["title"], attachment_path)
+
+    return s3_path, content

@@ -2,9 +2,7 @@ import itertools
 import logging
 import os
 import posixpath
-import random
 import re
-import secrets
 import shutil
 import time
 import zipfile
@@ -38,6 +36,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    get_attachment_path_and_content,
     get_data_file,
     long_term_idle_helper,
     make_subscriber_map,
@@ -59,7 +58,6 @@ from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
-from zerver.lib.upload import sanitize_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -1364,23 +1362,6 @@ def process_message_files(
         has_image=has_image,
         has_link=has_link,
     )
-
-
-def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> tuple[str, str]:
-    # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
-    # 'upload_message_attachment'
-    s3_path = "/".join(
-        [
-            str(realm_id),
-            format(random.randint(0, 255), "x"),
-            secrets.token_urlsafe(18),
-            sanitize_name(fileinfo["name"]),
-        ]
-    )
-    attachment_path = f"/user_uploads/{s3_path}"
-    content = "[{}]({})".format(fileinfo["title"], attachment_path)
-
-    return s3_path, content
 
 
 def build_reactions(
