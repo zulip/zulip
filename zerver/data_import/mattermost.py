@@ -5,9 +5,7 @@ https://docs.mattermost.com/administration/bulk-export.html
 
 import logging
 import os
-import random
 import re
-import secrets
 import shutil
 from collections.abc import Callable
 from typing import Any
@@ -35,6 +33,7 @@ from zerver.data_import.import_util import (
     build_zerver_realm,
     convert_html_to_text,
     create_converted_data_files,
+    get_attachment_path_and_content,
     make_subscriber_map,
     make_user_messages,
 )
@@ -44,7 +43,6 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.message import truncate_content
-from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 from zerver.models.streams import Stream
@@ -374,17 +372,11 @@ def process_message_attachments(
         if file_ext.lower() in IMAGE_EXTENSIONS:
             has_image = True
 
-        s3_path = "/".join(
-            [
-                str(realm_id),
-                format(random.randint(0, 255), "x"),
-                secrets.token_urlsafe(18),
-                sanitize_name(file_name),
-            ]
+        attachment_data = get_attachment_path_and_content(
+            link_name=file_name, filename=file_name, realm_id=realm_id
         )
-        content_for_link = f"[{file_name}](/user_uploads/{s3_path})"
 
-        markdown_links.append(content_for_link)
+        markdown_links.append(attachment_data.markdown_link)
 
         fileinfo = {
             "name": file_name,
@@ -396,9 +388,9 @@ def process_message_attachments(
             UploadRecordData(
                 content_type=None,
                 last_modified=fileinfo["created"],
-                path=s3_path,
+                path=attachment_data.path_id,
                 realm_id=realm_id,
-                s3_path=s3_path,
+                s3_path=attachment_data.path_id,
                 size=fileinfo["size"],
                 user_profile_id=user_id,
             )
@@ -409,12 +401,12 @@ def process_message_attachments(
             message_ids={message_id},
             user_id=user_id,
             fileinfo=fileinfo,
-            s3_path=s3_path,
+            s3_path=attachment_data.path_id,
             zerver_attachment=zerver_attachment,
         )
 
         # Copy the attachment file to output_dir
-        attachment_out_path = os.path.join(output_dir, "uploads", s3_path)
+        attachment_out_path = os.path.join(output_dir, "uploads", attachment_data.path_id)
         os.makedirs(os.path.dirname(attachment_out_path), exist_ok=True)
         shutil.copyfile(attachment_full_path, attachment_out_path)
 
