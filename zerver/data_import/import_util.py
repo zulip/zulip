@@ -7,7 +7,7 @@ import subprocess
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -71,6 +71,15 @@ class UploadRecordData:
     s3_path: str
     size: int
     user_profile_id: int
+
+
+@dataclass
+class UploadFileRequest:
+    output_file_path: str
+    request_url: str
+    params: dict[str, Any] | None
+    headers: dict[str, Any] | None
+    kwargs: dict[str, Any]
 
 
 class SubscriberHandler:
@@ -668,49 +677,43 @@ def process_avatars(
     return avatar_list + avatar_original_list
 
 
-def get_uploads(upload_dir: str, upload: list[str]) -> None:
-    upload_url = upload[0]
-    upload_path = upload[1]
-    upload_path = os.path.join(upload_dir, upload_path)
+def request_file_stream(
+    url: str,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> requests.Response:
+    if "stream" not in kwargs:
+        kwargs.update(stream=True)
 
-    response = requests.get(upload_url, stream=True)
-    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-    with open(upload_path, "wb") as upload_file:
-        shutil.copyfileobj(response.raw, upload_file)
+    response = requests.get(
+        url,
+        params=params,
+        headers=headers,
+        **kwargs,
+    )
+    if response.status_code != requests.codes.ok:
+        logging.info("HTTP error: %s, Response: %s", response.status_code, response.text)
+        raise Exception("Failed downloading file.")
+
+    return response
 
 
-def process_uploads(
-    upload_list: list[UploadRecordData], upload_dir: str, processes: int
-) -> list[ZerverFieldsT]:
-    """
-    This function downloads the uploads and saves it in the realm's upload directory.
-    Required parameters:
+def download_and_export_upload_file(
+    output_dir: str, upload_file_request: UploadFileRequest
+) -> None:
+    file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path)
 
-    1. upload_list: List of uploads to be mapped in uploads records.json file
-    2. upload_dir: Folder where the downloaded uploads are saved
-    """
-    logging.info("######### GETTING ATTACHMENTS #########\n")
-    logging.info("DOWNLOADING ATTACHMENTS .......\n")
-    upload_records = []
-    upload_url_list = []
-    for upload in upload_list:
-        upload_url = upload.path
-        upload_s3_path = upload.s3_path
-        upload_url_list.append([upload_url, upload_s3_path])
-        upload.path = upload_s3_path
-        upload_records.append(asdict(upload))
-
-    # Run downloads in parallel
-    run_parallel(
-        partial(get_uploads, upload_dir),
-        upload_url_list,
-        processes=processes,
-        catch=True,
-        report=lambda count: logging.info("Finished %s items", count),
+    response = request_file_stream(
+        upload_file_request.request_url,
+        upload_file_request.params,
+        upload_file_request.headers,
+        **upload_file_request.kwargs,
     )
 
-    logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
-    return upload_records
+    os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
+    with open(file_output_path, "wb") as upload_file:
+        shutil.copyfileobj(response.raw, upload_file)
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
