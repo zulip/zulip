@@ -1266,7 +1266,9 @@ def process_message_files(
             ]
             file_user_email = get_user_email(file_user[0], domain_name)
 
-            s3_path, content_for_link = get_attachment_path_and_content(fileinfo, realm_id)
+            s3_path, content_for_link = get_attachment_path_and_content(
+                file_title=fileinfo["title"], file_name=fileinfo["name"], realm_id=realm_id
+            )
             markdown_links.append(content_for_link)
 
             upload_metadata = UploadRecordData(
