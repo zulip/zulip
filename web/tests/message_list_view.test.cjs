@@ -367,6 +367,7 @@ test("muted_message_vars", () => {
 
 test("merge_message_groups", ({mock_template}) => {
     mock_template("message_list.hbs", false, () => "<message-list-stub>");
+    mock_template("bookend.hbs", false, () => "<bookend-stub>");
     // MessageListView has lots of DOM code, so we are going to test the message
     // group merging logic on its own.
 
