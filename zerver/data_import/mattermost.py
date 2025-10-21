@@ -11,6 +11,7 @@ import secrets
 import shutil
 import subprocess
 from collections.abc import Callable
+from dataclasses import asdict
 from typing import Any
 
 import orjson
@@ -20,6 +21,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
     SubscriberHandler,
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_direct_message_group,
@@ -391,16 +393,16 @@ def process_message_attachments(
             "created": os.path.getmtime(attachment_full_path),
         }
 
-        upload = dict(
+        upload_metadata = UploadRecordData(
+            content_type=None,
+            last_modified=fileinfo["created"],
             path=s3_path,
             realm_id=realm_id,
-            content_type=None,
-            user_profile_id=user_id,
-            last_modified=fileinfo["created"],
             s3_path=s3_path,
             size=fileinfo["size"],
+            user_profile_id=user_id,
         )
-        uploads_list.append(upload)
+        uploads_list.append(asdict(upload_metadata))
 
         build_attachment(
             realm_id=realm_id,

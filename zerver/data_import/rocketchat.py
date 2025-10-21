@@ -4,6 +4,7 @@ import random
 import secrets
 import uuid
 from collections import defaultdict
+from dataclasses import asdict
 from typing import Any
 
 import bson
@@ -12,6 +13,7 @@ from django.forms.models import model_to_dict
 
 from zerver.data_import.import_util import (
     SubscriberHandler,
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_direct_message_group,
@@ -440,16 +442,16 @@ def process_message_attachment(
         "created": float(upload_file_data["_updatedAt"].timestamp()),
     }
 
-    upload = dict(
+    upload_metadata = UploadRecordData(
+        content_type=upload["type"],
+        last_modified=fileinfo["created"],
         path=s3_path,
         realm_id=realm_id,
-        content_type=upload["type"],
-        user_profile_id=user_id,
-        last_modified=fileinfo["created"],
         s3_path=s3_path,
         size=fileinfo["size"],
+        user_profile_id=user_id,
     )
-    uploads_list.append(upload)
+    uploads_list.append(asdict(upload_metadata))
 
     build_attachment(
         realm_id=realm_id,
