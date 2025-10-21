@@ -429,6 +429,7 @@
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
+    max-width: 100%;
 
     &:disabled {
         cursor: not-allowed;
@@ -470,6 +471,7 @@
     margin-bottom: 10px;
     /* subtract padding (6px each side) and border (1px each side) */
     width: calc(var(--modal-input-width) - 14px);
+    max-width: calc(100% - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);

@@ -607,6 +607,8 @@ ul.popover-group-menu-member-list {
             /* Override default modal input width, since that overflows.
                This is 185px (the default "width: unset" width) at 14px/em */
             width: 13.2142em;
+            /* subtract padding (6px on left and 28px on right) and border (1px each side) */
+            max-width: calc(100% - 36px);
         }
 
         .group-search:placeholder-shown + #clear_groups_search,
@@ -905,6 +907,9 @@ ul.popover-group-menu-member-list {
             box-sizing: border-box;
             width: 100%;
             height: auto;
+            /* Unset max-width set using modal_text_input selector as box-sizing
+            is set to border-box here and we already set width to 100%. */
+            max-width: unset;
 
             &.empty-topic-display::placeholder {
                 color: inherit;
