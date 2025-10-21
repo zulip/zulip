@@ -5,9 +5,7 @@ https://docs.mattermost.com/administration/bulk-export.html
 
 import logging
 import os
-import random
 import re
-import secrets
 import shutil
 import subprocess
 from collections.abc import Callable
@@ -36,6 +34,7 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
+    get_attachment_path_and_content,
     make_subscriber_map,
     make_user_messages,
 )
@@ -45,7 +44,6 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.message import truncate_content
-from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 from zerver.models.streams import Stream
@@ -375,15 +373,9 @@ def process_message_attachments(
         if file_ext.lower() in IMAGE_EXTENSIONS:
             has_image = True
 
-        s3_path = "/".join(
-            [
-                str(realm_id),
-                format(random.randint(0, 255), "x"),
-                secrets.token_urlsafe(18),
-                sanitize_name(file_name),
-            ]
+        s3_path, content_for_link = get_attachment_path_and_content(
+            file_title=file_name, file_name=file_name, realm_id=realm_id
         )
-        content_for_link = f"[{file_name}](/user_uploads/{s3_path})"
 
         markdown_links.append(content_for_link)
 
