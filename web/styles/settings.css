@@ -1725,6 +1725,7 @@ label.preferences-radio-choice-label {
     & textarea {
         /* Subtract (1px border and 6px padding) on each side */
         width: calc(var(--modal-input-width) - 14px);
+        max-width: calc(100% - 14px);
     }
 }
 
@@ -2113,12 +2114,6 @@ label.preferences-radio-choice-label {
     #download_zuliprc {
         flex-direction: column;
         margin-top: 5px;
-    }
-
-    #edit-user-form {
-        .custom_user_field textarea {
-            width: calc(100% - 25px);
-        }
     }
 
     .topic_date_updated {
