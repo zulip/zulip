@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-10-22 13:48+0000\n"
 "PO-Revision-Date: 2025-09-08 15:49+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/zulip/django/ta/>\n"
@@ -197,7 +197,7 @@ msgstr "உங்கள் இலவச சோதனையைத் தொடங
 msgid "Please add a credit card to schedule upgrade."
 msgstr "மேம்படுத்தலை திட்டமிட கடன் கார்டைச் சேர்க்கவும்."
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
@@ -205,17 +205,17 @@ msgstr ""
 "திட்டத்தை புதுப்பிக்க முடியவில்லை. திட்டம் காலாவதியானது மற்றும் புதிய திட்டத்துடன் "
 "மாற்றப்பட்டுள்ளது."
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr "திட்டத்தை புதுப்பிக்க முடியவில்லை. திட்டம் முடிந்தது."
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "இலவச சோதனை திட்டத்திற்கான தற்போதைய பட்டியலிடல் காலத்தில் உரிமங்களை புதுப்பிக்க முடியாது."
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -223,18 +223,18 @@ msgstr ""
 "உரிமங்களை கைமுறையாக புதுப்பிக்க முடியவில்லை. உங்கள் திட்டம் தானியங்கி உரிம நிர்வாகத்தில் "
 "உள்ளது."
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 "உங்கள் திட்டம் ஏற்கனவே தற்போதைய பட்டியலிடல் காலத்தில் {licenses} உரிமங்களில் உள்ளது."
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "தற்போதைய பட்டியலிடல் காலத்தில் நீங்கள் உரிமங்களைக் குறைக்க முடியாது."
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
@@ -242,7 +242,7 @@ msgstr ""
 "தரமிறக்கப்படும் ஒரு திட்டத்திற்கான அடுத்த பட்டியலிடல் சுழற்சிக்கான உரிமங்களை மாற்ற "
 "முடியாது."
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -251,7 +251,7 @@ msgstr ""
 "உங்கள் திட்டம் ஏற்கனவே {licenses_at_next_renewal} உரிமத்துடன் புதுப்பிக்க "
 "திட்டமிடப்பட்டுள்ளது."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
@@ -260,43 +260,43 @@ msgstr ""
 "அடுத்த பட்டியலிடல் காலத்திற்கு நீங்கள் ஏற்கனவே {licenses_at_next_renewal} உரிமங்களை "
 "வாங்கியுள்ளீர்கள்."
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "மாற்ற எதுவும் இல்லை."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr ""
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr "அமர்வு காணப்படவில்லை"
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
-#: zerver/lib/streams.py:142 zerver/lib/streams.py:216
-#: zerver/lib/streams.py:218 zerver/lib/streams.py:220
-#: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
-#: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
-#: zerver/lib/user_groups.py:363 zerver/lib/user_groups.py:459
-#: zerver/lib/users.py:204 zerver/lib/users.py:271 zerver/lib/users.py:300
-#: zerver/lib/users.py:304 zerver/views/invite.py:157
-#: zerver/views/invite.py:278 zerver/views/message_summary.py:31
-#: zerver/views/presence.py:53 zerver/views/realm_emoji.py:35
-#: zerver/views/streams.py:400 zerver/views/streams.py:403
-#: zerver/views/streams.py:412 zerver/views/streams.py:456
-#: zerver/views/streams.py:698 zerver/views/streams.py:974
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
+#: zerver/lib/streams.py:144 zerver/lib/streams.py:213
+#: zerver/lib/streams.py:215 zerver/lib/streams.py:217
+#: zerver/lib/streams.py:226 zerver/lib/streams.py:1518
+#: zerver/lib/streams.py:1573 zerver/lib/user_groups.py:168
+#: zerver/lib/user_groups.py:194 zerver/lib/user_groups.py:365
+#: zerver/lib/user_groups.py:461 zerver/lib/users.py:204
+#: zerver/lib/users.py:271 zerver/lib/users.py:300 zerver/lib/users.py:304
+#: zerver/views/invite.py:157 zerver/views/invite.py:278
+#: zerver/views/message_summary.py:31 zerver/views/presence.py:52
+#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:381
+#: zerver/views/streams.py:384 zerver/views/streams.py:393
+#: zerver/views/streams.py:437 zerver/views/streams.py:878
 msgid "Insufficient permission"
 msgstr "போதிய இசைவு"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr "கட்டண நோக்கம் கிடைக்கவில்லை"
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr "Bass stripe_session_id அல்லது stripe_invoice_id"
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, fuzzy, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -323,8 +323,8 @@ msgstr "பட்டியலிடல் அணுகல் கிள்ளா�
 msgid "Invalid billing access token."
 msgstr "தவறான பட்டியலிடல் அணுகல் கிள்ளாக்கு."
 
-#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1479
-#: zilencer/views.py:1504
+#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1503
+#: zilencer/views.py:1528
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
@@ -397,7 +397,7 @@ msgid "Method not allowed (405)"
 msgstr "முறை அனுமதிக்கப்படவில்லை (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:412
 msgid "Internal server error"
 msgstr "உள் சேவையக பிழை"
 
@@ -1445,7 +1445,7 @@ msgid "Email"
 msgstr "மின்னஞ்சல்"
 
 #: templates/zerver/accounts_accept_terms.html:54
-#: templates/zerver/register.html:235
+#: templates/zerver/register.html:236
 #, python-format
 msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
@@ -1455,7 +1455,7 @@ msgstr ""
 "rel=\"noopener noreferrer\">பணி விதிமுறைகள்</a>."
 
 #: templates/zerver/accounts_accept_terms.html:68
-#: templates/zerver/register.html:250
+#: templates/zerver/register.html:251
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
 msgstr ""
 "சூலிப்பின் குறைந்த போக்குவரத்து செய்திமடலுக்கு (வருடத்திற்கு சில மின்னஞ்சல்கள்) என்னை "
@@ -1467,7 +1467,7 @@ msgstr "தொடரவும்"
 
 #: templates/zerver/accounts_home.html:5 templates/zerver/accounts_home.html:72
 #: templates/zerver/login.html:158 templates/zerver/portico-header.html:48
-#: templates/zerver/register.html:256
+#: templates/zerver/register.html:257
 msgid "Sign up"
 msgstr "பதிவு செய்க"
 
@@ -1551,15 +1551,15 @@ msgid ""
 "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgstr "சூலிப் ஏற்றுவதில் பிழை. <a class=\"reload-lnk\">மீண்டும் ஏற்றுதல்</a> பக்கம்."
 
-#: templates/zerver/app/index.html:227
+#: templates/zerver/app/index.html:209
 msgid "No conversations match your filters."
 msgstr "உங்கள் வடிப்பான்களுடன் எந்த உரையாடல்களும் பொருந்தவில்லை."
 
-#: templates/zerver/app/index.html:240
+#: templates/zerver/app/index.html:222
 msgid "This view is still loading messages."
 msgstr "இந்த பார்வை இன்னும் செய்திகளை ஏற்றுகிறது."
 
-#: templates/zerver/app/index.html:243
+#: templates/zerver/app/index.html:225
 msgid "Load more"
 msgstr "மேலும் ஏற்றவும்"
 
@@ -1723,6 +1723,13 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/deactivated.html:55
+msgid ""
+"If you're a member of the organization and want information about why it has "
+"been deactivated, please reach out to the organization's administrators "
+"directly."
+msgstr ""
+
+#: templates/zerver/deactivated.html:59
 #, python-format
 msgid ""
 "If you are an owner of this organization, you can <a href=\"mailto:"
@@ -1866,36 +1873,36 @@ msgstr ""
 "Zulip வலையில் உள்நுழைய பின்வரும் தகவலைப் பயன்படுத்துவீர்கள், <a href = "
 "\"%(apps_page_link)s\"> மொபைல் மற்றும் டெச்க்டாப் </a> பயன்பாடுகள்:"
 
-#: templates/zerver/emails/account_registered.html:34
+#: templates/zerver/emails/account_registered.html:35
 #: templates/zerver/emails/account_registered.txt:16
-#: templates/zerver/emails/confirm_registration.html:12
+#: templates/zerver/emails/confirm_registration.html:13
 #: templates/zerver/emails/confirm_registration.txt:3
 #, python-format
 msgid "Organization URL: %(organization_url)s"
 msgstr ""
 
-#: templates/zerver/emails/account_registered.html:37
+#: templates/zerver/emails/account_registered.html:38
 #: templates/zerver/emails/account_registered.txt:20
 #, python-format
 msgid "Your username: %(ldap_username)s"
 msgstr "உங்கள் பயனர்பெயர்: %(ldap_username)s"
 
-#: templates/zerver/emails/account_registered.html:39
+#: templates/zerver/emails/account_registered.html:40
 #: templates/zerver/emails/account_registered.txt:22
 msgid "Use your LDAP account to log in"
 msgstr "உள்நுழைய உங்கள் LDAP கணக்கைப் பயன்படுத்தவும்"
 
-#: templates/zerver/emails/account_registered.html:42
+#: templates/zerver/emails/account_registered.html:43
 #: templates/zerver/emails/account_registered.txt:25
 #, python-format
 msgid "Your account email: %(email)s"
 msgstr "உங்கள் கணக்கு மின்னஞ்சல்: %(email)s"
 
-#: templates/zerver/emails/account_registered.html:45
+#: templates/zerver/emails/account_registered.html:47
 msgid "Go to organization"
 msgstr ""
 
-#: templates/zerver/emails/account_registered.html:49
+#: templates/zerver/emails/account_registered.html:51
 #, python-format
 msgid ""
 "If you are new to Zulip, check out our <a "
@@ -1904,7 +1911,7 @@ msgstr ""
 "நீங்கள் சூலிப்பிற்கு புதியவராக இருந்தால், எங்கள் <a href = "
 "\"%(getting_user_started_link)s\"> தொடங்குதல் வழிகாட்டி </a>!"
 
-#: templates/zerver/emails/account_registered.html:51
+#: templates/zerver/emails/account_registered.html:53
 #, python-format
 msgid ""
 "We also have a guide for <a "
@@ -1914,7 +1921,7 @@ msgstr ""
 "<a href=\"%(getting_organization_started_link)s\">உங்கள் நிறுவனத்தை சூலிப்பிற்கு "
 "நகர்த்துவதற்கான வழிகாட்டியும் எங்களிடம் உள்ளது</a>."
 
-#: templates/zerver/emails/account_registered.html:57
+#: templates/zerver/emails/account_registered.html:59
 #, python-format
 msgid ""
 "Questions? <a href=\"mailto:%(support_email)s\">Contact us</a> — we'd love "
@@ -2072,18 +2079,18 @@ msgstr "உங்கள் புதிய மின்னஞ்சல் மு
 msgid "You have requested a new Zulip organization:"
 msgstr ""
 
-#: templates/zerver/emails/confirm_registration.html:13
+#: templates/zerver/emails/confirm_registration.html:14
 #: templates/zerver/emails/confirm_registration.txt:5
 #, python-format
 msgid "Organization type: %(organization_type)s"
 msgstr ""
 
-#: templates/zerver/emails/confirm_registration.html:16
+#: templates/zerver/emails/confirm_registration.html:18
 #: templates/zerver/emails/confirm_registration.txt:7
 msgid "You recently signed up for Zulip. Awesome!"
 msgstr "நீங்கள் அண்மைக் காலத்தில் சூலிப்பிற்கு பதிவு செய்துள்ளீர்கள். அருமை!"
 
-#: templates/zerver/emails/confirm_registration.html:21
+#: templates/zerver/emails/confirm_registration.html:23
 #: templates/zerver/emails/confirm_registration.txt:12
 msgid ""
 "Click the button below to create the organization and register your account. "
@@ -2092,11 +2099,11 @@ msgstr ""
 "அமைப்பை உருவாக்க கீழே உள்ள பொத்தானைக் சொடுக்கு செய்து உங்கள் கணக்கை பதிவு செய்யுங்கள். "
 "நீங்கள் விரும்பினால் மேலே உள்ள தகவல்களை நீங்கள் புதுப்பிக்க முடியும்."
 
-#: templates/zerver/emails/confirm_registration.html:23
+#: templates/zerver/emails/confirm_registration.html:25
 msgid "Click the button below to complete registration."
 msgstr "பதிவை முடிக்க கீழே உள்ள பொத்தானைக் சொடுக்கு செய்க."
 
-#: templates/zerver/emails/confirm_registration.html:25
+#: templates/zerver/emails/confirm_registration.html:27
 #: templates/zerver/emails/invitation.html:16
 #: templates/zerver/emails/invitation_reminder.html:14
 msgid "Complete registration"
@@ -2127,15 +2134,15 @@ msgstr ""
 "பகிர்வதற்கு உங்களுக்கு கேள்விகள் அல்லது கருத்து இருக்கிறதா? எங்களை %(support_email)s "
 "இல் தொடர்பு கொள்ளவும் - நாங்கள் உதவ விரும்புகிறோம்!"
 
-#: templates/zerver/emails/custom_email_base.pre.html:19
-#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:8
+#: templates/zerver/emails/custom_email_base.pre.html:23
+#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
 #: templates/zerver/emails/digest.html:55
-#: templates/zerver/emails/notify_new_login.html:46
+#: templates/zerver/emails/notify_new_login.html:44
 msgid "Manage email preferences"
 msgstr "மின்னஞ்சல் விருப்பங்களை நிர்வகிக்கவும்"
 
-#: templates/zerver/emails/custom_email_base.pre.html:19
-#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
+#: templates/zerver/emails/custom_email_base.pre.html:23
+#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:16
 msgid "Unsubscribe from marketing emails"
 msgstr ""
 
@@ -2657,41 +2664,41 @@ msgstr ""
 msgid "We noticed a recent login for the following Zulip account."
 msgstr "பின்வரும் சூலிப் கணக்கிற்கான அண்மைக் கால உள்நுழைவை நாங்கள் கவனித்தோம்."
 
-#: templates/zerver/emails/notify_new_login.html:16
+#: templates/zerver/emails/notify_new_login.html:15
 #, python-format
 msgid "Organization: %(organization_link)s"
 msgstr ""
 
-#: templates/zerver/emails/notify_new_login.html:19
+#: templates/zerver/emails/notify_new_login.html:18
 #: templates/zerver/emails/notify_new_login.txt:5
 #, python-format
 msgid "Email: %(user_email)s"
 msgstr "மின்னஞ்சல்: %(user_email)s"
 
-#: templates/zerver/emails/notify_new_login.html:22
+#: templates/zerver/emails/notify_new_login.html:21
 #: templates/zerver/emails/notify_new_login.txt:7
 #, fuzzy, python-format
 msgid "Time: %(login_time)s"
 msgstr "நேரம்: %(உள்நுழைவு_ நேரம்) கள்"
 
-#: templates/zerver/emails/notify_new_login.html:25
+#: templates/zerver/emails/notify_new_login.html:24
 #: templates/zerver/emails/notify_new_login.txt:9
 #, python-format
 msgid "Device: %(device_browser)s on %(device_os)s."
 msgstr "சாதனம்: %(device_browser)s இல் %(device_os)s."
 
-#: templates/zerver/emails/notify_new_login.html:28
+#: templates/zerver/emails/notify_new_login.html:27
 #: templates/zerver/emails/notify_new_login.txt:11
 #, python-format
 msgid "IP address: %(device_ip)s"
 msgstr "ஐபி முகவரி: %(device_ip)s"
 
-#: templates/zerver/emails/notify_new_login.html:33
+#: templates/zerver/emails/notify_new_login.html:31
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
 msgstr "இது நீங்கள் என்றால், பெரியது! நீங்கள் செய்ய வேண்டிய வேறு எதுவும் இல்லை."
 
-#: templates/zerver/emails/notify_new_login.html:36
+#: templates/zerver/emails/notify_new_login.html:34
 #, python-format
 msgid ""
 "If you do not recognize this login, or think your account may have been "
@@ -2703,17 +2710,17 @@ msgstr ""
 "உங்கள் கடவுச்சொல்லை மீட்டமைக்கவும் </a> அல்லது உடனடியாக எங்களை %(support_email)s இல் "
 "தொடர்பு கொள்ளவும்."
 
-#: templates/zerver/emails/notify_new_login.html:40
+#: templates/zerver/emails/notify_new_login.html:38
 #: templates/zerver/emails/notify_new_login.txt:20
 msgid "Thanks,"
 msgstr "நன்றி,"
 
-#: templates/zerver/emails/notify_new_login.html:41
+#: templates/zerver/emails/notify_new_login.html:39
 #: templates/zerver/emails/notify_new_login.txt:21
 msgid "Zulip Security"
 msgstr "சூலிப் பாதுகாப்பு"
 
-#: templates/zerver/emails/notify_new_login.html:46
+#: templates/zerver/emails/notify_new_login.html:44
 msgid "Unsubscribe from login notifications"
 msgstr ""
 
@@ -2754,7 +2761,7 @@ msgstr ""
 "இல்லையெனில், <i> ஏதேனும் </i> குழு அரட்டை தயாரிப்பு மதிப்பீடு செய்வதற்காக "
 "வாடிக்கையாளர்களிடமிருந்து நாங்கள் அடிக்கடி கேட்கும் சில ஆலோசனைகள் இங்கே:"
 
-#: templates/zerver/emails/onboarding_team_to_zulip.html:15
+#: templates/zerver/emails/onboarding_team_to_zulip.html:16
 #, python-format
 msgid ""
 "<a href=\"%(invite_users)s\"><b>Invite your teammates</b></a> to explore "
@@ -2763,12 +2770,12 @@ msgstr ""
 "<a href = \"%(invite_users)s\"> <b> உங்கள் குழு உறுப்பினர்களை அழைக்கவும் </b> </a> "
 "உங்களுடன் ஆராய்ந்து அவர்களின் தனித்துவமான முன்னோக்குகளைப் பகிர்ந்து கொள்ள."
 
-#: templates/zerver/emails/onboarding_team_to_zulip.html:16
+#: templates/zerver/emails/onboarding_team_to_zulip.html:17
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
 msgid "Use the app itself to chat about your impressions."
 msgstr "உங்கள் பதிவைப் பற்றி அரட்டையடிக்க பயன்பாட்டைப் பயன்படுத்தவும்."
 
-#: templates/zerver/emails/onboarding_team_to_zulip.html:18
+#: templates/zerver/emails/onboarding_team_to_zulip.html:19
 #, python-format
 msgid ""
 "<a href=\"%(trying_out_zulip)s\"><b>Run a week-long trial</b></a> with your "
@@ -3048,7 +3055,7 @@ msgstr "அந்த சூலிப் அமைப்பில் உங்க
 msgid "You do have active accounts in the following organization(s)."
 msgstr "பின்வரும் நிறுவனத்தில் (கள்) செயலில் கணக்குகள் உள்ளன."
 
-#: templates/zerver/emails/password_reset.html:32
+#: templates/zerver/emails/password_reset.html:34
 #: templates/zerver/emails/password_reset.txt:21
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
@@ -3057,7 +3064,7 @@ msgstr ""
 "மேலே உள்ள நிறுவனத்தில் (கள்) உங்கள் கடவுச்சொல்லில் உள்நுழைய அல்லது மீட்டமைக்க முயற்சி "
 "செய்யலாம்."
 
-#: templates/zerver/emails/password_reset.html:38
+#: templates/zerver/emails/password_reset.html:40
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
@@ -3584,7 +3591,7 @@ msgid "Incoming webhooks"
 msgstr "உள்வரும் வெப்ஊக்குகள்"
 
 #: templates/zerver/integrations/index.html:66
-#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:43
+#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:44
 msgid "Interactive bots"
 msgstr "ஊடாடும் போட்கள்"
 
@@ -3928,14 +3935,14 @@ msgstr "அமைப்பு URL"
 msgid "Use %(external_host)s"
 msgstr "%(external_host)s பயன்படுத்தவும்"
 
-#: templates/zerver/realm_creation_form.html:96
+#: templates/zerver/realm_creation_form.html:101
 msgid ""
 "Learn how to import from <a href=\"/help/import-from-"
 "mattermost\">Mattermost</a> or <a href=\"/help/import-from-"
 "rocketchat\">Rocket.Chat</a>."
 msgstr ""
 
-#: templates/zerver/realm_creation_form.html:104
+#: templates/zerver/realm_creation_form.html:110
 msgid "Import chat history?"
 msgstr ""
 
@@ -4002,6 +4009,19 @@ msgid ""
 "<a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(org_creation_link)s\">Create a new organization</a> if you don't "
 "have one yet."
+msgstr ""
+
+#: templates/zerver/realm_redirect.html:52
+#, fuzzy
+#| msgid "Self-host Zulip"
+msgid "Self-hosting Zulip?"
+msgstr "தன்வய புரவலன் சூலிப்"
+
+#: templates/zerver/realm_redirect.html:53
+#, python-format
+msgid ""
+"You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
+"href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
 
 #: templates/zerver/register.html:5
@@ -4095,7 +4115,7 @@ msgstr "விளம்பரத்தை எங்கே பார்த்த�
 msgid "Which organization?"
 msgstr ""
 
-#: templates/zerver/register.html:216
+#: templates/zerver/register.html:216 templates/zerver/register.html:217
 msgid "Which one?"
 msgstr ""
 
@@ -4204,8 +4224,8 @@ msgstr ""
 
 #: templates/zerver/slack_import.html:102
 msgid ""
-"Or <a href=\"#\" id=\"cancel-slack-import\">create organization</a> without "
-"importing data."
+"Or <span id=\"cancel-slack-import\" tabindex=\"0\">create organization</"
+"span> without importing data."
 msgstr ""
 
 #: templates/zerver/social_auth_select_email.html:4
@@ -4299,12 +4319,12 @@ msgstr "கையொப்பங்கள்"
 msgid "{user} joined this organization."
 msgstr ""
 
-#: zerver/actions/create_user.py:313
+#: zerver/actions/create_user.py:310
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} சூலிப்பில் சேர உங்கள் அழைப்பை ஏற்றுக்கொண்டார்!"
 
-#: zerver/actions/create_user.py:720
+#: zerver/actions/create_user.py:717
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
@@ -4523,35 +4543,35 @@ msgstr "கொடி திருத்த முடியாதது: '{flag}'
 msgid "Invalid message flag operation: '{operation}'"
 msgstr ""
 
-#: zerver/actions/message_flags.py:355 zerver/lib/message.py:398
-#: zerver/lib/message.py:413 zerver/lib/message.py:432
-#: zerver/lib/message.py:446
+#: zerver/actions/message_flags.py:355 zerver/lib/message.py:399
+#: zerver/lib/message.py:414 zerver/lib/message.py:433
+#: zerver/lib/message.py:447
 msgid "Invalid message(s)"
 msgstr "தவறான செய்தி (கள்)"
 
-#: zerver/actions/message_send.py:186
+#: zerver/actions/message_send.py:188
 msgid "Unable to render message"
 msgstr "செய்தியை வழங்க முடியவில்லை"
 
-#: zerver/actions/message_send.py:1317
+#: zerver/actions/message_send.py:1327
 msgid "Expected exactly one channel"
 msgstr "சரியாக ஒரு சேனல் எதிர்பார்க்கப்படுகிறது"
 
-#: zerver/actions/message_send.py:1328
+#: zerver/actions/message_send.py:1338
 msgid "Invalid data type for channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1344 zerver/actions/message_send.py:1354
+#: zerver/actions/message_send.py:1354 zerver/actions/message_send.py:1364
 #: zerver/lib/recipient_parsing.py:15
 msgid "Invalid data type for recipients"
 msgstr "பெறுநர்களுக்கு தவறான தரவு வகை"
 
-#: zerver/actions/message_send.py:1362 zerver/actions/message_send.py:1370
+#: zerver/actions/message_send.py:1372 zerver/actions/message_send.py:1380
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr ""
 "பெறுநரின் பட்டியல்களில் மின்னஞ்சல்கள் அல்லது பயனர் ஐடிகள் இருக்கலாம், ஆனால் இரண்டும் இல்லை."
 
-#: zerver/actions/message_send.py:1526
+#: zerver/actions/message_send.py:1533
 #, fuzzy, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
@@ -4560,7 +4580,7 @@ msgstr ""
 "உங்கள் போட் {bot_identity the சேனல் அடையாளம் {சேனல்_ஐடி பெறுநர் க்கு ஒரு செய்தியை "
 "அனுப்ப முயற்சித்தது, ஆனால் அந்த ஐடியுடன் சேனல் இல்லை."
 
-#: zerver/actions/message_send.py:1537
+#: zerver/actions/message_send.py:1544
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}, "
@@ -4571,7 +4591,7 @@ msgstr ""
 "முயற்சித்தது, ஆனால் அந்த சேனல் இல்லை. அதை உருவாக்க [இங்கே]({new_channel_link}) "
 "என்பதைக் சொடுக்கு செய்க."
 
-#: zerver/actions/message_send.py:1549
+#: zerver/actions/message_send.py:1556
 #, fuzzy, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
@@ -4580,15 +4600,15 @@ msgstr ""
 "உங்கள் போட் {bot_identity the சேனல் {சேனல்_பேம் பெறுநர் க்கு ஒரு செய்தியை அனுப்ப "
 "முயற்சித்தது. சேனல் உள்ளது, ஆனால் எந்த சந்தாதாரர்களும் இல்லை."
 
-#: zerver/actions/message_send.py:1654
+#: zerver/actions/message_send.py:1661
 msgid "You do not have permission to access some of the recipients."
 msgstr "பெறுநர்களில் சிலரை அணுக உங்களுக்கு இசைவு இல்லை."
 
-#: zerver/actions/message_send.py:1864
+#: zerver/actions/message_send.py:1865
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "விட்செட்டுகள்: பநிஇ புரோகிராமர் தவறான சாதொபொகு உள்ளடக்கத்தை அனுப்பினார்"
 
-#: zerver/actions/message_send.py:1870
+#: zerver/actions/message_send.py:1871
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "விட்செட்டுகள்: {error_msg}"
@@ -4631,7 +4651,7 @@ msgstr "தவறான அங்கீகார முறை: {name}. செல
 msgid "Authentication method {name} is not available on your current plan."
 msgstr "அங்கீகார முறை {பெயர் your உங்கள் தற்போதைய திட்டத்தில் கிடைக்கவில்லை."
 
-#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:385
+#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:366
 msgid "Moderation request channel must be private."
 msgstr "மிதமான கோரிக்கை சேனல் தனிப்பட்டதாக இருக்க வேண்டும்."
 
@@ -4687,7 +4707,7 @@ msgstr "சேனல் தனிப்பட்டது மற்றும் 
 msgid "Channel #**{channel_name}** has been unarchived."
 msgstr ""
 
-#: zerver/actions/streams.py:1241
+#: zerver/actions/streams.py:1236
 #, fuzzy, python-brace-format
 msgid ""
 "{user} changed the [access permissions]({help_link}) for this channel from "
@@ -4696,7 +4716,7 @@ msgstr ""
 "Cannel இந்த சேனலுக்கான [அணுகல் அனுமதிகள்]({help_link}) ஐ **{old_policy}** "
 "இலிருந்து **{new_policy}** க்கு மாற்றியது."
 
-#: zerver/actions/streams.py:1473
+#: zerver/actions/streams.py:1468
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions]({help_link}) for this channel:\n"
@@ -4709,41 +4729,41 @@ msgstr ""
 "* ** பழையது**: {old_setting_description}\n"
 "* ** புதிய**: {new_setting_description}\n"
 
-#: zerver/actions/streams.py:1543
+#: zerver/actions/streams.py:1538
 #, python-brace-format
 msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
 msgstr ""
 "{user_name} என மறுபெயரிடப்பட்ட சேனல் {old_channel_name} {new_channel_name}."
 
-#: zerver/actions/streams.py:1560 zerver/actions/streams.py:1562
-#: zerver/views/streams.py:1141
+#: zerver/actions/streams.py:1555 zerver/actions/streams.py:1557
+#: zerver/views/streams.py:1042
 msgid "No description."
 msgstr "விளக்கம் இல்லை."
 
-#: zerver/actions/streams.py:1565
+#: zerver/actions/streams.py:1560
 #, fuzzy, python-brace-format
 msgid "{user} changed the description for this channel."
 msgstr "{பயனர் this இந்த சேனலுக்கான விளக்கத்தை மாற்றினார்."
 
-#: zerver/actions/streams.py:1567
+#: zerver/actions/streams.py:1562
 msgid "Old description"
 msgstr "பழைய விளக்கம்"
 
-#: zerver/actions/streams.py:1571
+#: zerver/actions/streams.py:1566
 msgid "New description"
 msgstr "புதிய விளக்கம்"
 
-#: zerver/actions/streams.py:1642 zerver/actions/streams.py:1649
+#: zerver/actions/streams.py:1637 zerver/actions/streams.py:1644
 msgid "Forever"
 msgstr "என்றென்றும்"
 
-#: zerver/actions/streams.py:1643 zerver/actions/streams.py:1648
-#: zerver/actions/streams.py:1652 zerver/actions/streams.py:1653
+#: zerver/actions/streams.py:1638 zerver/actions/streams.py:1643
+#: zerver/actions/streams.py:1647 zerver/actions/streams.py:1648
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr "{number_of_days} நாட்கள்"
 
-#: zerver/actions/streams.py:1645 zerver/actions/streams.py:1655
+#: zerver/actions/streams.py:1640 zerver/actions/streams.py:1650
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
@@ -4752,11 +4772,11 @@ msgstr ""
 "இந்த சேனலில் உள்ள செய்திகள் இப்போது தானாகவே நீக்கப்படும் {number_of_days} அவை "
 "அனுப்பப்பட்ட சில நாட்களுக்குப் பிறகு."
 
-#: zerver/actions/streams.py:1650
+#: zerver/actions/streams.py:1645
 msgid "Messages in this channel will now be retained forever."
 msgstr "இந்த சேனலில் உள்ள செய்திகள் இப்போது எப்போதும் தக்கவைக்கப்படும்."
 
-#: zerver/actions/streams.py:1658
+#: zerver/actions/streams.py:1653
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period]({help_link}) for this "
@@ -4772,26 +4792,26 @@ msgstr ""
 "\n"
 "{summary_line}"
 
-#: zerver/actions/streams.py:1755
+#: zerver/actions/streams.py:1750
 msgid "Automatic"
 msgstr ""
 
-#: zerver/actions/streams.py:1757
+#: zerver/actions/streams.py:1752
 #, python-brace-format
 msgid "*{empty_topic_display_name}* topic allowed"
 msgstr ""
 
-#: zerver/actions/streams.py:1760
+#: zerver/actions/streams.py:1755
 #, python-brace-format
 msgid "No *{empty_topic_display_name}* topic"
 msgstr ""
 
-#: zerver/actions/streams.py:1763
+#: zerver/actions/streams.py:1758
 #, python-brace-format
 msgid "Only *{empty_topic_display_name}* topic allowed"
 msgstr ""
 
-#: zerver/actions/streams.py:1769
+#: zerver/actions/streams.py:1764
 #, python-brace-format
 msgid ""
 "{user_name} changed the \"Allow posting to the *general chat* topic?\" "
@@ -4844,11 +4864,11 @@ msgstr "அடிப்படை அங்கீகாரத்திற்க�
 msgid "Webhook bots can only access webhooks"
 msgstr "வெப்ஊக் போட்கள் வெப்ஊக்குகளை மட்டுமே அணுக முடியும்"
 
-#: zerver/forms.py:66
+#: zerver/forms.py:64
 msgid "Incorrect email or password."
 msgstr "கடவுச்சொல்"
 
-#: zerver/forms.py:68
+#: zerver/forms.py:66
 #, python-brace-format
 msgid ""
 "Your account {username} has been deactivated. Please contact your "
@@ -4857,51 +4877,51 @@ msgstr ""
 "உங்கள் கணக்கு {username} செயலிழக்கப்பட்டது. அதை மீண்டும் செயல்படுத்த உங்கள் நிறுவன "
 "நிர்வாகியை தொடர்பு கொள்ளவும்."
 
-#: zerver/forms.py:71
+#: zerver/forms.py:69
 msgid "The password is too weak."
 msgstr "கடவுச்சொல் மிகவும் பலவீனமாக உள்ளது."
 
-#: zerver/forms.py:93
+#: zerver/forms.py:83
 msgid "Subdomain needs to have length 3 or greater."
 msgstr "துணை டொமைன் 3 அல்லது அதற்கு மேற்பட்ட நீளம் இருக்க வேண்டும்."
 
-#: zerver/forms.py:94
+#: zerver/forms.py:84
 msgid "Subdomain cannot start or end with a '-'."
 msgstr "துணை டொமைன் ஒரு '-' உடன் தொடங்கவோ முடிவடையவோ முடியாது."
 
-#: zerver/forms.py:95
+#: zerver/forms.py:85
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "சப் டொமைனில் சிறிய எழுத்துக்கள், எண்கள் மற்றும் '-எச் மட்டுமே இருக்க முடியும்."
 
-#: zerver/forms.py:96
+#: zerver/forms.py:86
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr "துணை டொமைன் ஏற்கனவே பயன்பாட்டில் உள்ளது. வேறு ஒன்றைத் தேர்வுசெய்க."
 
-#: zerver/forms.py:97
+#: zerver/forms.py:87
 msgid "Subdomain reserved. Please choose a different one."
 msgstr "துணை டொமைன் ஒதுக்கப்பட்டுள்ளது. வேறு ஒன்றைத் தேர்வுசெய்க."
 
-#: zerver/forms.py:134 zerver/forms.py:304 zerver/lib/email_validation.py:111
-#: zilencer/views.py:230
+#: zerver/forms.py:124 zerver/forms.py:296 zerver/lib/email_validation.py:111
+#: zilencer/views.py:244
 msgid "Please use your real email address."
 msgstr "உங்கள் உண்மையான மின்னஞ்சல் முகவரியைப் பயன்படுத்தவும்."
 
-#: zerver/forms.py:277
+#: zerver/forms.py:269
 #, fuzzy, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr "{மின்னஞ்சல் the ஐப் பயன்படுத்தி நீங்கள் சேர முயற்சிக்கும் அமைப்பு இல்லை."
 
-#: zerver/forms.py:286
+#: zerver/forms.py:278
 #, fuzzy, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr "நிறுவன நிர்வாகியிடமிருந்து {மின்னஞ்சல் பெறுநர் க்கு அழைப்பைக் கோருங்கள்."
 
-#: zerver/forms.py:291
+#: zerver/forms.py:283
 msgid "Can't join the organization: password authentication is not enabled."
 msgstr ""
 
-#: zerver/forms.py:299
+#: zerver/forms.py:291
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
@@ -4910,11 +4930,11 @@ msgstr ""
 "உங்கள் மின்னஞ்சல் முகவரி, {email}, இந்த நிறுவனத்தில் கணக்குகளுக்கு பதிவு செய்ய "
 "அனுமதிக்கப்பட்ட களங்களில் ஒன்றில் இல்லை."
 
-#: zerver/forms.py:307
+#: zerver/forms.py:299
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr "இந்த நிறுவனத்தில் + கொண்ட மின்னஞ்சல் முகவரிகள் அனுமதிக்கப்படவில்லை."
 
-#: zerver/forms.py:325
+#: zerver/forms.py:314
 msgid ""
 "New members cannot join this organization because all Zulip licenses are in "
 "use. Please contact the person who invited you and ask them to increase the "
@@ -4924,32 +4944,32 @@ msgstr ""
 "பயன்பாட்டில் உள்ளன. உங்களை அழைத்த நபரைத் தொடர்புகொண்டு, உரிமங்களின் எண்ணிக்கையை அதிகரிக்கச் "
 "சொல்லுங்கள், பின்னர் மீண்டும் முயற்சிக்கவும்."
 
-#: zerver/forms.py:379
+#: zerver/forms.py:370
 msgid "Verified that you're a human user!"
 msgstr ""
 
-#: zerver/forms.py:380
+#: zerver/forms.py:371
 msgid "Verifying that you're not a bot…"
 msgstr ""
 
-#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
-#: zerver/forms.py:425
+#: zerver/forms.py:394 zerver/forms.py:405 zerver/forms.py:410
+#: zerver/forms.py:417
 msgid "Validation failed, please try again."
 msgstr ""
 
-#: zerver/forms.py:407 zerver/views/antispam.py:29
+#: zerver/forms.py:399 zerver/views/antispam.py:29
 msgid "Challenges are not enabled."
 msgstr ""
 
-#: zerver/forms.py:437
+#: zerver/forms.py:429
 msgid "New password"
 msgstr "புதிய கடவுச்சொல்"
 
-#: zerver/forms.py:444
+#: zerver/forms.py:436
 msgid "New password confirmation"
 msgstr "புதிய கடவுச்சொல் உறுதிப்படுத்தல்"
 
-#: zerver/forms.py:586
+#: zerver/forms.py:578
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -4958,7 +4978,7 @@ msgstr ""
 "உள்நுழைய நீங்கள் பல முயற்சிகளை மேற்கொள்கிறீர்கள். மீண்டும் {seconds} வினாடிகளில் "
 "முயற்சிக்கவும் அல்லது உதவிக்கு உங்கள் நிறுவன நிர்வாகியை தொடர்பு கொள்ளவும்."
 
-#: zerver/forms.py:598
+#: zerver/forms.py:590
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -4966,20 +4986,20 @@ msgstr ""
 "உங்கள் கடவுச்சொல் மிகவும் பலவீனமாக இருப்பதால் முடக்கப்பட்டுள்ளது. புதிய ஒன்றை உருவாக்க "
 "உங்கள் கடவுச்சொல்லை மீட்டமைக்கவும்."
 
-#: zerver/forms.py:646
+#: zerver/forms.py:638
 msgid "Token"
 msgstr "கிள்ளாக்கு"
 
-#: zerver/forms.py:669
+#: zerver/forms.py:661
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr ""
 "உதவிக்குறிப்பு: அவற்றுக்கிடையே காற்புள்ளிகளுடன் பல மின்னஞ்சல் முகவரிகளை உள்ளிடலாம்."
 
-#: zerver/forms.py:675
+#: zerver/forms.py:667
 msgid "Please enter at most 10 emails."
 msgstr "அதிகபட்சம் 10 மின்னஞ்சல்களை உள்ளிடவும்."
 
-#: zerver/forms.py:688
+#: zerver/forms.py:680
 msgid "We couldn't find that Zulip organization."
 msgstr "அந்த சூலிப் அமைப்பை எங்களால் கண்டுபிடிக்க முடியவில்லை."
 
@@ -5111,11 +5131,11 @@ msgstr ""
 msgid "Email with no subject"
 msgstr "எந்த விசயமும் இல்லாமல் மின்னஞ்சல்"
 
-#: zerver/lib/email_notifications.py:143 zerver/lib/email_notifications.py:165
+#: zerver/lib/email_notifications.py:145 zerver/lib/email_notifications.py:167
 msgid "Open Zulip to see the spoiler content"
 msgstr "ச்பாய்லர் உள்ளடக்கத்தைக் காண சூலிப் திறக்கவும்"
 
-#: zerver/lib/email_notifications.py:605
+#: zerver/lib/email_notifications.py:627
 #, python-brace-format
 msgid "{service_name} notifications"
 msgstr ""
@@ -5198,7 +5218,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "ஈமோசி பெயர் காணவில்லை"
 
-#: zerver/lib/events.py:2137
+#: zerver/lib/events.py:2136
 msgid "Could not allocate event queue"
 msgstr "நிகழ்வு வரிசையை ஒதுக்க முடியவில்லை"
 
@@ -5320,42 +5340,42 @@ msgstr "தலைப்பு"
 msgid "Invalid subdomain"
 msgstr "தவறான சப்டொமைன்"
 
-#: zerver/lib/exceptions.py:557
+#: zerver/lib/exceptions.py:552
 msgid "You do not have permission to initiate direct message conversations."
 msgstr "நேரடி செய்தி உரையாடல்களைத் தொடங்க உங்களுக்கு இசைவு இல்லை."
 
-#: zerver/lib/exceptions.py:570
+#: zerver/lib/exceptions.py:565
 #, python-brace-format
 msgid ""
 "Sending messages to the {empty_topic_display_name} is not allowed in this "
 "channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:583
+#: zerver/lib/exceptions.py:578
 #, python-brace-format
 msgid "Only the {empty_topic_display_name} topic is allowed in this channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:596
+#: zerver/lib/exceptions.py:591
 #, python-brace-format
 msgid ""
 "To enable this configuration, all messages in this channel must be in the "
 "{empty_topic_display_name} topic. Consider renaming or deleting other topics."
 msgstr ""
 
-#: zerver/lib/exceptions.py:603
+#: zerver/lib/exceptions.py:598
 msgid "Direct messages are disabled in this organization."
 msgstr "இந்த நிறுவனத்தில் நேரடி செய்திகள் முடக்கப்பட்டுள்ளன."
 
-#: zerver/lib/exceptions.py:605
+#: zerver/lib/exceptions.py:600
 msgid "This conversation does not include any users who can authorize it."
 msgstr "இந்த உரையாடலில் அங்கீகரிக்கக்கூடிய எந்தவொரு பயனரும் இல்லை."
 
-#: zerver/lib/exceptions.py:618
+#: zerver/lib/exceptions.py:613
 msgid "Access denied"
 msgstr "அணுகல் மறுக்கப்பட்டது"
 
-#: zerver/lib/exceptions.py:658
+#: zerver/lib/exceptions.py:653
 #, fuzzy, python-brace-format
 msgid ""
 "You only have permission to move the {total_messages_allowed_to_move}/"
@@ -5364,15 +5384,15 @@ msgstr ""
 "இந்த தலைப்பில் மிக அண்மைக் கால செய்திகளை {total_messages_allowed_to_move}/{மொத்த "
 "செய்திகளை நகர்த்த உங்களுக்கு மட்டுமே இசைவு உள்ளது."
 
-#: zerver/lib/exceptions.py:671
+#: zerver/lib/exceptions.py:666
 msgid "Reaction already exists."
 msgstr "எதிர்வினை ஏற்கனவே உள்ளது."
 
-#: zerver/lib/exceptions.py:683
+#: zerver/lib/exceptions.py:678
 msgid "Reaction doesn't exist."
 msgstr "எதிர்வினை இல்லை."
 
-#: zerver/lib/exceptions.py:708
+#: zerver/lib/exceptions.py:703
 msgid ""
 "Your organization is registered to a different Zulip server. Please contact "
 "Zulip support for assistance in resolving this issue."
@@ -5380,64 +5400,64 @@ msgstr ""
 "உங்கள் அமைப்பு வேறு சூலிப் சேவையகத்தில் பதிவு செய்யப்பட்டுள்ளது. இந்த சிக்கலைத் தீர்ப்பதற்கான "
 "உதவிக்கு சூலிப் ஆதரவைத் தொடர்பு கொள்ளவும்."
 
-#: zerver/lib/exceptions.py:722
+#: zerver/lib/exceptions.py:717
 msgid "Organization not registered"
 msgstr ""
 
-#: zerver/lib/exceptions.py:734
+#: zerver/lib/exceptions.py:729
 msgid ""
 "You do not have permission to use channel wildcard mentions in this channel."
 msgstr "இந்த சேனலில் சேனல் வைல்டு அட்டை குறிப்புகளைப் பயன்படுத்த உங்களுக்கு இசைவு இல்லை."
 
-#: zerver/lib/exceptions.py:746
+#: zerver/lib/exceptions.py:741
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr ""
 "இந்த தலைப்பில் வைல்டு அட்டை குறிப்பிடும் தலைப்பைப் பயன்படுத்த உங்களுக்கு இசைவு இல்லை."
 
-#: zerver/lib/exceptions.py:759
+#: zerver/lib/exceptions.py:754
 #, python-brace-format
 msgid "'{field_name}' value does not match the expected value."
 msgstr ""
 
-#: zerver/lib/exceptions.py:784
+#: zerver/lib/exceptions.py:779
 #, python-brace-format
 msgid "'{setting_name}' must be a system user group."
 msgstr "'{setting_name}' ஒரு கணினி பயனர் குழுவாக இருக்க வேண்டும்."
 
-#: zerver/lib/exceptions.py:800
+#: zerver/lib/exceptions.py:795
 msgid "Cannot deactivate user group in use."
 msgstr "பயன்பாட்டில் உள்ள பயனர் குழுவை செயலிழக்க முடியாது."
 
-#: zerver/lib/exceptions.py:810
+#: zerver/lib/exceptions.py:805
 msgid "You do not have permission to administer this channel."
 msgstr "இந்த சேனலை நிர்வகிக்க உங்களுக்கு இசைவு இல்லை."
 
-#: zerver/lib/exceptions.py:820
+#: zerver/lib/exceptions.py:815
 msgid "You do not have permission to change default channels."
 msgstr "இயல்புநிலை சேனல்களை மாற்ற உங்களுக்கு இசைவு இல்லை."
 
-#: zerver/lib/exceptions.py:830
+#: zerver/lib/exceptions.py:825
 msgid "Email is already in use."
 msgstr "மின்னஞ்சல் ஏற்கனவே பயன்பாட்டில் உள்ளது."
 
-#: zerver/lib/exceptions.py:840
+#: zerver/lib/exceptions.py:835
 msgid "Scheduled delivery time must be in the future."
 msgstr "திட்டமிடப்பட்ட விநியோக நேரம் எதிர்காலத்தில் இருக்க வேண்டும்."
 
-#: zerver/lib/exceptions.py:863
+#: zerver/lib/exceptions.py:858
 msgid "Invalid bouncer_public_key"
 msgstr ""
 
-#: zerver/lib/exceptions.py:875
+#: zerver/lib/exceptions.py:870
 msgid "Request expired"
 msgstr ""
 
-#: zerver/lib/exceptions.py:885
+#: zerver/lib/exceptions.py:880
 msgid "Invalid encrypted_push_registration"
 msgstr ""
 
-#: zerver/lib/exceptions.py:897
+#: zerver/lib/exceptions.py:892
 msgid "Server is not configured to use push notification service."
 msgstr ""
 
@@ -5457,71 +5477,77 @@ msgstr "தனிப்பயன் வெளிப்புற கணக்க�
 msgid "Invalid external account type"
 msgstr "தவறான வெளிப்புற கணக்கு வகை"
 
-#: zerver/lib/integrations.py:42
+#: zerver/lib/integrations.py:43
 msgid "Integration frameworks"
 msgstr "ஒருங்கிணைப்பு கட்டமைப்புகள்"
 
-#: zerver/lib/integrations.py:48
+#: zerver/lib/integrations.py:49
+#, fuzzy
+#| msgid "Video call ended"
+msgid "Video calling"
+msgstr "வீடியோ அழைப்பு முடிந்தது"
+
+#: zerver/lib/integrations.py:50
 msgid "Continuous integration"
 msgstr "தொடர்ச்சியான ஒருங்கிணைப்பு"
 
-#: zerver/lib/integrations.py:49
+#: zerver/lib/integrations.py:51
 msgid "Customer support"
 msgstr "வாடிக்கையாளர் உதவி"
 
-#: zerver/lib/integrations.py:50
+#: zerver/lib/integrations.py:52
 msgid "Deployment"
 msgstr "வரிசைப்படுத்தல்"
 
-#: zerver/lib/integrations.py:51
+#: zerver/lib/integrations.py:53
 msgid "Entertainment"
 msgstr "பொழுதுபோக்கு"
 
-#: zerver/lib/integrations.py:52
+#: zerver/lib/integrations.py:54
 msgid "Communication"
 msgstr "தொடர்பு"
 
-#: zerver/lib/integrations.py:53
+#: zerver/lib/integrations.py:55
 msgid "Financial"
 msgstr "பொருள்"
 
-#: zerver/lib/integrations.py:54
+#: zerver/lib/integrations.py:56
 msgid "Human resources"
 msgstr "மனித வளங்கள்"
 
-#: zerver/lib/integrations.py:55
+#: zerver/lib/integrations.py:57
 msgid "Marketing"
 msgstr "சந்தைப்படுத்தல்"
 
-#: zerver/lib/integrations.py:56
+#: zerver/lib/integrations.py:58
 msgid "Miscellaneous"
 msgstr "மற்றவை"
 
-#: zerver/lib/integrations.py:57
+#: zerver/lib/integrations.py:59
 msgid "Monitoring"
 msgstr "கண்காணிப்பு"
 
-#: zerver/lib/integrations.py:58
+#: zerver/lib/integrations.py:60
 msgid "Project management"
 msgstr "திட்ட மேலாண்மை"
 
-#: zerver/lib/integrations.py:59
+#: zerver/lib/integrations.py:61
 msgid "Productivity"
 msgstr "உற்பத்தித்திறன்"
 
-#: zerver/lib/integrations.py:60
+#: zerver/lib/integrations.py:62
 msgid "Version control"
 msgstr "பதிப்பு கட்டுப்பாடு"
 
-#: zerver/lib/message.py:205 zerver/views/welcome_bot_custom_message.py:32
+#: zerver/lib/message.py:206 zerver/views/welcome_bot_custom_message.py:32
 msgid "Message must not be empty"
 msgstr "செய்தி காலியாக இருக்கக்கூடாது"
 
-#: zerver/lib/message.py:207
+#: zerver/lib/message.py:208
 msgid "Message must not contain null bytes"
 msgstr "செய்தியில் சுழிய பைட்டுகள் இருக்கக்கூடாது"
 
-#: zerver/lib/message.py:1538
+#: zerver/lib/message.py:1537
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
 msgstr "பயனர் குழு '{user_group_name}' ஐக் குறிப்பிட உங்களுக்கு இசைவு இல்லை."
@@ -5563,29 +5589,29 @@ msgstr ""
 msgid "{fullname}'s moderation requests"
 msgstr ""
 
-#: zerver/lib/narrow.py:202
+#: zerver/lib/narrow.py:201
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
 msgstr "தவறான குறுகிய ஆபரேட்டர்: {desc}"
 
-#: zerver/lib/narrow.py:215
+#: zerver/lib/narrow.py:214
 #, python-brace-format
 msgid "Invalid narrow operator combination: {desc}"
 msgstr "தவறான குறுகிய ஆபரேட்டர் சேர்க்கை: {desc}"
 
-#: zerver/lib/narrow.py:977
+#: zerver/lib/narrow.py:890
 msgid "Duplicate 'with' operators."
 msgstr "ஆபரேட்டர்களுடன் 'நகல்."
 
-#: zerver/lib/narrow.py:987 zerver/lib/narrow.py:1008
+#: zerver/lib/narrow.py:900 zerver/lib/narrow.py:921
 msgid "Invalid 'with' operator"
 msgstr ""
 
-#: zerver/lib/narrow.py:1290
+#: zerver/lib/narrow.py:1202
 msgid "Missing 'anchor' argument."
 msgstr "'நங்கூரம்' வாதத்தைக் காணவில்லை."
 
-#: zerver/lib/narrow.py:1310
+#: zerver/lib/narrow.py:1222
 msgid "Invalid anchor"
 msgstr "தவறான நங்கூரம்"
 
@@ -5829,13 +5855,19 @@ msgstr ""
 "நேரங்கள், மேலும் பல.\n"
 
 #: zerver/lib/onboarding.py:262
-#, python-brace-format
+#, fuzzy, python-brace-format
+#| msgid ""
+#| "\n"
+#| "Here are a few messages I understand: {bot_commands}\n"
+#| "\n"
+#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
+#| "or browse the [Help center](/help/) to learn more!\n"
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
 "\n"
 "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-"or browse the [Help center](/help/) to learn more!\n"
+"or browse the [help center](/help/) to learn more!\n"
 msgstr ""
 "\n"
 "நான் புரிந்துகொள்ளும் சில செய்திகள் இங்கே: {bot_commands}\n"
@@ -6069,7 +6101,7 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr ""
 
 #. error
-#: zerver/lib/push_notifications.py:729 zilencer/views.py:661
+#: zerver/lib/push_notifications.py:729 zilencer/views.py:685
 msgid "Token does not exist"
 msgstr "கிள்ளாக்கு இல்லை"
 
@@ -6135,10 +6167,10 @@ msgstr ""
 msgid "Invalid data type for channel ID"
 msgstr ""
 
-#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:619
-#: zerver/lib/streams.py:635 zerver/tornado/views.py:229
-#: zerver/views/events_register.py:75 zerver/views/message_send.py:196
-#: zerver/views/message_send.py:217
+#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:615
+#: zerver/lib/streams.py:631 zerver/tornado/views.py:229
+#: zerver/views/events_register.py:75 zerver/views/message_send.py:170
+#: zerver/views/message_send.py:191
 msgid "User not authorized for this query"
 msgstr "இந்த வினவலுக்கு பயனர் ஏற்பு பெறவில்லை"
 
@@ -6209,7 +6241,7 @@ msgstr "அறிவிப்புகளை அழுத்துங்கள�
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr "'{var_name1}' மற்றும் '{var_name2}' வாதங்களுக்கு இடையில் தீர்மானிக்க முடியாது"
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:680 zerver/views/typing.py:47
+#: zerver/lib/request.py:83 zerver/lib/streams.py:676 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr "'{var_name}' வாதத்தைக் காணவில்லை"
@@ -6228,45 +6260,40 @@ msgstr "திட்டமிடப்பட்ட செய்தி இல்�
 msgid "{service_name} account security"
 msgstr "{service_name} கணக்கு பாதுகாப்பு"
 
-#: zerver/lib/streams.py:222 zerver/views/streams.py:381
+#: zerver/lib/streams.py:219 zerver/views/streams.py:362
 msgid "A default channel cannot be private."
 msgstr "இயல்புநிலை சேனல் தனிப்பட்டதாக இருக்க முடியாது."
 
-#: zerver/lib/streams.py:225 zerver/views/streams.py:410
+#: zerver/lib/streams.py:222 zerver/views/streams.py:391
 msgid "Web-public channels are not enabled."
 msgstr "வலை பொது சேனல்கள் இயக்கப்படவில்லை."
 
-#: zerver/lib/streams.py:582 zerver/lib/streams.py:590
+#: zerver/lib/streams.py:578 zerver/lib/streams.py:586
 msgid "You do not have permission to post in this channel."
 msgstr "இந்த சேனலில் இடுகையிட உங்களுக்கு இசைவு இல்லை."
 
-#: zerver/lib/streams.py:626 zerver/lib/streams.py:672
+#: zerver/lib/streams.py:622 zerver/lib/streams.py:668
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr "சேனலுக்கு '{channel_name}' க்கு அனுப்ப ஏற்பு இல்லை"
 
-#: zerver/lib/streams.py:768 zerver/lib/streams.py:803
-#: zerver/lib/streams.py:932 zerver/lib/streams.py:959
-#: zerver/lib/streams.py:1034 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:760 zerver/lib/streams.py:795
+#: zerver/lib/streams.py:924 zerver/lib/streams.py:951
+#: zerver/lib/streams.py:1017 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr ""
 
-#: zerver/lib/streams.py:1006
-msgid "You can only invite other Zephyr mirroring users to private channels."
-msgstr ""
-"நீங்கள் மற்ற செஃபிர் பிரதிபலிக்கும் பயனர்களை தனியார் சேனல்களுக்கு மட்டுமே அழைக்க முடியும்."
-
-#: zerver/lib/streams.py:1017 zerver/lib/streams.py:1154
+#: zerver/lib/streams.py:1000 zerver/lib/streams.py:1137
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:1569
+#: zerver/lib/streams.py:1590
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr "சேனல் (கள்) ({channel_names}) இல்லை"
 
-#: zerver/lib/streams.py:1606
+#: zerver/lib/streams.py:1660
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr "அடையாளம் '{group_id}' உடன் இயல்புநிலை சேனல் குழு இல்லை."
@@ -6468,41 +6495,41 @@ msgstr "தவறான பயனர் குழு"
 msgid "Invalid system group name."
 msgstr ""
 
-#: zerver/lib/user_groups.py:354 zerver/lib/user_groups.py:450
+#: zerver/lib/user_groups.py:356 zerver/lib/user_groups.py:452
 #, python-brace-format
 msgid "Invalid user group ID: {group_id}"
 msgstr ""
 
-#: zerver/lib/user_groups.py:385
+#: zerver/lib/user_groups.py:387
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr "'{setting_name}' அமைப்பை 'பங்கு: இணையம்' குழுவாக அமைக்க முடியாது."
 
-#: zerver/lib/user_groups.py:395
+#: zerver/lib/user_groups.py:397
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr "'{setting_name}' அமைப்பை 'பாத்திரம்: யாரும்' குழு என அமைக்க முடியாது."
 
-#: zerver/lib/user_groups.py:405
+#: zerver/lib/user_groups.py:407
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr "'{setting_name}' அமைப்பை 'பங்கு: எல்லோரும்' குழு என அமைக்க முடியாது."
 
-#: zerver/lib/user_groups.py:415
+#: zerver/lib/user_groups.py:417
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr "'{setting_name}' அமைப்பை '{group_name}' குழுவாக அமைக்க முடியாது."
 
-#: zerver/lib/user_groups.py:524
+#: zerver/lib/user_groups.py:526
 msgid "User group name can't be empty!"
 msgstr "பயனர் குழு பெயர் காலியாக இருக்க முடியாது!"
 
-#: zerver/lib/user_groups.py:528
+#: zerver/lib/user_groups.py:530
 #, python-brace-format
 msgid "User group name cannot exceed {max_length} characters."
 msgstr "பயனர் குழு பெயர் {max_length} எழுத்துக்களை விட அதிகமாக இருக்கக்கூடாது."
 
-#: zerver/lib/user_groups.py:536
+#: zerver/lib/user_groups.py:538
 #, python-brace-format
 msgid "User group name cannot start with '{prefix}'."
 msgstr "பயனர் குழு பெயர் '{prefix}' உடன் தொடங்க முடியாது."
@@ -6512,8 +6539,10 @@ msgid "Name too long!"
 msgstr "பெயர் மிக நீண்டது!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr "பெயர் மிகக் குறுகிய!"
+#, fuzzy
+#| msgid "Message must not be empty"
+msgid "Name must not be empty!"
+msgstr "செய்தி காலியாக இருக்கக்கூடாது"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -6574,7 +6603,7 @@ msgstr "அத்தகைய போட் இல்லை"
 
 #: zerver/lib/users.py:293 zerver/lib/users.py:324 zerver/lib/users.py:341
 #: zerver/lib/users.py:420 zerver/lib/users.py:446 zerver/lib/users.py:468
-#: zerver/views/presence.py:41
+#: zerver/views/presence.py:40
 msgid "No such user"
 msgstr "அத்தகைய பயனர் இல்லை"
 
@@ -6700,17 +6729,17 @@ msgstr "ZCommand இல் ஒரு முன்னணி குறைப்ப
 msgid "No such command: {command}"
 msgstr "அத்தகைய கட்டளை இல்லை: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:745
+#: zerver/lib/zulip_update_announcements.py:766
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 "`zulip_update_announcements_stream` எதிர்பாராத விதமாக செயலிழக்கப்படுகிறது."
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:469
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "CSRF பிழை: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:643
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "தலைகீழ் பதிலாள் தவறான கட்டமைப்பு: {proxy_reason}"
@@ -6758,7 +6787,7 @@ msgstr "வெளிப்புற கணக்கு"
 msgid "Pronouns"
 msgstr "உச்சரிப்புகள்"
 
-#: zerver/models/groups.py:22 zerver/models/users.py:318
+#: zerver/models/groups.py:22 zerver/models/users.py:316
 msgid "Nobody"
 msgstr "யாரும்"
 
@@ -6797,15 +6826,15 @@ msgstr "முகவரி வார்ப்புருவில் குழ�
 msgid "Group %(name)r in linkifier pattern is not present in URL template."
 msgstr "குழு %(பெயர்) r இணைப்பு வடிவத்தில் முகவரி வார்ப்புருவில் இல்லை."
 
-#: zerver/models/messages.py:381
+#: zerver/models/messages.py:380
 msgid "Unicode emoji"
 msgstr "யூனிகோட் ஈமோசி"
 
-#: zerver/models/messages.py:382
+#: zerver/models/messages.py:381
 msgid "Custom emoji"
 msgstr "தனிப்பயன் ஈமோசி"
 
-#: zerver/models/messages.py:383
+#: zerver/models/messages.py:382
 msgid "Zulip extra emoji"
 msgstr "கூடுதல் ஈமோசி"
 
@@ -6910,59 +6939,55 @@ msgstr "தனிப்பட்ட, பகிரப்பட்ட வரலா
 msgid "Private, protected history"
 msgstr "தனியார், பாதுகாக்கப்பட்ட வரலாறு"
 
-#: zerver/models/streams.py:87
-msgid "Public, protected history"
-msgstr "பொது, பாதுகாக்கப்பட்ட வரலாறு"
-
-#: zerver/models/users.py:314
+#: zerver/models/users.py:312
 msgid "Admins, moderators, members and guests"
 msgstr "நிர்வாகிகள், மதிப்பீட்டாளர்கள், உறுப்பினர்கள் மற்றும் விருந்தினர்கள்"
 
-#: zerver/models/users.py:315
+#: zerver/models/users.py:313
 msgid "Admins, moderators and members"
 msgstr "நிர்வாகிகள், மதிப்பீட்டாளர்கள் மற்றும் உறுப்பினர்கள்"
 
-#: zerver/models/users.py:316
+#: zerver/models/users.py:314
 msgid "Admins and moderators"
 msgstr "நிர்வாகிகள் மற்றும் மதிப்பீட்டாளர்கள்"
 
-#: zerver/models/users.py:317
+#: zerver/models/users.py:315
 msgid "Admins only"
 msgstr "நிர்வாகிகள் மட்டுமே"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:516
 msgid "Unknown user"
 msgstr "தெரியாத பயனர்"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:683
 msgid "Organization owner"
 msgstr ""
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:684
 msgid "Organization administrator"
 msgstr ""
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:685
 msgid "Moderator"
 msgstr "மதிப்பீட்டாளர்"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:686
 msgid "Member"
 msgstr "உறுப்பினர்"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:687
 msgid "Guest"
 msgstr "விருந்தினர்"
 
-#: zerver/signals.py:101
+#: zerver/signals.py:98
 msgid "Unknown IP address"
 msgstr "தெரியாத ஐபி முகவரி"
 
-#: zerver/signals.py:102
+#: zerver/signals.py:99
 msgid "an unknown operating system"
 msgstr "அறியப்படாத இயக்க முறைமை"
 
-#: zerver/signals.py:103
+#: zerver/signals.py:100
 msgid "An unknown browser"
 msgstr "அறியப்படாத உலாவி"
 
@@ -7165,21 +7190,17 @@ msgstr ""
 msgid "Message reporting is not enabled in this organization."
 msgstr ""
 
-#: zerver/views/message_send.py:215
+#: zerver/views/message_send.py:189
 msgid "Missing sender"
 msgstr "அனுப்புநர் காணவில்லை"
 
-#: zerver/views/message_send.py:222
+#: zerver/views/message_send.py:196
 msgid "Mirroring not allowed with recipient user IDs"
 msgstr "பெறுநர் பயனர் ஐடிகளுடன் அனுமதிக்கப்படவில்லை"
 
-#: zerver/views/message_send.py:234 zerver/views/message_send.py:241
+#: zerver/views/message_send.py:208 zerver/views/message_send.py:213
 msgid "Invalid mirrored message"
 msgstr "தவறான பிரதிபலித்த செய்தி"
-
-#: zerver/views/message_send.py:237
-msgid "Zephyr mirroring is not allowed in this organization"
-msgstr "இந்த அமைப்பில் செஃபிர் பிரதிபலிப்பு அனுமதிக்கப்படவில்லை"
 
 #: zerver/views/message_summary.py:28
 msgid "AI features are not enabled on this server."
@@ -7205,16 +7226,16 @@ msgstr "பயனர் ஏற்கனவே முடக்கியுள்�
 msgid "User is not muted"
 msgstr "தலைப்பு"
 
-#: zerver/views/navigation_views.py:58 zerver/views/navigation_views.py:90
+#: zerver/views/navigation_views.py:59 zerver/views/navigation_views.py:91
 msgid "Built-in views cannot have a custom name."
 msgstr ""
 
-#: zerver/views/navigation_views.py:61
+#: zerver/views/navigation_views.py:62
 msgid "Custom views must have a valid name."
 msgstr ""
 
-#: zerver/views/navigation_views.py:64 zerver/views/navigation_views.py:66
-#: zerver/views/navigation_views.py:92
+#: zerver/views/navigation_views.py:65 zerver/views/navigation_views.py:67
+#: zerver/views/navigation_views.py:93
 msgid "Navigation view already exists."
 msgstr ""
 
@@ -7234,25 +7255,25 @@ msgstr ""
 "[Vervice zulip video]({navigation_tour_video_url}) ஐ பின்னர் பார்க்கும்படி "
 "கேட்டீர்கள். இது நல்ல நேரம்?\n"
 
-#: zerver/views/presence.py:48
+#: zerver/views/presence.py:47
 msgid "Presence is not supported for bot users."
 msgstr "போட் பயனர்களுக்கு இருப்பு ஆதரிக்கப்படவில்லை."
 
-#: zerver/views/presence.py:58
+#: zerver/views/presence.py:57
 #, fuzzy, python-brace-format
 msgid "No presence data for {user_id_or_email}"
 msgstr "{User_id_or_email க்கு க்கான இருப்பு தரவு இல்லை"
 
-#: zerver/views/presence.py:101
+#: zerver/views/presence.py:100
 msgid "Client did not pass any new values."
 msgstr "வாடிக்கையாளர் எந்த புதிய மதிப்புகளையும் கடக்கவில்லை."
 
-#: zerver/views/presence.py:124
+#: zerver/views/presence.py:123
 msgid ""
 "Client must pass emoji_name if they pass either emoji_code or reaction_type."
 msgstr "வாடிக்கையாளர் EMOJI_NAME ஐ கடந்து செல்ல வேண்டும்."
 
-#: zerver/views/presence.py:195
+#: zerver/views/presence.py:194
 #, python-brace-format
 msgid "Invalid status: {status}"
 msgstr ""
@@ -7403,39 +7424,39 @@ msgstr "நீங்கள் சரியாக ஒரு லோகோவை �
 msgid "Invalid playground"
 msgstr ""
 
-#: zerver/views/registration.py:303
+#: zerver/views/registration.py:302
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
-#: zerver/views/registration.py:1076
+#: zerver/views/registration.py:1049
 msgid "Unauthenticated"
 msgstr ""
 
-#: zerver/views/registration.py:1087
+#: zerver/views/registration.py:1060
 msgid "Converting Slack data… This may take a while."
 msgstr ""
 
-#: zerver/views/registration.py:1107
+#: zerver/views/registration.py:1080
 msgid "Importing messages…"
 msgstr ""
 
-#: zerver/views/registration.py:1110
+#: zerver/views/registration.py:1083
 msgid "Importing attachment data…"
 msgstr ""
 
-#: zerver/views/registration.py:1113
+#: zerver/views/registration.py:1086
 msgid "Importing converted Slack data…"
 msgstr ""
 
-#: zerver/views/registration.py:1119
+#: zerver/views/registration.py:1092
 msgid "Finalizing import…"
 msgstr ""
 
-#: zerver/views/registration.py:1122
+#: zerver/views/registration.py:1095
 msgid "Done!"
 msgstr ""
 
-#: zerver/views/registration.py:1150
+#: zerver/views/registration.py:1123
 msgid "No users matching provided email."
 msgstr ""
 
@@ -7455,98 +7476,98 @@ msgstr ""
 msgid "Invalid DSN"
 msgstr ""
 
-#: zerver/views/streams.py:185
+#: zerver/views/streams.py:174
 msgid "Private channels cannot be made default."
 msgstr "தனியார் சேனல்களை இயல்புநிலையாக மாற்ற முடியாது."
 
-#: zerver/views/streams.py:219
+#: zerver/views/streams.py:208
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr "நீங்கள் \"புதிய_ விளக்கப்படம்\" அல்லது \"புதிய_ குழும_நேம்\" ஐ கடக்க வேண்டும்."
 
-#: zerver/views/streams.py:250
+#: zerver/views/streams.py:239
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr "\"OP\" க்கு தவறான மதிப்பு. \"சேர்\" அல்லது \"அகற்று\" ஒன்றைக் குறிப்பிடவும்."
 
-#: zerver/views/streams.py:365 zerver/views/streams.py:369
-#: zerver/views/streams.py:377
+#: zerver/views/streams.py:350 zerver/views/streams.py:354
+#: zerver/views/streams.py:358
 msgid "Invalid parameters"
 msgstr ""
 
-#: zerver/views/streams.py:393 zerver/views/streams.py:507
+#: zerver/views/streams.py:374 zerver/views/streams.py:488
 msgid "Channel content access is required."
 msgstr "சேனல் உள்ளடக்க அணுகல் தேவை."
 
-#: zerver/views/streams.py:463
+#: zerver/views/streams.py:444
 msgid "Channel already has that name."
 msgstr "சேனலுக்கு ஏற்கனவே அந்த பெயர் உள்ளது."
 
-#: zerver/views/streams.py:576 zerver/views/user_groups.py:511
+#: zerver/views/streams.py:557 zerver/views/user_groups.py:511
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "செய்ய எதுவும் இல்லை. குறைந்தபட்சம் \"சேர்\" அல்லது \"நீக்கு\" ஒன்றைக் குறிப்பிடவும்."
 
-#: zerver/views/streams.py:653
+#: zerver/views/streams.py:634
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
 msgstr ""
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:640
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr "{user_full_name} பின்வரும் சேனல்களுக்கு உங்களை சந்தா செலுத்தியது:"
 
-#: zerver/views/streams.py:969
+#: zerver/views/streams.py:873
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
 msgstr "சேனலை அணுக முடியவில்லை ({channel_name})."
 
-#: zerver/views/streams.py:1105
+#: zerver/views/streams.py:1006
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
 msgstr "{user_name} பின்வரும் சேனல்களை உருவாக்கியது: {new_channels}."
 
-#: zerver/views/streams.py:1107
+#: zerver/views/streams.py:1008
 #, fuzzy, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
 msgstr "{user_name ஒரு புதிய சேனலை உருவாக்கியது {user_name}."
 
-#: zerver/views/streams.py:1108
+#: zerver/views/streams.py:1009
 msgid "new channels"
 msgstr "புதிய சேனல்கள்"
 
-#: zerver/views/streams.py:1156
+#: zerver/views/streams.py:1055
 #, python-brace-format
 msgid "**Web-public** channel created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1160
+#: zerver/views/streams.py:1059
 #, python-brace-format
 msgid "**Public** channel created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1164
+#: zerver/views/streams.py:1063
 #, python-brace-format
 msgid ""
 "**Private, shared history** channel created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1168
+#: zerver/views/streams.py:1067
 #, python-brace-format
 msgid ""
 "**Private, protected history** channel created by {user_name}. **Description:"
 "**"
 msgstr ""
 
-#: zerver/views/streams.py:1403
+#: zerver/views/streams.py:1302
 #, fuzzy, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{சொத்து a ஒரு பூலியன் அல்ல"
 
-#: zerver/views/streams.py:1406
+#: zerver/views/streams.py:1305
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "அறியப்படாத சந்தா சொத்து: {property}"
 
-#: zerver/views/streams.py:1454
+#: zerver/views/streams.py:1353
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -7827,22 +7848,6 @@ msgstr "பிக் ப்ளூபட்டன் சேவையகத்த�
 msgid "BigBlueButton server returned an unexpected error."
 msgstr "BigblueButton சேவையகம் எதிர்பாராத பிழையை அளித்தது."
 
-#: zerver/views/zephyr.py:34
-msgid "Could not find Kerberos credential"
-msgstr "கெர்பரோச் நற்சான்றிதழைக் கண்டுபிடிக்க முடியவில்லை"
-
-#: zerver/views/zephyr.py:36
-msgid "Webathena login not enabled"
-msgstr "வெபதேனா உள்நுழைவு இயக்கப்படவில்லை"
-
-#: zerver/views/zephyr.py:57
-msgid "Invalid Kerberos cache"
-msgstr "தவறான கெர்பரோச் கேச்"
-
-#: zerver/views/zephyr.py:61 zerver/views/zephyr.py:75
-msgid "We were unable to set up mirroring for you"
-msgstr "உங்களுக்காக பிரதிபலிப்பதை எங்களால் அமைக்க முடியவில்லை"
-
 #: zerver/webhooks/circleci/view.py:86
 msgid "Projects using this version control system provider aren't supported"
 msgstr ""
@@ -7922,45 +7927,50 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "செல்லுபடியாகும் சூலிப் சர்வர் பநிஇ விசையுடன் சரிபார்க்க வேண்டும்"
 
 #. error
-#: zilencer/views.py:121 zilencer/views.py:123
+#: zilencer/views.py:122 zilencer/views.py:124
 msgid "Invalid UUID"
 msgstr ""
 
 #. error
-#: zilencer/views.py:128
+#: zilencer/views.py:129
 msgid "Invalid token type"
 msgstr "தவறான கிள்ளாக்கு வகை"
 
-#: zilencer/views.py:165
+#: zilencer/views.py:166
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr "{hostname} தவறான கூறுகளைக் கொண்டுள்ளது (எ.கா., பாதை, வினவல், துண்டு)."
 
-#: zilencer/views.py:172
+#: zilencer/views.py:173
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr "{hostname} என்பது சரியான ஓச்ட்பெயர் அல்ல"
 
-#: zilencer/views.py:182
+#: zilencer/views.py:183
 #, fuzzy, python-brace-format
 msgid "{hostname} not yet registered"
 msgstr "நிர்வாகிகள்"
 
-#: zilencer/views.py:234
-msgid "Invalid email address."
+#: zilencer/views.py:204
+#, python-brace-format
+msgid "Invalid server administrator email address: {email_reason}"
 msgstr ""
 
-#: zilencer/views.py:250
+#: zilencer/views.py:248
+msgid "example.com is not a valid email domain."
+msgstr ""
+
+#: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
 msgstr "{domain} தவறானது, ஏனெனில் அதில் எந்த MX பதிவுகளும் இல்லை"
 
-#: zilencer/views.py:255
+#: zilencer/views.py:278
 #, python-brace-format
 msgid "{domain} does not exist"
 msgstr "{domain} இல்லை"
 
-#: zilencer/views.py:357
+#: zilencer/views.py:381
 #, fuzzy, python-brace-format
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
@@ -7970,28 +7980,28 @@ msgstr ""
 "தயவுசெய்து பின்னர் மீண்டும் முயற்சிக்கவும் அல்லது உதவிக்கு {support_email that ஐ "
 "அணுகவும்."
 
-#: zilencer/views.py:365
+#: zilencer/views.py:389
 msgid "Registration not found for this hostname"
 msgstr "இந்த ஓச்ட்பெயருக்கு பதிவு கிடைக்கவில்லை"
 
-#: zilencer/views.py:377
+#: zilencer/views.py:401
 msgid "The host reported it has no verification secret."
 msgstr "சரிபார்ப்பு மறைபொருள் இல்லை என்று புரவலன் தெரிவித்துள்ளது."
 
-#: zilencer/views.py:379
+#: zilencer/views.py:403
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
 msgstr "ஓச்டிலிருந்து பெறப்பட்ட பிழை பதில்: {status_code}"
 
-#: zilencer/views.py:469
+#: zilencer/views.py:493
 msgid "Missing ios_app_id"
 msgstr "IOS_APP_ID காணவில்லை"
 
-#: zilencer/views.py:472
+#: zilencer/views.py:496
 msgid "Missing user_id or user_uuid"
 msgstr "USER_ID அல்லது USER_UUID ஐக் காணவில்லை"
 
-#: zilencer/views.py:855
+#: zilencer/views.py:879
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
@@ -8000,28 +8010,28 @@ msgstr ""
 "புச் அறிவிப்புகளை அனுப்ப உங்கள் திட்டம் அனுமதிக்காது. சேவையகத்தால் வழங்கப்பட்ட காரணம்: "
 "{reason}"
 
-#: zilencer/views.py:903
+#: zilencer/views.py:927
 msgid "Your plan doesn't allow sending push notifications."
 msgstr "புச் அறிவிப்புகளை அனுப்ப உங்கள் திட்டம் அனுமதிக்காது."
 
-#: zilencer/views.py:1118
+#: zilencer/views.py:1142
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr ""
 
-#: zilencer/views.py:1121
+#: zilencer/views.py:1145
 msgid "Invalid event type."
 msgstr ""
 
-#: zilencer/views.py:1128
+#: zilencer/views.py:1152
 msgid "Data is out of order."
 msgstr "தரவு ஒழுங்கற்றது."
 
-#: zilencer/views.py:1233
+#: zilencer/views.py:1257
 msgid "Duplicate registration detected."
 msgstr "நகல் பதிவு கண்டறியப்பட்டது."
 
-#: zilencer/views.py:1651
+#: zilencer/views.py:1675
 msgid "Malformed audit log data"
 msgstr "தவறாக தணிக்கை பதிவு தரவு"
 
@@ -8029,18 +8039,45 @@ msgstr "தவறாக தணிக்கை பதிவு தரவு"
 msgid "You need to reset your password."
 msgstr "உங்கள் கடவுச்சொல்லை மீட்டமைக்க வேண்டும்."
 
-#: zproject/backends.py:2821
+#: zproject/backends.py:2827
 msgid "Missing id_token parameter"
 msgstr "ஐடி_டோகன் அளவுரு இல்லை"
 
-#: zproject/backends.py:3545
+#: zproject/backends.py:3551
 msgid "Invalid OTP"
 msgstr "தவறான OTP"
 
-#: zproject/backends.py:3548
+#: zproject/backends.py:3554
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 "மொபைல்_ஃப்ளோ_ஓடிபி மற்றும் டெச்க்டாப்_ஃப்ளோ_ஓடிபி இரண்டையும் ஒன்றாகப் பயன்படுத்த முடியாது."
+
+#~ msgid ""
+#~ "You can only invite other Zephyr mirroring users to private channels."
+#~ msgstr ""
+#~ "நீங்கள் மற்ற செஃபிர் பிரதிபலிக்கும் பயனர்களை தனியார் சேனல்களுக்கு மட்டுமே அழைக்க "
+#~ "முடியும்."
+
+#~ msgid "Name too short!"
+#~ msgstr "பெயர் மிகக் குறுகிய!"
+
+#~ msgid "Public, protected history"
+#~ msgstr "பொது, பாதுகாக்கப்பட்ட வரலாறு"
+
+#~ msgid "Zephyr mirroring is not allowed in this organization"
+#~ msgstr "இந்த அமைப்பில் செஃபிர் பிரதிபலிப்பு அனுமதிக்கப்படவில்லை"
+
+#~ msgid "Could not find Kerberos credential"
+#~ msgstr "கெர்பரோச் நற்சான்றிதழைக் கண்டுபிடிக்க முடியவில்லை"
+
+#~ msgid "Webathena login not enabled"
+#~ msgstr "வெபதேனா உள்நுழைவு இயக்கப்படவில்லை"
+
+#~ msgid "Invalid Kerberos cache"
+#~ msgstr "தவறான கெர்பரோச் கேச்"
+
+#~ msgid "We were unable to set up mirroring for you"
+#~ msgstr "உங்களுக்காக பிரதிபலிப்பதை எங்களால் அமைக்க முடியவில்லை"
 
 #~ msgid "Channel name is already in use."
 #~ msgstr "சேனல் பெயர் ஏற்கனவே பயன்பாட்டில் உள்ளது."
