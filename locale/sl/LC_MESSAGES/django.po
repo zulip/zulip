@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 16:10+0000\n"
+"POT-Creation-Date: 2025-10-22 02:09+0000\n"
 "PO-Revision-Date: 2025-09-10 06:03+0000\n"
 "Last-Translator: BobTB <jf@kfm.si>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/"
@@ -279,18 +279,18 @@ msgid "Session not found"
 msgstr "Seja ni bila najdena"
 
 #: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
-#: zerver/lib/streams.py:142 zerver/lib/streams.py:216
-#: zerver/lib/streams.py:218 zerver/lib/streams.py:220
-#: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
-#: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
-#: zerver/lib/user_groups.py:363 zerver/lib/user_groups.py:459
-#: zerver/lib/users.py:204 zerver/lib/users.py:271 zerver/lib/users.py:300
-#: zerver/lib/users.py:304 zerver/views/invite.py:157
-#: zerver/views/invite.py:278 zerver/views/message_summary.py:31
-#: zerver/views/presence.py:53 zerver/views/realm_emoji.py:35
-#: zerver/views/streams.py:400 zerver/views/streams.py:403
-#: zerver/views/streams.py:412 zerver/views/streams.py:456
-#: zerver/views/streams.py:698 zerver/views/streams.py:974
+#: zerver/lib/streams.py:144 zerver/lib/streams.py:218
+#: zerver/lib/streams.py:220 zerver/lib/streams.py:222
+#: zerver/lib/streams.py:231 zerver/lib/streams.py:1543
+#: zerver/lib/streams.py:1598 zerver/lib/user_groups.py:168
+#: zerver/lib/user_groups.py:194 zerver/lib/user_groups.py:365
+#: zerver/lib/user_groups.py:461 zerver/lib/users.py:204
+#: zerver/lib/users.py:271 zerver/lib/users.py:300 zerver/lib/users.py:304
+#: zerver/views/invite.py:157 zerver/views/invite.py:278
+#: zerver/views/message_summary.py:31 zerver/views/presence.py:53
+#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:390
+#: zerver/views/streams.py:393 zerver/views/streams.py:402
+#: zerver/views/streams.py:446 zerver/views/streams.py:889
 msgid "Insufficient permission"
 msgstr "Nezadostno dovoljenje"
 
@@ -329,8 +329,8 @@ msgstr "Žeton za dostop do obračunavanja je potekel."
 msgid "Invalid billing access token."
 msgstr "Neveljaven žeton za dostop do obračunavanja."
 
-#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1476
-#: zilencer/views.py:1501
+#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1500
+#: zilencer/views.py:1525
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
@@ -4830,7 +4830,7 @@ msgid "Authentication method {name} is not available on your current plan."
 msgstr ""
 "Metoda preverjanja pristnosti {name} ni na voljo v vašem trenutnem načrtu."
 
-#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:385
+#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:375
 msgid "Moderation request channel must be private."
 msgstr "Kanal za zahteve moderiranja mora biti zaseben."
 
@@ -4915,7 +4915,7 @@ msgstr ""
 "{user_name} je preimenoval kanal {old_channel_name} v {new_channel_name}."
 
 #: zerver/actions/streams.py:1560 zerver/actions/streams.py:1562
-#: zerver/views/streams.py:1141
+#: zerver/views/streams.py:1056
 msgid "No description."
 msgstr "Brez opisa."
 
@@ -5083,7 +5083,7 @@ msgid "Subdomain reserved. Please choose a different one."
 msgstr "Poddomena je rezervirana. Prosimo, izberite drugo."
 
 #: zerver/forms.py:134 zerver/forms.py:304 zerver/lib/email_validation.py:111
-#: zilencer/views.py:230
+#: zilencer/views.py:244
 msgid "Please use your real email address."
 msgstr "Prosimo, uporabite svoj pravi e-poštni naslov."
 
@@ -6052,13 +6052,19 @@ msgstr ""
 "časih in drugih možnostih..\n"
 
 #: zerver/lib/onboarding.py:262
-#, python-brace-format
+#, fuzzy, python-brace-format
+#| msgid ""
+#| "\n"
+#| "Here are a few messages I understand: {bot_commands}\n"
+#| "\n"
+#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
+#| "or browse the [Help center](/help/) to learn more!\n"
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
 "\n"
 "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-"or browse the [Help center](/help/) to learn more!\n"
+"or browse the [help center](/help/) to learn more!\n"
 msgstr ""
 "\n"
 "Tukaj je nekaj sporočil, ki jih razumem: {bot_commands}\n"
@@ -6295,7 +6301,7 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "Neveljavne možnosti GCM za strežnik za potisna obvestila: {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:729 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:729 zilencer/views.py:682
 msgid "Token does not exist"
 msgstr "Žeton ne obstaja"
 
@@ -6363,8 +6369,8 @@ msgstr ""
 msgid "Invalid data type for channel ID"
 msgstr "Neveljaven podatkovni tip za ID kanala"
 
-#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:619
-#: zerver/lib/streams.py:635 zerver/tornado/views.py:229
+#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:621
+#: zerver/lib/streams.py:637 zerver/tornado/views.py:229
 #: zerver/views/events_register.py:75 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
@@ -6440,7 +6446,7 @@ msgstr "Napaka strežnika za potisna obvestila: {error}"
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr "Ne morem se odločiti med argumentoma '{var_name1}' in '{var_name2}'"
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:680 zerver/views/typing.py:47
+#: zerver/lib/request.py:83 zerver/lib/streams.py:682 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr "Manjkajoč argument '{var_name}'"
@@ -6459,45 +6465,45 @@ msgstr "Načrtovano sporočilo ne obstaja"
 msgid "{service_name} account security"
 msgstr "{service_name} varnost računa"
 
-#: zerver/lib/streams.py:222 zerver/views/streams.py:381
+#: zerver/lib/streams.py:224 zerver/views/streams.py:371
 msgid "A default channel cannot be private."
 msgstr "Privzet kanal ne more biti zaseben."
 
-#: zerver/lib/streams.py:225 zerver/views/streams.py:410
+#: zerver/lib/streams.py:227 zerver/views/streams.py:400
 msgid "Web-public channels are not enabled."
 msgstr "Spletno javni kanali niso omogočeni."
 
-#: zerver/lib/streams.py:582 zerver/lib/streams.py:590
+#: zerver/lib/streams.py:584 zerver/lib/streams.py:592
 msgid "You do not have permission to post in this channel."
 msgstr "Nimate dovoljenja za objavljanje v tem kanalu."
 
-#: zerver/lib/streams.py:626 zerver/lib/streams.py:672
+#: zerver/lib/streams.py:628 zerver/lib/streams.py:674
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr "Niste pooblaščeni za pošiljanje v kanal '{channel_name}'"
 
-#: zerver/lib/streams.py:768 zerver/lib/streams.py:803
-#: zerver/lib/streams.py:932 zerver/lib/streams.py:959
-#: zerver/lib/streams.py:1034 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:770 zerver/lib/streams.py:805
+#: zerver/lib/streams.py:934 zerver/lib/streams.py:961
+#: zerver/lib/streams.py:1036 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr "Neveljaven ID kanala"
 
-#: zerver/lib/streams.py:1006
+#: zerver/lib/streams.py:1008
 msgid "You can only invite other Zephyr mirroring users to private channels."
 msgstr ""
 "V zasebne kanale lahko povabite samo druge uporabnike zrcaljenja Zephyr."
 
-#: zerver/lib/streams.py:1017 zerver/lib/streams.py:1154
+#: zerver/lib/streams.py:1019 zerver/lib/streams.py:1156
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr "Neveljavno ime kanala '{channel_name}'"
 
-#: zerver/lib/streams.py:1569
+#: zerver/lib/streams.py:1615
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr "Kanal(i) ({channel_names}) ne obstajajo"
 
-#: zerver/lib/streams.py:1606
+#: zerver/lib/streams.py:1685
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr "Privzeta skupina kanalov z id-jem '{group_id}' ne obstaja."
@@ -6699,45 +6705,45 @@ msgstr "Neveljavna uporabniška skupina"
 msgid "Invalid system group name."
 msgstr "Neveljavno ime sistemske skupine."
 
-#: zerver/lib/user_groups.py:354 zerver/lib/user_groups.py:450
+#: zerver/lib/user_groups.py:356 zerver/lib/user_groups.py:452
 #, python-brace-format
 msgid "Invalid user group ID: {group_id}"
 msgstr "Neveljaven ID uporabniške skupine: {group_id}"
 
-#: zerver/lib/user_groups.py:385
+#: zerver/lib/user_groups.py:387
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr ""
 "Nastavitve '{setting_name}' ni mogoče nastaviti na skupino 'role:internet'."
 
-#: zerver/lib/user_groups.py:395
+#: zerver/lib/user_groups.py:397
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr ""
 "Nastavitve '{setting_name}' ni mogoče nastaviti na skupino 'role:nobody'."
 
-#: zerver/lib/user_groups.py:405
+#: zerver/lib/user_groups.py:407
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr ""
 "Nastavitve '{setting_name}' ni mogoče nastaviti na skupino 'role:everyone'."
 
-#: zerver/lib/user_groups.py:415
+#: zerver/lib/user_groups.py:417
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr ""
 "Nastavitve '{setting_name}' ni mogoče nastaviti na skupino '{group_name}'."
 
-#: zerver/lib/user_groups.py:524
+#: zerver/lib/user_groups.py:526
 msgid "User group name can't be empty!"
 msgstr "Ime uporabniške skupine ne sme biti prazno!"
 
-#: zerver/lib/user_groups.py:528
+#: zerver/lib/user_groups.py:530
 #, python-brace-format
 msgid "User group name cannot exceed {max_length} characters."
 msgstr "Ime uporabniške skupine ne sme presegati {max_length} znakov."
 
-#: zerver/lib/user_groups.py:536
+#: zerver/lib/user_groups.py:538
 #, python-brace-format
 msgid "User group name cannot start with '{prefix}'."
 msgstr "Ime uporabniške skupine se ne more začeti z '{prefix}'."
@@ -6995,7 +7001,7 @@ msgstr "Zunanji račun"
 msgid "Pronouns"
 msgstr "Zaimki"
 
-#: zerver/models/groups.py:22 zerver/models/users.py:318
+#: zerver/models/groups.py:22 zerver/models/users.py:316
 msgid "Nobody"
 msgstr "Nihče"
 
@@ -7150,43 +7156,43 @@ msgstr "Zasebno, zaščitena zgodovina"
 msgid "Public, protected history"
 msgstr "Javno, zaščitena zgodovina"
 
-#: zerver/models/users.py:314
+#: zerver/models/users.py:312
 msgid "Admins, moderators, members and guests"
 msgstr "Skrbniki, moderatorji, člani in gostje"
 
-#: zerver/models/users.py:315
+#: zerver/models/users.py:313
 msgid "Admins, moderators and members"
 msgstr "Skrbniki, moderatorji in člani"
 
-#: zerver/models/users.py:316
+#: zerver/models/users.py:314
 msgid "Admins and moderators"
 msgstr "Skrbniki in moderatorji"
 
-#: zerver/models/users.py:317
+#: zerver/models/users.py:315
 msgid "Admins only"
 msgstr "Samo skrbniki"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:517
 msgid "Unknown user"
 msgstr "Neznan uporabnik"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:683
 msgid "Organization owner"
 msgstr "Lastnik organizacije"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:684
 msgid "Organization administrator"
 msgstr "Skrbnik organizacije"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:685
 msgid "Moderator"
 msgstr "Moderator"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:686
 msgid "Member"
 msgstr "Član"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:687
 msgid "Guest"
 msgstr "Gost"
 
@@ -7697,76 +7703,76 @@ msgstr "Neveljavna oblika zahteve"
 msgid "Invalid DSN"
 msgstr "Neveljaven DSN"
 
-#: zerver/views/streams.py:185
+#: zerver/views/streams.py:175
 msgid "Private channels cannot be made default."
 msgstr "Zasebnih kanalov ni mogoče narediti privzetih."
 
-#: zerver/views/streams.py:219
+#: zerver/views/streams.py:209
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr "Posredovati morate \"new_description\" ali \"new_group_name\"."
 
-#: zerver/views/streams.py:250
+#: zerver/views/streams.py:240
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 "Neveljavna vrednost za \"op\". Določite eno izmed \"add\" ali \"remove\"."
 
-#: zerver/views/streams.py:365 zerver/views/streams.py:369
-#: zerver/views/streams.py:377
+#: zerver/views/streams.py:355 zerver/views/streams.py:359
+#: zerver/views/streams.py:367
 msgid "Invalid parameters"
 msgstr "Neveljavni parametri"
 
-#: zerver/views/streams.py:393 zerver/views/streams.py:507
+#: zerver/views/streams.py:383 zerver/views/streams.py:497
 msgid "Channel content access is required."
 msgstr "Zahtevan je dostop do vsebine kanala."
 
-#: zerver/views/streams.py:463
+#: zerver/views/streams.py:453
 msgid "Channel already has that name."
 msgstr "Kanal že ima to ime."
 
-#: zerver/views/streams.py:576 zerver/views/user_groups.py:511
+#: zerver/views/streams.py:566 zerver/views/user_groups.py:511
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Ni nič za storiti. Določite vsaj eno izmed \"add\" ali \"delete\"."
 
-#: zerver/views/streams.py:653
+#: zerver/views/streams.py:643
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
 msgstr "{user_full_name} vas je naročil na {channel_name}."
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:649
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr "{user_full_name} vas je naročil na naslednje kanale:"
 
-#: zerver/views/streams.py:969
+#: zerver/views/streams.py:884
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
 msgstr "Ni mogoče dostopati do kanala ({channel_name})."
 
-#: zerver/views/streams.py:1105
+#: zerver/views/streams.py:1020
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
 msgstr "{user_name} je ustvaril naslednje kanale: {new_channels}."
 
-#: zerver/views/streams.py:1107
+#: zerver/views/streams.py:1022
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
 msgstr "{user_name} je ustvaril nov kanal {new_channels}."
 
-#: zerver/views/streams.py:1108
+#: zerver/views/streams.py:1023
 msgid "new channels"
 msgstr "novi kanali"
 
-#: zerver/views/streams.py:1156
+#: zerver/views/streams.py:1071
 #, python-brace-format
 msgid "**Web-public** channel created by {user_name}. **Description:**"
 msgstr "**Javno dostopen** kanal, ki ga je ustvaril {user_name}. **Opis:**"
 
-#: zerver/views/streams.py:1160
+#: zerver/views/streams.py:1075
 #, python-brace-format
 msgid "**Public** channel created by {user_name}. **Description:**"
 msgstr "**Javni** kanal, ki ga je ustvaril {user_name}. **Opis:**"
 
-#: zerver/views/streams.py:1164
+#: zerver/views/streams.py:1079
 #, python-brace-format
 msgid ""
 "**Private, shared history** channel created by {user_name}. **Description:**"
@@ -7774,7 +7780,7 @@ msgstr ""
 "**Zasebni kanal s skupno zgodovino**, ki ga je ustvaril {user_name}. **Opis:"
 "**"
 
-#: zerver/views/streams.py:1168
+#: zerver/views/streams.py:1083
 #, python-brace-format
 msgid ""
 "**Private, protected history** channel created by {user_name}. **Description:"
@@ -7783,17 +7789,17 @@ msgstr ""
 "**Zasebni kanal z zaščiteno zgodovino**, ki ga je ustvaril {user_name}. "
 "**Opis:**"
 
-#: zerver/views/streams.py:1403
+#: zerver/views/streams.py:1318
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} ni logična vrednost"
 
-#: zerver/views/streams.py:1406
+#: zerver/views/streams.py:1321
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Neznana lastnost naročnine: {property}"
 
-#: zerver/views/streams.py:1454
+#: zerver/views/streams.py:1369
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr "Ni naročen na ID kanala {channel_id}"
@@ -8176,46 +8182,51 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "Potrditi je treba z veljavnim ključem API strežnika Zulip"
 
 #. error
-#: zilencer/views.py:121 zilencer/views.py:123
+#: zilencer/views.py:122 zilencer/views.py:124
 msgid "Invalid UUID"
 msgstr "Neveljaven UUID"
 
 #. error
-#: zilencer/views.py:128
+#: zilencer/views.py:129
 msgid "Invalid token type"
 msgstr "Neveljavna vrsta žetona"
 
-#: zilencer/views.py:165
+#: zilencer/views.py:166
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr ""
 "{hostname} vsebuje neveljavne komponente (npr. pot, poizvedba, fragment)."
 
-#: zilencer/views.py:172
+#: zilencer/views.py:173
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr "{hostname} ni veljavno ime gostitelja"
 
-#: zilencer/views.py:182
+#: zilencer/views.py:183
 #, python-brace-format
 msgid "{hostname} not yet registered"
 msgstr "{hostname} še ni registriran"
 
-#: zilencer/views.py:234
-msgid "Invalid email address."
-msgstr "Neveljaven e-poštni naslov."
+#: zilencer/views.py:204
+#, python-brace-format
+msgid "Invalid server administrator email address: {email_reason}"
+msgstr ""
 
-#: zilencer/views.py:250
+#: zilencer/views.py:248
+msgid "example.com is not a valid email domain."
+msgstr ""
+
+#: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
 msgstr "{domain} je neveljavna, ker nima nobenih zapisov MX"
 
-#: zilencer/views.py:255
+#: zilencer/views.py:278
 #, python-brace-format
 msgid "{domain} does not exist"
 msgstr "{domain} ne obstaja"
 
-#: zilencer/views.py:354
+#: zilencer/views.py:378
 #, python-brace-format
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
@@ -8224,28 +8235,28 @@ msgstr ""
 "Dosežene so bile globalne omejitve nedavne uporabe te končne točke. Prosimo, "
 "poskusite znova kasneje ali se obrnite na {support_email} za pomoč."
 
-#: zilencer/views.py:362
+#: zilencer/views.py:386
 msgid "Registration not found for this hostname"
 msgstr "Za to ime gostitelja ni bila najdena nobena registracija"
 
-#: zilencer/views.py:374
+#: zilencer/views.py:398
 msgid "The host reported it has no verification secret."
 msgstr "Gostitelj je poročal, da nima skrivnosti preverjanja."
 
-#: zilencer/views.py:376
+#: zilencer/views.py:400
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
 msgstr "Prejet odgovor o napaki od gostitelja: {status_code}"
 
-#: zilencer/views.py:466
+#: zilencer/views.py:490
 msgid "Missing ios_app_id"
 msgstr "Manjkajoč ios_app_id"
 
-#: zilencer/views.py:469
+#: zilencer/views.py:493
 msgid "Missing user_id or user_uuid"
 msgstr "Manjkajoč user_id ali user_uuid"
 
-#: zilencer/views.py:852
+#: zilencer/views.py:876
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
@@ -8254,28 +8265,28 @@ msgstr ""
 "Vaš načrt ne dovoljuje pošiljanja potisnih obvestil. Razlog, ki ga je "
 "posredoval strežnik: {reason}"
 
-#: zilencer/views.py:900
+#: zilencer/views.py:924
 msgid "Your plan doesn't allow sending push notifications."
 msgstr "Vaš načrt ne dovoljuje pošiljanja potisnih obvestil."
 
-#: zilencer/views.py:1115
+#: zilencer/views.py:1139
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr "Neveljavna lastnost {property}"
 
-#: zilencer/views.py:1118
+#: zilencer/views.py:1142
 msgid "Invalid event type."
 msgstr "Neveljavna vrsta dogodka."
 
-#: zilencer/views.py:1125
+#: zilencer/views.py:1149
 msgid "Data is out of order."
 msgstr "Podatki niso v vrstnem redu."
 
-#: zilencer/views.py:1230
+#: zilencer/views.py:1254
 msgid "Duplicate registration detected."
 msgstr "Zaznana je bila podvojena registracija."
 
-#: zilencer/views.py:1648
+#: zilencer/views.py:1672
 msgid "Malformed audit log data"
 msgstr "Napačno oblikovani podatki dnevnika revizije"
 
@@ -8283,17 +8294,20 @@ msgstr "Napačno oblikovani podatki dnevnika revizije"
 msgid "You need to reset your password."
 msgstr "Ponastaviti morate geslo."
 
-#: zproject/backends.py:2821
+#: zproject/backends.py:2827
 msgid "Missing id_token parameter"
 msgstr "Manjkajoč parameter id_token"
 
-#: zproject/backends.py:3545
+#: zproject/backends.py:3551
 msgid "Invalid OTP"
 msgstr "Neveljaven OTP"
 
-#: zproject/backends.py:3548
+#: zproject/backends.py:3554
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Ni mogoče hkrati uporabljati mobile_flow_otp in desktop_flow_otp."
+
+#~ msgid "Invalid email address."
+#~ msgstr "Neveljaven e-poštni naslov."
 
 #~ msgid "Channel name is already in use."
 #~ msgstr "Ime kanala je že v uporabi."

@@ -16,11 +16,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 16:10+0000\n"
+"POT-Creation-Date: 2025-10-22 02:09+0000\n"
 "PO-Revision-Date: 2025-09-29 09:02+0000\n"
 "Last-Translator: Goudarz Jafari <me@goudarzjafari.com>\n"
-"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/"
-"django-11-x/fa/>\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django-11-"
+"x/fa/>\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -279,18 +279,18 @@ msgid "Session not found"
 msgstr "جلسه پیدا نشد"
 
 #: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
-#: zerver/lib/streams.py:142 zerver/lib/streams.py:216
-#: zerver/lib/streams.py:218 zerver/lib/streams.py:220
-#: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
-#: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
-#: zerver/lib/user_groups.py:363 zerver/lib/user_groups.py:459
-#: zerver/lib/users.py:204 zerver/lib/users.py:271 zerver/lib/users.py:300
-#: zerver/lib/users.py:304 zerver/views/invite.py:157
-#: zerver/views/invite.py:278 zerver/views/message_summary.py:31
-#: zerver/views/presence.py:53 zerver/views/realm_emoji.py:35
-#: zerver/views/streams.py:400 zerver/views/streams.py:403
-#: zerver/views/streams.py:412 zerver/views/streams.py:456
-#: zerver/views/streams.py:698 zerver/views/streams.py:974
+#: zerver/lib/streams.py:144 zerver/lib/streams.py:218
+#: zerver/lib/streams.py:220 zerver/lib/streams.py:222
+#: zerver/lib/streams.py:231 zerver/lib/streams.py:1543
+#: zerver/lib/streams.py:1598 zerver/lib/user_groups.py:168
+#: zerver/lib/user_groups.py:194 zerver/lib/user_groups.py:365
+#: zerver/lib/user_groups.py:461 zerver/lib/users.py:204
+#: zerver/lib/users.py:271 zerver/lib/users.py:300 zerver/lib/users.py:304
+#: zerver/views/invite.py:157 zerver/views/invite.py:278
+#: zerver/views/message_summary.py:31 zerver/views/presence.py:53
+#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:390
+#: zerver/views/streams.py:393 zerver/views/streams.py:402
+#: zerver/views/streams.py:446 zerver/views/streams.py:889
 msgid "Insufficient permission"
 msgstr "دسترسی کافی ندارید"
 
@@ -329,8 +329,8 @@ msgstr "توکن دسترسی به صورت‌حساب منقضی شده است.
 msgid "Invalid billing access token."
 msgstr "توکن دسترسی به صورتحساب نامعتبر"
 
-#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1476
-#: zilencer/views.py:1501
+#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1500
+#: zilencer/views.py:1525
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
@@ -4861,7 +4861,7 @@ msgstr "روش اعتبارسنجی نامعتبر: {name}. روش‌های مع
 msgid "Authentication method {name} is not available on your current plan."
 msgstr "روش اعتبارسنجی {name} در طرح جاری شما در دسترس نیست."
 
-#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:385
+#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:375
 msgid "Moderation request channel must be private."
 msgstr "کانال درخواست مدیریت باید خصوصی باشد."
 
@@ -4949,7 +4949,7 @@ msgstr ""
 "داد."
 
 #: zerver/actions/streams.py:1560 zerver/actions/streams.py:1562
-#: zerver/views/streams.py:1141
+#: zerver/views/streams.py:1056
 msgid "No description."
 msgstr "بدون توضیح"
 
@@ -5116,7 +5116,7 @@ msgid "Subdomain reserved. Please choose a different one."
 msgstr "زیردامنه محفوظ است. لطفا یکی دیگر را انتخاب کنید."
 
 #: zerver/forms.py:134 zerver/forms.py:304 zerver/lib/email_validation.py:111
-#: zilencer/views.py:230
+#: zilencer/views.py:244
 msgid "Please use your real email address."
 msgstr "لطفا از آدرس ایمیل واقعی خود استفاده کنید."
 
@@ -6088,13 +6088,19 @@ msgstr ""
 "زمان‌های جهانی و چیزهای دیگر آشنا شوید.\n"
 
 #: zerver/lib/onboarding.py:262
-#, python-brace-format
+#, fuzzy, python-brace-format
+#| msgid ""
+#| "\n"
+#| "Here are a few messages I understand: {bot_commands}\n"
+#| "\n"
+#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
+#| "or browse the [Help center](/help/) to learn more!\n"
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
 "\n"
 "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-"or browse the [Help center](/help/) to learn more!\n"
+"or browse the [help center](/help/) to learn more!\n"
 msgstr ""
 "\n"
 "اینجا چند پیام هست که من متوجه می‌شوم: {bot_commands}\n"
@@ -6331,7 +6337,7 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "گزینه‌های GCM نامعتبر برای بانسر:  {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:729 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:729 zilencer/views.py:682
 msgid "Token does not exist"
 msgstr "توکن وجود ندارد"
 
@@ -6397,8 +6403,8 @@ msgstr ""
 msgid "Invalid data type for channel ID"
 msgstr "داده نامعتبر برای شناسه کانال"
 
-#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:619
-#: zerver/lib/streams.py:635 zerver/tornado/views.py:229
+#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:621
+#: zerver/lib/streams.py:637 zerver/tornado/views.py:229
 #: zerver/views/events_register.py:75 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
@@ -6473,7 +6479,7 @@ msgstr "خطای bouncer اعلان فشاری: {error}"
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr "امکان تشخیص بین آرگومان های '{var_name1}' و '{var_name2}' وجود ندارد"
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:680 zerver/views/typing.py:47
+#: zerver/lib/request.py:83 zerver/lib/streams.py:682 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr "آرگومان '{var_name}' خالی است"
@@ -6492,45 +6498,45 @@ msgstr "پیام برنامه‌ریزی شده وجود ندارد"
 msgid "{service_name} account security"
 msgstr "امنیت اکانت {service_name}"
 
-#: zerver/lib/streams.py:222 zerver/views/streams.py:381
+#: zerver/lib/streams.py:224 zerver/views/streams.py:371
 msgid "A default channel cannot be private."
 msgstr "یک کانال پیش‌فرض نمی‌تواند خصوصی باشد."
 
-#: zerver/lib/streams.py:225 zerver/views/streams.py:410
+#: zerver/lib/streams.py:227 zerver/views/streams.py:400
 msgid "Web-public channels are not enabled."
 msgstr "کانال‌های عمومی وب فعال نیستند."
 
-#: zerver/lib/streams.py:582 zerver/lib/streams.py:590
+#: zerver/lib/streams.py:584 zerver/lib/streams.py:592
 msgid "You do not have permission to post in this channel."
 msgstr "شما اجازه ندارید در این کانال پست ارسال کنید."
 
-#: zerver/lib/streams.py:626 zerver/lib/streams.py:672
+#: zerver/lib/streams.py:628 zerver/lib/streams.py:674
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr "برای ارسال مطلب در کانال '{channel_name}' تایید اعتبار نشده است"
 
-#: zerver/lib/streams.py:768 zerver/lib/streams.py:803
-#: zerver/lib/streams.py:932 zerver/lib/streams.py:959
-#: zerver/lib/streams.py:1034 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:770 zerver/lib/streams.py:805
+#: zerver/lib/streams.py:934 zerver/lib/streams.py:961
+#: zerver/lib/streams.py:1036 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr "شناسه نامعتبر کانال"
 
-#: zerver/lib/streams.py:1006
+#: zerver/lib/streams.py:1008
 msgid "You can only invite other Zephyr mirroring users to private channels."
 msgstr ""
 "شما تنها می‌توانید کاربران آیینه‌ای Zephyr را یه کانال‌های خصوصی دعوت کنید."
 
-#: zerver/lib/streams.py:1017 zerver/lib/streams.py:1154
+#: zerver/lib/streams.py:1019 zerver/lib/streams.py:1156
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr "نام نامعتبر برای کانال '{channel_name}'"
 
-#: zerver/lib/streams.py:1569
+#: zerver/lib/streams.py:1615
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr "کانال(ها) ({channel_names}) وجود ندارند"
 
-#: zerver/lib/streams.py:1606
+#: zerver/lib/streams.py:1685
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr "گروه کانال پیش‌فرض با شناسه '{group_id}' وجود ندارد."
@@ -6733,41 +6739,41 @@ msgstr "گروه کاربر اشتباه است"
 msgid "Invalid system group name."
 msgstr "نام گروه سیستمی، نامعتبر است."
 
-#: zerver/lib/user_groups.py:354 zerver/lib/user_groups.py:450
+#: zerver/lib/user_groups.py:356 zerver/lib/user_groups.py:452
 #, python-brace-format
 msgid "Invalid user group ID: {group_id}"
 msgstr "شناسه گروه کاربری نامعتبر: {group_id}"
 
-#: zerver/lib/user_groups.py:385
+#: zerver/lib/user_groups.py:387
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr "تنظیم '{setting_name}' را نمی‌توان روی گروه 'role:internet' تنظیم کرد."
 
-#: zerver/lib/user_groups.py:395
+#: zerver/lib/user_groups.py:397
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr "تنظیم '{setting_name}' را نمی‌توان روی گروه 'role:nobody' تنظیم کرد."
 
-#: zerver/lib/user_groups.py:405
+#: zerver/lib/user_groups.py:407
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr "تنظیم '{setting_name}' را نمی‌توان روی گروه 'role:everyone' تنظیم کرد."
 
-#: zerver/lib/user_groups.py:415
+#: zerver/lib/user_groups.py:417
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr "تنظیم '{setting_name}' را نمی‌توان روی گروه  '{group_name}'  تنظیم کرد."
 
-#: zerver/lib/user_groups.py:524
+#: zerver/lib/user_groups.py:526
 msgid "User group name can't be empty!"
 msgstr "گروه کاربری نمی‌تواند خالی باشد!"
 
-#: zerver/lib/user_groups.py:528
+#: zerver/lib/user_groups.py:530
 #, python-brace-format
 msgid "User group name cannot exceed {max_length} characters."
 msgstr "نام گروه نمی‌تواند از {max_length} کاراکتر فراتر رود."
 
-#: zerver/lib/user_groups.py:536
+#: zerver/lib/user_groups.py:538
 #, python-brace-format
 msgid "User group name cannot start with '{prefix}'."
 msgstr "نام گروه نمی‌تواند با کاراکتر '{prefix}' آغاز شود."
@@ -7024,7 +7030,7 @@ msgstr "حساب کاربری خارجی"
 msgid "Pronouns"
 msgstr "ضمایر"
 
-#: zerver/models/groups.py:22 zerver/models/users.py:318
+#: zerver/models/groups.py:22 zerver/models/users.py:316
 msgid "Nobody"
 msgstr "هیچ کس"
 
@@ -7180,43 +7186,43 @@ msgstr "سابقه محافظت شده، خصوصی"
 msgid "Public, protected history"
 msgstr "عمومی،‌سابقه محافظت شده"
 
-#: zerver/models/users.py:314
+#: zerver/models/users.py:312
 msgid "Admins, moderators, members and guests"
 msgstr "ادمین‌ها، مدیران، اعضا و مهمان‌ها"
 
-#: zerver/models/users.py:315
+#: zerver/models/users.py:313
 msgid "Admins, moderators and members"
 msgstr "ادمین‌ها، مدیران و اعضا"
 
-#: zerver/models/users.py:316
+#: zerver/models/users.py:314
 msgid "Admins and moderators"
 msgstr "ادمین‌ها و مدیران"
 
-#: zerver/models/users.py:317
+#: zerver/models/users.py:315
 msgid "Admins only"
 msgstr "فقط ادمین‌ها"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:517
 msgid "Unknown user"
 msgstr "کاربر ناشناس"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:683
 msgid "Organization owner"
 msgstr "مالک سازمان"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:684
 msgid "Organization administrator"
 msgstr "ادمین سازمان"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:685
 msgid "Moderator"
 msgstr "مجری"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:686
 msgid "Member"
 msgstr "عضو"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:687
 msgid "Guest"
 msgstr "مهمان"
 
@@ -7734,89 +7740,89 @@ msgstr "قالب درخواست نامعتبر"
 msgid "Invalid DSN"
 msgstr "DSN نامعتبر"
 
-#: zerver/views/streams.py:185
+#: zerver/views/streams.py:175
 msgid "Private channels cannot be made default."
 msgstr "کانال‌های خصوصی نمی‌توانند پیش‌فرض باشند."
 
-#: zerver/views/streams.py:219
+#: zerver/views/streams.py:209
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr ""
 "شما باید یکی از پارامترهای \"توضیحات جدید\" یا \"نام گروه جدید\" را وارد "
 "کنید."
 
-#: zerver/views/streams.py:250
+#: zerver/views/streams.py:240
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 "مقدار \"op\" اشتباه است. یکی از مقادیر \"add\" یا \"remove\" را استفاده کنید."
 
-#: zerver/views/streams.py:365 zerver/views/streams.py:369
-#: zerver/views/streams.py:377
+#: zerver/views/streams.py:355 zerver/views/streams.py:359
+#: zerver/views/streams.py:367
 msgid "Invalid parameters"
 msgstr "پارامترهای نامعتبر"
 
-#: zerver/views/streams.py:393 zerver/views/streams.py:507
+#: zerver/views/streams.py:383 zerver/views/streams.py:497
 msgid "Channel content access is required."
 msgstr "دسترسی به محتوای کانال الزامی است."
 
-#: zerver/views/streams.py:463
+#: zerver/views/streams.py:453
 msgid "Channel already has that name."
 msgstr "کانال در حال حاضر همین نام را دارد."
 
-#: zerver/views/streams.py:576 zerver/views/user_groups.py:511
+#: zerver/views/streams.py:566 zerver/views/user_groups.py:511
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 "کاری برای انجام نیست. حداقل یک مورد از \"add\" یا \"delete\" را مشخص کنید."
 
-#: zerver/views/streams.py:653
+#: zerver/views/streams.py:643
 #, fuzzy, python-brace-format
 #| msgid "{user_full_name} subscribed you to the channel {channel_name}."
 msgid "{user_full_name} subscribed you to {channel_name}."
 msgstr "کاربر {user_full_name} شما را عضو کانال {channel_name} کرد."
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:649
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr "کاربر {user_full_name} شما را عضو کانال‌های زیر کرد:"
 
-#: zerver/views/streams.py:969
+#: zerver/views/streams.py:884
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
 msgstr "دسترسی به کانال ({channel_name}) ممکن نیست."
 
-#: zerver/views/streams.py:1105
+#: zerver/views/streams.py:1020
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
 msgstr "{user_name} این کانال‌‌ها را ایجاد کرد: {new_channels}."
 
-#: zerver/views/streams.py:1107
+#: zerver/views/streams.py:1022
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
 msgstr "{user_name} یک کانال جدید ایجاد کرد {new_channels}."
 
-#: zerver/views/streams.py:1108
+#: zerver/views/streams.py:1023
 msgid "new channels"
 msgstr "کانال‌های جدید"
 
-#: zerver/views/streams.py:1156
+#: zerver/views/streams.py:1071
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid "**Web-public** channel created by {user_name}. **Description:**"
 msgstr "**{policy}** کانال ساخته شده توسط {user_name}. **شرح:**"
 
-#: zerver/views/streams.py:1160
+#: zerver/views/streams.py:1075
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid "**Public** channel created by {user_name}. **Description:**"
 msgstr "**{policy}** کانال ساخته شده توسط {user_name}. **شرح:**"
 
-#: zerver/views/streams.py:1164
+#: zerver/views/streams.py:1079
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid ""
 "**Private, shared history** channel created by {user_name}. **Description:**"
 msgstr "**{policy}** کانال ساخته شده توسط {user_name}. **شرح:**"
 
-#: zerver/views/streams.py:1168
+#: zerver/views/streams.py:1083
 #, fuzzy, python-brace-format
 #| msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgid ""
@@ -7824,17 +7830,17 @@ msgid ""
 "**"
 msgstr "**{policy}** کانال ساخته شده توسط {user_name}. **شرح:**"
 
-#: zerver/views/streams.py:1403
+#: zerver/views/streams.py:1318
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} یک مقدار بولی نیست"
 
-#: zerver/views/streams.py:1406
+#: zerver/views/streams.py:1321
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "ویژگی عضویت ناشناخته: {property}"
 
-#: zerver/views/streams.py:1454
+#: zerver/views/streams.py:1369
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr "عضو کانال با شناسه {channel_id} نیست"
@@ -8215,45 +8221,50 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "باید با کلید صحیح API سرور زولیپ اعتبارسنجی شود"
 
 #. error
-#: zilencer/views.py:121 zilencer/views.py:123
+#: zilencer/views.py:122 zilencer/views.py:124
 msgid "Invalid UUID"
 msgstr "UUID نامعتبر"
 
 #. error
-#: zilencer/views.py:128
+#: zilencer/views.py:129
 msgid "Invalid token type"
 msgstr "نوع توکن نامعتبر است"
 
-#: zilencer/views.py:165
+#: zilencer/views.py:166
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr "{hostname} شامل اجزای نامعتبر (مانند مسیر، کوئری، قطعه کد) است."
 
-#: zilencer/views.py:172
+#: zilencer/views.py:173
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr "{hostname} یک نام میزبان معتبر نیست"
 
-#: zilencer/views.py:182
+#: zilencer/views.py:183
 #, python-brace-format
 msgid "{hostname} not yet registered"
 msgstr "{hostname} هنوز ثبت نشده است"
 
-#: zilencer/views.py:234
-msgid "Invalid email address."
-msgstr "آدرس ایمیل نامعتبر."
+#: zilencer/views.py:204
+#, python-brace-format
+msgid "Invalid server administrator email address: {email_reason}"
+msgstr ""
 
-#: zilencer/views.py:250
+#: zilencer/views.py:248
+msgid "example.com is not a valid email domain."
+msgstr ""
+
+#: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
 msgstr "{domain} نامعتبر است به خاطر آنکه رکورد MX ندارد"
 
-#: zilencer/views.py:255
+#: zilencer/views.py:278
 #, python-brace-format
 msgid "{domain} does not exist"
 msgstr "{domain} موجود نیست"
 
-#: zilencer/views.py:354
+#: zilencer/views.py:378
 #, python-brace-format
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
@@ -8262,28 +8273,28 @@ msgstr ""
 "محدودیت‌های جهانی استفاده از این نقطه پایانی، تمام شده است. لطفاً بعداً دوباره "
 "امتحان کنید یا برای کمک با {support_email} تماس بگیرید."
 
-#: zilencer/views.py:362
+#: zilencer/views.py:386
 msgid "Registration not found for this hostname"
 msgstr "ثبت نام برای این نام میزبان یافت نشد"
 
-#: zilencer/views.py:374
+#: zilencer/views.py:398
 msgid "The host reported it has no verification secret."
 msgstr "میزبان گزارش داد که هیچ رمز اعتبارسنجی ندارد."
 
-#: zilencer/views.py:376
+#: zilencer/views.py:400
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
 msgstr "پاسخ خطا از میزبان دریافت شد: {status_code}"
 
-#: zilencer/views.py:466
+#: zilencer/views.py:490
 msgid "Missing ios_app_id"
 msgstr "ios_app_id گم شده است"
 
-#: zilencer/views.py:469
+#: zilencer/views.py:493
 msgid "Missing user_id or user_uuid"
 msgstr "شناسه کاربری یا uuid کاربر گم شده است"
 
-#: zilencer/views.py:852
+#: zilencer/views.py:876
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
@@ -8292,28 +8303,28 @@ msgstr ""
 "طرح شما، اجازه نمی‌دهد که اعلان فشاری بفرستید. دلایل ارائه شده توسط سرور: "
 "{reason}"
 
-#: zilencer/views.py:900
+#: zilencer/views.py:924
 msgid "Your plan doesn't allow sending push notifications."
 msgstr "طرح شما اجازه ارسال اعلان‌های فشاری را نمی‌دهد."
 
-#: zilencer/views.py:1115
+#: zilencer/views.py:1139
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr "دارایی نامعتبر {property}"
 
-#: zilencer/views.py:1118
+#: zilencer/views.py:1142
 msgid "Invalid event type."
 msgstr "نوع رویداد نامعتبر است."
 
-#: zilencer/views.py:1125
+#: zilencer/views.py:1149
 msgid "Data is out of order."
 msgstr "داده خارج از ترتیب است."
 
-#: zilencer/views.py:1230
+#: zilencer/views.py:1254
 msgid "Duplicate registration detected."
 msgstr "ثبت نام تکراری تشخیص داده شد."
 
-#: zilencer/views.py:1648
+#: zilencer/views.py:1672
 msgid "Malformed audit log data"
 msgstr "گزارش لاگ داده‌ها نادرست است"
 
@@ -8321,17 +8332,20 @@ msgstr "گزارش لاگ داده‌ها نادرست است"
 msgid "You need to reset your password."
 msgstr "لازم است که کلمه عبور خود را جایگزین کنید."
 
-#: zproject/backends.py:2821
+#: zproject/backends.py:2827
 msgid "Missing id_token parameter"
 msgstr "پارامتر id_token گم شده"
 
-#: zproject/backends.py:3545
+#: zproject/backends.py:3551
 msgid "Invalid OTP"
 msgstr "OTP اشتباه است"
 
-#: zproject/backends.py:3548
+#: zproject/backends.py:3554
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "نمی توان از mobile_flow_otp و desktop_flow_otp با هم استفاده کرد."
+
+#~ msgid "Invalid email address."
+#~ msgstr "آدرس ایمیل نامعتبر."
 
 #~ msgid "Channel name is already in use."
 #~ msgstr "نام کانال قبلاً استفاده شده‌است."
