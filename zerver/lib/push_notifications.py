@@ -1032,16 +1032,29 @@ def get_message_payload(
             data["channel_id"] = channel_id
 
         data["topic"] = get_topic_display_name(message.topic_name(), user_profile.default_language)
-    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        data["recipient_type"] = "private" if for_legacy_clients else "direct"
-        # For group DMs, we need to fetch the users for the pm_users field.
-        # Note that this doesn't do a separate database query, because both
-        # functions use the get_display_recipient_by_id cache.
-        recipients = get_display_recipient(message.recipient)
-        if len(recipients) > 2:
-            data["pm_users"] = direct_message_group_users(message.recipient.id)
-    else:  # Recipient.PERSONAL
-        data["recipient_type"] = "private" if for_legacy_clients else "direct"
+    else:
+        assert message.recipient.type in [Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP]
+        if for_legacy_clients:
+            data["recipient_type"] = "private"
+            if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+                # For group DMs, we need to fetch the users for the pm_users field.
+                # Note that this doesn't do a separate database query, because both
+                # functions use the get_display_recipient_by_id cache.
+                recipients = get_display_recipient(message.recipient)
+                if len(recipients) > 2:
+                    data["pm_users"] = direct_message_group_users(message.recipient.id)
+        else:
+            data["recipient_type"] = "direct"
+            # For 1:1 and group DMs, we need to fetch the users for the `recipient_user_ids`
+            # field. Note that this doesn't do a separate database query, because it uses
+            # the `get_display_recipient_by_id` cache.
+            display_recipients = get_display_recipient(message.recipient)
+            recipient_user_ids = set(
+                display_recipient["id"] for display_recipient in display_recipients
+            )
+            if len(recipient_user_ids) == 1:  # Recipient.PERSONAL
+                recipient_user_ids.add(message.sender_id)
+            data["recipient_user_ids"] = sorted(recipient_user_ids)
 
     return data
 

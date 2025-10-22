@@ -733,6 +733,43 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             "user_id": hamlet.id,
             "sender_id": aaron.id,
             "recipient_type": "direct",
+            "recipient_user_ids": sorted([aaron.id, hamlet.id]),
+            "type": "message",
+            "message_id": message_id,
+            "time": datetime_to_timestamp(time_now),
+            "content": "test content",
+            "sender_full_name": aaron.full_name,
+            "sender_avatar_url": absolute_avatar_url(aaron),
+        }
+        with mock.patch("zerver.lib.push_notifications.send_push_notifications") as m:
+            handle_push_notification(hamlet.id, missed_message)
+
+            self.assertEqual(m.call_args.args[1], expected_payload_data_to_encrypt)
+
+    def test_payload_data_to_encrypt_group_direct_message(self) -> None:
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+
+        time_now = now()
+        self.register_push_devices_for_notification()
+        with time_machine.travel(time_now, tick=False):
+            message_id = self.send_group_direct_message(
+                from_user=aaron, to_users=[hamlet, cordelia], skip_capture_on_commit_callbacks=True
+            )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        expected_payload_data_to_encrypt = {
+            "realm_url": realm.url,
+            "realm_name": realm.name,
+            "user_id": hamlet.id,
+            "sender_id": aaron.id,
+            "recipient_type": "direct",
+            "recipient_user_ids": sorted([aaron.id, cordelia.id, hamlet.id]),
             "type": "message",
             "message_id": message_id,
             "time": datetime_to_timestamp(time_now),

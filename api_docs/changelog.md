@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 429**
+
+* Replaced the `pm_users` field with `recipient_user_ids` in
+[E2EE mobile push notifications payload](/api/mobile-notifications)
+for group direct message. Previously, `pm_users` was included only
+for group DMs; `recipient_user_ids` is present for both 1:1 and
+group DM conversations.
+
 **Feature level 428**
 
 * [`GET /events`](/api/get-events): When a user is deactivated,
