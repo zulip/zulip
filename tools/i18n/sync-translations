@@ -101,7 +101,7 @@ else
     git branch -D "$local_branch"
 
     echo "Waiting for PR to merge..."
-    while [ "$(gh pr list --search "$commit" --state all --json state --jq .[0].state)" == "OPEN" ]; do
+    while [ "$(gh pr list --search "$commit" --state all --json state --jq .[0].state)" != "MERGED" ]; do
         sleep 30
     done
 
