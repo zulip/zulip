@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 16:10+0000\n"
+"POT-Creation-Date: 2025-10-22 02:09+0000\n"
 "PO-Revision-Date: 2025-10-11 04:07+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
@@ -263,18 +263,18 @@ msgid "Session not found"
 msgstr "找不到工作階段"
 
 #: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
-#: zerver/lib/streams.py:142 zerver/lib/streams.py:216
-#: zerver/lib/streams.py:218 zerver/lib/streams.py:220
-#: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
-#: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
-#: zerver/lib/user_groups.py:363 zerver/lib/user_groups.py:459
-#: zerver/lib/users.py:204 zerver/lib/users.py:271 zerver/lib/users.py:300
-#: zerver/lib/users.py:304 zerver/views/invite.py:157
-#: zerver/views/invite.py:278 zerver/views/message_summary.py:31
-#: zerver/views/presence.py:53 zerver/views/realm_emoji.py:35
-#: zerver/views/streams.py:400 zerver/views/streams.py:403
-#: zerver/views/streams.py:412 zerver/views/streams.py:456
-#: zerver/views/streams.py:698 zerver/views/streams.py:974
+#: zerver/lib/streams.py:144 zerver/lib/streams.py:218
+#: zerver/lib/streams.py:220 zerver/lib/streams.py:222
+#: zerver/lib/streams.py:231 zerver/lib/streams.py:1543
+#: zerver/lib/streams.py:1598 zerver/lib/user_groups.py:168
+#: zerver/lib/user_groups.py:194 zerver/lib/user_groups.py:365
+#: zerver/lib/user_groups.py:461 zerver/lib/users.py:204
+#: zerver/lib/users.py:271 zerver/lib/users.py:300 zerver/lib/users.py:304
+#: zerver/views/invite.py:157 zerver/views/invite.py:278
+#: zerver/views/message_summary.py:31 zerver/views/presence.py:53
+#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:390
+#: zerver/views/streams.py:393 zerver/views/streams.py:402
+#: zerver/views/streams.py:446 zerver/views/streams.py:889
 msgid "Insufficient permission"
 msgstr "權限不足"
 
@@ -311,8 +311,8 @@ msgstr "計費存取權杖已過期。"
 msgid "Invalid billing access token."
 msgstr "無效的計費存取權杖。"
 
-#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1476
-#: zilencer/views.py:1501
+#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1500
+#: zilencer/views.py:1525
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
@@ -4628,7 +4628,7 @@ msgstr "無效的認證方法：{name}。有效的方法有：{methods}"
 msgid "Authentication method {name} is not available on your current plan."
 msgstr "認證方法 {name} 在您目前的方案中不可用。"
 
-#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:385
+#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:375
 msgid "Moderation request channel must be private."
 msgstr "審核請求頻道必須是私人的。"
 
@@ -4710,7 +4710,7 @@ msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
 msgstr "{user_name} 將頻道 {old_channel_name} 重新命名為 {new_channel_name}。"
 
 #: zerver/actions/streams.py:1560 zerver/actions/streams.py:1562
-#: zerver/views/streams.py:1141
+#: zerver/views/streams.py:1056
 msgid "No description."
 msgstr "無敘述。"
 
@@ -4874,7 +4874,7 @@ msgid "Subdomain reserved. Please choose a different one."
 msgstr "子域名已被保留。請選擇不同的子域名。"
 
 #: zerver/forms.py:134 zerver/forms.py:304 zerver/lib/email_validation.py:111
-#: zilencer/views.py:230
+#: zilencer/views.py:244
 msgid "Please use your real email address."
 msgstr "請使用您真正的 email 地址。"
 
@@ -5809,13 +5809,19 @@ msgstr ""
 "隱藏內容、全域時間等功能。\n"
 
 #: zerver/lib/onboarding.py:262
-#, python-brace-format
+#, fuzzy, python-brace-format
+#| msgid ""
+#| "\n"
+#| "Here are a few messages I understand: {bot_commands}\n"
+#| "\n"
+#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
+#| "or browse the [Help center](/help/) to learn more!\n"
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
 "\n"
 "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-"or browse the [Help center](/help/) to learn more!\n"
+"or browse the [help center](/help/) to learn more!\n"
 msgstr ""
 "\n"
 "以下是我能理解的一些訊息：{bot_commands}\n"
@@ -6043,7 +6049,7 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "傳送到 bouncer 的 GCM 選項無效：{options}"
 
 #. error
-#: zerver/lib/push_notifications.py:729 zilencer/views.py:658
+#: zerver/lib/push_notifications.py:729 zilencer/views.py:682
 msgid "Token does not exist"
 msgstr "Token 不存在"
 
@@ -6105,8 +6111,8 @@ msgstr "伺服器上的推播通知設定有問題，請聯繫伺服器管理員
 msgid "Invalid data type for channel ID"
 msgstr "頻道 ID 的資料類型無效"
 
-#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:619
-#: zerver/lib/streams.py:635 zerver/tornado/views.py:229
+#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:621
+#: zerver/lib/streams.py:637 zerver/tornado/views.py:229
 #: zerver/views/events_register.py:75 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
@@ -6182,7 +6188,7 @@ msgstr "推送通知轉發器錯誤：{error}"
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr "不能從 '{var_name1}' 和 '{var_name2}' 之中決定參數"
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:680 zerver/views/typing.py:47
+#: zerver/lib/request.py:83 zerver/lib/streams.py:682 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr "缺少 '{var_name}' 參數"
@@ -6201,44 +6207,44 @@ msgstr "排程訊息不存在"
 msgid "{service_name} account security"
 msgstr "{service_name} 帳戶安全"
 
-#: zerver/lib/streams.py:222 zerver/views/streams.py:381
+#: zerver/lib/streams.py:224 zerver/views/streams.py:371
 msgid "A default channel cannot be private."
 msgstr "預設頻道不能是私人頻道。"
 
-#: zerver/lib/streams.py:225 zerver/views/streams.py:410
+#: zerver/lib/streams.py:227 zerver/views/streams.py:400
 msgid "Web-public channels are not enabled."
 msgstr "網路公開頻道未啟用。"
 
-#: zerver/lib/streams.py:582 zerver/lib/streams.py:590
+#: zerver/lib/streams.py:584 zerver/lib/streams.py:592
 msgid "You do not have permission to post in this channel."
 msgstr "您沒有權限在此頻道發佈訊息。"
 
-#: zerver/lib/streams.py:626 zerver/lib/streams.py:672
+#: zerver/lib/streams.py:628 zerver/lib/streams.py:674
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr "沒有傳送到頻道 '{channel_name}' 的授權"
 
-#: zerver/lib/streams.py:768 zerver/lib/streams.py:803
-#: zerver/lib/streams.py:932 zerver/lib/streams.py:959
-#: zerver/lib/streams.py:1034 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:770 zerver/lib/streams.py:805
+#: zerver/lib/streams.py:934 zerver/lib/streams.py:961
+#: zerver/lib/streams.py:1036 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr "頻道 ID 無效"
 
-#: zerver/lib/streams.py:1006
+#: zerver/lib/streams.py:1008
 msgid "You can only invite other Zephyr mirroring users to private channels."
 msgstr "您只能邀請其他 Zephyr 鏡像使用者到封閉頻道。"
 
-#: zerver/lib/streams.py:1017 zerver/lib/streams.py:1154
+#: zerver/lib/streams.py:1019 zerver/lib/streams.py:1156
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr "頻道名稱 '{channel_name}' 無效"
 
-#: zerver/lib/streams.py:1569
+#: zerver/lib/streams.py:1615
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr "頻道 ({channel_names}) 不存在"
 
-#: zerver/lib/streams.py:1606
+#: zerver/lib/streams.py:1685
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr "ID 為 '{group_id}' 的預設頻道群組不存在。"
@@ -6440,42 +6446,42 @@ msgstr "無效的使用者群組"
 msgid "Invalid system group name."
 msgstr "無效的系統群組名稱。"
 
-#: zerver/lib/user_groups.py:354 zerver/lib/user_groups.py:450
+#: zerver/lib/user_groups.py:356 zerver/lib/user_groups.py:452
 #, python-brace-format
 msgid "Invalid user group ID: {group_id}"
 msgstr "無效的使用者群組 ID：{group_id}"
 
-#: zerver/lib/user_groups.py:385
+#: zerver/lib/user_groups.py:387
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr ""
 "「{setting_name}」設定無法指定為「所有網際網路使用者（role:internet）」群組。"
 
-#: zerver/lib/user_groups.py:395
+#: zerver/lib/user_groups.py:397
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr "「{setting_name}」設定無法指定為「無人（role:nobody）」群組。"
 
-#: zerver/lib/user_groups.py:405
+#: zerver/lib/user_groups.py:407
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr "「{setting_name}」設定無法指定為「所有人（role:everyone）」群組。"
 
-#: zerver/lib/user_groups.py:415
+#: zerver/lib/user_groups.py:417
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr "「{setting_name}」設定無法指定為「{group_name}」群組。"
 
-#: zerver/lib/user_groups.py:524
+#: zerver/lib/user_groups.py:526
 msgid "User group name can't be empty!"
 msgstr "使用者群組名稱不能為空！"
 
-#: zerver/lib/user_groups.py:528
+#: zerver/lib/user_groups.py:530
 #, python-brace-format
 msgid "User group name cannot exceed {max_length} characters."
 msgstr "使用者群組名稱不得超過 {max_length} 個字元。"
 
-#: zerver/lib/user_groups.py:536
+#: zerver/lib/user_groups.py:538
 #, python-brace-format
 msgid "User group name cannot start with '{prefix}'."
 msgstr "使用者群組名稱不能以 '{prefix}' 開頭。"
@@ -6730,7 +6736,7 @@ msgstr "外部帳戶"
 msgid "Pronouns"
 msgstr "代名詞"
 
-#: zerver/models/groups.py:22 zerver/models/users.py:318
+#: zerver/models/groups.py:22 zerver/models/users.py:316
 msgid "Nobody"
 msgstr "沒有人"
 
@@ -6885,43 +6891,43 @@ msgstr "封閉，受保護歷史記錄"
 msgid "Public, protected history"
 msgstr "公開，受保護歷史記錄"
 
-#: zerver/models/users.py:314
+#: zerver/models/users.py:312
 msgid "Admins, moderators, members and guests"
 msgstr "管理者、版主、成員和訪客"
 
-#: zerver/models/users.py:315
+#: zerver/models/users.py:313
 msgid "Admins, moderators and members"
 msgstr "管理者、版主和成員"
 
-#: zerver/models/users.py:316
+#: zerver/models/users.py:314
 msgid "Admins and moderators"
 msgstr "管理員和版主"
 
-#: zerver/models/users.py:317
+#: zerver/models/users.py:315
 msgid "Admins only"
 msgstr "只允許管理者"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:517
 msgid "Unknown user"
 msgstr "未知的使用者"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:683
 msgid "Organization owner"
 msgstr "組織擁有者"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:684
 msgid "Organization administrator"
 msgstr "組織管理員"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:685
 msgid "Moderator"
 msgstr "版主"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:686
 msgid "Member"
 msgstr "成員"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:687
 msgid "Guest"
 msgstr "訪客"
 
@@ -7423,98 +7429,98 @@ msgstr "無效的請求格式"
 msgid "Invalid DSN"
 msgstr "無效的 DSN"
 
-#: zerver/views/streams.py:185
+#: zerver/views/streams.py:175
 msgid "Private channels cannot be made default."
 msgstr "封閉頻道不能設為預設。"
 
-#: zerver/views/streams.py:219
+#: zerver/views/streams.py:209
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr "您必須傳遞 \"new_description\" 或 \"new_group_name\"。"
 
-#: zerver/views/streams.py:250
+#: zerver/views/streams.py:240
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr "\"op\" 值無效。請指定 \"add\" 或 \"remove\"。"
 
-#: zerver/views/streams.py:365 zerver/views/streams.py:369
-#: zerver/views/streams.py:377
+#: zerver/views/streams.py:355 zerver/views/streams.py:359
+#: zerver/views/streams.py:367
 msgid "Invalid parameters"
 msgstr "無效參數"
 
-#: zerver/views/streams.py:393 zerver/views/streams.py:507
+#: zerver/views/streams.py:383 zerver/views/streams.py:497
 msgid "Channel content access is required."
 msgstr "需要頻道內容存取權限。"
 
-#: zerver/views/streams.py:463
+#: zerver/views/streams.py:453
 msgid "Channel already has that name."
 msgstr "頻道已使用該名稱。"
 
-#: zerver/views/streams.py:576 zerver/views/user_groups.py:511
+#: zerver/views/streams.py:566 zerver/views/user_groups.py:511
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "沒有要做的事。請至少指定 \"add\" 或 \"delete\" 其中一個。"
 
-#: zerver/views/streams.py:653
+#: zerver/views/streams.py:643
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
 msgstr "{user_full_name} 已為您訂閱 {channel_name}。"
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:649
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr "{user_full_name} 已將你加入下列頻道："
 
-#: zerver/views/streams.py:969
+#: zerver/views/streams.py:884
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
 msgstr "無法存取頻道 ({channel_name})。"
 
-#: zerver/views/streams.py:1105
+#: zerver/views/streams.py:1020
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
 msgstr "{user_name} 建立了以下頻道：{new_channels}。"
 
-#: zerver/views/streams.py:1107
+#: zerver/views/streams.py:1022
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
 msgstr "{user_name} 建立了新頻道 {new_channels}。"
 
-#: zerver/views/streams.py:1108
+#: zerver/views/streams.py:1023
 msgid "new channels"
 msgstr "新頻道"
 
-#: zerver/views/streams.py:1156
+#: zerver/views/streams.py:1071
 #, python-brace-format
 msgid "**Web-public** channel created by {user_name}. **Description:**"
 msgstr "由 {user_name} 建立的 **網路公共** 頻道。**描述：**"
 
-#: zerver/views/streams.py:1160
+#: zerver/views/streams.py:1075
 #, python-brace-format
 msgid "**Public** channel created by {user_name}. **Description:**"
 msgstr "由 {user_name} 建立的 **公開** 頻道。**描述：**"
 
-#: zerver/views/streams.py:1164
+#: zerver/views/streams.py:1079
 #, python-brace-format
 msgid ""
 "**Private, shared history** channel created by {user_name}. **Description:**"
 msgstr "由 {user_name} 建立的 **私人，分享過往訊息** 頻道。**描述：**"
 
-#: zerver/views/streams.py:1168
+#: zerver/views/streams.py:1083
 #, python-brace-format
 msgid ""
 "**Private, protected history** channel created by {user_name}. **Description:"
 "**"
 msgstr "由 {user_name} 建立的 **私人，保護過往訊息** 頻道。**描述：**"
 
-#: zerver/views/streams.py:1403
+#: zerver/views/streams.py:1318
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} 不是布林值"
 
-#: zerver/views/streams.py:1406
+#: zerver/views/streams.py:1321
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "未知的訂閱屬性：{property}"
 
-#: zerver/views/streams.py:1454
+#: zerver/views/streams.py:1369
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr "未訂閱頻道 ID {channel_id}"
@@ -7882,45 +7888,50 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "必須使用有效的 Zulip 伺服器 API 金鑰進行驗證"
 
 #. error
-#: zilencer/views.py:121 zilencer/views.py:123
+#: zilencer/views.py:122 zilencer/views.py:124
 msgid "Invalid UUID"
 msgstr "無效的 UUID"
 
 #. error
-#: zilencer/views.py:128
+#: zilencer/views.py:129
 msgid "Invalid token type"
 msgstr "無效的憑證類型"
 
-#: zilencer/views.py:165
+#: zilencer/views.py:166
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr "{hostname} 包含無效的組件（例如：路徑、查詢、片段）。"
 
-#: zilencer/views.py:172
+#: zilencer/views.py:173
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr "{hostname} 不是有效的主機名稱"
 
-#: zilencer/views.py:182
+#: zilencer/views.py:183
 #, python-brace-format
 msgid "{hostname} not yet registered"
 msgstr "{hostname} 尚未註冊"
 
-#: zilencer/views.py:234
-msgid "Invalid email address."
-msgstr "無效的電子郵件地址。"
+#: zilencer/views.py:204
+#, python-brace-format
+msgid "Invalid server administrator email address: {email_reason}"
+msgstr ""
 
-#: zilencer/views.py:250
+#: zilencer/views.py:248
+msgid "example.com is not a valid email domain."
+msgstr ""
+
+#: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
 msgstr "{domain} 無效，因為它沒有任何 MX 記錄"
 
-#: zilencer/views.py:255
+#: zilencer/views.py:278
 #, python-brace-format
 msgid "{domain} does not exist"
 msgstr "{domain} 不存在"
 
-#: zilencer/views.py:354
+#: zilencer/views.py:378
 #, python-brace-format
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
@@ -7929,56 +7940,56 @@ msgstr ""
 "此端點的近期使用已達到全域限制。請稍後再試，或聯絡 {support_email} 以獲得協"
 "助。"
 
-#: zilencer/views.py:362
+#: zilencer/views.py:386
 msgid "Registration not found for this hostname"
 msgstr "找不到此主機名稱的註冊資訊"
 
-#: zilencer/views.py:374
+#: zilencer/views.py:398
 msgid "The host reported it has no verification secret."
 msgstr "主機回報它沒有驗證密鑰。"
 
-#: zilencer/views.py:376
+#: zilencer/views.py:400
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
 msgstr "從主機收到錯誤回應：{status_code}"
 
-#: zilencer/views.py:466
+#: zilencer/views.py:490
 msgid "Missing ios_app_id"
 msgstr "缺少 ios_app_id"
 
-#: zilencer/views.py:469
+#: zilencer/views.py:493
 msgid "Missing user_id or user_uuid"
 msgstr "缺少 user_id 或 user_uuid"
 
-#: zilencer/views.py:852
+#: zilencer/views.py:876
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
 "server: {reason}"
 msgstr "您的方案不允許傳送推送通知。伺服器提供的原因：{reason}"
 
-#: zilencer/views.py:900
+#: zilencer/views.py:924
 msgid "Your plan doesn't allow sending push notifications."
 msgstr "您的方案不允許傳送推送通知。"
 
-#: zilencer/views.py:1115
+#: zilencer/views.py:1139
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr "無效的屬性 {property}"
 
-#: zilencer/views.py:1118
+#: zilencer/views.py:1142
 msgid "Invalid event type."
 msgstr "無效的事件類型。"
 
-#: zilencer/views.py:1125
+#: zilencer/views.py:1149
 msgid "Data is out of order."
 msgstr "資料順序錯誤。"
 
-#: zilencer/views.py:1230
+#: zilencer/views.py:1254
 msgid "Duplicate registration detected."
 msgstr "偵測到重複註冊。"
 
-#: zilencer/views.py:1648
+#: zilencer/views.py:1672
 msgid "Malformed audit log data"
 msgstr "格式錯誤的稽核紀錄資料"
 
@@ -7986,17 +7997,20 @@ msgstr "格式錯誤的稽核紀錄資料"
 msgid "You need to reset your password."
 msgstr "您需要重設密碼。"
 
-#: zproject/backends.py:2821
+#: zproject/backends.py:2827
 msgid "Missing id_token parameter"
 msgstr "缺少 id_token 參數"
 
-#: zproject/backends.py:3545
+#: zproject/backends.py:3551
 msgid "Invalid OTP"
 msgstr "無效的 OTP"
 
-#: zproject/backends.py:3548
+#: zproject/backends.py:3554
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "無法同時使用 mobile_flow_otp 和 desktop_flow_otp。"
+
+#~ msgid "Invalid email address."
+#~ msgstr "無效的電子郵件地址。"
 
 #~ msgid "Channel name is already in use."
 #~ msgstr "頻道名稱已被使用。"
