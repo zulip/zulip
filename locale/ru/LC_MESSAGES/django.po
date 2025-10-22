@@ -27,18 +27,18 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-08 15:53+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Lev Shereshevsky <Lev.Shereshevsky@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/"
-">\n"
+"PO-Revision-Date: 2025-10-21 15:27+0000\n"
+"Last-Translator: Вадим <idgart@yandex.ru>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/>"
+"\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
-"(n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"Plural-Forms: nplurals=4; plural="
+"(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 "
+": n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1516,7 +1516,7 @@ msgstr "Добро пожаловать в Zulip"
 #: templates/zerver/register.html:83 templates/zerver/reset.html:24
 #: templates/zerver/reset_confirm.html:24
 msgid "Email"
-msgstr "Адрес эл. почты"
+msgstr "Почта"
 
 #: templates/zerver/accounts_accept_terms.html:54
 #: templates/zerver/register.html:235
@@ -5495,10 +5495,9 @@ msgstr ""
 "Не авторизован: требуется аутентификация через API или пользовательский сеанс"
 
 #: zerver/lib/exceptions.py:193
-#, fuzzy, python-brace-format
-#| msgid "Channel named {channel_name} already exists"
+#, python-brace-format
 msgid "Channel '{channel_name}' already exists"
-msgstr "Канал с названием {channel_name} уже есть"
+msgstr "Канал '{channel_name}' уже есть"
 
 #: zerver/lib/exceptions.py:206
 #, python-brace-format
@@ -5912,7 +5911,7 @@ msgstr "Навигационный вид отсутствует."
 #: zerver/lib/onboarding.py:60
 #, python-brace-format
 msgid "A note from {admin_group_syntax}:"
-msgstr ""
+msgstr "Заметка от {admin_group_syntax}:"
 
 #: zerver/lib/onboarding.py:91
 #, python-brace-format
@@ -6417,25 +6416,25 @@ msgstr "Устройство не опознано отражателем push-�
 
 #: zerver/lib/push_notifications.py:1928
 msgid "No active registered push device"
-msgstr ""
+msgstr "Нет активного зарегистрированного push-устройства"
 
 #: zerver/lib/push_notifications.py:1941
-#, fuzzy
-#| msgid "Server is not configured to use push notification service."
 msgid "Network error while connecting to Zulip push notification service."
-msgstr "Сервер не настроен на использование службы push-уведомлений."
+msgstr "Ошибка сети при подключении к службе push-уведомлений Zulip."
 
 #: zerver/lib/push_notifications.py:1954
-#, fuzzy
-#| msgid "Server doesn't use the push notification service"
 msgid "Internal server error on Zulip push notification service, retry later."
-msgstr "Сервер не использует службу push-уведомлений"
+msgstr ""
+"Внутренняя ошибка сервера службы push-уведомлений Zulip, повторите попытку "
+"позже."
 
 #: zerver/lib/push_notifications.py:1968
 msgid ""
 "Push notification configuration issue on server, contact the server "
 "administrator or retry later."
 msgstr ""
+"Проблема настройки push-уведомлений на сервере, обратитесь к администратору "
+"сервера или повторите попытку позже."
 
 #: zerver/lib/recipient_parsing.py:9
 msgid "Invalid data type for channel ID"
@@ -6458,18 +6457,18 @@ msgid "You can't send direct messages outside of your organization."
 msgstr "Вы не можете отправлять личные сообщения за пределы своей организации."
 
 #: zerver/lib/reminders.py:21
-#, fuzzy, python-brace-format
-#| msgid "Channel name too long (limit: {max_length} characters)."
+#, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
-msgstr "Слишком длинное название канала (предел: {max_length} символов)."
+msgstr "Максимальная длина заметки к напоминанию: {max_length} символов"
 
 #: zerver/lib/reminders.py:50
-#, fuzzy, python-brace-format
-#| msgid "You requested a reminder for {message_pretty_link}."
+#, python-brace-format
 msgid ""
 "You requested a reminder for {message_pretty_link}. Note:\n"
 " > {note}"
-msgstr "Вы запросили напоминание о сообщении {message_pretty_link}."
+msgstr ""
+"Вы запросили напоминание о сообщении {message_pretty_link}. Заметка:\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:56
 #, python-brace-format
@@ -6477,12 +6476,13 @@ msgid "You requested a reminder for {message_pretty_link}."
 msgstr "Вы запросили напоминание о сообщении {message_pretty_link}."
 
 #: zerver/lib/reminders.py:62
-#, fuzzy, python-brace-format
-#| msgid "You requested a reminder for the following direct message."
+#, python-brace-format
 msgid ""
 "You requested a reminder for the following direct message. Note:\n"
 " > {note}"
-msgstr "Вы запросили напоминание о следующем личном сообщении."
+msgstr ""
+"Вы запросили напоминание о следующем личном сообщении. Заметка:\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:67
 msgid "You requested a reminder for the following direct message."
@@ -6543,7 +6543,7 @@ msgstr "Канал по умолчанию не может быть закрыт
 
 #: zerver/lib/streams.py:225 zerver/views/streams.py:410
 msgid "Web-public channels are not enabled."
-msgstr "Открытые веб-каналы не активированы."
+msgstr "Веб-открытые каналы не активированы."
 
 #: zerver/lib/streams.py:582 zerver/lib/streams.py:590
 msgid "You do not have permission to post in this channel."
@@ -6977,7 +6977,7 @@ msgstr "{var_name} отсутствует"
 #: zerver/lib/webhooks/common.py:107
 #, python-brace-format
 msgid "Unknown 'PresetUrlOption': {config}"
-msgstr ""
+msgstr "Неизвестный 'PresetUrlOption': {config}"
 
 #: zerver/lib/webhooks/common.py:138
 #, python-brace-format
@@ -7214,7 +7214,7 @@ msgstr "Разрешить GIF-файлы с рейтингом R (ограни�
 
 #: zerver/models/streams.py:61
 msgid "Web-public"
-msgstr "Публичный в интернете"
+msgstr "Веб-открытый"
 
 #: zerver/models/streams.py:67
 msgid "Public"
