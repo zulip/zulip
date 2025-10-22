@@ -76,7 +76,12 @@ def add_api_url_context(
 
 
 def add_canonical_link_context(context: dict[str, Any], request: HttpRequest) -> None:
-    context["REL_CANONICAL_LINK"] = f"https://zulip.com{request.path}"
+    if request.path in ["/api/", "/policies/", "/integrations/"]:
+        # Root doc pages have a trailing slash in the canonical URL.
+        canonical_path = request.path
+    else:
+        canonical_path = request.path.removesuffix("/")
+    context["REL_CANONICAL_LINK"] = f"https://zulip.com{canonical_path}"
 
 
 class ApiURLView(TemplateView):
