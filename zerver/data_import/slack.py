@@ -33,6 +33,7 @@ from zerver.data_import.import_util import (
     build_recipient,
     build_stream,
     build_subscription,
+    build_uploads,
     build_user_profile,
     build_usermessages,
     build_zerver_realm,
@@ -1389,25 +1390,6 @@ def build_reactions(
             processed_reactions.add(reaction_tuple)
 
             reaction_list.append(reaction_dict)
-
-
-def build_uploads(
-    user_id: int,
-    realm_id: int,
-    fileinfo: ZerverFieldsT,
-    s3_path: str,
-    uploads_list: list[ZerverFieldsT],
-) -> None:
-    upload = dict(
-        path=fileinfo["url_private"],  # Save Slack's URL here, which is used later while processing
-        realm_id=realm_id,
-        content_type=None,
-        user_profile_id=user_id,
-        last_modified=fileinfo["timestamp"],
-        s3_path=s3_path,
-        size=fileinfo["size"],
-    )
-    uploads_list.append(upload)
 
 
 def get_message_sending_user(message: ZerverFieldsT) -> str | None:
