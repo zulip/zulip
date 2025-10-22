@@ -10,6 +10,7 @@ import time
 import zipfile
 from collections import defaultdict
 from collections.abc import Iterator
+from dataclasses import asdict
 from datetime import datetime, timezone
 from email.errors import HeaderDefect
 from email.headerregistry import Address
@@ -23,6 +24,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_avatar,
@@ -33,7 +35,6 @@ from zerver.data_import.import_util import (
     build_recipient,
     build_stream,
     build_subscription,
-    build_uploads,
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
@@ -1270,14 +1271,18 @@ def process_message_files(
             s3_path, content_for_link = get_attachment_path_and_content(fileinfo, realm_id)
             markdown_links.append(content_for_link)
 
-            build_uploads(
-                slack_user_id_to_zulip_user_id[slack_user_id],
-                realm_id,
-                file_user_email,
-                fileinfo,
-                s3_path,
-                uploads_list,
+            upload_metadata = UploadRecordData(
+                content_type=None,
+                last_modified=fileinfo["timestamp"],
+                # Save Slack's URL here, which is used later while processing
+                path=fileinfo["url_private"],
+                realm_id=realm_id,
+                s3_path=s3_path,
+                size=fileinfo["size"],
+                user_profile_id=slack_user_id_to_zulip_user_id[slack_user_id],
+                user_profile_email=file_user_email,
             )
+            uploads_list.append(asdict(upload_metadata))
 
             build_attachment(
                 realm_id,

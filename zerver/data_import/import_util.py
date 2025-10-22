@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -48,6 +49,18 @@ DATA_IMPORT_CLIENTS = {
     # Special client key to be used for data import messages.
     "ZulipDataImport": 5,
 }
+
+
+@dataclass
+class UploadRecordData:
+    content_type: str | None
+    last_modified: float
+    path: str
+    realm_id: int
+    s3_path: str
+    size: int
+    user_profile_id: int
+    user_profile_email: str
 
 
 class SubscriberHandler:
@@ -866,24 +879,3 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
             f"Invalid email format, please fix the following email(s) and try again: {details}"
         )
         raise ValidationError(error_log)
-
-
-def build_uploads(
-    user_id: int,
-    realm_id: int,
-    email: str,
-    fileinfo: ZerverFieldsT,
-    s3_path: str,
-    uploads_list: list[ZerverFieldsT],
-) -> None:
-    upload = dict(
-        path=fileinfo["url_private"],  # Save Slack's URL here, which is used later while processing
-        realm_id=realm_id,
-        content_type=None,
-        user_profile_id=user_id,
-        last_modified=fileinfo["timestamp"],
-        user_profile_email=email,
-        s3_path=s3_path,
-        size=fileinfo["size"],
-    )
-    uploads_list.append(upload)
