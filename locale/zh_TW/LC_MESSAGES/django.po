@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-08 16:10+0000\n"
-"PO-Revision-Date: 2025-09-03 07:45+0000\n"
+"PO-Revision-Date: 2025-10-11 04:07+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/zulip/django-11-x/zh_Hant/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13.1-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -765,7 +765,7 @@ msgstr "您可以在 %(retry_after)s 秒後重試。"
 
 #: templates/corporate/billing/upgrade.html:5
 msgid "Upgrade"
-msgstr "升級"
+msgstr "昇級"
 
 #: templates/corporate/billing/upgrade.html:350
 msgid "Send invoice and start free trial"
@@ -1809,7 +1809,7 @@ msgstr "匿名使用者"
 
 #: templates/zerver/development/dev_login.html:32 zerver/models/groups.py:23
 msgid "Owners"
-msgstr "組織擁有者"
+msgstr "擁有者"
 
 #: templates/zerver/development/dev_login.html:49 zerver/models/groups.py:24
 msgid "Administrators"
@@ -5190,10 +5190,9 @@ msgid "Not logged in: API authentication or user session required"
 msgstr "未登入：必須有 API 驗證或使用者會話"
 
 #: zerver/lib/exceptions.py:193
-#, fuzzy, python-brace-format
-#| msgid "Channel named {channel_name} already exists"
+#, python-brace-format
 msgid "Channel '{channel_name}' already exists"
-msgstr "名為 {channel_name} 的頻道已存在"
+msgstr "頻道「{channel_name}」已存在"
 
 #: zerver/lib/exceptions.py:206
 #, python-brace-format
@@ -5594,7 +5593,7 @@ msgstr "導覽檢視不存在。"
 #: zerver/lib/onboarding.py:60
 #, python-brace-format
 msgid "A note from {admin_group_syntax}:"
-msgstr ""
+msgstr "來自 {admin_group_syntax} 的備註："
 
 #: zerver/lib/onboarding.py:91
 #, python-brace-format
@@ -6086,25 +6085,21 @@ msgstr "推送轉發器無法識別裝置"
 
 #: zerver/lib/push_notifications.py:1928
 msgid "No active registered push device"
-msgstr ""
+msgstr "沒有已註冊的推播裝置處於啟用狀態"
 
 #: zerver/lib/push_notifications.py:1941
-#, fuzzy
-#| msgid "Server is not configured to use push notification service."
 msgid "Network error while connecting to Zulip push notification service."
-msgstr "伺服器未設定使用推播通知服務。"
+msgstr "連線至 Zulip 推播通知服務時發生網路錯誤。"
 
 #: zerver/lib/push_notifications.py:1954
-#, fuzzy
-#| msgid "Server doesn't use the push notification service"
 msgid "Internal server error on Zulip push notification service, retry later."
-msgstr "伺服器不使用推送通知服務"
+msgstr "Zulip 推播通知服務發生內部伺服器錯誤，請稍後再試。"
 
 #: zerver/lib/push_notifications.py:1968
 msgid ""
 "Push notification configuration issue on server, contact the server "
 "administrator or retry later."
-msgstr ""
+msgstr "伺服器上的推播通知設定有問題，請聯繫伺服器管理員或稍後再試。"
 
 #: zerver/lib/recipient_parsing.py:9
 msgid "Invalid data type for channel ID"
@@ -6127,18 +6122,18 @@ msgid "You can't send direct messages outside of your organization."
 msgstr "您不能傳送私人訊息給組織外的人員。"
 
 #: zerver/lib/reminders.py:21
-#, fuzzy, python-brace-format
-#| msgid "Channel name too long (limit: {max_length} characters)."
+#, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
-msgstr "頻道名稱過長（限制：{max_length} 個字元）。"
+msgstr "提醒備註的最大長度：{max_length} 個字元"
 
 #: zerver/lib/reminders.py:50
-#, fuzzy, python-brace-format
-#| msgid "You requested a reminder for {message_pretty_link}."
+#, python-brace-format
 msgid ""
 "You requested a reminder for {message_pretty_link}. Note:\n"
 " > {note}"
-msgstr "您已為 {message_pretty_link} 設定了提醒。"
+msgstr ""
+"你已為 {message_pretty_link} 設定提醒。備註：\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:56
 #, python-brace-format
@@ -6146,12 +6141,13 @@ msgid "You requested a reminder for {message_pretty_link}."
 msgstr "您已為 {message_pretty_link} 設定了提醒。"
 
 #: zerver/lib/reminders.py:62
-#, fuzzy, python-brace-format
-#| msgid "You requested a reminder for the following direct message."
+#, python-brace-format
 msgid ""
 "You requested a reminder for the following direct message. Note:\n"
 " > {note}"
-msgstr "您已為以下私人訊息設定了提醒。"
+msgstr ""
+"你已為以下的私人訊息設定提醒。備註：\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:67
 msgid "You requested a reminder for the following direct message."
@@ -6641,7 +6637,7 @@ msgstr "{var_name} 遺失"
 #: zerver/lib/webhooks/common.py:107
 #, python-brace-format
 msgid "Unknown 'PresetUrlOption': {config}"
-msgstr ""
+msgstr "未知的 'PresetUrlOption'：{config}"
 
 #: zerver/lib/webhooks/common.py:138
 #, python-brace-format
@@ -7687,7 +7683,7 @@ msgstr "議題未靜音"
 
 #: zerver/views/users.py:130
 msgid "Cannot deactivate the only organization owner"
-msgstr "無法停用該組織唯一的所有者"
+msgstr "無法停用該組織唯一的擁有者"
 
 #: zerver/views/users.py:269
 msgid "User not authorized to change user emails"
@@ -7696,7 +7692,7 @@ msgstr "使用者無權變更使用者電子郵件"
 #: zerver/views/users.py:283
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
-msgstr "不能從唯一的組織所有者移除所有者權限。"
+msgstr "不能從唯一的組織所有者移除擁有者權限。"
 
 #: zerver/views/users.py:325
 msgid "Invalid new email address."
@@ -7709,15 +7705,15 @@ msgstr "新電子郵件值錯誤：{message}"
 
 #: zerver/views/users.py:473
 msgid "Failed to change owner, no such user"
-msgstr "變更所有者失敗，無此使用者"
+msgstr "變更擁有者失敗，無此使用者"
 
 #: zerver/views/users.py:475
 msgid "Failed to change owner, user is deactivated"
-msgstr "變更所有者失敗，使用者已停用"
+msgstr "變更擁有者失敗，使用者已停用"
 
 #: zerver/views/users.py:477
 msgid "Failed to change owner, bots can't own other bots"
-msgstr "變更所有者失敗，機器人不能擁有其他機器人"
+msgstr "變更擁有者失敗，機器人不能擁有其他機器人"
 
 #: zerver/views/users.py:593
 msgid ""

@@ -11,16 +11,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-08 16:10+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Danish <https://hosted.weblate.org/projects/zulip/django/da/"
-">\n"
+"PO-Revision-Date: 2025-09-17 20:02+0000\n"
+"Last-Translator: Achton Smidt Winther <achton@reload.dk>\n"
+"Language-Team: Danish <https://hosted.weblate.org/projects/zulip/django-11-x/"
+"da/>\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -49,21 +49,22 @@ msgstr "Private gruppe beskeder"
 #: analytics/views/stats.py:417
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "Manglende kanal for diagram: {chart_name}"
 
 #: analytics/views/stats.py:425
 #, python-brace-format
 msgid "Unknown chart name: {chart_name}"
-msgstr ""
+msgstr "Ukendt navn på diagram: {chart_name}"
 
 #: analytics/views/stats.py:435
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr ""
+msgstr "Starttidspunkt ligger efter sluttidspunkt. Start: {start}, slut: {end}"
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
 msgstr ""
+"Ingen analysedata tilgængelig. Kontakt venligst din server-administrator."
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -73,6 +74,10 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
+"Din organisation har ikke flere Zulip licenser tilbage og kan ikke acceptere "
+"nye brugere. [Tilkøb flere licenser]({billing_page_link}) eller "
+"[deaktiver inaktive brugere]({deactivate_user_help_page_link}) for at lukke "
+"nye brugere ind."
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
@@ -81,6 +86,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
+"Din organisation har kun én Zulip licens tilbage. Du kan "
+"[tilkøbe flere licenser]({billing_page_link}) eller "
+"[deaktivere inaktive brugere]({deactivate_user_help_page_link}) for at lukke "
+"nye brugere ind."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -89,6 +98,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
+"Din organisation har kun to Zulip licenser tilbage. Du kan "
+"[tilkøbe flere licenser]({billing_page_link}) eller "
+"[deaktivere inaktive brugere]({deactivate_user_help_page_link}) for at lukke "
+"nye brugere ind."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -97,6 +110,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
+"Din organisation har kun tre Zulip licenser tilbage. Du kan "
+"[tilkøbe flere licenser]({billing_page_link}) eller "
+"[deaktivere inaktive brugere]({deactivate_user_help_page_link}) for at lukke "
+"nye brugere ind."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
@@ -106,27 +123,34 @@ msgid ""
 "[number of licenses for the current and next billing period]"
 "({billing_page_link}) is greater than the current number of users."
 msgstr ""
+"En ny bruger ({email}) kunne ikke tilføjes, da din organisation ikke har nok "
+"Zulip-licenser. For at tilføje nye brugere, skal du sikre dig at "
+"[antallet af licenser for den aktuelle og kommende faktueringsperiode]"
+"({billing_page_link}) er større end det aktuelle antal brugere."
 
 #: corporate/lib/registration.py:119
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
 msgstr ""
+"Din organisation har ikke nok Zulip-licenser. Invitationerne blev ikke sendt."
 
 #: corporate/lib/registration.py:133
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"Din organisation har ikke nok Zulip-licenser til at ændre en gæstebrugers "
+"rolle."
 
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "Registrering er deaktiveret"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
-msgstr ""
+msgstr "Ugyldig ekstern server."
 
 #: corporate/lib/stripe.py:219
 #, python-brace-format
@@ -134,6 +158,8 @@ msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
+"Du skal købe licenser til alle aktive brugere i din organisation (mindst "
+"{min_licenses})."
 
 #: corporate/lib/stripe.py:225
 #, python-brace-format
@@ -141,78 +167,91 @@ msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this "
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
+"Regninger med mere end {max_licenses} licenser kan ikke processeres på denne "
+"side. Kontakt {email} for at fuldføre opgraderingen."
 
 #: corporate/lib/stripe.py:357
 msgid "No payment method on file."
-msgstr ""
+msgstr "Ingen betalingsmetode angivet."
 
 #: corporate/lib/stripe.py:365
 #, python-brace-format
 msgid "{brand} ending in {last4}"
-msgstr ""
+msgstr "{brand} slutter om {last4}"
 
 #: corporate/lib/stripe.py:373
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr ""
+msgstr "Ukendt betalingsmetode. Kontakt venligst {email}."
 
 #: corporate/lib/stripe.py:403
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr ""
+msgstr "Noget gik galt. Kontakt venligst {email}."
 
 #: corporate/lib/stripe.py:404
 msgid "Something went wrong. Please reload the page."
-msgstr ""
+msgstr "Noget gik galt. Genindlæs venligst siden."
 
 #: corporate/lib/stripe.py:500
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr ""
+msgstr "Noget gik galt. Vent venligst et par sekunder og prøv igen."
 
 #: corporate/lib/stripe.py:1884
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
+"Tilføj venligst et kreditkort før du påbegynder din gratis prøveperiode."
 
 #: corporate/lib/stripe.py:1907
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "Tilføj venligst kreditkort for at planlægge opgradering."
 
 #: corporate/lib/stripe.py:2978
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
+"Kunne ikke forny plan. Din plan er udløbet og er blevet erstattet af en ny."
 
 #: corporate/lib/stripe.py:2983
 msgid "Unable to update the plan. The plan has ended."
-msgstr ""
+msgstr "Kunne ikke forny abonnement. Dit abonnement blev afsluttet."
 
 #: corporate/lib/stripe.py:3051
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
+"Kan ikke opdatere licenser i den aktuelle faktureringsperiode for gratis "
+"prøveperiode."
 
 #: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
+"Kan ikke opdatere licenser manuelt. Dit abonnement er på automatisk "
+"licensstyring."
 
 #: corporate/lib/stripe.py:3062
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
+"Dit abonnement har allerede {licenses} licenser i den aktuelle "
+"faktureringsperiode."
 
 #: corporate/lib/stripe.py:3067
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr ""
+"Du kan ikke reducere antallet af licenser i den aktuelle faktureringsperiode."
 
 #: corporate/lib/stripe.py:3093
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
+"Kan ikke ændre licenser for næste faktureringsperiode for et abonnement der "
+"nedgraderes."
 
 #: corporate/lib/stripe.py:3099
 #, python-brace-format
@@ -220,6 +259,8 @@ msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
+"Dit abonnement er planlagt til fornyelse med {licenses_at_next_renewal} "
+"licenser."
 
 #: corporate/lib/stripe.py:3123
 #, python-brace-format
@@ -227,6 +268,8 @@ msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
+"Du har allerede købt {licenses_at_next_renewal} licenser for den kommende "
+"faktureringsperiode."
 
 #: corporate/lib/stripe.py:3145
 msgid "Nothing to change."
@@ -234,7 +277,7 @@ msgstr "Intet at ændre."
 
 #: corporate/lib/stripe.py:3430
 msgid "No customer for this organization!"
-msgstr ""
+msgstr "Du er ikke kunde for denne organisation!"
 
 #: corporate/lib/stripe.py:3439
 msgid "Session not found"
@@ -258,11 +301,11 @@ msgstr "Utilstrækkelige tilladelser"
 
 #: corporate/lib/stripe.py:3456
 msgid "Payment intent not found"
-msgstr ""
+msgstr "Betalingshensigt ikke fundet"
 
 #: corporate/lib/stripe.py:3459
 msgid "Pass stripe_session_id or stripe_invoice_id"
-msgstr ""
+msgstr "Videregiv stripe_session_id eller stripe_invoice_id"
 
 #: corporate/lib/stripe.py:4205
 #, python-brace-format
@@ -273,18 +316,23 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
 "we would really appreciate it!"
 msgstr ""
+"Din organisations ansøgning om sponseret hosting er blevet godkendt! Du er "
+"blevet opgraderet til {plan_name} gratis. {emoji}\n"
+"\n"
+"Hvis I vil {begin_link}angive Zulip som sponsor på jeres hjemmeside{end_link}"
+", sætter vi stor pris på det!"
 
 #: corporate/views/billing_page.py:352
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "Parameter 'confirmed' er påkrævet"
 
 #: corporate/views/remote_billing_page.py:133
 msgid "Billing access token expired."
-msgstr ""
+msgstr "Access token for fakturering er udløbet."
 
 #: corporate/views/remote_billing_page.py:135
 msgid "Invalid billing access token."
-msgstr ""
+msgstr "Ugyldig access token for fakturering."
 
 #: corporate/views/remote_billing_page.py:213 zilencer/views.py:1476
 #: zilencer/views.py:1501
@@ -293,28 +341,30 @@ msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
 "{support_email}"
 msgstr ""
+"Kunne ikke afstemme faktureringsdata mellem server og realm. Kontakt "
+"venligst {support_email}"
 
 #: corporate/views/remote_billing_page.py:293
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "Brugerkonto eksisterer endnu ikke."
 
 #: corporate/views/remote_billing_page.py:298
 #: corporate/views/remote_billing_page.py:733
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "Du skal acceptere servicevilkårene for at fortsætte."
 
 #: corporate/views/remote_billing_page.py:539
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
-msgstr ""
+msgstr "Dette zulip_org_id er ikke registreret i Zulips faktureringssystem."
 
 #: corporate/views/remote_billing_page.py:546
 msgid "Invalid zulip_org_key for this zulip_org_id."
-msgstr ""
+msgstr "Ugyldig zulip_org_key for dette zulip_org_id."
 
 #: corporate/views/remote_billing_page.py:550
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "Din serverregistrering er blevet deaktiveret."
 
 #: templates/404.html:4 templates/4xx.html:4
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html:4
@@ -331,6 +381,8 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
+"Hvis dette er en uventet fejl, kan du <a href=\"mailto:%(support_email)s\""
+">kontakte supporten</a>."
 
 #: templates/4xx.html:11
 msgid "Access forbidden (403)"
@@ -341,16 +393,20 @@ msgid ""
 "Your request could not be completed because your browser did not send the "
 "credentials required to authenticate your access. To resolve this issue:"
 msgstr ""
+"Forespørgslen kunne ikke fuldføres, da din browser ikke sendte de rette "
+"oplysninger påkrævet for at give dig adgang. For at løse denne fejl:"
 
 #: templates/4xx.html:22
 msgid "Make sure that your browser allows cookies for this site."
-msgstr ""
+msgstr "Sørg for, at din browser tillader cookies for denne hjemmeside."
 
 #: templates/4xx.html:27
 msgid ""
 "Check for any browser privacy settings or extensions that block Referer "
 "headers, and disable them for this site."
 msgstr ""
+"Tjek om der er browserindstillinger eller udvidelser, der blokerer Referer-"
+"headers, og deaktiver dem for dette websted."
 
 #: templates/4xx.html:35
 msgid "Method not allowed (405)"
@@ -366,6 +422,8 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Der opstod en fejl. Beklager! Vi er opmærksomme på problemet og arbejder på "
+"at løse det. Zulip indlæses automatisk, når det fungerer igen."
 
 #: templates/500.html:27
 #, python-format
@@ -374,12 +432,17 @@ msgid ""
 "information, and <a href=\"mailto:%(support_email)s\">contact Zulip support</"
 "a> with any questions."
 msgstr ""
+"Se venligst <a href=\"%(status_url)s\">Zulip Cloud-status</a> for mere "
+"information, og <a href=\"mailto:%(support_email)s\">kontakt Zulip-support</"
+"a>, hvis du har spørgsmål."
 
 #: templates/500.html:36
 msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"Der opstod en fejl. Beklager! Zulip indlæses automatisk, når det fungerer "
+"igen."
 
 #: templates/500.html:42
 #, python-format
@@ -387,6 +450,8 @@ msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
 msgstr ""
+"<a href=\"mailto:%(support_email)s\">Kontakt denne servers administratorer</"
+"a> for at få support."
 
 #: templates/500.html:47
 #, python-format
@@ -394,6 +459,8 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
+"Hvis du administrerer denne server, kan du med fordel læse <a href="
+"\"%(troubleshooting_url)s\">Zulip-serverens fejlfindingsvejledning</a>."
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -521,7 +588,7 @@ msgstr ""
 
 #: templates/analytics/stats.html:143
 msgid "Last update"
-msgstr ""
+msgstr "Sidste opdatering"
 
 #: templates/analytics/stats.html:144
 msgid ""
@@ -531,11 +598,11 @@ msgstr ""
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
-msgstr ""
+msgstr "Mailadresse ændret"
 
 #: templates/confirmation/confirm_email_change.html:12
 msgid "Email changed!"
-msgstr ""
+msgstr "Mailadresse ændret!"
 
 #: templates/confirmation/confirm_email_change.html:16
 #, python-format
@@ -547,7 +614,7 @@ msgstr ""
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
 msgid "Confirming your email address"
-msgstr ""
+msgstr "Bekræft din mailadresse"
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
@@ -555,7 +622,7 @@ msgstr ""
 
 #: templates/confirmation/link_does_not_exist.html:11
 msgid "Whoops. We couldn't find your confirmation link in the system."
-msgstr ""
+msgstr "Hov. Vi kunne ikke finde dit godkendelseslink i systemet."
 
 #: templates/confirmation/link_does_not_exist.html:13
 #: templates/confirmation/link_malformed.html:14
@@ -571,7 +638,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:11
 msgid "Whoops. The confirmation link has expired or been deactivated."
-msgstr ""
+msgstr "Hov. Dit godkendelseslink er udløbet eller er blevet deaktiveret."
 
 #: templates/confirmation/link_expired.html:12
 msgid "Please contact your organization administrator for a new link."
@@ -593,7 +660,7 @@ msgstr ""
 
 #: templates/corporate/billing/billing.html:5
 msgid "Billing"
-msgstr ""
+msgstr "Fakturering"
 
 #: templates/corporate/billing/billing.html:419
 #: templates/corporate/billing/billing.html:454
@@ -606,7 +673,7 @@ msgstr ""
 #: templates/zerver/change_email_address_visibility_modal.html:8
 #: templates/zerver/development/email_log.html:33
 msgid "Close modal"
-msgstr ""
+msgstr "Luk vindue"
 
 #: templates/corporate/billing/billing.html:439
 #: templates/corporate/billing/billing.html:527
@@ -614,13 +681,13 @@ msgstr ""
 #: templates/corporate/billing/billing.html:583
 #: templates/corporate/billing/billing.html:620
 msgid "Never mind"
-msgstr ""
+msgstr "Glem det"
 
 #: templates/corporate/billing/billing.html:441
 #: templates/corporate/billing/billing.html:529
 #: templates/corporate/billing/billing.html:557
 msgid "Downgrade"
-msgstr ""
+msgstr "Nedgrader"
 
 #: templates/corporate/billing/billing.html:472
 #: templates/corporate/billing/billing.html:501
@@ -639,11 +706,11 @@ msgstr "Bekræft"
 
 #: templates/corporate/billing/billing.html:585
 msgid "Cancel upgrade"
-msgstr ""
+msgstr "Annuller nedgradering"
 
 #: templates/corporate/billing/event_status.html:5
 msgid "Billing status"
-msgstr ""
+msgstr "Faktureringsstatus"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html:5
 msgid "Deactivate server registration?"
@@ -654,7 +721,7 @@ msgstr ""
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:4
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:11
 msgid "Plan management not available"
-msgstr ""
+msgstr "Abonnementsstyring ikke tilgængelig"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:13
 #, python-format
@@ -690,12 +757,12 @@ msgstr ""
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:4
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:4
 msgid "Rate limit exceeded"
-msgstr ""
+msgstr "Prisgrænse nået"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:11
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:11
 msgid "Rate limit exceeded."
-msgstr ""
+msgstr "Prisgrænse nået."
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:13
 msgid ""
@@ -711,7 +778,7 @@ msgstr ""
 
 #: templates/corporate/billing/upgrade.html:5
 msgid "Upgrade"
-msgstr ""
+msgstr "Opgrader"
 
 #: templates/corporate/billing/upgrade.html:350
 msgid "Send invoice and start free trial"
@@ -738,11 +805,11 @@ msgstr "Katagorier"
 #: templates/corporate/communities.html:60
 #: templates/zerver/integrations/index.html:78
 msgid "All"
-msgstr "Alle"
+msgstr "Alt"
 
 #: templates/corporate/comparison_table_integrated.html:103
 msgid "10,000 messages"
-msgstr ""
+msgstr "10.000 beskeder"
 
 #: templates/corporate/comparison_table_integrated.html:107
 #: templates/corporate/comparison_table_integrated.html:108
@@ -780,16 +847,16 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:284
 #: templates/corporate/comparison_table_integrated.html:285
 msgid "Unlimited"
-msgstr ""
+msgstr "Ubegrænset"
 
 #: templates/corporate/comparison_table_integrated.html:153
 msgid "Files up to 10 MB"
-msgstr ""
+msgstr "Filer op til 10 MB"
 
 #: templates/corporate/comparison_table_integrated.html:154
 #: templates/corporate/comparison_table_integrated.html:155
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "Filer op til 1 GB"
 
 #: templates/corporate/comparison_table_integrated.html:211
 #: templates/corporate/comparison_table_integrated.html:212
@@ -1070,7 +1137,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1729
 #: templates/corporate/comparison_table_integrated.html:1740
 msgid "Supported"
-msgstr ""
+msgstr "Understøttet"
 
 #: templates/corporate/comparison_table_integrated.html:230
 #: templates/corporate/comparison_table_integrated.html:244
@@ -1213,11 +1280,11 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1682
 #: templates/corporate/comparison_table_integrated.html:1683
 msgid "Self-managed"
-msgstr ""
+msgstr "Selvforvaltet"
 
 #: templates/corporate/comparison_table_integrated.html:282
 msgid "For organizations with up to 10 users"
-msgstr ""
+msgstr "For organisationer med op til 10 brugere"
 
 #: templates/corporate/comparison_table_integrated.html:1125
 msgid "25 users minimum"
@@ -1236,11 +1303,11 @@ msgstr "Mindst 25 brugere"
 #: templates/corporate/comparison_table_integrated.html:1738
 #: templates/corporate/comparison_table_integrated.html:1739
 msgid "Not available"
-msgstr ""
+msgstr "Ikke tilgængelig"
 
 #: templates/corporate/development-community.html:23
 msgid "The Zulip development community"
-msgstr ""
+msgstr "Zulips udviklerfællesskab"
 
 #: templates/corporate/development-community.html:30
 #: templates/corporate/development-community.html:55
@@ -1250,12 +1317,12 @@ msgstr ""
 #: templates/corporate/development-community.html:33
 #: templates/corporate/development-community.html:58
 msgid "Join as a self-hoster"
-msgstr ""
+msgstr "Deltag som bruger"
 
 #: templates/corporate/development-community.html:36
 #: templates/corporate/development-community.html:61
 msgid "Join as a contributor"
-msgstr ""
+msgstr "Deltag som bidragsyder"
 
 #: templates/corporate/for/business.html:24
 #: templates/corporate/for/communities.html:38
@@ -1270,13 +1337,13 @@ msgstr ""
 #: templates/corporate/for/use-cases.html:23
 #: templates/corporate/why-zulip.html:27 templates/zerver/create_realm.html:38
 msgid "Create organization"
-msgstr ""
+msgstr "Opret organisation"
 
 #: templates/corporate/for/business.html:27
 #: templates/corporate/self-hosting.html:27
 #: templates/corporate/why-zulip.html:30 templates/zerver/footer.html:45
 msgid "Get a demo"
-msgstr ""
+msgstr "Modtag demo"
 
 #: templates/corporate/for/business.html:30
 #: templates/corporate/for/communities.html:44
@@ -1290,7 +1357,7 @@ msgstr ""
 #: templates/corporate/for/research.html:455
 #: templates/corporate/for/use-cases.html:29
 msgid "Self-host Zulip"
-msgstr ""
+msgstr "Host Zulip selv"
 
 #: templates/corporate/for/communities.html:41
 #: templates/corporate/for/communities.html:73
@@ -1301,24 +1368,24 @@ msgstr ""
 #: templates/corporate/for/research.html:39
 #: templates/corporate/for/research.html:452
 msgid "Request sponsorship"
-msgstr ""
+msgstr "Ansøg om sponsorering"
 
 #: templates/corporate/for/education.html:35
 msgid "Education pricing"
-msgstr ""
+msgstr "Priser for uddannelse"
 
 #: templates/corporate/for/use-cases.html:26
 msgid "View pricing"
-msgstr ""
+msgstr "Se priser"
 
 #: templates/corporate/self-hosting.html:33
 msgid "Zulip for business"
-msgstr ""
+msgstr "Zulip for professionelle"
 
 #: templates/corporate/support/support_request.html:9
 #: templates/zerver/footer.html:44
 msgid "Contact support"
-msgstr ""
+msgstr "Kontakt support"
 
 #: templates/corporate/support/support_request.html:17
 msgid "From"
@@ -1339,19 +1406,19 @@ msgstr "Besked"
 #: templates/corporate/support/support_request.html:35
 #: templates/zerver/slack_import.html:59
 msgid "Submit"
-msgstr ""
+msgstr "Indsend"
 
 #: templates/corporate/support/support_request_thanks.html:4
 msgid "Thanks for contacting us"
-msgstr ""
+msgstr "Tak for at tage kontakt til os"
 
 #: templates/corporate/support/support_request_thanks.html:10
 msgid "Thanks for contacting us!"
-msgstr ""
+msgstr "Tak for at tage kontakt til os!"
 
 #: templates/corporate/support/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "Vi vil snart tage kontakt til dig."
 
 #: templates/corporate/support/support_request_thanks.html:13
 msgid ""
@@ -1361,7 +1428,7 @@ msgstr ""
 
 #: templates/corporate/team.html:139
 msgid "Avatar"
-msgstr ""
+msgstr "Avatar"
 
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
@@ -1384,11 +1451,11 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:4
 msgid "Accept the Terms of Service"
-msgstr ""
+msgstr "Accepter handelsbetingelser"
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
-msgstr "Velkommen til Zulip!"
+msgstr "Velkommen til Zulip"
 
 #: templates/zerver/accounts_accept_terms.html:25
 #: templates/zerver/accounts_home.html:63 templates/zerver/login.html:101
@@ -1404,11 +1471,13 @@ msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
+"Jeg accepterer <a href=\"%(root_domain_url)s/policies/terms\" target="
+"\"_blank\" rel=\"noopener noreferrer\">handelsbetingelserne</a>."
 
 #: templates/zerver/accounts_accept_terms.html:68
 #: templates/zerver/register.html:250
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
-msgstr ""
+msgstr "Abonner på Zulips sjældne nyhedsbrev (få emails om året)."
 
 #: templates/zerver/accounts_accept_terms.html:74
 msgid "Continue"
@@ -1418,11 +1487,11 @@ msgstr "Fortsæt"
 #: templates/zerver/login.html:158 templates/zerver/portico-header.html:51
 #: templates/zerver/register.html:256
 msgid "Sign up"
-msgstr ""
+msgstr "Registrer"
 
 #: templates/zerver/accounts_home.html:18
 msgid "Sign up for Zulip"
-msgstr ""
+msgstr "Registrer dig hos Zulip"
 
 #: templates/zerver/accounts_home.html:37
 msgid "You need an invitation to join this organization."
@@ -1710,7 +1779,7 @@ msgstr ""
 
 #: templates/zerver/desktop_redirect.html:17
 msgid "Copy"
-msgstr "Kopiér"
+msgstr "Kopier"
 
 #: templates/zerver/desktop_redirect.html:19
 msgid "You may then close this window."
@@ -2163,10 +2232,9 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/emails/digest.txt:32
-#, fuzzy, python-format
-#| msgid "Organization: %(organization_url)s"
+#, python-format
 msgid "Log in to Zulip to catch up: %(organization_url)s."
-msgstr "Organisation: %(organization_url)s"
+msgstr "Log ind på Zulip for at følge med: %(organization_url)s."
 
 #: templates/zerver/emails/digest.txt:35
 #: templates/zerver/emails/missed_message.txt:60
@@ -3176,7 +3244,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:26
 msgid "Business"
-msgstr ""
+msgstr "Business"
 
 #: templates/zerver/footer.html:27
 msgid "Education"
@@ -3272,7 +3340,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:93
 msgid "History"
-msgstr "History"
+msgstr "Historik"
 
 #: templates/zerver/footer.html:95
 msgid "Values"
@@ -3484,7 +3552,7 @@ msgstr ""
 msgid ""
 "Administrators of this Zulip organization will be able to see this email "
 "address."
-msgstr ""
+msgstr "Administratorer i denne Zulip-organisation kan se denne mailadresse."
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
@@ -3662,7 +3730,7 @@ msgstr ""
 #: templates/zerver/realm_creation_form.html:55
 #: templates/zerver/realm_redirect.html:22 templates/zerver/register.html:60
 msgid "Organization URL"
-msgstr "Organization URL"
+msgstr "organisationens URL"
 
 #: templates/zerver/realm_creation_form.html:62
 #, python-format
@@ -3677,10 +3745,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/realm_creation_form.html:104
-#, fuzzy
-#| msgid "Private, shared history"
 msgid "Import chat history?"
-msgstr "Privat, fuld adgang til historik"
+msgstr "Importer chathistorik?"
 
 #: templates/zerver/realm_import_post_process.html:5
 #, fuzzy
@@ -3689,10 +3755,8 @@ msgid "Finalize organization import"
 msgstr "Ugyldig organisation"
 
 #: templates/zerver/realm_import_post_process.html:13
-#, fuzzy
-#| msgid "Organization type"
 msgid "Organization import completed!"
-msgstr "Organisationstype"
+msgstr "Organisationsimport fuldendt!"
 
 #: templates/zerver/realm_import_post_process.html:23
 #, python-format
@@ -4726,10 +4790,8 @@ msgid "Invalid channel folder ID"
 msgstr ""
 
 #: zerver/lib/demo_organizations.py:17
-#, fuzzy
-#| msgid "Who can access your email address"
 msgid "Configure owner account email address."
-msgstr "Hvem kan se din e-mail adresse"
+msgstr "Konfigurer ejer-kontoens emailadresse."
 
 #: zerver/lib/digest.py:452
 #, python-brace-format
@@ -5234,10 +5296,9 @@ msgid "**Message sent by {reported_user_mention}**"
 msgstr ""
 
 #: zerver/lib/message_report.py:108
-#, fuzzy, python-brace-format
-#| msgid "{full_name} mentioned you:"
+#, python-brace-format
 msgid "{fullname}'s moderation requests"
-msgstr "{full_name} nævnte dig:"
+msgstr "{fullname}s anmodninger om moderation"
 
 #: zerver/lib/narrow.py:202
 #, python-brace-format
@@ -5975,10 +6036,9 @@ msgid "{var_name} is not a valid hex color code"
 msgstr ""
 
 #: zerver/lib/typed_endpoint_validators.py:124
-#, fuzzy, python-brace-format
-#| msgid "Invalid filename"
+#, python-brace-format
 msgid "Invalid {setting_name}"
-msgstr "Ugyldigt filnavn"
+msgstr "Ugyldigt {setting_name}"
 
 #: zerver/lib/upload/__init__.py:47
 msgid "Upload would exceed your organization's upload quota."
@@ -6939,10 +6999,8 @@ msgid "Converting Slack data… This may take a while."
 msgstr ""
 
 #: zerver/views/registration.py:1107
-#, fuzzy
-#| msgid "Direct messages"
 msgid "Importing messages…"
-msgstr "Private beskeder"
+msgstr "Importerer beskeder…"
 
 #: zerver/views/registration.py:1110
 msgid "Importing attachment data…"
@@ -7010,10 +7068,9 @@ msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
 #: zerver/views/streams.py:653
-#, fuzzy, python-brace-format
-#| msgid "{user_full_name} added you to the group {group_name}."
+#, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
-msgstr "{user_full_name} tilføjede dig til gruppen {group_name}."
+msgstr "{user_full_name} tilføjede dig til kanalen {channel_name}."
 
 #: zerver/views/streams.py:659
 #, python-brace-format

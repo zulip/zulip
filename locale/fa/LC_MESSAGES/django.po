@@ -17,16 +17,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-08 16:10+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django/fa/"
-">\n"
+"PO-Revision-Date: 2025-09-29 09:02+0000\n"
+"Last-Translator: Goudarz Jafari <me@goudarzjafari.com>\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/"
+"django-11-x/fa/>\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1515,7 +1515,7 @@ msgstr "ادامه"
 #: templates/zerver/login.html:158 templates/zerver/portico-header.html:51
 #: templates/zerver/register.html:256
 msgid "Sign up"
-msgstr "ثبت نام"
+msgstr "نام‌نویسی"
 
 #: templates/zerver/accounts_home.html:18
 msgid "Sign up for Zulip"
@@ -1533,7 +1533,7 @@ msgstr "یا"
 #: templates/zerver/accounts_home.html:86
 #, python-format
 msgid "Sign up with %(identity_provider)s"
-msgstr "ثبت نام با %(identity_provider)s"
+msgstr "نام‌نویسی با %(identity_provider)s"
 
 #: templates/zerver/accounts_home.html:92
 msgid "Already have an account?"

@@ -35,8 +35,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-08 16:10+0000\n"
-"PO-Revision-Date: 2025-09-03 07:45+0000\n"
-"Last-Translator: Pierre-Yves Haubruge <pyhaubruge@gmail.com>\n"
+"PO-Revision-Date: 2025-09-28 00:02+0000\n"
+"Last-Translator: Tom Hubrecht <github@mail.hubrecht.ovh>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/zulip/django-11-x/"
 "fr/>\n"
 "Language: fr\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.13.1-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -166,6 +166,8 @@ msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"Votre organisation n'a pas assez de licences Zulip pour modifier le rôle "
+"d'un utilisateur invité."
 
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
@@ -6845,7 +6847,7 @@ msgstr "Publique"
 
 #: zerver/models/streams.py:73
 msgid "Private, shared history"
-msgstr "Privé, historique protégé"
+msgstr "Privé, historique partagé"
 
 #: zerver/models/streams.py:79
 msgid "Private, protected history"
