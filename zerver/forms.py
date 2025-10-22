@@ -635,7 +635,7 @@ class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
     """
 
     otp_token = forms.IntegerField(
-        label=_("Token"), min_value=1, max_value=int("9" * totp_digits()), widget=forms.TextInput
+        label=_("Token"), min_value=0, max_value=int("9" * totp_digits()), widget=forms.TextInput
     )
 
 
