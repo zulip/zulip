@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (353, 0)  # bumped 2025-10-07 to rebuild emoji_names
+PROVISION_VERSION = (353, 1)  # bumped 2025-10-22 to upgrade uv
