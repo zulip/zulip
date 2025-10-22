@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-08 16:10+0000\n"
-"PO-Revision-Date: 2025-08-20 14:02+0000\n"
+"PO-Revision-Date: 2025-09-29 09:02+0000\n"
 "Last-Translator: Yidan Wang <wangyidan@westlake.edu.cn>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/zulip/django-11-x/zh_Hans/>\n"
@@ -33,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -2561,6 +2561,8 @@ msgid ""
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
 msgstr ""
+"直接回复此邮件，<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip "
+"中查看</a>，或<a href=\"%(notif_url)s\">管理电子邮件偏好</a>。"
 
 #: templates/zerver/emails/missed_message.html:48
 #, python-format
@@ -2568,6 +2570,8 @@ msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
+"<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip 中查看或回复</a>，或<a "
+"href=\"%(notif_url)s\">管理电子邮件偏好</a>。"
 
 #: templates/zerver/emails/missed_message.html:50
 #, python-format
@@ -2575,6 +2579,8 @@ msgid ""
 "<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
+"<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip 中回复</a>，或<a href="
+"\"%(notif_url)s\">管理电子邮件偏好</a>。"
 
 #: templates/zerver/emails/missed_message.html:52
 #, python-format
@@ -2596,7 +2602,7 @@ msgstr "与%(sender_str)s的私信"
 #: templates/zerver/emails/missed_message.subject.txt:12
 #, python-format
 msgid "[resolved] #%(channel_name)s > %(topic_name)s"
-msgstr ""
+msgstr "[已解決] #%(channel_name)s > %(topic_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:17
 msgid "New messages"
@@ -2610,7 +2616,7 @@ msgstr "直接回复此邮件，或在 %(realm_name)sZulip 中查看："
 #: templates/zerver/emails/missed_message.txt:45
 #, python-format
 msgid "View or reply in %(realm_name)s Zulip:"
-msgstr ""
+msgstr "在 %(realm_name)s Zulip 中查看或回复："
 
 #: templates/zerver/emails/missed_message.txt:49
 #, python-format
@@ -3228,7 +3234,8 @@ msgstr ""
 msgid ""
 "Click the button below to confirm your email and log in to Zulip plan "
 "management for <b>%(remote_realm_host)s</b>."
-msgstr ""
+msgstr "点击下方按钮以确认您的电子邮件并登录来管理 <b>%(remote_realm_host)s</b> 的 "
+"Zulip 方案。"
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:14
 #: templates/zerver/emails/remote_realm_billing_confirm_login.txt:4
@@ -3244,26 +3251,29 @@ msgstr "确认 Zulip 计划管理电子邮件"
 msgid ""
 "Click the link below to confirm your email and log in to Zulip plan "
 "management for %(remote_realm_host)s."
-msgstr ""
+msgstr "点击下方链接以确认您的电子邮件并登录来管理 %(remote_realm_host)s 的 Zulip "
+"方案。"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:9
 #, python-format
 msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the <a href=\"%(plans_link)s\">Zulip Community plan</a>."
-msgstr ""
+msgstr "您的 Zulip 赞助申请已获得批准！您的组织已升级至<a href=\"%(plans_link)s\""
+">Zulip 社群方案</a>。"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:12
 #, python-format
 msgid ""
 "If you could <a href=\"%(link_to_zulip)s\">list Zulip as a sponsor on your "
 "website</a>, we would really appreciate it!"
-msgstr ""
+msgstr "如果您能在您的网站上<a href=\"%(link_to_zulip)s\">将 Zulip "
+"列为赞助商</a>，我们将非常感谢！"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.subject.txt:1
 #, python-format
 msgid "Community plan sponsorship approved for %(billing_entity)s!"
-msgstr ""
+msgstr "%(billing_entity)s 的社群方案赞助已获得批准！"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:1
 msgid ""
@@ -3288,14 +3298,15 @@ msgstr "查找您的Zulip账号"
 #: templates/zerver/find_account.html:19
 msgid ""
 "Emails sent! The addresses entered on the previous page are listed below:"
-msgstr ""
+msgstr "电子邮件已发送！在前一页输入的地址列在下方："
 
 #: templates/zerver/find_account.html:30
 #, python-format
 msgid ""
 "If you don't receive an email, you can <a href=\"%(current_url)s\">find "
 "accounts for another email address</a>."
-msgstr ""
+msgstr "如果您没有收到电子邮件，您可以 <a href=\"%(current_url)s\""
+">寻找另一个电子邮箱地址的账户</a>。"
 
 #: templates/zerver/find_account.html:42
 msgid ""
@@ -3418,7 +3429,7 @@ msgstr "社区聊天"
 
 #: templates/zerver/footer.html:46
 msgid "Partners"
-msgstr ""
+msgstr "合作伙伴"
 
 #: templates/zerver/footer.html:47
 msgid "Zulip Cloud status"
@@ -3568,6 +3579,8 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
+"您尝试加入的组织 <a href=\"%(realm_url)s\">%(realm_name)s</a> "
+"不允许使用您的电子邮箱域名进行注册。"
 
 #: templates/zerver/invalid_email.html:27
 #, python-format
@@ -3576,6 +3589,8 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
+"您尝试加入的组织 <a href=\"%(realm_url)s\">%(realm_name)s</a> "
+"不允许使用临时电子邮箱地址进行注册。"
 
 #: templates/zerver/invalid_email.html:30
 #, python-format
@@ -3584,6 +3599,8 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
 msgstr ""
+"您尝试加入的组织 <a href=\"%(realm_url)s\">%(realm_name)s</a> "
+"不允许使用含有\"+\"号的电子邮箱进行注册。"
 
 #: templates/zerver/invalid_email.html:33
 msgid "Please sign up using a valid email address."
@@ -3600,7 +3617,7 @@ msgstr "找不到组织"
 #: templates/zerver/invalid_realm.html:17
 #, python-format
 msgid "There is no Zulip organization at <b>%(current_url)s</b>."
-msgstr ""
+msgstr "在 <b>%(current_url)s</b> 中没有 Zulip 组织。"
 
 #: templates/zerver/invalid_realm.html:21
 #, python-format
@@ -3609,6 +3626,9 @@ msgid ""
 "\">get a list of your Zulip Cloud accounts</a>, or <a href=\"mailto:"
 "%(support_email)s\">contact Zulip support</a>."
 msgstr ""
+"请尝试不同的网址，<a href=\"%(root_domain_url)s/accounts/find/\">来取得您的 "
+"Zulip Cloud 账号列表</a>，或<a href=\"mailto:%(support_email)s\">联系 Zulip "
+"支援</a>。"
 
 #: templates/zerver/invalid_realm.html:23
 #, python-format
@@ -3673,10 +3693,8 @@ msgid "Log in with %(identity_provider)s"
 msgstr "使用%(identity_provider)s登录"
 
 #: templates/zerver/login.html:156
-#, fuzzy
-#| msgid "Already have an account?"
 msgid "Don't have an account?"
-msgstr "已有账号？"
+msgstr "还没有账号？"
 
 #: templates/zerver/login.html:167
 msgid ""
@@ -3724,6 +3742,8 @@ msgid ""
 "New members cannot currently join <a href=\"%(realm_url)s\">%(realm_name)s</"
 "a> because all Zulip Cloud licenses are in use."
 msgstr ""
+"新成员目前无法加入 <a href=\"%(realm_url)s\">%(realm_name)s</a>，因为所有的 "
+"Zulip Cloud 授权都在使用中。"
 
 #: templates/zerver/no_spare_licenses.html:19
 msgid ""
@@ -3751,6 +3771,9 @@ msgid ""
 "you got stuck here while trying to log in, this is most likely a server bug "
 "or misconfiguration."
 msgstr ""
+"看起来您是意外到达这个页面。这个网站是认证过程中的中途步骤，不应该被主动访问"
+"。如果您是直接來到这里，您可能输入了错误的网址。如果您在尝试登录时卡在这里，"
+"很可能是因为服务器错误或者设置出现问题。"
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:4
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:11
@@ -3761,13 +3784,13 @@ msgstr "更新需求"
 msgid ""
 "You are using old version of the Zulip desktop app that is no longer "
 "supported."
-msgstr ""
+msgstr "您正在使用已不再支持的旧版 Zulip 桌面应用程序。"
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:21
 msgid ""
 "The auto-update feature in this old version of Zulip desktop app no longer "
 "works."
-msgstr ""
+msgstr "此旧版 Zulip 桌面应用程序的自动更新功能已无法使用。"
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:30
 msgid "Download the latest release."
@@ -3790,6 +3813,9 @@ msgid ""
 "production/multiple-organizations.html\">documentation</a> on creating a new "
 "organization for more information."
 msgstr ""
+"在此服务器上建立新组织需要有效的组织建立链接。 请参考 <a href=\"https://"
+"zulip.readthedocs.io/en/stable/production/multiple-organizations.html\""
+">文件</a> 了解建立新组织的更多信息。"
 
 #: templates/zerver/portico_error_pages/realm_creation_link_invalid.html:4
 #: templates/zerver/portico_error_pages/realm_creation_link_invalid.html:11
@@ -3800,11 +3826,12 @@ msgstr "组织创建链接已过期或无效"
 msgid ""
 "Unfortunately, this is not a valid link for creating an organization. Please "
 "<a href=\"/new/\">obtain a new link</a> and try again."
-msgstr ""
+msgstr "非常抱歉，此链接无法用于建立组织。请 <a href=\"/new/\">取得新的链接</a> "
+"后再试一次。"
 
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html:11
 msgid "Unexpected Zulip server registration"
-msgstr ""
+msgstr "意外的 Zulip 服务器注册"
 
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html:13
 #, python-format
@@ -3832,6 +3859,8 @@ msgid ""
 "Zulip supports <a href=\"%(supported_browsers_page_link)s\">modern browsers</"
 "a> like Firefox, Chrome, and Edge."
 msgstr ""
+"Zulip 支持 <a href=\"%(supported_browsers_page_link)s\">现代浏览器</a>， 如 "
+"Firefox、Chrome 和 Edge。"
 
 #: templates/zerver/portico_error_pages/unsupported_browser.html:24
 #, python-format
@@ -3880,16 +3909,16 @@ msgid ""
 "mattermost\">Mattermost</a> or <a href=\"/help/import-from-"
 "rocketchat\">Rocket.Chat</a>."
 msgstr ""
+"了解如何从 <a href=\"/help/import-from-mattermost\">Mattermost</a> 或 <a "
+"href=\"/help/import-from-rocketchat\">Rocket.Chat</a> 导入。"
 
 #: templates/zerver/realm_creation_form.html:104
 msgid "Import chat history?"
 msgstr "导入历史消息？"
 
 #: templates/zerver/realm_import_post_process.html:5
-#, fuzzy
-#| msgid "Invalid organization"
 msgid "Finalize organization import"
-msgstr "无效的组织"
+msgstr "完成组织导入"
 
 #: templates/zerver/realm_import_post_process.html:13
 msgid "Organization import completed!"
