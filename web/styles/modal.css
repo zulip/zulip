@@ -457,6 +457,14 @@
     }
 }
 
+.modal__body,
+.modal__content {
+    .dropdown-widget-button,
+    .dropdown_widget_with_label_wrapper {
+        max-width: 100%;
+    }
+}
+
 .modal_password_input,
 .modal_url_input,
 .modal_text_input {
