@@ -6,6 +6,7 @@ import subprocess
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
+from dataclasses import asdict, dataclass
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -49,6 +50,17 @@ DATA_IMPORT_CLIENTS = {
     # Special client key to be used for data import messages.
     "ZulipDataImport": 5,
 }
+
+
+@dataclass
+class UploadRecordData:
+    content_type: str | None
+    last_modified: float
+    path: str
+    realm_id: int
+    s3_path: str
+    size: int
+    user_profile_id: int
 
 
 class SubscriberHandler:
@@ -658,7 +670,7 @@ def get_uploads(upload_dir: str, upload: list[str]) -> None:
 
 
 def process_uploads(
-    upload_list: list[ZerverFieldsT], upload_dir: str, processes: int
+    upload_list: list[UploadRecordData], upload_dir: str, processes: int
 ) -> list[ZerverFieldsT]:
     """
     This function downloads the uploads and saves it in the realm's upload directory.
@@ -669,12 +681,14 @@ def process_uploads(
     """
     logging.info("######### GETTING ATTACHMENTS #########\n")
     logging.info("DOWNLOADING ATTACHMENTS .......\n")
+    upload_records = []
     upload_url_list = []
     for upload in upload_list:
-        upload_url = upload["path"]
-        upload_s3_path = upload["s3_path"]
+        upload_url = upload.path
+        upload_s3_path = upload.s3_path
         upload_url_list.append([upload_url, upload_s3_path])
-        upload["path"] = upload_s3_path
+        upload.path = upload_s3_path
+        upload_records.append(asdict(upload))
 
     # Run downloads in parallel
     run_parallel(
@@ -686,7 +700,7 @@ def process_uploads(
     )
 
     logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
-    return upload_list
+    return upload_records
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:

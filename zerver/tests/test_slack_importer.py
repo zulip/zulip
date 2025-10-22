@@ -21,6 +21,7 @@ from zerver.actions.create_realm import do_create_realm, get_email_address_visib
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
+    UploadRecordData,
     ZerverFieldsT,
     build_defaultstream,
     build_recipient,
@@ -173,7 +174,7 @@ class SlackImporter(ZulipTestCase):
         list[ZerverFieldsT],
         list[ZerverFieldsT],
         list[ZerverFieldsT],
-        list[ZerverFieldsT],
+        list[UploadRecordData],
         list[ZerverFieldsT],
     ]:
         """
@@ -1563,7 +1564,7 @@ class SlackImporter(ZulipTestCase):
 
         # Test uploads
         self.assert_length(uploads, 1)
-        self.assertEqual(uploads[0]["path"], "https://files.slack.com/apple.png")
+        self.assertEqual(uploads[0].path, "https://files.slack.com/apple.png")
         self.assert_length(attachment, 1)
         self.assertEqual(attachment[0]["file_name"], "apple.png")
         self.assertEqual(attachment[0]["is_realm_public"], True)
@@ -2190,7 +2191,7 @@ by Pieter
         user_list: list[dict[str, Any]] = []
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
         attachments: list[dict[str, Any]] = []
-        uploads: list[dict[str, Any]] = []
+        uploads: list[UploadRecordData] = []
 
         zerver_usermessage = [{"id": 3}, {"id": 5}, {"id": 6}, {"id": 9}]
 
@@ -2376,7 +2377,7 @@ by Pieter
         }
 
         zerver_attachment: list[dict[str, Any]] = []
-        uploads_list: list[dict[str, Any]] = []
+        uploads_list: list[UploadRecordData] = []
 
         info = process_message_files(
             message=message,
@@ -2401,9 +2402,9 @@ by Pieter
         self.assertTrue(info["has_link"])
         self.assertTrue(info["has_image"])
 
-        self.assertEqual(uploads_list[0]["s3_path"], image_path)
-        self.assertEqual(uploads_list[0]["realm_id"], realm_id)
-        self.assertEqual(uploads_list[0]["user_profile_id"], alice_id)
+        self.assertEqual(uploads_list[0].s3_path, image_path)
+        self.assertEqual(uploads_list[0].realm_id, realm_id)
+        self.assertEqual(uploads_list[0].user_profile_id, alice_id)
 
     def test_bot_duplicates(self) -> None:
         self.assertEqual(

@@ -23,6 +23,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_avatar,
@@ -848,7 +849,7 @@ def convert_slack_workspace_messages(
     output_dir: str,
     convert_slack_threads: bool,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
-) -> tuple[list[ZerverFieldsT], list[ZerverFieldsT], list[ZerverFieldsT]]:
+) -> tuple[list[ZerverFieldsT], list[UploadRecordData], list[ZerverFieldsT]]:
     """
     Returns:
     1. reactions, which is a list of the reactions
@@ -874,7 +875,7 @@ def convert_slack_workspace_messages(
 
     total_reactions: list[ZerverFieldsT] = []
     total_attachments: list[ZerverFieldsT] = []
-    total_uploads: list[ZerverFieldsT] = []
+    total_uploads: list[UploadRecordData] = []
 
     dump_file_id = 1
 
@@ -1076,7 +1077,7 @@ def channel_message_to_zerver_message(
     list[ZerverFieldsT],
     list[ZerverFieldsT],
     list[ZerverFieldsT],
-    list[ZerverFieldsT],
+    list[UploadRecordData],
     list[ZerverFieldsT],
 ]:
     """
@@ -1089,7 +1090,7 @@ def channel_message_to_zerver_message(
     """
     zerver_message = []
     zerver_usermessage: list[ZerverFieldsT] = []
-    uploads_list: list[ZerverFieldsT] = []
+    uploads_list: list[UploadRecordData] = []
     zerver_attachment: list[ZerverFieldsT] = []
     reaction_list: list[ZerverFieldsT] = []
 
@@ -1282,7 +1283,7 @@ def process_message_files(
     users: list[ZerverFieldsT],
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
     zerver_attachment: list[ZerverFieldsT],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
 ) -> dict[str, Any]:
     has_attachment = False
     has_image = False
@@ -1324,12 +1325,17 @@ def process_message_files(
             s3_path, content_for_link = get_attachment_path_and_content(fileinfo, realm_id)
             markdown_links.append(content_for_link)
 
-            build_uploads(
-                slack_user_id_to_zulip_user_id[slack_user_id],
-                realm_id,
-                fileinfo,
-                s3_path,
-                uploads_list,
+            uploads_list.append(
+                UploadRecordData(
+                    content_type=None,
+                    last_modified=fileinfo["timestamp"],
+                    # Save Slack's URL here, which is used later while processing
+                    path=fileinfo["url_private"],
+                    realm_id=realm_id,
+                    s3_path=s3_path,
+                    size=fileinfo["size"],
+                    user_profile_id=slack_user_id_to_zulip_user_id[slack_user_id],
+                )
             )
 
             build_attachment(
@@ -1450,25 +1456,6 @@ def build_reactions(
             processed_reactions.add(reaction_tuple)
 
             reaction_list.append(reaction_dict)
-
-
-def build_uploads(
-    user_id: int,
-    realm_id: int,
-    fileinfo: ZerverFieldsT,
-    s3_path: str,
-    uploads_list: list[ZerverFieldsT],
-) -> None:
-    upload = dict(
-        path=fileinfo["url_private"],  # Save Slack's URL here, which is used later while processing
-        realm_id=realm_id,
-        content_type=None,
-        user_profile_id=user_id,
-        last_modified=fileinfo["timestamp"],
-        s3_path=s3_path,
-        size=fileinfo["size"],
-    )
-    uploads_list.append(upload)
 
 
 def get_message_sending_user(message: ZerverFieldsT) -> str | None:
