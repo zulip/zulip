@@ -176,6 +176,15 @@ class zulip::common {
       },
     },
 
+    # https://github.com/prometheus/pushgateway/releases
+    'pushgateway' => {
+      'version' => '1.11.1',
+      'sha256'  => {
+        'amd64'   => '6ce6ffab84d0d71195036326640295c02165462abd12b8092b0fa93188f5ee37',
+        'aarch64' => 'b6dc1c1c46d1137e5eda253f6291247e39330d3065a839857b947e59b4f3e64b',
+      },
+    },
+
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
       'version' => '1.79.0',

@@ -13,6 +13,12 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:3000"]
 
+  - job_name: "pushgateway"
+    scrape_interval: 2m
+    honor_labels: true
+    static_configs:
+      - targets: ["localhost:9091"]
+
   - job_name: "node"
     ec2_sd_configs:
       - region: us-east-1
