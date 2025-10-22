@@ -277,12 +277,17 @@ export function initialize_custom_date_type_fields(
         }
     }
 
+    let common_class_name = "modal_text_input";
+    if (for_profile_settings_panel) {
+        common_class_name = "settings_text_input";
+    }
+
     flatpickr($date_picker_elements, {
         altInput: true,
         // We would need to handle the altInput separately
         // than ".custom_user_field_value" elements to handle
         // invalid values typed in the input.
-        altInputClass: "date-field-alt-input settings_text_input",
+        altInputClass: "date-field-alt-input " + common_class_name,
         altFormat: "F j, Y",
         allowInput: true,
         static: true,
