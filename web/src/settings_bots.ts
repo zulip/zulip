@@ -125,7 +125,7 @@ export function generate_zuliprc_content(bot: {
     let token;
     // For outgoing webhooks, include the token in the zuliprc.
     // It's needed for authenticating to the Botserver.
-    if (bot.bot_type === 3) {
+    if (bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
         const services = bot_data.get_services(bot.user_id);
         assert(services !== undefined);
         const service = services[0];
