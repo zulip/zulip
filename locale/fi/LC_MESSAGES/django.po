@@ -18,16 +18,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-09-08 15:53+0000\n"
-"PO-Revision-Date: 2025-08-18 10:43+0000\n"
+"PO-Revision-Date: 2025-09-23 14:28+0000\n"
 "Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/"
-">\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
+"\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -5908,7 +5908,7 @@ msgstr "Vahvistuslinkkiä ei ole"
 #: zerver/lib/onboarding.py:60
 #, python-brace-format
 msgid "A note from {admin_group_syntax}:"
-msgstr ""
+msgstr "Viesti käyttäjältä {admin_group_syntax}:"
 
 #: zerver/lib/onboarding.py:91
 #, python-brace-format
@@ -6412,7 +6412,7 @@ msgstr "Laitetta ei tunnisteta push bouncerin toimesta"
 
 #: zerver/lib/push_notifications.py:1928
 msgid "No active registered push device"
-msgstr ""
+msgstr "Ei aktiivisia rekisteröityjä push-laitteita"
 
 #: zerver/lib/push_notifications.py:1941
 #, fuzzy
@@ -6431,6 +6431,8 @@ msgid ""
 "Push notification configuration issue on server, contact the server "
 "administrator or retry later."
 msgstr ""
+"Push-ilmoitusasetusvirhe palvelimella, ota yhteys ylläpitoon tai yritä "
+"uudestaan mylhemmin."
 
 #: zerver/lib/recipient_parsing.py:9
 msgid "Invalid data type for channel ID"
@@ -6970,7 +6972,7 @@ msgstr "{var_name} puuttuu"
 #: zerver/lib/webhooks/common.py:107
 #, python-brace-format
 msgid "Unknown 'PresetUrlOption': {config}"
-msgstr ""
+msgstr "Tuntematon PresentUrlOption: {config}"
 
 #: zerver/lib/webhooks/common.py:138
 #, python-brace-format
@@ -6992,11 +6994,11 @@ msgstr "Operaattoria {operator} ei tueta."
 msgid ""
 "The webhook secret is missing. Please set the webhook_secret while "
 "generating the URL."
-msgstr ""
+msgstr "Webhookin salaisuus puuttuu. Aseta webhook_secret urlia generoidessa."
 
 #: zerver/lib/webhooks/common.py:363
 msgid "Webhook signature verification failed."
-msgstr ""
+msgstr "Webhookin allekirjoituksen varmennus epäonnistui."
 
 #: zerver/lib/zcommand.py:24
 msgid "There should be a leading slash in the zcommand."
@@ -7010,6 +7012,7 @@ msgstr "Komentoa {command} ei ole olemassa"
 #: zerver/lib/zulip_update_announcements.py:745
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
+"`zulip_update_announcements_stream` on odotuksenvastaisesti deaktivoitu."
 
 #: zerver/middleware.py:471
 #, python-brace-format
@@ -7024,7 +7027,7 @@ msgstr "Käänteisvälipalvelimen asetusvirhe: {proxy_reason}"
 #: zerver/models/custom_profile_fields.py:45
 #, python-brace-format
 msgid "Invalid user IDs: {invalid_ids}"
-msgstr ""
+msgstr "Viallisia käyttäjien ID:itä: {invalid_ids}"
 
 #: zerver/models/custom_profile_fields.py:53
 #, python-brace-format
@@ -7861,7 +7864,7 @@ msgstr "**{policy}** kanava, jonka on luonut {user_name}. **Kuvaus.**"
 #: zerver/views/streams.py:1403
 #, python-brace-format
 msgid "{property} is not a boolean"
-msgstr ""
+msgstr "{property} ei ole boolenarvo"
 
 #: zerver/views/streams.py:1406
 #, python-brace-format
@@ -7953,6 +7956,8 @@ msgid ""
 "Nothing to do. Specify at least one of \"add\", \"delete\", "
 "\"add_subgroups\" or \"delete_subgroups\"."
 msgstr ""
+"Ei mitään tehtävää. Ainakin tarvitaan \"add\", \"delete\", \"add_subgroups\" "
+"tai \"delete_subgroups\"."
 
 #: zerver/views/user_groups.py:304
 #, python-brace-format
@@ -8060,7 +8065,7 @@ msgstr "Virheellinen uusi sähköpostiosoite."
 #: zerver/views/users.py:334
 #, python-brace-format
 msgid "New email value error: {message}"
-msgstr ""
+msgstr "Viallinen uusi sähköpostiosoite: {message}"
 
 #: zerver/views/users.py:473
 msgid "Failed to change owner, no such user"
@@ -8188,7 +8193,7 @@ msgstr "Sisältö ei voi olla tyhjä"
 
 #: zerver/webhooks/jotform/view.py:152
 msgid "Unable to handle Jotform payload"
-msgstr ""
+msgstr "Jotform-payloadia ei pystytty käsittelemään"
 
 #: zerver/webhooks/librato/view.py:176
 msgid "Malformed JSON input"
@@ -8217,22 +8222,24 @@ msgid ""
 "Your data export is complete. [View and download exports]"
 "({export_settings_link})."
 msgstr ""
+"Datojen vienti on valmis [Katsele ja lataa viedyt datat]"
+"({export_settings_link})."
 
 #: zilencer/auth.py:61
 msgid "The verification secret has expired"
-msgstr ""
+msgstr "Varmennesalaisuus on vanhentunut"
 
 #: zilencer/auth.py:63
 msgid "The verification secret is invalid"
-msgstr ""
+msgstr "Varmennesalaisuus on viallinen"
 
 #: zilencer/auth.py:65
 msgid "The verification secret is malformed"
-msgstr ""
+msgstr "Varmennesalaisuus on väärän muotoinen"
 
 #: zilencer/auth.py:67
 msgid "The verification secret is for a different hostname"
-msgstr ""
+msgstr "Varmennesalaisuus on toiselle laitenimelle"
 
 #: zilencer/auth.py:128
 msgid "Invalid subdomain for push notifications bouncer"
@@ -8256,6 +8263,7 @@ msgstr "Virheellinen token-tyyppi"
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr ""
+"{hostname} sisältää viallisia osia (kuten: polku, hakulauseke, fragmentti)."
 
 #: zilencer/views.py:172
 #, python-brace-format
@@ -8265,7 +8273,7 @@ msgstr "{hostname} ei ole oikeanmuotoinen palvelinnimi"
 #: zilencer/views.py:182
 #, python-brace-format
 msgid "{hostname} not yet registered"
-msgstr ""
+msgstr "{hostname} ei ole vielä rekisteröity"
 
 #: zilencer/views.py:234
 msgid "Invalid email address."
@@ -8274,12 +8282,12 @@ msgstr "Viallinen sähköpostisoite."
 #: zilencer/views.py:250
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
-msgstr ""
+msgstr "{domain} on viallinen koska slille ei ole MX-tietueita"
 
 #: zilencer/views.py:255
 #, python-brace-format
 msgid "{domain} does not exist"
-msgstr ""
+msgstr "{domain} ei ole olemassa"
 
 #: zilencer/views.py:357
 #, python-brace-format
@@ -8287,6 +8295,8 @@ msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
 "try again later or reach out to {support_email} for assistance."
 msgstr ""
+"Globaalit käyttörajat on käytetty lopppuun. Yritä uudestaan myöhemmin tai "
+"hae apua sähköpostitse osoitteesta {support_email}."
 
 #: zilencer/views.py:365
 msgid "Registration not found for this hostname"
