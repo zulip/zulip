@@ -13,13 +13,24 @@
                         {{> help_link_widget . }}
                         {{/if}}
                     </h1>
+                    {{#if (or subheader_html text_subheader)}}
+                    <div class="modal__subheader">
+                        {{#if subheader_html}}
+                            {{{ subheader_html }}}
+                        {{else}}
+                            {{ text_subheader }}
+                        {{/if}}
+                    </div>
+                    {{/if}}
                 </div>
                 {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
             </header>
+            {{#if body_html}}
             <main class="modal__content" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
                 {{{ body_html }}}
             </main>
+            {{/if}}
             <footer class="modal__footer">
                 {{#if footer_minor_text }}
                 <div class="dialog-widget-footer-minor-text">{{footer_minor_text}}</div>
