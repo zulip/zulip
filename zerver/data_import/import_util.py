@@ -671,7 +671,9 @@ def run_parallel_wrapper(
     f: Callable[[ListJobData], None], full_items: list[ListJobData], threads: int = 6
 ) -> None:
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
-
+    if threads == 1:
+        for item in full_items:
+            wrapping_function(f, item)
     with ProcessPoolExecutor(max_workers=threads) as executor:
         for count, future in enumerate(
             as_completed(executor.submit(wrapping_function, f, item) for item in full_items), 1
