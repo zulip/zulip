@@ -1717,8 +1717,7 @@ def do_convert_directory(
         avatar_list, avatar_folder, realm_id, threads, size_url_suffix="-512"
     )
 
-    uploads_folder = os.path.join(output_dir, "uploads")
-    uploads_records = process_uploads(uploads_list, uploads_folder, threads)
+    uploads_records = process_uploads(uploads_list, output_dir, threads)
     attachment = {"zerver_attachment": zerver_attachment}
 
     team_info_dict = get_slack_api_data("https://slack.com/api/team.info", "team", token=token)
