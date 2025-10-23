@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from collections.abc import Iterator
 from io import BytesIO
@@ -2239,8 +2240,7 @@ by Pieter
 
         self.assertEqual(test_reactions, reactions)
 
-    @mock.patch("zerver.data_import.slack.requests.get")
-    @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
+    @responses.activate
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
@@ -2252,9 +2252,7 @@ by Pieter
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
-        mock_process_uploads: mock.Mock,
         mock_attachment: mock.Mock,
-        mock_requests_get: mock.Mock,
     ) -> None:
         test_slack_dir = os.path.join(
             settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "slack_fixtures"
@@ -2280,17 +2278,35 @@ by Pieter
             {},
             team_info_fixture["team"],
         ]
-        mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
-        mock_requests_get.return_value.headers = {"Content-Type": "image/png"}
+
+        responses.add(
+            responses.GET,
+            re.compile(r"https://.*\.slack-edge\.com/.*"),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            re.compile(r"https://files\.slack\.com/.*"),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
 
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
             do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
 
+        realm_id = 0
+        uploads_folder = os.path.join(output_dir, "uploads", str(realm_id))
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
         self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
+        self.assertTrue(os.path.exists(uploads_folder))
+        self.assertTrue(os.listdir(uploads_folder) != [])
 
         realm_icons_path = os.path.join(output_dir, "realm_icons")
         realm_icon_records_path = os.path.join(realm_icons_path, "records.json")
@@ -2448,7 +2464,6 @@ by Pieter
         self.assertEqual(slack_emoji_name_to_codepoint["dog"], "1f436")
 
     @mock.patch("zerver.data_import.slack.requests.get")
-    @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
@@ -2460,7 +2475,6 @@ by Pieter
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
-        mock_process_uploads: mock.Mock,
         mock_attachment: mock.Mock,
         mock_requests_get: mock.Mock,
     ) -> None:
