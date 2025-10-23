@@ -2861,17 +2861,17 @@ class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
         result = super().get_user_details(attributes)
 
         extra_attr_names = self.conf.get("extra_attrs", [])
-        result["extra_attrs"] = {}
+        extra_attrs = {}
 
         if (groups_list := attributes.get("zulip_groups")) is not None:
-            result["extra_attrs"]["zulip_groups"] = groups_list
+            extra_attrs["zulip_groups"] = groups_list
 
         for extra_attr_name in extra_attr_names:
-            result["extra_attrs"][extra_attr_name] = self.get_attr(
-                attributes=attributes, conf_key=None, default_attribute=extra_attr_name
+            extra_attrs[extra_attr_name] = self.get_attr(
+                attributes=attributes, conf_key="<extra>", default_attributes=(extra_attr_name,)
             )
 
-        return result
+        return {**result, "extra_attrs": extra_attrs}
 
 
 class SAMLDocument:
@@ -3062,11 +3062,18 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         super().__init__(*args, **kwargs)
 
     @override
-    def get_idp(self, idp_name: str) -> ZulipSAMLIdentityProvider:
-        """Given the name of an IdP, get a SAMLIdentityProvider instance.
+    def get_idp(self, idp_name: str | None) -> ZulipSAMLIdentityProvider:
+        """Given the name of an IdP, get a SAMLIdentityProvider instance
         Forked to use our subclass of SAMLIdentityProvider for more flexibility."""
-        idp_config = self.setting("ENABLED_IDPS")[idp_name]
-        return ZulipSAMLIdentityProvider(idp_name, **idp_config)
+        enabled_idps: dict[str, dict[str, str]] = self.setting("ENABLED_IDPS")
+        if idp_name is None:  # nocoverage
+            # RelayState was missing, perhaps an IdP initiated flow
+            if len(enabled_idps) != 1:
+                raise AuthMissingParameter(self, "RelayState.idp")
+            # Use the only configured IDP
+            idp_name = next(iter(enabled_idps))
+        idp_config = enabled_idps[idp_name]
+        return ZulipSAMLIdentityProvider(self, idp_name, **idp_config)
 
     @override
     def auth_url(self) -> str:
