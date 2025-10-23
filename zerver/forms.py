@@ -358,7 +358,6 @@ class AltchaWidget(forms.TextInput):
                 '  challengeurl="/json/antispam_challenge"'
                 "  hidelogo"
                 "  hidefooter"
-                '  floating="bottom"'
                 "  refetchonexpire"
                 '  style="{}"'
                 '  strings="{}"'
