@@ -925,14 +925,15 @@ input[type="checkbox"] {
         display: inline-flex;
     }
 
-    .default_stream_choices_table {
-        margin-top: 2px;
-    }
-
     .choice-row {
         margin-bottom: 10px;
 
         &:last-of-type {
+            /* Remove margin-bottom for last choice row
+               to remove extra space between the modal
+               content and footer. */
+            margin-bottom: 0;
+
             .delete-choice {
                 display: none;
             }
