@@ -1179,3 +1179,7 @@ ul.modal-options-list {
         background: var(--color-background-active-popover-menu);
     }
 }
+
+#confirm_delete_attachments_modal .detached-attachments-modal-list {
+    margin-bottom: 0;
+}
