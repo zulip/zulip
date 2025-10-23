@@ -1183,3 +1183,10 @@ ul.modal-options-list {
 #confirm_delete_attachments_modal .detached-attachments-modal-list {
     margin-bottom: 0;
 }
+
+#demo-organization-conversion-modal {
+    .subdomain-setting,
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
