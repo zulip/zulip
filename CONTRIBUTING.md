@@ -10,6 +10,51 @@ To learn about ways to contribute without writing code, please see our
 suggestions for how you can [support the Zulip
 project](https://zulip.com/help/support-zulip-project).
 
+## How to be a successful contributor
+
+In our experience, to become an effective Zulip contributor, you should be
+excited to:
+
+- **Learn from documentation.** Zulip has over 185,000 words of [documentation
+  for contributors][documentation for contributors], and we expect you to make
+  good use of it.
+- **Aim for understanding**. To produce work that improves Zulip, you’ll need to
+  understand the relevant existing code, and figure out a good set of changes to
+  accomplish what you’re trying to do. Fiddling or vibe coding until things seem
+  to work, and then asking maintainers to verify code that you don’t understand
+  yourself, does not help the project.
+- **Take pride in your work**. Strive to write the best
+  [commits][commit discipline] you can, carefully [review][reviewing code] your
+  own work, and take the time to [explain][submitting a PR] it clearly to
+  project maintainers.
+- **Learn from feedback.** Every pull request undergoes a rigorous [review
+  process][review process]. We need contributors to carefully apply and respond
+  to the feedback they receive, and to take advantage of the learning experience
+  to avoid similar mistakes in future work.
+- **Communicate with intention.** Any piece of communication from you (a pull
+  request, a [question][great-questions] in the development community, etc.), is
+  a request for time and attention from Zulip’s maintainers. Successful
+  contributors put in the reasoning and writing effort required to
+  [communicate][how we communicate] clearly and succinctly, and don’t waste the
+  community’s time with AI slop.
+- **Communicate in the open.** Technical and product decisions are discussed
+  openly in the [Zulip development
+  community](https://zulip.com/development-community/) and [on
+  GitHub](https://github.com/zulip), so that we can all learn from each other.
+
+What about technical skills? You will need a baseline level of technical
+expertise to be able to understand the part of Zulip’s code base you’re working
+in, and make quality changes. If you find that you are constantly getting stuck
+as you work towards this, it might be best to hold off on trying to contribute,
+and focus on learning the relevant software engineering skills for now.
+
+[documentation for contributors]: https://zulip.readthedocs.io/en/latest/index.html#zulip-documentation-overview
+[commit discipline]: https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html
+[reviewing code]: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
+[submitting a PR]: https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html
+[review process]: https://zulip.readthedocs.io/en/latest/contributing/review-process.html
+[how we communicate]: https://zulip.readthedocs.io/en/latest/contributing/how-we-communicate.html
+
 ## Learning from the docs
 
 Zulip has a documentation-based approach to onboarding new contributors. As you
