@@ -44,11 +44,14 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
     }
     dialog_widget.launch({
         text_heading: display_topic_name,
-        html_body: "",
+        html_body: "<div></div>", // Placeholder, will be replaced in post_render.
         close_on_submit: true,
         id: "topic-summary-modal",
         footer_minor_text: $t({defaultMessage: "AI summaries may have errors."}),
         ...params,
+        on_show() {
+            $("#topic-summary-modal .modal__content").addClass("hide");
+        },
         post_render() {
             const close_on_success = false;
             dialog_widget.submit_api_request(
@@ -62,7 +65,9 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
                         const summary_html = render_topic_summary({
                             summary_markdown,
                         });
-                        $("#topic-summary-modal .modal__content").addClass("rendered_markdown");
+                        $("#topic-summary-modal .modal__content")
+                            .removeClass("hide")
+                            .addClass("rendered_markdown");
                         $("#topic-summary-modal .modal__content").html(summary_html);
                         rendered_markdown.update_elements(
                             $("#topic-summary-modal .modal__content"),
