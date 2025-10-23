@@ -59,14 +59,15 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    /* 12px 16px at 16px/1em */
-    padding: 0.75em 1em;
+    /* 0 16px 12px 16px at 16px/1em */
+    padding: 0 1em 0.75em;
     background-color: var(--color-background-modal-bar);
 }
 
 .modal__content + .modal__footer {
     /* These styles apply only when the modal content
        is present in the modal. */
+    padding: 1em 0.75em; /* 16px 12px at 16px/1em */
     border-top: 1px solid var(--color-border-modal-bar);
 }
 
@@ -126,6 +127,12 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+}
+
+.modal__subheader {
+    margin-top: 0.125em; /* 2px at 16px/1em */
+    line-height: 1.25; /* 20px at 16px/1em */
+    color: var(--color-modal-subheading-text);
 }
 
 .modal__close {
