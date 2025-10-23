@@ -10,6 +10,13 @@ lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip Server 11.x series
 
+### Zulip Server 11.4
+
+_Released 2025-10-23_
+
+- Fixed a bug that could cause the incoming email server to crash on
+  startup.
+
 ### Zulip Server 11.3
 
 _Released 2025-10-22_
