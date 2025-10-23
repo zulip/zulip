@@ -275,7 +275,7 @@
     .user-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
-        border: 1px solid var(--color-border-pill-container); 
+        border: 1px solid var(--color-border-pill-container);
 
         &.user-mention-me {
             color: var(--color-text-self-direct-mention);
