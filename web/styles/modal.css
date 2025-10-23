@@ -1146,3 +1146,11 @@ ul.modal-options-list {
         margin-bottom: 0;
     }
 }
+
+#create_bot_form {
+    margin-bottom: 0;
+
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
