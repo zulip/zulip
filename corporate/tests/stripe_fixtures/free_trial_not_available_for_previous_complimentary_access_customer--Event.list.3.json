@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -195,7 +195,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "free_trial_not_available_for_previous_complimentary_access_customer--Event.list.3.json",
@@ -209,7 +209,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -403,7 +403,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "free_trial_not_available_for_previous_complimentary_access_customer--Event.list.3.json",
@@ -417,7 +417,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -611,7 +611,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_paid": 0,
@@ -635,7 +635,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-09-30.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -657,6 +657,7 @@
           "currency": "usd",
           "customer": "cus_NORMALIZED",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "free_trial_not_available_for_previous_complimentary_access_customer--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": "ch_NORMALIZED",

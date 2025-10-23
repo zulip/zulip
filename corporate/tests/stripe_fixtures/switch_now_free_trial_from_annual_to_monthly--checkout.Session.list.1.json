@@ -1,7 +1,9 @@
 {
   "data": [
     {
-      "adaptive_pricing": null,
+      "adaptive_pricing": {
+        "enabled": false
+      },
       "after_expiration": null,
       "allow_promotion_codes": null,
       "amount_subtotal": null,
@@ -13,10 +15,27 @@
         "status": null
       },
       "billing_address_collection": "required",
+      "branding_settings": {
+        "background_color": "#ffffff",
+        "border_style": "rounded",
+        "button_color": "#0074d4",
+        "display_name": "Sandbox",
+        "font_family": "default",
+        "icon": {
+          "file": "file_1RCGizRVfKEFJaqcFHPvd6rl",
+          "type": "file"
+        },
+        "logo": {
+          "file": "file_1RCGiyRVfKEFJaqc9ny0K376",
+          "type": "file"
+        }
+      },
       "cancel_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1",
       "client_reference_id": null,
       "client_secret": null,
       "collected_information": {
+        "business_name": null,
+        "individual_name": null,
         "shipping_details": null
       },
       "consent": null,
@@ -35,7 +54,9 @@
       "customer_creation": null,
       "customer_details": {
         "address": null,
+        "business_name": null,
         "email": "hamlet@zulip.com",
+        "individual_name": null,
         "name": null,
         "phone": null,
         "tax_exempt": null,
@@ -55,6 +76,7 @@
       },
       "mode": "setup",
       "object": "checkout.session",
+      "origin_context": null,
       "payment_intent": null,
       "payment_link": null,
       "payment_method_collection": "always",
