@@ -1127,3 +1127,7 @@ ul.modal-options-list {
     /* 14px = 2 * 6px + 2 * 1px (6px padding and 1px border on left and right). */
     max-width: calc(100% - 14px);
 }
+
+#confirm_delete_attachments_modal .detached-attachments-modal-list {
+    margin-bottom: 0;
+}
