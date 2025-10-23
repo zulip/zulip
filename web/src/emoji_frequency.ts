@@ -15,7 +15,7 @@ export type ReactionData = {
     current_user_reacted_message_ids: Set<number>;
 };
 
-const MAX_FREQUENTLY_USED_EMOJI = 6;
+const MAX_FREQUENTLY_USED_EMOJI = 12;
 export const reaction_data = new Map<string, ReactionData>();
 
 export function update_frequently_used_emojis_list(): void {
