@@ -1190,3 +1190,15 @@ ul.modal-options-list {
         margin-bottom: 0;
     }
 }
+
+#demo_organization_add_email_form {
+    margin-bottom: 0;
+
+    .input-group {
+        margin-bottom: 0.3125em; /* 5px at 16px/1em */
+    }
+
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
