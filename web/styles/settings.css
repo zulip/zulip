@@ -855,6 +855,8 @@ input[type="checkbox"] {
         margin-bottom: 10px;
 
         &:last-of-type {
+            margin-bottom: 0;
+
             .delete-choice {
                 display: none;
             }
