@@ -671,7 +671,7 @@ def get_uploads(upload_dir: str, upload: list[str]) -> None:
 
 
 def process_uploads(
-    upload_list: list[ZerverFieldsT], upload_dir: str, processes: int
+    upload_list: list[ZerverFieldsT], output_dir: str, processes: int
 ) -> list[ZerverFieldsT]:
     """
     This function downloads the uploads and saves it in the realm's upload directory.
@@ -682,6 +682,8 @@ def process_uploads(
     """
     logging.info("######### GETTING ATTACHMENTS #########\n")
     logging.info("DOWNLOADING ATTACHMENTS .......\n")
+
+    upload_dir = os.path.join(output_dir, "uploads")
     upload_url_list = []
     for upload in upload_list:
         upload_url = upload["path"]
