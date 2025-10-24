@@ -1596,12 +1596,17 @@ ul.popover-menu-list {
     padding: 0.6666em;
 
     .topic-links-menu-title {
+        font-weight: 600;
         margin: 0;
     }
 
-    .popover-topic-links-list {
-        width: 400px;
-        max-width: 95vw;
+    .popover-topic-links-list a {
+        width: fit-content;
+        max-width: 85vw;
+        display: block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
     }
 
     .topic-links-menu-link-list + .topic-links-menu-link-list {

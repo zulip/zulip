@@ -23,6 +23,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
+import z from "zod";
 
 function get_conversation(instance: tippy.Instance): {
     stream_id: number;
@@ -57,6 +58,35 @@ function get_conversation(instance: tippy.Instance): {
     }
 
     return {stream_id, topic_name, url};
+}
+
+export function open_cross_topic_links(
+    stream_id: number,
+    topic_name: string,
+    placement: tippy.Placement,
+    target: tippy.ReferenceElement,
+): void {
+    popover_menus.toggle_popover_menu(target, {
+        theme: "popover-menu",
+        placement,
+        onShow(instance) {
+            popover_menus.popover_instances.topic_links = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popover_menus.on_show_prep(instance);
+
+            const context = {
+                links_from_narrow: message_store.topic_links_from_narrow(stream_id, topic_name),
+                links_to_narrow: message_store.topic_links_to_narrow(stream_id, topic_name),
+            };
+            instance.setContent(
+                ui_util.parse_html(render_left_sidebar_topic_links_popover(context)),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.topic_links = null;
+        },
+    });
 }
 
 export function initialize(): void {
@@ -227,16 +257,19 @@ export function initialize(): void {
 
                 $popper.on("click", ".sidebar-open-topic-links", () => {
                     const {stream_id, topic_name} = get_conversation(instance);
-                    const context = {
-                        links_from_narrow: message_store.topic_links_from_narrow(
-                            stream_id,
-                            topic_name,
-                        ),
-                        links_to_narrow: message_store.topic_links_to_narrow(stream_id, topic_name),
-                    };
-                    instance.setContent(
-                        ui_util.parse_html(render_left_sidebar_topic_links_popover(context)),
-                    );
+                    // Keep the same placement when replacing the popover. Ideally we
+                    // could get this from the props, but left_sidebar_tippy_options
+                    // sets up fallback placements, and I haven't found a way to get the
+                    // real placement value, so we're parsing it with zod instead.
+                    const raw_placement = $(instance.popper)
+                        .find(".tippy-box")
+                        .attr("data-placement");
+                    const placement = z
+                        .enum(["top", "bottom", "left", "right"])
+                        .parse(raw_placement);
+                    const reference = instance.reference;
+                    popover_menus.hide_current_popover_if_visible(instance);
+                    open_cross_topic_links(stream_id, topic_name, placement, reference);
                 });
 
                 $popper.on("click", ".sidebar-popover-copy-link-to-topic", (e) => {
