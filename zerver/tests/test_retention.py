@@ -15,6 +15,7 @@ from zerver.actions.scheduled_messages import check_schedule_message, delete_sch
 from zerver.actions.submessage import do_add_submessage
 from zerver.lib.retention import (
     archive_messages,
+    archive_messages_by_recipient,
     clean_archived_data,
     get_realms_and_streams_for_archiving,
     move_messages_to_archive,
@@ -41,6 +42,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 
@@ -486,6 +488,89 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         for message in archived_messages:
             self.assertEqual(message.archive_transaction_id, transactions[2].id)
 
+    def test_update_direct_message_group_stats_when_archiving_expired_messages(self) -> None:
+        zulip_realm = get_realm("zulip")
+        zulip_realm.message_retention_days = 1
+        zulip_realm.save()
+
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            message_ids = [
+                self.send_group_direct_message(hamlet, [othello, cordelia]),
+                self.send_group_direct_message(iago, [othello, cordelia]),
+                self.send_group_direct_message(iago, [hamlet, cordelia]),
+                self.send_group_direct_message(hamlet, [iago, cordelia]),
+                self.send_group_direct_message(desdemona, [othello, hamlet, iago]),
+            ]
+
+        dm_group_1 = get_or_create_direct_message_group([hamlet.id, othello.id, cordelia.id])
+        self.assertEqual(dm_group_1.total_messages, 1)
+        self.assertEqual(dm_group_1.first_message_id, message_ids[0])
+        self.assertEqual(dm_group_1.last_message_id, message_ids[0])
+
+        dm_group_2 = get_or_create_direct_message_group([iago.id, hamlet.id, cordelia.id])
+        self.assertEqual(dm_group_2.total_messages, 2)
+        self.assertEqual(dm_group_2.first_message_id, message_ids[2])
+        self.assertEqual(dm_group_2.last_message_id, message_ids[3])
+
+        expired_time = now + timedelta(days=2)  # More than retention policy of 1 day
+        with time_machine.travel(expired_time, tick=False):
+            archive_messages()
+
+        self.assert_length(Message.objects.filter(id__in=message_ids), 0)
+
+        dm_group_1 = get_or_create_direct_message_group([hamlet.id, othello.id, cordelia.id])
+        self.assertEqual(dm_group_1.total_messages, 0)
+        self.assertIsNone(dm_group_1.first_message)
+        self.assertIsNone(dm_group_1.last_message)
+
+        dm_group_2 = get_or_create_direct_message_group([iago.id, hamlet.id, cordelia.id])
+        self.assertEqual(dm_group_2.total_messages, 0)
+        self.assertIsNone(dm_group_2.first_message)
+        self.assertIsNone(dm_group_2.last_message)
+
+    def test_update_direct_message_group_stats_when_archiving_using_recipient(self) -> None:
+        zulip_realm = get_realm("zulip")
+
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            message_ids = [
+                self.send_group_direct_message(hamlet, [othello, cordelia]),
+                self.send_group_direct_message(othello, [hamlet, cordelia]),
+                self.send_group_direct_message(hamlet, [othello, cordelia]),
+            ]
+
+        dm_group = get_or_create_direct_message_group([hamlet.id, othello.id, cordelia.id])
+        self.assertEqual(dm_group.total_messages, 3)
+        self.assertEqual(dm_group.first_message_id, message_ids[0])
+        self.assertEqual(dm_group.last_message_id, message_ids[2])
+
+        expired_time = now + timedelta(days=2)  # More than message_retention_days
+        with time_machine.travel(expired_time, tick=False):
+            assert dm_group.recipient is not None
+            archive_messages_by_recipient(
+                recipient=dm_group.recipient,
+                message_retention_days=1,
+                realm=zulip_realm,
+            )
+
+        self.assert_length(Message.objects.filter(id__in=message_ids), 0)
+
+        dm_group = get_or_create_direct_message_group([hamlet.id, othello.id, cordelia.id])
+        self.assertEqual(dm_group.total_messages, 0)
+        self.assertIsNone(dm_group.first_message)
+        self.assertIsNone(dm_group.last_message)
+
 
 class TestArchivingSubMessages(ArchiveMessagesTestingBase):
     def test_archiving_submessages(self) -> None:
@@ -621,6 +706,38 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
 
         restore_all_data_from_archive()
         self._verify_restored_data(msg_ids, usermsg_ids)
+
+    def test_direct_message_group_stats_archiving(self) -> None:
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+
+        msg_ids = [
+            self.send_group_direct_message(self.sender, [othello, cordelia]) for i in range(3)
+        ]
+        usermsg_ids = self._get_usermessage_ids(msg_ids)
+
+        dm_group_id_list = [self.sender.id, othello.id, cordelia.id]
+        direct_message_group = get_or_create_direct_message_group(dm_group_id_list)
+        self.assertEqual(direct_message_group.total_messages, 3)
+        self.assertEqual(direct_message_group.first_message_id, min(msg_ids))
+        self.assertEqual(direct_message_group.last_message_id, max(msg_ids))
+
+        self._assert_archive_empty()
+        move_messages_to_archive(message_ids=msg_ids)
+        self._verify_archive_data(msg_ids, usermsg_ids)
+
+        direct_message_group = get_or_create_direct_message_group(dm_group_id_list)
+        self.assertEqual(direct_message_group.total_messages, 0)
+        self.assertIsNone(direct_message_group.first_message_id)
+        self.assertIsNone(direct_message_group.last_message_id)
+
+        restore_all_data_from_archive()
+        self._verify_restored_data(msg_ids, usermsg_ids)
+
+        direct_message_group = get_or_create_direct_message_group(dm_group_id_list)
+        self.assertEqual(direct_message_group.total_messages, 3)
+        self.assertEqual(direct_message_group.first_message_id, min(msg_ids))
+        self.assertEqual(direct_message_group.last_message_id, max(msg_ids))
 
     def test_move_messages_to_archive_with_realm_argument(self) -> None:
         realm = get_realm("zulip")
@@ -1151,10 +1268,29 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(26):
             do_delete_messages(realm, messages, acting_user=None)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))
         self.assert_length({message.archive_transaction_id for message in archived_messages}, 1)
+
+    def test_do_delete_multiple_group_direct_messages(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+
+        message_ids = [
+            self.send_group_direct_message(hamlet, [othello, cordelia]) for i in range(3)
+        ]
+        messages = Message.objects.filter(id__in=message_ids)
+
+        with self.assert_database_query_count(28):
+            do_delete_messages(realm, messages, acting_user=None)
+        self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
+
+        archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
+        self.assert_length({message.archive_transaction_id for message in archived_messages}, 1)
+        self.assertEqual(archived_messages.count(), len(message_ids))
