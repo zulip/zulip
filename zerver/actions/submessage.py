@@ -91,6 +91,8 @@ def do_add_submessage(
         sender_id=sender_id,
         content=content,
     )
-    target_user_ids = event_recipient_ids_for_action_on_messages([submessage.message])
+    target_user_ids = event_recipient_ids_for_action_on_messages(
+        [submessage.message.id], submessage.message.is_channel_message
+    )
 
     send_event_on_commit(realm, event, target_user_ids)
