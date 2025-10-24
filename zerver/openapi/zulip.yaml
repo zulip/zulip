@@ -12090,6 +12090,8 @@ paths:
                   $ref: "#/components/schemas/CanSubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
+                can_create_topic_group:
+                  $ref: "#/components/schemas/CanCreateTopicGroup"
                 folder_id:
                   description: |
                     This parameter adds the newly created channel to the specified
@@ -12140,6 +12142,8 @@ paths:
               can_subscribe_group:
                 contentType: application/json
               can_resolve_topics_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
               folder_id:
                 contentType: application/json
@@ -17380,6 +17384,7 @@ paths:
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
                                 can_resolve_topics_group: {}
+                                can_create_topic_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -22234,6 +22239,7 @@ paths:
                                 can_send_message_group: {}
                                 can_resolve_topics_group: {}
                                 can_subscribe_group: {}
+                                can_create_topic_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -22826,6 +22832,26 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_create_topic_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to create new topics in this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        Note that using this permission requires also having permission to send
+                        messages in the channel.
+
+                        **Changes**: New in Zulip 12.0 (feature level ZF-b7d3e1). Previously, if you
+                        could send messages in a channel, you could create topics in the channel.
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
 
             encoding:
               is_private:
@@ -22857,6 +22883,8 @@ paths:
               can_subscribe_group:
                 contentType: application/json
               can_resolve_topics_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
       responses:
         "200":
@@ -23409,6 +23437,8 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_add_subscribers_group:
                   $ref: "#/components/schemas/ChannelCanAddSubscribersGroup"
+                can_create_topic_group:
+                  $ref: "#/components/schemas/CanCreateTopicGroup"
                 can_delete_any_message_group:
                   $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
                 can_delete_own_message_group:
@@ -23434,6 +23464,8 @@ paths:
               announce:
                 contentType: application/json
               can_add_subscribers_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
               can_administer_channel_group:
                 contentType: application/json
@@ -25136,6 +25168,7 @@ components:
             can_send_message_group: {}
             can_subscribe_group: {}
             can_resolve_topics_group: {}
+            can_create_topic_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
               type: integer
@@ -25345,6 +25378,8 @@ components:
           $ref: "#/components/schemas/CanSubscribeGroup"
         can_resolve_topics_group:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
+        can_create_topic_group:
+          $ref: "#/components/schemas/CanCreateTopicGroup"
         subscriber_count:
           type: number
           description: |
@@ -26500,6 +26535,8 @@ components:
           $ref: "#/components/schemas/CanSubscribeGroup"
         can_resolve_topics_group:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
+        can_create_topic_group:
+          $ref: "#/components/schemas/CanCreateTopicGroup"
         is_archived:
           type: boolean
           description: |
@@ -28714,6 +28751,21 @@ components:
             in a channel regardless of the value of this setting.
 
             **Changes**: New in Zulip 11.0 (feature level 402).
+
+            [setting-values]: /api/group-setting-values
+    CanCreateTopicGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to create a new topic in this channel.
+
+            Note that using this permission requires also having permission to
+            send messages in the channel.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-b7d3e1). Previously,
+            if you could send messages in a channel, you could create topics in
+            the channel.
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:
