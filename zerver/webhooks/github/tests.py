@@ -779,3 +779,33 @@ class GitHubSponsorsHookTests(WebhookTestCase):
             TOPIC_SPONSORS,
             expected_message,
         )
+
+    def test_issue_edited_title_renames_topic(self) -> None:
+        # 1. Setup: Create an initial message in the old topic
+        stream_name = "github"
+        old_topic = "public-repo issue #2: Old Title"
+        new_topic = "public-repo issue #2: New Title"
+
+        self.subscribe(self.example_user("hamlet"), stream_name)
+        self.send_stream_message(
+            self.example_user("hamlet"),
+            stream_name,
+            topic_name=old_topic,
+            content="To be renamed",
+        )
+
+        # 2. Trigger the webhook
+        expected_message = (
+            "baxterthehacker edited issue "
+            "[public-repo#2](https://github.com/baxterthehacker/public-repo/issues/2)."
+        )
+        self.check_webhook(
+            "issues__edited_title",
+            expected_topic_name=new_topic,
+            expected_message=expected_message,
+        )
+
+        # 3. Verify the rename (case-insensitive check)
+        msg = self.get_last_message()
+        self.assertIn("New Title".casefold(), msg.topic_name.casefold())
+

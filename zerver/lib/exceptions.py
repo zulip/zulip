@@ -268,7 +268,9 @@ class RateLimitedError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("API usage exceeded rate limit")
+        return _(
+            "API usage exceeded rate limit; see https://zulip.com/api/http-headers#rate-limiting-response-headers"
+        )
 
     @property
     @override

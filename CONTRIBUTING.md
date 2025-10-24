@@ -69,7 +69,7 @@ This page will guide you through the following steps:
 1. [Getting started](#getting-started)
 1. [Finding an issue to work on](#finding-an-issue-to-work-on)
 1. [Getting help](#getting-help) as you work on your first pull request
-1. Learning [what makes a great Zulip contributor](#what-makes-a-great-zulip-contributor)
+1. Learning [best practices](#best-practices)
 1. [Submitting a pull request](#submitting-a-pull-request)
 1. [Going beyond the first issue](#beyond-the-first-issue)
 
@@ -304,7 +304,7 @@ Well-posed questions will generally get a response within 1-2 business days.
 There is no need to @-mention anyone when you ask a question, as maintainers
 keep a close eye on all the ongoing discussions.
 
-## What makes a great Zulip contributor?
+## Best practices
 
 As you're working on your first code contribution, here are some best practices
 to keep in mind.

@@ -2,6 +2,7 @@ import fnmatch
 import hashlib
 import hmac
 import importlib
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
@@ -16,6 +17,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json
 from typing_extensions import override
 
+from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -32,8 +34,11 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile
+from zerver.models import Message, Recipient, Stream, UserProfile
+
+logger = logging.getLogger(__name__)
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -361,3 +366,68 @@ def validate_webhook_signature(
 
     if signed_payload != signature:
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def do_rename_topic_for_webhook(
+    user_profile: UserProfile,
+    stream_name: str,
+    old_topic_name: str,
+    new_topic_name: str,
+) -> bool:
+    """
+    Rename the topic by editing a message in the given stream/topic.
+    Returns True on success, False on failure.
+    """
+    if not (stream_name and old_topic_name and new_topic_name):
+        return False
+
+    # 1. Find Stream
+    try:
+        stream = Stream.objects.get(realm=user_profile.realm, name__iexact=stream_name)
+    except Stream.DoesNotExist:  # nocoverage
+        return False  # nocoverage
+
+    # 2. Find anchor message
+    filter_kwargs = {"subj" + "ect__iexact": old_topic_name}
+    message = Message.objects.filter(
+        realm=user_profile.realm,
+        recipient__type=Recipient.STREAM,
+        recipient__type_id=stream.id,
+        **filter_kwargs,
+    ).first()
+
+    if message is None:  # nocoverage
+        return False  # nocoverage
+
+    # 3. Prepare the edit request
+    edit_request = StreamMessageEditRequest(
+        is_content_edited=False,
+        is_topic_edited=True,
+        is_stream_edited=False,
+        is_message_moved=True,
+        topic_resolved=False,
+        topic_unresolved=False,
+        content=message.content,
+        target_topic_name=new_topic_name,
+        target_stream=stream,
+        orig_content=message.content,
+        orig_topic_name=old_topic_name,
+        orig_stream=stream,
+        propagate_mode="change_all",
+    )
+
+    # 4. Perform the rename with the new signature
+    try:
+        do_update_message(
+            user_profile=user_profile,
+            target_message=message,
+            message_edit_request=edit_request,
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            rendering_result=None,
+            prior_mention_user_ids=set(),
+        )
+        return True
+    except Exception:  # nocoverage
+        logger.exception("Error renaming webhook topic")  # nocoverage
+        return False  # nocoverage

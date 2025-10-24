@@ -1,0 +1,18 @@
+{
+  "action": "edited",
+  "issue": {
+    "html_url": "https://github.com/baxterthehacker/public-repo/issues/2",
+    "number": 2,
+    "title": "New Title",
+    "body": "Test issue body",
+    "user": { "login": "baxterthehacker", "html_url": "https://github.com/baxterthehacker" }
+  },
+  "changes": { "title": { "from": "Old Title" } },
+  "repository": {
+    "name": "public-repo",
+    "full_name": "baxterthehacker/public-repo",
+    "private": false,
+    "html_url": "https://github.com/baxterthehacker/public-repo"
+  },
+  "sender": { "login": "baxterthehacker", "html_url": "https://github.com/baxterthehacker" }
+}
