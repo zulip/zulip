@@ -400,6 +400,16 @@ function process_newly_read_message(
     recent_view_ui.update_topic_unread_count(message);
 }
 
+function process_newly_unread_message(message: Message): void {
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        
+        msg_list.view.show_messages_as_unread([message.id]);
+    }
+    unread_ui.notify_messages_remain_unread();
+    unread_ui.update_unread_counts();
+}
+
+
 export function mark_as_unread_from_here(message_id: number): void {
     assert(message_lists.current !== undefined);
     const current_filter = message_lists.current.data.filter;
@@ -428,27 +438,36 @@ export function mark_as_unread_from_here(message_id: number): void {
     let display_count: string;
 
     function do_mark_unread(message_ids_to_update: number[] | undefined): void {
-        // If we have already fully fetched the current view, we can
-        // send the server the set of IDs to update, rather than
-        // updating on the basis of the narrow.
-        if (
-            message_ids_to_update !== undefined &&
-            (message_ids_to_update.length < 200 || likely_offline)
-        ) {
-            do_mark_unread_by_ids(message_ids_to_update);
-        } else {
-            const include_anchor = true;
-            const messages_marked_unread_till_now = 0;
-            const num_after = INITIAL_BATCH_SIZE - 1;
-            do_mark_unread_by_narrow(
-                message_id,
-                include_anchor,
-                messages_marked_unread_till_now,
-                num_after,
-                narrow,
-            );
-        }
+    if (message_ids_to_update !== undefined) {
+        message_ids_to_update.forEach((id) => {
+            const message = message_store.get(id);
+            if (message && !message.unread) {
+                message.unread = true; 
+                console.log("Processed")
+                process_newly_unread_message(message); 
+            }
+        });
     }
+
+    if (
+        message_ids_to_update !== undefined &&
+        (message_ids_to_update.length < 200 || likely_offline)
+    ) {
+        do_mark_unread_by_ids(message_ids_to_update);
+    } else {
+        const include_anchor = true;
+        const messages_marked_unread_till_now = 0;
+        const num_after = INITIAL_BATCH_SIZE - 1;
+        do_mark_unread_by_narrow(
+            message_id,
+            include_anchor,
+            messages_marked_unread_till_now,
+            num_after,
+            narrow,
+        );
+    }
+}
+
 
     if (!may_contain_multiple_conversations) {
         // Never display a prompt in a conversation view.
@@ -798,6 +817,17 @@ export function notify_server_messages_read(
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
         return;
+    }
+
+    const likely_offline = watchdog.suspects_user_is_offline() || !navigator.onLine;
+    console.log("Offline check:", likely_offline);
+    if (likely_offline) {
+        messages.forEach((message) => {
+            if (message.unread) {
+                message.unread = false;
+                process_newly_read_message(message, options);
+            }
+        });
     }
 
     message_flags.send_read(messages);
