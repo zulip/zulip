@@ -75,7 +75,7 @@ function format(reminders: Map<number, Reminder>): ReminderRenderContext[] {
     return formatted_reminders;
 }
 
-export function launch(): void {
+export function launch(select_reminder_id?: number): void {
     $("#reminders-overlay-container").html(render_reminders_overlay());
     overlays.open_overlay({
         name: "reminders",
@@ -91,6 +91,21 @@ export function launch(): void {
     const $messages_list = $("#reminders-overlay .overlay-messages-list");
     $messages_list.append($(rendered_list));
 
+    if (select_reminder_id !== undefined) {
+        // Check that the reminder to be focused exists.
+        const $reminder_to_be_focused = $(
+            `#reminders-overlay .reminder-row[data-reminder-id=${CSS.escape(
+                select_reminder_id.toString(),
+            )}]`,
+        );
+        if ($reminder_to_be_focused.length > 0) {
+            messages_overlay_ui.set_initial_element(
+                select_reminder_id.toString(),
+                keyboard_handling_context,
+            );
+            return;
+        }
+    }
     const first_element_id = keyboard_handling_context.get_items_ids()[0];
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
 }
@@ -128,5 +143,14 @@ export function initialize(): void {
 
     $("body").on("focus", ".reminder-info-box", function (this: HTMLElement) {
         messages_overlay_ui.activate_element(this, keyboard_handling_context);
+    });
+
+    $("body").on("click", ".message-reminder-overlay-link", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const reminder_id = $(this).attr("data-reminder-id");
+        assert(reminder_id !== undefined);
+        launch(Number.parseInt(reminder_id, 10));
     });
 }
