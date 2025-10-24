@@ -204,11 +204,11 @@ export function make_server_callback(
     message_id: number,
 ): (opts: {
     msg_type: string;
-    data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+    data: string | PollWidgetOutboundData | TodoWidgetOutboundData | undefined;
 }) => void {
     return function (opts: {
         msg_type: string;
-        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData | undefined;
     }) {
         const url = "/json/submessage";
 
