@@ -161,7 +161,7 @@ class Command(ZulipBaseCommand):
             # This does an implicit "distinct"
             all_emails = server_users.union(realm_users).values_list("email", flat=True)
             del options["from_address"]
-            email_sender = custom_email_sender(
+            email_sender, _ = custom_email_sender(
                 dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL, **options
             )
 
