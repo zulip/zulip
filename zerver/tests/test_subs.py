@@ -29,6 +29,7 @@ from zerver.actions.streams import (
     bulk_remove_subscriptions,
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
+    do_change_stream_permission,
     do_deactivate_stream,
     do_set_stream_property,
     do_unarchive_stream,
@@ -70,7 +71,7 @@ from zerver.lib.subscription_info import (
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.user_groups import UserGroupMembershipDetails
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_group_setting_value_for_api
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -740,6 +741,180 @@ class StreamAdminTest(ZulipTestCase):
             "property": "history_public_to_subscribers",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+    def test_updating_protected_history_and_can_create_topic_group_for_streams(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        stream = self.make_stream(
+            "stream", realm, invite_only=True, history_public_to_subscribers=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name="role:everyone", realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name="role:moderators", realm=realm, is_system_group=True
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        anonymous_group = UserGroupMembersData(
+            direct_members=[user_profile.id],
+            direct_subgroups=[moderators_system_group.id],
+        )
+
+        error_msg = "Unsupported parameter combination: history_public_to_subscribers, can_create_topic_group"
+
+        def check_stream_property_update(
+            property_name: str,
+            setting_value: bool | int | UserGroupMembersData,
+            expect_fail: bool = False,
+        ) -> None:
+            params = {property_name: orjson.dumps(setting_value).decode()}
+            if property_name == "can_create_topic_group":
+                params = {property_name: orjson.dumps({"new": setting_value}).decode()}
+
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+            stream.refresh_from_db()
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+                return
+
+            self.assert_json_success(result)
+            if property_name == "can_create_topic_group":
+                expected_value = setting_value
+                current_value = get_group_setting_value_for_api(stream.can_create_topic_group)
+                self.assertEqual(expected_value, current_value)
+            else:
+                self.assertEqual(getattr(stream, property_name), setting_value)
+
+        # Test changing can_create_topic_group setting for a private stream
+        # with protected history.
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
+
+        check_stream_property_update(
+            "can_create_topic_group", moderators_system_group.id, expect_fail=True
+        )
+        check_stream_property_update(
+            "can_create_topic_group", hamletcharacters_group.id, expect_fail=True
+        )
+        check_stream_property_update("can_create_topic_group", anonymous_group, expect_fail=True)
+        check_stream_property_update("can_create_topic_group", everyone_system_group.id)
+
+        # Test changing stream to have protected history for different
+        # can_create_topic_group setting values.
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
+        # Testing for a system group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", moderators_system_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False, expect_fail=True)
+
+        # Testing for a user defined group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", hamletcharacters_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False, expect_fail=True)
+
+        # Testing for an anonymous group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", anonymous_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False, expect_fail=True)
+
+        # Testing for everyone group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", everyone_system_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False)
+
+        # Reset stream permissions.
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
+
+        # Test when both "history_public_to_subscribers" and "can_create_topic_group"
+        # are updated in the same request.
+        # Testing for a system group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": moderators_system_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, error_msg)
+
+        # Testing for a user defined group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": hamletcharacters_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, error_msg)
+
+        # Testing for an anonymous group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": anonymous_group}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, error_msg)
+
+        # Testing for everyone system group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": everyone_system_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.history_public_to_subscribers, False)
+        self.assertEqual(stream.can_create_topic_group.id, everyone_system_group.id)
+
+        # Stream can be set to an anonymous group if its history
+        # is also made public.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+            "can_create_topic_group": orjson.dumps({"new": anonymous_group}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.history_public_to_subscribers, True)
+        self.assertEqual(list(stream.can_create_topic_group.direct_members.all()), [user_profile])
+        self.assertEqual(
+            list(stream.can_create_topic_group.direct_subgroups.all()), [moderators_system_group]
+        )
+
+        # Test with an anonymous group with no members and only
+        # everyone system group as subgroup.
+        anonymous_group = UserGroupMembersData(
+            direct_members=[],
+            direct_subgroups=[everyone_system_group.id],
+        )
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": anonymous_group}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.history_public_to_subscribers, False)
+        self.assertEqual(stream.can_create_topic_group.id, everyone_system_group.id)
 
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")

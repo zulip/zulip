@@ -22527,9 +22527,14 @@ paths:
                     It's an error for this parameter to be false for a public or
                     web-public channel and when is_private is false.
 
+                    This can only be `false` if `can_create_topic_group` for the channel
+                    is the `role:everyone` [system group][system-groups].
+
                     **Changes**: Before Zulip 6.0 (feature level 136), `history_public_to_subscribers`
                     was silently ignored unless the request also contained either `is_private` or
                     `is_web_public`.
+
+                    [system-groups]: /api/group-setting-values#system-groups
                   type: boolean
                   example: false
                 is_default_stream:
@@ -22841,10 +22846,14 @@ paths:
                         Note that using this permission requires also having permission to send
                         messages in the channel.
 
+                        For [private channels with protected history](/help/channel-permissions#private-channels),
+                        this setting can only be set to `role:everyone` [system group][system-groups].
+
                         **Changes**: New in Zulip 12.0 (feature level 441). Previously, if you
                         could send messages in a channel, you could create topics in the channel.
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
                       example:
                         {
                           "new":
@@ -28763,11 +28772,16 @@ components:
             Note that using this permission requires also having permission to
             send messages in the channel.
 
+            Note that this must be the `role:everyone` [system group][system-groups]
+            for [private channels with protected history][private-channels].
+
             **Changes**: New in Zulip 12.0 (feature level 441). Previously,
             if you could send messages in a channel, you could create topics in
             the channel.
 
             [setting-values]: /api/group-setting-values
+            [private-channels]: /help/channel-permissions/#private-channels
+            [system-groups]: /api/group-setting-values#system-groups
     LinkifierPattern:
       description: |
         The [Python regular

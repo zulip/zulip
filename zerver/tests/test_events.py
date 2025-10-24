@@ -1480,7 +1480,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(event["stream_id"], private_stream.id)
 
     def test_events_on_changing_private_stream_permission_settings(self) -> None:
-        self.make_stream("private_stream", invite_only=True)
+        self.make_stream("private_stream", invite_only=True, history_public_to_subscribers=True)
         self.subscribe(self.example_user("iago"), "private_stream")
         for setting_name in Stream.stream_permission_group_settings:
             if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
