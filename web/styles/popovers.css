@@ -824,6 +824,11 @@ ul.popover-group-menu-member-list {
             &.empty-topic-only {
                 cursor: default;
             }
+
+            &.invalid-topic-input {
+                border-color: var(--color-invalid-input-border);
+                box-shadow: var(--invalid-input-box-shadow);
+            }
         }
     }
 
@@ -892,6 +897,10 @@ ul.popover-group-menu-member-list {
             display: inline-block;
             margin-right: 10px;
         }
+    }
+
+    .new-topic-name-error {
+        color: hsl(0deg 100% 50%);
     }
 }
 

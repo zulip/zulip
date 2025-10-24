@@ -519,10 +519,31 @@ function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: numb
 
     $topic_edit_save_button.removeClass("topic-required");
 
+    if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+        const topic_val = $inline_topic_edit_input.val()!;
+        const existing_topics_in_stream = stream_topic_history
+            .get_recent_topic_names(stream_id)
+            .map((topic) => topic.toLowerCase());
+        if (
+            !existing_topics_in_stream.includes(topic_val.trim().toLowerCase()) &&
+            stream_topic_history.has_history_for(stream_id)
+        ) {
+            $topic_edit_save_button.prop("disabled", true);
+            $topic_edit_save_button
+                .closest(".topic-edit-save-wrapper")
+                .attr(
+                    "data-tippy-content",
+                    compose_validate.CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE,
+                );
+            return;
+        }
+    }
+
     // If we reach here, it means the save button was disabled previously
     // and the user has started typing in the input field, probably to fix
     // the error. So, we re-enable the save button.
     $topic_edit_save_button.prop("disabled", false);
+    $topic_edit_save_button.closest(".topic-edit-save-wrapper").removeAttr("data-tippy-content");
 
     if (stream_data.can_use_empty_topic(stream_id)) {
         const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
