@@ -14196,6 +14196,14 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                web_inbox_show_channel_folders:
+                  type: boolean
+                  description: |
+                    Determines whether the web/desktop application's Inbox view displays
+                    any channel folders configured by the organization.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-00a230).
+                  example: true
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
@@ -14537,6 +14545,8 @@ paths:
               web_stream_unreads_count_display_policy:
                 contentType: application/json
               hide_ai_features:
+                contentType: application/json
+              web_inbox_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
@@ -17850,6 +17860,13 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          web_inbox_show_channel_folders:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's Inbox view displays
+                              any channel folders configured by the organization.
+
+                              **Changes**: New in Zulip 11.0 (feature level ZF-00a230).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
@@ -20763,6 +20780,13 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          web_inbox_show_channel_folders:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's Inbox view displays
+                              any channel folders configured by the organization.
+
+                              **Changes**: New in Zulip 11.0 (feature level ZF-00a230).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
@@ -22043,6 +22067,13 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                web_inbox_show_channel_folders:
+                  type: boolean
+                  description: |
+                    Determines whether the web/desktop application's Inbox view displays
+                    any channel folders configured by the organization.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-00a230).
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
@@ -22471,6 +22502,8 @@ paths:
               web_stream_unreads_count_display_policy:
                 contentType: application/json
               hide_ai_features:
+                contentType: application/json
+              web_inbox_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
