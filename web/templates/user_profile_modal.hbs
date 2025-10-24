@@ -110,62 +110,72 @@
 
                     <div class="tabcontent" id="user-profile-streams-tab">
                         <div class="alert stream_list_info"></div>
-                        {{#if show_user_subscribe_widget}}
-                            <div class="header-section">
-                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
-                            </div>
-                            {{> user_profile_subscribe_widget}}
-                        {{/if}}
                         <div class="stream-list-top-section">
                             <div class="header-section">
                                 <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
                             </div>
-                            <div class="stream-search-container">
-                                <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter' }}" />
-                                <button type="button" class="clear_search_button" id="clear_stream_search">
-                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                                </button>
+                            <div class="stream-list-container">
+                                <div class="stream-search-container filter-input has-input-icon has-input-button input-element-wrapper">
+                                    <i class="input-icon zulip-icon zulip-icon-search" aria-hidden="true"></i>
+                                    <input type="text" class="input-element stream-search" placeholder="{{t 'Filter' }}" />
+                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral " id="clear_stream_search">
+                                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="subscription-stream-list" data-simplebar data-simplebar-tab-index="-1">
+                                    <ul class="user-stream-list" data-empty="{{t 'No channel subscriptions.' }}" data-search-results-empty="{{t 'No matching channels.' }}"></ul>
+                                </div>
                             </div>
                         </div>
-                        <div class="subscription-stream-list empty-list">
-                            <table class="user-stream-list" data-empty="{{t 'No channel subscriptions.'}}" data-search-results-empty="{{t 'No matching channels' }}"></table>
-                        </div>
+                        {{#if show_user_subscribe_widget}}
+                            <div class="stream-list-bottom-section">
+                                <div class="header-section">
+                                    <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
+                                </div>
+                                {{> user_profile_subscribe_widget}}
+                            </div>
+                        {{/if}}
                     </div>
 
                     <div class="tabcontent" id="user-profile-groups-tab">
                         <div class="alert user-profile-group-list-alert"></div>
-                        {{#if show_user_group_container}}
-                            <div class="header-section">
-                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
-                            </div>
-                            <div id="groups-to-add" class="add-button-container">
-                                <div id="user-group-to-add">
-                                    <div class="add-user-group-container">
-                                        <div class="pill-container">
-                                            <div class="input" contenteditable="true"
-                                              data-placeholder="{{t 'Add user groups' }}">
-                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
-                            </div>
-                        {{/if}}
                         <div class="group-list-top-section">
                             <div class="header-section">
                                 <h3 class="group-tab-element-header">{{t 'Group membership' }}</h3>
                             </div>
-                            <div class="group-search-container">
-                                <input type="text" class="group-search modal_text_input" placeholder="{{t 'Filter' }}" />
-                                <button type="button" class="clear_search_button" id="clear_groups_search">
-                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                                </button>
+                            <div class="group-list-container">
+                                <div class="group-search-container filter-input has-input-icon has-input-button input-element-wrapper">
+                                    <i class="input-icon zulip-icon zulip-icon-search"></i>
+                                    <input type="text" class="input-element group-search" placeholder="{{t 'Filter' }}" />
+                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral " id="clear_groups_search">
+                                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="subscription-group-list" data-simplebar data-simplebar-tab-index="-1">
+                                    <ul class="user-group-list" data-empty="{{t 'Not a member of any groups.' }}" data-search-results-empty="{{t 'No matching user groups' }}"></ul>
+                                </div>
                             </div>
                         </div>
-                        <div class="subscription-group-list empty-list">
-                            <table class="user-group-list" data-empty="{{t 'Not a member of any groups.'}}" data-search-results-empty="{{t 'No matching user groups' }}"></table>
-                        </div>
+                        {{#if show_user_group_container}}
+                            <div class="group-list-bottom-section">
+                                <div class="header-section">
+                                    <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                                </div>
+                                <div id="groups-to-add" class="add-button-container">
+                                    <div id="user-group-to-add">
+                                        <div class="add-user-group-container">
+                                            <div class="pill-container">
+                                                <div class="input" contenteditable="true"
+                                                  data-placeholder="{{t 'Add user groups' }}">
+                                                    {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
+                                </div>
+                            </div>
+                        {{/if}}
                     </div>
                     <div class="tabcontent" id="manage-profile-tab"></div>
                 </div>

@@ -15,7 +15,9 @@
     white-space: nowrap;
 }
 
-#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section) {
+#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section),
+#user-profile-modal .stream-list-container .input-element-wrapper,
+#user-profile-modal .group-list-container .input-element-wrapper {
     /* We normalize this based on Firefox's 31px-tall input,
        raising Chrome's (28px) and Safari's (30px) to all
        match, so that `top:` and other offset values are
