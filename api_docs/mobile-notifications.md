@@ -52,17 +52,17 @@ Sample JSON data that gets encrypted:
 
 **Changes**: New in Zulip 11.0 (feature level 413).
 
-### New direct message
+### New direct message / group direct message
 
 Sample JSON data that gets encrypted:
 ```json
 {
   "content": "test content",
   "message_id": 46,
-  "pm_users": "6,10,12,15",
   "realm_name": "Zulip Dev",
   "realm_url": "http://zulip.testserver",
   "recipient_type": "direct",
+  "recipient_user_ids": [6,10,12,15],
   "sender_avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
   "sender_full_name": "aaron",
   "sender_id": 6,
@@ -72,14 +72,18 @@ Sample JSON data that gets encrypted:
 }
 ```
 
-- **Group direct messages**: The `pm_users` string field is only
-present for group direct messages, containing a sorted comma-separated
-list of all user IDs in the group direct message conversation,
+**Changes**: In Zulip 11.0 (feature level ZF-f9e97c), replaced the
+`pm_users` field with `recipient_user_ids`. It's a sorted array of
+all user IDs participating in a direct message (DM) or group DM conversation,
 including both `user_id` and `sender_id`.
 
-**Changes**: New in Zulip 11.0 (feature level 413).
+* Previously, `pm_users` was included only for group DMs; `recipient_user_ids`
+is present for both 1:1 and group DM conversations.
 
-### New group direct message
+* The old `pm_users` field was a string containing a comma-separated list of
+sorted user IDs. `recipient_user_ids` has a more structured array format.
+
+New in Zulip 11.0 (feature level 413).
 
 ### Remove notifications
 
