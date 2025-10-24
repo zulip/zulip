@@ -1,4 +1,5 @@
 :root {
+    --collapse-expand-animation-content-height: 0;
     /* Zulip color palette */
     /* stylelint-disable color-no-hex */
     /* grey */
