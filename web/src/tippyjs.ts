@@ -9,6 +9,7 @@ import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
 
+import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
@@ -976,6 +977,23 @@ export function initialize(): void {
                 return undefined;
             }
             return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#recipient_box_clear_topic_button",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const stream_id = compose_state.stream_id();
+            let content = $t({defaultMessage: "New topic"});
+            if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                content = $t({defaultMessage: "Clear topic"});
+            }
+            instance.setContent(content);
         },
         appendTo: () => document.body,
         onHidden(instance) {

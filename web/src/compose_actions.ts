@@ -15,6 +15,7 @@ import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as drafts from "./drafts.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
@@ -411,6 +412,15 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             compose_state.set_stream_id("");
             opts.topic = "";
             compose_recipient.toggle_compose_recipient_dropdown();
+        }
+
+        if (
+            is_clear_topic_button_triggered &&
+            stream &&
+            !stream_data.can_create_new_topics_in_stream(stream.stream_id)
+        ) {
+            // Open the typahead so that user can select an existing topic.
+            composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
         }
     } else {
         // Open stream selection dropdown if no stream is selected.
