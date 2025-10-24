@@ -93,6 +93,7 @@ class StreamDict(TypedDict, total=False):
     topics_policy: int | None
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
+    can_create_topic_group: UserGroup | None
     can_delete_any_message_group: UserGroup | None
     can_delete_own_message_group: UserGroup | None
     can_move_messages_out_of_channel_group: UserGroup | None
@@ -348,6 +349,7 @@ def create_stream_if_needed(
     topics_policy: int | None = None,
     can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
+    can_create_topic_group: UserGroup | None = None,
     can_delete_any_message_group: UserGroup | None = None,
     can_delete_own_message_group: UserGroup | None = None,
     can_move_messages_out_of_channel_group: UserGroup | None = None,
@@ -477,6 +479,7 @@ def create_streams_if_needed(
             topics_policy=stream_dict.get("topics_policy", None),
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
+            can_create_topic_group=stream_dict.get("can_create_topic_group", None),
             can_delete_any_message_group=stream_dict.get("can_delete_any_message_group", None),
             can_delete_own_message_group=stream_dict.get("can_delete_own_message_group", None),
             can_move_messages_out_of_channel_group=stream_dict.get(
@@ -1617,6 +1620,7 @@ def list_to_streams(
             stream_dict["can_administer_channel_group"] = group_settings_map[
                 "can_administer_channel_group"
             ]
+            stream_dict["can_create_topic_group"] = group_settings_map["can_create_topic_group"]
             stream_dict["can_delete_any_message_group"] = group_settings_map[
                 "can_delete_any_message_group"
             ]
@@ -1727,6 +1731,9 @@ def stream_to_dict(
     can_administer_channel_group = get_group_setting_value_for_register_api(
         stream.can_administer_channel_group_id, anonymous_group_membership
     )
+    can_create_topic_group = get_group_setting_value_for_register_api(
+        stream.can_create_topic_group_id, anonymous_group_membership
+    )
     can_delete_any_message_group = get_group_setting_value_for_register_api(
         stream.can_delete_any_message_group_id, anonymous_group_membership
     )
@@ -1760,6 +1767,7 @@ def stream_to_dict(
         is_archived=stream.deactivated,
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_create_topic_group=can_create_topic_group,
         can_delete_any_message_group=can_delete_any_message_group,
         can_delete_own_message_group=can_delete_own_message_group,
         can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
