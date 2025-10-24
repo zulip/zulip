@@ -127,7 +127,7 @@ export function is_white_space_pre(paste_html: string): boolean {
 
 function is_from_excel(html_fragment: HTMLBodyElement): boolean {
     const html_tag = html_fragment.parentElement;
-    if (!html_tag || html_tag.nodeName !== "HTML") {
+    if (html_tag?.nodeName !== "HTML") {
         return false;
     }
 
@@ -166,7 +166,7 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
 // something like LibreOffice Writer.
 function is_from_libreoffice_calc(body_tag: HTMLBodyElement): boolean {
     const html_tag = body_tag.parentElement;
-    if (!html_tag || html_tag.nodeName !== "HTML") {
+    if (html_tag?.nodeName !== "HTML") {
         return false;
     }
 

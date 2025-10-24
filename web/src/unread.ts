@@ -597,7 +597,7 @@ class UnreadTopicCounter {
             // topic in this stream containing a given unread message
             // ID. If it's not in this stream, we'll get undefined.
             const stream_topic = this.reverse_lookup.get(message_id);
-            if (stream_topic !== undefined && stream_topic.stream_id === stream_id) {
+            if (stream_topic?.stream_id === stream_id) {
                 // Important: We lower-case topics here before adding them
                 // to this set, to support case-insensitive checks.
                 result.add(stream_topic.topic.toLowerCase());
