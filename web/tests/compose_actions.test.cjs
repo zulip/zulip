@@ -92,6 +92,7 @@ const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const compose_reply = zrequire("compose_reply");
+const compose_validate = zrequire("compose_validate");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
@@ -170,7 +171,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
-    override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
+    override_rewire(compose_validate, "update_posting_policy_banner_post_validation", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
@@ -323,7 +324,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
-    override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
+    override_rewire(compose_validate, "update_posting_policy_banner_post_validation", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_private_message_recipient_ids({override});
     mock_template("inline_decorated_channel_name.hbs", false, noop);
@@ -392,7 +393,6 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
     override_private_message_recipient_ids({override});
-    override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
