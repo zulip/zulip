@@ -737,6 +737,13 @@ export function discard_stream_property_element_changes(
         case "folder_id":
             settings_components.set_channel_folder_dropdown_value(sub);
             break;
+        case "default_code_block_language":
+            assert(typeof property_value === "string");
+            settings_components.set_dropdown_list_widget_setting_value(
+                property_name,
+                property_value,
+            );
+            break;
         default:
             if (property_value !== undefined) {
                 const validated_property_value = z
