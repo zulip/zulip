@@ -2,6 +2,7 @@ import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as typeahead from "../shared/src/typeahead.ts";
 
 import * as blueslip from "./blueslip.ts";
@@ -650,7 +651,7 @@ export function pm_perma_link(message: Message): string | undefined {
 }
 
 export function get_slug_from_full_name(full_name: string): string {
-    return full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+    return internal_url.encodeHashComponent(full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-"));
 }
 
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
