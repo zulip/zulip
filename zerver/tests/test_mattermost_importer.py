@@ -46,7 +46,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(mattermost_data["team"], 2)
         self.assertEqual(mattermost_data["team"][0]["name"], "gryffindor")
 
-        self.assert_length(mattermost_data["channel"], 6)
+        self.assert_length(mattermost_data["channel"], 9)
         self.assertEqual(mattermost_data["channel"][0]["name"], "gryffindor-common-room")
         self.assertEqual(mattermost_data["channel"][0]["team"], "gryffindor")
 
@@ -252,7 +252,7 @@ class MatterMostImporter(ZulipTestCase):
                 team_name=team_name,
             )
 
-        self.assert_length(zerver_stream, 4)
+        self.assert_length(zerver_stream, 7)
 
         self.assertEqual(zerver_stream[0]["name"], "Gryffindor common room")
         self.assertEqual(zerver_stream[0]["invite_only"], False)
@@ -288,6 +288,15 @@ class MatterMostImporter(ZulipTestCase):
             "Super long channel name, it's more than 60 characters, whic…",  # codespell:ignore whic
         )
         self.assertGreaterEqual(Stream.MAX_NAME_LENGTH, len(zerver_stream[3]["name"]))
+        self.assertEqual(
+            zerver_stream[4]["name"], "Super long channel name, it's more than 60 characters, … (2)"
+        )
+        self.assertGreaterEqual(Stream.MAX_NAME_LENGTH, len(zerver_stream[4]["name"]))
+        # Identical truncated channel names doesn't collide
+        self.assertEqual(
+            zerver_stream[5]["name"], "Super long channel name, it's more than 60 characters, … (3)"
+        )
+        self.assertGreaterEqual(Stream.MAX_NAME_LENGTH, len(zerver_stream[5]["name"]))
 
         self.assertTrue(stream_id_mapper.has("gryffindor-common-room"))
         self.assertTrue(stream_id_mapper.has("gryffindor-quidditch-team"))
@@ -751,15 +760,18 @@ class MatterMostImporter(ZulipTestCase):
             {"harry@zulip.com", "ron@zulip.com", "snape@zulip.com"}, exported_user_emails
         )
 
-        self.assert_length(realm["zerver_stream"], 4)
+        self.assert_length(realm["zerver_stream"], 7)
         exported_stream_names = self.get_set(realm["zerver_stream"], "name")
-        self.assertEqual(
+        self.assertSetEqual(
             exported_stream_names,
             {
                 "Gryffindor common room",
                 "Gryffindor quidditch team",
                 "Dumbledores army",
                 "Super long channel name, it's more than 60 characters, whic…",  # codespell:ignore whic
+                "Super long channel name, it's more than 60 characters, … (2)",
+                "Super long channel name, it's more than 60 characters, … (3)",
+                "Gryffindor quidditch team (2)",
             },
         )
         self.assertEqual(
@@ -770,11 +782,11 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 7)
+        self.assert_length(exported_recipient_ids, 10)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
         self.assertEqual(exported_recipient_types, {1, 2})
         exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
-        self.assert_length(exported_recipient_type_ids, 4)
+        self.assert_length(exported_recipient_type_ids, 7)
 
         exported_subscription_userprofile = self.get_set(
             realm["zerver_subscription"], "user_profile"
