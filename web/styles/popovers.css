@@ -1598,9 +1598,13 @@ ul.popover-menu-list {
 
 #topic-links-menu-popover {
     color: var(--color-text-popover-menu) !important;
-    padding: 0.6666em;
+
+    .popover-topic-links-list {
+        padding: 0 0.6666em 0.6666em;
+    }
 
     .topic-links-menu-title {
+        padding: 0.6666em 0.6666em 0;
         font-weight: 600;
         margin: 0;
     }
