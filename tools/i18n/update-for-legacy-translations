@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import glob
 import os
 import re
 from subprocess import check_output
@@ -239,11 +240,19 @@ def update_for_legacy_stream_translations(
         print(f"Updated {number_of_updates} strings in: {path}")
 
 
+expected_legacy_filenames = set()
 for locale in get_locales():
     current = get_json_filename(locale)
     legacy = get_legacy_filename(locale)
+    expected_legacy_filenames.add(legacy)
     if os.path.exists(current) and os.path.exists(legacy):
         print(f"Checking legacy translations for: {current}")
         current_translations = get_translations(current)
         legacy_translations = get_translations(legacy)
         update_for_legacy_stream_translations(current_translations, legacy_translations, current)
+
+for extra_file in (
+    set(glob.glob("locale/*/legacy_stream_translations.json")) - expected_legacy_filenames
+):
+    print(f"Removing dangling legacy translation file {extra_file}")
+    os.unlink(extra_file)
