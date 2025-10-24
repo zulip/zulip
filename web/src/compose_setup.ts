@@ -637,6 +637,11 @@ export function initialize(): void {
         // chat* is permitted.
         compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
+        const stream_id = compose_state.stream_id()!;
+        if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+            // Open the typahead so that user can select an existing topic.
+            composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
+        }
     });
 
     $("#compose-direct-recipient").on("click", "#compose-new-direct-recipient-button", (e) => {
