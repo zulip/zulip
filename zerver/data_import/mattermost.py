@@ -197,15 +197,30 @@ def convert_channel_data(
 
     streams = []
     initialize_stream_membership_dicts()
-
+    channel_name_count: dict[str, int] = {}
     for channel_dict in channel_data_list:
         now = int(timezone_now().timestamp())
         stream_id = stream_id_mapper.get(channel_dict["name"])
         stream_name = channel_dict["name"]
         invite_only = get_invite_only_value_from_channel_type(channel_dict["type"])
-        channel_display_name = truncate_content(
-            channel_dict["display_name"], Stream.MAX_NAME_LENGTH, "…"
-        )
+        channel_display_name = channel_dict["display_name"]
+
+        if channel_display_name in channel_name_count:
+            channel_name_count[channel_display_name] += 1
+            collision = channel_name_count[channel_display_name]
+            count = f" ({collision})"
+
+            channel_display_name = (
+                truncate_content(
+                    channel_display_name, Stream.MAX_NAME_LENGTH - len(f"{count}"), "…"
+                )
+                + f"{count}"
+            )
+        else:
+            channel_name_count[channel_display_name] = 1
+            channel_display_name = truncate_content(
+                channel_display_name, Stream.MAX_NAME_LENGTH, "…"
+            )
 
         stream = build_stream(
             date_created=now,
