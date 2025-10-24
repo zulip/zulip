@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import random
 from base64 import b64encode
 from urllib.parse import quote, urlencode, urljoin
 
@@ -22,6 +21,7 @@ from pydantic import Json
 from requests_oauthlib import OAuth2Session
 from typing_extensions import TypedDict
 
+from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.cache import (
@@ -311,16 +311,19 @@ def get_bigbluebutton_url(
 ) -> HttpResponse:
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
-    id = "zulip-" + str(random.randint(100000000000, 999999999999))
+    meeting_id = "zulip-" + str(user_profile.uuid)
 
     # We sign our data here to ensure a Zulip user cannot tamper with
     # the join link to gain access to other meetings that are on the
     # same bigbluebutton server.
     signed = Signer().sign_object(
         {
-            "meeting_id": id,
+            "meeting_id": meeting_id,
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
+            "bbb_origin": "Zulip",
+            "bbb_origin_version": ZULIP_VERSION,
+            "bbb_origin_tag": ZULIP_MERGE_BASE,
             "moderator": request.user.id,
         }
     )
@@ -352,6 +355,9 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             "meetingID": bigbluebutton_data["meeting_id"],
             "name": bigbluebutton_data["name"],
             "lockSettingsDisableCam": bigbluebutton_data["lock_settings_disable_cam"],
+            "meta_bbb-origin": bigbluebutton_data["bbb_origin"],
+            "meta_bbb-origin-version": bigbluebutton_data["bbb_origin_version"],
+            "meta_bbb-origin-tag": bigbluebutton_data["bbb_origin_version"],
         },
         quote_via=quote,
     )
