@@ -1,5 +1,7 @@
 type MaybeGetStreamName = (id: number) => string | undefined;
 
+const MIN_SLUG_LENGTH_DIFF_FOR_SHORTENING = 30;
+
 const hashReplacements = new Map([
     ["%", "."],
     ["(", ".28"],
@@ -39,6 +41,15 @@ export function stream_id_to_slug(
     return `${stream_id}-${name}`;
 }
 
+export function encode_slug(stream_id: number, slug: string): string {
+    const encoded_slug = encodeHashComponent(slug);
+    const length_diff = encoded_slug.length - slug.length;
+    if (length_diff > Math.max(slug.length, MIN_SLUG_LENGTH_DIFF_FOR_SHORTENING)) {
+        return String(stream_id);
+    }
+    return encoded_slug;
+}
+
 export function encode_stream_id(
     stream_id: number,
     maybe_get_stream_name: MaybeGetStreamName,
@@ -47,7 +58,7 @@ export function encode_stream_id(
     // URI encoding piece.
     const slug = stream_id_to_slug(stream_id, maybe_get_stream_name);
 
-    return encodeHashComponent(slug);
+    return encode_slug(stream_id, slug);
 }
 
 export function by_stream_url(

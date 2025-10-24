@@ -55,7 +55,7 @@ export function encode_stream_id(stream_id: number): string {
     // URI encoding piece
     const slug = stream_data.id_to_slug(stream_id);
 
-    return internal_url.encodeHashComponent(slug);
+    return internal_url.encode_slug(stream_id, slug);
 }
 
 export function decode_operand(operator: string, operand: string): string {
