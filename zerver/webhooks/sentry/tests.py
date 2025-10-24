@@ -191,6 +191,16 @@ Traceback:
 ```"""
         self.check_webhook("event_for_message_node", expected_topic_name, expected_message)
 
+    def test_event_for_error_python(self) -> None:
+        expected_topic_name = "Database connection timeout"
+        expected_message = """\
+    **New error:** [Database connection timeout](https://sentry.io/organizations/example-org/issues/12345/events/abc123/)
+    ```quote
+    **level:** error
+    **timestamp:** 2024-01-15 10:30:45
+    ```"""
+        self.check_webhook("event_for_error_python", expected_topic_name, expected_message)
+
     def test_event_for_message_python(self) -> None:
         expected_topic_name = "A simple message-based issue."
         expected_message = """\

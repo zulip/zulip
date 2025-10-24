@@ -47,7 +47,14 @@ Traceback:
 """
 )
 # Because of the \n added at the end of each context element,
-# this will actually look better in the traceback.
+
+ERROR_EVENT_TEMPLATE = """
+    **New error:** [{title}]({web_link})
+    ```quote
+    **level:** {level}
+    **timestamp:** {datetime}
+    ```
+    """
 
 ISSUE_CREATED_MESSAGE_TEMPLATE = """
 **New issue created:** {title}
@@ -174,7 +181,9 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
         # The event was triggered by a sentry.capture_message() call
         # (in the Python Sentry SDK) or something similar.
         body = MESSAGE_EVENT_TEMPLATE.format(**context)
-
+    elif event.get("type") == "error" and "exception" not in event:
+        # Handle error events that are not exceptions
+        body = ERROR_EVENT_TEMPLATE.format(**context)
     else:
         raise UnsupportedWebhookEventTypeError("unknown-event type")
 
