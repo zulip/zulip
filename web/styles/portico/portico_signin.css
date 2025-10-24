@@ -1581,3 +1581,46 @@ button#register_auth_button_gitlab {
 .self-hosting-login-help-text {
     margin-top: 10px;
 }
+
+.altcha .altcha-main {
+    display: inline;
+}
+
+.altcha .altcha-main .altcha-label {
+    font-weight: 300;
+    font-size: 0.8em;
+    color: inherit;
+    text-align: center;
+    padding-left: 5px;
+    display: inline;
+}
+
+.altcha .altcha-checkbox {
+    display: inline;
+    margin-right: 5px;
+}
+
+.altcha {
+    width: 100%;
+    margin: auto;
+    border: none !important;
+    margin-bottom: -47.8889px;
+}
+
+.altcha.altcha-checkbox-hidden {
+    .altcha-checkbox {
+        display: none;
+    }
+
+    .altcha-main .altcha-label {
+        padding-left: 0;
+    }
+}
+
+#new-realm-creation .new-organization-button {
+    margin-bottom: 0;
+}
+
+#new-realm-creation #altcha-submit-button-container {
+    margin-bottom: 30px;
+}
