@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import (
     build_message_send_dict,
     check_message,
@@ -79,7 +80,12 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
-from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
+from zerver.models.users import (
+    get_system_bot,
+    get_user,
+    get_user_by_delivery_email,
+    is_cross_realm_bot_email,
+)
 from zerver.views.message_send import InvalidMirrorInputError
 
 
@@ -91,10 +97,14 @@ class MessagePOSTTest(ZulipTestCase):
         error_msg: str | None = None,
         *,
         allow_unsubscribed_sender: bool = False,
+        topic_name: str = "test",
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(
-                user, stream_name, allow_unsubscribed_sender=allow_unsubscribed_sender
+                user,
+                stream_name,
+                allow_unsubscribed_sender=allow_unsubscribed_sender,
+                topic_name=topic_name,
             )
             result = self.api_get(user, "/api/v1/messages/" + str(msg_id))
             self.assert_json_success(result)
@@ -531,6 +541,217 @@ class MessagePOSTTest(ZulipTestCase):
             "Not authorized to send to channel 'private_stream",
             allow_unsubscribed_sender=True,
         )
+
+    def test_can_create_topic_group_permission(self) -> None:
+        realm = get_realm("zulip")
+
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+
+        desdemona_owned_bot = self.create_test_bot(
+            short_name="whatever1",
+            full_name="whatever1",
+            user_profile=desdemona,
+        )
+        iago_owned_bot = self.create_test_bot(
+            short_name="whatever2",
+            full_name="whatever2",
+            user_profile=iago,
+        )
+        cordelia_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=cordelia,
+        )
+        othello_owned_bot = self.create_test_bot(
+            short_name="whatever4",
+            full_name="whatever4",
+            user_profile=othello,
+        )
+        notification_bot = get_system_bot("notification-bot@zulip.com", realm.id)
+
+        bot_without_owner = do_create_user(
+            email="free-bot@zulip.testserver",
+            password="",
+            realm=realm,
+            full_name="freebot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
+        )
+        can_create_topic_error_msg = (
+            "You do not have permission to create new topics in this channel."
+        )
+
+        stream_name = "Verona"
+        stream = get_stream(stream_name, realm)
+
+        def check_sending_message_for_can_create_topic_group(
+            sender: UserProfile,
+            topic_name: str = "new_topic",
+            expect_fail: bool = False,
+        ) -> None:
+            if expect_fail:
+                self._send_and_verify_message(
+                    sender,
+                    stream_name,
+                    can_create_topic_error_msg,
+                    topic_name=topic_name,
+                )
+                return
+
+            if is_cross_realm_bot_email(sender.delivery_email):
+                internal_send_stream_message(
+                    notification_bot, stream, topic_name, "Message from notification bot."
+                )
+                message = self.get_last_message()
+                self.assertEqual(message.content, "Message from notification bot.")
+            else:
+                self._send_and_verify_message(sender, stream_name, topic_name=topic_name)
+
+            sent_message = self.get_last_message()
+            # Delete last sent message, so that the topic used for testing
+            # new topics is empty.
+            do_delete_messages(realm, [sent_message], acting_user=None)
+
+        self._send_and_verify_message(desdemona, stream_name, topic_name="existing topic")
+
+        # Set topic creation settings to nobody group.
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", nobody_group, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(desdemona, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(desdemona, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            desdemona_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(cordelia, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", owners_group, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(iago, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        check_sending_message_for_can_create_topic_group(desdemona)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(iago, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            iago_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", hamletcharacters_group, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(desdemona, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        check_sending_message_for_can_create_topic_group(hamlet)
+        check_sending_message_for_can_create_topic_group(cordelia)
+        check_sending_message_for_can_create_topic_group(cordelia_owned_bot)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(desdemona, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            desdemona_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(iago, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            iago_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[othello.id], direct_subgroups=[owners_group.id]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", setting_group_member_dict, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(iago, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(hamlet, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(cordelia, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(cordelia_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        check_sending_message_for_can_create_topic_group(desdemona)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot)
+        check_sending_message_for_can_create_topic_group(othello)
+        check_sending_message_for_can_create_topic_group(othello_owned_bot)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(iago, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            iago_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(hamlet, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(cordelia, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            cordelia_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", everyone_group, acting_user=iago
+        )
+        check_sending_message_for_can_create_topic_group(othello)
+        check_sending_message_for_can_create_topic_group(othello_owned_bot)
+        check_sending_message_for_can_create_topic_group(iago)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot)
+        check_sending_message_for_can_create_topic_group(polonius)
+        check_sending_message_for_can_create_topic_group(bot_without_owner)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
 
     def test_api_message_with_default_to(self) -> None:
         """
