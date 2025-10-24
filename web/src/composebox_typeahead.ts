@@ -1253,8 +1253,7 @@ export function content_typeahead_selected(
             const sub = stream_data.get_sub_by_name(item.name);
             const is_empty_topic_only_channel =
                 sub && stream_data.is_empty_topic_only_channel(sub.stream_id);
-            const is_greater_than_key_pressed =
-                event && event.type === "keydown" && event.key === ">";
+            const is_greater_than_key_pressed = event?.type === "keydown" && event.key === ">";
 
             // For empty topic only channel, skip showing topic typeahead and
             // insert direct channel link.

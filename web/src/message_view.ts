@@ -90,7 +90,7 @@ export function reset_ui_state(opts: {trigger?: string}): void {
     // Most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
     let skip_automatic_new_visibility_policy_banner = false;
-    if (opts && opts.trigger === "outside_current_view") {
+    if (opts?.trigger === "outside_current_view") {
         skip_automatic_new_visibility_policy_banner = true;
     }
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
