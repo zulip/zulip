@@ -145,6 +145,26 @@ export function generate_and_insert_audio_or_video_call_link(
                 }
             },
         });
+    } else if (
+        available_providers.nextcloud_talk &&
+        realm.realm_video_chat_provider === available_providers.nextcloud_talk.id
+    ) {
+        const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
+        const request = {
+            meeting_name,
+        };
+        void channel.get({
+            url: "/json/calls/nextcloud_talk/create",
+            data: request,
+            success(response) {
+                const data = call_response_schema.parse(response);
+                if (is_audio_call) {
+                    insert_audio_call_url(data.url, $target_textarea);
+                } else {
+                    insert_video_call_url(data.url, $target_textarea);
+                }
+            },
+        });
     } else {
         // TODO: Use `new URL` to generate the URLs here.
         const video_call_id = util.random_int(100000000000000, 999999999999999);

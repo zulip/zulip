@@ -536,6 +536,10 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
+# Nextcloud Talk credentials (other settings are in default_settings.py)
+NEXTCLOUD_TALK_USERNAME = get_secret("nextcloud_talk_username", development_only=True)
+NEXTCLOUD_TALK_PASSWORD = get_secret("nextcloud_talk_password")
+
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
 # Please don't make us go over our rate limit.

@@ -43,7 +43,9 @@ export function compute_show_audio_chat_button(): boolean {
         (available_providers.big_blue_button &&
             realm.realm_video_chat_provider === available_providers.big_blue_button.id) ||
         (available_providers.zoom_server_to_server &&
-            realm.realm_video_chat_provider === available_providers.zoom_server_to_server.id)
+            realm.realm_video_chat_provider === available_providers.zoom_server_to_server.id) ||
+        (available_providers.nextcloud_talk &&
+            realm.realm_video_chat_provider === available_providers.nextcloud_talk.id)
     ) {
         return true;
     }
