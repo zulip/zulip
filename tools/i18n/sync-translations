@@ -26,6 +26,11 @@ if git rev-parse --verify --quiet "origin/$local_branch" >/dev/null; then
 fi
 git checkout -b "$local_branch" "upstream/$branch"
 
+# Clear out local `.mo` files which cause locale/*/LC_MESSAGES/
+# directories to not be empty when their .po files vanish, so git
+# doesn't remove the directory.
+rm locale/*/LC_MESSAGES/*.mo
+
 wlc lock "zulip/frontend$suffix"
 wlc lock "zulip/django$suffix"
 trap 'wlc unlock "zulip/frontend$suffix" && wlc unlock "zulip/django$suffix"' EXIT
@@ -59,6 +64,10 @@ else
 
     # Update locale/*/legacy_stream_translations.json
     ./tools/i18n/update-for-legacy-translations
+
+    # Trim out any now-empty locale directories
+    find locale/ -type d -empty -delete
+
     git add locale/
 
     # Double-check that they all compile
