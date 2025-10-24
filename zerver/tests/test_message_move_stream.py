@@ -1406,6 +1406,85 @@ class MessageMoveStreamTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 4)
 
+    def test_move_message_to_stream_based_on_can_create_create_topic_group(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        realm = iago.realm
+
+        error_msg = "You do not have permission to create new topics in this channel."
+
+        new_stream = self.subscribe(iago, "new_stream")
+        self.send_stream_message(iago, "new_stream", topic_name="existing topic")
+
+        def check_move_message_to_stream(
+            user: UserProfile,
+            expect_fail: bool = False,
+            topic_name: str = "test",
+        ) -> None:
+            (_, _, _, msg_id, _) = self.prepare_move_topics(
+                "iago", "old_stream", "new_stream", "test"
+            )
+            result = self.api_patch(
+                user,
+                "/api/v1/messages/" + str(msg_id),
+                {
+                    "stream_id": new_stream.id,
+                    "propagate_mode": "change_all",
+                    "topic": topic_name,
+                },
+            )
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+                return
+
+            self.assert_json_success(result)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            new_stream, "can_create_topic_group", nobody_group, acting_user=desdemona
+        )
+        # Moving message to a new topic is not allowed.
+        check_move_message_to_stream(desdemona, expect_fail=True)
+        check_move_message_to_stream(iago, expect_fail=True)
+
+        # Moving message to an existing topic is allowed.
+        check_move_message_to_stream(desdemona, topic_name="existing topic")
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            new_stream, "can_create_topic_group", owners_group, acting_user=desdemona
+        )
+
+        # Moving message to a new topic is allowed to owners only.
+        check_move_message_to_stream(iago, expect_fail=True)
+        check_move_message_to_stream(desdemona)
+        # Moving message to an existing topic is allowed.
+        check_move_message_to_stream(iago, topic_name="existing topic")
+
+        anonymous_group = UserGroupMembersData(
+            direct_members=[aaron.id, iago.id],
+            direct_subgroups=[],
+        )
+        do_change_stream_group_based_setting(
+            new_stream, "can_create_topic_group", anonymous_group, acting_user=desdemona
+        )
+
+        # Moving message to a new topic is not allowed, except for anonymous group members.
+        check_move_message_to_stream(desdemona, expect_fail=True)
+        check_move_message_to_stream(cordelia, expect_fail=True)
+        check_move_message_to_stream(iago)
+        check_move_message_to_stream(aaron)
+        # Moving message to an existing topic is allowed.
+        check_move_message_to_stream(desdemona, topic_name="existing topic")
+        check_move_message_to_stream(cordelia, topic_name="existing topic")
+
     def test_move_message_to_stream_and_topic(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, _msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"

@@ -2867,3 +2867,99 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name="new topic",
             expected_error="Only the general chat topic is allowed in this channel.",
         )
+
+    def test_can_move_messages_can_create_topic_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        error_msg = "You do not have permission to create new topics in this channel."
+
+        stream = get_stream("Denmark", realm)
+        self.send_stream_message(hamlet, stream.name, topic_name="old topic")
+        self.send_stream_message(hamlet, stream.name, topic_name="existing topic")
+
+        def check_move_message(
+            user_profile: UserProfile,
+            stream: Stream,
+            topic_name: str,
+            expect_fail: bool = False,
+        ) -> None:
+            params = {
+                "stream_id": stream.id,
+                "topic": topic_name,
+            }
+
+            self.subscribe(user_profile, stream.name)
+            msg_id = self.send_stream_message(user_profile, stream.name, topic_name="old topic")
+
+            result = self.api_patch(
+                user_profile,
+                "/api/v1/messages/" + str(msg_id),
+                params,
+            )
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+                return
+
+            self.assert_json_success(result)
+            if topic_name == "new topic":
+                # Delete this topic, as it contains messages and is no longer new.
+                messages = get_topic_messages(user_profile, stream, topic_name)
+                do_delete_messages(user_profile.realm, messages, acting_user=None)
+
+        # When nobody is allowed to move messages to new topics.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", nobody_system_group, acting_user=iago
+        )
+
+        check_move_message(hamlet, stream, topic_name="new topic", expect_fail=True)
+        check_move_message(iago, stream, topic_name="new topic", expect_fail=True)
+        check_move_message(cordelia, stream, topic_name="new topic", expect_fail=True)
+
+        # However moving messages to existing topics is allowed.
+        check_move_message(hamlet, stream, topic_name="existing topic")
+        check_move_message(iago, stream, topic_name="existing topic")
+        check_move_message(cordelia, stream, topic_name="existing topic")
+
+        # For a user defined group, its members can move messages to a new topic.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_create_topic_group",
+            hamletcharacters_group,
+            acting_user=iago,
+        )
+        check_move_message(iago, stream, topic_name="new topic", expect_fail=True)
+        check_move_message(hamlet, stream, topic_name="new topic")
+        check_move_message(cordelia, stream, topic_name="new topic")
+
+        # However moving messages to existing topics is allowed.
+        check_move_message(iago, stream, topic_name="existing topic")
+        check_move_message(hamlet, stream, topic_name="existing topic")
+        check_move_message(cordelia, stream, topic_name="existing topic")
+
+        # For an anonymous group, its members can move messages to a new topic.
+        anonymous_group = UserGroupMembersData(
+            direct_members=[hamlet.id, iago.id],
+            direct_subgroups=[],
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_create_topic_group",
+            anonymous_group,
+            acting_user=iago,
+        )
+        check_move_message(cordelia, stream, topic_name="new topic", expect_fail=True)
+        check_move_message(hamlet, stream, topic_name="new topic")
+        check_move_message(iago, stream, topic_name="new topic")
+
+        # However moving messages to existing topics is allowed.
+        check_move_message(cordelia, stream, topic_name="existing topic")
+        check_move_message(hamlet, stream, topic_name="existing topic")
+        check_move_message(iago, stream, topic_name="existing topic")
