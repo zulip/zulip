@@ -543,10 +543,16 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
     }
 
     switch (event_name) {
-        case "tab":
-        case "shift_tab":
-            change_focus_to_filter();
-            return true;
+        case "tab": {
+            const next_section = (current_section + 1) % get_total_sections();
+            maybe_change_active_section(next_section);
+            return maybe_change_focused_emoji($emoji_map, next_section, 0);
+        }
+        case "shift_tab": {
+            const previous_section = (current_section - 1) % get_total_sections();
+            maybe_change_active_section(previous_section);
+            return maybe_change_focused_emoji($emoji_map, previous_section, 0);
+        }
         case "page_up":
             maybe_change_active_section(current_section - 1);
             return true;
