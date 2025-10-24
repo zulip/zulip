@@ -102,7 +102,7 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
         }
     }
     assert(profile_field !== undefined);
-    const html_body = render_confirm_delete_profile_field({
+    const html_subheader = render_confirm_delete_profile_field({
         profile_field_name: profile_field.name,
         count: users_using_deleting_profile_field,
     });
@@ -118,8 +118,8 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     }
 
     confirm_dialog.launch({
-        html_body,
         html_heading: $t_html({defaultMessage: "Delete custom profile field?"}),
+        html_subheader,
         on_click: request_delete,
     });
 }
