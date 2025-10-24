@@ -833,6 +833,7 @@ ul.popover-group-menu-member-list {
     }
 }
 
+#message_report_modal,
 #move_topic_modal {
     /* Modals have a 16px/1em base font-size. */
     & form {
@@ -854,6 +855,7 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    #report_type_options_widget_wrapper,
     #move_topic_to_stream_widget_wrapper {
         display: flex;
         /* 230px at 16px/1em */
@@ -940,6 +942,11 @@ ul.popover-group-menu-member-list {
 
     #message_move_select_options {
         width: 100%;
+    }
+
+    #message-report-description {
+        width: 100%;
+        box-sizing: border-box;
     }
 
     #move_messages_count {
