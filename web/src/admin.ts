@@ -255,6 +255,7 @@ export function build_page(): void {
         realm_name_in_email_notifications_policy_values:
             settings_config.realm_name_in_email_notifications_policy_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
+        week_start_day_values: settings_config.week_start_day_values,
         disable_enable_spectator_access_setting:
             !realm.server_web_public_streams_enabled || !realm.zulip_plan_is_not_limited,
         realm_push_notifications_enabled: realm.realm_push_notifications_enabled,

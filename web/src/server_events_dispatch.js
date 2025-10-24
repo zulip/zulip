@@ -939,6 +939,7 @@ export function dispatch_normal_event(event) {
                 "web_suggest_update_timezone",
                 "web_left_sidebar_unreads_count_summary",
                 "web_left_sidebar_show_channel_folders",
+                "week_start_day",
             ];
 
             const original_home_view = user_settings.web_home_view;

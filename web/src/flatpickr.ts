@@ -3,6 +3,7 @@ import flatpickr from "flatpickr";
 import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {getWeekStartByLocale} from "weekstart";
 
 import {$t} from "./i18n.ts";
 import {user_settings} from "./user_settings.ts";
@@ -18,6 +19,60 @@ function is_numeric_key(key: string): boolean {
     return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
 }
 
+type Weekday0to6 = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+type LocaleWithWeekInfo = Intl.Locale & {
+    getWeekInfo: () => {firstDay: number};
+};
+
+function hasGetWeekInfo(loc: Intl.Locale): loc is LocaleWithWeekInfo {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return typeof (loc as {getWeekInfo?: unknown}).getWeekInfo === "function";
+}
+
+function isWeekday0to6(n: number): n is Weekday0to6 {
+    return n >= 0 && n <= 6;
+}
+
+export function get_first_day_of_week(): Weekday0to6 {
+    switch (user_settings.week_start_day) {
+        case 2:
+            return 6; // Saturday
+        case 3:
+            return 0; // Sunday
+        case 4:
+            return 1; // Monday
+    }
+    // Intl.Locale.getWeekInfo() – returns 1..7 (Mon..Sun) (Chrome and Safari)
+    try {
+        const loc = new Intl.Locale(navigator.language);
+        if (hasGetWeekInfo(loc)) {
+            const n = loc.getWeekInfo().firstDay;
+            if (n === 7) {
+                return 0;
+            }
+            if (isWeekday0to6(n)) {
+                return n;
+            }
+        }
+    } catch {
+        /* ignore */
+    }
+
+    // CLDR-backed fallback (Firefox)
+    try {
+        const w = getWeekStartByLocale(navigator.language);
+        if (isWeekday0to6(w)) {
+            return w;
+        }
+    } catch {
+        /* ignore */
+    }
+
+    // Final fallback: Sunday
+    return 0;
+}
+
 export function show_flatpickr(
     element: HTMLElement,
     callback: (time: string) => void,
@@ -25,6 +80,17 @@ export function show_flatpickr(
     options: flatpickr.Options.Options = {},
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
+
+    const baseLocale: Record<string, unknown> =
+        typeof options.locale === "object" && options.locale !== null ? options.locale : {};
+    const mergedLocale = {
+        ...baseLocale,
+        firstDayOfWeek: get_first_day_of_week(),
+    };
+    const mergedOptions: flatpickr.Options.Options = {
+        ...options,
+        locale: mergedLocale,
+    };
 
     flatpickr_instance = flatpickr(util.the($flatpickr_input), {
         mode: "single",
@@ -82,7 +148,7 @@ export function show_flatpickr(
                 event.stopPropagation();
             }
         },
-        ...options,
+        ...mergedOptions,
     });
 
     const $container = $(flatpickr_instance.calendarContainer);
