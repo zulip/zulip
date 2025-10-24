@@ -5,7 +5,7 @@ import copy
 import logging
 import re
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from email.headerregistry import Address
 from functools import cache
@@ -1319,17 +1319,33 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: list[int]
     # below the 4KB limit (leaving plenty of space for metadata).
     MAX_APNS_MESSAGE_IDS = 200
     truncated_message_ids = sorted(message_ids)[-MAX_APNS_MESSAGE_IDS:]
-    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
-    apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
-    payload_data_to_encrypt = get_remove_payload_data_to_encrypt(
-        user_profile, truncated_message_ids
-    )
 
-    # We need to call both the legacy/non-E2EE and E2EE functions
-    # for sending mobile notifications, since we don't at this time
-    # know which mobile app version the user may be using.
-    send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
-    send_push_notifications(user_profile, payload_data_to_encrypt)
+    def get_payload_legacy(
+        apple_device_exists: bool, android_device_exists: bool
+    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        apns_payload = (
+            get_remove_payload_apns(user_profile, truncated_message_ids)
+            if apple_device_exists
+            else {}
+        )
+        gcm_payload, gcm_options = (
+            get_remove_payload_gcm(user_profile, truncated_message_ids)
+            if android_device_exists
+            else ({}, {})
+        )
+        return apns_payload, gcm_payload, gcm_options
+
+    def get_payload_to_encrypt() -> dict[str, Any]:
+        payload_data_to_encrypt = get_remove_payload_data_to_encrypt(
+            user_profile, truncated_message_ids
+        )
+        return payload_data_to_encrypt
+
+    prepare_payload_and_send_push_notifications(
+        user_profile,
+        get_payload_legacy,
+        get_payload_to_encrypt,
+    )
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1347,21 +1363,10 @@ def send_push_notifications_legacy(
     apns_payload: dict[str, Any],
     gcm_payload: dict[str, Any],
     gcm_options: dict[str, Any],
+    apple_devices: list[PushDeviceToken],
+    android_devices: list[PushDeviceToken],
 ) -> None:
-    android_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.FCM).order_by("id")
-    )
-    apple_devices = list(
-        PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS).order_by("id")
-    )
-
-    if len(android_devices) + len(apple_devices) == 0:
-        logger.info(
-            "Skipping legacy push notifications for user %s because there are no registered devices",
-            user_profile.id,
-        )
-        return
-
+    assert len(android_devices) + len(apple_devices) != 0
     # While sending push notifications for new messages to older clients
     # (which don't support E2EE), if `require_e2ee_push_notifications`
     # realm setting is set to `true`, we redact the content.
@@ -1470,21 +1475,9 @@ def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], public_key_str: 
 def send_push_notifications(
     user_profile: UserProfile,
     payload_data_to_encrypt: dict[str, Any],
-    test_notification_to_push_devices: QuerySet[PushDevice] | None = None,
+    push_devices: QuerySet[PushDevice],
 ) -> None:
-    if test_notification_to_push_devices is not None:
-        assert len(test_notification_to_push_devices) != 0
-        push_devices = test_notification_to_push_devices
-    else:
-        # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-        push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
-
-    if len(push_devices) == 0:
-        logger.info(
-            "Skipping E2EE push notifications for user %s because there are no registered devices",
-            user_profile.id,
-        )
-        return
+    assert len(push_devices) != 0
 
     is_removal = payload_data_to_encrypt["type"] == "remove"
     is_test_notification = payload_data_to_encrypt["type"] == "test"
@@ -1621,6 +1614,50 @@ def send_push_notifications(
         raise NoActivePushDeviceError
 
 
+def prepare_payload_and_send_push_notifications(
+    user_profile: UserProfile,
+    get_payload_legacy: Callable[
+        [bool, bool],
+        tuple[dict[str, Any], dict[str, Any], dict[str, Any]],
+    ],
+    get_payload_to_encrypt: Callable[[], dict[str, Any]],
+) -> None:
+    # Send legacy/non-E2EE push notifications.
+    push_device_tokens = PushDeviceToken.objects.filter(user=user_profile).order_by("id")
+    if push_device_tokens:
+        apple_devices, android_devices = [], []
+
+        for push_device_token in push_device_tokens:
+            if push_device_token.kind == PushDeviceToken.APNS:
+                apple_devices.append(push_device_token)
+            else:
+                android_devices.append(push_device_token)
+
+        apns_payload, gcm_payload, gcm_options = get_payload_legacy(
+            bool(apple_devices), bool(android_devices)
+        )
+        send_push_notifications_legacy(
+            user_profile, apns_payload, gcm_payload, gcm_options, apple_devices, android_devices
+        )
+    else:
+        logger.info(
+            "Skipping legacy push notifications for user %s because there are no registered devices",
+            user_profile.id,
+        )
+
+    # Send E2EE push notifications.
+    # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
+    push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+    if push_devices:
+        payload_to_encrypt = get_payload_to_encrypt()
+        send_push_notifications(user_profile, payload_to_encrypt, push_devices)
+    else:
+        logger.info(
+            "Skipping E2EE push notifications for user %s because there are no registered devices",
+            user_profile.id,
+        )
+
+
 def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any]) -> None:
     """
     missed_message is the event received by the
@@ -1639,7 +1676,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
-    with transaction.atomic(savepoint=False):
+    with transaction.atomic(durable=True):
         try:
             (message, user_message) = access_message_and_usermessage(
                 user_profile,
@@ -1732,27 +1769,51 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # to the sender if they did not had access previously.
         can_access_sender = True
 
-    apns_payload = get_message_payload_apns(
-        user_profile,
-        message,
-        trigger,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-    )
-    gcm_payload, gcm_options = get_message_payload_gcm(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
-    )
-    payload_data_to_encrypt = get_payload_data_to_encrypt(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
-    )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
-    # We need to call both the legacy/non-E2EE and E2EE functions
-    # for sending mobile notifications, since we don't at this time
-    # know which mobile app version the user may be using.
-    send_push_notifications_legacy(user_profile, apns_payload, gcm_payload, gcm_options)
-    send_push_notifications(user_profile, payload_data_to_encrypt)
+    def get_payload_legacy(
+        apple_device_exists: bool, android_device_exists: bool
+    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        apns_payload = (
+            get_message_payload_apns(
+                user_profile,
+                message,
+                trigger,
+                mentioned_user_group_id,
+                mentioned_user_group_name,
+                can_access_sender,
+            )
+            if apple_device_exists
+            else {}
+        )
+        gcm_payload, gcm_options = (
+            get_message_payload_gcm(
+                user_profile,
+                message,
+                mentioned_user_group_id,
+                mentioned_user_group_name,
+                can_access_sender,
+            )
+            if android_device_exists
+            else ({}, {})
+        )
+        return apns_payload, gcm_payload, gcm_options
+
+    def get_payload_to_encrypt() -> dict[str, Any]:
+        payload_data_to_encrypt = get_payload_data_to_encrypt(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
+        return payload_data_to_encrypt
+
+    prepare_payload_and_send_push_notifications(
+        user_profile,
+        get_payload_legacy,
+        get_payload_to_encrypt,
+    )
 
 
 def send_test_push_notification_directly_to_devices(
@@ -1830,9 +1891,7 @@ def send_e2ee_test_push_notification(
     logger.info("Sending E2EE test push notification for user %s", user_profile.id)
 
     try:
-        send_push_notifications(
-            user_profile, payload_data_to_encrypt, test_notification_to_push_devices=push_devices
-        )
+        send_push_notifications(user_profile, payload_data_to_encrypt, push_devices)
     except PushNotificationBouncerServerError:
         # 5xx error response from bouncer server
         raise InternalBouncerServerError

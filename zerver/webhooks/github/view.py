@@ -15,6 +15,7 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
+    do_rename_topic_for_webhook,
     get_http_headers_from_filename,
     get_setup_webhook_message,
     validate_extract_webhook_http_header,
@@ -62,10 +63,14 @@ class Helper:
         request: HttpRequest,
         payload: WildValue,
         include_title: bool,
+        user_profile: UserProfile,
+        stream: str,
     ) -> None:
         self.request = request
         self.payload = payload
         self.include_title = include_title
+        self.user_profile = user_profile
+        self.stream = stream
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook; ignoring"
@@ -91,6 +96,22 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     if action in ("opened", "merged"):
         target_branch = pull_request["head"]["label"].tame(check_string)
         base_branch = pull_request["base"]["label"].tame(check_string)
+
+    # ADDED: Topic Renaming Logic for PRs
+    if action == "edited" and "title" in changes:
+        repo_name = get_repository_name(payload)
+        pr_number = pull_request["number"].tame(check_int)
+        old_title = changes["title"]["from"].tame(check_string)
+        new_title = pull_request["title"].tame(check_string)
+
+        old_topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=repo_name, type="PR", id=pr_number, title=old_title
+        )
+        new_topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=repo_name, type="PR", id=pr_number, title=new_title
+        )
+
+        do_rename_topic_for_webhook(helper.user_profile, helper.stream, old_topic, new_topic)
 
     return get_pull_request_event_message(
         user_name=get_sender_name(payload),
@@ -168,6 +189,23 @@ def get_issue_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
+
+    # ADDED: Topic Renaming Logic for Issues
+    if action == "edited" and "title" in payload.get("changes", {}):
+        repo_name = get_repository_name(payload)
+        issue_number = issue["number"].tame(check_int)
+        old_title = payload["changes"]["title"]["from"].tame(check_string)
+        new_title = issue["title"].tame(check_string)
+
+        old_topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=repo_name, type="issue", id=issue_number, title=old_title
+        )
+        new_topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=repo_name, type="issue", id=issue_number, title=new_title
+        )
+
+        do_rename_topic_for_webhook(helper.user_profile, helper.stream, old_topic, new_topic)
+
     return get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
@@ -1054,7 +1092,14 @@ def api_github_webhook(
         request=request,
         payload=payload,
         include_title=user_specified_topic is not None,
+        user_profile=user_profile,
+        stream=topic_name,
     )
+
+    # Correction for Helper initialization to get the real stream name
+    stream = request.GET.get("stream")
+    helper.stream = stream if stream else ""  # Handle None case
+
     body = body_function(helper)
 
     check_send_webhook_message(request, user_profile, topic_name, body, event)
