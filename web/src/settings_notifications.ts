@@ -313,11 +313,11 @@ function reset_stream_notifications(elem: HTMLElement): void {
     const sub = sub_store.get(stream_id);
     assert(sub !== undefined);
 
-    const html_body = render_confirm_reset_stream_notifications({sub});
+    const html_subheader = render_confirm_reset_stream_notifications({sub});
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Reset to default notifications?"}),
-        html_body,
+        html_subheader,
         id: "confirm_reset_stream_notifications_modal",
         on_click() {
             do_reset_stream_notifications(elem, sub);
