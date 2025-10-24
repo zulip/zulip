@@ -447,7 +447,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             message_store.update_booleans(anchor_message, event.flags);
 
             if (event.rendered_content !== undefined) {
-                anchor_message.content = event.rendered_content;
+                message_store.update_message_content(anchor_message, event.rendered_content);
             }
 
             if (event.is_me_message !== undefined) {
@@ -821,6 +821,13 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // new_stream_id is undefined if this is only a topic edit.
             const post_edit_stream_id = new_stream_id ?? old_stream_id;
 
+            message_store.process_topic_edit({
+                message_ids: event.message_ids,
+                old_stream_id,
+                old_topic: pre_edit_topic,
+                new_stream_id: post_edit_stream_id,
+                new_topic: post_edit_topic,
+            });
             recent_senders.process_topic_edit({
                 message_ids: event.message_ids,
                 old_stream_id,

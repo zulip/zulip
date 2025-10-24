@@ -38,6 +38,7 @@ import * as recent_view_data from "./recent_view_data.ts";
 import type {ConversationData} from "./recent_view_data.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
@@ -674,7 +675,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const topic = last_msg.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
         const is_empty_string_topic = topic === "";
-        const topic_url = hash_util.by_channel_topic_permalink(stream_id, topic);
+        const topic_url = stream_topic_history.channel_topic_permalink_hash(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
         // We only supply the data to the topic rows and let jquery

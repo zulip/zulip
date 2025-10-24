@@ -1595,3 +1595,31 @@ ul.popover-menu-list {
     flex: 1;
     min-width: 0;
 }
+
+#topic-links-menu-popover {
+    color: var(--color-text-popover-menu) !important;
+    padding: 0.6666em;
+
+    .topic-links-menu-title {
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .popover-topic-links-list a {
+        width: fit-content;
+        max-width: 85vw;
+        display: block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .topic-links-menu-link-list + .topic-links-menu-link-list {
+        margin-top: 10px;
+    }
+
+    ul {
+        margin: 0;
+        list-style: none;
+    }
+}
