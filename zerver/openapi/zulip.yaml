@@ -25473,7 +25473,7 @@ paths:
       summary: Create BigBlueButton video call
       description: |
         Create a video call URL for a BigBlueButton video call.
-        Requires [BigBlueButton 2.4+](/integrations/doc/big-blue-button)
+        Requires [BigBlueButton 2.4+](/integrations/big-blue-button)
         to be configured on the Zulip server.
 
         The acting user will be given the moderator role on the call.

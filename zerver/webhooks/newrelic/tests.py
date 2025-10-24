@@ -345,7 +345,7 @@ class NewRelicHookTests(WebhookTestCase):
         expected_message = """
 :danger: A New Relic [incident](https://one.newrelic.com/alerts-ai) updated
 
-**Warning**: Unable to use the default notification format because at least one expected field was missing from the incident payload. See [New Relic integration documentation](/integrations/doc/newrelic).
+**Warning**: Unable to use the default notification format because at least one expected field was missing from the incident payload. See [New Relic integration documentation](/integrations/newrelic).
 
 **Missing fields**: `issueUrl`, `title`, `priority`, `totalIncidents`, `state`, `createdAt`, `updatedAt`, `alertPolicyNames`, `alertConditionNames`
 """.strip()
