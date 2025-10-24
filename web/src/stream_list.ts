@@ -672,6 +672,9 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         color: sub.color,
         pin_to_top: sub.pin_to_top,
         can_post_messages,
+        cannot_create_topics_in_channel: !stream_data.can_create_new_topics_in_stream(
+            sub.stream_id,
+        ),
         is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
     };
     const $list_item = $(render_stream_sidebar_row(args));
