@@ -42,9 +42,11 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
+from zerver.lib.message import truncate_content
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
+from zerver.models.streams import Stream
 
 
 def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
@@ -201,11 +203,14 @@ def convert_channel_data(
         stream_id = stream_id_mapper.get(channel_dict["name"])
         stream_name = channel_dict["name"]
         invite_only = get_invite_only_value_from_channel_type(channel_dict["type"])
+        channel_display_name = truncate_content(
+            channel_dict["display_name"], Stream.MAX_NAME_LENGTH, "…"
+        )
 
         stream = build_stream(
             date_created=now,
             realm_id=realm_id,
-            name=channel_dict["display_name"],
+            name=channel_display_name,
             # Purpose describes how the channel should be used. It is similar to
             # stream description and is shown in channel list to help others decide
             # whether to join.
