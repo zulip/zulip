@@ -8,6 +8,7 @@ import render_settings_deactivation_stream_modal from "../templates/confirm_dial
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
@@ -618,7 +619,35 @@ export function initialize(): void {
             data.description = new_description;
         }
 
-        dialog_widget.submit_api_request(channel.patch, url, data);
+        dialog_widget.submit_api_request(channel.patch, url, data, {
+            success_continuation() {
+                dialog_widget.close();
+            },
+            error_continuation(xhr) {
+                const $modal = $("#change_stream_info_modal");
+
+                const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+
+                if (code === "CHANNEL_ALREADY_EXISTS") {
+                    $modal.find("#dialog_error").hide().empty();
+
+                    assert(data.new_name !== undefined);
+                    const existing_stream = stream_data.get_sub_by_name(data.new_name);
+
+                    if (existing_stream) {
+                        const rendered_error = render_channel_name_conflict_error({
+                            stream_id: existing_stream.stream_id,
+                            is_archived: existing_stream.is_archived,
+                            show_rename: false,
+                            can_view_channel: true,
+                        });
+
+                        $modal.find("#stream_name_error").html(rendered_error).show();
+                        $("#change_stream_name").trigger("focus");
+                    }
+                }
+            },
+        });
     }
 
     $("#channels_overlay_container").on(

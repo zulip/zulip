@@ -116,6 +116,29 @@
     color: hsl(0deg 100% 50%);
 }
 
+.stream_creation_error a,
+.stream_creation_error span#archived_stream_rename,
+#change_stream_info_modal #stream_name_error a {
+    color: hsl(208deg 56% 53%);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.stream_creation_error a:hover,
+.stream_creation_error span#archived_stream_rename:hover,
+#change_stream_info_modal #stream_name_error a:hover {
+    color: hsl(208deg 56% 38%);
+}
+
+#change_stream_info_modal input#change_stream_name {
+    margin-bottom: 0;
+}
+
+#change_stream_info_modal #stream_name_error {
+    margin-bottom: 20px;
+    color: hsl(0deg 100% 50%);
+}
+
 /* TODO: Unify with settings.css definition */
 h3.stream_setting_subsection_title,
 h3.user_group_setting_subsection_title {
