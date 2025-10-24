@@ -508,20 +508,15 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
         // Move down into emoji map.
         const filter_text = $<HTMLInputElement>("input#emoji-popover-filter").val()!;
         const is_cursor_at_end = $("#emoji-popover-filter").caret() === filter_text.length;
-        if (event_name === "down_arrow" || (is_cursor_at_end && event_name === "right_arrow")) {
-            assert($selected_emoji !== undefined);
-            $selected_emoji.trigger("focus");
-            if (current_section === 0 && current_index < 6) {
-                scroll_util.get_scroll_element($emoji_map).scrollTop(0);
-            }
-            update_emoji_showcase($selected_emoji);
-            return true;
-        }
-        if (event_name === "tab") {
-            assert($selected_emoji !== undefined);
-            $selected_emoji.trigger("focus");
-            update_emoji_showcase($selected_emoji);
-            return true;
+        if (
+            event_name === "tab" ||
+            event_name === "down_arrow" ||
+            (is_cursor_at_end && event_name === "right_arrow")
+        ) {
+            current_section = 0;
+            current_index = 0;
+            maybe_change_active_section(0);
+            return maybe_change_focused_emoji($emoji_map, 0, 0);
         }
         return false;
     } else if (
