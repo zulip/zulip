@@ -82,7 +82,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
     do_regenerate_api_key,
 )
-from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.actions.users import do_change_is_imported_stub, do_change_user_role, do_deactivate_user
 from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
 from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
@@ -1784,3 +1784,21 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 1)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[0].extra_data, {"fragment": "inbox"})
+
+    def test_changing_is_imported_stub(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.is_imported_stub = True
+        hamlet.save()
+
+        now = timezone_now()
+        do_change_is_imported_stub(hamlet)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.USER_IS_IMPORTED_STUB_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(audit_log_entries[0].extra_data, {})
