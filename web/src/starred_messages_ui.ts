@@ -91,7 +91,7 @@ export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: s
         return;
     }
 
-    const html_body = render_confirm_unstar_all_messages_in_topic({
+    const html_subheader = render_confirm_unstar_all_messages_in_topic({
         stream_name,
         topic_display_name: util.get_final_topic_display_name(topic),
         is_empty_string_topic: topic === "",
@@ -99,7 +99,7 @@ export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: s
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Unstar messages in topic"}),
-        html_body,
+        html_subheader,
         on_click,
     });
 }
