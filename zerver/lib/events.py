@@ -869,17 +869,6 @@ def fetch_initial_state_data(
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
 
-    if want("update_display_settings") and not user_settings_object:
-        for prop in UserProfile.display_settings_legacy:
-            state[prop] = getattr(settings_user, prop)
-        state["emojiset_choices"] = UserProfile.emojiset_choices()
-        state["timezone"] = canonicalize_timezone(settings_user.timezone)
-
-    if want("update_global_notifications") and not user_settings_object:
-        for notification in UserProfile.notification_settings_legacy:
-            state[notification] = getattr(settings_user, notification)
-        state["available_notification_sounds"] = get_available_notification_sounds()
-
     if want("user_settings"):
         state["user_settings"] = {}
 
@@ -1847,23 +1836,12 @@ def apply_event(
             state["realm_linkifiers"] = event["realm_linkifiers"]
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
-    elif event["type"] == "update_display_settings":
-        if event["setting_name"] != "timezone":
-            assert event["setting_name"] in UserProfile.display_settings_legacy
-        state[event["setting_name"]] = event["setting"]
-    elif event["type"] == "update_global_notifications":
-        assert event["notification_name"] in UserProfile.notification_settings_legacy
-        state[event["notification_name"]] = event["setting"]
+
     elif event["type"] == "user_settings":
         # time zone setting is not included in property_types dict because
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
-        if event["property"] in {
-            **UserProfile.display_settings_legacy,
-            **UserProfile.notification_settings_legacy,
-        }:
-            state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass
