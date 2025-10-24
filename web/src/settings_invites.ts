@@ -280,13 +280,13 @@ export function on_load_success(
             email,
             referred_by,
         };
-        const html_body = render_settings_revoke_invite_modal(ctx);
+        const html_subheader = render_settings_revoke_invite_modal(ctx);
 
         confirm_dialog.launch({
             html_heading: ctx.is_multiuse
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
-            html_body,
+            html_subheader,
             id: "revoke_invite_modal",
             close_on_submit: false,
             loading_spinner: true,
