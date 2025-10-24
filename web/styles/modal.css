@@ -1231,3 +1231,7 @@ ul.modal-options-list {
     flex-direction: column;
     gap: 0.625em; /* 10px at 16px/1em */
 }
+
+#first_stream_created_modal .first-stream-created-instructions-list {
+    margin-bottom: 0;
+}
