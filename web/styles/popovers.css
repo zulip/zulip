@@ -547,6 +547,7 @@ ul.popover-group-menu-member-list {
         font-size: 1.5em;
     }
 
+    #user-profile-groups-tab,
     #user-profile-streams-tab {
         .stream_list_info {
             margin-bottom: 8px;
