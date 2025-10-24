@@ -72,11 +72,11 @@ export function rerender_ui(): void {
 }
 
 export function confirm_unstar_all_messages(): void {
-    const html_body = render_confirm_unstar_all_messages();
+    const html_subheader = render_confirm_unstar_all_messages();
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Unstar all messages"}),
-        html_body,
+        html_subheader,
         on_click: message_flags.unstar_all_messages,
     });
 }
