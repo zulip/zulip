@@ -397,6 +397,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         subscribed: true,
         can_send_message_group: everyone.id,
         topics_policy: "inherit",
+        can_create_topic_group: everyone.id,
     };
     stream_data.add_sub_for_tests(special_sub);
 
@@ -443,6 +444,7 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
         name: "stream102",
         subscribed: true,
         can_send_message_group: admin.id,
+        can_create_topic_group: everyone.id,
     };
 
     stream_data.add_sub_for_tests(sub_stream_102);
