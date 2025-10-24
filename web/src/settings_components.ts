@@ -1610,6 +1610,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_add_members_group", null],
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
     ["can_join_group", null],
     ["can_leave_group", null],
     ["can_manage_group", null],

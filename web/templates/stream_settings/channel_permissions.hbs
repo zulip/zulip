@@ -41,6 +41,12 @@
       prefix=prefix
       help_link="/help/channel-posting-policy" }}
 
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_create_topic_group"
+      label=group_setting_labels.can_create_topic_group
+      prefix=prefix
+      help_link="/help/channel-posting-policy" }}
+
     <div class="input-group">
         <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>
         <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
