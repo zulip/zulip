@@ -85,6 +85,7 @@ from zerver.lib.streams import (
     list_to_streams,
     stream_to_dict,
     user_has_content_access,
+    validate_can_create_topic_group_setting,
     validate_topics_policy,
 )
 from zerver.lib.subscription_info import gather_subscriptions
@@ -103,6 +104,7 @@ from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     access_user_group_api_value_for_setting,
     get_group_setting_value_for_api,
+    get_role_based_system_groups_dict,
     get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
@@ -397,6 +399,29 @@ def update_stream_backend(
     if validated_topics_policy is not None:
         do_set_stream_property(stream, "topics_policy", validated_topics_policy.value, user_profile)
 
+    system_groups_name_dict = get_role_based_system_groups_dict(user_profile.realm)
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
+    if not proposed_history_public_to_subscribers:
+        if can_create_topic_group is None:
+            validate_can_create_topic_group_setting(
+                user_profile.realm,
+                proposed_history_public_to_subscribers,
+                proposed_is_private,
+                stream.can_create_topic_group_id,
+                system_groups_name_dict,
+            )
+        else:
+            new_can_create_topic_group = parse_group_setting_value(
+                can_create_topic_group.new, nobody_group
+            )
+            validate_can_create_topic_group_setting(
+                user_profile.realm,
+                proposed_history_public_to_subscribers,
+                proposed_is_private,
+                new_can_create_topic_group,
+                system_groups_name_dict,
+            )
+
     if (
         is_private is not None
         or is_web_public is not None
@@ -455,7 +480,6 @@ def update_stream_backend(
             folder = get_channel_folder_by_id(folder_id, user_profile.realm)
         do_change_stream_folder(stream, folder, acting_user=user_profile)
 
-    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     request_settings_dict = locals()
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         assert setting_name in request_settings_dict

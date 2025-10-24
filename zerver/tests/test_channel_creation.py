@@ -19,7 +19,8 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
+from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.models import (
     Message,
     NamedUserGroup,
@@ -677,6 +678,110 @@ class TestCreateStreams(ZulipTestCase):
             realm, "new stream with acting user", acting_user=user
         )
         self.assertCountEqual(stream.can_administer_channel_group.direct_members.all(), [user])
+
+    def test_stream_creation_for_can_create_topic_group(self) -> None:
+        user = self.example_user("iago")
+        realm = user.realm
+        self.login_user(user)
+
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+
+        error_msg = "Unsupported parameter combination: history_public_to_subscribers, can_create_topic_group"
+
+        def check_create_protected_history_stream_for_group_value(
+            stream_name: str,
+            setting_value: int | UserGroupMembersData,
+            expect_fail: bool = False,
+        ) -> None:
+            subscriptions = [{"name": stream_name}]
+            extra_post_data = {
+                "history_public_to_subscribers": orjson.dumps(False).decode(),
+                "can_create_topic_group": orjson.dumps(setting_value).decode(),
+            }
+
+            result = self.subscribe_via_post(
+                user,
+                subscriptions,
+                extra_post_data,
+                invite_only=True,
+                subdomain="zulip",
+                allow_fail=expect_fail,
+            )
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+            else:
+                self.assert_json_success(result)
+                stream = get_stream(stream_name, realm)
+                self.assertFalse(stream.history_public_to_subscribers)
+                expected_value = setting_value
+                if (
+                    not isinstance(setting_value, int)
+                    and len(setting_value.direct_members) == 0
+                    and len(setting_value.direct_subgroups) == 1
+                ):
+                    expected_value = setting_value.direct_subgroups[0]
+                current_value = get_group_setting_value_for_api(stream.can_create_topic_group)
+                self.assertEqual(expected_value, current_value)
+
+            stream_name = stream_name + "create_endpoint"
+            result = self.create_channel_via_post(
+                user,
+                name=stream_name,
+                extra_post_data=extra_post_data,
+                invite_only=True,
+            )
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+            else:
+                self.assert_json_success(result)
+                stream = get_stream(stream_name, realm)
+                self.assertFalse(stream.history_public_to_subscribers)
+                expected_value = setting_value
+                if (
+                    not isinstance(setting_value, int)
+                    and len(setting_value.direct_members) == 0
+                    and len(setting_value.direct_subgroups) == 1
+                ):
+                    expected_value = setting_value.direct_subgroups[0]
+                current_value = get_group_setting_value_for_api(stream.can_create_topic_group)
+                self.assertEqual(expected_value, current_value)
+
+        # For channels with protected history the can_create_topic_group should be everyone_system_group.
+        # Testing for everyone group.
+        check_create_protected_history_stream_for_group_value("stream_1", everyone_system_group.id)
+
+        # Testing for a system group.
+        check_create_protected_history_stream_for_group_value(
+            "stream_2", moderators_system_group.id, expect_fail=True
+        )
+
+        # Testing for a user defined group.
+        check_create_protected_history_stream_for_group_value(
+            "stream_3", hamletcharacters_group.id, expect_fail=True
+        )
+
+        # Testing for an anonymous group.
+        check_create_protected_history_stream_for_group_value(
+            "stream_4",
+            UserGroupMembersData(
+                direct_members=[user.id], direct_subgroups=[moderators_system_group.id]
+            ),
+            expect_fail=True,
+        )
+
+        # Testing for an unparsed everyone group.
+        check_create_protected_history_stream_for_group_value(
+            "stream_5",
+            UserGroupMembersData(direct_members=[], direct_subgroups=[everyone_system_group.id]),
+        )
 
     def do_test_permission_setting_on_stream_creation(self, setting_name: str) -> None:
         user = self.example_user("hamlet")
