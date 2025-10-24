@@ -55,6 +55,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_id_for_message,
+    access_stream_to_create_new_topic,
     can_access_stream_history,
     can_edit_topic,
     can_move_messages_out_of_channel,
@@ -1683,6 +1684,13 @@ def check_update_message(
         ):
             check_time_limit_for_change_all_propagate_mode(
                 message, user_profile, topic_name, stream_id
+            )
+
+        if message_edit_request.is_message_moved:
+            access_stream_to_create_new_topic(
+                user_profile,
+                message_edit_request.target_stream,
+                message_edit_request.target_topic_name,
             )
 
     updated_message_result = do_update_message(

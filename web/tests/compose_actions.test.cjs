@@ -173,6 +173,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
     mock_template("inline_decorated_channel_name.hbs", false, noop);
 
     let compose_defaults;
