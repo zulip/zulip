@@ -75,6 +75,7 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
     ["can_delete_any_message_group", null],
     ["can_delete_own_message_group", null],
     ["can_move_messages_out_of_channel_group", null],
