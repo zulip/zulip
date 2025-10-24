@@ -197,7 +197,7 @@ def convert_channel_data(
 
     streams = []
     initialize_stream_membership_dicts()
-
+    channel_name_count: dict[str, int] = {}
     for channel_dict in channel_data_list:
         now = int(timezone_now().timestamp())
         stream_id = stream_id_mapper.get(channel_dict["name"])
@@ -206,6 +206,20 @@ def convert_channel_data(
         channel_display_name = truncate_content(
             channel_dict["display_name"], Stream.MAX_NAME_LENGTH, "…"
         )
+
+        if channel_display_name in channel_name_count:
+            channel_name_count[channel_display_name] += 1
+            collision = channel_name_count[channel_display_name]
+            count_string = f" ({collision})"
+
+            channel_display_name = (
+                truncate_content(
+                    channel_display_name, Stream.MAX_NAME_LENGTH - len(count_string), "…"
+                )
+                + count_string
+            )
+        else:
+            channel_name_count[channel_display_name] = 1
 
         stream = build_stream(
             date_created=now,
