@@ -1,0 +1,26 @@
+[
+  {
+    "Name": "Alya Abbott",
+    "UserId": "3c6ee395-529d-4681-b5f7-582c707570f6",
+    "UserName": "alya@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  },
+  {
+    "Name": "Pieter K",
+    "UserId": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+    "UserName": "pieterk@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  },
+  {
+    "Name": "Guest guy",
+    "UserId": "16741626-4cd8-46cc-bf36-42ecc2b5fdce",
+    "UserName": "kwok.pieter_gmail.com#EXT#@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  }
+]
