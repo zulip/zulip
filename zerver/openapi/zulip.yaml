@@ -22782,6 +22782,9 @@ paths:
                         Note that a user must have metadata access to a channel and permission
                         to administer the channel in order to modify this setting.
 
+                        Note that using this permission to send a message to a new topic requires
+                        also having permission to create new topics in the channel.
+
                         **Changes**: New in Zulip 10.0 (feature level 333). Previously
                         `stream_post_policy` field used to control the permission to
                         post in the channel.
@@ -28724,6 +28727,9 @@ components:
 
             Note that a user must have metadata access to a channel and permission
             to administer the channel in order to modify this setting.
+
+            Note that using this permission to send a message to a new topic requires
+            also having permission to create new topics in the channel.
 
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to

@@ -26,7 +26,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import get_topic_display_name
+from zerver.lib.topic import get_topic_display_name, messages_for_topic
 from zerver.lib.types import APIStreamDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -699,6 +699,51 @@ def access_stream_for_send_message(
     )
 
 
+def check_user_can_create_new_topics(user_profile: UserProfile, stream: Stream) -> None:
+    can_create_topic_group = stream.can_create_topic_group
+    if (
+        hasattr(can_create_topic_group, "named_user_group")
+        and can_create_topic_group.named_user_group.name == SystemGroups.NOBODY
+    ):
+        raise JsonableError(_("You do not have permission to create new topics in this channel."))
+
+    if not user_has_permission_for_group_setting(
+        stream.can_create_topic_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_create_topic_group"],
+        direct_member_only=False,
+    ):
+        raise JsonableError(_("You do not have permission to create new topics in this channel."))
+
+
+def check_for_can_create_topic_group_violation(
+    user_profile: UserProfile, stream: Stream, topic_name: str
+) -> None:
+    if is_cross_realm_bot_email(user_profile.delivery_email):
+        return
+
+    can_create_topic_group = stream.can_create_topic_group
+    if (
+        hasattr(can_create_topic_group, "named_user_group")
+        and can_create_topic_group.named_user_group.name == SystemGroups.EVERYONE
+    ):
+        return
+
+    assert stream.recipient_id is not None
+    topic_exists = messages_for_topic(
+        realm_id=stream.realm_id, stream_recipient_id=stream.recipient_id, topic_name=topic_name
+    ).exists()
+
+    if not topic_exists:
+        try:
+            check_user_can_create_new_topics(user_profile, stream)
+        except JsonableError as e:
+            if user_profile.is_bot and user_profile.bot_owner is not None:
+                check_user_can_create_new_topics(user_profile.bot_owner, stream)
+            else:
+                raise JsonableError(e.msg)
+
+
 def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) -> None:
     if stream_id is None and stream is None:
         # Uses the same translated string as RequestVariableMissingError
@@ -976,7 +1021,7 @@ def access_stream_by_id_for_message(
 ) -> tuple[Stream, Subscription | None]:
     """
     Variant of access_stream_by_id that uses get_stream_by_id_for_sending_message
-    to ensure we do a select_related("can_send_message_group").
+    to ensure we do a select_related("can_send_message_group", "can_create_topic_group").
     """
     error = _("Invalid channel ID")
     try:

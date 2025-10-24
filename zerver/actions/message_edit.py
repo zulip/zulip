@@ -59,6 +59,7 @@ from zerver.lib.streams import (
     can_edit_topic,
     can_move_messages_out_of_channel,
     can_resolve_topics,
+    check_for_can_create_topic_group_violation,
     check_stream_access_based_on_can_send_message_group,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
@@ -97,7 +98,11 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
-from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
+from zerver.models.streams import (
+    StreamTopicsPolicyEnum,
+    get_stream_by_id_for_sending_message,
+    get_stream_by_id_in_realm,
+)
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -1487,7 +1492,10 @@ def build_message_edit_request(
         )
 
     orig_stream_id = message.recipient.type_id
-    orig_stream = get_stream_by_id_in_realm(orig_stream_id, message.realm)
+    # We call get_stream_by_id_for_sending_message instead of
+    # get_stream_by_id_in_realm here so that "can_create_topic_group" is
+    # fetched using select_related and we can save a couple of DB queries.
+    orig_stream = get_stream_by_id_for_sending_message(orig_stream_id, message.realm)
 
     is_stream_edited = False
     target_stream = orig_stream
@@ -1683,6 +1691,17 @@ def check_update_message(
         ):
             check_time_limit_for_change_all_propagate_mode(
                 message, user_profile, topic_name, stream_id
+            )
+
+        if (
+            message_edit_request.is_message_moved
+            and not message_edit_request.topic_resolved
+            and not message_edit_request.topic_unresolved
+        ):
+            check_for_can_create_topic_group_violation(
+                user_profile,
+                message_edit_request.target_stream,
+                message_edit_request.target_topic_name,
             )
 
     updated_message_result = do_update_message(

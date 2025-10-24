@@ -334,13 +334,21 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
 
 def get_stream_by_name_for_sending_message(stream_name: str, realm: Realm) -> Stream:
     return Stream.objects.select_related(
-        "can_send_message_group", "can_send_message_group__named_user_group"
+        "can_send_message_group",
+        "can_send_message_group__named_user_group",
+        "can_create_topic_group",
+        "can_create_topic_group__named_user_group",
     ).get(name__iexact=stream_name.strip(), realm_id=realm.id)
 
 
 def get_stream_by_id_for_sending_message(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related(
-        "realm", "recipient", "can_send_message_group", "can_send_message_group__named_user_group"
+        "realm",
+        "recipient",
+        "can_send_message_group",
+        "can_send_message_group__named_user_group",
+        "can_create_topic_group",
+        "can_create_topic_group__named_user_group",
     ).get(id=stream_id, realm=realm)
 
 
