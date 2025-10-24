@@ -508,20 +508,15 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
         // Move down into emoji map.
         const filter_text = $<HTMLInputElement>("input#emoji-popover-filter").val()!;
         const is_cursor_at_end = $("#emoji-popover-filter").caret() === filter_text.length;
-        if (event_name === "down_arrow" || (is_cursor_at_end && event_name === "right_arrow")) {
-            assert($selected_emoji !== undefined);
-            $selected_emoji.trigger("focus");
-            if (current_section === 0 && current_index < 6) {
-                scroll_util.get_scroll_element($emoji_map).scrollTop(0);
-            }
-            update_emoji_showcase($selected_emoji);
-            return true;
-        }
-        if (event_name === "tab") {
-            assert($selected_emoji !== undefined);
-            $selected_emoji.trigger("focus");
-            update_emoji_showcase($selected_emoji);
-            return true;
+        if (
+            event_name === "tab" ||
+            event_name === "down_arrow" ||
+            (is_cursor_at_end && event_name === "right_arrow")
+        ) {
+            current_section = 0;
+            current_index = 0;
+            maybe_change_active_section(0);
+            return maybe_change_focused_emoji($emoji_map, 0, 0);
         }
         return false;
     } else if (
@@ -548,10 +543,16 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
     }
 
     switch (event_name) {
-        case "tab":
-        case "shift_tab":
-            change_focus_to_filter();
-            return true;
+        case "tab": {
+            const next_section = (current_section + 1) % get_total_sections();
+            maybe_change_active_section(next_section);
+            return maybe_change_focused_emoji($emoji_map, next_section, 0);
+        }
+        case "shift_tab": {
+            const previous_section = (current_section - 1) % get_total_sections();
+            maybe_change_active_section(previous_section);
+            return maybe_change_focused_emoji($emoji_map, previous_section, 0);
+        }
         case "page_up":
             maybe_change_active_section(current_section - 1);
             return true;
