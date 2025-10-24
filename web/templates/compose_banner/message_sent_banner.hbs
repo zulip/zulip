@@ -1,8 +1,9 @@
 <div class="above_compose_banner main-view-banner success {{classname}}">
-    <p class="banner_content">
-        {{banner_text}}
-        <a class="above_compose_banner_action_link" {{#if above_composebox_narrow_url}}href="{{above_composebox_narrow_url}}"{{/if}} data-message-id="{{link_msg_id}}">
+    <div class="banner-content-wrapper">
+        <p class="banner_content">
+            {{banner_text}}
             {{#if message_recipient}}
+            <a class="above_compose_banner_action_link" {{#if above_composebox_narrow_url}}href="{{above_composebox_narrow_url}}"{{/if}} data-message-id="{{link_msg_id}}">
                 {{#with message_recipient}}
                 {{#if (eq message_type "channel")}}
                     {{#tr}}
@@ -13,10 +14,16 @@
                     {{t 'Go to {recipient_text}' }}
                 {{/if}}
                 {{/with}}
+            </a>
             {{else}}
-                {{link_text}}
+            {{link_text}}
             {{/if}}
-        </a>
-    </p>
+        </p>
+        {{#unless message_recipient}}
+        <button class="btn btn-primary above_compose_banner_action_button" data-message-id="{{link_msg_id}}">
+            Scroll down
+        </button>
+        {{/unless}}
+    </div>
     <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
 </div>
