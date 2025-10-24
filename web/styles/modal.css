@@ -1214,3 +1214,10 @@ ul.modal-options-list {
 #start-export-modal #start-export-form {
     margin-bottom: 0;
 }
+
+#edit-linkifier-form {
+    .linkifier-edit-form,
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
