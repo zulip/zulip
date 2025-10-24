@@ -128,6 +128,8 @@ TAB_SECTION_LABELS = {
     "for-yourself": "For yourself",
     "new-organizations": "New organizations",
     "imported-organizations": "Imported organizations",
+    "send-channel-message": "Send a channel message",
+    "send-dm": "Send a DM",
 }
 
 
