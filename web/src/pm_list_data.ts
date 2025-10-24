@@ -84,9 +84,20 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
-        const is_deactivated = !people.is_active_user_for_popover(
-            Number.parseInt(user_ids_string, 10) || 0,
-        );
+
+        const check_if_user_deactivated = (user_id: string): boolean =>
+            !people.is_active_user_for_popover(Number.parseInt(user_id, 10) || 0);
+
+        let is_deactivated = false;
+
+        // A group is considered deactivated if at least one user in the group
+        // is deactivated.
+        if (is_group) {
+            const user_ids = user_ids_string.split(",");
+            is_deactivated = user_ids.some((user_id) => check_if_user_deactivated(user_id));
+        } else {
+            is_deactivated = check_if_user_deactivated(user_ids_string);
+        }
 
         let user_circle_class;
         let status_emoji_info;
@@ -152,6 +163,10 @@ export function get_list_info(
         // comment in topic_list_data.ts.
         if (conversation.is_active) {
             return true;
+        }
+
+        if (conversation.is_deactivated) {
+            return false;
         }
 
         // We don't need to filter muted users here, because
