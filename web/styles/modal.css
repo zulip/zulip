@@ -1000,7 +1000,8 @@ ul.modal-options-list {
     margin-bottom: 0;
 }
 
-#confirm_delete_attachments_modal .detached-attachments-modal-list {
+#confirm_delete_attachments_modal .detached-attachments-modal-list,
+.deleted-profile-field-options-list {
     /* Override default value for <ul> in bootstrap.app.css */
     margin-bottom: 0;
 }
