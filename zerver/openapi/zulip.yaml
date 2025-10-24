@@ -23155,9 +23155,14 @@ paths:
                     It's an error for this parameter to be false for a public or
                     web-public channel and when is_private is false.
 
+                    This cannot be set to `false` if `can_create_topic_group` setting
+                    is not set to `role:everyone` [system group][system-groups].
+
                     **Changes**: Before Zulip 6.0 (feature level 136), `history_public_to_subscribers`
                     was silently ignored unless the request also contained either `is_private` or
                     `is_web_public`.
+
+                    [system-groups]: /api/group-setting-values#system-groups
                   type: boolean
                   example: false
                 is_default_stream:
@@ -23468,7 +23473,12 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
+                        For [private channels with protected history](/help/channel-permissions#private-channels),
+                        this setting can only be set to `role:everyone` [system group][system-groups].
+
                         **Changes**: New in Zulip 12.0 (feature level ZF-b7d3e1).
+
+                        [system-groups]: /api/group-setting-values#system-groups
                       example:
                         {
                           "new":
@@ -29383,6 +29393,9 @@ components:
         - description: |
             A [group-setting value][setting-values] defining the set of users
             who have permission to create a new topic in this channel.
+
+            Note that for [private channels with protected history](/help/channel-permissions#private-channels),
+            everyone can start new topics.
 
             **Changes**: New in Zulip 12.0 (feature level ZF-b7d3e1).
 
