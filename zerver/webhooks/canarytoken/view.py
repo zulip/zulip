@@ -28,8 +28,10 @@ def api_canarytoken_webhook(
     https://help.canary.tools/hc/en-gb/articles/360002426577-How-do-I-configure-notifications-for-a-Generic-Webhook-
     """
     topic_name = "canarytoken alert"
+    time = message["time"].tame(check_string)
+    formatted_time = time.replace("(UTC)", "").strip() + "Z"
     body = (
-        f"**:alert: Canarytoken has been triggered on {message['time'].tame(check_string)}!**\n\n"
+        f"**:alert: Canarytoken has been triggered on <time:{formatted_time}>!**\n\n"
         f"{message['memo'].tame(check_string)} \n\n"
         f"[Manage this canarytoken]({message['manage_url'].tame(check_string)})"
     )
