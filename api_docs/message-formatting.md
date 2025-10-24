@@ -140,6 +140,23 @@ Clients can recognize if an image was thumbnailed by its `src`
 attribute starting with `/user_uploads/thumbnail/`.  The `href` will
 always link to the originally-uploaded file.
 
+When a Zulip message is sent referencing an image in Markdown syntax,
+`![example image](/user_uploads/path/to/example.png)`, Zulip will generate
+an image element with the following format, including a reference to the
+non-thumbnailed original source on the `data-original-src` attribute:
+
+```html
+<img alt="example image" class="inline-image"
+  data-original-dimensions="1050x700"
+  data-original-content-type="image/png"
+  data-original-src="/user_uploads/path/to/example.png"
+  src="/user_uploads/thumbnail/path/to/example.png/840x560.webp">
+```
+
+Clients can recognize if an image was thumbnailed by its `src`
+attribute starting with `/user_uploads/thumbnail/`.  The `data-original-src`
+attribute will always reference the originally-uploaded file.
+
 **Changes**: See [Changes to image formatting](#changes-to-image-formatting).
 
 ### Image-loading placeholders
@@ -149,7 +166,9 @@ the time the message is sent, the `img` element will temporarily
 reference a loading indicator image and have the `image-loading-placeholder`
 class, which clients can use to identify loading indicators and
 replace them with a more native loading indicator element if
-desired. For example:
+desired.
+
+In image previews, the placeholder is structured like this:
 
 ``` html
 <div class="message_inline_image">
@@ -160,6 +179,18 @@ desired. For example:
           src="/path/to/spinner.png">
     </a>
 </div>
+```
+
+For image elements presented in Markdown syntax, this placeholder
+structure is used:
+
+```html
+<img alt="example image"
+  class="inline-image image-loading-placeholder"
+  data-original-content-type="image/png"
+  data-original-dimensions="1050x700"
+  data-original-src="/user_uploads/path/to/example.png"
+  src="/path/to/spinner.png">
 ```
 
 Once the server has a working thumbnail, such messages will be updated
@@ -197,6 +228,17 @@ Transcoded images are presented with this structure in image previews:
           src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
     </a>
 </div>
+```
+
+Transcoded images presented in Markdown syntax are structured like this:
+
+```html
+<img alt="example HEIC image" class="inline-image"
+  data-original-dimensions="1920x1080"
+  data-original-content-type="image/heic"
+  data-original-src="/user_uploads/path/to/example.heic"
+  data-transcoded-image="1920x1080.webp"
+  src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
 ```
 
 ### Recommended client processing of image previews
