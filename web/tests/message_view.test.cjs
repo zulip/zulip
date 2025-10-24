@@ -48,10 +48,7 @@ mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
-    user_has_permission_for_group_setting: () => true,
-});
+const settings_data = mock_esm("../src/settings_data");
 mock_esm("../src/spectators", {
     login_to_access() {},
 });
@@ -239,6 +236,8 @@ run_test("urls", () => {
 });
 
 run_test("show_empty_narrow_message", ({mock_template, override}) => {
+    settings_data.user_can_access_all_other_users = () => true;
+    settings_data.user_has_permission_for_group_setting = () => true;
     override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
@@ -641,6 +640,25 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         empty_narrow_html(
             "translated: None of your messages have emoji reactions yet.",
             'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+        ),
+    );
+
+    // The channel is private, and the user cannot subscribe (e.g., they
+    // have access to channel metadata, but don't have content access).
+    const private_sub = {
+        stream_id: 101,
+        name: "private",
+        subscribed: false,
+        invite_only: true,
+    };
+    stream_data.add_sub_for_tests(private_sub);
+    settings_data.user_has_permission_for_group_setting = () => false;
+    current_filter = set_filter([["stream", private_sub.stream_id.toString()]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to view messages in this private channel.",
         ),
     );
 });
