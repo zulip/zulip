@@ -16,7 +16,7 @@ import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, narrow_term_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -219,6 +219,8 @@ function message_matches_search_term(message: Message, operator: string, operand
         }
     }
 
+    // We will never get here since operator type validation would fail.
+    // istanbul ignore next
     return true; // unknown operators return true (effectively ignored)
 }
 
@@ -291,21 +293,30 @@ export class Filter {
         return operator;
     }
 
-    static canonicalize_term({negated = false, operator, operand}: NarrowTerm): NarrowTerm {
+    static canonicalize_term({
+        negated = false,
+        operator,
+        operand,
+    }: {
+        negated?: boolean | undefined;
+        operator: string;
+        operand: string;
+    }): NarrowTerm {
         // Make negated explicitly default to false for both clarity and
         // simplifying deepEqual checks in the tests.
         operator = Filter.canonicalize_operator(operator);
+        const narrow_term = narrow_term_schema.parse({negated, operator, operand});
 
-        switch (operator) {
+        switch (narrow_term.operator) {
             case "is":
                 // "is:private" was renamed to "is:dm"
-                if (operand === "private") {
-                    operand = "dm";
+                if (narrow_term.operand === "private") {
+                    narrow_term.operand = "dm";
                 }
                 break;
             case "has":
                 // images -> image, etc.
-                operand = operand.replace(/s$/, "");
+                narrow_term.operand = narrow_term.operand.replace(/s$/, "");
                 break;
 
             case "channel":
@@ -314,13 +325,13 @@ export class Filter {
                 break;
             case "sender":
             case "dm":
-                operand = operand.toLowerCase();
-                if (operand === "me") {
-                    operand = people.my_current_email();
+                narrow_term.operand = narrow_term.operand.toLowerCase();
+                if (narrow_term.operand === "me") {
+                    narrow_term.operand = people.my_current_email();
                 }
                 break;
             case "dm-including":
-                operand = operand.toLowerCase();
+                narrow_term.operand = narrow_term.operand.toLowerCase();
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -328,18 +339,14 @@ export class Filter {
                 // phrase search behavior, however.  So, we replace all instances of
                 // curly quotes with regular quotes when doing a search.  This is
                 // unlikely to cause any problems and is probably what the user wants.
-                operand = operand.replaceAll(/[\u201C\u201D]/g, '"');
+                narrow_term.operand = narrow_term.operand.replaceAll(/[\u201C\u201D]/g, '"');
                 break;
             default:
-                operand = operand.toLowerCase();
+                narrow_term.operand = narrow_term.operand.toLowerCase();
         }
 
         // We may want to consider allowing mixed-case operators at some point
-        return {
-            negated,
-            operator,
-            operand,
-        };
+        return narrow_term;
     }
 
     static ensure_channel_topic_terms(
@@ -388,8 +395,11 @@ export class Filter {
 
         assert(message.type === "stream");
 
-        const channel_term = {operator: "channel", operand: message.stream_id.toString()};
-        const topic_term = {operator: "topic", operand: message.topic};
+        const channel_term: NarrowTerm = {
+            operator: "channel",
+            operand: message.stream_id.toString(),
+        };
+        const topic_term: NarrowTerm = {operator: "topic", operand: message.topic};
 
         const updated_terms = [channel_term, topic_term, ...non_conversation_terms];
         return updated_terms;
@@ -422,15 +432,13 @@ export class Filter {
         const terms: NarrowTerm[] = [];
         let search_term: string[] = [];
         let negated;
-        let operator;
         let operand;
-        let term;
+        let term: NarrowTerm;
 
         function maybe_add_search_terms(): void {
             if (search_term.length > 0) {
-                operator = "search";
                 const _operand = search_term.join(" ");
-                term = {operator, operand: _operand, negated: false};
+                term = {operator: "search", operand: _operand, negated: false};
                 terms.push(term);
                 search_term = [];
             }
@@ -494,11 +502,11 @@ export class Filter {
                 // terms list. This is done so that the last active filter is correctly
                 // detected by the `get_search_result` function (in search_suggestions.ts).
                 maybe_add_search_terms();
-                term = {
+                term = narrow_term_schema.parse({
                     negated,
                     operator: Filter.canonicalize_operator(operator),
                     operand,
-                };
+                });
                 terms.push(term);
             }
         }
@@ -900,8 +908,7 @@ export class Filter {
 
             const dm_operand = dm_participants.join(",");
 
-            const dm_conversation_terms = [{operator: "dm", operand: dm_operand, negated: false}];
-            return [...dm_conversation_terms, ...filtered_terms];
+            return [{operator: "dm", operand: dm_operand, negated: false}, ...filtered_terms];
         }
 
         assert(typeof message.display_recipient === "string");
@@ -1605,12 +1612,16 @@ export class Filter {
     }
 
     _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
-        return terms_mixed_case.map((term: NarrowTerm) => Filter.canonicalize_term(term));
+        const terms = terms_mixed_case.map((term: NarrowTerm) => Filter.canonicalize_term(term));
+        return terms;
     }
 
     adjust_with_operand_to_message(msg_id: number): void {
         const narrow_terms = this._terms.filter((term) => term.operator !== "with");
-        const adjusted_with_term = {operator: "with", operand: `${msg_id}`};
+        const adjusted_with_term: NarrowTerm = {
+            operator: "with",
+            operand: `${msg_id}`,
+        };
         const adjusted_terms = [...narrow_terms, adjusted_with_term];
         this._terms = adjusted_terms;
         this.requires_adjustment_for_moved_with_target = false;
