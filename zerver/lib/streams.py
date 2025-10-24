@@ -158,6 +158,34 @@ def validate_topics_policy(
     return None
 
 
+def validate_can_create_topic_group_setting_for_protected_history_streams(
+    history_public_to_subscribers: bool | None,
+    invite_only: bool,
+    can_create_topic_group: int | UserGroupMembersData,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> None:
+    if history_public_to_subscribers is None:
+        history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+            invite_only, history_public_to_subscribers
+        )
+
+    if history_public_to_subscribers:
+        return
+
+    # If a group setting has value "Everyone including guests" along with additional
+    # users or groups, we do not treat it as equivalent to just "Everyone including guests".
+    # For a channel with protected history, everyone must be allowed to create new topics.
+    # As a result, enabling protected history for a channel requires the `can_create_topic_group`
+    # setting to have "Everyone including guests" group configuration only.
+    if (
+        not isinstance(can_create_topic_group, int)
+        or can_create_topic_group != system_groups_name_dict[SystemGroups.EVERYONE].id
+    ):
+        raise IncompatibleParametersError(
+            ["history_public_to_subscribers", "can_create_topic_group"]
+        )
+
+
 def get_default_value_for_history_public_to_subscribers(
     invite_only: bool,
     history_public_to_subscribers: bool | None,
@@ -1511,6 +1539,15 @@ def access_requested_group_permissions_for_streams(
                 setting_value = parse_group_setting_value(
                     setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
                 )
+
+                if setting_name == "can_create_topic_group":
+                    validate_can_create_topic_group_setting_for_protected_history_streams(
+                        request_settings_dict["history_public_to_subscribers"],
+                        request_settings_dict["invite_only"],
+                        setting_value,
+                        system_groups_name_dict,
+                    )
+
                 group_settings_map[setting_name] = access_user_group_for_setting(
                     setting_value,
                     user_profile,
