@@ -1169,3 +1169,9 @@ ul.modal-options-list {
 .deleted-profile-field-options-list {
     margin-bottom: 0;
 }
+
+.confirm-unsubscribe-private-stream-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625em; /* 10px at 16px/1em */
+}
