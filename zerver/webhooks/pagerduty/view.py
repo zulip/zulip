@@ -2,13 +2,14 @@ from email.headerregistry import Address
 from typing import TypeAlias
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, validate_webhook_signature
 from zerver.models import UserProfile
 
 FormatDictType: TypeAlias = dict[str, str | int]
@@ -20,7 +21,7 @@ PAGER_DUTY_EVENT_NAMES = {
     "incident.resolve": "resolved",
     "incident.assign": "assigned",
     "incident.escalate": "escalated",
-    "incident.delegate": "delineated",
+    "incident.delegate": "delegated",
 }
 
 PAGER_DUTY_EVENT_NAMES_V2 = {
@@ -36,6 +37,24 @@ PAGER_DUTY_EVENT_NAMES_V3 = {
     "incident.unacknowledged": "unacknowledged",
     "incident.resolved": "resolved",
     "incident.reassigned": "reassigned",
+    "incident.reopened": "reopened",
+    "incident.priority_updated": "priority updated",
+    "incident.annotated": "annotated",
+    "incident.delegated": "delegated",
+    "incident.escalated": "escalated",
+    "incident.status_update_published": "status update published",
+    "incident.conference_bridge.updated": "conference bridge updated",
+    "incident.custom_field_values.updated": "custom field values updated",
+    "incident.incident_type.changed": "incident type changed",
+    "incident.responder.added": "responder added",
+    "incident.responder.replied": "responder replied",
+    "incident.service_updated": "service updated",
+    "incident.workflow.started": "workflow started",
+    "incident.workflow.completed": "workflow completed",
+    "service.created": "created",
+    "service.updated": "updated",
+    "service.deleted": "deleted",
+    "service.custom_field_values.updated": "custom field values updated",
 }
 
 ALL_EVENT_TYPES = [
@@ -45,6 +64,23 @@ ALL_EVENT_TYPES = [
     "acknowledged",
     "triggered",
     "reassigned",
+    "reopened",
+    "priority updated",
+    "annotated",
+    "delegated",
+    "escalated",
+    "status update published",
+    "conference bridge updated",
+    "custom field values updated",
+    "incident type changed",
+    "responder added",
+    "responder replied",
+    "service updated",
+    "workflow started",
+    "workflow completed",
+    "created",
+    "updated",
+    "deleted",
 ]
 
 AGENT_TEMPLATE = "[{username}]({url})"
@@ -164,6 +200,18 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
 
 
 def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
+    data_type = event["data"]["type"].tame(check_string)
+
+    # Route based on data structure type
+    if data_type == "service":
+        return build_service_formatdict_v3(event)
+    else:
+        # Handle all incident-related events (incident, incident_note, etc.)
+        return build_incident_formatdict_v3(event)
+
+
+def build_incident_formatdict_v3(event: WildValue) -> FormatDictType:
+    """Handle incident events with the original incident data structure"""
     format_dict: FormatDictType = {}
     format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V3[event["event_type"].tame(check_string)]
 
@@ -200,30 +248,74 @@ def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
     return format_dict
 
 
+def build_service_formatdict_v3(event: WildValue) -> FormatDictType:
+    """Handle service events with the service data structure"""
+    format_dict: FormatDictType = {}
+    format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V3[event["event_type"].tame(check_string)]
+
+    # Service events have different field structure
+    format_dict["service_id"] = event["data"]["id"].tame(check_string)
+    format_dict["service_name"] = event["data"]["summary"].tame(check_string)
+    format_dict["service_url"] = event["data"]["html_url"].tame(check_string)
+
+    # Service events don't have incident-specific fields
+    format_dict["incident_id"] = format_dict["service_id"]  # Reuse for compatibility
+    format_dict["incident_url"] = format_dict["service_url"]  # Reuse for compatibility
+    format_dict["incident_num_title"] = format_dict["service_name"]  # Use service name
+    format_dict["assignee_info"] = "nobody"  # Services don't have assignees
+    format_dict["trigger_message"] = ""
+
+    # Handle agent if present (for service update events)
+    agent = event.get("agent")
+    if agent:
+        format_dict["agent_info"] = AGENT_TEMPLATE.format(
+            username=agent["summary"].tame(check_string),
+            url=agent["html_url"].tame(check_string),
+        )
+
+    return format_dict
+
+
 def send_formatted_pagerduty(
     request: HttpRequest,
     user_profile: UserProfile,
     message_type: str,
     format_dict: FormatDictType,
 ) -> None:
+    # Handle service events
     if message_type in (
+        "service.created",
+        "service.updated",
+        "service.deleted",
+        "service.custom_field_values.updated",
+    ):
+        template = "Service [{incident_num_title}]({incident_url}) {action}."
+        topic_name = "Service {incident_num_title}".format(**format_dict)
+    # Handle incident trigger/unacknowledge events
+    elif message_type in (
         "incident.trigger",
         "incident.triggered",
         "incident.unacknowledge",
         "incident.unacknowledged",
     ):
         template = INCIDENT_WITH_SERVICE_AND_ASSIGNEE
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
+    # Handle incident resolution events
     elif message_type in ("incident.resolve", "incident.resolved"):
         if "agent_info" in format_dict:
             template = INCIDENT_RESOLVED_WITH_AGENT
         else:
             template = INCIDENT_RESOLVED
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
+    # Handle incident assignment/reassignment events
     elif message_type in ("incident.assign", "incident.reassigned"):
         template = INCIDENT_ASSIGNED
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
+    # Handle all other incident events
     else:
         template = INCIDENT_WITH_ASSIGNEE
+        topic_name = "Incident {incident_num_title}".format(**format_dict)
 
-    topic_name = "Incident {incident_num_title}".format(**format_dict)
     body = template.format(**format_dict)
     assert isinstance(format_dict["action"], str)
     check_send_webhook_message(request, user_profile, topic_name, body, format_dict["action"])
@@ -237,6 +329,37 @@ def api_pagerduty_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
+    # PagerdUty webhook signature verification
+    # Get the X-PagerDuty-Signature header from the HTTP request
+    pagerduty_signature = request.META.get("HTTP_X_PAGERDUTY_SIGNATURE")
+    signature_valid = True
+    if pagerduty_signature:
+        # Parse "v1=hex1,v1=hex2" format.
+        signatures = []
+        # Split the header value by commas to handle multiple signatures.
+        for sig_part in pagerduty_signature.split(","):
+            sig_part = sig_part.strip()
+            if sig_part.startswith("v1="):
+                hex_signature = sig_part[3:]  # Extract just the hex signature
+                signatures.append(hex_signature)  # Add the extracted hex signature to list
+
+        if not signatures:
+            raise JsonableError(_("Webhook signature verification failed."))  # nocoverage
+
+        # Try validating each signature in the list.
+        signature_valid = False
+        for signature in signatures:
+            try:
+                # validate using HMAC-SHA256
+                validate_webhook_signature(request, request.body.decode(), signature)
+                signature_valid = True
+                break
+            except JsonableError:
+                continue
+
+    if not signature_valid:
+        raise JsonableError(_("Webhook signature verification failed."))
+
     messages = payload.get("messages")
     if messages:
         for message in messages:
@@ -268,7 +391,7 @@ def api_pagerduty_webhook(
             send_formatted_pagerduty(request, user_profile, message_event, format_dict)
     else:
         if "event" in payload:
-            # V3 has no "messages" field, and it has key "event" instead
+            # Pagerduty Webhook V3
             event = payload["event"]
             event_type = event.get("event_type").tame(check_none_or(check_string))
 
