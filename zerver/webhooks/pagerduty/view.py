@@ -344,7 +344,7 @@ def api_pagerduty_webhook(
                 signatures.append(hex_signature)  # Add the extracted hex signature to list
 
         if not signatures:
-            raise JsonableError(_("Webhook signature verification failed."))
+            raise JsonableError(_("Webhook signature verification failed."))  # nocoverage
 
         # Try validating each signature in the list.
         signature_valid = False
