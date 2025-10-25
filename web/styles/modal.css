@@ -397,6 +397,10 @@
     opacity: 0.7;
 }
 
+#demo-owner-update-email-field-hint {
+    opacity: 0.7;
+}
+
 #sender_channel_email_address_widget {
     width: 12.875em; /* 206px at 16px/em */
 }
@@ -425,6 +429,7 @@
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
+    max-width: 100%;
 
     &:disabled {
         cursor: not-allowed;
@@ -452,6 +457,14 @@
     }
 }
 
+.modal__body,
+.modal__content {
+    .dropdown-widget-button,
+    .dropdown_widget_with_label_wrapper {
+        max-width: 100%;
+    }
+}
+
 .modal_password_input,
 .modal_url_input,
 .modal_text_input {
@@ -466,6 +479,7 @@
     margin-bottom: 10px;
     /* subtract padding (6px each side) and border (1px each side) */
     width: calc(var(--modal-input-width) - 14px);
+    max-width: calc(100% - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);

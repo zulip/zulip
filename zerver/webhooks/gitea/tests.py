@@ -51,6 +51,11 @@ class GiteaHookTests(WebhookTestCase):
         expected_message = """kostekIV closed [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
         self.check_webhook("pull_request__closed", expected_topic_name, expected_message)
 
+    def test_pull_request_closed_different_user(self) -> None:
+        expected_topic_name = "test / PR #126085 PR closed"
+        expected_message = """Aneesh-Hegde closed [PR #1](https://gitea.com/Aneesh-Hegde/test-repo/pulls/1) from `main` to `main`."""
+        self.check_webhook("pull_request__closed_diff_user", expected_topic_name, expected_message)
+
     def test_pull_request_assigned(self) -> None:
         expected_topic_name = "test / PR #1906 test 2"
         expected_message = """kostekIV assigned kostekIV to [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master` (assigned to kostekIV)."""

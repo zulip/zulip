@@ -251,6 +251,14 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
+        result = self.client_get(
+            # Non-root API docs pages do not have a trailing slash.
+            "/api/changelog/",
+            follow=True,
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(result.status_code, 404)
+
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", ["Normal users"])
         self._test("/devtools/", ["Useful development URLs"])
@@ -412,6 +420,14 @@ class DocPageTest(ZulipTestCase):
             if "bot_avatars"
             not in (image_path := os.path.relpath(os.path.join(root, file), directory))
         }
+
+        # The integration docs and the screenshot images are in different repos
+        # for the PythonAPIIntegrations, so we cannot avoid going out of sync
+        # when adding/deleting screenshots.
+        # Use this set to temporarily add exclusions to this test.
+        exception_images: set[str] = {"jira-plugin/001.png", "git/001.png"}
+        images_in_dir.update(exception_images)
+        images_in_docs.update(exception_images)
 
         self.assertEqual(
             images_in_dir,

@@ -19,6 +19,45 @@ _Unreleased_
 
 ## Zulip Server 11.x series
 
+### Zulip Server 11.4
+
+_Released 2025-10-23_
+
+- Fixed a bug that could cause the incoming email server to crash on
+  startup.
+
+### Zulip Server 11.3
+
+_Released 2025-10-22_
+
+- Removed the Google blobs emoji set (deprecated since 2017); any
+  users who had this preference will have it updated to the standard
+  Google emoji set.
+- Updated incoming email server to automatically drop auto-replies,
+  including out-of-office messages, if they are marked as such in
+  their headers.
+- Fixed a permissions issue with logfiles of the incoming email
+  server.
+- Fixed an unread count bug involving unreads in muted topics.
+- Fixed some compose box transitions.
+- Fixed several minor bugs in the inbox view.
+- Fixed Gitea integration displaying the wrong actor for pull request
+  events.
+- Fixed a minor data corruption bug involving group-based permissions.
+- Removed a misleading emoji alias from CLDR for 🔯.
+- Clarified validation of email addresses when registering for push
+  notifications service.
+- Improved handling of imported Slack threads and bot email addresses.
+- Improved documentation for reverse proxies.
+- Improved documentation about recovering from database-only backups.
+- Improved API documentation for deleting messages.
+- Improved documentation for GitLab integration.
+- Added `rel="canonical"` links in headers of documentation pages,
+  pointing to zulip.com documentation, to help search engines not
+  index potentially stale self-hosted duplicates of pages.
+- Updated and reorganized security documentation.
+- Updated Python dependencies.
+
 ### Zulip Server 11.2
 
 _Released 2025-09-16_

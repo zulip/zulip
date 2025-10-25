@@ -115,6 +115,10 @@ export const update_person = function update(event: UserUpdate): void {
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
 
+        if (people.is_my_user_id(event.user_id)) {
+            settings_account.update_role_text();
+        }
+
         if (people.is_my_user_id(event.user_id) && current_user.is_owner !== user.is_owner) {
             current_user.is_owner = user.is_owner;
             settings_org.maybe_disable_widgets();

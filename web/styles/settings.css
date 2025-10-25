@@ -813,6 +813,11 @@ input[type="checkbox"] {
     grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
     align-items: center;
     width: var(--modal-input-width);
+
+    .flatpickr-wrapper {
+        grid-column: datepicker-start / close-button-end;
+        grid-row: close-button;
+    }
 }
 
 .control-label-disabled {
@@ -1713,12 +1718,14 @@ label.preferences-radio-choice-label {
 #edit-user-form {
     .person_picker {
         /* Subtract (1px border and 2px of padding) on each side */
-        min-width: calc(var(--modal-input-width) - 6px);
+        width: calc(var(--modal-input-width) - 6px);
+        max-width: calc(100% - 6px);
     }
 
     & textarea {
         /* Subtract (1px border and 6px padding) on each side */
         width: calc(var(--modal-input-width) - 14px);
+        max-width: calc(100% - 14px);
     }
 }
 
@@ -2107,12 +2114,6 @@ label.preferences-radio-choice-label {
     #download_zuliprc {
         flex-direction: column;
         margin-top: 5px;
-    }
-
-    #edit-user-form {
-        .custom_user_field textarea {
-            width: calc(100% - 25px);
-        }
     }
 
     .topic_date_updated {

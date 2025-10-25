@@ -136,6 +136,10 @@ generate an image preview element with the following format:
 </div>
 ```
 
+Clients can recognize if an image was thumbnailed by its `src`
+attribute starting with `/user_uploads/thumbnail/`.  The `href` will
+always link to the originally-uploaded file.
+
 **Changes**: See [Changes to image formatting](#changes-to-image-formatting).
 
 ### Image-loading placeholders

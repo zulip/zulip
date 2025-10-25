@@ -522,7 +522,7 @@ export function initialize(): void {
     });
 
     $("#navbar_alerts_wrapper").on("click", ".download-latest-zulip-version", () => {
-        window.open("https://zulip.com/download", "_blank", "noopener,noreferrer");
+        window.open("https://zulip.com/apps/", "_blank", "noopener,noreferrer");
     });
 
     $("#navbar_alerts_wrapper").on("click", ".edit-profile-required-fields", () => {

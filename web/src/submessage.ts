@@ -42,7 +42,7 @@ const widget_data_event_schema = z.object({
         }),
         z.object({
             widget_type: z.literal("todo"),
-            extra_data: todo_widget_extra_data_schema,
+            extra_data: z.nullable(todo_widget_extra_data_schema),
         }),
     ]),
 });

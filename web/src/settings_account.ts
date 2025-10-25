@@ -23,6 +23,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_ui from "./settings_ui.ts";
@@ -91,6 +92,15 @@ export function update_email_change_display(): void {
         $("#email_field_container").removeClass("disabled_setting_tooltip");
         $("label[for='change_email_button']").removeClass("cursor-text");
     }
+}
+
+export function update_role_text(): void {
+    if ($("#user_role_details").length === 0) {
+        return;
+    }
+
+    const role_text = people.get_user_type(current_user.user_id)!;
+    $("#user_role_details .user-details-desc").text(role_text);
 }
 
 function display_avatar_upload_complete(): void {
@@ -236,6 +246,7 @@ export function add_custom_profile_fields_to_settings(): void {
     custom_profile_fields_ui.initialize_custom_date_type_fields(
         element_id,
         people.my_current_user_id(),
+        true,
     );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
@@ -630,6 +641,7 @@ export function set_up(): void {
         const data = {
             email: $<HTMLInputElement>("input#demo_organization_add_email").val(),
             full_name: $("#demo_organization_update_full_name").val(),
+            email_address_visibility: $("#demo_owner_email_address_visibility").val(),
         };
 
         const opts = {
@@ -668,6 +680,9 @@ export function set_up(): void {
         e.stopPropagation();
 
         function demo_organization_add_email_post_render(): void {
+            // Set email address visibility to current user setting.
+            $("#demo_owner_email_address_visibility").val(user_settings.email_address_visibility);
+
             // Disable submit button if either input is an empty string.
             const $add_email_element = $<HTMLInputElement>("input#demo_organization_add_email");
             const $add_name_element = $<HTMLInputElement>(
@@ -698,6 +713,8 @@ export function set_up(): void {
                 html_body: render_demo_organization_add_email_modal({
                     delivery_email: current_user.delivery_email,
                     full_name: current_user.full_name,
+                    email_address_visibility_values:
+                        settings_config.email_address_visibility_values,
                 }),
                 html_submit_button: $t_html({defaultMessage: "Add"}),
                 loading_spinner: true,
