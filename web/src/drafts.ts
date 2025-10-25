@@ -279,11 +279,9 @@ export function delete_all_drafts(): void {
 }
 
 export function confirm_delete_all_drafts(): void {
-    const html_body = render_confirm_delete_all_drafts();
-
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Delete all drafts"}),
-        html_body,
+        html_subheader: render_confirm_delete_all_drafts(),
         on_click: delete_all_drafts,
     });
 }
