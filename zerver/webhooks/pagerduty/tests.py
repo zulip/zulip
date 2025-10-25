@@ -110,7 +110,7 @@ class PagerDutyHookTests(WebhookTestCase):
         payload = self.get_body("trigger_v2")
         webhook_secret = "test_webhook_secret_123"
         invalid_signature = "0" * 64
-        url = self.build_webhook_url(webhook_secret=webhook_secret)t
+        url = self.build_webhook_url(webhook_secret=webhook_secret)
         with self.settings(VERIFY_WEBHOOK_SIGNATURES=True):
             result = self.client_post(url,payload,content_type="application/json",HTTP_X_PAGERDUTY_SIGNATURE=f"v1={invalid_signature}",)
             self.assert_json_error(result, "Webhook signature verification failed.")
