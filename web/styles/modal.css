@@ -1179,3 +1179,7 @@ ul.modal-options-list {
 #first_stream_created_modal .first-stream-created-instructions-list {
     margin-bottom: 0;
 }
+
+#confirm_mark_messages_as_read_modal .input-group:last-of-type {
+    margin-bottom: 0;
+}
