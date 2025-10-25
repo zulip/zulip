@@ -711,6 +711,7 @@ paths:
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
                                         "can_subscribe_group": 2,
+                                        "can_unsubscribe_group": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1416,6 +1417,7 @@ paths:
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
                                         "can_subscribe_group": 2,
+                                        "can_unsubscribe_group": 2,
                                         "stream_weekly_traffic": null,
                                         "subscriber_count": 0,
                                       },
@@ -12128,6 +12130,8 @@ paths:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
                   $ref: "#/components/schemas/CanSubscribeGroup"
+                can_unsubscribe_group:
+                  $ref: "#/components/schemas/CanUnsubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
                 folder_id:
@@ -12178,6 +12182,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_unsubscribe_group:
                 contentType: application/json
               can_resolve_topics_group:
                 contentType: application/json
@@ -12412,19 +12418,33 @@ paths:
       description: |
         Unsubscribe yourself or other users from one or more channels.
 
-        In addition to managing the current user's subscriptions, this
-        endpoint can be used to remove other users from channels. This
-        is possible in 3 situations:
+        This endpoint allows managing the current user's subscriptions
+        and can also be used to remove other users from channels under
+        specific conditions:
 
-        - Organization administrators can remove any user from any
-          channel.
-        - Users can remove a bot that they own from any channel that
-          the user [can access](/help/channel-permissions).
-        - Users can unsubscribe any user from a channel if they [have
-          access](/help/channel-permissions) to the channel and are a
-          member of the [user group](/api/get-user-groups) specified
-          by the [`can_remove_subscribers_group`][can-remove-parameter]
-          for the channel.
+        - Self-unsubscription:
+
+          - Organization administrators can always unsubscribe themselves from
+            any channel if they are subscribed to.
+          - Users can unsubscribe themselves from a channel if they are
+            a member of the [user group](/api/get-user-groups) specified
+            by either the `can_unsubscribe_group`, `can_remove_subscribers_group`,
+            or `can_administer_channel_group` for that channel.
+
+        - Unsubscribing others:
+          - Organization administrators can remove any user from any
+            channel.
+          - Users can remove a bot that they own from any channel that
+            the user [can access](/help/channel-permissions).
+          - Users can unsubscribe any user from a channel if they [have
+            access](/help/channel-permissions) to the channel and are a
+            member of the [user group](/api/get-user-groups) specified
+            by the [`can_remove_subscribers_group`][can-remove-parameter]
+            for the channel.
+
+        **Changes**: Before Zulip 11.0 (feature level ZF-1abcca), the
+        `can_unsubscribe_group` permission, which allows members of the
+        group to unsubscribe themselves from channel, did not exist.
 
         **Changes**: Before Zulip 10.0 (feature level 362),
         subscriptions in archived channels could not be modified.
@@ -17313,6 +17333,7 @@ paths:
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
+                                can_unsubscribe_group: {}
                                 can_resolve_topics_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
@@ -22755,6 +22776,7 @@ paths:
                                 can_send_message_group: {}
                                 can_resolve_topics_group: {}
                                 can_subscribe_group: {}
+                                can_unsubscribe_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -22799,6 +22821,7 @@ paths:
                                 - is_announcement_only
                                 - can_remove_subscribers_group
                                 - can_subscribe_group
+                                - can_unsubscribe_group
                                 - stream_weekly_traffic
                                 - is_recently_active
                                 - subscriber_count
@@ -22812,6 +22835,7 @@ paths:
                               "can_add_subscribers_group": 10,
                               "can_remove_subscribers_group": 10,
                               "can_subscribe_group": 10,
+                              "can_unsubscribe_group": 10,
                               "creator_id": null,
                               "date_created": 1691057093,
                               "description": "A private channel",
@@ -22836,6 +22860,7 @@ paths:
                               "can_add_subscribers_group": 9,
                               "can_remove_subscribers_group": 9,
                               "can_subscribe_group": 10,
+                              "can_unsubscribe_group": 10,
                               "creator_id": 12,
                               "date_created": 1691057093,
                               "description": "A default public channel",
@@ -22909,6 +22934,7 @@ paths:
                             "can_add_subscribers_group": 2,
                             "can_remove_subscribers_group": 2,
                             "can_subscribe_group": 2,
+                            "can_unsubscribe_group": 2,
                             "stream_weekly_traffic": null,
                             subscriber_count: 12,
                           },
@@ -23328,6 +23354,25 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_unsubscribe_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to unsubscribe themselves from this
+                        channel expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Note that a user must have metadata access to a channel and permission
+                        to administer the channel in order to modify this setting.
+
+                        **Changes**: New in Zulip 11.0 (feature level ZF-1abcca).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_resolve_topics_group:
                   allOf:
                     - description: |
@@ -23376,6 +23421,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_unsubscribe_group:
                 contentType: application/json
               can_resolve_topics_group:
                 contentType: application/json
@@ -25656,6 +25703,7 @@ components:
             can_move_messages_within_channel_group: {}
             can_send_message_group: {}
             can_subscribe_group: {}
+            can_unsubscribe_group: {}
             can_resolve_topics_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
@@ -25694,6 +25742,7 @@ components:
             - can_remove_subscribers_group
             - stream_weekly_traffic
             - can_subscribe_group
+            - can_unsubscribe_group
     BasicChannelBase:
       type: object
       description: |
@@ -25864,6 +25913,8 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        can_unsubscribe_group:
+          $ref: "#/components/schemas/CanUnsubscribeGroup"
         can_resolve_topics_group:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
         subscriber_count:
@@ -27019,6 +27070,8 @@ components:
           $ref: "#/components/schemas/CanSendMessageGroup"
         can_subscribe_group:
           $ref: "#/components/schemas/CanSubscribeGroup"
+        can_unsubscribe_group:
+          $ref: "#/components/schemas/CanUnsubscribeGroup"
         can_resolve_topics_group:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
         is_archived:
@@ -29210,6 +29263,19 @@ components:
             modify this setting.
 
             **Changes**: New in Zulip 10.0 (feature level 357).
+
+            [setting-values]: /api/group-setting-values
+    CanUnsubscribeGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to unsubscribe themselves to this channel.
+
+            Note that a user must have metadata access to a channel and permission
+            to administer the channel in order to modify this setting.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-1abcca).
 
             [setting-values]: /api/group-setting-values
     CanResolveTopicsGroup:
