@@ -338,7 +338,7 @@ def api_pagerduty_webhook(
         signatures = []
         # Split the header value by commas to handle multiple signatures.
         for sig_part in pagerduty_signature.split(","):
-            sig_part = sig_part.strip()  # Remove leading/trailing whitespace.
+            sig_part = sig_part.strip()
             if sig_part.startswith("v1="):
                 hex_signature = sig_part[3:]  # Extract just the hex signature
                 signatures.append(hex_signature)  # Add the extracted hex signature to list
