@@ -1239,3 +1239,7 @@ ul.modal-options-list {
 #confirm_mark_messages_as_read_modal .input-group:last-of-type {
     margin-bottom: 0;
 }
+
+#change_user_group_name {
+    margin-bottom: 0;
+}
