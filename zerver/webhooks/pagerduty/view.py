@@ -209,6 +209,7 @@ def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
         # Handle all incident-related events (incident, incident_note, etc.)
         return build_incident_formatdict_v3(event)
 
+
 def build_incident_formatdict_v3(event: WildValue) -> FormatDictType:
     """Handle incident events with the original incident data structure"""
     format_dict: FormatDictType = {}
@@ -246,6 +247,7 @@ def build_incident_formatdict_v3(event: WildValue) -> FormatDictType:
 
     return format_dict
 
+
 def build_service_formatdict_v3(event: WildValue) -> FormatDictType:
     """Handle service events with the service data structure"""
     format_dict: FormatDictType = {}
@@ -273,6 +275,7 @@ def build_service_formatdict_v3(event: WildValue) -> FormatDictType:
 
     return format_dict
 
+
 def send_formatted_pagerduty(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -280,7 +283,12 @@ def send_formatted_pagerduty(
     format_dict: FormatDictType,
 ) -> None:
     # Handle service events
-    if message_type in ("service.created", "service.updated", "service.deleted", "service.custom_field_values.updated"):
+    if message_type in (
+        "service.created",
+        "service.updated",
+        "service.deleted",
+        "service.custom_field_values.updated",
+    ):
         template = "Service [{incident_num_title}]({incident_url}) {action}."
         topic_name = "Service {incident_num_title}".format(**format_dict)
     # Handle incident trigger/unacknowledge events
@@ -324,18 +332,20 @@ def api_pagerduty_webhook(
     # PagerdUty webhook signature verification
     # Get the X-PagerDuty-Signature header from the HTTP request
     pagerduty_signature = request.META.get("HTTP_X_PAGERDUTY_SIGNATURE")
+    signature_valid = True
     if pagerduty_signature:
         # Parse "v1=hex1,v1=hex2" format.
         signatures = []
         # Split the header value by commas to handle multiple signatures.
         for sig_part in pagerduty_signature.split(","):
-            sig_part = sig_part.strip() # Remove leading/trailing whitespace.
+            sig_part = sig_part.strip()  # Remove leading/trailing whitespace.
             if sig_part.startswith("v1="):
-                hex_signature = sig_part[3:] # Extract just the hex signature
-                signatures.append(hex_signature) # Add the extracted hex signature to list
+                hex_signature = sig_part[3:]  # Extract just the hex signature
+                signatures.append(hex_signature)  # Add the extracted hex signature to list
 
         if not signatures:
             raise JsonableError(_("Webhook signature verification failed."))
+
         # Try validating each signature in the list.
         signature_valid = False
         for signature in signatures:
@@ -347,9 +357,9 @@ def api_pagerduty_webhook(
             except JsonableError:
                 continue
 
-        if not signature_valid:
-            raise JsonableError(_("Webhook signature verification failed."))
-    
+    if not signature_valid:
+        raise JsonableError(_("Webhook signature verification failed."))
+
     messages = payload.get("messages")
     if messages:
         for message in messages:
@@ -381,7 +391,7 @@ def api_pagerduty_webhook(
             send_formatted_pagerduty(request, user_profile, message_event, format_dict)
     else:
         if "event" in payload:
-            # Pagerduty Webhook V3 
+            # Pagerduty Webhook V3
             event = payload["event"]
             event_type = event.get("event_type").tame(check_none_or(check_string))
 
