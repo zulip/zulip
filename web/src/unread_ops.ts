@@ -74,6 +74,7 @@ export function confirm_mark_messages_as_read(): void {
     const modal_id = confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
         html_body,
+        id: "confirm_mark_messages_as_read_modal",
         on_click() {
             handle_mark_messages_as_read(modal_id);
         },
