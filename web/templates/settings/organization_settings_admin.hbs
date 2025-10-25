@@ -7,14 +7,11 @@
                 {{> settings_save_discard_widget section_name="notifications" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                <div class="realm_default_language">
-                    {{> language_selection_widget
-                      section_name="realm_default_language"
-                      setting_value=realm_default_language_name
-                      language_code=realm_default_language_code
-                      section_title=admin_settings_label.realm_default_language
-                      help_link_widget_link="/help/configure-organization-language"}}
-                </div>
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_default_language"
+                  label=admin_settings_label.realm_default_language
+                  value_type="string"
+                  help_link="/help/configure-organization-language"}}
 
                 {{> ../dropdown_widget_with_label
                   widget_name="realm_new_stream_announcements_stream_id"

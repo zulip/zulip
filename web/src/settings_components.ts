@@ -9,7 +9,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import * as blueslip from "./blueslip.ts";
 import * as buttons from "./buttons.ts";
 import * as compose_banner from "./compose_banner.ts";
-import type {DropdownWidget} from "./dropdown_widget.ts";
+import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {
     AssignedGroupPermission,
@@ -17,7 +17,7 @@ import type {
     RealmGroupSettingNameSupportingAnonymousGroups,
 } from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
-import {$t} from "./i18n.ts";
+import {$t, get_language_list_columns} from "./i18n.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -495,6 +495,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_signup_announcements_stream_id", null],
     ["realm_zulip_update_announcements_stream_id", null],
     ["realm_default_code_block_language", null],
+    ["realm_default_language", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
@@ -839,6 +840,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
+        case "realm_default_language":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
@@ -885,11 +887,6 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_jitsi_server_url":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_jitsi_server_url_setting_value($(elem), false);
-            break;
-        case "realm_default_language":
-            proposed_val = $("#org-notifications .language_selection_widget").attr(
-                "data-language-code",
-            );
             break;
         default:
             if (current_val !== undefined) {
@@ -2016,3 +2013,11 @@ export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): nu
     }
     return value;
 }
+
+export const language_options = (): Option[] => {
+    const languages = get_language_list_columns(realm.realm_default_language);
+    return languages.map((language) => ({
+        name: language.name_with_percent,
+        unique_id: language.code,
+    }));
+};
