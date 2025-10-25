@@ -1235,8 +1235,9 @@ class Timestamp(markdown.inlinepatterns.Pattern):
                 timestamp = None
 
         if not timestamp:
+            error_element = Element("span")
             error_element.text = markdown.util.AtomicString(
-                f"time: {time_input_string}"
+                f"Invalid time format: {time_input_string}"
             )
             return error_element
 
@@ -1246,8 +1247,9 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             try:
                 timestamp = timestamp.astimezone(timezone.utc)
             except (ValueError, OverflowError):
+                error_element = Element("span")
                 error_element.text = markdown.util.AtomicString(
-                    f"time: {time_input_string}"
+                    f"Invalid time format: {time_input_string}"
                 )
                 return error_element
         else:
