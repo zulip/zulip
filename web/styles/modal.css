@@ -981,6 +981,12 @@ ul.modal-options-list {
     width: 100%;
 }
 
+#change_group_info_modal .user-group-info-modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625em; /* 10px at 16px/1em */
+}
+
 /* ==============================================================
  *  MODAL MARGIN OVERRIDES
  *  Some elements inside the modal content area have default
