@@ -945,15 +945,6 @@ export function dispatch_normal_event(event) {
             if (user_preferences.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
-            if (event.property === "default_language") {
-                // We additionally need to set the language name.
-                //
-                // Note that this does not change translations at all;
-                // a reload is fundamentally required because we
-                // cannot rerender with the new language the strings
-                // present in the backend/Jinja2 templates.
-                settings_preferences.set_default_language_name(event.language_name);
-            }
             if (event.property === "web_home_view") {
                 left_sidebar_navigation_area.handle_home_view_changed(event.value);
 
