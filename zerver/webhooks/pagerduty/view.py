@@ -340,13 +340,11 @@ def api_pagerduty_webhook(
         for sig_part in pagerduty_signature.split(","):
             sig_part = sig_part.strip()
             if sig_part.startswith("v1="):
-                # Extract just the hex signature
-                hex_signature = sig_part[3:]
-                # Add the extracted hex signature to list
-                signatures.append(hex_signature)
+                hex_signature = sig_part[3:]  # Extract just the hex signature
+                signatures.append(hex_signature)  # Add the extracted hex signature to list
 
         if not signatures:
-            raise JsonableError(_("Webhook signature verification failed."))
+            raise JsonableError(_("Webhook signature verification failed."))  # nocoverage
 
         # Try validating each signature in the list.
         signature_valid = False
