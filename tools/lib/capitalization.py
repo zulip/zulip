@@ -192,6 +192,9 @@ IGNORED_PHRASES = [
     r"comma-separated list",
     # Used in info_overlay.
     r"then",
+    # Used in message edit history overlay.
+    r"<z-link></z-link> was marked as resolved",
+    r"<z-link></z-link> was marked as unresolved",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
