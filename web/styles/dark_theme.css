@@ -29,11 +29,9 @@
 
     .dropdown-list-delete {
         /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
-        color: color-mix(
-            in oklch,
-            hsl(7deg 100% 74%) 70%,
-            transparent
-        ) !important;
+        color: color-mix(in oklch,
+                hsl(7deg 100% 74%) 70%,
+                transparent) !important;
 
         &:hover {
             color: hsl(7deg 100% 74%) !important;
@@ -65,21 +63,9 @@
         opacity: 0.4;
     }
 
-    textarea,
-    select,
-    .user-status-content-wrapper,
-    .custom-time-input-value,
-    #organization-permissions .dropdown-widget-button,
-    #organization-settings .dropdown-widget-button {
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
+    /* BLOCK DELETED AROUND FORMER LINE 79 */
 
-    .popover-filter-input-wrapper .popover-filter-input:focus {
-        background-color: hsl(225deg 6% 7%);
-        border: 1px solid hsl(0deg 0% 100% / 50%);
-        box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
-    }
+    /* BLOCK DELETED AROUND FORMER LINE 93 */
 
     & select option {
         background-color: var(--color-background);
@@ -91,21 +77,16 @@
     }
 
     #searchbox {
+
         /* Light theme shows hover mostly through box-shadow,
           and dark theme shows it mostly through changing color
           of the search button. */
-        .navbar-search:not(.expanded)
-            #searchbox-input-container:hover
-            .search_icon {
+        .navbar-search:not(.expanded) #searchbox-input-container:hover .search_icon {
             opacity: 0.75;
         }
     }
 
-    textarea:focus,
-    textarea.new_message_textarea:focus,
-    #compose_recipient_box:focus {
-        border-color: hsl(0deg 0% 0% / 90%);
-    }
+    /* BLOCK DELETED AROUND FORMER LINE 121 */
 
     .popover hr,
     hr {
@@ -124,28 +105,22 @@
         }
     }
 
-    #recent_view
-        .change_visibility_policy
-        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+    #recent_view .change_visibility_policy .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
         filter: invert(1);
     }
 
-    .drafts-container .header-body .delete-drafts-group > *:focus {
+    .drafts-container .header-body .delete-drafts-group>*:focus {
         background-color: hsl(228deg 11% 17%);
     }
 
     .table-striped tbody tr:nth-child(even) td {
         border-color: hsl(0deg 0% 0% / 20%);
-        background-color: color-mix(
-            in srgb,
-            hsl(0deg 0% 0%) 20%,
-            var(--color-background-modal)
-        );
+        background-color: color-mix(in srgb,
+                hsl(0deg 0% 0%) 20%,
+                var(--color-background-modal));
     }
 
-    .overlay-message-row
-        .message_header_private_message
-        .message_label_clickable {
+    .overlay-message-row .message_header_private_message .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
     }
@@ -288,13 +263,14 @@
         }
     }
 
-    .panel_user_list > .pill-container,
-    .creator_details > .display_only_pill {
+    .panel_user_list>.pill-container,
+    .creator_details>.display_only_pill {
         &:hover {
             color: inherit;
         }
 
-        > .pill {
+        >.pill {
+
             &:focus,
             &:hover {
                 color: inherit;
