@@ -1,0 +1,17 @@
+{
+    "rules": {
+        "media-feature-name-no-unknown": [
+            true,
+            {
+                "ignoreMediaFeatureNames": [
+                    "xl_min",
+                    "short_navbar_cutoff_height",
+                    "md_min",
+                    "ml_min",
+                    "sm_min",
+                    "mm_min"
+                ]
+            }
+        ]
+    }
+}

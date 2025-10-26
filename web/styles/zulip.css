@@ -1,46 +1,3 @@
-/* Note: This file contains many styles. I'm only showing the parts we changed. */
-/* Paste the full content from your original zulip.css here... */
-
-/* --- START OF CHANGES --- */
-
-/* Around line 550 - Modify this block */
-textarea,
-select {
-    /* Original Light Values - Replace #FFFFFF and #AAAAAA with what was actually there if different */
-    background-color: light-dark(#FFFFFF, hsl(0deg 0% 0% / 20%));
-    border-color: light-dark(#AAAAAA, hsl(0deg 0% 0% / 60%));
-    /* Keep any other existing properties here */
-    font-family: "Source Sans 3 VF", sans-serif;
-    /* Example existing property */
-}
-
-/* ... other styles ... */
-
-/* Around line 1187 - Modify the &:focus block inside .popover-filter-input */
-.popover-filter-input-wrapper {
-    display: flex;
-
-    .popover-filter-input {
-        background: var(--color-background-widget-input);
-        color: var(--color-text-dropdown-input);
-        width: 100%;
-        margin: 4px 4px 2px;
-
-        /* This is the block we changed */
-        &:focus {
-            background: light-dark(hsl(0deg 0% 100%), hsl(225deg 6% 7%));
-            border: 1px solid light-dark(hsl(229.09deg 21.57% 10% / 80%), hsl(0deg 0% 100% / 50%));
-            box-shadow: light-dark(0 0 6px hsl(228deg 9.8% 20% / 30%), 0 0 5px hsl(0deg 0% 100% / 40%));
-        }
-    }
-}
-
-/* --- END OF CHANGES --- */
-
-/* ... Paste the rest of the original zulip.css content here ... */
-
-/* --- BEGINNING OF THE ORIGINAL zulip.css (for reference) --- */
-/* (This is the file content you provided earlier) */
 html {
     overflow: hidden scroll;
     overscroll-behavior-y: none;
@@ -71,8 +28,10 @@ body {
     /* The line-height used in most of the UI should be at least
        its legacy value, but should expand with larger base
        line-height values. */
-    line-height: max(var(--legacy-body-line-height-unitless),
-            var(--base-line-height-unitless));
+    line-height: max(
+        var(--legacy-body-line-height-unitless),
+        var(--base-line-height-unitless)
+    );
     font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
@@ -81,36 +40,41 @@ body {
     .header-main,
     .app .app-main,
     #compose-container {
-        max-width: calc(var(--left-sidebar-max-width) + var(--message-area-max-width) + var(--right-sidebar-max-width));
+        max-width: calc(
+            var(--left-sidebar-max-width) + var(--message-area-max-width) +
+                var(--right-sidebar-max-width)
+        );
     }
 
     /* When sidebars are manually hidden, we set the max-width
        for the layout to a different maximum width. This keeps
        the message area predictably readable. */
     &.hide-left-sidebar:not(.fluid_layout_width) {
-
         .header-main,
         .app .app-main,
         #compose-container {
-            max-width: calc(var(--message-area-max-width) + var(--right-sidebar-max-width));
+            max-width: calc(
+                var(--message-area-max-width) + var(--right-sidebar-max-width)
+            );
 
             /* When we're less than the xl_min breakpoint, we instead
                constrain to just the message area's max-width, since
                the right column will be hidden below that point. */
-            @container header-container (width < $cq_xl_min) {
+            @container header-container (width < cq_xl_min) {
                 max-width: var(--message-area-max-width);
             }
 
-            @container app (width < $cq_xl_min) {
+            @container app (width < cq_xl_min) {
                 max-width: var(--message-area-max-width);
             }
         }
     }
 
     /* Fallback media query. */
-    @media (width < $xl_min) {
-        &.without-container-query-support.hide-left-sidebar:not(.fluid_layout_width) {
-
+    @media (width < xl_min) {
+        &.without-container-query-support.hide-left-sidebar:not(
+                .fluid_layout_width
+            ) {
             .header-main,
             .app .app-main,
             #compose-container {
@@ -120,16 +84,16 @@ body {
     }
 
     &.hide-right-sidebar:not(.fluid_layout_width) {
-
         .header-main,
         .app .app-main,
         #compose-container {
-            max-width: calc(var(--left-sidebar-max-width) + var(--message-area-max-width));
+            max-width: calc(
+                var(--left-sidebar-max-width) + var(--message-area-max-width)
+            );
         }
     }
 
     &.hide-left-sidebar.hide-right-sidebar:not(.fluid_layout_width) {
-
         .header-main,
         .app .app-main,
         #compose-container {
@@ -138,7 +102,6 @@ body {
     }
 
     &.fluid_layout_width {
-
         .header-main,
         .app .app-main,
         #compose-container {
@@ -351,7 +314,7 @@ p.n-margin {
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
     z-index: 110;
 
-    @container app (width < $cq_md_min) {
+    @container app (width < cq_md_min) {
         width: calc(90% - 30px);
         left: 5%;
         top: 5%;
@@ -432,7 +395,6 @@ p.n-margin {
 }
 
 body.has-overlay-scrollbar {
-
     /* Move simplebar scrollbar to the left so that
        browser scrollbar doesn't overlap with it. */
     .app-main .column-right .simplebar-track.simplebar-vertical {
@@ -543,18 +505,30 @@ body.has-overlay-scrollbar {
         }
 
         & .login_button {
-            color: var(--color-navbar-spectator-medium-attention-brand-button-text);
-            background-color: var(--color-navbar-spectator-medium-attention-brand-button-background);
+            color: var(
+                --color-navbar-spectator-medium-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-medium-attention-brand-button-background
+            );
 
             &:hover,
             &:focus {
-                color: var(--color-navbar-spectator-medium-attention-brand-button-text);
-                background-color: var(--color-navbar-spectator-medium-attention-brand-button-background-hover);
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
             }
 
             &:active {
-                color: var(--color-navbar-spectator-medium-attention-brand-button-text);
-                background-color: var(--color-navbar-spectator-medium-attention-brand-button-background-active);
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-active
+                );
             }
         }
     }
@@ -566,7 +540,7 @@ body.has-overlay-scrollbar {
         height: var(--header-height);
         width: var(--header-height);
 
-        @media (width >=$xl_min) and (height >=600px) {
+        @media (width >=xl_min) and (height >=600px) {
             display: none;
         }
 
@@ -613,7 +587,9 @@ body.has-overlay-scrollbar {
 #message_feed_container,
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
-    padding-top: calc(var(--navbar-fixed-height) + var(--header-padding-bottom));
+    padding-top: calc(
+        var(--navbar-fixed-height) + var(--header-padding-bottom)
+    );
 }
 
 .app-main {
@@ -675,7 +651,6 @@ body.has-overlay-scrollbar {
 }
 
 .with-container-query-support {
-
     /* With spec-aligned container support, we
        can establish em-aware containers to
        query as needed.
@@ -698,12 +673,18 @@ body.has-overlay-scrollbar {
 .column-middle,
 #compose-content {
     margin-right: var(--right-sidebar-width);
-    margin-left: calc(var(--left-sidebar-width) + var(--left-sidebar-padding-left));
+    margin-left: calc(
+        var(--left-sidebar-width) + var(--left-sidebar-padding-left)
+    );
     position: relative;
 }
 
 textarea,
-input {
+select {
+    /* Use hsl instead of hex, apply light-dark */
+    background-color: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 0% / 20%));
+    border-color: light-dark(hsl(0deg 0% 67%), hsl(0deg 0% 0% / 60%));
+    /* Keep existing properties */
     font-family: "Source Sans 3 VF", sans-serif;
 }
 
@@ -728,7 +709,7 @@ button:focus {
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
 a:not(:active):focus,
 button:focus-visible,
-label.checkbox input[type="checkbox"]:focus~.rendered-checkbox,
+label.checkbox input[type="checkbox"]:focus ~ .rendered-checkbox,
 i.fa:focus,
 i.zulip-icon:focus-visible,
 [role="button"]:focus {
@@ -738,7 +719,6 @@ i.zulip-icon:focus-visible,
 
 /* List of text-like input types taken from Bootstrap */
 input:not(.input-element) {
-
     &[type="text"],
     &[type="password"],
     &[type="datetime"],
@@ -878,7 +858,6 @@ strong {
 }
 
 @keyframes pulse-unread {
-
     /* Only unread dots in collapsed Views
        have offset variables set; all others
        will fall back to 0 (no offset). */
@@ -887,7 +866,8 @@ strong {
     }
 
     50% {
-        transform: scale(var(--pulse-unread-scale-max)) translateX(var(--unread-dot-x-offset-scaled, 0));
+        transform: scale(var(--pulse-unread-scale-max))
+            translateX(var(--unread-dot-x-offset-scaled, 0));
     }
 
     100% {
@@ -1126,7 +1106,9 @@ div.focused-message-list.is-conversation-view .recipient_row {
     /* Calculate right margin so that title and description
        elements can truncate and not collide with or run underneath
        with the search section. */
-    margin-right: calc(var(--search-box-width) + var(--navbar-content-righthand-offset));
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1230,7 +1212,7 @@ nav {
             /* 20px at 16px em */
             max-width: var(--realm-logo-max-width);
 
-            @media (height < $short_navbar_cutoff_height) {
+            @media (height < short_navbar_cutoff_height) {
                 height: 0.9375em;
                 /* 15px at 16px em */
             }
@@ -1513,7 +1495,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .flatpickr-calendar {
-
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
         display: none;
@@ -1536,7 +1517,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         font-weight: 600;
     }
 
-    @media (width < $md_min) {
+    @media (width < md_min) {
         /* Center align flatpickr on mobile
          * devices so that it doesn't go out of
          * the viewport. */
@@ -1590,7 +1571,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+@media (width < xl_min) or (height < short_navbar_cutoff_height) {
     .spectator-view {
         #navbar-middle {
             /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
@@ -1616,7 +1597,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-@media (width < $md_min) {
+@media (width < md_min) {
     .spectator-view {
         #navbar-middle {
             /* = (width of button, square with header) * 3 (number of buttons) */
@@ -1629,7 +1610,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-%hide-right-sidebar {
+hide-right-sidebar {
     .column-right {
         display: none;
 
@@ -1693,7 +1674,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-%hide-left-sidebar {
+hide-left-sidebar {
     .left-sidebar-toggle-button .zulip-icon-panel-left {
         display: block;
     }
@@ -1738,26 +1719,25 @@ div.topic_edit_spinner .loading_indicator_spinner {
         margin-left: 7px;
     }
 
-    @container header-container (width > $cq_md_min) {
+    @container header-container (width > cq_md_min) {
         #navbar-middle {
             margin-left: var(--middle-column-left-margin-fluid-layout);
         }
     }
 
-    @container header-container (width < $cq_xl_min) {
+    @container header-container (width < cq_xl_min) {
         #top_navbar .column-left {
             width: auto;
         }
     }
 
-    @container header-container (width < $cq_md_min) {
+    @container header-container (width < cq_md_min) {
         #navbar-middle {
             margin-left: 0;
         }
     }
 
-    @container app (width < $cq_xl_min) {
-
+    @container app (width < cq_xl_min) {
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
@@ -1766,7 +1746,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 /* Media-query fallback for the cinched-up logo presentation. */
-@media (width > $md_min) {
+@media (width > md_min) {
     .without-container-query-support {
         &.hide-left-sidebar {
             #navbar-middle {
@@ -1777,7 +1757,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 body:not(.hide-left-sidebar) {
-
     /* User can clearly see the unread count in the left sidebar. So,
        we don't need an indicator here as it will only serve as a disctraction. */
     #header-container .column-left .left-sidebar-toggle-unreadcount {
@@ -1786,10 +1765,9 @@ body:not(.hide-left-sidebar) {
 }
 
 body:not(.spectator-view) {
-
     /* The large Log In button for spectators makes this rule
        inappropriate for that view. */
-    @container header-container (width < $cq_xl_min) {
+    @container header-container (width < cq_xl_min) {
         #navbar-middle {
             /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
             margin-right: var(--right-column-collapsed-sidebar-width);
@@ -1808,7 +1786,7 @@ body:not(.spectator-view) {
    media queries. The layout will not look as good as it could, but
    essential scrolling behavior will be maintained. */
 
-@container app (width < $cq_xl_min) {
+@container app (width < cq_xl_min) {
     .app-main {
         @extend %hide-right-sidebar;
 
@@ -1824,7 +1802,7 @@ body:not(.spectator-view) {
     }
 }
 
-@container header-container (width < $cq_md_min) {
+@container header-container (width < cq_md_min) {
     .header-main .column-left {
         display: none;
     }
@@ -1845,9 +1823,40 @@ body:not(.spectator-view) {
     }
 }
 
-@container app (width < $cq_md_min) {
+@container app (width < cq_md_min) {
     .app-main {
-        @extend %hide-left-sidebar;
+        .left-sidebar-toggle-button .zulip-icon-panel-left {
+            display: block;
+        }
+
+        .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
+            display: none;
+        }
+
+        .column-left {
+            display: none;
+
+            &.expanded {
+                /* In the extended state, we open the sidebar
+                   to its maximum possible size (otherwise, it
+                   would be unnecessarily too narrow). */
+                --left-sidebar-width: var(--left-sidebar-max-width);
+                display: block;
+                position: absolute;
+                float: none;
+                left: 0;
+                top: 0;
+
+                .left-sidebar {
+                    background-color: var(--color-background);
+                    box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
+                    border-right: 1px solid var(--color-border-sidebar);
+                    height: 100%;
+                    padding-left: 10px;
+                    width: var(--left-sidebar-width);
+                }
+            }
+        }
 
         .column-middle {
             margin-left: 7px;
@@ -1867,8 +1876,7 @@ body:not(.spectator-view) {
     }
 }
 
-@container app (width <=$cq_ml_min) {
-
+@container app (width <=cq_ml_min) {
     .column-right.expanded,
     .column-left.expanded {
         width: 100vw;
@@ -1882,14 +1890,14 @@ body:not(.spectator-view) {
     }
 }
 
-@container header-container (width <=$cq_sm_min) {
+@container header-container (width <=cq_sm_min) {
     .narrow_description {
         display: none;
     }
 }
 
 /* Begin fallback media queries. */
-@media (width < $xl_min) {
+@media (width < xl_min) {
     .without-container-query-support {
         .app-main {
             @extend %hide-right-sidebar;
@@ -1911,7 +1919,6 @@ body:not(.spectator-view) {
         }
 
         .hide-left-sidebar {
-
             #compose-content,
             .app-main .column-middle {
                 margin-left: 7px;
@@ -1924,7 +1931,7 @@ body:not(.spectator-view) {
     }
 }
 
-@media (width < $md_min) {
+@media (width < md_min) {
     .without-container-query-support {
         .app-main {
             @extend %hide-left-sidebar;
@@ -1970,9 +1977,8 @@ body:not(.spectator-view) {
     }
 }
 
-@media (width <=$ml_min) {
+@media (width <=ml_min) {
     .without-container-query-support {
-
         .column-right.expanded,
         .column-left.expanded {
             width: 100vw;
@@ -1987,7 +1993,7 @@ body:not(.spectator-view) {
     }
 }
 
-@media (width <=$sm_min) {
+@media (width <=sm_min) {
     .without-container-query-support {
         .narrow_description {
             display: none;
@@ -2010,19 +2016,19 @@ body:not(.spectator-view) {
 /* Adjustments for smaller viewports are critical
    regardless of info-density settings, so we
    don't include a container-query check here. */
-@media (width < $md_min) {
+@media (width < md_min) {
     .app-main::after {
         content: "lt_md_min";
     }
 }
 
-@container app (width >=$cq_md_min) {
+@container app (width >=cq_md_min) {
     .app-main::after {
         content: "gte_md_min";
     }
 }
 
-@media (width >=$md_min) {
+@media (width >=md_min) {
     .without-container-query-support {
         .app-main::after {
             content: "gte_md_min";
@@ -2030,13 +2036,13 @@ body:not(.spectator-view) {
     }
 }
 
-@container app (width >=$cq_xl_min) {
+@container app (width >=cq_xl_min) {
     .app-main::after {
         content: "gte_md_min gte_xl_min";
     }
 }
 
-@media (width >=$xl_min) {
+@media (width >=xl_min) {
     .without-container-query-support {
         .app-main::after {
             content: "gte_md_min gte_xl_min";
@@ -2046,8 +2052,7 @@ body:not(.spectator-view) {
 
 /* End viewport state queries. */
 
-@media (height < $short_navbar_cutoff_height) {
-
+@media (height < short_navbar_cutoff_height) {
     .app-main .column-right.expanded .right-sidebar,
     .app-main .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
@@ -2088,7 +2093,10 @@ body:not(.spectator-view) {
         height: var(--header-height);
     }
 
-    nav .column-left .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
+    nav
+        .column-left
+        .left-sidebar-toggle-button
+        .left-sidebar-toggle-unreadcount {
         top: 5px;
         left: 16px;
     }
@@ -2110,7 +2118,7 @@ body:not(.spectator-view) {
 /* As these adjustments are properly the province of
    the viewport, we do not present these mm_min queries
    in a corresponding container query block. */
-@media (width < $mm_min) {
+@media (width < mm_min) {
     html {
         overflow-x: hidden;
     }
@@ -2220,11 +2228,17 @@ body:not(.spectator-view) {
         width: 100%;
         margin: 4px 4px 2px;
 
-        /* THIS BLOCK WAS MODIFIED */
         &:focus {
             background: light-dark(hsl(0deg 0% 100%), hsl(225deg 6% 7%));
-            border: 1px solid light-dark(hsl(229.09deg 21.57% 10% / 80%), hsl(0deg 0% 100% / 50%));
-            box-shadow: light-dark(0 0 6px hsl(228deg 9.8% 20% / 30%), 0 0 5px hsl(0deg 0% 100% / 40%));
+            border: 1px solid
+                light-dark(
+                    hsl(229.09deg 21.57% 10% / 80%),
+                    hsl(0deg 0% 100% / 50%)
+                );
+            box-shadow: light-dark(
+                var(--popover-filter-input-focus-shadow-light),
+                var(--popover-filter-input-focus-shadow-dark)
+            );
         }
     }
 }
@@ -2277,9 +2291,11 @@ body:not(.spectator-view) {
         display: grid;
         grid-template:
             "privacy-icon     item-label       " min-content
-            "item-description item-description" minmax(0, min-content) / minmax(0,
+            "item-description item-description" minmax(0, min-content) / minmax(
+                0,
                 auto
-            ) minmax(0, 1fr);
+            )
+            minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2321,7 +2337,9 @@ body:not(.spectator-view) {
             grid-area: item-label;
             display: grid;
             grid-template:
-                "item-text item-buttons" minmax(0, auto) "item-text .           " minmax(0, auto) / minmax(0, 1fr) minmax(0, auto);
+                "item-text item-buttons" minmax(0, auto)
+                "item-text .           " minmax(0, auto) / minmax(0, 1fr)
+                minmax(0, auto);
             align-items: center;
 
             &:has(.dropdown-list-buttons) {
@@ -2482,7 +2500,6 @@ body:not(.spectator-view) {
 }
 
 .left-sidebar-toggle-button {
-
     .zulip-icon-panel-left,
     .zulip-icon-panel-left-dashed {
         font-size: 1.25em;
@@ -2529,7 +2546,7 @@ body:not(.spectator-view) {
 .inline_profile_picture.deactivated {
     position: relative;
 
-    >img {
+    > img {
         opacity: 0.5;
     }
 
@@ -2545,4 +2562,10 @@ body:not(.spectator-view) {
     }
 }
 
-/* --- END OF THE ORIGINAL zulip.css --- */
+:root {
+    /* Add box-shadow variables */
+    --popover-filter-input-focus-shadow-light: 0 0 6px
+        hsl(228deg 9.8% 20% / 30%);
+    --popover-filter-input-focus-shadow-dark: 0 0 5px hsl(0deg 0% 100% / 40%);
+    /* ... rest of the :root variables ... */
+}

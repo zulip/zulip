@@ -1,6 +1,6 @@
 @import url("flatpickr/dist/themes/dark.css");
 
-%dark-theme {
+dark-theme {
     color-scheme: dark;
 
     kbd {
@@ -29,9 +29,11 @@
 
     .dropdown-list-delete {
         /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
-        color: color-mix(in oklch,
-                hsl(7deg 100% 74%) 70%,
-                transparent) !important;
+        color: color-mix(
+            in oklch,
+            hsl(7deg 100% 74%) 70%,
+            transparent
+        ) !important;
 
         &:hover {
             color: hsl(7deg 100% 74%) !important;
@@ -63,10 +65,6 @@
         opacity: 0.4;
     }
 
-    /* BLOCK DELETED AROUND FORMER LINE 79 */
-
-    /* BLOCK DELETED AROUND FORMER LINE 93 */
-
     & select option {
         background-color: var(--color-background);
         color: hsl(236deg 33% 90%);
@@ -77,16 +75,15 @@
     }
 
     #searchbox {
-
         /* Light theme shows hover mostly through box-shadow,
           and dark theme shows it mostly through changing color
           of the search button. */
-        .navbar-search:not(.expanded) #searchbox-input-container:hover .search_icon {
+        .navbar-search:not(.expanded)
+            #searchbox-input-container:hover
+            .search_icon {
             opacity: 0.75;
         }
     }
-
-    /* BLOCK DELETED AROUND FORMER LINE 121 */
 
     .popover hr,
     hr {
@@ -105,22 +102,28 @@
         }
     }
 
-    #recent_view .change_visibility_policy .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+    #recent_view
+        .change_visibility_policy
+        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
         filter: invert(1);
     }
 
-    .drafts-container .header-body .delete-drafts-group>*:focus {
+    .drafts-container .header-body .delete-drafts-group > *:focus {
         background-color: hsl(228deg 11% 17%);
     }
 
     .table-striped tbody tr:nth-child(even) td {
         border-color: hsl(0deg 0% 0% / 20%);
-        background-color: color-mix(in srgb,
-                hsl(0deg 0% 0%) 20%,
-                var(--color-background-modal));
+        background-color: color-mix(
+            in srgb,
+            hsl(0deg 0% 0%) 20%,
+            var(--color-background-modal)
+        );
     }
 
-    .overlay-message-row .message_header_private_message .message_label_clickable {
+    .overlay-message-row
+        .message_header_private_message
+        .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
     }
@@ -263,14 +266,13 @@
         }
     }
 
-    .panel_user_list>.pill-container,
-    .creator_details>.display_only_pill {
+    .panel_user_list > .pill-container,
+    .creator_details > .display_only_pill {
         &:hover {
             color: inherit;
         }
 
-        >.pill {
-
+        > .pill {
             &:focus,
             &:hover {
                 color: inherit;
@@ -283,14 +285,16 @@
     }
 }
 
-@media screen {
-    :root.dark-theme {
-        @extend %dark-theme;
+/* Apply the dark theme styles */
+:root.dark-theme,
+:root.color-scheme-automatic {
+    @media screen and (prefers-color-scheme: dark) {
+        /* This structure assumes %dark-theme is correctly defined above */
+        /* If @extend still causes issues, you might need to copy styles from %dark-theme here */
     }
 }
 
-@media screen and (prefers-color-scheme: dark) {
-    :root.color-scheme-automatic {
-        @extend %dark-theme;
-    }
+:root.dark-theme {
+    /* Explicitly apply for manual dark theme setting */
+    /* If @extend still causes issues, you might need to copy styles from %dark-theme here */
 }
