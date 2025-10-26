@@ -590,7 +590,27 @@ function handleTimestamp(time_string: string): string {
         // there is a chance that the server would interpret it successfully
         // and if it does, the jumping from the error message to a rendered
         // timestamp doesn't look good.
-        return `<span>${escaped_time}</span>`;
+
+        // Checking if the backend could parse a timestamp
+        const backend_only_patterns = [
+            // Human-readable dates with ordinal suffixes (5th, 31st, etc.)
+            /\b\d+(st|nd|rd|th)\b/i,
+            // Dates with timezone abbreviations like IST, PST, etc.
+            /\b[A-Z]{3,4}\b/,
+        ];
+
+        const is_backend_only_timestamp = backend_only_patterns.some((pattern) =>
+            pattern.test(time_string),
+        );
+
+        if (is_backend_only_timestamp) {
+            // For timestamps that the backend can parse but frontend cannot,
+            // render just the time content in a span (frontend fallback).
+            return `<span>${escaped_time}</span>`;
+        }
+        // For all other invalid input (malformed),
+        // return escaped literal to match backend behavior.
+        return `&lt;time:${escaped_time}&gt;`;
     }
 
     // Use html5 <time> tag for valid timestamps.

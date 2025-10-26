@@ -549,7 +549,7 @@ inline.zulip = merge({}, inline.breaks, {
   stream_topic: /^#\*\*([^\*>]+)>([^\*]*)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
-  timestamp: /^<time:([^>]+)>/,
+  timestamp: /^<time:([^>]*?)>/,
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
           '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
@@ -822,13 +822,6 @@ InlineLexer.prototype.output = function(src) {
     if (cap = this.rules.unicodeemoji.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.unicodeEmoji(cap[1]);
-      continue;
-    }
-
-    // timestamp
-    if (cap = this.rules.timestamp.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += this.timestamp(cap[1]);
       continue;
     }
 
