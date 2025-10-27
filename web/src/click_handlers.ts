@@ -420,24 +420,6 @@ export function initialize(): void {
         return nearest.id;
     }
 
-    $("#message_feed_container").on(
-        "click",
-        ".narrows_by_recipient",
-        function (this: HTMLElement, e) {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) {
-                return;
-            }
-            e.preventDefault();
-            if (document.getSelection()?.type === "Range") {
-                return;
-            }
-            const row_id = get_row_id_for_narrowing(this);
-            // TODO: Navigate user according to `web_channel_default_view` setting.
-            // Also, update the tooltip hotkey in recipient bar.
-            message_view.narrow_by_recipient(row_id, {trigger: "message header"});
-        },
-    );
-
     $("#message_feed_container").on("click", ".narrows_by_topic", function (this: HTMLElement, e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
