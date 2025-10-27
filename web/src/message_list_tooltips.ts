@@ -5,6 +5,7 @@ import * as tippy from "tippy.js";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
+import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
@@ -145,6 +146,19 @@ export function initialize(): void {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
         onCreate(instance) {
+            // We sniff the href, rather than looking up the user's settings
+            // so that the tooltip always matches the link.
+            if (
+                instance.reference.hasAttribute("href") &&
+                instance.reference.getAttribute("href")!.startsWith("#topics/")
+            ) {
+                instance.setContent(
+                    parse_html(
+                        render_narrow_tooltip_list_of_topics({content: instance.props.content}),
+                    ),
+                );
+                return;
+            }
             instance.setContent(
                 parse_html(render_narrow_tooltip({content: instance.props.content})),
             );
