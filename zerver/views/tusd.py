@@ -23,6 +23,7 @@ from zerver.lib.upload import (
     check_upload_within_quota,
     create_attachment,
     delete_message_attachment,
+    maybe_add_charset,
     sanitize_name,
     upload_backend,
 )
@@ -154,6 +155,8 @@ def handle_upload_pre_finish_hook(
         content_type = guess_type(filename)[0]
         if content_type is None:
             content_type = "application/octet-stream"
+    file_data = attachment_source(path_id)
+    content_type = maybe_add_charset(content_type, file_data)
 
     if settings.LOCAL_UPLOADS_DIR is None:
         # We "copy" the file to itself to update the Content-Type,
@@ -200,7 +203,7 @@ def handle_upload_pre_finish_hook(
             filename,
             path_id,
             content_type,
-            attachment_source(path_id),
+            file_data,
             user_profile,
             user_profile.realm,
         )
