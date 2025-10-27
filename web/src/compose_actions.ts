@@ -29,6 +29,7 @@ import * as resize from "./resize.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as stream_data from "./stream_data.ts";
+import * as typing from "./typing.ts";
 import * as util from "./util.ts";
 
 // Opts sent to `compose_actions.start`.
@@ -86,6 +87,8 @@ export function rewire_blur_compose_inputs(value: typeof blur_compose_inputs): v
 function hide_box(): void {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
+    // Cancel the auto-save timer since we just saved
+    typing.cancel_auto_save_timer();
     blur_compose_inputs();
     $("#compose_recipient_box").hide();
     $("#compose-direct-recipient").hide();
@@ -366,6 +369,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         (!same_recipient_as_before(opts) || opts.content !== undefined)
     ) {
         drafts.update_draft();
+        // Cancel the auto-save timer since we just saved
+        typing.cancel_auto_save_timer();
         clear_box();
     }
 

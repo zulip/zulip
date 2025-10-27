@@ -37,6 +37,7 @@ import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
 import {get_timestamp_for_flatpickr} from "./timerender.ts";
+import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
@@ -664,6 +665,10 @@ export function initialize(): void {
         // Save drafts when the window loses focus to help
         // ensure no work is lost
         drafts.update_draft();
+        // Cancel the auto-save timer since we just saved.
+        // This prevents the timer from firing later and potentially
+        // overwriting a newer draft if the user types in another tab.
+        typing.cancel_auto_save_timer();
     });
 
     $("body").on("click", ".formatting_button", function (e) {

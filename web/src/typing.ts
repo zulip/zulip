@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
+import * as drafts from "./drafts.ts";
 import * as message_store from "./message_store.ts";
 import * as people from "./people.ts";
 import * as rows from "./rows.ts";
@@ -16,6 +17,12 @@ import * as stream_data from "./stream_data.ts";
 import {user_settings} from "./user_settings.ts";
 
 let edit_box_worker: EditingStatusWorker;
+
+// Auto-save delay in milliseconds (60 seconds after typing starts)
+const AUTO_SAVE_DELAY_MS = 60000;
+
+// Track the auto-save timer at module level so it can be accessed by cancel_auto_save_timer()
+let auto_save_timer: ReturnType<typeof setTimeout> | null = null;
 
 type TypingAPIRequest = {op: "start" | "stop"} & (
     | {
@@ -217,6 +224,14 @@ export function stop_message_edit_notifications(message_id: number): void {
     );
 }
 
+// Cancel the auto-save timer when a draft is explicitly saved
+export function cancel_auto_save_timer(): void {
+    if (auto_save_timer !== null) {
+        clearTimeout(auto_save_timer);
+        auto_save_timer = null;
+    }
+}
+
 export function initialize(): void {
     const worker = {
         get_current_time,
@@ -240,6 +255,25 @@ export function initialize(): void {
             realm.server_typing_started_wait_period_milliseconds,
             realm.server_typing_stopped_wait_period_milliseconds,
         );
+
+        // Auto-save logic:
+        // - If no timer is running, save immediately and start a new timer
+        // - If timer is already running, do nothing (don't restart it)
+        // -----------------------------------------------------------------
+        // Defer the initial auto-save to the next tick of the event loop.
+        // This helps prevent race conditions, especially in Puppeteer tests,
+        // by allowing the UI to stabilize and update the compose state
+        // before the draft is saved.
+        auto_save_timer ??= setTimeout(() => {
+            // Save immediately (first input)
+            drafts.update_draft({no_notify: true});
+
+            // Start timer for next auto-save (60 seconds from now)
+            auto_save_timer = setTimeout(() => {
+                drafts.update_draft({no_notify: true});
+                auto_save_timer = null; // Reset timer so a new one can start on next input
+            }, AUTO_SAVE_DELAY_MS);
+        }, 0);
     });
 
     $("body").on("input", ".message_edit_content", function (this: HTMLElement) {
@@ -264,5 +298,7 @@ export function initialize(): void {
             realm.server_typing_started_wait_period_milliseconds,
             realm.server_typing_stopped_wait_period_milliseconds,
         );
+        // Cancel the auto-save timer since compose is being closed
+        cancel_auto_save_timer();
     });
 }
