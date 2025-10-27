@@ -41,7 +41,7 @@ class ODataQueryParameter:
     # amount, type, and order of the data returned for the resource
     # identified by the URL.
     # https://learn.microsoft.com/en-us/graph/query-parameters?tabs=http
-    parameter: Literal["$filter", "$search", "$select"]
+    parameter: Literal["$filter", "$search", "$select", "$top"]
     expression: str
 
 
@@ -56,7 +56,7 @@ def get_microsoft_graph_api_data(
     if not kwargs.get("token"):
         raise AssertionError("Microsoft authorization token missing in kwargs")
     token = kwargs.pop("token")
-
+    result = []
     parameters = {}
     if odata_parameters is not None:
         for parameter in odata_parameters:
@@ -70,7 +70,18 @@ def get_microsoft_graph_api_data(
     if response.status_code != requests.codes.ok:
         logging.info("HTTP error: %s, Response: %s", response.status_code, response.text)
         raise Exception("HTTP error accessing the Microsoft Graph API.")
-    return response.json()["value"]
+
+    response_data = response.json()
+    result.extend(response_data["value"])
+
+    # If a request is paginated, "@odata.nextLink" will be included in the response,
+    # it points to the next page of result. Even if the `$top` query is not specified,
+    # depending on the endpoint and the result size, it may be paged by the server.
+    # https://learn.microsoft.com/en-us/graph/paging?tabs=http#server-side-paging
+    next_link: str | None = response_data.get("@odata.nextLink")
+    if next_link is not None:
+        result.extend(get_microsoft_graph_api_data(next_link, token=token))
+    return result
 
 
 def get_directory_roles(api_token: str) -> list[MicrosoftTeamsFieldsT]:
