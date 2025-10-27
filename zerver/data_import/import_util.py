@@ -17,7 +17,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.message import normalize_body_for_import
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_extension
 from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
@@ -744,14 +744,15 @@ def process_emojis(
         # Directly download the emoji and patch the file_name with the correct extension
         # based on the content-type returned by the server. This is needed because Slack
         # sometimes returns an emoji url with .png extension despite the file being a gif.
-        content_type = get_emojis(emoji_dir, emoji_url, emoji_path)
-        if content_type is None:
+        content_type_raw = get_emojis(emoji_dir, emoji_url, emoji_path)
+        if content_type_raw is None:
             logging.warning(
                 "Emoji %s has an unspecified content type. Using the original file extension.",
                 emoji["name"],
             )
             continue
 
+        content_type = bare_content_type(content_type_raw)
         if (
             content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES
             or content_type not in INLINE_MIME_TYPES
