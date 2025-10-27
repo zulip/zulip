@@ -1326,6 +1326,9 @@ def bulk_can_unsubscribe_self_from_streams(
     if user_profile.is_realm_admin:
         return True
 
+    if user_profile.can_unsubscribe_from_channels():
+        return True
+
     user_recursive_group_ids = set(
         get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
@@ -1686,6 +1689,7 @@ def list_to_streams(
             ]
             stream_dict["can_resolve_topics_group"] = group_settings_map["can_resolve_topics_group"]
             stream_dict["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
+            stream_dict["can_unsubscribe_group"] = group_settings_map["can_unsubscribe_group"]
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
