@@ -237,10 +237,12 @@ export function resize_settings_overlay_subheader($container: JQuery): void {
     const left_subheader_height = height_of($left_subheader);
     const right_subheader_height = height_of($right_subheader);
 
+    // Since height_of returns height including border width, we will
+    // subtract 1px, which is the bottom border width.
     if (left_subheader_height < right_subheader_height) {
-        $left_subheader.css("height", right_subheader_height);
+        $left_subheader.css("height", right_subheader_height - 1);
     } else {
-        $right_subheader.css("height", left_subheader_height);
+        $right_subheader.css("height", left_subheader_height - 1);
     }
 }
 
