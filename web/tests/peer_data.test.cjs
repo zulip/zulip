@@ -61,9 +61,9 @@ const bot_botson = {
 const nobody_group = make_user_group({
     name: "Nobody",
     id: 1,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 function contains_sub(subs, sub) {

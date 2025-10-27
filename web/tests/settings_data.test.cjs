@@ -34,7 +34,7 @@ const admins = make_user_group({
     id: 1,
     members: new Set([1]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
     can_add_members_group: 4,
     can_join_group: 4,
     can_manage_group: 4,
@@ -76,9 +76,9 @@ const nobody = make_user_group({
     description: "Nobody",
     name: "role:nobody",
     id: 4,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
     can_add_members_group: 4,
     can_join_group: 4,
     can_leave_group: 4,
@@ -283,7 +283,7 @@ function test_realm_group_settings(setting_name, validation_func) {
             id: 1,
             members: new Set([admin_user_id]),
             is_system_group: true,
-            direct_subgroup_ids: new Set([]),
+            direct_subgroup_ids: new Set(),
         });
         const moderators = make_user_group({
             name: "Moderators",
@@ -543,7 +543,7 @@ run_test("user_can_access_all_other_users", ({override}) => {
         id: 1,
         members: new Set([member_user_id]),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const everyone = make_user_group({
         name: "role:everyone",
@@ -614,7 +614,7 @@ run_test("user_can_create_web_public_streams", ({override}) => {
         id: 3,
         members: new Set([owner_user_id]),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     override(current_user, "user_id", owner_user_id);
     user_groups.initialize({realm_user_groups: [owners]});
@@ -646,7 +646,7 @@ run_test("guests_can_access_all_other_users", () => {
         id: 1,
         members: new Set([member_user_id]),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const everyone = make_user_group({
         name: "role:everyone",

@@ -80,7 +80,7 @@ const everyone_group = {
     id: 1,
     description: "",
     members: new Set([30]),
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 };
 
 user_groups.initialize({realm_user_groups: [everyone_group]});
