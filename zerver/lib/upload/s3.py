@@ -14,7 +14,7 @@ from django.conf import settings
 from django.utils.http import content_disposition_header
 from typing_extensions import override
 
-from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type
 from zerver.lib.partial import partial
 from zerver.lib.thumbnail import resize_logo, resize_realm_icon
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
@@ -110,7 +110,7 @@ def upload_content_to_s3(
     extras = {}
     if content_type is None:  # nocoverage
         content_type = ""
-    is_attachment = content_type not in INLINE_MIME_TYPES
+    is_attachment = bare_content_type(content_type) not in INLINE_MIME_TYPES
     if filename is not None:
         extras["ContentDisposition"] = content_disposition_header(is_attachment, filename)
     elif is_attachment:

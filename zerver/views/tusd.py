@@ -14,7 +14,7 @@ from pydantic.alias_generators import to_pascal
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.decorator import get_basic_credentials, validate_api_key
 from zerver.lib.exceptions import AccessDeniedError, JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.upload import (
@@ -165,7 +165,7 @@ def handle_upload_pre_finish_hook(
             "realm_id": str(user_profile.realm_id),
         }
 
-        is_attachment = content_type not in INLINE_MIME_TYPES
+        is_attachment = bare_content_type(content_type) not in INLINE_MIME_TYPES
         content_disposition = content_disposition_header(is_attachment, filename) or "inline"
 
         from zerver.lib.upload.s3 import S3UploadBackend
