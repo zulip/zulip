@@ -982,7 +982,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list_sort.set_filter_out_inactives();
-                stream_list.update_streams_sidebar();
+                stream_list.update_streams_sidebar(true);
             }
             if (event.property === "web_animate_image_previews") {
                 // Rerender the whole message list UI

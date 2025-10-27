@@ -17,6 +17,7 @@ import * as channel_folders from "./channel_folders.ts";
 import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
@@ -321,9 +322,7 @@ export function build_stream_list(force_rerender: boolean): void {
         assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
         const $li = sidebar_row.get_li();
-        if (inactive_or_muted) {
-            $li.addClass("inactive-or-muted-in-channel-folder");
-        }
+        $li.toggleClass("inactive-or-muted-in-channel-folder", inactive_or_muted);
         $list.append($li);
     }
 
@@ -348,10 +347,27 @@ export function build_stream_list(force_rerender: boolean): void {
         }
         const muted_and_inactive_streams = [...section.muted_streams, ...section.inactive_streams];
         if (section.id !== "pinned-streams" && muted_and_inactive_streams.length > 0) {
+            let button_text;
+            if (section.muted_streams.length > 0 && section.inactive_streams.length > 0) {
+                button_text = $t(
+                    {defaultMessage: "{count} INACTIVE OR MUTED"},
+                    {count: muted_and_inactive_streams.length},
+                );
+            } else if (section.muted_streams.length > 0) {
+                button_text = $t(
+                    {defaultMessage: "{count} MUTED"},
+                    {count: section.muted_streams.length},
+                );
+            } else {
+                button_text = $t(
+                    {defaultMessage: "{count} INACTIVE"},
+                    {count: section.inactive_streams.length},
+                );
+            }
             $(`#stream-list-${section.id}`).append(
                 $(
                     render_show_inactive_or_muted_channels({
-                        inactive_or_muted_count: muted_and_inactive_streams.length,
+                        button_text,
                     }),
                 ),
             );
