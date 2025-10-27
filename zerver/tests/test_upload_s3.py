@@ -130,7 +130,7 @@ class S3Test(ZulipTestCase):
         Verifies that the path of a file uploaded by a cross-realm bot to another
         realm is correct.
         """
-        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         zulip_realm = get_realm("zulip")
@@ -142,6 +142,11 @@ class S3Test(ZulipTestCase):
         )[0]
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
         self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
+
+        path_id = re.sub(r"/user_uploads/", "", url)
+        s3_obj = bucket.Object(path_id)
+        s3_obj.load()
+        self.assertEqual(s3_obj.metadata["realm_id"], str(zulip_realm.id))
 
     @use_s3_backend
     def test_delete_message_attachment(self) -> None:
