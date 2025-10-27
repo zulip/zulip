@@ -15,6 +15,7 @@ from zerver.data_import.microsoft_teams import (
     MicrosoftTeamsFieldsT,
     MicrosoftTeamsUserIdToZulipUserIdT,
     MicrosoftTeamsUserRoleData,
+    ODataQueryParameter,
     convert_users,
     do_convert_directory,
     get_microsoft_graph_api_data,
@@ -347,3 +348,51 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             microsoft_teams_user_role_data.guest_user_ids,
             MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA.guest_user_ids,
         )
+
+    @responses.activate
+    def test_paginated_get_microsoft_graph_api_data(self) -> None:
+        def paginated_graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
+            assert request.url is not None
+            parsed = urlsplit(request.url)
+            query_params = parse_qs(parsed.query)
+            queries = set(query_params.keys())
+
+            if queries == {"$filter", "$top"}:
+                body = self.fixture_data(
+                    "paginated_users_member.json",
+                    "microsoft_graph_api_response_fixtures",
+                )
+            elif queries == {"$filter", "$skiptoken", "$top"}:
+                body = self.fixture_data(
+                    "paginated_users_member_2.json",
+                    "microsoft_graph_api_response_fixtures",
+                )
+            else:
+                raise AssertionError("There is no response fixture for this request.")
+
+            headers = {"Content-Type": "application/json"}
+            return 200, headers, body
+
+        responses.add_callback(
+            responses.GET,
+            "https://graph.microsoft.com/v1.0/users",
+            callback=paginated_graph_api_users_callback,
+            content_type="application/json",
+        )
+
+        odata_parameter = [
+            ODataQueryParameter(parameter="$filter", expression="userType eq 'Member'"),
+            ODataQueryParameter(parameter="$top", expression="3"),
+        ]
+        result = get_microsoft_graph_api_data(
+            MICROSOFT_GRAPH_API_URL.format(endpoint="/users"),
+            odata_parameter,
+            token="MICROSOFT_GRAPH_API_TOKEN",
+        )
+        result_user_ids = {user["id"] for user in result}
+        expected_member_users = {
+            user["Id"]
+            for user in self.get_exported_microsoft_teams_user_data()
+            if user["Mail"] not in GUEST_USER_EMAILS
+        }
+        self.assertSetEqual(result_user_ids, expected_member_users)
