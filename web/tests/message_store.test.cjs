@@ -289,14 +289,14 @@ test("reify_message_id", () => {
 });
 
 test("update_booleans", () => {
-    const message = {};
-
     // First, test fields that we do actually want to update.
-    message.mentioned = false;
-    message.mentioned_me_directly = false;
-    message.stream_wildcard_mentioned = false;
-    message.topic_wildcard_mentioned = false;
-    message.alerted = false;
+    const message = {
+        mentioned: false,
+        mentioned_me_directly: false,
+        stream_wildcard_mentioned: false,
+        topic_wildcard_mentioned: false,
+        alerted: false,
+    };
 
     let flags = ["mentioned", "has_alert_word", "read"];
     message_store.update_booleans(message, flags);

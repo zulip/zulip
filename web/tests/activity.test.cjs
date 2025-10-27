@@ -274,8 +274,7 @@ test("direct_message_update_dom_counts", () => {
     $li.set_find_results(".unread_count", $count);
     $count.set_parents_result("li", $li);
 
-    const counts = new Map();
-    counts.set(pm_key, 5);
+    const counts = new Map([[pm_key, 5]]);
     $li.addClass("user_sidebar_entry");
 
     activity_ui.update_dom_with_unread_counts({pm_count: counts});

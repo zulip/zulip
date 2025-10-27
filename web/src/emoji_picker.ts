@@ -146,13 +146,14 @@ function show_emoji_catalog(): void {
 export function rebuild_catalog(): void {
     const realm_emojis = emoji.active_realm_emojis;
 
-    const catalog = new Map<string, EmojiDict[]>();
-    catalog.set(
-        "Custom",
-        [...realm_emojis.keys()].map(
-            (realm_emoji_name) => emoji.emojis_by_name.get(realm_emoji_name)!,
-        ),
-    );
+    const catalog = new Map([
+        [
+            "Custom",
+            [...realm_emojis.keys()].map(
+                (realm_emoji_name) => emoji.emojis_by_name.get(realm_emoji_name)!,
+            ),
+        ],
+    ]);
 
     for (const [category, raw_codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
         const codepoints = z.array(z.string()).parse(raw_codepoints);

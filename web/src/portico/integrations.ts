@@ -231,8 +231,7 @@ function hide_integration_show_catalog(): void {
 }
 
 function get_state_from_path(): State {
-    const result = {...INITIAL_STATE};
-    result.query = state.query;
+    const result = {...INITIAL_STATE, query: state.query};
 
     const parts = path_parts();
     if (parts[1] === "doc" && parts[2] !== undefined && INTEGRATIONS.get(parts[2])) {

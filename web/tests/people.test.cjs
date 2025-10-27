@@ -1680,22 +1680,23 @@ test_people("fetch_users", async ({override}) => {
         },
     ];
 
-    const params = {};
-    params.realm_users = [
-        {
-            email: "my_email@example.com",
-            user_id: 42,
-            full_name: "Me Myself",
-        },
-    ];
-    params.realm_non_active_users = [];
-    params.cross_realm_bots = [
-        {
-            email: "bot@example.com",
-            user_id: 17,
-            full_name: "Test Bot",
-        },
-    ];
+    const params = {
+        realm_users: [
+            {
+                email: "my_email@example.com",
+                user_id: 42,
+                full_name: "Me Myself",
+            },
+        ],
+        realm_non_active_users: [],
+        cross_realm_bots: [
+            {
+                email: "bot@example.com",
+                user_id: 17,
+                full_name: "Test Bot",
+            },
+        ],
+    };
     const user_group_params = {
         realm_user_groups: [
             make_user_group({
