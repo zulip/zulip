@@ -88,7 +88,6 @@ export function set_filter_out_inactives(): void {
     }
 }
 
-// Exported for access by unit tests.
 export function is_filtering_inactives(): boolean {
     return filter_out_inactives;
 }
