@@ -116,6 +116,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
                 content_type,
                 thumbnailed_bytes,
                 None,
+                None,
             )
             height = resized.get("page-height") if thumbnail_format.animated else resized.height
             image_attachment.thumbnail_metadata.append(

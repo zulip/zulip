@@ -95,6 +95,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
+        target_realm: Realm | None,
     ) -> None:
         write_local_file("files", path_id, file_data)
 
