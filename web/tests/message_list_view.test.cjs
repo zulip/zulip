@@ -132,17 +132,16 @@ test("message_edited_vars", () => {
     //   * message without sender
 
     function build_message_context(message = {}, message_context = {}) {
-        message_context = {
+        return {
             include_sender: true,
             ...message_context,
+            msg: {
+                is_me_message: false,
+                last_edit_timestamp: (next_timestamp += 1),
+                edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
+                ...message,
+            },
         };
-        message_context.msg = {
-            is_me_message: false,
-            last_edit_timestamp: (next_timestamp += 1),
-            edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
-            ...message,
-        };
-        return message_context;
     }
 
     function build_message_group(messages) {
@@ -227,13 +226,7 @@ test("muted_message_vars", () => {
     // correctly.
 
     function build_message_context(message = {}, message_context = {}) {
-        message_context = {
-            ...message_context,
-        };
-        message_context.msg = {
-            ...message,
-        };
-        return message_context;
+        return {...message_context, msg: {...message}};
     }
 
     function build_message_group(messages) {
@@ -372,21 +365,20 @@ test("merge_message_groups", ({mock_template}) => {
     // group merging logic on its own.
 
     function build_message_context(message = {}, message_context = {}) {
-        message_context = {
+        return {
             include_sender: true,
             ...message_context,
+            msg: {
+                id: _.uniqueId("test_message_"),
+                status_message: false,
+                type: "stream",
+                stream_id: 2,
+                topic: "Test topic 1",
+                sender_email: "test@example.com",
+                timestamp: (next_timestamp += 1),
+                ...message,
+            },
         };
-        message_context.msg = {
-            id: _.uniqueId("test_message_"),
-            status_message: false,
-            type: "stream",
-            stream_id: 2,
-            topic: "Test topic 1",
-            sender_email: "test@example.com",
-            timestamp: (next_timestamp += 1),
-            ...message,
-        };
-        return message_context;
     }
 
     function build_message_group(messages) {

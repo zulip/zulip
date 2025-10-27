@@ -668,12 +668,10 @@ run_test("realm settings", ({override}) => {
     // realm
     function test_realm_boolean(event, parameter_name) {
         override(realm, parameter_name, true);
-        event = {...event};
-        event.value = false;
+        event = {...event, value: false};
         dispatch(event);
         assert.equal(realm[parameter_name], false);
-        event = {...event};
-        event.value = true;
+        event = {...event, value: true};
         dispatch(event);
         assert.equal(realm[parameter_name], true);
     }

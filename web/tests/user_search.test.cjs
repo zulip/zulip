@@ -224,11 +224,12 @@ test("blur search left", ({override}) => {
 });
 
 test("filter_user_ids", ({override}) => {
-    const user_presence = {};
-    user_presence[alice.user_id] = "active";
-    user_presence[fred.user_id] = "active";
-    user_presence[jill.user_id] = "active";
-    user_presence[me.user_id] = "active";
+    const user_presence = {
+        [alice.user_id]: "active",
+        [fred.user_id]: "active",
+        [jill.user_id]: "active",
+        [me.user_id]: "active",
+    };
 
     override(presence, "get_status", (user_id) => user_presence[user_id]);
     override(presence, "get_user_ids", () => all_user_ids);

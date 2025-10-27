@@ -283,10 +283,11 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
-        stub_state = {};
-        stub_state.send_msg_called = 0;
-        stub_state.get_events_running_called = 0;
-        stub_state.reify_message_id_checked = 0;
+        stub_state = {
+            send_msg_called: 0,
+            get_events_running_called: 0,
+            reify_message_id_checked: 0,
+        };
         return stub_state;
     }
 

@@ -422,10 +422,10 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             name: string;
             unique_id: number;
         }[] {
-            const senders: (User | CurrentUser | Bot)[] = [people.EMAIL_GATEWAY_BOT];
-            senders.push(
+            const senders = [
+                people.EMAIL_GATEWAY_BOT,
                 ...stream_data.get_current_user_and_their_bots_with_post_messages_permission(sub),
-            );
+            ];
             return senders.map((sender) => ({
                 name: update_option_label(sender),
                 unique_id: sender.user_id,

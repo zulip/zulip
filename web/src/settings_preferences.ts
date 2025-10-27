@@ -284,8 +284,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             changed_property,
             true,
         );
-        const data: Record<string, number> = {};
-        data[changed_property] = new_value;
+        const data = {[changed_property]: new_value};
 
         const $status_element = $(this).closest(".subsection-parent").find(".alert-notification");
         information_density.enable_or_disable_control_buttons($container);
@@ -306,7 +305,6 @@ export function set_up(settings_panel: SettingsPanel): void {
         const $input_elem = $(this);
         const new_theme_code = $input_elem.val();
         assert(new_theme_code !== undefined);
-        const data = {color_scheme: new_theme_code};
 
         const $status_element = $input_elem
             .closest(".subsection-parent")
@@ -329,7 +327,7 @@ export function set_up(settings_panel: SettingsPanel): void {
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",
-            data,
+            {color_scheme: new_theme_code},
             $status_element,
             opts,
         );

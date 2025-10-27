@@ -49,13 +49,14 @@ run_test("user_groups", () => {
         deactivated: false,
     });
 
-    const params = {};
-    params.realm_user_groups = [
-        students,
-        get_test_subgroup(4),
-        get_test_subgroup(5),
-        get_test_subgroup(6),
-    ];
+    const params = {
+        realm_user_groups: [
+            students,
+            get_test_subgroup(4),
+            get_test_subgroup(5),
+            get_test_subgroup(6),
+        ],
+    };
     const user_id_not_in_any_group = 0;
     const user_id_part_of_a_group = 2;
     const user_id_associated_via_subgroup = 4;
