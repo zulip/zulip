@@ -215,6 +215,7 @@ def upload_message_attachment(
             content_type,
             file_data,
             user_profile,
+            target_realm,
         )
         create_attachment(
             uploaded_file_name,
