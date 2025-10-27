@@ -773,6 +773,19 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             self.assert_length(json["not_removed"], 0)
             self.assertFalse(subscribed_to_stream(user, stream.id))
 
+        # Test that a user can unsubscribe themselves as the
+        # realm-level can_unsubscribe_group is set to the
+        # everyone group by default.
+        check_unsubscribing_user(aaron)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_unsubscribe_group",
+            nobody_group,
+            acting_user=admin,
+        )
         anonymous_group_member_dict = UserGroupMembersData(
             direct_members=[aaron.id], direct_subgroups=[]
         )
@@ -816,9 +829,6 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # Test that an admin can always unsubscribe themselves.
         check_unsubscribing_user(admin)
 
-        nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
-        )
         do_change_stream_group_based_setting(
             stream,
             "can_unsubscribe_group",
@@ -856,6 +866,23 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # Test that a user not in any of the permission groups cannot
         # unsubscribe themselves
         check_unsubscribing_user(cordelia, expect_fail=True)
+
+        # Test that a user in the realm-level can_unsubscribe_group can
+        # unsubscribe themselves
+        cordelia_realm_group = self.create_or_update_anonymous_group_for_setting([cordelia], [])
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_unsubscribe_group",
+            cordelia_realm_group,
+            acting_user=admin,
+        )
+        check_unsubscribing_user(cordelia)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_unsubscribe_group",
+            nobody_group,
+            acting_user=admin,
+        )
 
         # Test that a user cannot unsubscribe from an inaccessible private stream.
         private_stream = self.make_stream("private_stream", invite_only=True)

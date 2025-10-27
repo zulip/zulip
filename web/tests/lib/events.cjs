@@ -469,6 +469,7 @@ exports.fixtures = {
             can_invite_users_group: 3,
             can_move_messages_between_topics_group: 3,
             can_resolve_topics_group: 1,
+            can_unsubscribe_group: 3,
             direct_message_permission_group: 3,
             plan_type: 3,
             upload_quota_mib: 50000,

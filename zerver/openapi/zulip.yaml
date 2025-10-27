@@ -5020,6 +5020,17 @@ paths:
                                             set of users who are allowed to use AI summarization.
 
                                             **Changes**: New in Zulip 10.0 (feature level 350).
+                                    can_unsubscribe_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the
+                                            set of users who have permission to unsubscribe themselves from all channels
+                                            in the organization.
+
+                                            **Changes**: New in Zulip 12.0 (feature level ZF-1abcca), the
+                                            `can_unsubscribe_group` realm setting was added, which allows members of the
+                                            group to unsubscribe themselves from all channels in the organization.
                                     create_multiuse_invite_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -12426,6 +12437,9 @@ paths:
 
           - Organization administrators can always unsubscribe themselves from
             any channel if they are subscribed to.
+          - Users who are member of the [user group](/api/get-user-groups)
+            specified by organization-level `can_unsubscribe_group` can unsubscribe
+            themselves from any channel they are subscribed to.
           - Users can unsubscribe themselves from a channel if they are
             a member of the [user group](/api/get-user-groups) specified
             by either the `can_unsubscribe_group`, `can_remove_subscribers_group`,
@@ -12440,7 +12454,7 @@ paths:
             by the [`can_remove_subscribers_group`][can-remove-parameter]
             for the channel.
 
-        **Changes**: Before Zulip 11.0 (feature level ZF-1abcca), anyone who
+        **Changes**: Before Zulip 12.0 (feature level ZF-1abcca), anyone who
         was subscribed to a channel could unsubscribe themselves from it.
 
         Before Zulip 10.0 (feature level 362),
@@ -19262,6 +19276,17 @@ paths:
                               to resolve topics was controlled by the more general
                               `can_move_messages_between_topics_group permission for moving messages`.
                           - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_unsubscribe_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the
+                              set of users who have permission to unsubscribe themselves from channels
+                              in the organization.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-1abcca).
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_create_public_stream_policy:
                         type: integer
                         deprecated: true
@@ -23362,7 +23387,10 @@ paths:
                         Note that a user must have metadata access to a channel and permission
                         to administer the channel in order to modify this setting.
 
-                        **Changes**: New in Zulip 11.0 (feature level ZF-1abcca). Prior to this change,
+                        Users who have similar realm-level permissions can unsubscribe themselves from
+                        a channel regardless of the value of this setting.
+
+                        **Changes**: New in Zulip 12.0 (feature level ZF-1abcca). Prior to this change,
                         anyone who was subscribed to a channel could unsubscribe themselves from it.
                       example:
                         {
@@ -23991,6 +24019,8 @@ paths:
                   $ref: "#/components/schemas/CanSendMessageGroup"
                 can_subscribe_group:
                   $ref: "#/components/schemas/CanSubscribeGroup"
+                can_unsubscribe_group:
+                  $ref: "#/components/schemas/CanUnsubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
               required:
@@ -24014,6 +24044,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_unsubscribe_group:
                 contentType: application/json
               subscribers:
                 contentType: application/json
@@ -29270,10 +29302,13 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to unsubscribe themselves to this channel.
 
+            Users who have similar realm-level permissions can unsubscribe themselves
+            from a channel regardless of the value of this setting.
+
             Note that a user must have metadata access to a channel and permission
             to administer the channel in order to modify this setting.
 
-            **Changes**: New in Zulip 11.0 (feature level ZF-1abcca).
+            **Changes**: New in Zulip 12.0 (feature level ZF-1abcca).
 
             [setting-values]: /api/group-setting-values
     CanResolveTopicsGroup:
