@@ -104,7 +104,6 @@ def create_attachment(
         file_size = file_data.size
         file_vips_data = file_data.vips_source
 
-    content_type = maybe_add_charset(content_type, file_data)
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -207,6 +206,7 @@ def upload_message_attachment(
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
+    content_type = maybe_add_charset(content_type, file_data)
 
     with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
