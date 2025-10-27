@@ -282,9 +282,9 @@ class TusdPreCreateTest(ZulipTestCase):
         realm.custom_upload_quota_gb = 1
         realm.save(update_fields=["custom_upload_quota_gb"])
 
-        path_id = upload_message_attachment("zulip.txt", "text/plain", b"zulip!", hamlet)[
-            0
-        ].removeprefix("/user_uploads/")
+        path_id = upload_message_attachment(
+            "zulip.txt", "text/plain", b"zulip!", hamlet, hamlet.realm
+        )[0].removeprefix("/user_uploads/")
         attachment = Attachment.objects.get(path_id=path_id)
         attachment.size = assert_is_not_none(realm.upload_quota_bytes()) - 10
         attachment.save(update_fields=["size"])
@@ -480,7 +480,12 @@ class TusdPreFinishTest(ZulipTestCase):
             str(hamlet.realm.id), sanitize_name("zulip.txt")
         )
         upload_backend.upload_message_attachment(
-            path_id, "zulip.txt", "text/plain", b"zulip!", hamlet
+            path_id,
+            "zulip.txt",
+            "text/plain",
+            b"zulip!",
+            hamlet,
+            hamlet.realm,
         )
 
         info = TusUpload(
@@ -505,6 +510,7 @@ class TusdPreFinishTest(ZulipTestCase):
             "application/octet-stream",
             info.model_dump_json().encode(),
             hamlet,
+            hamlet.realm,
         )
 
         # Post the hook saying the file is in place
@@ -542,7 +548,9 @@ class TusdPreFinishTest(ZulipTestCase):
         path_id = upload_backend.generate_message_upload_path(
             str(hamlet.realm.id), sanitize_name("")
         )
-        upload_backend.upload_message_attachment(path_id, "", "ignored", b"zulip!", hamlet)
+        upload_backend.upload_message_attachment(
+            path_id, "", "ignored", b"zulip!", hamlet, hamlet.realm
+        )
 
         info = TusUpload(
             id=path_id,
@@ -561,6 +569,7 @@ class TusdPreFinishTest(ZulipTestCase):
             "ignored",
             info.model_dump_json().encode(),
             hamlet,
+            hamlet.realm,
         )
 
         # Post the hook saying the file is in place
@@ -688,7 +697,7 @@ class TusdPreTerminateTest(ZulipTestCase):
             str(hamlet.realm.id), sanitize_name("zulip.txt")
         )
         upload_backend.upload_message_attachment(
-            path_id, "zulip.txt", "text/plain", b"zulip!", hamlet
+            path_id, "zulip.txt", "text/plain", b"zulip!", hamlet, hamlet.realm
         )
 
         info = TusUpload(
