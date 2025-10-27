@@ -339,6 +339,26 @@ class S3Test(ZulipTestCase):
         self.assertEqual(b"", bucket.Object(key).get()["Body"].read())
 
     @use_s3_backend
+    def test_user_uploads_text_charset(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        self.login("hamlet")
+        fp = BytesIO("नाम में क्या रक्खा हे".encode())
+        fp.name = "zulip.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        response_dict = self.assert_json_success(result)
+        self.assertIn("url", response_dict)
+        url = response_dict["url"]
+
+        path_id = re.sub(r"/user_uploads/", "", url)
+        s3_obj = bucket.Object(path_id)
+        s3_obj.load()
+        attachment_obj = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment_obj.content_type, 'text/plain; charset="utf-8"')
+        self.assertEqual(s3_obj.content_type, 'text/plain; charset="utf-8"')
+
+    @use_s3_backend
     def test_user_avatars_base(self) -> None:
         backend = zerver.lib.upload.upload_backend
         assert isinstance(backend, S3UploadBackend)
