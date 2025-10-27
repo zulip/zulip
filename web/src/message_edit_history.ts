@@ -152,7 +152,6 @@ export function fetch_and_render_message_history(message: Message): void {
             const data = server_message_history_schema.parse(raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];
-            let prev_stream_item: EditHistoryEntry | null = null;
             for (const [index, msg] of data.message_history.entries()) {
                 // Format times and dates nicely for display
                 const time = new Date(msg.timestamp * 1000);
@@ -216,9 +215,6 @@ export function fetch_and_render_message_history(message: Message): void {
                     stream_changed = true;
                     prev_stream_id = msg.prev_stream;
                     prev_stream = get_display_stream_name(msg.prev_stream);
-                    if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
-                    }
                     prev_stream_topic_url = by_stream_topic_url(prev_stream_id, msg.prev_topic);
                     assert("stream_id" in message);
                     const new_stream_id = msg.stream;
@@ -232,12 +228,6 @@ export function fetch_and_render_message_history(message: Message): void {
                     new_topic_display_name = util.get_final_topic_display_name(msg.topic);
                     is_empty_string_prev_topic = msg.prev_topic === "";
                     is_empty_string_new_topic = msg.topic === "";
-                    assert("stream_id" in message);
-                    const stream_id = message.stream_id;
-                    new_stream = get_sub_by_id(stream_id)?.name;
-                    prev_stream = new_stream;
-                    prev_stream_topic_url = by_stream_topic_url(stream_id, msg.prev_topic);
-                    new_stream_topic_url = by_stream_topic_url(stream_id, msg.topic);
                     if (is_resolved(msg.topic) || is_resolved(msg.prev_topic)) {
                         if (is_resolved(msg.topic) && msg.topic.slice(2) === msg.prev_topic) {
                             topic_resolved_or_unresolved = "resolved";
@@ -258,9 +248,6 @@ export function fetch_and_render_message_history(message: Message): void {
                     stream_changed = true;
                     prev_stream_id = msg.prev_stream;
                     prev_stream = get_display_stream_name(msg.prev_stream);
-                    if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
-                    }
                     is_empty_string_prev_topic = msg.topic === "";
                     is_empty_string_new_topic = msg.topic === "";
                     assert("stream_id" in message);
@@ -298,22 +285,15 @@ export function fetch_and_render_message_history(message: Message): void {
                     topic_resolved_or_unresolved,
                 };
 
-                if (msg.prev_stream) {
-                    prev_stream_item = item;
-                }
-
                 content_edit_history.push(item);
             }
-            if (prev_stream_item !== null) {
-                assert(message.type === "stream");
-                prev_stream_item.new_stream = get_display_stream_name(message.stream_id);
-            }
 
-            // In order to correctly compute the recipient_bar_color
-            // values, it is convenient to iterate through the array of edit history
+            // In order to correctly compute the recipient_bar_color values and entries for topic
+            // only moves, it is convenient to iterate through the array of edit history
             // entries in reverse chronological order.
             if (message.is_stream) {
                 // Start with the message's current location.
+                let current_stream_id = message.stream_id;
                 let stream_display_name: string = get_display_stream_name(message.stream_id);
                 let stream_color: string = get_color(message.stream_id);
                 let recipient_bar_color: string = get_recipient_bar_color(stream_color);
@@ -330,6 +310,23 @@ export function fetch_and_render_message_history(message: Message): void {
                         );
                         stream_color = get_color(edit_history_entry.prev_stream_id);
                         recipient_bar_color = get_recipient_bar_color(stream_color);
+                        current_stream_id = edit_history_entry.prev_stream_id;
+                    }
+                    if (edit_history_entry.topic_edited && !edit_history_entry.stream_changed) {
+                        edit_history_entry.prev_stream = stream_display_name;
+                        edit_history_entry.new_stream = stream_display_name;
+
+                        assert(edit_history_entry.prev_topic_display_name !== undefined);
+                        assert(edit_history_entry.new_topic_display_name !== undefined);
+
+                        edit_history_entry.prev_stream_topic_url = by_stream_topic_url(
+                            current_stream_id,
+                            edit_history_entry.prev_topic_display_name,
+                        );
+                        edit_history_entry.new_stream_topic_url = by_stream_topic_url(
+                            current_stream_id,
+                            edit_history_entry.new_topic_display_name,
+                        );
                     }
                 }
                 if (move_history_only) {
