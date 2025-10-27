@@ -104,8 +104,8 @@ As you are getting started on your first pull request:
   review. Catching mistakes yourself will help your PRs be merged faster, and
   folks will appreciate the quality and professionalism of your work.
 
-Our documentation on [what makes a great Zulip
-contributor](../contributing/contributing.md#what-makes-a-great-zulip-contributor)
+Our documentation on [how to be a successful
+contributor](../contributing/contributing.md#how-to-be-a-successful-contributor)
 offers some additional advice.
 
 ## Putting together your application
