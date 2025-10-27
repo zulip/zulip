@@ -2,7 +2,6 @@ import base64
 import binascii
 import os
 from datetime import timedelta
-from email.message import EmailMessage
 from urllib.parse import quote, urlsplit
 
 from django.conf import settings
@@ -28,7 +27,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import zulip_redirect_to_login
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import (
@@ -137,12 +136,6 @@ def serve_s3(
     # telling S3 that is what we want in the signed URL.
     patch_cache_control(response, private=True, immutable=True)
     return response
-
-
-def bare_content_type(content_type: str) -> str:
-    fake_msg = EmailMessage()
-    fake_msg["content-type"] = content_type
-    return fake_msg.get_content_type()
 
 
 def serve_local(
