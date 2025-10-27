@@ -1266,6 +1266,6 @@ export function initialize(): void {
 
     $("#channels_overlay_container").on("click", "#preview-stream-button", () => {
         const stream_id = Number.parseInt($(".stream_settings_header").attr("data-stream-id")!, 10);
-        window.location.href = hash_util.by_stream_url(stream_id);
+        window.location.href = hash_util.channel_url_by_user_setting(stream_id);
     });
 }
