@@ -62,7 +62,7 @@ const admins_group = make_user_group({
     id: 1,
     members: new Set([admin_user_id]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 const moderators_group = make_user_group({
@@ -84,9 +84,9 @@ const everyone_group = make_user_group({
 const nobody_group = make_user_group({
     name: "Nobody",
     id: 4,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 const students = make_user_group({
@@ -94,7 +94,7 @@ const students = make_user_group({
     id: 5,
     members: new Set([test_user.user_id]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 const me_group = make_user_group({
@@ -102,7 +102,7 @@ const me_group = make_user_group({
     id: 6,
     members: new Set([me.user_id]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 function initialize_and_override_current_user(user_id, override) {

@@ -148,7 +148,7 @@ const bob_system_group = make_user_group({
     id: 1,
     name: "Bob system group",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 const bob_system_group_item = user_group_item(bob_system_group);
@@ -157,7 +157,7 @@ const bob_group = make_user_group({
     id: 2,
     name: "Bob group",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
 });
 const bob_group_item = user_group_item(bob_group);
@@ -174,7 +174,7 @@ const admins_group = make_user_group({
     id: 4,
     name: "Admins of zulip",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
 });
 const admins_group_item = user_group_item(admins_group);
@@ -183,7 +183,7 @@ const members_group = make_user_group({
     id: 5,
     name: "role:members",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 const members_group_item = user_group_item(members_group);
@@ -192,7 +192,7 @@ const everyone_group = make_user_group({
     id: 6,
     name: "role:everyone",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 
