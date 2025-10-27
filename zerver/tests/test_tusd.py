@@ -672,6 +672,56 @@ class TusdPreFinishTest(ZulipTestCase):
         response = bucket.Object(f"{path_id}.info").get()
         self.assertEqual(response["ContentType"], "binary/octet-stream")
 
+    @use_s3_backend
+    def test_s3_upload_chardet(self) -> None:
+        assert settings.LOCAL_FILES_DIR is None
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        upload_backend = S3UploadBackend()
+
+        filename = "text-file.txt"
+        path_id = upload_backend.generate_message_upload_path(
+            str(hamlet.realm.id), sanitize_name(filename, strict=True)
+        )
+        content = "zulip!"
+        info = TusUpload(
+            id=path_id,
+            size=len(content),
+            offset=0,
+            size_is_deferred=False,
+            meta_data={
+                "filename": filename,
+                "filetype": "text/plain",
+                "name": filename,
+                "type": "text/plain",
+            },
+            is_final=False,
+            is_partial=False,
+            partial_uploads=None,
+            storage=None,
+        )
+        bucket.Object(path_id).put(
+            Body=content.encode(),
+            ContentType="application/octet-stream",
+            Metadata={k: v.encode("ascii", "replace").decode() for k, v in info.meta_data.items()},
+        )
+        bucket.Object(f"{path_id}.info").put(
+            Body=info.model_dump_json().encode(),
+        )
+        # Post the hook saying the file is in place
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(info).model_dump(),
+            content_type="application/json",
+        )
+        self.assertEqual(result.status_code, 200)
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment.size, len(content))
+        self.assertEqual(attachment.content_type, 'text/plain; charset="ascii"')
+        self.assertEqual(bucket.Object(path_id).get()["ContentType"], 'text/plain; charset="ascii"')
+
 
 class TusdPreTerminateTest(ZulipTestCase):
     def request(self, info: TusUpload) -> TusHook:
