@@ -472,12 +472,6 @@
     margin-bottom: calc(
         (var(--compose-formatting-buttons-row-height) + 1px) * -1
     );
-
-    textarea {
-        /* Flatten the bottom edge of the textarea to
-           merge with the flat top edge of the buttons row */
-        border-radius: 3px 3px 0 0;
-    }
 }
 
 #preview-message-area-container {

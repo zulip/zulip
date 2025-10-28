@@ -793,7 +793,7 @@ input[type="checkbox"] {
         min-width: calc(var(--modal-input-width) - 6px);
     }
 
-    & textarea {
+    .settings_textarea {
         /* Subtract 6px of padding from side */
         width: calc(var(--modal-input-width) - 12px);
     }
@@ -1670,7 +1670,8 @@ label.preferences-radio-choice-label {
     .custom_user_field {
         padding-bottom: 20px;
 
-        & textarea {
+        .settings_textarea,
+        .modal_textarea {
             height: 80px;
         }
 
@@ -1741,7 +1742,7 @@ label.preferences-radio-choice-label {
 
     & input,
     input[type="url"],
-    & textarea,
+    .modal_textarea,
     & select {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
