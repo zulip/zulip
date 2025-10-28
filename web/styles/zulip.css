@@ -719,7 +719,6 @@ input:not(.input-element) {
     &[type="month"],
     &[type="time"],
     &[type="week"],
-    &[type="number"],
     &[type="email"],
     &[type="url"],
     &[type="search"],
