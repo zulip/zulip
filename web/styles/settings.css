@@ -1618,8 +1618,9 @@ label.preferences-radio-choice-label {
         max-width: calc(100% - 6px);
     }
 
-    & textarea {
+    .modal-textarea {
         /* Subtract (1px border and 6px padding) on each side */
+        box-sizing: content-box;
         width: calc(var(--modal-input-width) - 14px);
         max-width: calc(100% - 14px);
     }
@@ -1756,7 +1757,8 @@ label.preferences-radio-choice-label {
     margin-bottom: 20px;
 }
 
-.settings-textarea {
+.settings-textarea,
+.modal-textarea {
     color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 4px;
@@ -2188,6 +2190,7 @@ label.preferences-radio-choice-label {
     .settings_url_input,
     .settings_text_input,
     .settings-textarea,
+    .modal-textarea,
     .pill-container {
         margin-bottom: 0;
 
