@@ -852,7 +852,9 @@
     resize: none !important;
     color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
-    border-radius: 3px;
+    /* Flatten the bottom edge of the textarea to
+    merge with the flat top edge of the buttons row */
+    border-radius: 3px 3px 0 0;
     vertical-align: middle;
     border: none;
     /* Match textarea padding to compose box and
