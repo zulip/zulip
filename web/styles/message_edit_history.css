@@ -67,3 +67,20 @@
         align-items: center;
     }
 }
+
+#message-history-overlay
+    .message-edit-history-container
+    .message_edit_history_content {
+    /* We need to use different color for links to distinguish
+       them from normal text and have enough contrast so that they
+       are visible clearly. */
+    .highlight_text_inserted,
+    .highlight_text_deleted {
+        > a {
+            color: light-dark(
+                var(--color-markdown-link),
+                hsl(200.27deg 100% 85.49%)
+            );
+        }
+    }
+}
