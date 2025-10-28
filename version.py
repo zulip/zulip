@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (355, 0)  # bumped 2025-10-28 to upgrade stripe
+PROVISION_VERSION = (355, 1)  # bumped 2025-10-28 to upgrade Node.js
