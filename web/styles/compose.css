@@ -1970,7 +1970,8 @@ textarea.new_message_textarea {
 #add-new-saved-snippet-modal,
 #edit-saved-snippet-modal {
     & .saved-snippet-title {
-        width: 97%;
+        /* subtract padding (6px each side) and border (1px each side) */
+        width: calc(100% - 14px);
         margin-bottom: 20px;
     }
 
