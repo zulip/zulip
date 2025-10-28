@@ -799,7 +799,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         if (sub.pin_to_top) {
             pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
             pinned_unread_counts.muted += stream_count_info.muted_count;
-        } else if (sub.folder_id !== null) {
+        } else if (sub.folder_id !== null && user_settings.web_left_sidebar_show_channel_folders) {
             if (!folder_unread_counts.has(sub.folder_id)) {
                 folder_unread_counts.set(sub.folder_id, {
                     unmuted: 0,
@@ -874,25 +874,27 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             normal_section_unread_counts.muted_channel_muted,
     );
 
-    for (const folder_id of channel_folders.get_all_folder_ids()) {
-        const unread_counts = folder_unread_counts.get(folder_id) ?? {
-            unmuted: 0,
-            muted: 0,
-            inactive_unmuted: 0,
-            inactive_muted: 0,
-            muted_channel_unmuted: 0,
-            muted_channel_muted: 0,
-        };
-        update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
-            unread_counts.unmuted,
-            unread_counts.muted,
-        );
-        update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
-            unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
-            unread_counts.inactive_muted + unread_counts.muted_channel_muted,
-        );
+    if (user_settings.web_left_sidebar_show_channel_folders) {
+        for (const folder_id of channel_folders.get_all_folder_ids()) {
+            const unread_counts = folder_unread_counts.get(folder_id) ?? {
+                unmuted: 0,
+                muted: 0,
+                inactive_unmuted: 0,
+                inactive_muted: 0,
+                muted_channel_unmuted: 0,
+                muted_channel_muted: 0,
+            };
+            update_section_unread_count(
+                $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
+                unread_counts.unmuted,
+                unread_counts.muted,
+            );
+            update_section_unread_count(
+                $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
+                unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
+                unread_counts.inactive_muted + unread_counts.muted_channel_muted,
+            );
+        }
     }
 };
 
