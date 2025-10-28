@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 431
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (357, 0)  # bumped 2025-11-04 to upgrade Stripe to latest version
+PROVISION_VERSION = (357, 1)  # bumped 2025-11-06 to upgrade python-zulip-api
