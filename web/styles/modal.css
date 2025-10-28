@@ -312,7 +312,6 @@
     margin-top: 10px;
 
     .email_field_textarea {
-        width: 97%;
         resize: vertical;
         margin-bottom: 10px;
         min-height: 2em;
@@ -494,6 +493,11 @@
 .modal__container .modal_text_input:read-only {
     background-color: var(--background-color-readonly-modal-input);
     opacity: var(--opacity-readonly-modal-input);
+}
+
+.modal-textarea {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #add-realm-domain-widget {
