@@ -312,7 +312,6 @@
     margin-top: 10px;
 
     .email_field_textarea {
-        width: 97%;
         resize: vertical;
         margin-bottom: 10px;
     }
@@ -488,6 +487,11 @@
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+.modal_textarea {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #add-realm-domain-widget {
