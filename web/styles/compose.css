@@ -1975,7 +1975,6 @@ textarea.new_message_textarea {
     }
 
     & .saved-snippet-content {
-        width: 97%;
         resize: vertical;
     }
 }

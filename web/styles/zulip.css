@@ -1481,8 +1481,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #invite_welcome_custom_message_text {
     resize: vertical;
     height: 8em;
-    width: 100%;
-    box-sizing: border-box;
 }
 
 .custom-time-input-value {
