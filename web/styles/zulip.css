@@ -344,6 +344,10 @@ p.n-margin {
         align-items: center;
         margin-left: auto;
     }
+
+    &.download-feedback-widget {
+        cursor: pointer;
+    }
 }
 
 #navbar-fixed-container {
