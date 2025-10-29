@@ -83,4 +83,26 @@
             );
         }
     }
+
+    /* Show `Link:` text of media beside it
+       to clarify click area for opening media
+       in new tab vs in lightbox. */
+    .highlight_text_inserted:has(.media-anchor-element .media-image-element),
+    .highlight_text_deleted:has(.media-anchor-element .media-image-element) {
+        > .media-anchor-element {
+            display: flex;
+            overflow-wrap: anywhere;
+
+            > .media-image-element {
+                flex-grow: 1;
+                flex-shrink: 0;
+            }
+        }
+
+        @media (width < $sm_min) {
+            > .media-anchor-element {
+                flex-direction: column;
+            }
+        }
+    }
 }
