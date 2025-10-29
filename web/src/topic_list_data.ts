@@ -9,8 +9,8 @@ import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
-const max_topics = 8;
-const max_topics_with_unread = 12;
+const max_topics = 6;
+const max_topics_with_unread = 10;
 
 export type TopicInfo = {
     stream_id: number;
