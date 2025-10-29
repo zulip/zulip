@@ -1194,9 +1194,7 @@ function set_up_dropdown_widget(
         ...(text_if_current_value_not_in_options && {text_if_current_value_not_in_options}),
         on_mount_callback(dropdown) {
             if (setting_type === "group") {
-                $(dropdown.popper).css("min-width", "300px");
-                $(dropdown.popper).find(".simplebar-content").css("width", "max-content");
-                $(dropdown.popper).find(".simplebar-content").css("min-width", "100%");
+                $(dropdown.popper).addClass("settings-dropdown-popper-styles");
             }
         },
     });
@@ -1627,7 +1625,7 @@ export function build_page(): void {
         $upload_text: JQuery,
         $delete_button: JQuery,
     ): void {
-        $spinner.css({visibility: "hidden"});
+        $spinner.addClass("visibility-hidden");
         $upload_text.show();
         $delete_button.show();
     }
@@ -1637,7 +1635,7 @@ export function build_page(): void {
         $upload_text: JQuery,
         $delete_button: JQuery,
     ): void {
-        $spinner.css({visibility: "visible"});
+        $spinner.removeClass("visibility-hidden");
         $upload_text.hide();
         $delete_button.hide();
     }

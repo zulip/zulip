@@ -441,7 +441,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             // only continuously update the email address when we have
             // a current sender.
             $("#copy_email_address_modal .tag-checkbox").off("change");
-            $(".stream-email").children().css("visibility", "hidden");
+            $(".stream-email").children().addClass("visibility-hidden");
             $("#copy_email_address_modal .dialog_submit_button").trigger("focus");
 
             event.stopPropagation();
@@ -472,7 +472,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
                     const flags = get_checked_tags();
                     address = get_stream_email_address(flags, email);
                     $(".email-address").text(address);
-                    $(".stream-email").children().css("visibility", "visible");
+                    $(".stream-email").children().removeClass("visibility-hidden");
                     enable_tag_checkbox_change_handler();
                 },
             },

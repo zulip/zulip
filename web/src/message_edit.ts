@@ -464,7 +464,7 @@ function update_inline_topic_edit_input_max_width(
             $inline_topic_edit_input.css("max-width", `calc(${placeholder_width}px + 1ch)`);
         } else {
             // Otherwise, we set the max-width to a reasonable 20ch width.
-            $inline_topic_edit_input.css("max-width", "20ch");
+            $inline_topic_edit_input.addClass("max-width-20ch");
         }
     }
 }
