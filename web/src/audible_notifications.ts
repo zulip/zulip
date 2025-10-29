@@ -13,7 +13,7 @@ export function update_notification_sound_source(
 ): void {
     const notification_sound = settings_object.notification_sound;
     // Sanitize to prevent injection (allow only alphanumeric, dash, underscore)
-    const safe_notification_sound = notification_sound.replace(/[^a-zA-Z0-9_-]/g, "");
+    const safe_notification_sound = notification_sound.replaceAll(/[^a-zA-Z0-9_-]/g, "");
     const audio_file_without_extension =
         "/static/audio/notification_sounds/" + safe_notification_sound;
 
