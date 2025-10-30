@@ -275,17 +275,42 @@ test("errors", ({disallow_rewire}) => {
 });
 
 test("reify_message_id", () => {
-    const message = {type: "private", id: 500};
-
+    const local_private_message = {type: "private", draft_id: 4, topic: "", id: 500};
     message_store.update_message_cache({
-        type: "server_message",
-        message,
+        type: "local_message",
+        message: local_private_message,
     });
-    assert.equal(message_store.get_cached_message(500).message, message);
-
+    assert.equal(message_store.get_cached_message(500).message, local_private_message);
     message_store.reify_message_id({old_id: 500, new_id: 501});
     assert.equal(message_store.get_cached_message(500), undefined);
-    assert.equal(message_store.get_cached_message(501).message, message);
+    assert.deepEqual(message_store.get_cached_message(501).message, {
+        type: "private",
+        id: 501,
+        locally_echoed: false,
+    });
+
+    const local_stream_message = {type: "stream", draft_id: 4, topic: "foo", id: 600};
+    message_store.update_message_cache({
+        type: "local_message",
+        message: local_stream_message,
+    });
+    message_store.reify_message_id({old_id: 600, new_id: 601});
+    assert.equal(message_store.get_cached_message(600), undefined);
+    assert.deepEqual(message_store.get_cached_message(601).message, {
+        type: "stream",
+        id: 601,
+        topic: "foo",
+        locally_echoed: false,
+    });
+
+    const server_message = {type: "stream", id: 700};
+    message_store.update_message_cache({
+        type: "server_message",
+        message: server_message,
+    });
+    message_store.reify_message_id({old_id: 700, new_id: 701});
+    assert.equal(message_store.get_cached_message(700), undefined);
+    assert.equal(message_store.get_cached_message(701).message, server_message);
 });
 
 test("update_booleans", () => {
