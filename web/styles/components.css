@@ -132,6 +132,14 @@ select.bootstrap-focus-style {
     }
 }
 
+.visibility-hidden {
+    visibility: hidden !important;
+}
+
+.visibility-visible {
+    visibility: visible !important;
+}
+
 .no-pointer-events {
     pointer-events: none !important;
 }

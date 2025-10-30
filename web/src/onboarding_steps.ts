@@ -147,22 +147,26 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
                         skip_video_button_text_updated = true;
                     }
                     if (video_ended_button_visible && current_time < $video_elem.duration) {
-                        $("#navigation-tour-video-ended-button-wrapper").addClass(
-                            "visibility-hidden",
-                        );
+                        $("#navigation-tour-video-ended-button-wrapper")
+                            .removeClass("visibility-visible")
+                            .addClass("visibility-hidden");
                         video_ended_button_visible = false;
                         $video.removeClass("dimmed-background");
                     }
                 });
 
                 $video.on("ended", () => {
-                    $("#navigation-tour-video-ended-button-wrapper").removeClass(
-                        "visibility-hidden",
-                    );
+                    $("#navigation-tour-video-ended-button-wrapper")
+                        .removeClass("visibility-hidden")
+                        .addClass("visibility-visible");
                     video_ended_button_visible = true;
                     $video.addClass("dimmed-background");
-                    $skip_video_button.addClass("visibility-hidden");
-                    $watch_later_button.addClass("visibility-hidden");
+                    $skip_video_button
+                        .removeClass("visibility-visible")
+                        .addClass("visibility-hidden");
+                    $watch_later_button
+                        .removeClass("visibility-visible")
+                        .addClass("visibility-hidden");
                     // Exit fullscreen to make the 'video-ended-button-wrapper' button visible.
                     const $video_elem = util.the($video);
                     if (document.fullscreenElement === $video_elem) {

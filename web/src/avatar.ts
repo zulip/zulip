@@ -59,13 +59,17 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
 }
 
 function display_avatar_delete_complete(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").addClass("visibility-hidden");
+    $("#user-avatar-upload-widget .upload-spinner-background")
+        .removeClass("visibility-visible")
+        .addClass("visibility-hidden");
     $("#user-avatar-upload-widget .image-upload-text").show();
     $("#user-avatar-source").show();
 }
 
 function display_avatar_delete_started(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").removeClass("visibility-hidden");
+    $("#user-avatar-upload-widget .upload-spinner-background")
+        .removeClass("visibility-hidden")
+        .addClass("visibility-visible");
     $("#user-avatar-upload-widget .image-upload-text").hide();
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }

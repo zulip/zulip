@@ -1038,9 +1038,13 @@ export async function build_move_topic_to_stream_popover(
         const $clear_topic_name_button = $("#clear_move_topic_new_topic_name");
         const topic_input_value = $("input#move-topic-new-topic-name").val();
         if (topic_input_value === "" || $("input#move-topic-new-topic-name").prop("disabled")) {
-            $clear_topic_name_button.addClass("visibility-hidden");
+            $clear_topic_name_button
+                .removeClass("visibility-visible")
+                .addClass("visibility-hidden");
         } else {
-            $clear_topic_name_button.removeClass("visibility-hidden");
+            $clear_topic_name_button
+                .removeClass("visibility-hidden")
+                .addClass("visibility-visible");
         }
     }
 

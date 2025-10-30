@@ -1625,7 +1625,7 @@ export function build_page(): void {
         $upload_text: JQuery,
         $delete_button: JQuery,
     ): void {
-        $spinner.addClass("visibility-hidden");
+        $spinner.removeClass("visibility-visible").addClass("visibility-hidden");
         $upload_text.show();
         $delete_button.show();
     }
@@ -1635,7 +1635,7 @@ export function build_page(): void {
         $upload_text: JQuery,
         $delete_button: JQuery,
     ): void {
-        $spinner.removeClass("visibility-hidden");
+        $spinner.removeClass("visibility-hidden").addClass("visibility-visible");
         $upload_text.hide();
         $delete_button.hide();
     }
