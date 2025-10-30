@@ -1473,30 +1473,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
             // but we use `message_view.show` to pass in the `trigger` parameter
-            switch (msg.type) {
-                case "private":
-                    message_view.show(
-                        [
-                            {operator: "dm", operand: msg.reply_to},
-                            {operator: "near", operand: String(msg.id)},
-                        ],
-                        {trigger: "hotkey"},
-                    );
-                    return true;
-                case "stream":
-                    message_view.show(
-                        [
-                            {
-                                operator: "channel",
-                                operand: msg.stream_id.toString(),
-                            },
-                            {operator: "topic", operand: msg.topic},
-                            {operator: "near", operand: String(msg.id)},
-                        ],
-                        {trigger: "hotkey"},
-                    );
-                    return true;
-            }
+            message_view.narrow_to_message_near(msg, "hotkey");
+            return true;
         }
     }
 
