@@ -86,6 +86,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.types import Validator
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_groups import (
     get_system_user_group_by_name,
     get_system_user_group_for_user,
@@ -841,7 +842,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         params["next"] = next
         params["multiuse_object_key"] = multiuse_object_key
         if len(params) > 0:
-            url += f"?{urlencode(params)}"
+            query = urlencode(params)
+            url = append_url_query_string(url, query)
+
         if user_agent is not None:
             headers["HTTP_USER_AGENT"] = user_agent
 
@@ -2568,7 +2571,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_get("/accounts/login/social/saml")
         self.assertEqual(
             info_log.output[0],
-            "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None",
+            "INFO:root:Attempted to initiate saml authentication with wrong idp argument: None",
         )
         self.assertEqual(result.status_code, 500)
         self.assert_in_response("Configuration error", result)
@@ -3028,7 +3031,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assert_in_response("SAML authentication", result)
             self.assertEqual(
                 info_log.output[0],
-                "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None",
+                "INFO:root:Attempted to initiate saml authentication with wrong idp argument: None",
             )
 
             with self.assertLogs(level="INFO") as info_log:
@@ -3036,7 +3039,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             # No such IdP is configured.
             self.assertEqual(
                 info_log.output[0],
-                "INFO:root:Attempted to initiate SAML authentication with wrong idp argument: nonexistent_idp",
+                "INFO:root:Attempted to initiate saml authentication with wrong idp argument: nonexistent_idp",
             )
             self.assertEqual(result.status_code, 500)
             self.assert_in_response("Configuration error", result)
@@ -4242,8 +4245,8 @@ class GenericOpenIdConnectTest(SocialAuthBase):
     BACKEND_CLASS = GenericOpenIdConnectBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
-    LOGIN_URL = "/accounts/login/social/oidc"
-    SIGNUP_URL = "/accounts/register/social/oidc"
+    LOGIN_URL = "/accounts/login/social/oidc/testoidc"
+    SIGNUP_URL = "/accounts/register/social/oidc/testoidc"
 
     BASE_OIDC_URL = "https://example.com/api/openid"
     AUTHORIZATION_URL = f"{BASE_OIDC_URL}/authorize"
@@ -4252,23 +4255,19 @@ class GenericOpenIdConnectTest(SocialAuthBase):
     USER_INFO_URL = f"{BASE_OIDC_URL}/userinfo"
     AUTH_FINISH_URL = "/complete/oidc/"
 
-    @override
-    def social_auth_test(
-        self,
-        *args: Any,
-        **kwargs: Any,
-    ) -> "TestHttpResponse":
+    def _default_discovery_payload(self, base_oidc_url: str) -> dict[str, Any]:
         # Example payload of the discovery endpoint (with appropriate values filled
         # in to match our test setup).
         # All the attributes below are REQUIRED per OIDC specification:
         # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
         # or at least required for the `code` flow with userinfo - that this implementation uses.
         # Other flows are not supported right now.
-        idp_discovery_endpoint_payload_dict = {
-            "issuer": self.BASE_OIDC_URL,
-            "authorization_endpoint": self.AUTHORIZATION_URL,
-            "token_endpoint": self.ACCESS_TOKEN_URL,
-            "userinfo_endpoint": self.USER_INFO_URL,
+        return {
+            "issuer": base_oidc_url,
+            "authorization_endpoint": f"{base_oidc_url}/authorize",
+            "token_endpoint": f"{base_oidc_url}/token",
+            "userinfo_endpoint": f"{base_oidc_url}/userinfo",
+            "jwks_uri": f"{base_oidc_url}/jwks.json",
             "response_types_supported": [
                 "code",
                 "id_token",
@@ -4277,21 +4276,42 @@ class GenericOpenIdConnectTest(SocialAuthBase):
                 "code id_token",
                 "code id_token token",
             ],
-            "jwks_uri": self.JWKS_URL,
             "id_token_signing_alg_values_supported": ["HS256", "RS256"],
             "subject_types_supported": ["public"],
         }
 
+    @contextmanager
+    def mock_oidc_discovery(
+        self,
+        base_oidc_url: str,
+        *,
+        assert_all_requests_are_fired: bool = False,
+    ) -> Iterator[responses.RequestsMock]:
+        discovery_url = f"{base_oidc_url}/.well-known/openid-configuration"
+        body = json.dumps(self._default_discovery_payload(base_oidc_url))
+
+        with responses.RequestsMock(
+            assert_all_requests_are_fired=assert_all_requests_are_fired
+        ) as requests_mock:
+            requests_mock.add(
+                method=responses.GET,
+                url=discovery_url,
+                status=200,
+                body=body,
+                content_type="application/json",
+            )
+            yield requests_mock
+
+    @override
+    def social_auth_test(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> "TestHttpResponse":
         # We need to run the social_auth_test procedure with a mock response set up for the
         # OIDC discovery endpoint as that's the first thing requested by the server when a user
         # starts trying to authenticate.
-        with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
-            requests_mock.add(
-                requests_mock.GET,
-                f"{self.BASE_OIDC_URL}/.well-known/openid-configuration",
-                status=200,
-                body=json.dumps(idp_discovery_endpoint_payload_dict),
-            )
+        with self.mock_oidc_discovery(self.BASE_OIDC_URL):
             result = super().social_auth_test(*args, **kwargs)
 
         return result
@@ -4321,6 +4341,16 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             self.JWKS_URL,
             status=200,
             json=json.loads(EXAMPLE_JWK),
+        )
+
+        discovery_url = f"{self.BASE_OIDC_URL}/.well-known/openid-configuration"
+        body = json.dumps(self._default_discovery_payload(self.BASE_OIDC_URL))
+        requests_mock.add(
+            method=responses.GET,
+            url=discovery_url,
+            status=200,
+            body=body,
+            content_type="application/json",
         )
 
     @override
@@ -4432,29 +4462,136 @@ class GenericOpenIdConnectTest(SocialAuthBase):
                 [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
             )
 
-    def test_too_many_idps(self) -> None:
-        """
-        Only one IdP is supported for now.
-        """
-        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
-
-        mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
-        [idp_config_dict] = mock_oidc_setting_dict.values()
-        mock_oidc_setting_dict["secondprovider"] = idp_config_dict
         with (
             self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict),
             self.assertLogs("django.request", level="ERROR") as m,
         ):
             result = self.social_auth_test(
-                account_data_dict, subdomain="zulip", next="/user_uploads/image"
+                account_data_dict, is_signup=True, subdomain="zulip", next="/user_uploads/image"
             )
             self.assertEqual(result.status_code, 500)
             self.assert_in_response("Configuration error", result)
             self.assert_in_response("OpenID Connect", result)
             self.assertEqual(
-                m.output,
-                [f"ERROR:django.request:Internal Server Error: {self.LOGIN_URL}"],
+                m.output, [f"ERROR:django.request:Internal Server Error: {self.SIGNUP_URL}"]
             )
+
+    def test_social_auth_oidc_multiple_idps_configured(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_dict["testoidc2"] = copy.deepcopy(idps_dict["testoidc"])
+        idps_dict["testoidc2"]["oidc_url"] = "https://example.com/idp2/api/openid"
+        idps_dict["testoidc2"]["display_name"] = "Second Test IdP"
+        idps_dict["testoidc2"]["limit_to_subdomains"] = ["zulip"]
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_dict):
+            # Go to the login page and check that buttons to log in show up for both IdPs:
+            result = self.client_get("/accounts/login/")
+            self.assert_in_success_response(["Log in with Test IdP"], result)
+            self.assert_in_success_response(["/accounts/login/social/oidc/testoidc"], result)
+            self.assert_in_success_response(["Log in with Second Test IdP"], result)
+            self.assert_in_success_response(["/accounts/login/social/oidc/testoidc2"], result)
+
+            # Try successful authentication with the regular idp from all previous tests:
+            self.test_social_auth_success()
+
+            # Now test with the second idp:
+            original_LOGIN_URL = self.LOGIN_URL
+            original_SIGNUP_URL = self.SIGNUP_URL
+            original_AUTHORIZATION_URL = self.AUTHORIZATION_URL
+            original_BASE_OIDC_URL = self.BASE_OIDC_URL
+            original_ACCESS_TOKEN_URL = self.ACCESS_TOKEN_URL
+            original_JWKS_URL = self.JWKS_URL
+            original_USER_INFO_URL = self.USER_INFO_URL
+            original_AUTH_FINISH_URL = self.AUTH_FINISH_URL
+            self.LOGIN_URL = "/accounts/login/social/oidc/testoidc2"
+            self.SIGNUP_URL = "/accounts/register/social/oidc/testoidc2"
+            self.BASE_OIDC_URL = idps_dict["testoidc2"]["oidc_url"]
+            self.AUTHORIZATION_URL = f"{self.BASE_OIDC_URL}/authorize"
+            self.ACCESS_TOKEN_URL = f"{self.BASE_OIDC_URL}/token"
+            self.JWKS_URL = f"{self.BASE_OIDC_URL}/jwks"
+            self.USER_INFO_URL = f"{self.BASE_OIDC_URL}/userinfo"
+            try:
+                self.test_social_auth_success()
+            finally:
+                # Restore original values at the end, regardless of what happens
+                # in the block above, to avoid affecting other tests in unpredictable
+                # ways.
+                self.LOGIN_URL = original_LOGIN_URL
+                self.SIGNUP_URL = original_SIGNUP_URL
+                self.AUTHORIZATION_URL = original_AUTHORIZATION_URL
+                self.BASE_OIDC_URL = original_BASE_OIDC_URL
+                self.ACCESS_TOKEN_URL = original_ACCESS_TOKEN_URL
+                self.JWKS_URL = original_JWKS_URL
+                self.USER_INFO_URL = original_USER_INFO_URL
+                self.AUTH_FINISH_URL = original_AUTH_FINISH_URL
+
+    def test_no_idp_parameter(self) -> None:
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.client_get(reverse("social:begin", args=[self.backend.name]))
+        self.assert_json_error(result, "Missing idp param")
+        self.assertEqual(
+            m.output, [self.logger_output("/login/oidc/: Missing idp param.", type="info")]
+        )
+
+    def test_social_auth_oidc_idp_limited_to_subdomains_attempt_wrong_realm(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_dict["testoidc"]["limit_to_subdomains"] = ["zulip"]
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_dict):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            with self.assertLogs(self.logger_string, level="INFO") as m:
+                result = self.social_auth_test(account_data_dict, subdomain="zephyr")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual("/login/", result["Location"])
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    "/complete/oidc/: Authentication request with IdP testoidc but this provider is not enabled "
+                    "for this subdomain zephyr.",
+                    "info",
+                )
+            ],
+        )
+
+    @override
+    def test_social_auth_complete(self) -> None:
+        def mock_process_error(backend: BaseOAuth2, data: Mapping[str, object]) -> None:
+            raise AuthFailed(backend, "Not found")
+
+        with (
+            mock.patch(
+                "social_core.backends.oauth.BaseOAuth2.process_error",
+                autospec=True,
+                side_effect=mock_process_error,
+            ),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.client_get(reverse("social:complete", args=[self.backend.name]))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn("login", result["Location"])
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output("AuthFailed: Authentication failed: Not found", "info"),
+            ],
+        )
+
+        with (
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            result = self.client_get(reverse("social:complete", args=[self.backend.name]))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn("login", result["Location"])
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output("Missing needed parameter state", "warning"),
+            ],
+        )
+
+    @override
+    def test_social_auth_session_fields_cleared_correctly(self) -> None:
+        with self.mock_oidc_discovery(self.BASE_OIDC_URL):
+            super().test_social_auth_session_fields_cleared_correctly()
 
     @override
     def test_config_error_development(self) -> None:
@@ -5797,44 +5934,54 @@ class ExternalMethodDictsTests(ZulipTestCase):
                 [string.format("register") for string in expected_button_id_strings], result
             )
 
-    def test_get_external_method_dicts_multiple_saml_idps(self) -> None:
-        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+    def test_get_external_method_dicts_multiple_saml_oidc_idps(self) -> None:
+        saml_idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
         # Create another IdP config, by copying the original one and changing some details.idps_dict['test_idp'])
-        idps_dict["test_idp2"] = copy.deepcopy(idps_dict["test_idp"])
-        idps_dict["test_idp2"]["url"] = "https://idp2.example.com/idp/profile/SAML2/Redirect/SSO"
-        idps_dict["test_idp2"]["display_name"] = "Second Test IdP"
-        idps_dict["test_idp2"]["limit_to_subdomains"] = ["zephyr"]
+        saml_idps_dict["test_idp2"] = copy.deepcopy(saml_idps_dict["test_idp"])
+        saml_idps_dict["test_idp2"]["url"] = (
+            "https://idp2.example.com/idp/profile/SAML2/Redirect/SSO"
+        )
+        saml_idps_dict["test_idp2"]["display_name"] = "Second Test IdP"
+        saml_idps_dict["test_idp2"]["limit_to_subdomains"] = ["zephyr"]
+
+        oidc_idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        oidc_idps_dict["testoidc2"] = copy.deepcopy(oidc_idps_dict["testoidc"])
+        oidc_idps_dict["testoidc2"]["oidc_url"] = "https://example.com/idp2/api/openid"
+        oidc_idps_dict["testoidc2"]["display_name"] = "Second Test IdP"
+        oidc_idps_dict["testoidc2"]["limit_to_subdomains"] = ["zephyr"]
         with self.settings(
-            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+            SOCIAL_AUTH_SAML_ENABLED_IDPS=saml_idps_dict,
+            SOCIAL_AUTH_OIDC_ENABLED_IDPS=oidc_idps_dict,
             AUTHENTICATION_BACKENDS=(
                 "zproject.backends.EmailAuthBackend",
                 "zproject.backends.GitHubAuthBackend",
                 "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.GenericOpenIdConnectBackend",
             ),
         ):
             # Calling get_external_method_dicts without a realm returns all methods configured on the server:
             external_auth_methods = get_external_method_dicts()
-            # 1 IdP enabled for all realms + a dict for GitHub auth
-            self.assert_length(external_auth_methods, 2)
+            # 1 IdP enabled for all realms for SAML as well as OIDC + a dict for GitHub auth
+            self.assert_length(external_auth_methods, 3)
             self.assertEqual(
-                [external_auth_methods[0]["name"], external_auth_methods[1]["name"]],
-                ["saml:test_idp", "github"],
+                {method["name"] for method in external_auth_methods},
+                {"saml:test_idp", "oidc:testoidc", "github"},
             )
 
             external_auth_methods = get_external_method_dicts(get_realm("zulip"))
-            # Only test_idp enabled for the zulip realm, + GitHub auth.
-            self.assert_length(external_auth_methods, 2)
+            # Only test_idp end testoidc nabled for the zulip realm, + GitHub auth.
+            self.assert_length(external_auth_methods, 3)
             self.assertEqual(
-                [external_auth_methods[0]["name"], external_auth_methods[1]["name"]],
-                ["saml:test_idp", "github"],
+                {method["name"] for method in external_auth_methods},
+                {"saml:test_idp", "oidc:testoidc", "github"},
             )
 
             external_auth_methods = get_external_method_dicts(get_realm("zephyr"))
             # Both idps enabled for the zephyr realm, + GitHub auth.
-            self.assert_length(external_auth_methods, 3)
+            self.assert_length(external_auth_methods, 5)
             self.assertEqual(
-                {external_auth_methods[0]["name"], external_auth_methods[1]["name"]},
-                {"saml:test_idp", "saml:test_idp2"},
+                {method["name"] for method in external_auth_methods},
+                {"saml:test_idp", "saml:test_idp2", "oidc:testoidc", "oidc:testoidc2", "github"},
             )
 
 

@@ -397,6 +397,10 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
         ## reads the secret with the specified name from zulip-secrets.conf.
         "client_id": "<your client id>",
         "secret": get_secret("social_auth_oidc_secret"),
+        ## If you want this IdP to only be enabled for authentication
+        ## to certain subdomains, uncomment and edit the setting below.
+        # "limit_to_subdomains": ["subdomain1", "subdomain2"],
+        ##
         ## Determines whether "Log in with OIDC" will automatically
         ## register a new account if one does not already exist. By
         ## default, Zulip asks the user whether they want to create an

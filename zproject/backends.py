@@ -3533,19 +3533,20 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     auth_backend_name = "OpenID Connect"
     sort_order = 100
 
-    # Hack: We don't yet support multiple IdPs, but we want this
-    # module to import if nothing has been configured yet.
-    settings_dict: OIDCIdPConfigDict
-    [settings_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [OIDCIdPConfigDict()]
-
-    display_icon: str | None = settings_dict.get("display_icon", None)
-    display_name: str = settings_dict.get("display_name", "OIDC")
+    REDIS_EXPIRATION_SECONDS = 60 * 15
 
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
-    # Discovery endpoint for the superclass to read all the appropriate
-    # configuration from.
-    OIDC_ENDPOINT = settings_dict.get("oidc_url")
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.server_settings_dict: dict[str, OIDCIdPConfigDict] = (
+            settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS
+        )
+        self.idp_name: str | None = None
+
+        self._cached_oidc_config: Any = None
+        self._cached_jwks_keys: Any = None
+
+        super().__init__(*args, **kwargs)
 
     @override
     def get_key_and_secret(self) -> tuple[str, str]:
@@ -3555,15 +3556,170 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         assert isinstance(secret, str)
         return client_id, secret
 
+    # Discovery endpoint for the superclass to read all the appropriate
+    # configuration from.
+    @property
+    @override
+    def OIDC_ENDPOINT(self) -> str:  # type: ignore[override]  # mypy complains about overriding a writable attr with a @property.
+        return self.settings_dict["oidc_url"]
+
+    @property
+    def settings_dict(self) -> OIDCIdPConfigDict:
+        # This property is the core of the multi-IdP support for this backend.
+        # Returns the correct configuration dict based on which IdP is being used
+        # for the current authentication attempt.
+        idp_name = self.get_idp_name()
+        return self.server_settings_dict[idp_name]
+
+    def get_idp_name(self) -> str:
+        # This should only be accessed after the idp_name has been set:
+        # 1) During auth initiation step: after get_or_create_state() in the auth_url() codepath
+        #    has set this value.
+        # 2) During auth final step at /complete/oidc/: after auth_complete() has fetched, validated
+        #    and set the value.
+        assert self.idp_name is not None
+        return self.idp_name
+
+    @override
+    def get_or_create_state(self) -> str:
+        try:
+            idp_name = self.strategy.request_data()["idp"]
+        except KeyError:
+            # If the above raise KeyError, no idp was specified. This no a valid request
+            # to the /login/oidc/ endpoint and it should be impossible for this request
+            # to happen with normal usage of the login page - only through the user manually
+            # fiddling with the URL.
+            self.logger.info("/login/oidc/: Missing idp param.")
+            raise JsonableError(_("Missing idp param"))
+        self.idp_name = idp_name
+
+        # python-social-auth's implementation first checks if there already is an
+        # oidc_state stored in the session and if so, reuses it.
+        # We want to avoid issues with reuse of a state value across different
+        # IdPs, so we just generate a fresh state token at auth initiation.
+        state = self.state_token()
+        self.strategy.session_set("oidc_state", state)
+
+        params_to_relay = self.standard_relay_params
+        request_data = self.strategy.request_data().dict()
+        data_to_relay = {key: request_data[key] for key in params_to_relay if key in request_data}
+        data_to_relay["idp"] = idp_name
+
+        # Associate the important data, especially the IdP which is being used, with the state token
+        # to ensure we have the right set of values for this auth session.
+        # This is more robust than relying on storing variables in request.session.
+        self.put_data_in_redis(state, data_to_relay)
+
+        return state
+
+    @override
+    def oidc_config(self) -> dict[Any, Any]:
+        # Overridden from superclass to remove class-level caching, which is incompatible
+        # with our multi-IdP support implementation.
+        # TODO: We should add our own caching, to avoid unnecessary requests on every
+        # auth attempt.
+        # A simple instance-level caching is necessary to avoid making a new request every time
+        # a property from /openid-configuration needs to be ready (which can be multiple times during
+        # the processing of a single authentication attempt).
+        if self._cached_oidc_config is None:
+            self._cached_oidc_config = self.get_json(
+                self.oidc_endpoint() + "/.well-known/openid-configuration"
+            )
+
+        return self._cached_oidc_config
+
+    @override
+    def get_jwks_keys(self) -> Any:  # nocoverage
+        # Overridden from superclass to remove class-level caching, which is incompatible
+        # with our multi-IdP support implementation.
+        if self._cached_jwks_keys is None:
+            self._cached_jwks_keys = self.get_remote_jwks_keys()
+        return self._cached_jwks_keys
+
+    @classmethod
+    def put_data_in_redis(cls, state: str, data_to_relay: dict[str, Any]) -> str:
+        return put_dict_in_redis(
+            redis_client,
+            "oidc_state_{token}",
+            data_to_store=data_to_relay,
+            expiration_seconds=cls.REDIS_EXPIRATION_SECONDS,
+            token=state,
+        )
+
+    @classmethod
+    def get_data_from_redis(cls, state: str) -> dict[str, Any] | None:
+        data = get_dict_from_redis(
+            redis_client, key_format="oidc_state_{token}", key=f"oidc_state_{state}"
+        )
+
+        return data
+
+    @override
+    def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
+        """
+        Overridden in order to support multiple IdPs being enabled on the server.
+        Needs to safely determine:
+        1) Which IdP is handling this authentication attempt
+        2) Which subdomain we're logging into
+        3) Validate that the IdP is allowed for authentication users for this subdomain.
+        """
+        with social_auth_exception_guard(self.logger) as abort_flag:
+            self.process_error(self.data)
+            state = self.validate_state()
+        if abort_flag.aborted:
+            return None
+        assert state
+
+        relayed_params = self.get_data_from_redis(state)
+        assert relayed_params is not None
+        for param in self.standard_relay_params:
+            relayed_value = relayed_params.get(param)
+            session_value = self.strategy.session_get(param)
+            # A hardening measure. These params are automatically saved in the
+            # user's Zulip session by python-social-auth when auth is initiated.
+            # More robustly, we associate these values with the "state" token
+            # generated for this OIDC authentication attempt and store that in
+            # redis.
+            # It's this latter storage that we want to rely on for fetching
+            # these values here in auth_complete, after the user has been
+            # redirected back to us from the IdP.  However, if all is right,
+            # then the values in the session should match what we retrieve from
+            # redis.
+            assert relayed_value == session_value
+
+        idp_name = relayed_params["idp"]
+        assert idp_name
+        subdomain = relayed_params["subdomain"]
+        assert subdomain is not None
+        idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
+        if not idp_valid:
+            error_msg = (
+                "/complete/oidc/: Authentication request with IdP %s but this provider is not"
+                " enabled for this subdomain %s."
+            )
+            self.logger.info(error_msg, idp_name, subdomain)
+            return None
+        self.idp_name = idp_name
+
+        # We've identified the IdP and ensured it's allowed for the target subdomain.
+        # Now we can hand off the rest of the auth flow to the superclass' implementation.
+        return super().auth_complete(*args, **kwargs)
+
     @classmethod
     def check_config(cls) -> bool:
-        if len(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.keys()) != 1:
-            # Only one IdP supported for now.
-            return False
-
         mandatory_config_keys = ["oidc_url", "client_id", "secret"]
-        [idp_config_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values()
-        if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
+        for idp_config_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values():
+            if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
+                return False
+
+        return True
+
+    @classmethod
+    def validate_idp_for_subdomain(cls, idp_name: str, subdomain: str) -> bool:
+        idp_dict = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.get(idp_name)
+        if idp_dict is None:
+            raise AssertionError(f"IdP: {idp_name} not found")
+        if "limit_to_subdomains" in idp_dict and subdomain not in idp_dict["limit_to_subdomains"]:
             return False
 
         return True
@@ -3571,15 +3727,24 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     @classmethod
     @override
     def dict_representation(cls, realm: Realm | None = None) -> list[ExternalAuthMethodDictT]:
-        return [
-            dict(
-                name=f"oidc:{cls.name}",
-                display_name=cls.display_name,
-                display_icon=cls.display_icon,
-                login_url=reverse("login-social", args=(cls.name,)),
-                signup_url=reverse("signup-social", args=(cls.name,)),
+        result: list[ExternalAuthMethodDictT] = []
+        for idp_name, idp_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.items():
+            if realm and not cls.validate_idp_for_subdomain(idp_name, realm.subdomain):
+                continue
+            if realm is None and "limit_to_subdomains" in idp_dict:
+                # If queried without a realm, only return IdPs that can be used on all realms.
+                continue
+
+            auth_dict: ExternalAuthMethodDictT = dict(
+                name=f"oidc:{idp_name}",
+                display_name=idp_dict.get("display_name", cls.auth_backend_name),
+                display_icon=idp_dict.get("display_icon", cls.display_icon),
+                login_url=reverse("login-social", args=("oidc", idp_name)),
+                signup_url=reverse("signup-social", args=("oidc", idp_name)),
             )
-        ]
+            result.append(auth_dict)
+
+        return result
 
     @override
     def should_auto_signup(self) -> bool:
