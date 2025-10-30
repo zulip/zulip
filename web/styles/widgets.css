@@ -267,7 +267,7 @@ input {
     &.poll-question,
     &.todo-task-list-title {
         flex: 1 0 auto;
-        padding: 4px 6px;
+        padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     }
 }
 
