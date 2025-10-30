@@ -290,10 +290,6 @@ export const update_elements = ($content: JQuery): void => {
         }
     });
 
-    $content.find("span.timestamp-error").each(function (): void {
-        // No longer needed - server now returns original input instead of error message
-    });
-
     $content.find("div.spoiler-header").each(function (): void {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.

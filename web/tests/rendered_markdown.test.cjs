@@ -146,7 +146,6 @@ const get_content_element = () => {
     $content.set_find_results("a.stream", $array([]));
     $content.set_find_results("a.stream-topic, a.message-link", $array([]));
     $content.set_find_results("time", $array([]));
-    $content.set_find_results("span.timestamp-error", $array([]));
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
@@ -627,22 +626,6 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
         $timestamp.html(),
         '<span class="timestamp-content-wrapper">\n    <i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>Wed, Jul 15, 2020, 8:40 PM</span>',
     );
-});
-
-run_test("timestamp-error", () => {
-    // Setup
-    const $content = get_content_element();
-    const $timestamp_error = $.create("timestamp-error");
-    $timestamp_error.text("the-time-format");
-    $content.set_find_results("span.timestamp-error", $array([$timestamp_error]));
-
-    // Initial assert
-    assert.equal($timestamp_error.text(), "the-time-format");
-
-    rm.update_elements($content);
-
-    // Final assert - text should remain unchanged
-    assert.equal($timestamp_error.text(), "the-time-format");
 });
 
 run_test("emoji", ({override}) => {
