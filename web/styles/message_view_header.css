@@ -170,3 +170,18 @@
         padding-bottom: 0;
     }
 }
+
+
+/* Improve visibility of message link emoji (issue #35092) */
+.message-link-emoji {
+    opacity: 0.9;
+    filter: contrast(1.2);
+}
+
+body.light-theme .message-link-emoji {
+    filter: brightness(0.7);
+}
+
+body.dark-theme .message-link-emoji {
+    filter: brightness(1.3);
+}
