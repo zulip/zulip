@@ -40,7 +40,7 @@ import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
-import {TopicListWidget} from "./topic_list.ts";
+import * as topic_list from "./topic_list.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -1122,7 +1122,7 @@ function hide_channel_view_loading_indicator(): void {
     loading.destroy_indicator($("#inbox-loading-indicator #loading_more_indicator"));
 }
 
-class InboxTopicListWidget extends TopicListWidget {
+class InboxTopicListWidget extends topic_list.TopicListWidget {
     override topic_list_class_name = "inbox-channel-topic-list";
     topics_widget?: list_widget.ListWidget<topic_list_data.TopicInfo>;
 
@@ -1166,6 +1166,8 @@ class InboxTopicListWidget extends TopicListWidget {
                 }
 
                 channel_view_topic_widget.build();
+                // Also, update the left sidebar topics list for this channel.
+                topic_list.update_widget_for_stream(this.my_stream_id);
             });
         } else {
             show_empty_inbox_channel_view_text(this.is_empty());
