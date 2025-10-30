@@ -112,7 +112,7 @@ details worth understanding:
   [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
   Specify:
   - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
-  - `http://localhost:9991` for the "Audience URI (SP Entity ID)".
+  - `http://localhost:9991` for the "Audience URL (SP Entity ID)".
   - Skip "Default RelayState".
   - Skip "Name ID format".
   - Set 'Email` for "Application username format".

@@ -69,7 +69,7 @@ which contains key-value pairs as shown in the following example:
 [api]
 key=<API key from the web interface>
 email=<your email address>
-site=<your Zulip server's URI>
+site=<your Zulip server's URL>
 ...
 ```
 

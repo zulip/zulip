@@ -9,7 +9,7 @@ from .common.spiders import BaseDocumentationSpider
 
 
 def get_images_dir(images_path: str) -> str:
-    # Get index html file as start url and convert it to file uri
+    # Get index html file as start url and convert it to file url
     dir_path = os.path.dirname(os.path.realpath(__file__))
     target_path = os.path.join(dir_path, os.path.join(*[os.pardir] * 4), images_path)
     return os.path.realpath(target_path)
