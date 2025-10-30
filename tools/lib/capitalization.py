@@ -192,6 +192,14 @@ IGNORED_PHRASES = [
     r"comma-separated list",
     # Used in info_overlay.
     r"then",
+    r"Joe Smith",
+    r"bold",
+    r"channel name",
+    r"is busy working",
+    r"italic",
+    r"strikethrough",
+    r"support team",
+    r"topic name",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
