@@ -417,6 +417,26 @@ function topic_resolve_toggled(new_topic: string, original_topic: string): boole
     return false;
 }
 
+function get_post_edit_topic(
+    topic_edited: boolean,
+    event: UpdateMessageEvent,
+    new_topic: string | undefined,
+    anchor_message: Message | undefined,
+): string {
+    const pre_edit_topic = util.get_edit_event_orig_topic(event);
+    assert(pre_edit_topic !== undefined);
+
+    if (topic_edited) {
+        assert(new_topic !== undefined);
+        return new_topic;
+    }
+    if (anchor_message !== undefined) {
+        assert(anchor_message.type === "stream");
+        return anchor_message.topic;
+    }
+    return pre_edit_topic;
+}
+
 export function update_messages(events: UpdateMessageEvent[]): void {
     const messages_to_rerender: Message[] = [];
     let changed_narrow = false;
@@ -447,7 +467,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             message_store.update_booleans(anchor_message, event.flags);
 
             if (event.rendered_content !== undefined) {
-                anchor_message.content = event.rendered_content;
+                message_store.update_message_content(anchor_message, event.rendered_content);
             }
 
             if (event.is_me_message !== undefined) {
@@ -627,6 +647,21 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 // before we modify the topic field on the message.
                 unread.update_unread_topics(moved_message, event);
 
+                // Before editing the topic or stream, update the topic
+                // links to point to the right place.
+                if (topic_edited || stream_changed) {
+                    message_store.process_topic_edit({
+                        message_ids: event.message_ids,
+                        new_stream_id: new_stream_id ?? old_stream_id,
+                        new_topic: get_post_edit_topic(
+                            topic_edited,
+                            event,
+                            new_topic,
+                            anchor_message,
+                        ),
+                    });
+                }
+
                 // Now edit the attributes of our message object.
                 if (topic_edited) {
                     moved_message.topic = new_topic;
@@ -803,24 +838,18 @@ export function update_messages(events: UpdateMessageEvent[]): void {
         if (topic_edited || stream_changed) {
             // We must be moving stream messages.
             assert(old_stream_id !== undefined);
-            let pre_edit_topic = util.get_edit_event_orig_topic(event);
-            assert(pre_edit_topic !== undefined);
 
-            let post_edit_topic: string;
-            if (topic_edited) {
-                assert(new_topic !== undefined);
-                post_edit_topic = new_topic;
-            } else {
-                if (anchor_message !== undefined) {
-                    assert(anchor_message.type === "stream");
-                    pre_edit_topic = anchor_message.topic;
-                }
-                post_edit_topic = pre_edit_topic;
-            }
+            const pre_edit_topic = util.get_edit_event_orig_topic(event);
+            assert(pre_edit_topic !== undefined);
+            const post_edit_topic = get_post_edit_topic(
+                topic_edited,
+                event,
+                new_topic,
+                anchor_message,
+            );
 
             // new_stream_id is undefined if this is only a topic edit.
             const post_edit_stream_id = new_stream_id ?? old_stream_id;
-
             recent_senders.process_topic_edit({
                 message_ids: event.message_ids,
                 old_stream_id,
