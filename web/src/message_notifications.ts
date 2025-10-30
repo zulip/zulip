@@ -4,10 +4,10 @@ import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import type {ElectronBridgeNotification} from "./desktop_notifications.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_parser from "./message_parser.ts";
 import type {Message} from "./message_store.ts";
-import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
 import * as spoilers from "./spoilers.ts";
 import * as stream_data from "./stream_data.ts";
@@ -210,7 +210,10 @@ export function process_notification(notification: {
             notification_object.addEventListener("click", () => {
                 notification_object.close();
                 if (message.type !== "test-notification") {
-                    message_view.narrow_by_topic(message.id, {trigger: "notification"});
+                    // Narrowing to message's near view helps to handle the case
+                    // where a user clicked the notification, but before narrowing
+                    // the message deletion got processed.
+                    window.location.href = hash_util.by_conversation_and_time_url(message);
                 }
                 window.focus();
             });
