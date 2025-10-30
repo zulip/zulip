@@ -572,31 +572,38 @@ function handleLinkifier({
 }
 
 function handleTimestamp(time_string: string): string {
-    let timeobject;
-    const time = Number(time_string);
+    const trimmed = time_string.trim();
+    const escaped_time = _.escape(trimmed);
 
-    if (Number.isNaN(time)) {
-        timeobject = new Date(time_string); // not a Unix timestamp
-    } else {
-        // JavaScript dates are in milliseconds, Unix timestamps are in seconds
-        timeobject = new Date(time * 1000);
+    // Case 1: Pure Unix timestamp (seconds)
+    const unix_seconds = Number(trimmed);
+    if (!Number.isNaN(unix_seconds) && Number.isFinite(unix_seconds)) {
+        const date_from_unix = new Date(unix_seconds * 1000);
+        if (isValid(date_from_unix) && getUnixTime(date_from_unix) >= 0) {
+            const escaped_isotime = _.escape(date_from_unix.toISOString().split(".")[0] + "Z");
+            return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
+        }
+        // If invalid/negative, fall through to span below
     }
 
-    const escaped_time = _.escape(time_string);
-    if (!isValid(timeobject) || getUnixTime(timeobject) < 0) {
-        // Unsupported time format: rerender accordingly.
-
-        // We do not show an error on these formats in local echo because
-        // there is a chance that the server would interpret it successfully
-        // and if it does, the jumping from the error message to a rendered
-        // timestamp doesn't look good.
-        return `<span>${escaped_time}</span>`;
+    // Case 2: Date-only strings we confidently support on the client
+    //  - ISO date (YYYY-MM-DD)
+    //  - Day Mon YYYY (e.g., 31 Dec 2017)
+    const is_iso_date_only = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
+    const is_day_mon_year = /^\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}$/.test(trimmed);
+    if (is_iso_date_only || is_day_mon_year) {
+        const parsed = new Date(trimmed);
+        if (isValid(parsed) && getUnixTime(parsed) >= 0) {
+            const escaped_isotime = _.escape(parsed.toISOString().split(".")[0] + "Z");
+            return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
+        }
+        // If parsing failed, treat as unsupported below
     }
 
-    // Use html5 <time> tag for valid timestamps.
-    // render time without milliseconds.
-    const escaped_isotime = _.escape(timeobject.toISOString().split(".")[0] + "Z");
-    return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
+    // Unsupported/ambiguous time formats: render the original text safely.
+    // We intentionally avoid showing an error in local echo to prevent
+    // jarring transitions if the server later accepts the value.
+    return `<span>${escaped_time}</span>`;
 }
 
 function handleStream({
