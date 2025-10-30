@@ -708,6 +708,11 @@
     --input-button-width: 1.5em; /* 24px at 16px/1em */
     --input-button-ending-offset: 0.125em; /* 2px at 16px/1em */
 
+    /* Input padding and border variables */
+    --input-horizontal-padding: 6px;
+    --input-vertical-padding: 4px;
+    --input-border-width: 1px;
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(

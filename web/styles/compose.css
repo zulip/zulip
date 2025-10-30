@@ -1964,8 +1964,11 @@ textarea.new_message_textarea {
 #add-new-saved-snippet-modal,
 #edit-saved-snippet-modal {
     & .saved-snippet-title {
-        /* subtract padding (6px each side) and border (1px each side) */
-        width: calc(100% - 14px);
+        /* Subtract (2 * horizontal padding) + (2 * border width) */
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
         margin-bottom: 20px;
     }
 
