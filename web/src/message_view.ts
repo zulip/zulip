@@ -39,6 +39,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
 import {raw_message_schema} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
@@ -1533,4 +1534,33 @@ export function rerender_combined_feed(combined_feed_msg_list: MessageList): voi
         trigger: "stream / topic visibility policy change",
         force_rerender: true,
     });
+}
+
+export function narrow_to_message_near(message: Message, trigger: string): void {
+    // The following code is essentially equivalent to
+    // `window.location.href = hashutil.by_conversation_and_time_url(msg)`
+    // but we use `show` to pass in the `trigger` parameter.
+    switch (message.type) {
+        case "private":
+            show(
+                [
+                    {operator: "dm", operand: message.reply_to},
+                    {operator: "near", operand: String(message.id)},
+                ],
+                {trigger},
+            );
+            return;
+        case "stream":
+            show(
+                [
+                    {
+                        operator: "channel",
+                        operand: message.stream_id.toString(),
+                    },
+                    {operator: "topic", operand: message.topic},
+                    {operator: "near", operand: String(message.id)},
+                ],
+                {trigger},
+            );
+    }
 }

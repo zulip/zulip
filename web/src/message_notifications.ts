@@ -210,7 +210,10 @@ export function process_notification(notification: {
             notification_object.addEventListener("click", () => {
                 notification_object.close();
                 if (message.type !== "test-notification") {
-                    message_view.narrow_by_topic(message.id, {trigger: "notification"});
+                    // Narrowing to message's near view helps to handle the case
+                    // where a user clicked the notification, but before narrowing
+                    // the message deletion got processed.
+                    message_view.narrow_to_message_near(message, "notification");
                 }
                 window.focus();
             });
