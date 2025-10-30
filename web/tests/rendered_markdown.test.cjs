@@ -633,16 +633,16 @@ run_test("timestamp-error", () => {
     // Setup
     const $content = get_content_element();
     const $timestamp_error = $.create("timestamp-error");
-    $timestamp_error.text("Invalid time format: the-time-format");
+    $timestamp_error.text("the-time-format");
     $content.set_find_results("span.timestamp-error", $array([$timestamp_error]));
 
     // Initial assert
-    assert.equal($timestamp_error.text(), "Invalid time format: the-time-format");
+    assert.equal($timestamp_error.text(), "the-time-format");
 
     rm.update_elements($content);
 
-    // Final assert
-    assert.equal($timestamp_error.text(), "translated: Invalid time format: the-time-format");
+    // Final assert - text should remain unchanged
+    assert.equal($timestamp_error.text(), "the-time-format");
 });
 
 run_test("emoji", ({override}) => {
