@@ -208,6 +208,7 @@ export default defineConfig({
                             link: "/zulip-cloud-or-self-hosting",
                         },
                         "moving-to-zulip",
+                        "moving-from-slack",
                         "moderating-open-organizations",
                         "setting-up-zulip-for-a-class",
                         "using-zulip-for-a-class",
