@@ -189,9 +189,15 @@ def send_e2ee_push_notifications(
             apns_remote_push_devices.append(remote_push_device)
         else:
             assert isinstance(push_request, FCMPushRequest)
+            # The API requires all values to be strings. Our `push_request.payload`
+            # has a field `push_account_id` with integer value, so convert it to string.
+            data = {
+                k: str(v) if not isinstance(v, str) else v
+                for k, v in asdict(push_request.payload).items()
+            }
             fcm_requests.append(
                 firebase_messaging.Message(
-                    data=asdict(push_request.payload),
+                    data=data,
                     token=remote_push_device.token,
                     android=firebase_messaging.AndroidConfig(priority=push_request.fcm_priority),
                 )
