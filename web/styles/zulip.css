@@ -1051,6 +1051,12 @@ div.focused-message-list.is-conversation-view .recipient_row {
     background-clip: padding-box;
 }
 
+.topic_edit_save,
+.topic_edit_cancel {
+    /* Adjust top and bottom padding to fit into the recipient row. */
+    padding: 0.125em 0.625em; /* 2px 10px at 16px/em */
+}
+
 .information-settings .user-profile-picture,
 .user_sidebar_entry.with_avatar .user-profile-picture,
 .inline_profile_picture {
