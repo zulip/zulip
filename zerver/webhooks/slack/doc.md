@@ -111,7 +111,7 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 
 {!webhooks-url-specification.md!}
 
-[1]: /integrations/doc/slack_incoming
+[1]: /integrations/slack_incoming
 [2]: /help/create-a-channel
 [3]: https://api.slack.com/apis/events-api
 [4]: https://api.slack.com/apps

@@ -27,7 +27,7 @@ Get GitHub Sponsors notifications in Zulip!
 
 - [GitHub's webhook events documentation][github-webhook-events]
 
-- [Zulip GitHub integration](/integrations/doc/github).
+- [Zulip GitHub integration](/integrations/github).
 
 {!webhooks-url-specification.md!}
 

@@ -881,7 +881,7 @@ _Released 2024-11-22_
 - Fixed emoji appearing huge when viewing email notifications in
   Microsoft Outlook.
 - Fixed the [slack-compatible incoming
-  webhook](https://zulip.com/integrations/doc/slack_incoming) to
+  webhook](https://zulip.com/integrations/slack_incoming) to
   return success/failure HTTP responses in the correct format.
 - Fixed several bugs with the data import tools, primarily around
   thumbnailing of images and input validation.
@@ -1269,7 +1269,7 @@ _Released 2024-05-09_
 - The ‘default' topic visibility icon is no longer displayed in the inbox view,
   for a cleaner look.
 - Fixed confusing wording in the [Alertmanager
-  integration](https://zulip.com/integrations/doc/alertmanager).
+  integration](https://zulip.com/integrations/alertmanager).
 - Started allowing DMs to bots and to oneself, regardless if [DMs are in general
   restricted](https://zulip.com/help/restrict-direct-messages).
 - Notices indicating that “push notifications are not working” are now
@@ -1659,7 +1659,7 @@ _Released 2023-08-25_
   reverse order.
 - Upgraded Python requirements.
 - Updated puppet dependencies.
-- Improved the [Sentry integration](https://zulip.com/integrations/doc/sentry),
+- Improved the [Sentry integration](https://zulip.com/integrations/sentry),
   including making the “Test plugin” button in Sentry work properly.
 - Reduced memory usage by replacing a custom error reporting handler with the
   default Django implementation. This will result in a slight change in the
@@ -1684,7 +1684,7 @@ _Released 2023-08-25_
   [host multiple Zulip](../production/multiple-organizations.md)
   organizations on one server.
 - Fixed missing images in documentation for the
-  [“XKCD” bot](https://zulip.com/integrations/doc/xkcd).
+  [“XKCD” bot](https://zulip.com/integrations/xkcd).
 - Fixed “Back to login page” button alignment in the desktop app.
 - Added a reference to
   [PostgreSQL upgrades](../production/upgrade.md#upgrading-postgresql)
