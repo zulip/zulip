@@ -829,6 +829,11 @@
     }
 }
 
+.slack-topics-dropdown-dropdown-list-container {
+    /* 250px at 14px */
+    width: 17.8571em;
+}
+
 #invite_users_option_tabs_container {
     margin-bottom: 20px;
 }

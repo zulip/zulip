@@ -21,6 +21,13 @@
         {{t "Send all notifications to a single topic"}}
     </label>
 </div>
+<div class="input-group">
+    <div class="topic-to-use-wrapper integration-url-parameter">
+        {{> ../dropdown_widget_with_label
+          widget_name="slack-topics-dropdown"
+          label=(t "Topics to use")}}
+    </div>
+</div>
 <div class="input-group hide">
     <label for="integration-url-topic-input" class="modal-label-field">{{t "Topic"}}</label>
     <input type="text" id="integration-url-topic-input" class="modal_text_input integration-url-parameter" maxlength="{{ max_topic_length }}" />

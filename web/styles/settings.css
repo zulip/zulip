@@ -2323,6 +2323,7 @@ label.preferences-radio-choice-label {
         width: 50%;
     }
 
+    .topic-to-use-wrapper .dropdown_widget_value,
     .integration-url-name-wrapper .dropdown_widget_value,
     .integration-url-stream-wrapper .dropdown_widget_value {
         white-space: nowrap;
@@ -2330,6 +2331,7 @@ label.preferences-radio-choice-label {
         text-overflow: ellipsis;
     }
 
+    .topic-to-use-wrapper .dropdown-widget-button,
     .integration-url-stream-wrapper .dropdown-widget-button {
         width: 75%;
     }
