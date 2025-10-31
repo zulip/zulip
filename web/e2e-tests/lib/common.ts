@@ -7,7 +7,7 @@ import * as url from "node:url";
 import "css.escape";
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
-import puppeteer from "puppeteer";
+import * as puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 import * as z from "zod/mini";
