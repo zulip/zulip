@@ -4,6 +4,7 @@ title: Moving to Zulip
 
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
+import ZulipTip from "../../components/ZulipTip.astro";
 import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
 
 Welcome to Zulip! This page will guide you through the process of transitioning
@@ -18,9 +19,9 @@ The following steps are described in more detail below:
   1. [Create your organization](#create-your-organization).
   1. [Sign up for a plan](#sign-up-for-a-plan).
   1. [Configure your organization](#configure-your-organization).
+  1. [Review and update communication policies](#review-and-update-communication-policies).
   1. [Prepare users for the transition](#prepare-users-for-the-transition).
   1. [Invite users to join](#invite-users-to-join).
-  1. [Update your guidelines](#update-your-guidelines).
 </Steps>
 
 Each organization is unique, but we hope these common practices will help you
@@ -138,45 +139,50 @@ you will need to upgrade your plan.
      move your integrations when migrating an organization from Slack to Zulip.
 </Steps>
 
+## Review and update communication policies
+
+Consider updating your organization's communication policies and best
+practice recommendations to take advantage of Zulip's organized
+conversations:
+
+* Many organizations find that with Zulip, there’s no longer a reason to use
+  email for internal communications. You get the organization of an email
+  [inbox](/help/inbox) together with all the features of a modern chat app,
+  like instant delivery of messages, emoji reactions, typing notifications,
+  @-mentions, and more.
+* Using Zulip, you can discuss complex topics and make decisions with input
+  from all stakeholders, without the overhead of scheduling meeting. Are
+  there standing meetings you might not need?
+* With conversations organized by topic, you can review prior discussions to
+  understand past work, explanations, and decisions — your chat history
+  becomes a knowledge base. Should it be standard practice to link to Zulip
+  conversations from docs, issue trackers, etc. for additional context?
+
 ## Prepare users for the transition
 
+Prepare an introduction to Zulip for your organization. It's often effective to
+combine a written announcement with a live presentation. Recommended topics to
+cover include:
+
 <Steps>
-  1. Plan how you will introduce users to Zulip. You may want to:
-     * Share Zulip's [getting started guide](/help/getting-started-with-zulip).
-     * Prepare a live demo / training session. Consider recording it for
-       future use!
-  1. Inform users about the transition, including why you're moving to Zulip, the
-     timeline, and what they'll need to do.
+  1. Brief introduction to Zulip.
+  1. Why you're making this change. How do you expect it to improve communication
+     in your organization?
+  1. Accompanying changes to your communication policies. Are there any changes
+     to common workflows?
+  1. Pointers to additional resources, such as Zulip's [getting started
+     guide](/help/getting-started-with-zulip).
+  1. Transition timeline.
+  1. How users will be supported during the transition.
 </Steps>
 
 ## Invite users to join
 
 <HowToInviteUsersToJoin />
 
-## Update your guidelines
-
-<Steps>
-  1. Update any links and login instructions to point to your Zulip organization.
-  1. Share basic instructions for getting started with Zulip. You can refer users
-     to Zulip's [help center](/help), [getting started
-     guide](/help/getting-started-with-zulip), and any onboarding content you've
-     created.
-  1. Consider updating your organization's communication policies and best
-     practice recommendations to take advantage of Zulip's organized
-     conversations:
-     * Many organizations find that with Zulip, there’s no longer a reason to use
-       email for internal communications. You get the organization of an email
-       [inbox](/help/inbox) together with all the features of a modern chat app,
-       like instant delivery of messages, emoji reactions, typing notifications,
-       @-mentions, and more.
-     * Using Zulip, you can discuss complex topics and make decisions with input
-       from all stakeholders, without the overhead of scheduling meeting. Are
-       there standing meetings you might not need?
-     * With conversations organized by topic, you can review prior discussions to
-       understand past work, explanations, and decisions — your chat history
-       becomes a knowledge base. Should it be standard practice to link to Zulip
-       conversations from docs, issue trackers, etc. for additional context?
-</Steps>
+<ZulipTip>
+  Remember to update links and login instructions to point to Zulip.
+</ZulipTip>
 
 Congratulations on making the move! If you have any questions or feedback
 throughout this process, please [reach out](/help/contact-support) to the Zulip
