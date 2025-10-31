@@ -66,8 +66,15 @@ export function initialize(): void {
 
         // Allow selecting text inside a spoiler header.
         const selection = document.getSelection();
-        if (selection && selection.type === "Range") {
-            return;
+        if (selection && selection.type === "Range" && selection.rangeCount > 0) {
+            const $header = $(this);
+            const range = selection.getRangeAt(0);
+            if (
+                $header[0]?.contains(range.commonAncestorContainer) &&
+                !$spoiler_content[0]?.contains(range.commonAncestorContainer)
+            ) {
+                return;
+            }
         }
 
         e.preventDefault();
