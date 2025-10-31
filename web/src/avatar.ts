@@ -122,5 +122,6 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         $("#user-avatar-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_avatar_file_size_mib,
+        "user_avatar",
     );
 }
