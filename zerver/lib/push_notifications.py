@@ -1447,6 +1447,9 @@ APNsPriority: TypeAlias = Literal[10, 5, 1]
 
 @dataclass
 class PushRequestBasePayload:
+    # FCM expects in this type must always be strings. Non-string
+    # fields must be converted into strings in the FCM code path
+    # within send_e2ee_push_notifications.
     push_account_id: int
     encrypted_data: str
 

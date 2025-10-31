@@ -196,9 +196,14 @@ def send_e2ee_push_notifications(
             apns_remote_push_devices.append(remote_push_device)
         else:
             assert isinstance(push_request, FCMPushRequest)
+            fcm_payload = dict(
+                # FCM only allows string values, so we stringify push_account_id.
+                push_account_id=str(push_request.payload.push_account_id),
+                encrypted_data=push_request.payload.encrypted_data,
+            )
             fcm_requests.append(
                 firebase_messaging.Message(
-                    data=asdict(push_request.payload),
+                    data=fcm_payload,
                     token=remote_push_device.token,
                     android=firebase_messaging.AndroidConfig(priority=push_request.fcm_priority),
                 )
