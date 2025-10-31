@@ -4,8 +4,12 @@ title: Moving to Zulip
 
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import CommunicationPolicies from "../include/_CommunicationPolicies.mdx";
+import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
 import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import SignUpForAPlan from "../include/_SignUpForAPlan.mdx";
 
 Welcome to Zulip! This page will guide you through the process of transitioning
 your organization to Zulip. It assumes that you have [completed your initial
@@ -79,55 +83,13 @@ Zulip.
 
 ## Sign up for a plan
 
-If you require features that are not available on [Zulip Cloud
-Free](https://zulip.com/plans/#cloud) or the [Zulip
-Free](https://zulip.com/plans/#self-hosted) plan for self-hosted organizations,
-you will need to upgrade your plan.
-
-<Tabs>
-  <TabItem label="Zulip Cloud">
-    <Steps>
-      1. Follow the
-         [instructions](/help/zulip-cloud-billing#upgrade-to-a-zulip-cloud-standard-or-plus-plan)
-         to upgrade to a Zulip Cloud Standard or Plus plan. If your organization may
-         be
-         [eligible](/help/zulip-cloud-billing#free-and-discounted-zulip-cloud-standard)
-         for a free or discounted plan, you can [apply for
-         sponsorship](/help/zulip-cloud-billing#apply-for-sponsorship).
-    </Steps>
-  </TabItem>
-
-  <TabItem label="Self hosting">
-    <Steps>
-      1. Follow the [instructions](/help/self-hosted-billing#upgrade-to-a-paid-plan)
-         to upgrade to a Zulip Basic or Zulip Business plan. If your organization may
-         be [eligible](/help/self-hosted-billing#free-community-plan) for a free or
-         discounted plan, you can [apply for
-         sponsorship](/help/self-hosted-billing#apply-for-community-plan). To inquire
-         about Zulip Enterprise, please reach out to
-         [sales@zulip.com](mailto:sales@zulip.com).
-    </Steps>
-  </TabItem>
-</Tabs>
+<SignUpForAPlan />
 
 ## Configure your organization
 
-<Steps>
-  1. [Create your organization profile](/help/create-your-organization-profile),
-     which is displayed on your organization's registration and login pages.
-  1. [Create user groups](/help/create-user-groups), which offer a flexible way to
-     manage permissions.
-  1. Review [organization permissions](/help/manage-permissions), such as who
-     can invite users, create channels, etc.
-  1. If your organization uses an issue tracker (e.g., GitHub, Salesforce,
-     Zendesk, Jira, etc.), configure [linkifiers](/help/add-a-custom-linkifier) to
-     automatically turn issue numbers (e.g., #2468) into links.
-  1. Set up [custom profile fields](/help/custom-profile-fields), which make it
-     easy for users to share information, such as their pronouns, job title, or
-     team.
-  1. Review [default user settings](/help/configure-default-new-user-settings),
-     including language, [default visibility for email
-     addresses](/help/configure-email-visibility), and notification preferences.
+<FlattenedSteps>
+  <ConfigureYourOrganization />
+
   1. [Create channels](/help/create-channels), unless you've imported
      channels from another app. Zulip's [topics](/help/introduction-to-topics)
      give each conversation its own space, so one channel per team should be
@@ -137,30 +99,11 @@ you will need to upgrade your plan.
      [Slack-compatible incoming
      webhook](https://zulip.com/integrations/doc/slack_incoming) makes it easy to
      move your integrations when migrating an organization from Slack to Zulip.
-</Steps>
+</FlattenedSteps>
 
 ## Review and update communication policies
 
-Consider updating your organization's communication policies and best
-practice recommendations to take advantage of Zulip's organized
-conversations:
-
-* Many organizations find that with Zulip, there’s no longer a reason to use
-  email for internal communications. You get the organization of an email
-  [inbox](/help/inbox) together with all the features of a modern chat app,
-  like instant delivery of messages, emoji reactions, typing notifications,
-  @-mentions, and more.
-* Because Zulip further organizes messages into conversations labeled with
-  [topics](/help/introduction-to-topics), there is generally no need to create
-  dedicated channels for specific projects.
-* With conversations organized by topic, you can review prior discussions to
-  understand past work, explanations, and decisions — your chat history
-  becomes a knowledge base. Should it be standard practice to link to Zulip
-  conversations from docs, issue trackers, etc. for additional context?
-* Using Zulip, you can discuss complex topics and make decisions with input
-  from all stakeholders, without the overhead of scheduling meeting. Are
-  there standing meetings you might not need? For example, stand-ups can be
-  replaced with dedicated check-in topics for each team member.
+<CommunicationPolicies />
 
 ## Prepare users for the transition
 
