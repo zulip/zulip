@@ -28,13 +28,15 @@
 # deletions.
 import logging
 import time
+from collections import defaultdict
 from collections.abc import Iterable, Mapping
-from datetime import timedelta
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any
 
 from django.conf import settings
 from django.db import connection, transaction
-from django.db.models import Model
+from django.db.models import Max, Min, Model
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 
@@ -55,6 +57,7 @@ from zerver.models import (
     SubMessage,
     UserMessage,
 )
+from zerver.models.recipients import DirectMessageGroup
 
 logger = logging.getLogger("zulip.retention")
 log_to_file(logger, settings.RETENTION_LOG_PATH)
@@ -89,6 +92,12 @@ models_with_message_key: list[dict[str, Any]] = [
 ]
 
 EXCLUDE_FIELDS = {Message._meta.get_field("search_tsvector")}
+
+
+@dataclass
+class DirectMessageGroupArchiveData:
+    recipient_id: int
+    archived_message_count: int
 
 
 @transaction.atomic(savepoint=False)
@@ -192,6 +201,13 @@ def move_expired_messages_to_archive_by_recipient(
     chunk_size: int = MESSAGE_BATCH_SIZE,
 ) -> int:
     assert message_retention_days != -1
+    check_date = timezone_now() - timedelta(days=message_retention_days)
+
+    if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        archive_data, message_ids = extract_dm_group_archive_data_by_check_date(
+            realm, check_date, recipient
+        )
+        update_direct_message_group_stats_of_archived_messages(message_ids, archive_data)
 
     # Uses index: zerver_message_realm_recipient_date_sent
     query = SQL(
@@ -207,7 +223,6 @@ def move_expired_messages_to_archive_by_recipient(
     RETURNING id
     """
     )
-    check_date = timezone_now() - timedelta(days=message_retention_days)
 
     return run_archiving(
         query,
@@ -227,6 +242,9 @@ def move_expired_direct_messages_to_archive(
     message_retention_days = realm.message_retention_days
     assert message_retention_days != -1
     check_date = timezone_now() - timedelta(days=message_retention_days)
+
+    archive_data, message_ids = extract_dm_group_archive_data_by_check_date(realm, check_date)
+    update_direct_message_group_stats_of_archived_messages(message_ids, archive_data)
 
     # Archive expired direct Messages in the realm, including cross-realm messages.
     # Uses index: zerver_message_realm_date_sent
@@ -463,6 +481,9 @@ def move_messages_to_archive(
     ordered, as that'll allow better performance here by keeping the batches that'll be sent to the database
     ordered rather than randomly scattered.
     """
+    archive_data = extract_dm_group_archive_data_by_message_ids(message_ids, chunk_size)
+    update_direct_message_group_stats_of_archived_messages(message_ids, archive_data)
+
     count = 0
     # In order to avoid sending a massive list of message ids to the database,
     # we'll handle chunking the list of ids directly here.
@@ -500,6 +521,158 @@ def move_messages_to_archive(
 
     if count == 0:
         raise Message.DoesNotExist
+
+
+def extract_dm_group_archive_data_by_message_ids(
+    message_ids: list[int],
+    chunk_size: int = MESSAGE_BATCH_SIZE,
+) -> dict[int, DirectMessageGroupArchiveData]:
+    archive_data: dict[int, DirectMessageGroupArchiveData] = {}
+
+    # Process in chunks to avoid overwhelming the database
+    message_ids_head = message_ids
+    while message_ids_head:
+        message_ids_chunk = message_ids_head[0:chunk_size]
+        message_ids_head = message_ids_head[chunk_size:]
+
+        affected_recipients = Message.objects.filter(
+            id__in=message_ids_chunk,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        ).values_list("recipient_id", "recipient__type_id")
+
+        for recipient_id, dm_group_id in affected_recipients:
+            if dm_group_id not in archive_data:
+                archive_data[dm_group_id] = DirectMessageGroupArchiveData(
+                    recipient_id=recipient_id,
+                    archived_message_count=0,
+                )
+            archive_data[dm_group_id].archived_message_count += 1
+
+    return archive_data
+
+
+def extract_dm_group_archive_data_by_check_date(
+    realm: Realm,
+    check_date: datetime,
+    recipient: Recipient | None = None,
+) -> tuple[dict[int, DirectMessageGroupArchiveData], list[int]]:
+    archive_data: dict[int, DirectMessageGroupArchiveData] = {}
+    archived_message_ids: list[int] = []
+
+    query = Message.objects.filter(realm_id=realm.id, date_sent__lt=check_date)
+    if recipient:
+        assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        query = query.filter(recipient_id=recipient.id)
+    else:
+        query = query.filter(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
+
+    affected_recipients = query.values_list("id", "recipient_id", "recipient__type_id")
+
+    for message_id, recipient_id, dm_group_id in affected_recipients:
+        if dm_group_id not in archive_data:
+            archive_data[dm_group_id] = DirectMessageGroupArchiveData(
+                recipient_id=recipient_id,
+                archived_message_count=0,
+            )
+        archive_data[dm_group_id].archived_message_count += 1
+        archived_message_ids.append(message_id)
+
+    return archive_data, archived_message_ids
+
+
+def update_direct_message_group_stats_of_archived_messages(
+    archived_message_ids: list[int],
+    archive_data: dict[int, DirectMessageGroupArchiveData],
+) -> None:
+    if not archive_data:
+        return
+
+    # Convert to set for O(1) lookup performance
+    archived_message_ids_set = set(archived_message_ids)
+    recipient_ids_needing_stat_update = []
+
+    dm_group_ids = list(archive_data.keys())
+    dm_groups = DirectMessageGroup.objects.filter(id__in=dm_group_ids)
+
+    for dm_group in dm_groups:
+        dm_group.total_messages -= archive_data[dm_group.id].archived_message_count
+
+        # Skip updating first or last message IDs if the DM group
+        # will have no remaining messages, as they will be set to
+        # None during the bulk update operation
+        needs_first_message_update = (
+            dm_group.first_message_id in archived_message_ids_set and dm_group.total_messages > 0
+        )
+        needs_last_message_update = (
+            dm_group.last_message_id in archived_message_ids_set and dm_group.total_messages > 0
+        )
+
+        if needs_first_message_update or needs_last_message_update:
+            recipient_ids_needing_stat_update.append(archive_data[dm_group.id].recipient_id)
+
+    if recipient_ids_needing_stat_update:
+        stat_records = (
+            Message.objects.select_related("recipient")
+            .exclude(id__in=archived_message_ids_set)
+            .filter(recipient_id__in=recipient_ids_needing_stat_update)
+            .values("recipient__type_id")
+            .annotate(min_message_id=Min("id"), max_message_id=Max("id"))
+            .values_list("recipient__type_id", "min_message_id", "max_message_id")
+        )
+
+        stat_map = {dm_group_id: (min_id, max_id) for dm_group_id, min_id, max_id in stat_records}
+
+        for dm_group in dm_groups:
+            if dm_group.id in stat_map:
+                min_message_id, max_message_id = stat_map[dm_group.id]
+                dm_group.first_message_id = min_message_id
+                dm_group.last_message_id = max_message_id
+
+    DirectMessageGroup.objects.bulk_update(
+        dm_groups, ["first_message_id", "last_message_id", "total_messages"]
+    )
+
+
+def update_direct_message_group_stats_of_restored_messages(
+    message_ids: list[int], chunk_size: int = MESSAGE_BATCH_SIZE
+) -> None:
+    # a map from direct message group id to set of restored message ids
+    restore_data: defaultdict[int, set[int]] = defaultdict(set)
+
+    # Process in chunks to avoid overwhelming the database
+    message_ids_head = message_ids
+    while message_ids_head:
+        message_ids_chunk = message_ids_head[0:chunk_size]
+        message_ids_head = message_ids_head[chunk_size:]
+
+        affected_dm_groups = Message.objects.filter(
+            id__in=message_ids_chunk,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        ).values_list("id", "recipient__type_id")
+
+        for message_id, dm_group_id in affected_dm_groups:
+            restore_data[dm_group_id].add(message_id)
+
+    if not restore_data:
+        return
+
+    dm_group_ids = list(restore_data.keys())
+    dm_groups = DirectMessageGroup.objects.filter(id__in=dm_group_ids)
+
+    for dm_group in dm_groups:
+        restored_message_ids = restore_data[dm_group.id]
+        dm_group.total_messages += len(restored_message_ids)
+        min_restored_message_id = min(restored_message_ids)
+        max_restored_message_id = max(restored_message_ids)
+
+        if dm_group.first_message_id is None or dm_group.first_message_id > min_restored_message_id:
+            dm_group.first_message_id = min_restored_message_id
+        if dm_group.last_message_id is None or dm_group.last_message_id < max_restored_message_id:
+            dm_group.last_message_id = max_restored_message_id
+
+    DirectMessageGroup.objects.bulk_update(
+        dm_groups, ["first_message_id", "last_message_id", "total_messages"]
+    )
 
 
 def restore_messages_from_archive(archive_transaction_id: int) -> list[int]:
@@ -594,6 +767,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
     # the block ends.
     with transaction.atomic(durable=True):
         msg_ids = restore_messages_from_archive(archive_transaction.id)
+        update_direct_message_group_stats_of_restored_messages(msg_ids)
         restore_models_with_message_key_from_archive(archive_transaction.id)
         restore_attachments_from_archive(archive_transaction.id)
         restore_attachment_messages_from_archive(archive_transaction.id)

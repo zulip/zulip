@@ -14,6 +14,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 
 if TYPE_CHECKING:
@@ -914,7 +915,35 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertEqual(stream.first_message_id, message_ids[1])
 
         all_messages = Message.objects.filter(id__in=message_ids)
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(28):
             do_delete_messages(realm, all_messages, acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, None)
+
+    def test_update_first_message_id_on_group_direct_message_deletion(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        realm = cordelia.realm
+
+        message_ids = [self.send_group_direct_message(cordelia, [hamlet, iago]) for _ in range(5)]
+        first_message_id = message_ids[0]
+
+        dm_group = get_or_create_direct_message_group([cordelia.id, hamlet.id, iago.id])
+        self.assertEqual(dm_group.first_message_id, first_message_id)
+
+        message = Message.objects.get(id=message_ids[2])
+        do_delete_messages(realm, [message], acting_user=None)
+        dm_group = get_or_create_direct_message_group([cordelia.id, hamlet.id, iago.id])
+        self.assertEqual(dm_group.first_message_id, first_message_id)
+
+        first_message = Message.objects.get(id=first_message_id)
+        do_delete_messages(realm, [first_message], acting_user=None)
+        dm_group = get_or_create_direct_message_group([cordelia.id, hamlet.id, iago.id])
+        self.assertEqual(dm_group.first_message_id, message_ids[1])
+
+        remaining_messages = Message.objects.filter(id__in=message_ids)
+        with self.assert_database_query_count(28):
+            do_delete_messages(cordelia.realm, remaining_messages, acting_user=None)
+        dm_group = get_or_create_direct_message_group([cordelia.id, hamlet.id, iago.id])
+        self.assertIsNone(dm_group.first_message_id)

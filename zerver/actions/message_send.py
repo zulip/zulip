@@ -112,7 +112,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
-from zerver.models.recipients import get_direct_message_group_user_ids
+from zerver.models.recipients import DirectMessageGroup, get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
@@ -991,6 +991,8 @@ def do_send_messages(
 
     bulk_insert_ums(ums)
 
+    update_direct_message_group_stats(send_message_requests)
+
     for send_request in send_message_requests:
         do_widget_post_save_actions(send_request)
 
@@ -1306,6 +1308,42 @@ def do_send_messages(
         for send_request in send_message_requests
     ]
     return sent_message_results
+
+
+def update_direct_message_group_stats(send_message_requests: Sequence[SendMessageRequest]) -> None:
+    """Update first_message, last_message, and total_messages for DirectMessageGroups."""
+    # Sort send_requests by message ID to ensure correct ordering when
+    # multiple messages are sent to the same DM group
+    dm_group_send_requests = [
+        send_request
+        for send_request in send_message_requests
+        if send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+    ]
+    dm_group_send_requests.sort(key=lambda req: req.message.id)
+
+    if not dm_group_send_requests:
+        return
+
+    direct_message_group_ids = [
+        send_request.message.recipient.type_id for send_request in dm_group_send_requests
+    ]
+
+    # Fetch DirectMessageGroups with explicit ordering to prevent deadlocks
+    direct_message_groups = DirectMessageGroup.objects.filter(
+        id__in=direct_message_group_ids
+    ).order_by("id")
+    direct_message_group_map = {dmg.id: dmg for dmg in direct_message_groups}
+
+    for send_request in dm_group_send_requests:
+        direct_message_group = direct_message_group_map[send_request.message.recipient.type_id]
+        if direct_message_group.first_message_id is None:
+            direct_message_group.first_message_id = send_request.message.id
+        direct_message_group.last_message_id = send_request.message.id
+        direct_message_group.total_messages += 1
+
+    DirectMessageGroup.objects.bulk_update(
+        direct_message_groups, ["first_message_id", "last_message_id", "total_messages"]
+    )
 
 
 def extract_stream_indicator(s: str) -> str | int:
