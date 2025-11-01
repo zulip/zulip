@@ -51,6 +51,7 @@ function update_widget_for_stream(stream_id: number): void {
 
 export function clear(): void {
     popover_menus.get_topic_menu_popover()?.hide();
+    topic_filter_pill_widget?.clear(true);
 
     for (const widget of active_widgets.values()) {
         widget.remove();
@@ -80,6 +81,10 @@ export function zoom_out(): void {
     const widget = active_widgets.get(stream_id);
     assert(widget !== undefined);
     const parent_widget = widget.get_parent();
+
+    // Reset the resolved topic filter since we moved away
+    // from the view.
+    topic_filter_pill_widget?.clear(true);
 
     rebuild_left_sidebar(parent_widget, stream_id);
 }
