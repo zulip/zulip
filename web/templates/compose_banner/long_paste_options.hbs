@@ -1,0 +1,14 @@
+<div
+  class="main-view-banner {{banner_type}} {{classname}}">
+    <div class="main-view-banner-elements-wrapper">
+        {{#if show_paste_button}}
+        <div class="banner_content">{{t 'Do you want to paste directly into the compose box, or convert the pasted text into a file?'}}</div>
+        <button class="main-view-banner-action-button paste-to-compose">{{t 'Paste'}}</button>
+        <button class="main-view-banner-action-button convert-to-file secondary-button right_edge">{{t 'Convert'}}</button>
+        {{else}}
+        <div class="banner_content">{{t 'Do you want to convert the pasted text into a file?'}}</div>
+        <button class="main-view-banner-action-button convert-to-file right_edge">{{t 'Yes, convert'}}</button>
+        {{/if}}
+    </div>
+    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
+</div>
