@@ -1632,10 +1632,6 @@ label.preferences-radio-choice-label {
             background-color: hsl(0deg 0% 0% / 2%);
         }
     }
-
-    .preferences-settings-form select {
-        width: var(--modal-input-width);
-    }
 }
 
 .time-limit-custom-input,
