@@ -106,6 +106,7 @@ from zproject.backends import (
     sync_groups_for_prereg_user,
     validate_otp_params,
 )
+from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -712,23 +713,33 @@ def start_social_login(
     extra_arg: str | None = None,
 ) -> HttpResponse:
     extra_url_params: dict[str, str] = {}
-    if backend == "saml":
-        if not SAMLAuthBackend.check_config():
-            return config_error(request, "saml")
+    if backend in ["saml", "oidc"]:
+        idps_settings_dict: dict[str, SAMLIdPConfigDict] | dict[str, OIDCIdPConfigDict]
+        match backend:
+            case "saml":
+                if not SAMLAuthBackend.check_config():
+                    return config_error(request, "saml")
+                idps_settings_dict = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS
+            case "oidc":
+                if not GenericOpenIdConnectBackend.check_config():
+                    return config_error(request, "oidc")
+                idps_settings_dict = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS
+            case _:
+                raise AssertionError
 
-        # This backend requires the name of the IdP (from the list of configured ones)
+        # These backends require the name of the IdP (from the list of configured ones)
         # to be passed as the parameter.
-        if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
+        if not extra_arg or extra_arg not in idps_settings_dict:
             logging.info(
-                "Attempted to initiate SAML authentication with wrong idp argument: %s", extra_arg
+                "Attempted to initiate %s authentication with wrong idp argument: %s",
+                backend,
+                extra_arg,
             )
-            return config_error(request, "saml")
+            return config_error(request, backend)
         extra_url_params = {"idp": extra_arg}
 
     if backend == "apple" and not AppleAuthBackend.check_config():
         return config_error(request, "apple")
-    if backend == "oidc" and not GenericOpenIdConnectBackend.check_config():
-        return config_error(request, "oidc")
 
     # TODO: Add AzureAD also.
     if backend in ["github", "google", "gitlab"]:
