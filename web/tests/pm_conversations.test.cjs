@@ -81,11 +81,11 @@ test("insert_recent_private_message", () => {
 
     // Base data
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 100},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "1", max_message_id: 100, count: 0},
+        {user_ids_string: "3", max_message_id: 99, count: 0},
+        {user_ids_string: "1,2", max_message_id: 98, count: 0},
+        {user_ids_string: "1,2,3", max_message_id: 97, count: 0},
+        {user_ids_string: "15", max_message_id: 96, count: 0},
     ]);
 
     // Insert new messages (which should rearrange these entries).
@@ -98,11 +98,11 @@ test("insert_recent_private_message", () => {
     pmc.recent.insert([1], 555);
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 1000},
-        {user_ids_string: "1,2,3", max_message_id: 999},
-        {user_ids_string: "15", max_message_id: 101},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1", max_message_id: 1000, count: 1},
+        {user_ids_string: "1,2,3", max_message_id: 999, count: 1},
+        {user_ids_string: "15", max_message_id: 101, count: 1},
+        {user_ids_string: "3", max_message_id: 99, count: 0},
+        {user_ids_string: "1,2", max_message_id: 98, count: 0},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2,3", "15", "3", "1,2"]);
 });
@@ -112,11 +112,11 @@ test("muted_users", () => {
 
     // Base data
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 100},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "1", max_message_id: 100, count: 0},
+        {user_ids_string: "3", max_message_id: 99, count: 0},
+        {user_ids_string: "1,2", max_message_id: 98, count: 0},
+        {user_ids_string: "1,2,3", max_message_id: 97, count: 0},
+        {user_ids_string: "15", max_message_id: 96, count: 0},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
 
@@ -128,9 +128,9 @@ test("muted_users", () => {
     // 1:1 direct messages in which the other user hasn't been muted.
     // Direct message groups where there's at least one non-muted participant.
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "3", max_message_id: 99, count: 0},
+        {user_ids_string: "1,2,3", max_message_id: 97, count: 0},
+        {user_ids_string: "15", max_message_id: 96, count: 0},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
 });
@@ -154,4 +154,28 @@ test("has_conversation", ({override}) => {
     assert.ok(!pmc.recent.has_conversation("1,3"));
     assert.ok(!pmc.recent.has_conversation("2"));
     assert.ok(!pmc.recent.has_conversation("72"));
+});
+
+test("maybe_remove", () => {
+    pmc.recent.initialize(params);
+
+    assert.deepEqual(pmc.recent.get().length, 5);
+
+    pmc.recent.insert([1], 101);
+    pmc.recent.insert([1], 102);
+
+    pmc.recent.maybe_remove("1", 1);
+    assert.equal(pmc.recent.get().find((c) => c.user_ids_string === "1").count, 1);
+    assert.ok(pmc.recent.has_conversation("1"));
+
+    pmc.recent.maybe_remove("1", 1);
+    assert.ok(!pmc.recent.has_conversation("1"));
+    assert.deepEqual(pmc.recent.get().length, 4);
+
+    // Try to remove non-existent conversation
+    pmc.recent.maybe_remove("999", 1);
+
+    pmc.recent.insert([3], 103);
+    pmc.recent.maybe_remove("3", 10);
+    assert.ok(!pmc.recent.has_conversation("3"));
 });

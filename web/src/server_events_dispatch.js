@@ -41,6 +41,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
@@ -170,6 +171,21 @@ export function dispatch_normal_event(event) {
 
         case "delete_message": {
             const msg_ids = event.message_ids;
+            const num_messages = msg_ids.length;
+
+            // For private messages,we need to get conversation info BEFORE deletion
+            // because message_events.remove_messages() will delete from message_store
+            let pm_user_ids_string = null;
+            if (event.message_type === "private") {
+                const first_message = message_store.get(msg_ids[0]);
+                if (first_message && first_message.type === "private") {
+                    const user_ids = people.pm_with_user_ids(first_message);
+                    if (user_ids) {
+                        pm_user_ids_string = people.pm_lookup_key_from_user_ids(user_ids);
+                    }
+                }
+            }
+
             // message is passed to unread.get_unread_messages,
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
@@ -182,10 +198,14 @@ export function dispatch_normal_event(event) {
                 stream_topic_history.remove_messages({
                     stream_id: event.stream_id,
                     topic_name: event.topic,
-                    num_messages: msg_ids.length,
+                    num_messages,
                     max_removed_msg_id: Math.max(...msg_ids),
                 });
                 stream_list.update_streams_sidebar();
+            } else if (event.message_type === "private" && pm_user_ids_string !== null) {
+                // Update PM list to remove conversations that are now empty.
+                pm_conversations.recent.maybe_remove(pm_user_ids_string, num_messages);
+                pm_list.update_private_messages();
             }
 
             break;

@@ -62,7 +62,11 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             .map((conversation) => conversation.user_ids_string)
             .includes(active_user_ids_string)
     ) {
-        conversations.unshift({user_ids_string: active_user_ids_string, max_message_id: -1});
+        conversations.unshift({
+            user_ids_string: active_user_ids_string,
+            max_message_id: -1,
+            count: 0,
+        });
     }
 
     for (const conversation of conversations) {
