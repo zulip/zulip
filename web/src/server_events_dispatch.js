@@ -310,6 +310,7 @@ export function dispatch_normal_event(event) {
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
                 message_edit_history_visibility_policy: noop,
+                moderation_request_channel_id: noop,
                 move_messages_between_streams_limit_seconds: noop,
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
@@ -742,6 +743,9 @@ export function dispatch_normal_event(event) {
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream_id);
+                        if (realm.realm_moderation_request_channel_id === stream_id) {
+                            settings_org.sync_realm_settings("moderation_request_channel_id");
+                        }
                         if (realm.realm_new_stream_announcements_stream_id === stream_id) {
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }

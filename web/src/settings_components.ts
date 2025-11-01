@@ -491,6 +491,7 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
 }
 
 const dropdown_widget_map = new Map<string, DropdownWidget | null>([
+    ["realm_moderation_request_channel_id", null],
     ["realm_new_stream_announcements_stream_id", null],
     ["realm_signup_announcements_stream_id", null],
     ["realm_zulip_update_announcements_stream_id", null],
@@ -836,6 +837,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_authentication_methods":
             proposed_val = get_input_element_value(elem, "auth-methods");
             break;
+        case "realm_moderation_request_channel_id":
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":

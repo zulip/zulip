@@ -710,6 +710,8 @@ export function initialize(): void {
 
         const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
 
+        const is_moderation_request_channel =
+            stream_id === realm.realm_moderation_request_channel_id;
         const is_new_stream_announcements_stream =
             stream_id === realm.realm_new_stream_announcements_stream_id;
         const is_signup_announcements_stream =
@@ -719,10 +721,12 @@ export function initialize(): void {
         const is_announcement_stream =
             is_new_stream_announcements_stream ||
             is_signup_announcements_stream ||
-            is_zulip_update_announcements_stream;
+            is_zulip_update_announcements_stream ||
+            is_moderation_request_channel;
 
         const html_body = render_settings_deactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
+            is_moderation_request_channel,
             is_new_stream_announcements_stream,
             is_signup_announcements_stream,
             is_zulip_update_announcements_stream,
