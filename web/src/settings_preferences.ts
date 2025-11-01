@@ -1,15 +1,16 @@
 import $ from "jquery";
 import Cookies from "js-cookie";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as emojisets from "./emojisets.ts";
-import * as hash_parser from "./hash_parser.ts";
-import {$t_html, get_language_list_columns, get_language_name} from "./i18n.ts";
+import {$t_html, get_language_list_columns} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
@@ -18,7 +19,6 @@ import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import * as settings_components from "./settings_components.ts";
 import type {RequestOpts} from "./settings_ui.ts";
 import * as settings_ui from "./settings_ui.ts";
-import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import {user_settings, user_settings_schema} from "./user_settings.ts";
 import type {UserSettings} from "./user_settings.ts";
@@ -47,12 +47,7 @@ const meta = {
 };
 
 export let user_settings_panel: SettingsPanel;
-
-export let user_default_language_name: string | undefined;
-
-export function set_default_language_name(name: string | undefined): void {
-    user_default_language_name = name;
-}
+let default_language_dropdown_widget: dropdown_widget.DropdownWidget;
 
 function change_display_setting(
     data: Record<string, string | boolean | number>,
@@ -105,87 +100,8 @@ function spectator_default_language_modal_post_render(): void {
         });
 }
 
-function org_notification_default_language_modal_post_render(): void {
-    $("#language_selection_modal")
-        .find(".language")
-        .on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dialog_widget.close();
-
-            const $link = $(e.target).closest("a[data-code]");
-            const setting_value = $link.attr("data-code");
-            assert(setting_value !== undefined);
-            const new_language = $link.attr("data-name");
-            assert(new_language !== undefined);
-            const $language_element = $("#org-notifications .language_selection_widget");
-            $language_element.find(".language_selection_button").text(new_language);
-            $language_element.attr("data-language-code", setting_value);
-            settings_components.save_discard_realm_settings_widget_status_handler(
-                $("#org-notifications"),
-            );
-        });
-}
-
-function user_default_language_modal_post_render(): void {
-    $("#language_selection_modal")
-        .find(".language")
-        .on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dialog_widget.close();
-
-            const $link = $(e.target).closest("a[data-code]");
-            const setting_value = $link.attr("data-code");
-            assert(setting_value !== undefined);
-            const data = {default_language: setting_value};
-
-            const new_language = $link.attr("data-name");
-            assert(new_language !== undefined);
-            $("#user-preferences .language_selection_widget .language_selection_button").text(
-                new_language,
-            );
-            $("#user-preferences .language_selection_widget").attr(
-                "data-language-code",
-                setting_value,
-            );
-
-            change_display_setting(
-                data,
-                $("#settings_content").find(".general-settings-status"),
-                undefined,
-                undefined,
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a class='reload_link'>${content_html.join("")}</a>`,
-                    },
-                ),
-                true,
-            );
-        });
-}
-
-function default_language_modal_post_render(): void {
-    if (page_params.is_spectator) {
-        spectator_default_language_modal_post_render();
-    } else if (hash_parser.get_current_hash_category() === "organization") {
-        org_notification_default_language_modal_post_render();
-    } else {
-        user_default_language_modal_post_render();
-    }
-}
-
-export function launch_default_language_setting_modal(): void {
-    let selected_language = user_settings.default_language;
-
-    if (hash_parser.get_current_hash_category() === "organization") {
-        selected_language = realm.realm_default_language;
-    }
+export function launch_default_language_setting_modal_for_spectator(): void {
+    const selected_language = user_settings.default_language;
 
     const html_body = render_dialog_default_language({
         language_list: get_language_list_columns(selected_language),
@@ -199,7 +115,7 @@ export function launch_default_language_setting_modal(): void {
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,
-        post_render: default_language_modal_post_render,
+        post_render: spectator_default_language_modal_post_render,
         on_click() {
             // We perform no actions since the 'close_on_submit' field takes care
             // of closing the modal.
@@ -384,6 +300,8 @@ export function set_up(settings_panel: SettingsPanel): void {
             },
         });
     });
+
+    render_language_dropdown_widget();
 }
 
 export async function report_emojiset_change(settings_panel: SettingsPanel): Promise<void> {
@@ -435,13 +353,6 @@ export function update_page(property: UserSettingsProperty): void {
     const $container = $(user_settings_panel.container);
     let value = user_settings[property];
 
-    // The default_language button text updates to the language
-    // name and not the value of the user_settings property.
-    if (property === "default_language") {
-        $container.find(".language_selection_button").text(user_default_language_name ?? "");
-        return;
-    }
-
     // settings_org.set_input_element_value doesn't support radio
     // button widgets like these.
     if (property === "emojiset" || property === "user_list_style") {
@@ -460,10 +371,57 @@ export function update_page(property: UserSettingsProperty): void {
     settings_components.set_input_element_value($input_elem, value);
 }
 
-export function initialize(): void {
-    const user_language_name = get_language_name(user_settings.default_language);
-    set_default_language_name(user_language_name);
+function language_select_callback(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    dropdown.hide();
+    event.preventDefault();
+    event.stopPropagation();
+    widget.render();
 
+    const current_value = widget.current_value;
+    assert(current_value !== undefined);
+    const data = {default_language: current_value};
+    change_display_setting(
+        data,
+        $("#settings_content").find(".general-settings-status"),
+        undefined,
+        undefined,
+        $t_html(
+            {
+                defaultMessage:
+                    "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+            },
+            {
+                "z-link": (content_html) => `<a class='reload_link'>${content_html.join("")}</a>`,
+            },
+        ),
+        true,
+    );
+}
+
+export function set_default_language(default_language: string): void {
+    if (!default_language_dropdown_widget) {
+        return;
+    }
+    default_language_dropdown_widget.render(default_language);
+}
+
+function render_language_dropdown_widget(): void {
+    default_language_dropdown_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "default_language",
+        get_options: settings_components.language_options,
+        item_click_callback: language_select_callback,
+        default_id: user_settings.default_language,
+        $events_container: $("#user-preferences .preferences-settings-form"),
+        unique_id_type: "string",
+    });
+    default_language_dropdown_widget.setup();
+}
+
+export function initialize(): void {
     user_settings_panel = {
         container: "#user-preferences",
         settings_object: user_settings,

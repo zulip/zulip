@@ -1156,7 +1156,7 @@ run_test("stream_typing_message_edit", ({override}) => {
 });
 
 run_test("user_settings", ({override}) => {
-    settings_preferences.set_default_language_name = () => {};
+    settings_preferences.set_default_language = () => {};
     let event = event_fixtures.user_settings__default_language;
     override(user_settings, "default_language", "en");
     override(settings_preferences, "update_page", noop);

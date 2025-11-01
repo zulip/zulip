@@ -628,9 +628,11 @@ input[type="checkbox"] {
     margin-top: 0;
 }
 
-.language_selection_widget .language_selection_button {
-    text-decoration: none;
-    min-width: 0;
+.realm_default_language-dropdown-list-container,
+.default_language-dropdown-list-container {
+    /* This is same as saved snippets dropdown's width and
+    also makes all language names fit in the same line. */
+    width: 17.8571em;
 }
 
 #user_enter_sends_label kbd,

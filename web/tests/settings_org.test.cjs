@@ -150,18 +150,18 @@ function test_submit_settings_form(override, submit_form) {
     $save_button_header = stubs.$save_button_header;
     $save_button_header.attr("id", `org-${subsection}`);
 
-    const $realm_default_language_elem = $("#id_realm_default_language");
-    $realm_default_language_elem.val("en");
-    $realm_default_language_elem.attr("id", "id_realm_default_language");
+    const $realm_topics_policy_elem = $("#id_realm_topics_policy");
+    $realm_topics_policy_elem.val("disable_empty_topic");
+    $realm_topics_policy_elem.attr("id", "id_realm_topics_policy");
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
+    $subsection_elem.set_find_results(".prop-element", [$realm_topics_policy_elem]);
 
     submit_form.call({to_$: () => $(".save-button")}, ev);
     assert.ok(patched);
 
     const expected_value = {
-        default_language: "en",
+        topics_policy: "disable_empty_topic",
     };
     assert.deepEqual(data, expected_value);
 
