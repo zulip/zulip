@@ -2487,6 +2487,7 @@ class RealmAPITest(ZulipTestCase):
         bool_tests: list[bool] = [False, True]
         test_values: dict[str, Any] = dict(
             web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
+            week_start_day=[2, 3],
             web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
             web_home_view=["recent_topics", "inbox", "all_messages"],

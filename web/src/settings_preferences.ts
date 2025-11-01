@@ -8,6 +8,7 @@ import render_dialog_default_language from "../templates/default_language_modal.
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as emojisets from "./emojisets.ts";
+import {get_first_day_of_week} from "./flatpickr.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t_html, get_language_list_columns, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
@@ -227,6 +228,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     $container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
+    $container.find(".setting_week_start_day").val(settings_object.week_start_day.toString());
     $container
         .find(".setting_web_mark_read_on_scroll_policy")
         .val(settings_object.web_mark_read_on_scroll_policy);
@@ -435,8 +437,30 @@ export function update_page(property: UserSettingsProperty): void {
     const $container = $(user_settings_panel.container);
     let value = user_settings[property];
 
+    // Refresh flatpickr instance
+    if (property === "week_start_day") {
+        $(".custom_user_field .datepicker").each((_i, el) => {
+            const fpElement =
+                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                el as HTMLElement & {
+                    _flatpickr?: {
+                        set: (key: string, value: unknown) => void;
+                        redraw: () => void;
+                    };
+                };
+
+            const fp = fpElement._flatpickr;
+
+            if (fp) {
+                fp.set("locale", {firstDayOfWeek: get_first_day_of_week()});
+                fp.redraw();
+            }
+        });
+    }
+
     // The default_language button text updates to the language
     // name and not the value of the user_settings property.
+
     if (property === "default_language") {
         $container.find(".language_selection_button").text(user_default_language_name ?? "");
         return;

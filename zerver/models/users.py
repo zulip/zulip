@@ -47,9 +47,11 @@ class UserBaseSettings(models.Model):
     """This abstract class is the container for all preferences/personal
     settings for users that control the behavior of the application.
 
+
     It was extracted from UserProfile to support the RealmUserDefault
     model (i.e. allow individual realms to configure the default
     values of these preferences for new users in their organization).
+
 
     Changing the default value for a field declared here likely
     requires a migration to update all RealmUserDefault rows that had
@@ -76,6 +78,18 @@ class UserBaseSettings(models.Model):
     translate_emoticons = models.BooleanField(default=False)
     display_emoji_reaction_users = models.BooleanField(default=True)
     twenty_four_hour_time = models.BooleanField(default=False)
+    # First day of the week preference (used by web date pickers)
+    WEEK_START_DAY_AUTOMATIC = 1
+    WEEK_START_DAY_SATURDAY = 2
+    WEEK_START_DAY_SUNDAY = 3
+    WEEK_START_DAY_MONDAY = 4
+    WEEK_START_DAY_CHOICES = [
+        WEEK_START_DAY_AUTOMATIC,
+        WEEK_START_DAY_SATURDAY,
+        WEEK_START_DAY_SUNDAY,
+        WEEK_START_DAY_MONDAY,
+    ]
+    week_start_day = models.PositiveSmallIntegerField(default=WEEK_START_DAY_AUTOMATIC)
     starred_message_counts = models.BooleanField(default=True)
     web_suggest_update_timezone = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
@@ -387,6 +401,7 @@ class UserBaseSettings(models.Model):
         resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         web_left_sidebar_unreads_count_summary=bool,
         web_left_sidebar_show_channel_folders=bool,
+        week_start_day=int,
     )
 
     modern_notification_settings = dict(
@@ -1057,6 +1072,7 @@ def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[Us
     it has the same security caveats.  It gets multiple
     users and returns a QuerySet, since most callers
     will only need two or three fields.
+
 
     If you are using this to get large UserProfile objects, you are
     probably making a mistake, but if you must,
