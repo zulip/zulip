@@ -24,6 +24,7 @@ from django.http import HttpRequest, HttpResponse
 from django.http.request import QueryDict
 from django.http.response import HttpResponseBase
 from django.test import override_settings
+from django.test.client import RequestFactory
 from django.urls import URLResolver, resolve
 from moto.core.decorator import mock_aws
 from mypy_boto3_s3.service_resource import Bucket
@@ -793,6 +794,48 @@ def ratelimit_rule(
 
     with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield
+
+def make_mock_request(
+    method: str = "GET",
+    path: str = "/",
+    user=None,
+    data=None,
+    headers=None,
+    files=None,
+) -> HttpRequest:
+    """
+    Cria um HttpRequest consistente para testes.
+    - Normaliza GET/POST/PUT/PATCH.
+    - Converte headers simples -> META (HTTP_*).
+    - Injeta user e realm quando disponível.
+    - Suporta FILES.
+    """
+    rf = RequestFactory()
+    m = (method or "GET").upper()
+    if m == "POST":
+        req = rf.post(path, data=data or {})
+    elif m == "PUT":
+        req = rf.put(path, data=data or {})
+    elif m == "PATCH":
+        req = rf.patch(path, data=data or {})
+    else:
+        req = rf.get(path, data=data or {})
+
+    # headers -> META
+    for k, v in (headers or {}).items():
+        meta_key = k if k.startswith("HTTP_") else f"HTTP_{k.replace('-', '_').upper()}"
+        req.META[meta_key] = v
+
+    if files:
+        req.FILES.update(files)
+
+    if user is not None:
+        req.user = user
+        req.realm = getattr(user, "realm", None)
+    else:
+        req.realm = None
+
+    return req
 
 
 def consume_response(response: HttpResponseBase) -> None:
