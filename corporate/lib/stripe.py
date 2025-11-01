@@ -3227,6 +3227,32 @@ class BillingSession(ABC):
             invoice_params["days_until_due"] = days_until_due
         return stripe.Invoice.create(**invoice_params)
 
+    def apply_flat_discount_to_invoice(
+        self,
+        plan: CustomerPlan,
+        stripe_invoice: stripe.Invoice,
+        renewal_invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
+    ) -> None:
+        customer_remaining_discounted_months = plan.customer.flat_discounted_months
+        flat_discount = plan.customer.flat_discount
+        assert customer_remaining_discounted_months > 0
+        num_months = 12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+        months = min(customer_remaining_discounted_months, num_months)
+        discount = plan.customer.flat_discount * months
+        plan.customer.flat_discounted_months -= months
+        plan.customer.save(update_fields=["flat_discounted_months"])
+        assert stripe_invoice.id is not None
+        assert plan.customer.stripe_customer_id is not None
+        stripe.InvoiceItem.create(
+            invoice=stripe_invoice.id,
+            currency="usd",
+            customer=plan.customer.stripe_customer_id,
+            description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
+            # Negative value to apply discount.
+            amount=(-1 * discount),
+            period=renewal_invoice_period,
+        )
+
     def invoice_plan(self, plan: CustomerPlan, event_time: datetime) -> None:
         if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_STARTED:
             raise NotImplementedError(
@@ -3351,32 +3377,20 @@ class BillingSession(ABC):
                 plan.invoiced_through = ledger_entry
                 plan.save(update_fields=["invoiced_through"])
 
-            flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
             if stripe_invoice is not None:
                 # Only apply discount if this invoice contains renewal of the plan.
+                # Note that only self-hosted plans have a flat rate discount offer.
                 if (
                     renewal_invoice_period is not None
+                    and not isinstance(self, RealmBillingSession)
                     and plan.fixed_price is None
-                    and flat_discounted_months > 0
+                    and plan.customer.flat_discounted_months > 0
                 ):
-                    assert stripe_invoice.id is not None
-                    num_months = (
-                        12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+                    self.apply_flat_discount_to_invoice(
+                        plan,
+                        stripe_invoice,
+                        renewal_invoice_period,
                     )
-                    flat_discounted_months = min(flat_discounted_months, num_months)
-                    discount = flat_discount * flat_discounted_months
-                    plan.customer.flat_discounted_months -= flat_discounted_months
-                    plan.customer.save(update_fields=["flat_discounted_months"])
-                    stripe.InvoiceItem.create(
-                        invoice=stripe_invoice.id,
-                        currency="usd",
-                        customer=plan.customer.stripe_customer_id,
-                        description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
-                        # Negative value to apply discount.
-                        amount=(-1 * discount),
-                        period=renewal_invoice_period,
-                    )
-
                 stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
