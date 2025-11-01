@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from typing_extensions import Self, override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, INLINE_MIME_TYPES
+from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, INLINE_MIME_TYPES, bare_content_type
 from zerver.lib.queue import queue_event_on_commit
 from zerver.models import Attachment, ImageAttachment
 
@@ -296,7 +296,8 @@ def missing_thumbnails(
         seen_thumbnails.add(StoredThumbnailFormat(**existing_thumbnail))
 
     potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
-    if image_attachment.content_type not in INLINE_MIME_TYPES:
+    assert image_attachment.content_type
+    if bare_content_type(image_attachment.content_type) not in INLINE_MIME_TYPES:
         if image_attachment.original_width_px >= image_attachment.original_height_px:
             additional_format = ThumbnailFormat(
                 TRANSCODED_IMAGE_FORMAT.extension,
@@ -342,7 +343,7 @@ def maybe_thumbnail(
     realm_id: int,
     skip_events: bool = False,
 ) -> ImageAttachment | None:
-    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+    if content_type is None or bare_content_type(content_type) not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         # If it doesn't self-report as an image file that we might want
         # to thumbnail, don't parse the bytes at all.
         return None
@@ -475,7 +476,8 @@ def get_user_upload_previews(
     audio_path_ids = {
         attachment.path_id
         for attachment in non_image_attachments
-        if attachment.content_type in AUDIO_INLINE_MIME_TYPES
+        if attachment.content_type
+        and bare_content_type(attachment.content_type) in AUDIO_INLINE_MIME_TYPES
     }
 
     return AttachmentData(
@@ -514,7 +516,10 @@ def get_transcoded_format(
     # not in INLINE_MIME_TYPES get an extra large-resolution thumbnail
     # added to their list of formats, this is thus either None or a
     # high-resolution thumbnail.
-    if image_attachment.content_type is None or image_attachment.content_type in INLINE_MIME_TYPES:
+    if (
+        image_attachment.content_type is None
+        or bare_content_type(image_attachment.content_type) in INLINE_MIME_TYPES
+    ):
         return None
 
     thumbs_by_size = sorted(

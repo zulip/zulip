@@ -14,7 +14,7 @@ from django.conf import settings
 from django.utils.http import content_disposition_header
 from typing_extensions import override
 
-from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type
 from zerver.lib.partial import partial
 from zerver.lib.thumbnail import resize_logo, resize_realm_icon
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
@@ -91,6 +91,7 @@ def upload_content_to_s3(
     cache_control: str | None = None,
     extra_metadata: dict[str, str] | None = None,
     filename: str | None = None,
+    target_realm: Realm | None = None,
 ) -> None:
     # Note that these steps are also replicated in
     # handle_upload_pre_finish_hook in zerver.views.tus, to update
@@ -101,13 +102,15 @@ def upload_content_to_s3(
     if user_profile:
         metadata["user_profile_id"] = str(user_profile.id)
         metadata["realm_id"] = str(user_profile.realm_id)
+    if target_realm:
+        metadata["realm_id"] = str(target_realm.id)
     if extra_metadata is not None:
         metadata.update(extra_metadata)
 
     extras = {}
     if content_type is None:  # nocoverage
         content_type = ""
-    is_attachment = content_type not in INLINE_MIME_TYPES
+    is_attachment = bare_content_type(content_type) not in INLINE_MIME_TYPES
     if filename is not None:
         extras["ContentDisposition"] = content_disposition_header(is_attachment, filename)
     elif is_attachment:
@@ -256,6 +259,7 @@ class S3UploadBackend(ZulipUploadBackend):
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
+        target_realm: Realm | None,
     ) -> None:
         upload_content_to_s3(
             self.uploads_bucket,
@@ -265,6 +269,7 @@ class S3UploadBackend(ZulipUploadBackend):
             file_data,
             storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
             filename=filename,
+            target_realm=target_realm,
         )
 
     @override
