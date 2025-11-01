@@ -9,6 +9,7 @@ supported by Zulip are:
   100% open source video conferencing solution.
 - [Zoom](https://zulip.com/integrations/doc/zoom)
 - [BigBlueButton](https://zulip.com/integrations/doc/big-blue-button)
+- [Nextcloud Talk](https://zulip.com/integrations/doc/nextcloud-talk)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
@@ -161,3 +162,51 @@ This enables BigBlueButton support in your Zulip server. Finally, [configure
 BigBlueButton as the video call
 provider](https://zulip.com/help/configure-call-provider)
 in the Zulip organizations where you want to use it.
+
+## Nextcloud Talk
+
+To use the [Nextcloud Talk](https://nextcloud.com/talk/) video call
+integration on a self-hosted Zulip installation, you'll need to have access to a
+Nextcloud server (version 20+) with the Talk app enabled and configure it:
+
+1. Log into your Nextcloud server with a dedicated user account that will be
+   used for creating video call rooms. This can be a regular user account or
+   a dedicated service account.
+
+2. Create an app password for API access:
+
+   - Go to **Settings** → **Security** → **Devices & sessions**
+   - In the "App name" field at the bottom of the page, enter a name like
+     "Zulip Integration"
+   - Click **Create new app password**
+   - Copy the generated app password
+
+3. Get your Nextcloud server URL. This should be the base URL of your
+   Nextcloud installation (e.g., `https://nextcloud.example.com`).
+
+You can then configure your Zulip server to use that Nextcloud Talk
+server as follows:
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `nextcloud_talk_password`
+   to be the app password you generated in step 2 above.
+
+2. In `/etc/zulip/settings.py`, configure the following settings:
+
+   ```python
+   NEXTCLOUD_SERVER = "https://nextcloud.example.com"
+   NEXTCLOUD_TALK_USERNAME = "your-nextcloud-username"
+
+   ```
+
+3. Restart the Zulip server with
+   /home/zulip/deployments/current/scripts/restart-server.
+
+This enables Nextcloud Talk support in your Zulip server. Finally, https://zulip.com/help/configure-call-provider
+in the Zulip organizations where you want to use it.
+
+:::{note}
+Zulip creates public Nextcloud Talk conversations that allow guest access
+without authentication. Participants can join by visiting the URL and entering
+their name. This ensures that all Zulip users can join calls regardless of
+whether they have Nextcloud accounts.
+:::

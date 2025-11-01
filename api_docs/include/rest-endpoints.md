@@ -168,3 +168,5 @@
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
+

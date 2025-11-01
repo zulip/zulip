@@ -646,6 +646,10 @@ class Realm(models.Model):
             "name": "Zoom",
             "id": 5,
         },
+        "nextcloud_talk": {
+            "name": "Nextcloud Talk",
+            "id": 6,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -1050,6 +1054,12 @@ class Realm(models.Model):
                 settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is None
                 or settings.VIDEO_ZOOM_CLIENT_ID is None
                 or settings.VIDEO_ZOOM_CLIENT_SECRET is None
+            ):
+                continue
+            if provider == "nextcloud_talk" and (
+                settings.NEXTCLOUD_SERVER is None
+                or settings.NEXTCLOUD_TALK_USERNAME is None
+                or settings.NEXTCLOUD_TALK_PASSWORD is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]
