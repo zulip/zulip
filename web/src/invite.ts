@@ -590,7 +590,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 classname: "setup_tips_banner",
                 ...invite_tips_data,
             };
-            $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
+            $(".invite-user-modal-banners .setup-tips-container").html(
+                render_invite_tips_banner(context),
+            );
         }
 
         const toggler = components.toggle({
