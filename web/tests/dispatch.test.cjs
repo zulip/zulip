@@ -144,6 +144,7 @@ page_params.test_suite = false;
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
 const channel_folders = zrequire("channel_folders");
+const compose_validate = zrequire("compose_validate");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
@@ -641,7 +642,8 @@ run_test("channel_folders", ({override}) => {
     server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
 });
 
-run_test("realm settings", ({override}) => {
+run_test("realm settings", ({override, override_rewire}) => {
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
@@ -656,7 +658,6 @@ run_test("realm settings", ({override}) => {
     override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
     override(compose_recipient, "update_topic_inputbox_on_topics_policy_change", noop);
     override(compose_recipient, "update_compose_area_placeholder_text", noop);
-    override(compose_recipient, "check_posting_policy_for_compose_box", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         with_overrides(({override}) => {
