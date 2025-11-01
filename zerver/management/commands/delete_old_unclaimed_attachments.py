@@ -61,7 +61,7 @@ class Command(ZulipBaseCommand):
             )
 
         if options["for_real"]:
-            do_delete_old_unclaimed_attachments(delta_weeks)
+            do_delete_old_unclaimed_attachments(old_attachments, old_archived_attachments)
             print()
             print("Unclaimed files deleted.")
 
