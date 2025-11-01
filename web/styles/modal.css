@@ -11,7 +11,7 @@
 .modal__overlay {
     position: fixed;
     inset: 0;
-    background: hsl(0deg 0% 0% / 60%);
+    background: var(--color-background-modal-overlay);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -25,41 +25,68 @@
     max-width: calc(100% - 32px);
     max-height: 96%;
     width: 37.1428em; /* 520px at 14px em */
-    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--color-border-modal);
+    border-radius: 7px;
     box-sizing: border-box;
 }
 
 .modal__header {
-    /* 16px 16px 16px 24px at 16px/1em */
-    padding: 1em 1em 1em 1.5em;
     display: grid;
-    /* 1.8em is the shortest round value for heading at which none of
-       the letters of the english alphabet get cut by overflow:hidden
-       at em = 20px
-       29px at 16px/1em = 1.8125 */
+    /* The grid structure uses two grid columns to define the
+       area for the modal close button, with the rightmost column
+       being used for the close button and to also serve as the
+       right padding and the column to its left accounts for the
+       space of modal close button icon width - right padding. */
     grid-template:
-        "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
-        1.8125em;
-    column-gap: 4px;
+        ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
+        ". modal-header-content .                  ." minmax(0, auto)
+        / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
+    background-color: var(--color-background-modal-bar);
+
+    &:has(+ .modal__content) {
+        border-bottom: 1px solid var(--color-border-modal-bar);
+    }
+}
+
+.modal__header-content {
+    grid-area: modal-header-content;
+    /* 10px at 16px/1em */
+    padding: 0.625em 0;
 }
 
 .modal__footer {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    /* 20px 24px at 16px/1em */
-    padding: 1.25em 1.5em;
+    /* 0 16px 12px 16px at 16px/1em */
+    padding: 0 1em 0.75em;
+    background-color: var(--color-background-modal-bar);
+}
+
+.modal__content + .modal__footer {
+    /* These styles apply only when the modal content
+       is present in the modal. */
+    padding: 1em 0.75em; /* 16px 12px at 16px/1em */
+    border-top: 1px solid var(--color-border-modal-bar);
 }
 
 .modal__title {
-    grid-area: heading;
     margin: 0;
-    /* 24px at 16px/1em */
-    font-size: 1.5em;
-    font-weight: 600;
-    line-height: 1.25;
+    /* 20px at 16px/1em */
+    font-size: 1.25em;
+    font-weight: 650;
+    line-height: 1.2; /* 24px at 20px/1em */
     overflow: hidden;
     overflow-wrap: break-word;
+    color: var(--color-modal-heading-text);
+
+    .icon-button {
+        /* 16px icon + 4px padding = 24px icon button,
+           which matches with the line height of the
+           modal title. */
+        padding: 0.25em; /* 4px at 16px/1em */
+    }
 
     .channel-privacy-type-icon {
         /* This pushes back on suspect styles
@@ -90,12 +117,10 @@
 }
 
 .user-profile-name-heading {
-    max-width: 80%;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    /* This line-height is to increase the vertical clickable areas on the icons. */
-    line-height: 1.2727em; /* 28px at 22px font-size at 14px em */
 
     .user-profile-name {
         white-space: nowrap;
@@ -104,31 +129,28 @@
     }
 }
 
-.modal__close {
-    &::before {
-        content: "\2715";
-        color: var(--color-modal-close-button);
-    }
-    background: transparent;
-    border: 0;
+.modal__subheader {
+    margin-top: 0.125em; /* 2px at 16px/1em */
+    line-height: 1.25; /* 20px at 16px/1em */
+    color: var(--color-modal-subheading-text);
+}
 
-    &:hover {
-        background: var(--color-background-modal-close-button-hover);
-    }
+.modal__close {
+    grid-area: modal-close-button;
 }
 
 .modal__content {
     display: flex;
     flex-direction: column;
-    /* 2px 24px at 16px/1em */
-    padding: 0.125em 1.5em;
+    /* 14px 16px at 16px/1em */
+    padding: 0.875em 1em;
     /* Prevent the appearance of a horizontal
        native scrollbar at certain
        info-density/zoom levels. */
     overflow: hidden auto;
-    /* Set a max-width, less the 1.5em of left and right
+    /* Set a max-width, less the 1em of left and right
        padding specified above. */
-    max-width: calc(100% - 3em);
+    max-width: calc(100% - 2em);
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid var(--color-border-modal-footer);
@@ -204,6 +226,275 @@
     color: hsl(0deg 0% 100%) !important;
 }
 
+#user-profile-modal {
+    .modal__header {
+        grid-template:
+            ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
+            ". modal-header-content .                  ." minmax(0, auto)
+            ". modal-tab-switcher   modal-tab-switcher ." minmax(0, auto)
+            / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
+    }
+
+    .modal__container {
+        height: 75dvh;
+    }
+
+    #user-profile-modal-tab-toggle {
+        grid-area: modal-tab-switcher;
+        font-weight: initial;
+        padding-bottom: 0.5em; /* 8px at 16px/1em */
+    }
+
+    .name {
+        color: var(--color-user-profile-field-name);
+        font-weight: 600;
+        margin-right: 10px;
+        overflow-wrap: break-word;
+    }
+
+    .value {
+        vertical-align: top;
+        overflow-wrap: anywhere;
+    }
+
+    #exit-sign {
+        /* 24px at 14px/1em */
+        font-size: 1.7143em;
+        line-height: 1;
+    }
+
+    #profile-tab {
+        margin: 1px 5px 0;
+
+        & li.custom_user_field {
+            display: block;
+        }
+    }
+
+    .top {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    @media (width < $ml_min) {
+        .top {
+            flex-direction: column-reverse;
+        }
+    }
+
+    #avatar {
+        display: inline-block;
+        height: 180px;
+        width: 180px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0deg 0% 100%);
+        }
+    }
+
+    .user-profile-header-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .deactivated-user-icon {
+        vertical-align: middle;
+        font-size: 0.7em;
+    }
+
+    #default-section {
+        vertical-align: top;
+
+        .default-field {
+            margin-bottom: 10px;
+        }
+    }
+
+    & hr {
+        border: 1px solid hsl(0deg 0% 93%);
+        margin: 5px 0;
+    }
+
+    #content {
+        .field-section {
+            margin-bottom: 10px;
+
+            &[data-type="2"] .value {
+                overflow-wrap: break-word;
+            }
+        }
+
+        .rendered_markdown p {
+            margin: 0;
+        }
+    }
+
+    .col-left {
+        padding: 0 10px 0 0;
+    }
+
+    .col-right {
+        width: fit-content;
+    }
+
+    .tab-data {
+        .active {
+            display: block;
+        }
+
+        margin-bottom: 20px;
+    }
+
+    .group-tab-element-header,
+    .stream-tab-element-header {
+        margin: 0;
+        display: inline-block;
+        font-weight: inherit;
+        /* 21px at 14px/1em */
+        font-size: 1.5em;
+    }
+
+    #user-profile-streams-tab {
+        .stream_list_info {
+            margin-bottom: 8px;
+        }
+
+        .user-profile-group-list-alert {
+            margin-bottom: 8px;
+        }
+
+        .stream-privacy {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
+
+        .user_profile_subscribe_widget {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-top: 2px;
+        }
+
+        .dropdown_widget_value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .group-list-top-section,
+    .stream-list-top-section {
+        display: flex;
+        margin-top: 12px;
+        align-items: center;
+        margin-bottom: 5px;
+
+        .group-search-container,
+        .stream-search-container {
+            margin-left: auto;
+            display: grid;
+            grid-template:
+                "search-input clear-search" auto / minmax(0, 1fr)
+                30px;
+        }
+
+        .group-search,
+        .stream-search {
+            grid-column: search-input-start / clear-search-end;
+            grid-row: search-input;
+            padding-right: 28px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin-bottom: 0;
+            /* Override default modal input width, since that overflows.
+               This is 185px (the default "width: unset" width) at 14px/em */
+            width: 13.2142em;
+            /* subtract padding (6px on left and 28px on right) and border (1px each side) */
+            max-width: calc(100% - 36px);
+        }
+
+        .group-search:placeholder-shown + #clear_groups_search,
+        .stream-search:placeholder-shown + #clear_stream_search {
+            visibility: hidden;
+        }
+    }
+
+    .subscription-group-list,
+    .subscription-stream-list {
+        border: 1px solid var(--color-border-user-profile-table);
+        border-radius: 4px;
+        overflow: auto;
+        text-align: left;
+        margin-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+
+        .user-stream-list,
+        .user-group-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
+            border-collapse: collapse;
+
+            & tr {
+                border-bottom: 1px solid var(--color-border-user-profile-table);
+                /* Ensure equal height for rows with a remove-subscription-button and
+                   those without one. */
+                height: 34px;
+
+                &:last-of-type {
+                    border-bottom: none;
+                }
+
+                & td {
+                    padding: 4px 0;
+
+                    &.remove_subscription,
+                    &.remove_member {
+                        padding-right: 10px;
+                    }
+
+                    &.user-profile-channel-row,
+                    &.user-profile-group-row {
+                        text-align: left;
+                        padding-left: 10px;
+
+                        & .user-profile-channel-container {
+                            display: flex;
+                            gap: 3px;
+                        }
+                    }
+                }
+            }
+
+            .remove-button-wrapper {
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
+    }
+
+    .manage-profile-tab-footer:not(.manage-profile-tab-active) {
+        display: none;
+    }
+
+    .empty-list {
+        border: none;
+
+        .empty-table-message {
+            padding: 3em 1em;
+        }
+    }
+}
+
 #user-profile-modal .save-success {
     vertical-align: top;
     background-color: transparent;
@@ -215,6 +506,29 @@
 
     &:not(:empty) {
         border: 1px solid hsl(156deg 30% 50%);
+    }
+}
+
+@media (width < $md_min) {
+    #user-profile-modal {
+        .group-list-top-section,
+        .stream-list-top-section {
+            display: block;
+
+            .header-section {
+                width: 100%;
+            }
+
+            .group-search,
+            .stream-search {
+                margin-bottom: 8px;
+            }
+
+            #clear_groups_search,
+            #clear_stream_search {
+                padding-top: 1px;
+            }
+        }
     }
 }
 
@@ -253,14 +567,6 @@
 
     .modal__header {
         padding-bottom: 0;
-    }
-
-    & hr {
-        margin: 10px 0;
-    }
-
-    .modal__content {
-        padding: 0 24px 8px;
     }
 
     .loading_indicator {
@@ -802,4 +1108,74 @@ ul.modal-options-list {
 #change_user_group_name {
     /* 14px = 2 * 6px + 2 * 1px (6px padding and 1px border on left and right). */
     max-width: calc(100% - 14px);
+}
+
+#confirm_delete_attachments_modal .detached-attachments-modal-list {
+    margin-bottom: 0;
+}
+
+#demo-organization-conversion-modal {
+    .subdomain-setting,
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
+
+#demo_organization_add_email_form {
+    margin-bottom: 0;
+
+    .input-group {
+        margin-bottom: 0.3125em; /* 5px at 16px/1em */
+    }
+
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
+
+#create_bot_form {
+    margin-bottom: 0;
+
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
+
+#start-export-modal #start-export-form {
+    margin-bottom: 0;
+}
+
+#edit-linkifier-form {
+    .linkifier-edit-form,
+    .input-group:last-of-type {
+        margin-bottom: 0;
+    }
+}
+
+.deleted-profile-field-options-list {
+    margin-bottom: 0;
+}
+
+.confirm-unsubscribe-private-stream-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625em; /* 10px at 16px/1em */
+}
+
+#first_stream_created_modal .first-stream-created-instructions-list {
+    margin-bottom: 0;
+}
+
+#confirm_mark_messages_as_read_modal .input-group:last-of-type {
+    margin-bottom: 0;
+}
+
+#change_user_group_name {
+    margin-bottom: 0;
+}
+
+#change_group_info_modal .user-group-info-modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625em; /* 10px at 16px/1em */
 }

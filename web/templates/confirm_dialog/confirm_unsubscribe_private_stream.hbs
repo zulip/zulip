@@ -1,8 +1,10 @@
-{{#unless unsubscribing_other_user}}
-    <p>{{t "Once you leave this channel, you will not be able to rejoin."}}</p>
-{{/unless}}
-{{#if organization_will_lose_content_access}}
-    <p>
-        {{t "Your organization will lose access content in this channel, and nobody will be able to subscribe to it in the future."}}
-    </p>
-{{/if}}
+<div class="confirm-unsubscribe-private-stream-content">
+    {{#unless unsubscribing_other_user}}
+        <span>{{t "Once you leave this channel, you will not be able to rejoin."}}</span>
+    {{/unless}}
+    {{#if organization_will_lose_content_access}}
+        <span>
+            {{t "Your organization will lose access content in this channel, and nobody will be able to subscribe to it in the future."}}
+        </span>
+    {{/if}}
+</div>
