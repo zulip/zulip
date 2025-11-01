@@ -3253,6 +3253,77 @@ class BillingSession(ABC):
             period=renewal_invoice_period,
         )
 
+    def build_renewal_invoice_item_parameters(
+        self,
+        plan: CustomerPlan,
+        ledger_entry: LicenseLedger,
+        stripe_invoice: stripe.Invoice,
+        invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
+    ) -> stripe.params.InvoiceItemCreateParams:
+        assert plan.customer.stripe_customer_id is not None
+        assert stripe_invoice.id is not None
+        invoice_item_params = stripe.params.InvoiceItemCreateParams(
+            customer=plan.customer.stripe_customer_id,
+            currency="usd",
+            discountable=False,
+            idempotency_key=get_idempotency_key(ledger_entry),
+            invoice=stripe_invoice.id,
+            period=invoice_period,
+        )
+        if plan.fixed_price is not None:
+            amount_due = get_amount_due_fixed_price_plan(plan.fixed_price, plan.billing_schedule)
+            invoice_item_params["amount"] = amount_due
+        else:
+            assert plan.price_per_license is not None  # needed for mypy
+            invoice_item_params["unit_amount_decimal"] = str(plan.price_per_license)
+            invoice_item_params["quantity"] = ledger_entry.licenses
+        invoice_item_params["description"] = f"{plan.name} - renewal"
+        return invoice_item_params
+
+    def build_additional_licenses_invoice_item_parameters(
+        self,
+        plan: CustomerPlan,
+        ledger_entry: LicenseLedger,
+        licenses_base: int,
+        stripe_invoice: stripe.Invoice,
+        invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
+    ) -> stripe.params.InvoiceItemCreateParams:
+        assert plan.customer.stripe_customer_id is not None
+        assert stripe_invoice.id is not None
+        invoice_item_params = stripe.params.InvoiceItemCreateParams(
+            customer=plan.customer.stripe_customer_id,
+            currency="usd",
+            discountable=False,
+            idempotency_key=get_idempotency_key(ledger_entry),
+            invoice=stripe_invoice.id,
+            period=invoice_period,
+        )
+        assert plan.price_per_license is not None
+        last_ledger_entry_renewal = (
+            LicenseLedger.objects.filter(
+                plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
+            )
+            .order_by("-id")
+            .first()
+        )
+        assert last_ledger_entry_renewal is not None
+        last_renewal = last_ledger_entry_renewal.event_time
+        billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
+        plan_renewal_or_end_date = get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
+        unit_amount = plan.price_per_license
+        if not plan.is_free_trial():
+            proration_fraction = (plan_renewal_or_end_date - ledger_entry.event_time) / (
+                billing_period_end - last_renewal
+            )
+            unit_amount = int(plan.price_per_license * proration_fraction + 0.5)
+        invoice_item_params["unit_amount_decimal"] = str(unit_amount)
+        invoice_item_params["quantity"] = ledger_entry.licenses - licenses_base
+        invoice_item_params["description"] = "Additional license ({} - {})".format(
+            ledger_entry.event_time.strftime("%b %-d, %Y"),
+            plan_renewal_or_end_date.strftime("%b %-d, %Y"),
+        )
+        return invoice_item_params
+
     def invoice_plan(self, plan: CustomerPlan, event_time: datetime) -> None:
         if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_STARTED:
             raise NotImplementedError(
@@ -3313,7 +3384,6 @@ class BillingSession(ABC):
                     if stripe_invoice is None:
                         stripe_invoice = self.create_stripe_invoice_for_plan(plan)
                     assert stripe_invoice is not None
-                    assert stripe_invoice.id is not None
 
                     invoice_period = stripe.params.InvoiceItemCreateParamsPeriod(
                         start=datetime_to_timestamp(ledger_entry.event_time),
@@ -3322,59 +3392,19 @@ class BillingSession(ABC):
                         ),
                     )
 
-                    # These base parameters are the same for both renewal ledger
-                    # entries and additional license entries.
-                    invoice_item_params = stripe.params.InvoiceItemCreateParams(
-                        customer=plan.customer.stripe_customer_id,
-                        currency="usd",
-                        discountable=False,
-                        idempotency_key=get_idempotency_key(ledger_entry),
-                        invoice=stripe_invoice.id,
-                        period=invoice_period,
-                    )
-
                     if ledger_entry.is_renewal:
                         renewal_invoice_period = invoice_period
-                        if plan.fixed_price is not None:
-                            amount_due = get_amount_due_fixed_price_plan(
-                                plan.fixed_price, plan.billing_schedule
-                            )
-                            invoice_item_params["amount"] = amount_due
-                        else:
-                            assert plan.price_per_license is not None  # needed for mypy
-                            invoice_item_params["unit_amount_decimal"] = str(plan.price_per_license)
-                            invoice_item_params["quantity"] = ledger_entry.licenses
-                        invoice_item_params["description"] = f"{plan.name} - renewal"
+                        invoice_item_params = self.build_renewal_invoice_item_parameters(
+                            plan, ledger_entry, stripe_invoice, invoice_period
+                        )
                     else:
-                        # TODO: Bundle additional licenses by date added.
-                        assert plan.price_per_license is not None
-                        last_ledger_entry_renewal = (
-                            LicenseLedger.objects.filter(
-                                plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
-                            )
-                            .order_by("-id")
-                            .first()
-                        )
-                        assert last_ledger_entry_renewal is not None
+                        # TODO: Bundle additional licenses by date added so that
+                        # we don't exceed the limit of 250 invoice items in Stripe.
                         assert licenses_base is not None
-                        last_renewal = last_ledger_entry_renewal.event_time
-                        billing_period_end = start_of_next_billing_cycle(
-                            plan, ledger_entry.event_time
-                        )
-                        plan_renewal_or_end_date = get_plan_renewal_or_end_date(
-                            plan, ledger_entry.event_time
-                        )
-                        unit_amount = plan.price_per_license
-                        if not plan.is_free_trial():
-                            proration_fraction = (
-                                plan_renewal_or_end_date - ledger_entry.event_time
-                            ) / (billing_period_end - last_renewal)
-                            unit_amount = int(plan.price_per_license * proration_fraction + 0.5)
-                        invoice_item_params["unit_amount_decimal"] = str(unit_amount)
-                        invoice_item_params["quantity"] = ledger_entry.licenses - licenses_base
-                        invoice_item_params["description"] = "Additional license ({} - {})".format(
-                            ledger_entry.event_time.strftime("%b %-d, %Y"),
-                            plan_renewal_or_end_date.strftime("%b %-d, %Y"),
+                        invoice_item_params = (
+                            self.build_additional_licenses_invoice_item_parameters(
+                                plan, ledger_entry, licenses_base, stripe_invoice, invoice_period
+                            )
                         )
 
                     stripe.InvoiceItem.create(**invoice_item_params)
