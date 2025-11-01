@@ -810,6 +810,10 @@ input[type="checkbox"] {
     border: none;
 }
 
+.user_timezone-dropdown-list-container {
+    width: calc(var(--modal-input-width));
+}
+
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
