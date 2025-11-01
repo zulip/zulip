@@ -220,22 +220,6 @@ export function initialize(): void {
     // selection function which will open the compose box  and select the message.
     if (!util.is_mobile()) {
         $("#main_div").on("click", ".messagebox", select_message_function);
-        // on the other hand, on mobile it should be done with a long tap.
-    } else {
-        $("#main_div").on("longtap", ".messagebox", function (this: HTMLElement, e) {
-            const sel = window.getSelection();
-            // if one matches, remove the current selections.
-            // after a longtap that is valid, there should be no text selected.
-            if (sel) {
-                if (sel.removeAllRanges) {
-                    sel.removeAllRanges();
-                } else if (sel.empty) {
-                    sel.empty();
-                }
-            }
-
-            select_message_function.call(this, e);
-        });
     }
 
     $("#main_div").on("click", ".star_container", function (e) {
