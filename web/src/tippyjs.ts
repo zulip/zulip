@@ -305,7 +305,6 @@ export function initialize(): void {
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",
-            "#copy_generated_invite_link",
             ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
@@ -472,6 +471,21 @@ export function initialize(): void {
             defaultMessage:
                 "You do not have permissions to create invite links in this organization.",
         }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#copy_generated_invite_link",
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage: "Copy link",
+                }),
+            );
+        },
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

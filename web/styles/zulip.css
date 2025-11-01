@@ -765,17 +765,6 @@ li,
     outline: 1px solid var(--color-copy-button-square-bg-active);
 }
 
-#copy_generated_link_container {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-}
-
-#copy_generated_invite_link {
-    position: relative;
-    right: -30px;
-}
-
 /* Classes for hiding and showing controls */
 
 .notdisplayed {
@@ -1351,13 +1340,22 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-#multiuse_invite_link {
-    width: 100%;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: bottom;
+.copy-invite-link-banner {
+    .banner-content {
+        white-space: nowrap;
+    }
+
+    .banner-label {
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+@container banner (width >= 25em) {
+    #copy_generated_invite_link .action-button-label {
+        display: none;
+    }
 }
 
 #invite-user-form .loading_indicator_spinner {
