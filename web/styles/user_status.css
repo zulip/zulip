@@ -100,4 +100,8 @@
             }
         }
     }
+
+    .scheduled-end-time-container {
+        margin-top: 1.25em;
+    }
 }

@@ -63,6 +63,7 @@ export function initialize(): void {
                     status_text: "",
                     emoji_name: "",
                     emoji_code: "",
+                    scheduled_end_time: JSON.stringify(null),
                     success() {
                         popover_menus.hide_current_popover_if_visible(instance);
                     },
