@@ -478,7 +478,7 @@ documentation in `zerver/openapi/zulip.yaml`, for example:
                       # uri:
                       #   type: string
                       #   description: |
-                      #     The URI of the uploaded file.
+                      #     The URL of the uploaded file.
                     example:
                       {
                         "msg": "",

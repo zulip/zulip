@@ -156,7 +156,7 @@ function show_home_view(): void {
 function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean): boolean {
     message_viewport.stop_auto_scrolling();
 
-    // NB: In Firefox, window.location.hash is URI-decoded.
+    // NB: In Firefox, window.location.hash is URL-decoded.
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
     const hash = window.location.hash.split("/");

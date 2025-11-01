@@ -24,7 +24,7 @@ def transform_to_url_template_syntax(
     )
     for linkifier in linkifiers:
         converted_template = linkifier.url_format_string.translate(escape_table)
-        # Replace format string variables with the RFC 6570 URI Template syntax
+        # Replace format string variables with the RFC 6570 URL Template syntax
         converted_template = var_pattern.sub(r"\1{\2}", converted_template).replace("%%", "%")
         if not uri_template.validate(converted_template):
             raise RuntimeError(
