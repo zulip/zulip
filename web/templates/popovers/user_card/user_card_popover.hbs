@@ -157,9 +157,9 @@
             <li role="none" class="popover-menu-list-item link-item hidden-for-spectators">
                 <a role="menuitem" class="popover-menu-link {{ private_message_class }}" tabindex="0">
                     <i class="popover-menu-icon zulip-icon zulip-icon-send-dm" aria-hidden="true"></i>
-                    <span class="popover-menu-label">{{t "Send direct message" }}</span>
+                    <span class="popover-menu-label">{{t "Send DM" }}</span>
                     {{#if is_sender_popover}}
-                        {{popover_hotkey_hints "R"}}
+                        {{popover_hotkey_hints "Shift" "R"}}
                     {{/if}}
                 </a>
             </li>
@@ -204,7 +204,7 @@
                 {{#if is_me}}
                     <span class="popover-menu-label">{{t "View messages with yourself" }}</span>
                 {{else}}
-                    <span class="popover-menu-label">{{t "View direct messages" }}</span>
+                    <span class="popover-menu-label">{{t "View DMs" }}</span>
                 {{/if}}
             </a>
         </li>
