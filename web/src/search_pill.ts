@@ -200,9 +200,18 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
         // are already set up to only display text and no pill. We also
         // don't show it for most user pills.
         if (render_data.type === "generic_operator" && render_data.operator !== "search") {
+            let description_html: string;
+            const is_operator_suggestion =
+                search_terms[0]!.operator !== "" && !text_query.includes(":");
+            description_html = Filter.search_description_as_html(
+                search_terms,
+                is_operator_suggestion,
+            );
+            const capitalized_first_letter = description_html.charAt(0).toUpperCase();
+            description_html = capitalized_first_letter + description_html.slice(1);
             return render_search_list_item({
                 pills: pill_render_data,
-                description_html: suggestion.description_html,
+                description_html,
             });
         } else if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
             const description_html = render_data.negated
