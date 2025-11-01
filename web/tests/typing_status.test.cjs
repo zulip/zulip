@@ -5,10 +5,16 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_state = mock_esm("../src/compose_state");
+const drafts = mock_esm("../src/drafts");
 const stream_data = mock_esm("../src/stream_data");
+
+set_global("document", {
+    to_$: () => $("document-stub"),
+});
 
 const {set_realm} = zrequire("state_data");
 const typing = zrequire("typing");
@@ -665,4 +671,77 @@ run_test("edit_messages", ({override_rewire}) => {
         stopped: true,
         timer_cleared: true,
     });
+});
+
+run_test("auto_save_drafts", ({override}) => {
+    override(realm, "server_typing_started_wait_period_milliseconds", TYPING_STARTED_WAIT_PERIOD);
+    override(realm, "server_typing_stopped_wait_period_milliseconds", TYPING_STOPPED_WAIT_PERIOD);
+
+    // Mock Date.now() to control time
+    let current_time = 1000000;
+    override(Date, "now", () => current_time);
+
+    // Track drafts.update_draft calls
+    const draft_updates = [];
+    override(drafts, "update_draft", (opts) => {
+        draft_updates.push({time: current_time, opts});
+        return "draft_id_123";
+    });
+
+    // Mock compose_state for is_valid_conversation check
+    override(compose_state, "has_message_content", () => true);
+    override(compose_state, "get_message_type", () => "private");
+    override(compose_pm_pill, "get_user_ids_string", () => "1,2");
+
+    // Initialize typing module
+    typing.initialize();
+
+    // Get the input handler that was registered on $(document)
+    const compose_input_handler = $("document-stub").get_on_handler("input", "#compose-textarea");
+    assert.ok(compose_input_handler);
+
+    // Simulate first input - should NOT auto-save (no 60s elapsed yet)
+    compose_input_handler();
+    assert.equal(draft_updates.length, 0);
+
+    // Simulate input after 30 seconds - should NOT auto-save
+    current_time += 30000;
+    compose_input_handler();
+    assert.equal(draft_updates.length, 0);
+
+    // Simulate input after 50 seconds total - should NOT auto-save
+    current_time += 20000;
+    compose_input_handler();
+    assert.equal(draft_updates.length, 0);
+
+    // Simulate input after exactly 60 seconds total - should NOT auto-save (using > not >=)
+    current_time += 10000;
+    compose_input_handler();
+    assert.equal(draft_updates.length, 0);
+
+    // Simulate input after MORE than 60 seconds total - SHOULD auto-save
+    current_time += 1000;
+    compose_input_handler();
+    assert.equal(draft_updates.length, 1);
+    assert.deepEqual(draft_updates[0].opts, {no_notify: true});
+    assert.equal(draft_updates[0].time, 1061000);
+
+    // Simulate another input immediately - should NOT auto-save (60s not elapsed)
+    current_time += 1000;
+    compose_input_handler();
+    assert.equal(draft_updates.length, 1);
+
+    // Simulate input after MORE than 60 seconds since last save - SHOULD auto-save again
+    current_time += 60000;
+    compose_input_handler();
+    assert.equal(draft_updates.length, 2);
+    assert.deepEqual(draft_updates[1].opts, {no_notify: true});
+    assert.equal(draft_updates[1].time, 1122000);
+
+    // Simulate input after 120 seconds - SHOULD auto-save (more than 60s elapsed)
+    current_time += 120000;
+    compose_input_handler();
+    assert.equal(draft_updates.length, 3);
+    assert.deepEqual(draft_updates[2].opts, {no_notify: true});
+    assert.equal(draft_updates[2].time, 1242000);
 });

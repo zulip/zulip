@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
+import * as drafts from "./drafts.ts";
 import * as message_store from "./message_store.ts";
 import * as people from "./people.ts";
 import * as rows from "./rows.ts";
@@ -16,6 +17,9 @@ import * as stream_data from "./stream_data.ts";
 import {user_settings} from "./user_settings.ts";
 
 let edit_box_worker: EditingStatusWorker;
+
+// Auto-save interval in milliseconds (60 seconds)
+const AUTO_SAVE_INTERVAL_MS = 60000;
 
 type TypingAPIRequest = {op: "start" | "stop"} & (
     | {
@@ -230,6 +234,10 @@ export function initialize(): void {
         notify_server_editing_stop,
     };
 
+    // Initialize the auto-save timestamp to current time to prevent
+    // immediate auto-save on first input
+    let last_auto_save_timestamp = get_current_time();
+
     $(document).on("input", "#compose-textarea", () => {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
@@ -240,6 +248,13 @@ export function initialize(): void {
             realm.server_typing_started_wait_period_milliseconds,
             realm.server_typing_stopped_wait_period_milliseconds,
         );
+
+        // Auto-save draft if it's been more than 60 seconds since the last save
+        const current_time = get_current_time();
+        if (current_time - last_auto_save_timestamp > AUTO_SAVE_INTERVAL_MS) {
+            drafts.update_draft({no_notify: true});
+            last_auto_save_timestamp = current_time;
+        }
     });
 
     $("body").on("input", ".message_edit_content", function (this: HTMLElement) {
