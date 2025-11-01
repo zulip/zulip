@@ -32,3 +32,4 @@ instance of Jitsi Meet.
 - [How to start a call](/help/start-a-call)
 - [Zoom integration](/integrations/doc/zoom)
 - [BigBlueButton integration](/integrations/doc/big-blue-button)
+- [Constructor Groups integration](/integrations/doc/constructor-groups)
