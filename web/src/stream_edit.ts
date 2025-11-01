@@ -839,6 +839,7 @@ export function initialize(): void {
                 );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
+                stream_ui_updates.update_can_create_topic_group_setting_state($edit_container);
             }
             return true;
         },
@@ -905,6 +906,7 @@ export function initialize(): void {
                 );
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
+                stream_ui_updates.update_can_create_topic_group_setting_state($edit_container);
             }
         },
     );

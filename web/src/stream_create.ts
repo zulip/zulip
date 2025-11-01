@@ -26,6 +26,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 let created_stream: string | undefined;
@@ -75,6 +76,7 @@ export function maybe_update_error_message(): void {
 const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
     ["can_delete_any_message_group", null],
     ["can_delete_own_message_group", null],
     ["can_move_messages_out_of_channel_group", null],
@@ -192,6 +194,22 @@ function toggle_advanced_configurations(): void {
         $toggle_button.addClass("fa-caret-down");
         $toggle_button.removeClass("fa-caret-right");
     }
+}
+
+function handle_can_create_topic_group_change(widget: GroupSettingPillContainer): void {
+    const $container = $("#stream-creation").expectOne();
+    const setting_value = settings_components.get_group_setting_widget_value(widget);
+    const everyone_group = user_groups.get_user_group_from_name("role:everyone")!;
+    const $private_stream_elem = $container.find(
+        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
+    );
+    const disable_private_stream_elem = setting_value !== everyone_group.id;
+
+    $private_stream_elem.prop("disabled", disable_private_stream_elem);
+
+    $private_stream_elem
+        .closest("div")
+        .toggleClass("can_create_topic_group_tooltip", disable_private_stream_elem);
 }
 
 $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscribers", (e) => {
@@ -558,6 +576,7 @@ export function show_new_stream_modal(): void {
     update_announce_stream_state();
     stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_and_stream_privacy_state($("#stream-creation"));
+    stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -571,6 +590,18 @@ function set_up_group_setting_widgets(): void {
                 setting_name: stream_permission_group_settings_schema.parse(setting_name),
             });
         group_setting_widget_map.set(setting_name, group_setting_widgets[setting_name]);
+        if (setting_name === "can_create_topic_group") {
+            const can_create_topic_group_widget =
+                group_setting_widget_map.get("can_create_topic_group");
+            assert(can_create_topic_group_widget !== undefined);
+            assert(can_create_topic_group_widget !== null);
+            can_create_topic_group_widget.onPillCreate(() => {
+                handle_can_create_topic_group_change(can_create_topic_group_widget);
+            });
+            can_create_topic_group_widget.onPillRemove(() => {
+                handle_can_create_topic_group_change(can_create_topic_group_widget);
+            });
+        }
     }
 }
 
@@ -588,6 +619,7 @@ export function set_up_handlers(): void {
         update_announce_stream_state();
         stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
         stream_ui_updates.update_can_subscribe_group_label($container);
+        stream_ui_updates.update_can_create_topic_group_setting_state($container);
     });
 
     $container.on("change", ".default-stream input", () => {

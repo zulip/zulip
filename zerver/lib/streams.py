@@ -26,7 +26,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import get_topic_display_name
+from zerver.lib.topic import get_topic_display_name, messages_for_topic
 from zerver.lib.types import APIStreamDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -53,7 +53,7 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
@@ -93,6 +93,7 @@ class StreamDict(TypedDict, total=False):
     topics_policy: int | None
     can_add_subscribers_group: UserGroup | None
     can_administer_channel_group: UserGroup | None
+    can_create_topic_group: UserGroup | None
     can_delete_any_message_group: UserGroup | None
     can_delete_own_message_group: UserGroup | None
     can_move_messages_out_of_channel_group: UserGroup | None
@@ -155,6 +156,35 @@ def validate_topics_policy(
             )
         return topics_policy
     return None
+
+
+def validate_can_create_topic_group_setting(
+    realm: Realm,
+    history_public_to_subscribers: bool | None,
+    invite_only: bool,
+    can_create_topic_group: int | UserGroupMembersData,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> None:
+    if history_public_to_subscribers is None:
+        history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+            realm, invite_only, history_public_to_subscribers
+        )
+
+    if history_public_to_subscribers:
+        return
+
+    # If a group setting has value "Everyone including guests" along with additional
+    # users or groups, we do not treat it as equivalent to just "Everyone including guests".
+    # For a channel with protected history, everyone must be allowed to create new topics.
+    # As a result, enabling protected history for a channel requires the `can_create_topic_group`
+    # setting to have "Everyone including guests" group configuration only.
+    if (
+        not isinstance(can_create_topic_group, int)
+        or can_create_topic_group != system_groups_name_dict[SystemGroups.EVERYONE].id
+    ):
+        raise IncompatibleParametersError(
+            ["history_public_to_subscribers", "can_create_topic_group"]
+        )
 
 
 def get_default_value_for_history_public_to_subscribers(
@@ -348,6 +378,7 @@ def create_stream_if_needed(
     topics_policy: int | None = None,
     can_add_subscribers_group: UserGroup | None = None,
     can_administer_channel_group: UserGroup | None = None,
+    can_create_topic_group: UserGroup | None = None,
     can_delete_any_message_group: UserGroup | None = None,
     can_delete_own_message_group: UserGroup | None = None,
     can_move_messages_out_of_channel_group: UserGroup | None = None,
@@ -477,6 +508,7 @@ def create_streams_if_needed(
             topics_policy=stream_dict.get("topics_policy", None),
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
+            can_create_topic_group=stream_dict.get("can_create_topic_group", None),
             can_delete_any_message_group=stream_dict.get("can_delete_any_message_group", None),
             can_delete_own_message_group=stream_dict.get("can_delete_own_message_group", None),
             can_move_messages_out_of_channel_group=stream_dict.get(
@@ -667,6 +699,48 @@ def access_stream_for_send_message(
     raise JsonableError(
         _("Not authorized to send to channel '{channel_name}'").format(channel_name=stream.name)
     )
+
+
+def check_stream_access_based_on_can_create_topic_group(
+    user_profile: UserProfile, stream: Stream
+) -> None:
+    system_groups_name_dict = get_realm_system_groups_name_dict(user_profile.realm.id)
+    if stream.can_create_topic_group_id in system_groups_name_dict:
+        if system_groups_name_dict[stream.can_create_topic_group_id] == SystemGroups.EVERYONE:
+            return
+        if system_groups_name_dict[stream.can_create_topic_group_id] == SystemGroups.NOBODY:
+            raise JsonableError(
+                _("You do not have permission to create new topics in this channel.")
+            )
+
+    if not user_has_permission_for_group_setting(
+        stream.can_create_topic_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_create_topic_group"],
+        direct_member_only=False,
+    ):
+        raise JsonableError(_("You do not have permission to create new topics in this channel."))
+
+
+def access_stream_to_create_new_topic(
+    user_profile: UserProfile, stream: Stream, topic_name: str
+) -> None:
+    if is_cross_realm_bot_email(user_profile.delivery_email):
+        return
+
+    assert stream.recipient_id is not None
+    topic_exists = messages_for_topic(
+        realm_id=stream.realm_id, stream_recipient_id=stream.recipient_id, topic_name=topic_name
+    ).exists()
+
+    if not topic_exists:
+        try:
+            check_stream_access_based_on_can_create_topic_group(user_profile, stream)
+        except JsonableError as e:
+            if user_profile.is_bot and user_profile.bot_owner is not None:
+                check_stream_access_based_on_can_create_topic_group(user_profile.bot_owner, stream)
+            else:
+                raise JsonableError(e.msg)
 
 
 def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) -> None:
@@ -1517,6 +1591,15 @@ def access_requested_group_permissions(
             ):
                 raise JsonableError(_("Insufficient permission"))
 
+            if setting_name == "can_create_topic_group":
+                validate_can_create_topic_group_setting(
+                    realm,
+                    request_settings_dict["history_public_to_subscribers"],
+                    request_settings_dict["invite_only"],
+                    setting_value,
+                    system_groups_name_dict,
+                )
+
             if not isinstance(setting_value, int):
                 anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
         else:
@@ -1617,6 +1700,7 @@ def list_to_streams(
             stream_dict["can_administer_channel_group"] = group_settings_map[
                 "can_administer_channel_group"
             ]
+            stream_dict["can_create_topic_group"] = group_settings_map["can_create_topic_group"]
             stream_dict["can_delete_any_message_group"] = group_settings_map[
                 "can_delete_any_message_group"
             ]
@@ -1727,6 +1811,9 @@ def stream_to_dict(
     can_administer_channel_group = get_group_setting_value_for_register_api(
         stream.can_administer_channel_group_id, anonymous_group_membership
     )
+    can_create_topic_group = get_group_setting_value_for_register_api(
+        stream.can_create_topic_group_id, anonymous_group_membership
+    )
     can_delete_any_message_group = get_group_setting_value_for_register_api(
         stream.can_delete_any_message_group_id, anonymous_group_membership
     )
@@ -1760,6 +1847,7 @@ def stream_to_dict(
         is_archived=stream.deactivated,
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_create_topic_group=can_create_topic_group,
         can_delete_any_message_group=can_delete_any_message_group,
         can_delete_own_message_group=can_delete_own_message_group,
         can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,

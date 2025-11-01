@@ -601,6 +601,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
+    const can_create_topics = stream_data.can_create_new_topics_in_stream(sub.stream_id);
     const url = hash_util.channel_url_by_user_setting(sub.stream_id);
     const args = {
         name,
@@ -611,8 +612,7 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         is_web_public: sub.is_web_public,
         color: sub.color,
         pin_to_top: sub.pin_to_top,
-        can_post_messages,
-        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
+        show_new_topic_button: can_post_messages && can_create_topics,
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
@@ -1302,6 +1302,10 @@ export function set_event_handlers({
         e.stopPropagation();
         e.preventDefault();
         const stream_id = Number.parseInt(this.dataset.streamId!, 10);
+        const can_create_new_topics = stream_data.can_create_new_topics_in_stream(stream_id);
+        if (!can_create_new_topics) {
+            return;
+        }
         compose_actions.start({
             message_type: "stream",
             stream_id,

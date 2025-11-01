@@ -1267,7 +1267,7 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
         do_change_stream_permission(
             stream,
             invite_only=True,
-            history_public_to_subscribers=False,
+            history_public_to_subscribers=True,
             is_web_public=False,
             acting_user=self.admin,
         )
