@@ -105,8 +105,11 @@ h3,
     cursor: not-allowed;
 }
 
-#account-settings .deactivate_realm_button {
-    margin-left: 10px;
+#account-settings .deactivate-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-wrap: wrap;
 }
 
 #change_email_button,
@@ -2121,12 +2124,6 @@ label.preferences-radio-choice-label {
     #change_password_modal,
     #change_email_modal {
         width: 300px;
-    }
-}
-
-@media (width < $mm_min) {
-    .deactivate_realm_button {
-        margin-top: 20px;
     }
 }
 
