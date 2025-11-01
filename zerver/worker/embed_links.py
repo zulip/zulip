@@ -63,12 +63,16 @@ class FetchLinksEmbedData(QueueProcessingWorker):
                 content=message.content,
                 message_sender=message.sender,
             )
+            default_code_block_language = event.get(
+                "default_code_block_language", realm.default_code_block_language
+            )
             rendering_result = render_incoming_message(
                 message,
                 message.content,
                 realm,
                 url_embed_data=url_embed_data,
                 mention_data=mention_data,
+                default_code_block_language=default_code_block_language,
             )
             do_update_embedded_data(message.sender, message, rendering_result, mention_data)
 

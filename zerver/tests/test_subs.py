@@ -5090,6 +5090,31 @@ class SubscriptionAPITest(ZulipTestCase):
         data = self.assert_json_success(response)
         self.assertNotIn("new_subscription_messages_sent", data)
 
+    def test_update_default_code_block_language(self) -> None:
+        iago = self.example_user("iago")
+        stream = self.make_stream("test_stream")
+
+        realm = get_realm("zulip")
+        self.assertEqual(stream.default_code_block_language, realm.default_code_block_language)
+
+        result = self.api_patch(
+            iago,
+            f"/api/v1/streams/{stream.id}",
+            {"default_code_block_language": "python"},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.default_code_block_language, "python")
+
+        result = self.api_patch(
+            iago,
+            f"/api/v1/streams/{stream.id}",
+            {"default_code_block_language": ""},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.default_code_block_language, "")
+
 
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self) -> None:
