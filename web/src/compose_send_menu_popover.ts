@@ -108,12 +108,25 @@ export function open_schedule_message_menu(
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
                         ),
-                        onClose(selectedDates, _dateStr, instance) {
+                        appendTo: $popper[0]!,
+                        position: "above center",
+                        onOpen() {
+                            // Prevent the parent popover from closing when flatpickr opens
+                            instance.setProps({
+                                hideOnClick: false,
+                            });
+                        },
+                        onClose(selectedDates, _dateStr, flatpickr_instance) {
                             // Return to normal state.
                             $send_later_options_content.css("pointer-events", "all");
+                            // Re-enable hiding on click for the parent popover
+                            instance.setProps({hideOnClick: true});
                             const selected_date = selectedDates[0];
-                            assert(instance.config.minDate !== undefined);
-                            if (selected_date && selected_date < instance.config.minDate) {
+                            assert(flatpickr_instance.config.minDate !== undefined);
+                            if (
+                                selected_date &&
+                                selected_date < flatpickr_instance.config.minDate
+                            ) {
                                 scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
                                     true,
                                 );
