@@ -221,8 +221,7 @@ function render_user_profile_subscribe_widget(): void {
         $events_container: $("#user-profile-modal"),
         unique_id_type: "number",
     };
-    user_profile_subscribe_widget =
-        user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
+    user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
     user_profile_subscribe_widget.setup();
 }
 
