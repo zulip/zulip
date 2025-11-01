@@ -3207,6 +3207,26 @@ class BillingSession(ABC):
             licenses_at_next_renewal=licenses_for_new_plan,
         )
 
+    def create_stripe_invoice_for_plan(self, plan: CustomerPlan) -> stripe.Invoice:
+        assert plan.customer.stripe_customer_id is not None
+        if plan.charge_automatically:
+            collection_method: Literal["charge_automatically", "send_invoice"] = (
+                "charge_automatically"
+            )
+            days_until_due = None
+        else:
+            collection_method = "send_invoice"
+            days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+        invoice_params = stripe.params.InvoiceCreateParams(
+            auto_advance=True,
+            collection_method=collection_method,
+            customer=plan.customer.stripe_customer_id,
+            statement_descriptor=plan.name,
+        )
+        if days_until_due is not None:
+            invoice_params["days_until_due"] = days_until_due
+        return stripe.Invoice.create(**invoice_params)
+
     def invoice_plan(self, plan: CustomerPlan, event_time: datetime) -> None:
         if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_STARTED:
             raise NotImplementedError(
@@ -3304,23 +3324,7 @@ class BillingSession(ABC):
                     need_to_invoice = True
 
                 if stripe_invoice is None and need_to_invoice:
-                    if plan.charge_automatically:
-                        collection_method: Literal["charge_automatically", "send_invoice"] = (
-                            "charge_automatically"
-                        )
-                        days_until_due = None
-                    else:
-                        collection_method = "send_invoice"
-                        days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-                    invoice_params = stripe.params.InvoiceCreateParams(
-                        auto_advance=True,
-                        collection_method=collection_method,
-                        customer=plan.customer.stripe_customer_id,
-                        statement_descriptor=plan.name,
-                    )
-                    if days_until_due is not None:
-                        invoice_params["days_until_due"] = days_until_due
-                    stripe_invoice = stripe.Invoice.create(**invoice_params)
+                    stripe_invoice = self.create_stripe_invoice_for_plan(plan)
 
                 if invoice_item_params.get("description") is not None:
                     invoice_period = stripe.params.InvoiceItemCreateParamsPeriod(
