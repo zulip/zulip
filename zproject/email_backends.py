@@ -7,7 +7,7 @@ from email.message import Message
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
-from django.core.mail.message import EmailMessage
+from django.core.mail.message import EmailAlternative, EmailMessage
 from django.template import loader
 from typing_extensions import override
 
@@ -77,14 +77,15 @@ class EmailLogBackEnd(EmailBackend):
             # Here, we replace the email addresses used in development
             # with chat.zulip.org, so that web email providers like Gmail
             # will be able to fetch the illustrations used in the emails.
-            html_alternative = (
-                email_message.alternatives[0][0].replace(
+            assert isinstance(email_message.alternatives, MutableSequence)
+            current_alternative = email_message.alternatives[0]
+            assert isinstance(current_alternative[0], str)
+            email_message.alternatives[0] = EmailAlternative(
+                content=current_alternative[0].replace(
                     localhost_email_images_base_url, czo_email_images_base_url
                 ),
-                email_message.alternatives[0][1],
+                mimetype=current_alternative[1],
             )
-            assert isinstance(email_message.alternatives, MutableSequence)
-            email_message.alternatives[0] = html_alternative
 
             email_message.to = [get_forward_address()]
 
