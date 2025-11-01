@@ -56,6 +56,14 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
 }
 
+const throttled_update_draft = _.throttle(
+    () => {
+        drafts.update_draft({no_notify: true});
+    },
+    60000,
+    {leading: false, trailing: true},
+);
+
 export function initialize(): void {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
@@ -108,6 +116,9 @@ export function initialize(): void {
         if (compose_state.get_is_content_unedited_restored_draft()) {
             compose_state.set_is_content_unedited_restored_draft(false);
         }
+
+        // Save the draft, but throttled to at most once per minute.
+        throttled_update_draft();
     });
 
     $("#compose form").on("submit", (e) => {
