@@ -746,8 +746,8 @@ export async function initialize_everything(state_data) {
     message_edit_history.initialize();
     hotkey.initialize();
     desktop_integration.initialize();
-
     group_permission_settings.initialize();
+    util.initialize();
 
     $("#app-loading").addClass("loaded");
 }
