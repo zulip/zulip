@@ -1604,3 +1604,7 @@ div.settings-radio-input-parent {
         }
     }
 }
+
+.no-border-bottom {
+    border-bottom: none;
+}

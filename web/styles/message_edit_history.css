@@ -67,3 +67,7 @@
         align-items: center;
     }
 }
+
+.max-width-20ch {
+    max-width: 20ch;
+}

@@ -248,3 +248,7 @@
         line-height: 0;
     }
 }
+
+[disabled] {
+    pointer-events: none;
+}

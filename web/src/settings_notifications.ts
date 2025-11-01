@@ -107,7 +107,7 @@ function rerender_ui(): void {
     }
 
     if (unmatched_streams.length === 0) {
-        $unmatched_streams_table.css("display", "none");
+        $unmatched_streams_table.hide();
         $("#customize_stream_notifications_widget .dropdown_widget_value").text(
             $t({defaultMessage: "Customize a channel"}),
         );

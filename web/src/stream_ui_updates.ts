@@ -95,13 +95,13 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
         $container
             .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
             .last()
-            .css("border-bottom", "none");
+            .addClass("no-border-bottom");
     } else {
         if ($web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden")) {
             $container
                 .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
                 .last()
-                .css("border-bottom", "");
+                .removeClass("no-border-bottom");
             $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", false);
         }
         $web_public_stream_elem.prop(

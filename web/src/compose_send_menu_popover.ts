@@ -110,7 +110,7 @@ export function open_schedule_message_menu(
                         ),
                         onClose(selectedDates, _dateStr, instance) {
                             // Return to normal state.
-                            $send_later_options_content.css("pointer-events", "all");
+                            $send_later_options_content.removeClass("no-pointer-events");
                             const selected_date = selectedDates[0];
                             assert(instance.config.minDate !== undefined);
                             if (selected_date && selected_date < instance.config.minDate) {
@@ -126,7 +126,7 @@ export function open_schedule_message_menu(
                     },
                 );
                 // Disable interaction with rest of the options in the popover.
-                $send_later_options_content.css("pointer-events", "none");
+                $send_later_options_content.addClass("no-pointer-events");
                 e.preventDefault();
                 e.stopPropagation();
             });
