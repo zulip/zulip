@@ -1788,6 +1788,10 @@ class RealmImportExportTest(ExportFile):
                 ).count(),
             )
 
+        # Check is_imported_stub is set True for all imported users.
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            self.assertTrue(user_profile.is_imported_stub)
+
         # Check folder field for imported streams
         for stream in Stream.objects.filter(realm=imported_realm):
             if stream.name == "Verona":

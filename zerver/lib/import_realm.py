@@ -1418,6 +1418,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     for user_profile_dict in data["zerver_userprofile"]:
         user_profile_dict["password"] = None
         user_profile_dict["api_key"] = generate_api_key()
+        user_profile_dict["is_imported_stub"] = True
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict["user_permissions"]
         del user_profile_dict["groups"]
