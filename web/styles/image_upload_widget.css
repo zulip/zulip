@@ -215,6 +215,10 @@
         top: 0;
         left: 0;
     }
+
+    .image-block {
+        object-fit: contain;
+    }
 }
 
 /* CSS  related to upload widget's preview image */
