@@ -492,10 +492,12 @@ class ZulipPasswordResetForm(PasswordResetForm):
             )
             return
         if email_belongs_to_ldap(realm, email):
-            # TODO: Ideally, we'd provide a user-facing error here
+            # We'd provide a user-facing error here
             # about the fact that they aren't allowed to have a
             # password in the Zulip server and should change it in LDAP.
-            logging.info("Password reset not allowed for user in LDAP domain")
+            error_message = "Password reset not allowed for user in LDAP domain"
+            ValidationError(error_message)
+            logging.info(error_message)
             return
         if realm.deactivated:
             logging.info("Realm is deactivated")
