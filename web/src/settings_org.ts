@@ -1667,7 +1667,7 @@ export function build_page(): void {
         const $spinner = $(`${widget} .upload-spinner-background`).expectOne();
         const $upload_text = $(`${widget}  .image-upload-text`).expectOne();
         const $delete_button = $(`${widget}  .image-delete-button`).expectOne();
-        const $error_field = $(`${widget}  .image_file_input_error`).expectOne();
+        const $error_field = $(`${widget}-error`).expectOne();
         realm_icon_logo_upload_start($spinner, $upload_text, $delete_button);
         $error_field.hide();
         channel.post({

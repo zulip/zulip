@@ -135,7 +135,7 @@ function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
         contentType: false,
         success() {
             display_avatar_upload_complete();
-            $("#user-avatar-upload-widget .image_file_input_error").hide();
+            $("#user-avatar-upload-widget-error").hide();
             $("#user-avatar-source").hide();
             // Rest of the work is done via the user_events -> avatar_url event we will get
         },
@@ -146,7 +146,7 @@ function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
             }
             const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
             if (parsed.success) {
-                const $error = $("#user-avatar-upload-widget .image_file_input_error");
+                const $error = $("#user-avatar-upload-widget-error");
                 $error.text(parsed.data.msg);
                 $error.show();
             }
