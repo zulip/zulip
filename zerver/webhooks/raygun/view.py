@@ -81,7 +81,7 @@ def make_time_chunk(error_dict: WildValue) -> str:
     time_last = parse_time(error_dict["lastOccurredOn"].tame(check_string))
 
     # Provide time information about this error,
-    return f"* **First occurred**: {time_first}\n* **Last occurred**: {time_last}\n"
+    return f"* **First occurred**: <time:{time_first}>\n* **Last occurred**: <time:{time_last}>\n"
 
 
 def make_message_chunk(message: str) -> str:
@@ -252,7 +252,7 @@ def activity_message(payload: WildValue) -> str:
         assigned_to = payload["error"]["assignedTo"].tame(check_string)
         message += f"{user} assigned {error_link_md} to {assigned_to}:\n"
 
-    message += "* **Timestamp**: {}\n".format(
+    message += "* **Timestamp**: <time:{}>\n".format(
         parse_time(payload["error"]["activityDate"].tame(check_string))
     )
 
