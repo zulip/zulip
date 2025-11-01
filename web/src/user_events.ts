@@ -215,7 +215,11 @@ export const update_person = function update(event: UserUpdate): void {
             settings_users.update_view_on_reactivate(event.user_id, is_bot_user);
         } else {
             people.deactivate(user);
-            stream_events.remove_deactivated_user_from_all_streams(event.user_id);
+            // We used to remove deactivated users in this code block before. But now,
+            // that should be done by the `peer_remove` event being sent by the server.
+            // This function should be removed altogether if we go through a period of
+            // no blueslip errors raised in the function below.
+            stream_events.report_error_if_user_still_has_subscriptions(event.user_id);
             user_group_edit.remove_deactivated_user_from_all_groups(event.user_id);
             settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
         }
