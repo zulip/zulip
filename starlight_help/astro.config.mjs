@@ -242,7 +242,10 @@ export default defineConfig({
                         "create-channels",
                         "customize-settings-for-new-users",
                         "invite-users-to-join",
-                        "set-up-integrations",
+                        {
+                            label: "Set up integrations",
+                            link: "/integrations-overview",
+                        },
                     ],
                 },
                 {
@@ -760,5 +763,6 @@ export default defineConfig({
         "disable-message-edit-history": "/help/restrict-message-edit-history-access",
         "edit-a-bot": "/help/manage-a-bot",
         "reading-dms": "/help/direct-messages",
+        "set-up-integrations": "/help/integrations-overview",
     },
 });
