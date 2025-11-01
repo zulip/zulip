@@ -1,11 +1,13 @@
-<form id="invite-user-form">
-    <div class="setup-tips-container"></div>
-    {{#if development_environment}}
-    <div class="alert" id="dev_env_msg"></div>
-    {{/if}}
+<div class="invite-user-modal-banners">
     {{#if (not user_has_email_set) }}
     <div class="demo-organization-add-email-banner banner-wrapper"></div>
     {{/if}}
+    {{#if development_environment}}
+    <div class="alert" id="dev_env_msg"></div>
+    {{/if}}
+    <div class="setup-tips-container"></div>
+</div>
+<form id="invite-user-form">
     <div class="input-group">
         <div id="invite_users_option_tabs_container"></div>
         <div id="invitee_emails_container">

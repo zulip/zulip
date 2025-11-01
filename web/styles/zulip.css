@@ -1334,6 +1334,23 @@ div.topic_edit_spinner .loading_indicator_spinner {
     vertical-align: middle;
 }
 
+.invite-user-modal-banners {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &:has(.banner) {
+        /* Only apply bottom margin if there is a banner present. */
+        margin-bottom: 10px;
+    }
+
+    .banner-wrapper:empty {
+        /* Avoid unnecessary spacing between empty banner
+           wrappers due to the flex gap property. */
+        display: none;
+    }
+}
+
 #multiuse_invite_link {
     width: 100%;
     text-overflow: ellipsis;
