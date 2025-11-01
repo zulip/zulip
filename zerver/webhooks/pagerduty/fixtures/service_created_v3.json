@@ -1,0 +1,22 @@
+{
+  "event": {
+    "id": "01DFJKL2Q3MNOP4RSTUV5WXYZ1",
+    "event_type": "service.created",
+    "resource_type": "service",
+    "occurred_at": "2024-01-15T12:00:00.000Z",
+    "agent": {
+      "html_url": "https://pig208.pagerduty.com/users/PAGENT1",
+      "id": "PAGENT1",
+      "self": "https://api.pagerduty.com/users/PAGENT1",
+      "summary": "Admin User",
+      "type": "user_reference"
+    },
+    "data": {
+      "type": "service",
+      "id": "PSERVICE1",
+      "summary": "Test Service",
+      "self": "https://api.pagerduty.com/services/PSERVICE1",
+      "html_url": "https://pig208.pagerduty.com/services/PSERVICE1"
+    }
+  }
+}
