@@ -40,7 +40,7 @@ export function update(): void {
     }
 }
 
-function update_widget_for_stream(stream_id: number): void {
+export function update_widget_for_stream(stream_id: number): void {
     const widget = active_widgets.get(stream_id);
     if (widget === undefined) {
         blueslip.warn("User re-narrowed before topic history was returned.");
