@@ -198,6 +198,7 @@ export default defineConfig({
                             link: "/zulip-cloud-or-self-hosting",
                         },
                         "moving-to-zulip",
+                        "moving-from-slack",
                         "moderating-open-organizations",
                         "setting-up-zulip-for-a-class",
                         "using-zulip-for-a-class",
@@ -231,7 +232,10 @@ export default defineConfig({
                         "create-channels",
                         "customize-settings-for-new-users",
                         "invite-users-to-join",
-                        "set-up-integrations",
+                        {
+                            label: "Set up integrations",
+                            link: "/integrations-overview",
+                        },
                     ],
                 },
                 {
@@ -749,5 +753,6 @@ export default defineConfig({
         "disable-message-edit-history": "/help/restrict-message-edit-history-access",
         "edit-a-bot": "/help/manage-a-bot",
         "reading-dms": "/help/direct-messages",
+        "set-up-integrations": "/help/integrations-overview",
     },
 });
