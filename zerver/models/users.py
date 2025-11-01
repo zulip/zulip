@@ -295,6 +295,10 @@ class UserBaseSettings(models.Model):
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
 
+    # UI setting to control showing channel folders in the Inbox view
+    # of the Zulip web app.
+    web_inbox_show_channel_folders = models.BooleanField(default=True, db_default=True)
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is
     # the same as UserProfile.delivery_email, or is instead a fake
@@ -370,6 +374,7 @@ class UserBaseSettings(models.Model):
         email_address_visibility=int,
         web_escape_navigates_to_home_view=bool,
         receives_typing_notifications=bool,
+        web_inbox_show_channel_folders=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
