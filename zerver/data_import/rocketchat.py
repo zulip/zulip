@@ -1,8 +1,7 @@
 import logging
 import os
-import random
-import secrets
 import uuid
+from dataclasses import asdict
 from typing import Any
 
 import bson
@@ -11,6 +10,7 @@ from django.forms.models import model_to_dict
 
 from zerver.data_import.import_util import (
     SubscriberHandler,
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_direct_message_group,
@@ -25,6 +25,7 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
+    get_attachment_path_and_content,
     make_subscriber_map,
     make_user_messages,
 )
@@ -418,13 +419,8 @@ def process_message_attachment(
         logging.info("Replacing too long attachment name with random uuid: %s", file_name)
         sanitized_name = uuid.uuid4().hex
 
-    s3_path = "/".join(
-        [
-            str(realm_id),
-            format(random.randint(0, 255), "x"),
-            secrets.token_urlsafe(18),
-            sanitized_name,
-        ]
+    s3_path, content_for_link = get_attachment_path_and_content(
+        file_title=file_name, file_name=file_name, realm_id=realm_id
     )
 
     # Build the attachment from chunks and save it to s3_path.
@@ -433,9 +429,7 @@ def process_message_attachment(
     with open(file_out_path, "wb") as upload_file:
         upload_file.write(b"".join(upload_file_data["chunk"]))
 
-    attachment_content = (
-        f"{upload_file_data.get('description', '')}\n\n[{file_name}](/user_uploads/{s3_path})"
-    )
+    attachment_content = f"{upload_file_data.get('description', '')}\n\n{content_for_link}"
 
     fileinfo = {
         "name": file_name,
@@ -443,17 +437,17 @@ def process_message_attachment(
         "created": float(upload_file_data["_updatedAt"].timestamp()),
     }
 
-    upload = dict(
+    upload_metadata = UploadRecordData(
+        content_type=upload["type"],
+        last_modified=fileinfo["created"],
         path=s3_path,
         realm_id=realm_id,
-        content_type=upload["type"],
-        user_profile_id=user_id,
-        last_modified=fileinfo["created"],
-        user_profile_email=user_handler.get_user(user_id=user_id)["email"],
         s3_path=s3_path,
         size=fileinfo["size"],
+        user_profile_id=user_id,
+        user_profile_email=user_handler.get_user(user_id=user_id)["email"],
     )
-    uploads_list.append(upload)
+    uploads_list.append(asdict(upload_metadata))
 
     build_attachment(
         realm_id=realm_id,

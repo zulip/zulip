@@ -1,11 +1,13 @@
 import logging
 import os
 import random
+import secrets
 import shutil
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -22,6 +24,7 @@ from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
+from zerver.lib.upload import sanitize_name
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -48,6 +51,27 @@ DATA_IMPORT_CLIENTS = {
     # Special client key to be used for data import messages.
     "ZulipDataImport": 5,
 }
+
+
+@dataclass
+class UploadRecordData:
+    content_type: str | None
+    last_modified: float
+    path: str
+    realm_id: int
+    s3_path: str
+    size: int
+    user_profile_id: int
+    user_profile_email: str
+
+
+@dataclass
+class UploadFileRequest:
+    file_path: str
+    request_url: str
+    params: dict[str, Any] | None
+    headers: dict[str, Any] | None
+    kwargs: dict[str, Any]
 
 
 class SubscriberHandler:
@@ -656,51 +680,56 @@ def run_parallel_wrapper(
     f: Callable[[ListJobData], None], full_items: list[ListJobData], threads: int = 6
 ) -> None:
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
+    if threads == 1:
+        for item in full_items:
+            wrapping_function(f, item)
+    else:
+        with ProcessPoolExecutor(max_workers=threads) as executor:
+            for count, future in enumerate(
+                as_completed(executor.submit(wrapping_function, f, item) for item in full_items), 1
+            ):
+                future.result()
+                if count % 1000 == 0:
+                    logging.info("Finished %s items", count)
 
-    with ProcessPoolExecutor(max_workers=threads) as executor:
-        for count, future in enumerate(
-            as_completed(executor.submit(wrapping_function, f, item) for item in full_items), 1
-        ):
-            future.result()
-            if count % 1000 == 0:
-                logging.info("Finished %s items", count)
 
+def get_uploads(upload_dir: str, upload_file_request: UploadFileRequest) -> None:
+    url = upload_file_request.request_url
+    kwargs = upload_file_request.kwargs
 
-def get_uploads(upload_dir: str, upload: list[str]) -> None:
-    upload_url = upload[0]
-    upload_path = upload[1]
-    upload_path = os.path.join(upload_dir, upload_path)
+    upload_path = os.path.join(upload_dir, upload_file_request.file_path)
 
-    response = requests.get(upload_url, stream=True)
+    response = requests.get(
+        url,
+        params=upload_file_request.params,
+        headers=upload_file_request.headers,
+        stream=True,
+        **kwargs,
+    )
     os.makedirs(os.path.dirname(upload_path), exist_ok=True)
     with open(upload_path, "wb") as upload_file:
         shutil.copyfileobj(response.raw, upload_file)
 
 
 def process_uploads(
-    upload_list: list[ZerverFieldsT], upload_dir: str, threads: int
-) -> list[ZerverFieldsT]:
+    upload_file_request_list: list[UploadFileRequest],
+    output_dir: str,
+    threads: int,
+) -> None:
     """
-    This function downloads the uploads and saves it in the realm's upload directory.
-    Required parameters:
-
-    1. upload_list: List of uploads to be mapped in uploads records.json file
-    2. upload_dir: Folder where the downloaded uploads are saved
+    Creates the export's uploads folder and downloads all uploaded files into it.
     """
     logging.info("######### GETTING ATTACHMENTS #########\n")
     logging.info("DOWNLOADING ATTACHMENTS .......\n")
-    upload_url_list = []
-    for upload in upload_list:
-        upload_url = upload["path"]
-        upload_s3_path = upload["s3_path"]
-        upload_url_list.append([upload_url, upload_s3_path])
-        upload["path"] = upload_s3_path
+
+    upload_dir = os.path.join(output_dir, "uploads")
 
     # Run downloads in parallel
-    run_parallel_wrapper(partial(get_uploads, upload_dir), upload_url_list, threads=threads)
+    run_parallel_wrapper(
+        partial(get_uploads, upload_dir), upload_file_request_list, threads=threads
+    )
 
     logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
-    return upload_list
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
@@ -866,3 +895,22 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
             f"Invalid email format, please fix the following email(s) and try again: {details}"
         )
         raise ValidationError(error_log)
+
+
+def get_attachment_path_and_content(
+    file_title: str, file_name: str, realm_id: int
+) -> tuple[str, str]:
+    # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
+    # 'upload_message_attachment'
+    s3_path = "/".join(
+        [
+            str(realm_id),
+            format(random.randint(0, 255), "x"),
+            secrets.token_urlsafe(18),
+            sanitize_name(file_name),
+        ]
+    )
+    attachment_path = f"/user_uploads/{s3_path}"
+    content = f"[{file_title}]({attachment_path})"
+
+    return s3_path, content
