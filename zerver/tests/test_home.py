@@ -948,6 +948,7 @@ class HomeTest(ZulipTestCase):
             sorted(
                 [
                     dict(
+                        avatar_source="U",
                         avatar_version=cross_realm_email_gateway_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
@@ -964,6 +965,7 @@ class HomeTest(ZulipTestCase):
                         is_guest=False,
                     ),
                     dict(
+                        avatar_source="U",
                         avatar_version=cross_realm_notification_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
@@ -980,6 +982,7 @@ class HomeTest(ZulipTestCase):
                         is_guest=False,
                     ),
                     dict(
+                        avatar_source="U",
                         avatar_version=cross_realm_welcome_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
