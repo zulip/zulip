@@ -33,6 +33,7 @@ import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import type * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as tippyjs from "./tippyjs.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import type {UserOrMentionPillData} from "./typeahead_helper.ts";
@@ -1511,6 +1512,9 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
                 return item.type === "topic_list" && !item.is_channel_link
                     ? "topic-typeahead-link"
                     : "";
+            },
+            clear_typeahead_tooltip() {
+                tippyjs.typeahead_status_emoji_tooltip?.hide();
             },
         }),
     );
