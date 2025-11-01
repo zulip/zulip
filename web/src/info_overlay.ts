@@ -36,115 +36,114 @@ function format_usage_html(...keys: string[]): string {
 
 const markdown_help_rows = [
     {
-        markdown: "**bold**",
+        markdown: `**${$t({defaultMessage: "bold"})}**`,
         usage_html: format_usage_html("Ctrl", "B"),
     },
     {
-        markdown: "*italic*",
+        markdown: `*${$t({defaultMessage: "italic"})}*`,
         usage_html: format_usage_html("Ctrl", "I"),
     },
     {
-        markdown: "~~strikethrough~~",
+        markdown: `~~${$t({defaultMessage: "strikethrough"})}~~`,
     },
     {
         markdown: ":heart:",
     },
     {
-        markdown: "[Zulip website](https://zulip.org)",
+        markdown: `[${$t({defaultMessage: "Zulip website"})}](https://zulip.org)`,
         usage_html: format_usage_html("Ctrl", "Shift", "L"),
     },
     {
-        markdown: "#**channel name**",
-        output_html: "<p><a>#channel name</a></p>",
-        effect_html: "(links to a channel)",
+        markdown: `#**${$t({defaultMessage: "channel name"})}**`,
+        effect_html: $t({defaultMessage: "(links to a channel)"}),
     },
     {
-        markdown: "#**channel name>topic name**",
-        output_html: "<p><a>#channel name > topic name</a></p>",
-        effect_html: "(links to topic)",
+        markdown: `#**${$t({defaultMessage: "channel name"})}>${$t({defaultMessage: "topic name"})}**`,
+        effect_html: $t({defaultMessage: "(links to topic)"}),
     },
     {
-        markdown: "@**Joe Smith**",
-        output_html:
-            '<p><span class="user-mention"><span class="mention-content-wrapper">@Joe Smith</span></span></p>',
-        effect_html: "(notifies Joe Smith)",
+        markdown: `@**${$t({defaultMessage: "Joe Smith"})}**`,
+        effect_html: $t(
+            {defaultMessage: "(notifies {user})"},
+            {user: $t({defaultMessage: "Joe Smith"})},
+        ),
     },
     {
-        markdown: "@_**Joe Smith**",
-        output_html:
-            '<p><span class="user-mention"><span class="mention-content-wrapper">Joe Smith</span></span></p>',
-        effect_html: "(links to profile but doesn't notify Joe Smith)",
+        markdown: `@_**${$t({defaultMessage: "Joe Smith"})}**`,
+        effect_html: $t(
+            {defaultMessage: "(links to profile but doesn't notify {user})"},
+            {user: $t({defaultMessage: "Joe Smith"})},
+        ),
     },
     {
-        markdown: "@*support team*",
-        // Since there are no mentionable user groups that we can
-        // assume exist, we use a fake data-user-group-id of 0 in
-        // order to avoid upsetting the rendered_markdown.ts
-        // validation logic for user group elements.
-        //
-        // Similar hackery is not required for user mentions as very
-        // old mentions do not have data-user-id, so compatibility
-        // code for that case works ... but it might be better to just
-        // user your own name/user ID anyway.
-        output_html:
-            '<p><span class="user-group-mention" data-user-group-id="0"><span class="mention-content-wrapper">@support team</span></span></p>',
-        effect_html: "(notifies <b>support team</b> group)",
+        markdown: `@*${$t({defaultMessage: "support team"})}*`,
+        effect_html: $t_html(
+            {defaultMessage: "(notifies <z-user-group></z-user-group> group)"},
+            {"z-user-group": () => `<b>${$t_html({defaultMessage: "support team"})}</b>`},
+        ),
     },
     {
         markdown: "@**all**",
-        effect_html: "(notifies all recipients)",
+        effect_html: $t({defaultMessage: "(notifies all recipients)"}),
     },
     {
         markdown: `\
-* Milk
-* Tea
-  * Green tea
-  * Black tea
-* Coffee`,
+* ${$t({defaultMessage: "Milk"})}
+* ${$t({defaultMessage: "Tea"})}
+  * ${$t({defaultMessage: "Green tea"})}
+  * ${$t({defaultMessage: "Black tea"})}
+* ${$t({defaultMessage: "Coffee"})}`,
     },
     {
         markdown: `\
-1. Milk
-1. Tea
-1. Coffee`,
+1. ${$t({defaultMessage: "Milk"})}
+1. ${$t({defaultMessage: "Tea"})}
+1. ${$t({defaultMessage: "Coffee"})}`,
     },
     {
-        markdown: "> Quoted",
+        markdown: `> ${$t({defaultMessage: "Quoted"})}`,
     },
     {
         markdown: `\
 \`\`\`quote
-Quoted block
+${$t({defaultMessage: "Quoted block"})}
 \`\`\``,
     },
     {
         markdown: `\
-\`\`\`spoiler Always visible heading
-This text won't be visible until the user clicks.
+\`\`\`spoiler ${$t({defaultMessage: "Always visible heading"})}
+${$t({defaultMessage: "This text won't be visible until the user clicks."})}
 \`\`\``,
     },
     {
-        markdown: "Some inline `code`",
+        markdown: $t({defaultMessage: "Some inline `code`"}),
     },
+    // These code block examples are chosen to include no strings needing translation.
     {
         markdown: `\
 \`\`\`
-def zulip():
-    print "Zulip"
+def f():
+    print("Zulip")
 \`\`\``,
     },
     {
         markdown: `\
 \`\`\`python
-def zulip():
-    print "Zulip"
+def f():
+    print("Zulip")
 \`\`\``,
+        // output_html required because we don't have pygments in the web app processor.
         output_html: `\
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
+<div class="codehilite zulip-code-block" data-code-language="Python"><pre><div class="code-buttons-container">
+    </span></div><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Zulip"</span><span class="p">)</span>
+</code></pre></div>`,
     },
     {
-        markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
+        markdown: $t(
+            {defaultMessage: "Some inline math {math}"},
+            {math: "$$ e^{i \\pi} + 1 = 0 $$"},
+        ),
     },
     {
         markdown: `\
@@ -153,57 +152,57 @@ def zulip():
 \`\`\``,
     },
     {
-        markdown: "/me is busy working",
-        output_html:
-            '<p><span class="sender_name">Iago</span> <span class="status-message">is busy working</span></p>',
+        markdown: `/me ${$t({defaultMessage: "is busy working"})}`,
+        // output_html required since /me rendering is not done in Markdown processor.
+        output_html: `<p><span class="sender_name">Iago</span> <span class="status-message">${$t({defaultMessage: "is busy working"})}</span></p>`,
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
-        output_html:
-            '<p><time datetime="2023-05-28T08:00:00Z"><span class="timestamp-content-wrapper"><i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>Sun, May 28, 2023, 1:30 PM</span></time></p>',
     },
     {
-        markdown: `/poll What did you drink this morning?
-Milk
-Tea
-Coffee`,
+        markdown: `/poll ${$t({defaultMessage: "What did you drink this morning?"})}
+${$t({defaultMessage: "Milk"})}
+${$t({defaultMessage: "Tea"})}
+${$t({defaultMessage: "Coffee"})}`,
+        // output_html required since poll rendering is done outside Markdown.
         output_html: `\
 <div class="poll-widget">
-    <h4 class="poll-question-header">What did you drink this morning?</h4>
+    <h4 class="poll-question-header">${$t({defaultMessage: "What did you drink this morning?"})}</h4>
     <i class="fa fa-pencil poll-edit-question"></i>
     <ul class="poll-widget">
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Milk</span>
+        <span>${$t({defaultMessage: "Milk"})}</span>
     </li>
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Tea</span>
+        <span>${$t({defaultMessage: "Tea"})}</span>
     </li>
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Coffee</span>
+        <span>${$t({defaultMessage: "Coffee"})}</span>
     </li>
     </ul>
 </div>
 `,
     },
     {
-        markdown: `/todo Today's tasks
-Task 1: This is the first task.
-Task 2: This is the second task
-Last task`,
+        markdown: `/todo ${$t({defaultMessage: "Today's tasks"})}
+${$t({defaultMessage: "Task 1"})}: ${$t({defaultMessage: "This is the first task."})}
+${$t({defaultMessage: "Task 2"})}: ${$t({defaultMessage: "This is the second task."})}
+${$t({defaultMessage: "Last task"})}`,
+        // output_html required since todo rendering is done outside Markdown.
         output_html: `\
 <div class="message_content rendered_markdown">
     <div class="widget-content">
         <div class="todo-widget">
-            <h4>Today's tasks</h4>
+            <h4>${$t({defaultMessage: "Today's tasks"})}</h4>
             <ul class="todo-widget">
                 <li>
                     <label class="checkbox">
@@ -212,7 +211,7 @@ Last task`,
                             <span class="rendered-checkbox"></span>
                         </div>
                         <div>
-                            <s><strong>Task 1:</strong> This is the first task.</s>
+                            <s><strong>${$t({defaultMessage: "Task 1"})}:</strong> ${$t({defaultMessage: "This is the first task."})}</s>
                         </div>
                     </label>
                 </li>
@@ -223,7 +222,7 @@ Last task`,
                             <span class="rendered-checkbox"></span>
                         </div>
                         <div>
-                            <strong>Task 2:</strong> This is the second task.
+                            <strong>${$t({defaultMessage: "Task 2"})}:</strong> ${$t({defaultMessage: "This is the second task."})}
                         </div>
                     </label>
                 </li>
@@ -234,7 +233,7 @@ Last task`,
                             <span class="rendered-checkbox"></span>
                         </div>
                         <div>
-                            <strong>Last task</strong>
+                            <strong>${$t({defaultMessage: "Last task"})}</strong>
                         </div>
                     </label>
                 </li>
@@ -264,12 +263,39 @@ Last task`,
 ];
 
 export function set_up_toggler(): void {
+    const helper_config: markdown.MarkdownHelpers = {
+        ...markdown.web_app_helpers!,
+        get_actual_name_from_user_id() {
+            return $t({defaultMessage: "Joe Smith"});
+        },
+        get_user_id_from_name() {
+            return 0;
+        },
+        get_user_group_from_name(name) {
+            return {id: 0, name};
+        },
+        is_member_of_user_group() {
+            return true;
+        },
+        get_stream_by_name(stream_name) {
+            return {stream_id: 0, name: stream_name};
+        },
+    };
     for (const row of markdown_help_rows) {
         if (row.markdown && !row.output_html) {
             const message = {
                 raw_content: row.markdown,
-                ...markdown.render(row.markdown),
+                ...markdown.render(row.markdown, helper_config),
             };
+            const rendered_content = new DOMParser().parseFromString(message.content, "text/html");
+            // We remove all attributes from stream links in the markdown content since
+            // we just want to display a mock template.
+            for (const elt of rendered_content.querySelectorAll("a[data-stream-id]")) {
+                const anchor_element = document.createElement("a");
+                anchor_element.innerHTML = elt.innerHTML;
+                elt.replaceWith(anchor_element);
+            }
+            message.content = rendered_content.body.innerHTML;
             row.output_html = postprocess_content(message.content);
         }
     }
