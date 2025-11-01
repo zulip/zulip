@@ -302,7 +302,7 @@ export function update_expanded_views_for_search(search_value: string): void {
     }
 
     let any_view_visible = false;
-    const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const expanded_views = left_sidebar_navigation_area.get_built_in_pinned_views();
     for (const view of expanded_views) {
         let show_view = search_util.vanilla_match({
             val: view.name,
@@ -325,9 +325,11 @@ export function update_expanded_views_for_search(search_value: string): void {
 }
 
 export function initialize_left_sidebar(): void {
-    const primary_condensed_views =
-        left_sidebar_navigation_area.get_built_in_primary_condensed_views();
-    const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const pinned_views = left_sidebar_navigation_area.get_built_in_pinned_views();
+    const unpinned_views = left_sidebar_navigation_area.get_built_in_unpinned_views();
+    const has_unpinned_views = unpinned_views.length > 0;
+    const is_condensed = left_sidebar_navigation_area.is_condensed();
+    const should_hide_menu = !is_condensed && !has_unpinned_views;
 
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
@@ -339,8 +341,9 @@ export function initialize_left_sidebar(): void {
         is_recent_view_home_view:
             user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         is_spectator: page_params.is_spectator,
-        primary_condensed_views,
-        expanded_views,
+        primary_condensed_views: pinned_views,
+        expanded_views: pinned_views,
+        should_hide_menu,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

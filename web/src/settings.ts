@@ -10,6 +10,7 @@ import * as common from "./common.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -151,6 +152,10 @@ export function build_page(): void {
                 user_settings.web_line_height_percent,
             ),
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
+        navigation_views: navigation_views.get_all_navigation_views().map((view) => ({
+            ...view,
+            setting_name: `navigation_view_${view.fragment}`,
+        })),
     });
 
     $(".settings-box").html(rendered_settings_tab);
