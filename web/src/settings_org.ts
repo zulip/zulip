@@ -18,7 +18,7 @@ import {
     type RealmGroupSettingNameSupportingAnonymousGroups,
     realm_group_setting_name_supporting_anonymous_groups_schema,
 } from "./group_permission_settings.ts";
-import {$t, $t_html, get_language_name} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -598,6 +598,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
+        case "realm_default_language":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             assert(typeof property_value === "string" || typeof property_value === "number");
@@ -636,18 +637,6 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             );
             break;
         }
-        case "realm_default_language":
-            assert(typeof property_value === "string");
-            $("#org-notifications .language_selection_widget").attr(
-                "data-language-code",
-                property_value,
-            );
-            $("#org-notifications .language_selection_widget .language_selection_button").text(
-                // We know this is defined, since we got the `property_value` from a dropdown
-                // of valid language options.
-                get_language_name(property_value)!,
-            );
-            break;
         case "realm_org_type":
             assert(typeof property_value === "number");
             settings_components.set_input_element_value($elem, property_value);
@@ -1268,6 +1257,11 @@ export let init_dropdown_widgets = (): void => {
     set_up_dropdown_widget(
         "realm_default_code_block_language",
         combined_code_language_options,
+        "language",
+    );
+    set_up_dropdown_widget(
+        "realm_default_language",
+        settings_components.language_options,
         "language",
     );
 

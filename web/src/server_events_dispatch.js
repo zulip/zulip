@@ -952,7 +952,7 @@ export function dispatch_normal_event(event) {
                 // a reload is fundamentally required because we
                 // cannot rerender with the new language the strings
                 // present in the backend/Jinja2 templates.
-                settings_preferences.set_default_language_name(event.language_name);
+                settings_preferences.set_default_language(event.value);
             }
             if (event.property === "web_home_view") {
                 left_sidebar_navigation_area.handle_home_view_changed(event.value);

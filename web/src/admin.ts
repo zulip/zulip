@@ -6,7 +6,7 @@ import render_settings_organization_settings_tip from "../templates/settings/org
 
 import * as bot_data from "./bot_data.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
-import {$t, get_language_name, language_list} from "./i18n.ts";
+import {$t, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -181,7 +181,6 @@ export function build_page(): void {
             realm.realm_message_edit_history_visibility_policy,
         realm_allow_message_editing: realm.realm_allow_message_editing,
         language_list,
-        realm_default_language_name: get_language_name(realm.realm_default_language),
         realm_default_language_code: realm.realm_default_language,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
