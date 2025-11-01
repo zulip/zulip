@@ -773,7 +773,7 @@ function handle_edit_form($tbody: JQuery): void {
         }
 
         const user = people.get_by_user_id(user_id);
-        user_profile.show_user_profile(user, "manage-profile-tab");
+        void user_profile.show_user_profile(user, "manage-profile-tab");
     });
 }
 
