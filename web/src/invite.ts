@@ -1,15 +1,17 @@
 import ClipboardJS from "clipboard";
 import {add} from "date-fns";
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
+import * as banners from "./banners.ts";
+import type {Banner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
@@ -56,8 +58,9 @@ type CommonInvitationData = {
     welcome_message_custom_text?: string;
 };
 
-function reset_error_messages(): void {
+function reset_invite_modal_banners(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
+    $("#invite-success-banner-container").empty();
 
     if (page_params.development_environment) {
         $("#dev_env_msg").hide().text("").removeClass(common.status_classes);
@@ -145,7 +148,7 @@ function get_common_invitation_data(): CommonInvitationData {
 }
 
 function beforeSend(): void {
-    reset_error_messages();
+    reset_invite_modal_banners();
     // TODO: You could alternatively parse the emails here, and return errors to
     // the user if they don't match certain constraints (i.e. not real email addresses,
     // aren't in the right domain, etc.)
@@ -256,6 +259,29 @@ function submit_invitation_form(): void {
     });
 }
 
+const copy_invite_link_banner = (invite_link: string): Banner => ({
+    intent: "success",
+    label: new Handlebars.SafeString(
+        $t_html(
+            {defaultMessage: "Link: <z-link></z-link>"},
+            {
+                "z-link": () =>
+                    `<a href='${invite_link}' id='multiuse_invite_link' class='banner-link'>${invite_link}</a>`,
+            },
+        ),
+    ),
+    buttons: [
+        {
+            attention: "primary",
+            icon: "copy",
+            label: $t({defaultMessage: "Copy link"}),
+            id: "copy_generated_invite_link",
+        },
+    ],
+    close_button: false,
+    custom_classes: "copy-invite-link-banner",
+});
+
 function generate_multiuse_invite(): void {
     const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
@@ -263,10 +289,17 @@ function generate_multiuse_invite(): void {
         url: "/json/invites/multiuse",
         data,
         beforeSend,
-        success(data) {
-            const copy_link_html = render_copy_invite_link(data);
-            ui_report.success(copy_link_html, $invite_status);
-            const clipboard = new ClipboardJS("#copy_generated_invite_link");
+        success(raw_data) {
+            const data = z.object({invite_link: z.string()}).parse(raw_data);
+            banners.open(
+                copy_invite_link_banner(data.invite_link),
+                $("#invite-success-banner-container"),
+            );
+            util.the($(".copy-invite-link-banner")).scrollIntoView();
+
+            const clipboard = new ClipboardJS("#copy_generated_invite_link", {
+                text: () => data.invite_link,
+            });
 
             clipboard.on("success", () => {
                 const tippy_timeout_in_ms = 800;
@@ -277,7 +310,7 @@ function generate_multiuse_invite(): void {
             });
         },
         error(xhr) {
-            ui_report.error("", xhr, $invite_status);
+            ui_report.error($t({defaultMessage: "Failed"}), xhr, $invite_status);
         },
         complete() {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Create link"}));
@@ -615,7 +648,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                         break;
                 }
                 toggle_invite_submit_button(key);
-                reset_error_messages();
+                reset_invite_modal_banners();
             },
         });
         const $container = $("#invite_users_option_tabs_container");
