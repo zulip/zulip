@@ -23,6 +23,11 @@
 }
 
 .todo-widget {
+    & li.todo-item-draggable {
+        margin-left: -26px !important;
+        padding-left: 5px;
+    }
+
     .todo-task-list-title-bar {
         flex: 1 1 auto;
         display: flex;
@@ -43,6 +48,41 @@
     .add-task,
     .add-desc {
         font-weight: 400;
+    }
+
+    .todo-item {
+        align-items: center;
+        border-radius: 6px;
+
+        &:hover {
+            background-color: var(--color-background-hover-todo-item);
+
+            div.todo-draggable {
+                opacity: 0.5;
+            }
+        }
+    }
+
+    div.todo-draggable {
+        height: min-content;
+        cursor: grab;
+        opacity: 0;
+
+        i.drag-icon {
+            display: block;
+        }
+    }
+
+    .dragging {
+        user-select: none;
+        background-color: var(--color-background-hover-todo-item);
+        position: relative;
+        z-index: 1;
+
+        div.todo-draggable {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
     }
 
     & label.checkbox {
