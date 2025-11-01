@@ -89,8 +89,8 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
     // Instead of waiting for reactivate button using the `waitForSelector` function,
     // we wait until the input is focused because the `waitForSelector` function
     // doesn't guarantee that element is interactable.
-    await page.waitForSelector("input[aria-label='Filter deactivated users']", {visible: true});
-    await page.click("input[aria-label='Filter deactivated users']");
+    await page.waitForSelector("#filter-deactivated-users", {visible: true});
+    await page.click("#filter-deactivated-users");
     await page.waitForFunction(
         () => document.activeElement?.classList?.contains("search") === true,
     );
