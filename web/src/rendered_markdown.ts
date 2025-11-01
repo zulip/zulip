@@ -291,13 +291,8 @@ export const update_elements = ($content: JQuery): void => {
     });
 
     $content.find("span.timestamp-error").each(function (): void {
-        const match_array = /^Invalid time format: (.*)$/.exec($(this).text());
-        assert(match_array !== null);
-        const [, time_str] = match_array;
-        const text = $t(
-            {defaultMessage: "Invalid time format: {timestamp}"},
-            {timestamp: time_str},
-        );
+        const time_str = $(this).text();
+        const text = $t({defaultMessage: "{timestamp}"}, {timestamp: time_str});
         $(this).text(text);
     });
 
