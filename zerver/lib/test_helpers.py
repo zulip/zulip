@@ -403,7 +403,9 @@ class HostRequestMock(HttpRequest):
         RequestNotes.set_notes(
             self,
             RequestNotes(
-                client_name="",
+                client_name=meta_data["HTTP_USER_AGENT"]
+                if meta_data and "HTTP_USER_AGENT" in meta_data
+                else "",  # Mock parse_client() in middleware.py
                 log_data={},
                 tornado_handler_id=None if tornado_handler is None else tornado_handler.handler_id,
                 client=get_client(client_name) if client_name is not None else None,
