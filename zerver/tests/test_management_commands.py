@@ -606,3 +606,57 @@ class TestSendZulipUpdateAnnouncements(ZulipTestCase):
 
         realm.refresh_from_db()
         self.assertEqual(realm.zulip_update_announcements_level, 5)
+
+
+class TestUserChangeNotifications(ZulipTestCase):
+    def test_bulk_change_user_name_sends_notifications(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv") as f:
+            f.write(f"{hamlet.delivery_email},New Hamlet Name\n")
+            data_file = f.name
+
+        try:
+            # Run the bulk_change_user_name command
+            with stdout_suppressed():
+                call_command("bulk_change_user_name", data_file, f"--realm={realm.string_id}")
+
+            # Verify the name was changed
+            hamlet.refresh_from_db()
+            self.assertEqual(hamlet.full_name, "New Hamlet Name")
+
+            # Verify a notification was sent (acting_user=None means system change)
+            message = most_recent_message(hamlet)
+            self.assertIn("The following changes have been made to your account", message.content)
+            self.assertIn("full name", message.content)
+            self.assertIn("King Hamlet", message.content)  # old name
+            self.assertIn("New Hamlet Name", message.content)  # new name
+        finally:
+            os.unlink(data_file)
+
+    def test_change_user_role_sends_notifications(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Hamlet starts as a member
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MEMBER)
+
+        # Change hamlet's role to moderator via management command
+        with stdout_suppressed():
+            call_command(
+                "change_user_role", hamlet.delivery_email, "moderator", f"--realm={realm.string_id}"
+            )
+
+        # Verify the role was changed
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MODERATOR)
+
+        # Verify a notification was sent (acting_user=None means system change)
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        self.assertIn("role", message.content)
+        self.assertIn("Member", message.content)  # old role
+        self.assertIn("Moderator", message.content)  # new role
