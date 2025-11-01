@@ -4,7 +4,6 @@ import * as channel from "./channel.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";
 import type {StateData} from "./state_data.ts";
-import {user_settings} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
@@ -95,7 +94,6 @@ export function set_status_emoji(event: UserStatusEvent): void {
     }
 
     user_status_emoji_info.set(opts.user_id, {
-        emoji_alt_code: user_settings.emojiset === "text",
         ...emoji.get_emoji_details_for_rendering({
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
