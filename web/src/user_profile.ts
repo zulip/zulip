@@ -470,11 +470,7 @@ export function update_user_custom_profile_fields(user: User): void {
 
     const profile_data = {profile_fields};
     $custom_profile_field.html(render_user_custom_profile_fields(profile_data));
-    custom_profile_fields_ui.initialize_custom_user_type_fields(
-        "#user-profile-modal #content",
-        user.user_id,
-        false,
-    );
+    custom_profile_fields_ui.initialize_profile_user_type_pills(user.user_id);
 }
 
 export function hide_user_profile(): void {
@@ -500,11 +496,7 @@ function initialize_user_type_fields(user: User): void {
     // Avoid duplicate pill fields, by removing existing ones.
     $("#user-profile-modal .pill").remove();
     if (!user.is_bot) {
-        custom_profile_fields_ui.initialize_custom_user_type_fields(
-            "#user-profile-modal #content",
-            user.user_id,
-            false,
-        );
+        custom_profile_fields_ui.initialize_profile_user_type_pills(user.user_id);
     } else {
         initialize_bot_owner("#user-profile-modal #content", user.user_id);
     }

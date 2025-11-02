@@ -337,6 +337,7 @@
 
 /* These pill are similar to .not-editable, but are meant to show
    profile cards when clicked. */
+.user-type-custom-field-pill-container > .display_only_pill,
 .panel_user_list > .pill-container,
 .creator_details > .display_only_pill {
     gap: 2px;
@@ -349,6 +350,13 @@
 
     &:hover {
         color: inherit;
+    }
+
+    /* `settings.css` applies a :focus-within box-shadow to `.custom_user_field .pill-container`
+    and `.bot_owner_user_field .pill-container`.That effect conflicts with the unified pill
+    styling (no shadow), so we override it here. */
+    &:focus-within {
+        box-shadow: none;
     }
 
     > .pill {
@@ -368,6 +376,10 @@
             }
         }
     }
+}
+
+#user-profile-modal .pill-value {
+    max-width: 100%;
 }
 
 .creator_details > .display_only_pill {
@@ -401,6 +413,13 @@
             }
         }
     }
+}
+
+.user-type-custom-field-pill-container {
+    display: inline-flex;
+    gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
+    max-width: 100%;
+    flex-wrap: wrap;
 }
 
 .display_only_group_pill .zulip-icon-user-group {

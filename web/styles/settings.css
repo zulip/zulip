@@ -1737,6 +1737,10 @@ label.preferences-radio-choice-label {
     }
 }
 
+.user-type-custom-field-pill-container .pill-container {
+    max-width: none;
+}
+
 #get_api_key_button {
     display: block;
 }
