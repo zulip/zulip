@@ -52,17 +52,6 @@
                 outline: 0;
             }
 
-            .user-circle {
-                /* 11px at 16px/1em */
-                font-size: 0.6875em;
-                align-self: center;
-                /* TODO: A grid rewrite of typeahead rows
-                   should help to obviate these kinds of
-                   fiddly spacing hacks. */
-                margin-right: 2px;
-                margin-left: -2px;
-            }
-
             &.topic-typeahead-link {
                 gap: 5px;
             }
@@ -193,14 +182,22 @@
     }
 }
 
-/* For FontAwesome icons and zulip icons used in place of images for some users. */
-.typeahead-image {
-    font-size: 1.3571em; /* 19px at 14px em */
+/* Container for image and presence indicator */
+.typeahead-image-container {
+    position: relative;
     display: inline-block;
     height: 1.1052em; /* 21px at 19px/1em */
     width: 1.1052em; /* 21px at 19px/1em */
-    border-radius: 4px;
+    flex-shrink: 0;
+}
 
+/* For FontAwesome icons and zulip icons used in place of images for some users. */
+.typeahead-image {
+    font-size: 1.3571em; /* 19px at 14px em */
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 4px;
     text-align: center;
 
     &.zulip-icon-user-group {
@@ -217,6 +214,19 @@
         font size used to calculate presence circle width and gap. */
         margin-left: calc((0.6875 + 0.3571) * var(--base-font-size-px));
     }
+}
+
+/* Position presence dot in bottom-right corner */
+.typeahead-image-container .user-circle {
+    position: absolute;
+    font-size: 0.5em;
+    bottom: -0.5px;
+    right: -0.5px;
+    background-color: var(--color-background);
+    border: 1.5px solid var(--color-background);
+    border-radius: 50%;
+    margin: 0;
+    line-height: 1;
 }
 
 .typeahead-text-container {
