@@ -32,7 +32,7 @@ import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
 // Opts sent to `compose_actions.start`.
-type ComposeActionsStartOpts = {
+export type ComposeActionsStartOpts = {
     message_type: "private" | "stream";
     force_close?: boolean;
     trigger?: string;

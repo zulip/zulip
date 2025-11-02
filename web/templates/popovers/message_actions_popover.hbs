@@ -16,6 +16,13 @@
                 {{popover_hotkey_hints "<"}}
             </a>
         </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" data-message-id="{{message_id}}" class="reply_button popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-reply" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Reply to message" }}</span>
+            </a>
+        </li>
+
         {{/if}}
         {{!-- Group 2 --}}
         {{#if (or editability_menu_item move_message_menu_item should_display_delete_option)}}

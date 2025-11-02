@@ -128,6 +128,13 @@ export function initialize({
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
+            $popper.one("click", ".reply_button", (e) => {
+                compose_reply.reply_to_message({message_id});
+                e.preventDefault();
+                e.stopPropagation();
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
             $popper.one("click", ".forward_button", (e) => {
                 compose_reply.quote_message({
                     trigger: "popover respond",

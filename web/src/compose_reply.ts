@@ -24,6 +24,8 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as unread_ops from "./unread_ops.ts";
+import type {ComposeActionsStartOpts} from "./compose_actions";
+
 
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
@@ -434,3 +436,26 @@ export function initialize(): void {
         respond_to_message({trigger: "reply button"});
     });
 }
+
+
+
+
+export function reply_to_message({message_id}: {message_id: number}): void {
+    const message = message_lists.current?.get(message_id);
+    if (!message) {
+        return;
+    }
+    const compose_opts: ComposeActionsStartOpts = {
+        message_type: message.type,
+        trigger: "reply_to_message",
+        is_reply: true,
+    };
+    if (message.type === "stream") {
+        compose_opts.stream_id = message.stream_id;
+        compose_opts.topic = message.topic;
+    }
+    compose_actions.start(compose_opts);
+    const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
+    compose_ui.insert_syntax_and_focus(mention);
+}
+
