@@ -1,4 +1,5 @@
-.pill-container {
+.pill-container,
+.view-only-pill {
     display: inline-flex;
     gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
     flex-wrap: wrap;
@@ -21,7 +22,7 @@
         position: relative;
 
         height: var(--height-input-pill);
-        /* Make sure the `height` property
+        /* Make sure the height property
            is the authoritative source of an
            input pill's height, without being
            affected by borders, etc. */
@@ -111,7 +112,7 @@
                ::before content where the icon sits. */
             display: flex;
             align-items: center;
-            /* !important overrides `.dark-theme:root a:hover` */
+            /* !important overrides .dark-theme:root a:hover */
             color: var(--color-input-pill-close) !important;
             opacity: 0.7;
         }
@@ -148,7 +149,7 @@
             }
 
             .pill-close-button {
-                /* !important overrides `.dark-theme:root a:hover` */
+                /* !important overrides .dark-theme:root a:hover */
                 color: var(--color-close-deactivated-user-pill) !important;
             }
 
@@ -236,6 +237,19 @@
     }
 }
 
+.view-only-pill {
+    border: none;
+    background: transparent;
+}
+
+.view-only-pill .pill {
+    outline: 1px solid var(--color-outline-low-attention-input-pill);
+}
+
+.view-only-pill .pill:hover {
+    outline: none;
+}
+
 .person_picker {
     .pill:hover {
         background-color: var(--color-background-input-pill-hover);
@@ -304,7 +318,7 @@
            when presented with an outline. */
         outline-offset: -1px;
 
-        /* Display `(you)` with the same 5px padding to the right
+        /* Display (you) with the same 5px padding to the right
            as ordinary .pill-value text. */
         .my_user_status {
             padding-right: 5px;

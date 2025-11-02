@@ -145,15 +145,29 @@ export function initialize_custom_user_type_fields(
             field.type === field_types.USER.id &&
             (field_value_raw !== undefined || is_target_element_editable)
         ) {
-            const $pill_container = $(element_id)
-                .find(
-                    `.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"] .pill-container`,
-                )
-                .expectOne();
+            let $pill_container = $(element_id).find(
+                `.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"] .pill-container`,
+            );
+
+            // If there is no pill-container, fall back to view-only-pill.
+            if ($pill_container.length === 0) {
+                $pill_container = $(element_id).find(
+                    `.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"] .view-only-pill`,
+                );
+            }
+
+            $pill_container.expectOne();
             const pill_config = {
                 exclude_inaccessible_users: is_target_element_editable,
             };
-            const pills = user_pill.create_pills($pill_container, pill_config);
+
+            // We create an options object and set 'disabled' to true
+            // if the element is NOT editable.
+            const pill_options = {
+                disabled: !is_target_element_editable,
+            };
+
+            const pills = user_pill.create_pills($pill_container, pill_config, pill_options);
 
             if (field_value_raw !== undefined) {
                 const field_value = user_value_schema.parse(JSON.parse(field_value_raw));

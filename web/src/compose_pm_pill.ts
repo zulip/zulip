@@ -23,7 +23,8 @@ export function initialize_pill(): UserPillWidget {
         create_item_from_text: user_pill.create_item_from_user_id,
         get_text_from_item: user_pill.get_unique_full_name_from_item,
         get_display_value_from_item: user_pill.get_display_value_from_item,
-        generate_pill_html: (item: UserPill) => user_pill.generate_pill_html(item, true),
+        generate_pill_html: (item: UserPill) =>
+            user_pill.generate_pill_html(item, {show_user_status_emoji: true}),
     });
 
     return pill;
