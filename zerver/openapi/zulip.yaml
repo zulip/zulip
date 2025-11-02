@@ -250,103 +250,15 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to clients that have requested the
-                                `update_display_settings` event type and did not include
-                                `user_settings_object` in their `client_capabilities` when
-                                registering the event queue.
-
-                                **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                                connecting to newer servers should declare the `user_settings_object`
-                                client capability and process the `user_settings` event type instead.
-                              deprecated: true
-                              properties:
-                                id:
-                                  $ref: "#/components/schemas/EventIdSchema"
-                                type:
-                                  allOf:
-                                    - $ref: "#/components/schemas/EventTypeSchema"
-                                    - enum:
-                                        - update_display_settings
-                                user:
-                                  type: string
-                                  description: |
-                                    The Zulip API email of the user.
-                                setting_name:
-                                  type: string
-                                  description: |
-                                    Name of the changed display setting.
-                                setting:
-                                  description: |
-                                    New value of the changed setting.
-                                  oneOf:
-                                    - type: boolean
-                                    - type: integer
-                                    - type: string
-                                language_name:
-                                  description: |
-                                    Present only if the setting to be changed is
-                                    `default_language`. Contains the name of the
-                                    new default language in English.
-                                  type: string
-                              additionalProperties: false
-                              example:
-                                {
-                                  "type": "update_display_settings",
-                                  "user": "iago@zulip.com",
-                                  "setting_name": "high_contrast_mode",
-                                  "setting": false,
-                                  "id": 0,
-                                }
-                            - type: object
-                              description: |
-                                Event sent to a user's clients when that user's [notification
-                                settings](/api/update-settings) have changed with an additional
-                                rule that it is only sent to clients that did not include
-                                `user_settings_object` in their `client_capabilities` when
-                                registering the event queue.
-
-                                **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                                connecting to newer servers should declare the `user_settings_object`
-                                client capability and process the `user_settings` event type instead.
-                              deprecated: true
-                              properties:
-                                id:
-                                  $ref: "#/components/schemas/EventIdSchema"
-                                type:
-                                  allOf:
-                                    - $ref: "#/components/schemas/EventTypeSchema"
-                                    - enum:
-                                        - update_global_notifications
-                                user:
-                                  type: string
-                                  description: |
-                                    The Zulip API email of the user.
-                                notification_name:
-                                  type: string
-                                  description: |
-                                    Name of the changed notification setting.
-                                setting:
-                                  description: |
-                                    New value of the changed setting.
-                                  oneOf:
-                                    - type: boolean
-                                    - type: integer
-                                    - type: string
-                              additionalProperties: false
-                              example:
-                                {
-                                  "type": "update_global_notifications",
-                                  "user": "iago@zulip.com",
-                                  "notification_name": "enable_sounds",
-                                  "setting": true,
-                                  "id": 0,
-                                }
-                            - type: object
-                              description: |
                                 Event sent to a user's clients when that user's settings
                                 have changed.
 
-                                **Changes**: New in Zulip 5.0 (feature level 89), replacing the
+                                **Changes**: The `update_display_settings` and `update_global_notifications`
+                                legacy event types that had been deprecated in Zulip 5.0 (feature level 89)
+                                were removed entirely in Zulip 12.0 (feature level ZF-651304). All clients should
+                                be using the `user_settings` event type to access user settings.
+
+                                New in Zulip 5.0 (feature level 89), replacing the
                                 previous `update_display_settings` and `update_global_notifications`
                                 event types, which are still present for backwards compatibility reasons.
                               properties:
@@ -21658,8 +21570,16 @@ paths:
       tags: ["users"]
       description: |
         This endpoint is used to edit the current user's settings.
+        When invoked by a realm owner, it supports bulk updates to
+        settings for specified users or members of user groups using
+        the `target_users` parameter.
 
-        **Changes**: Removed `dense_mode` setting in Zulip 10.0
+        **Changes**: New in Zulip 11.0 (feature level ZF-4fcc57),
+        Added support for bulk updates to settings for specified
+        users or members of user groups using the `target_users`
+        and `skip_if_already_edited` parameters.
+
+        Removed `dense_mode` setting in Zulip 10.0
         (feature level 364) as we now have `web_font_size_px` and
         `web_line_height_percent` settings for more control.
 
@@ -21708,6 +21628,42 @@ paths:
             schema:
               type: object
               properties:
+                target_users:
+                  description: |
+                    An object specifying the users and user groups whose settings an
+                    administrator intends to modify. It contains two optional fields
+                    `user_ids` and `group_ids`. This parameter is only applicable when
+                    the requesting user has realm owner privileges, enabling updates
+                    across multiple users or group members.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-4fcc57).
+                  type: object
+                  properties:
+                    user_ids:
+                      description: |
+                        A list of integer user IDs representing individual users whose settings will be updated.
+                      type: array
+                      items:
+                        type: integer
+                    group_ids:
+                      description: |
+                        A list of integer group IDs representing user groups, where settings will be applied to
+                        all active members of the specified groups.
+                      type: array
+                      items:
+                        type: integer
+                  example: {"user_ids": [6, 8], "group_ids": [24]}
+                skip_if_already_edited:
+                  description: |
+                    Whether to skip updating a user's setting if it has been previously
+                    modified by user. This parameter is only applicable when the requesting
+                    user has realm owner privileges, enabling bulk updates across multiple
+                    users or group members. If provided, the server validates the user IDs
+                    and ensures they belong to the same realm as the administrator.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-4fcc57).
+                  type: boolean
+                  example: false
                 full_name:
                   description: |
                     A new display name for the user.
@@ -22432,6 +22388,10 @@ paths:
                   type: boolean
                   example: true
             encoding:
+              target_users:
+                contentType: application/json
+              skip_if_already_edited:
+                contentType: application/json
               twenty_four_hour_time:
                 contentType: application/json
               web_mark_read_on_scroll_policy:

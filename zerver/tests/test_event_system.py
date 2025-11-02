@@ -528,7 +528,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertIn("gravatar.com", message["avatar_url"])
 
         do_change_user_setting(
-            user_profile,
+            [user_profile],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -680,7 +680,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -691,7 +691,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
@@ -708,7 +708,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -719,7 +719,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
@@ -801,12 +801,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("user_settings", result)
         for prop in UserProfile.property_types:
-            if prop in {
-                **UserProfile.display_settings_legacy,
-                **UserProfile.notification_settings_legacy,
-            }:
-                # Only legacy settings are included in the top level.
-                self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
 
     def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
@@ -1290,8 +1284,6 @@ class FetchQueriesTest(ZulipTestCase):
             # 3 of the 9 queries here are shared with other event types
             # as mentioned above.
             subscription=9,
-            update_display_settings=0,
-            update_global_notifications=0,
             update_message_flags=7,
             user_settings=0,
             user_status=1,

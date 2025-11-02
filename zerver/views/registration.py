@@ -781,9 +781,9 @@ def registration_helper(
                 do_change_user_role(user_profile, role, acting_user=user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
-            do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
+            do_change_user_setting([user_profile], "timezone", timezone, acting_user=user_profile)
             do_change_user_setting(
-                user_profile,
+                [user_profile],
                 "default_language",
                 get_default_language_for_new_user(realm, request=request),
                 acting_user=None,

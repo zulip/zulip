@@ -111,13 +111,13 @@ class SendLoginEmailTest(ZulipTestCase):
         user.date_joined = mock_time - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
         user.save()
 
-        do_change_user_setting(user, "enable_login_emails", False, acting_user=None)
+        do_change_user_setting([user], "enable_login_emails", False, acting_user=None)
         self.assertFalse(user.enable_login_emails)
         with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
         self.assert_length(mail.outbox, 0)
 
-        do_change_user_setting(user, "enable_login_emails", True, acting_user=None)
+        do_change_user_setting([user], "enable_login_emails", True, acting_user=None)
         self.assertTrue(user.enable_login_emails)
         with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
