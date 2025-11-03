@@ -763,7 +763,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             "003.png",
             "bitbucket",
             bot_name="Bitbucket Bot",
-            channel="bitbucket",
+            channel="commits",
         )
     ],
     "bitbucket3": [
@@ -772,7 +772,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
             "004.png",
             "bitbucket",
             bot_name="Bitbucket Server Bot",
-            channel="bitbucket",
+            channel="commits",
         )
     ],
     "buildbot": [WebhookScreenshotConfig("started.json")],
@@ -795,9 +795,13 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "freshstatus": [WebhookScreenshotConfig("freshstatus_incident_open.json")],
     "front": [WebhookScreenshotConfig("inbound_message.json")],
     "gitea": [WebhookScreenshotConfig("pull_request__merged.json", channel="commits")],
-    "github": [WebhookScreenshotConfig("push__1_commit.json")],
+    "github": [WebhookScreenshotConfig("push__1_commit.json", channel="commits")],
     "githubsponsors": [WebhookScreenshotConfig("created.json", channel="github")],
-    "gitlab": [WebhookScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
+    "gitlab": [
+        WebhookScreenshotConfig(
+            "push_hook__push_local_branch_without_commits.json", channel="commits"
+        )
+    ],
     "gocd": [WebhookScreenshotConfig("pipeline_with_mixed_job_result.json")],
     "gogs": [WebhookScreenshotConfig("pull_request__opened.json", channel="commits")],
     "gosquared": [WebhookScreenshotConfig("traffic_spike.json")],
@@ -840,7 +844,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "radarr": [WebhookScreenshotConfig("radarr_movie_grabbed.json")],
     "raygun": [WebhookScreenshotConfig("new_error.json")],
     "reviewboard": [WebhookScreenshotConfig("review_request_published.json")],
-    "rhodecode": [WebhookScreenshotConfig("push.json")],
+    "rhodecode": [WebhookScreenshotConfig("push.json", channel="commits")],
     "rundeck": [WebhookScreenshotConfig("start.json")],
     "semaphore": [WebhookScreenshotConfig("pull_request.json")],
     "sentry": [WebhookScreenshotConfig("event_for_exception_python.json")],
