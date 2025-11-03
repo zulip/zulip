@@ -294,6 +294,46 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 zerver_logger.output[2],
             )
 
+        # `ANDROID_FCM_CREDENTIALS_PATH` is unset / fcm_app=None.
+        message_id = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        with (
+            mock.patch("zilencer.lib.push_notifications.fcm_app", new=None),
+            mock.patch(
+                "zilencer.lib.push_notifications.send_e2ee_push_notification_apple",
+                return_value=SentPushNotificationResult(
+                    successfully_sent_count=1,
+                    delete_device_ids=[],
+                ),
+            ),
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+            self.assertLogs("zilencer.lib.push_notifications", level="ERROR") as zilencer_logger,
+            mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
+        ):
+            handle_push_notification(hamlet.id, missed_message)
+
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sending push notifications to mobile clients for user {hamlet.id}",
+                zerver_logger.output[0],
+            )
+            self.assertEqual(
+                "ERROR:zilencer.lib.push_notifications:"
+                "FCM: Dropping push notifications since ANDROID_FCM_CREDENTIALS_PATH is unset",
+                zilencer_logger.output[0],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 0 via FCM, 1 via APNs in 2.000s",
+                zerver_logger.output[2],
+            )
+
     def test_early_return_if_expired_time_set(self) -> None:
         aaron = self.example_user("aaron")
         hamlet = self.example_user("hamlet")

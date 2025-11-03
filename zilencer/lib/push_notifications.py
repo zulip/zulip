@@ -88,6 +88,13 @@ def send_e2ee_push_notification_android(
     successfully_sent_count = 0
     delete_device_ids: list[int] = []
 
+    if fcm_app is None:
+        logger.error("FCM: Dropping push notifications since ANDROID_FCM_CREDENTIALS_PATH is unset")
+        return SentPushNotificationResult(
+            successfully_sent_count=successfully_sent_count,
+            delete_device_ids=delete_device_ids,
+        )
+
     try:
         batch_response = firebase_messaging.send_each(fcm_requests, app=fcm_app)
     except firebase_exceptions.FirebaseError:
