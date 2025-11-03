@@ -2512,7 +2512,7 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(
             m.output[0],
-            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (with stripe_customer_id: cus_123) failed because of existing active plan.",
+            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (stripe: cus_123) failed because of existing active plan.",
         )
         self.assert_length(m.output, 1)
 
@@ -4419,7 +4419,7 @@ class StripeTest(StripeTestCase):
             )
         self.assertEqual(
             m.output[0],
-            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (with stripe_customer_id: cus_123) failed because of existing active plan.",
+            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (stripe: cus_123) failed because of existing active plan.",
         )
         self.assertEqual(
             context.exception.error_description, "subscribing with existing subscription"
