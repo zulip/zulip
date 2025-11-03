@@ -4351,10 +4351,10 @@ class RealmBillingSession(BillingSession):
 
     def send_realm_created_internal_admin_message(self) -> None:
         channel = "signups"
-        topic = "new organizations"
         support_url = self.support_url()
-        organization_type = get_org_type_display_name(self.realm.org_type)
-        message = f"[{self.realm.name}]({support_url}) ([{self.realm.display_subdomain}]({self.realm.url})). Organization type: {organization_type}"
+        organization_type = get_org_type_display_name(self.realm.org_type).lower()
+        topic = f"{organization_type} signups"
+        message = f"[{self.realm.name}]({support_url}) ([{self.realm.display_subdomain}]({self.realm.url}))."
         self.send_support_admin_realm_internal_message(channel, topic, message)
 
 

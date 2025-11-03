@@ -1464,8 +1464,7 @@ class RealmCreationTest(ZulipTestCase):
         # Check organization name, subdomain and organization type are in message content
         self.assertIn("Zulip Test", messages[0].content)
         self.assertIn("custom-test", messages[0].content)
-        self.assertIn("Organization type: Business", messages[0].content)
-        self.assertEqual("new organizations", messages[0].topic_name())
+        self.assertEqual("business signups", messages[0].topic_name())
 
         realm_creation_audit_log = RealmAuditLog.objects.get(
             realm=realm, event_type=AuditLogEventType.REALM_CREATED
