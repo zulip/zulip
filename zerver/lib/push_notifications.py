@@ -1370,14 +1370,15 @@ def send_push_notifications_legacy(
     # While sending push notifications for new messages to older clients
     # (which don't support E2EE), if `require_e2ee_push_notifications`
     # realm setting is set to `true`, we redact the content.
-    if gcm_payload.get("event") != "remove" and user_profile.realm.require_e2ee_push_notifications:
+    if user_profile.realm.require_e2ee_push_notifications:
         # Make deep copies so redaction doesn't affect the original dicts
-        apns_payload = copy.deepcopy(apns_payload)
-        gcm_payload = copy.deepcopy(gcm_payload)
-
         placeholder_content = _("New message")
-        apns_payload["alert"]["body"] = placeholder_content
-        gcm_payload["content"] = placeholder_content
+        if gcm_payload and gcm_payload.get("event") != "remove":
+            gcm_payload = copy.deepcopy(gcm_payload)
+            gcm_payload["content"] = placeholder_content
+        if apns_payload and apns_payload["custom"]["zulip"].get("event") != "remove":
+            apns_payload = copy.deepcopy(apns_payload)
+            apns_payload["alert"]["body"] = placeholder_content
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(
