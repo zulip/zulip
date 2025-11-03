@@ -1,21 +1,21 @@
 {
-  "amount": 17442,
+  "amount": 56000,
   "currency": "usd",
   "customer": "cus_NORMALIZED",
   "date": 1000000000,
-  "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
+  "description": "Zulip Cloud Standard - renewal",
   "discountable": false,
   "discounts": [],
   "id": "invoice_plan--InvoiceItem.create.2.json",
   "invoice": "in_NORMALIZED",
   "livemode": false,
   "metadata": {},
-  "net_amount": 17442,
+  "net_amount": 56000,
   "object": "invoiceitem",
   "parent": null,
   "period": {
-    "end": 1357095845,
-    "start": 1334113445
+    "end": 1388631845,
+    "start": 1357095845
   },
   "pricing": {
     "price_details": {
@@ -23,10 +23,10 @@
       "product": "prod_NORMALIZED"
     },
     "type": "price_details",
-    "unit_amount_decimal": "5814"
+    "unit_amount_decimal": "8000"
   },
   "proration": false,
-  "quantity": 3,
+  "quantity": 7,
   "tax_rates": [],
   "test_clock": null
 }
