@@ -412,6 +412,7 @@ module = [
     "ahocorasick.*",
     "bitfield.*",
     "bmemcached.*",
+    "bsonstream.*",
     "circuitbreaker.*",
     "digitalocean.*",
     "django_auth_ldap.*",
