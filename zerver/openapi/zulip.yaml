@@ -21485,7 +21485,8 @@ paths:
                               nullable: true
                               description: |
                                 URL for an image to be displayed as an icon in all buttons for
-                                the external authentication method.
+                                the external authentication method. This URL should be resolved
+                                relative to the server's base URL.
 
                                 When `null`, no icon should be displayed.
                             login_url:
