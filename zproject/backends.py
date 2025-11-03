@@ -2475,7 +2475,17 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # it should be False.
     full_name_validated = False
 
-    standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, "next"]
+    # Several backends need to store information about the parameters of a user's
+    # initiated authentication session, while the user is redirected to a third party
+    # authentication provider.
+    # See also DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE.
+    #
+    # The params of interest in practice overlap with SOCIAL_AUTH_FIELDS_STORED_IN_SESSION,
+    # but the objective of the storage is somewhat different, and the storage is not in
+    # request.session, but instead in redis.
+    # Thus for readability of code, we want to name this standard_relay_params, as a distinct
+    # concept.
+    standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION]
 
     @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:

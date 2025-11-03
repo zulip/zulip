@@ -1345,10 +1345,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
+        next = "/some/path"
 
-        def initiate_auth(mobile_flow_otp: str | None = None) -> None:
+        def initiate_auth(mobile_flow_otp: str | None = None, next: str | None = None) -> None:
             url, headers = self.prepare_login_url_and_headers(
-                subdomain="zulip", mobile_flow_otp=mobile_flow_otp
+                subdomain="zulip",
+                mobile_flow_otp=mobile_flow_otp,
+                next=next or "",
             )
             result = self.client_get(url, **headers)
             self.assertEqual(result.status_code, 302)
@@ -1356,15 +1359,17 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             result = self.client_get(result["Location"], **headers)
             self.assertEqual(result.status_code, 302)
 
-        # Start social auth with mobile_flow_otp param. It should get saved into the session
+        # Start social auth with mobile_flow_otp and next params. They should get saved into the session
         # on SOCIAL_AUTH_SUBDOMAIN.
-        initiate_auth(mobile_flow_otp)
+        initiate_auth(mobile_flow_otp, next)
         self.assertEqual(self.client.session["mobile_flow_otp"], mobile_flow_otp)
+        self.assertEqual(self.client.session["next"], next)
 
-        # Make a request without mobile_flow_otp param and verify the field doesn't persist
+        # Make a request without params and verify the fields don't persist
         # in the session from the previous request.
         initiate_auth()
         self.assertEqual(self.client.session.get("mobile_flow_otp"), None)
+        self.assertEqual(self.client.session["next"], None)
 
     def test_social_auth_mobile_and_desktop_flow_in_one_request_error(self) -> None:
         otp = "1234abcd" * 8

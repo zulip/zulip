@@ -1133,6 +1133,11 @@ SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = [
     "mobile_flow_otp",
     "desktop_flow_otp",
     "multiuse_object_key",
+    # Include "next" so python-social-auth treats it like other session fields
+    # and clears it when absent in subsequent auth requests. Otherwise,
+    # it saves it in the session due to its being the redirect field,
+    # but doesn't clear it from the session when the "next" is absent.
+    "next",
 ]
 SOCIAL_AUTH_LOGIN_ERROR_URL = "/login/"
 
