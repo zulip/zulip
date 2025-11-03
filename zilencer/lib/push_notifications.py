@@ -40,9 +40,9 @@ def send_e2ee_push_notification_apple(
     apns_context = get_apns_context()
 
     if apns_context is None:
-        logger.debug(
-            "APNs: Dropping a notification because nothing configured. "
-            "Set ZULIP_SERVICES_URL (or APNS_CERT_FILE)."
+        logger.error(
+            "APNs: Dropping push notifications since "
+            "neither APNS_TOKEN_KEY_FILE nor APNS_CERT_FILE is set."
         )
         return SentPushNotificationResult(
             successfully_sent_count=successfully_sent_count,

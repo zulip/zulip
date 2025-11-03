@@ -221,7 +221,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_fcm() as mock_fcm_messaging,
             mock.patch("zilencer.lib.push_notifications.get_apns_context", return_value=None),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
-            self.assertLogs("zilencer.lib.push_notifications", level="DEBUG") as zilencer_logger,
+            self.assertLogs("zilencer.lib.push_notifications", level="WARNING") as zilencer_logger,
             mock.patch("time.perf_counter", side_effect=[10.0, 12.0]),
         ):
             mock_fcm_messaging.send_each.return_value = self.make_fcm_error_response(
@@ -238,9 +238,8 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 zerver_logger.output[0],
             )
             self.assertEqual(
-                "DEBUG:zilencer.lib.push_notifications:"
-                "APNs: Dropping a notification because nothing configured. "
-                "Set ZULIP_SERVICES_URL (or APNS_CERT_FILE).",
+                "ERROR:zilencer.lib.push_notifications:"
+                "APNs: Dropping push notifications since neither APNS_TOKEN_KEY_FILE nor APNS_CERT_FILE is set.",
                 zilencer_logger.output[0],
             )
             self.assertIn(
