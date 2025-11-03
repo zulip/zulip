@@ -1,0 +1,25 @@
+:root {
+    --color-background-gradient-start: hsl(209deg 40% 50%);
+    --color-background-gradient-end: hsl(210deg 48% 69%);
+    --font-ss3: "Source Sans 3 VF", sans-serif;
+    --font-ops: "Open Sans Variable", sans-serif;
+    --color-background-box: hsl(210deg 44% 92%);
+    --color-background-box-muted: hsl(0deg 0% 100% / 50%);
+    --color-background-box-muted-hover: hsl(0deg 0% 100% / 60%);
+    --color-plan-tab-header: hsl(223deg 40% 30%);
+    --color-plan-tab-copy: hsl(223deg 40% 25% / 70%);
+    --color-box-header: hsl(223deg 43% 25%);
+    --color-box-copy: hsl(223deg 43% 25%);
+    --color-box-copy-fine-print: hsl(223deg 43% 55%);
+    --color-link: hsl(210deg 94% 42%);
+    --color-link-hover: hsl(210deg 100% 50%);
+    --color-link-underline: hsl(210deg 94% 42% / 30%);
+    --color-link-underline-hover: hsl(210deg 100% 50%);
+    --color-link-underline-alternate: hsl(210deg 94% 100% / 40%);
+    --color-link-underline-alternate-hover: hsl(210deg 94% 100% / 80%);
+
+    @media (prefers-color-scheme: dark) {
+        --color-background-gradient-start: hsl(209deg 63% 40%);
+        --color-background-gradient-end: hsl(238deg 28% 50%);
+    }
+}
