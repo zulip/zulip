@@ -5,7 +5,7 @@ import secrets
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from enum import Enum, IntEnum
 from functools import wraps
@@ -3324,6 +3324,17 @@ class BillingSession(ABC):
         )
         return invoice_item_params
 
+    def update_additional_licenses_invoice_item_quantity(
+        self,
+        ledger_entry: LicenseLedger,
+        invoice_item: stripe.params.InvoiceItemCreateParams,
+        licenses_base: int,
+    ) -> stripe.params.InvoiceItemCreateParams:
+        current_quantity = invoice_item.get("quantity")
+        assert current_quantity is not None
+        invoice_item["quantity"] = current_quantity + (ledger_entry.licenses - licenses_base)
+        return invoice_item
+
     def invoice_plan(self, plan: CustomerPlan, event_time: datetime) -> None:
         if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_STARTED:
             raise NotImplementedError(
@@ -3364,8 +3375,15 @@ class BillingSession(ABC):
             # Invoice Variables
             stripe_invoice: stripe.Invoice | None = None
 
+            # Track invoice item parameters for additional licenses added on a specific
+            # date so that we can bundle them into one item on the invoice.
+            current_tracked_date: date | None = None
+            complete_invoice_items: list[stripe.params.InvoiceItemCreateParams] = []
+            pending_invoice_item: stripe.params.InvoiceItemCreateParams | None = None
+
             # Track if we added renewal invoice item which is possibly eligible for discount.
             renewal_invoice_period: stripe.params.InvoiceItemCreateParamsPeriod | None = None
+
             for ledger_entry in LicenseLedger.objects.filter(
                 plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
             ).order_by("id"):
@@ -3397,22 +3415,50 @@ class BillingSession(ABC):
                         invoice_item_params = self.build_renewal_invoice_item_parameters(
                             plan, ledger_entry, stripe_invoice, invoice_period
                         )
+                        complete_invoice_items.append(invoice_item_params)
                     else:
-                        # TODO: Bundle additional licenses by date added so that
-                        # we don't exceed the limit of 250 invoice items in Stripe.
                         assert licenses_base is not None
-                        invoice_item_params = (
-                            self.build_additional_licenses_invoice_item_parameters(
-                                plan, ledger_entry, licenses_base, stripe_invoice, invoice_period
+                        if (
+                            current_tracked_date is not None
+                            and current_tracked_date == ledger_entry.event_time.date()
+                        ):
+                            assert pending_invoice_item is not None
+                            # Update tracked pending invoice item parameters for new
+                            # additional licenses that were added on the same date.
+                            pending_invoice_item = (
+                                self.update_additional_licenses_invoice_item_quantity(
+                                    ledger_entry, pending_invoice_item, licenses_base
+                                )
                             )
-                        )
-
-                    stripe.InvoiceItem.create(**invoice_item_params)
+                        else:
+                            # Add the completed invoice item parameters to the tracked
+                            # list, if it exists.
+                            if pending_invoice_item is not None:
+                                complete_invoice_items.append(pending_invoice_item)
+                            # Create new invoice item parameters and update tracked date.
+                            pending_invoice_item = (
+                                self.build_additional_licenses_invoice_item_parameters(
+                                    plan,
+                                    ledger_entry,
+                                    licenses_base,
+                                    stripe_invoice,
+                                    invoice_period,
+                                )
+                            )
+                            current_tracked_date = ledger_entry.event_time.date()
 
                 # Update license base per ledger_entry.
                 licenses_base = ledger_entry.licenses
                 plan.invoiced_through = ledger_entry
                 plan.save(update_fields=["invoiced_through"])
+
+            # Add pending invoice item parameters to complete invoice
+            # item list, if it exists.
+            if pending_invoice_item is not None:
+                complete_invoice_items.append(pending_invoice_item)
+
+            for invoice_item in complete_invoice_items:
+                stripe.InvoiceItem.create(**invoice_item)
 
             if stripe_invoice is not None:
                 # Only apply discount if this invoice contains renewal of the plan.

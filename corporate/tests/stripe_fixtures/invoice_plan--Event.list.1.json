@@ -45,7 +45,7 @@
       "id": "invoice_plan--Event.list.1.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "invoice_plan--Event.list.1.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
