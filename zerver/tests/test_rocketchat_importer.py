@@ -20,7 +20,6 @@ from zerver.data_import.rocketchat import (
     process_message_attachment,
     process_users,
     rocketchat_data_to_dict,
-    separate_channel_private_and_livechat_messages,
     truncate_name,
 )
 from zerver.data_import.sequencer import IdMapper
@@ -648,108 +647,6 @@ class RocketChatImporter(ZulipTestCase):
             zerver_recipient[12]["id"],
         )
 
-    def test_separate_channel_private_and_livechat_messages(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        room_id_to_room_map: dict[str, dict[str, Any]] = {}
-        team_id_to_team_map: dict[str, dict[str, Any]] = {}
-        dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
-        direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
-        livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
-
-        with self.assertLogs(level="INFO"):
-            categorize_channels_and_map_with_id(
-                channel_data=rocketchat_data["room"],
-                room_id_to_room_map=room_id_to_room_map,
-                team_id_to_team_map=team_id_to_team_map,
-                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-                direct_id_to_direct_map=direct_id_to_direct_map,
-                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            )
-
-        channel_messages: list[dict[str, Any]] = []
-        private_messages: list[dict[str, Any]] = []
-        livechat_messages: list[dict[str, Any]] = []
-
-        separate_channel_private_and_livechat_messages(
-            messages=rocketchat_data["message"],
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-            livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            channel_messages=channel_messages,
-            private_messages=private_messages,
-            livechat_messages=livechat_messages,
-        )
-
-        self.assert_length(rocketchat_data["message"], 87)
-        self.assert_length(channel_messages, 68)
-        self.assert_length(private_messages, 11)
-        self.assert_length(livechat_messages, 8)
-
-        self.assertIn(rocketchat_data["message"][0], channel_messages)
-        self.assertIn(rocketchat_data["message"][1], channel_messages)
-        self.assertIn(rocketchat_data["message"][4], channel_messages)
-
-        self.assertIn(rocketchat_data["message"][11], private_messages)
-        self.assertIn(rocketchat_data["message"][12], private_messages)
-        self.assertIn(rocketchat_data["message"][50], private_messages)  # Group direct message
-
-        self.assertIn(rocketchat_data["message"][79], livechat_messages)
-        self.assertIn(rocketchat_data["message"][83], livechat_messages)
-        self.assertIn(rocketchat_data["message"][86], livechat_messages)
-
-        # Message in a Discussion originating from a direct channel
-        self.assertIn(rocketchat_data["message"][70], private_messages)
-        self.assertIn(rocketchat_data["message"][70]["rid"], direct_id_to_direct_map)
-
-        # Add a message with no `rid`
-        rocketchat_data["message"].append(
-            {
-                "_id": "p4v37myxc6yLZ8AHh",
-                "t": "livechat_navigation_history",
-                "ts": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
-                "msg": " - applewebdata://9124F033-BFEF-43C5-9215-DA369E4DA22D",
-                "u": {"_id": "rocket.cat", "username": "cat"},
-                "groupable": False,
-                "unread": True,
-                "navigation": {
-                    "page": {
-                        "change": "url",
-                        "title": "",
-                        "location": {"href": "applewebdata://9124F033-BFEF-43C5-9215-DA369E4DA22D"},
-                    },
-                    "token": "ebxuypgh0updo6klkobzhp",
-                },
-                "expireAt": 1575592722794.0,
-                "_hidden": True,
-                "_updatedAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
-            }
-        )
-
-        channel_messages = []
-        private_messages = []
-        livechat_messages = []
-
-        separate_channel_private_and_livechat_messages(
-            messages=rocketchat_data["message"],
-            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-            direct_id_to_direct_map=direct_id_to_direct_map,
-            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-            livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            channel_messages=channel_messages,
-            private_messages=private_messages,
-            livechat_messages=livechat_messages,
-        )
-
-        # No new message added to channel, private or livechat messages
-        self.assert_length(channel_messages, 68)
-        self.assert_length(private_messages, 11)
-        self.assert_length(livechat_messages, 8)
-
     def test_map_upload_id_to_upload_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -926,8 +823,6 @@ class RocketChatImporter(ZulipTestCase):
                 "INFO:root:Done processing emoji",
                 "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
                 "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
-                "INFO:root:Processed messages up to 35 / 35",
-                "INFO:root:Processed messages up to 8 / 8",
                 "INFO:root:Exporting migration status",
             ],
         )
