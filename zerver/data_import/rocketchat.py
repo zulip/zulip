@@ -3,6 +3,7 @@ import os
 import random
 import secrets
 import uuid
+from collections import defaultdict
 from typing import Any
 
 import bson
@@ -288,21 +289,18 @@ def build_custom_emoji(
     emoji_records: list[ZerverFieldsT] = []
 
     # Map emoji file_id to emoji file data
-    emoji_file_data = {}
+    emoji_file_data = defaultdict(list)
+    object_id_to_filename = {}
     for emoji_file in custom_emoji_data["file"]:
-        emoji_file_data[str(emoji_file["_id"])] = {"filename": emoji_file["filename"], "chunks": []}
+        if isinstance(emoji_file["_id"], bson.objectid.ObjectId):  # nocoverage
+            object_id_to_filename[str(emoji_file["_id"])] = emoji_file["filename"]
     for emoji_chunk in custom_emoji_data["chunk"]:
-        emoji_file_data[emoji_chunk["files_id"]]["chunks"].append(emoji_chunk["data"])
+        file_id = str(emoji_chunk["files_id"])
+        emoji_file_data[object_id_to_filename.get(file_id, file_id)].append(emoji_chunk["data"])
 
-    # Build custom emoji
     for rc_emoji in custom_emoji_data["emoji"]:
-        # Subject to change with changes in database
-        emoji_file_id = f"{rc_emoji['name']}.{rc_emoji['extension']}"
-
-        emoji_file_info = emoji_file_data[emoji_file_id]
-
-        emoji_filename = emoji_file_info["filename"]
-        emoji_data = b"".join(emoji_file_info["chunks"])
+        emoji_filename = f"{rc_emoji['name']}.{rc_emoji['extension']}"
+        emoji_data = b"".join(emoji_file_data[emoji_filename])
 
         target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm_id,
