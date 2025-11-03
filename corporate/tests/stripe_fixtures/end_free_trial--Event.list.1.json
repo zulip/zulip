@@ -1,27 +1,44 @@
 {
   "data": [
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
-          "amount_paid": 72000,
-          "amount_requested": 72000,
+          "address": null,
+          "balance": 0,
           "created": 1000000000,
-          "currency": "usd",
-          "id": "end_free_trial--Event.list.1.json",
-          "invoice": "in_NORMALIZED",
-          "is_default": true,
-          "livemode": false,
-          "object": "invoice_payment",
-          "payment": {
-            "payment_intent": "pi_NORMALIZED",
-            "type": "payment_intent"
+          "currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "end_free_trial--Customer.create.1.json",
+          "invoice_prefix": "NORMALIZED",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_NORMALIZED",
+            "footer": null,
+            "rendering_options": null
           },
-          "status": "paid",
-          "status_transitions": {
-            "canceled_at": null,
-            "paid_at": 1000000000
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none",
+          "test_clock": null
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": null
           }
         }
       },
@@ -30,10 +47,10 @@
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": null,
-        "idempotency_key": null
+        "id": "end_free_trial--Event.list.1.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "invoice_payment.paid"
+      "type": "customer.updated"
     }
   ],
   "has_more": true,

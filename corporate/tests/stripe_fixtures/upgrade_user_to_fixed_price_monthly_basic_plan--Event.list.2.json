@@ -1,169 +1,26 @@
 {
   "data": [
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
-          "account_country": "US",
-          "account_name": "NORMALIZED",
-          "account_tax_ids": null,
-          "amount_due": 10000,
-          "amount_overpaid": 0,
-          "amount_paid": 10000,
-          "amount_remaining": 0,
-          "amount_shipping": 0,
-          "application": null,
-          "attempt_count": 1,
-          "attempted": true,
-          "auto_advance": false,
-          "automatic_tax": {
-            "disabled_reason": null,
-            "enabled": false,
-            "liability": null,
-            "provider": null,
-            "status": null
-          },
-          "automatically_finalizes_at": null,
-          "billing_reason": "manual",
-          "collection_method": "charge_automatically",
+          "amount_paid": null,
+          "amount_requested": 10000,
           "created": 1000000000,
           "currency": "usd",
-          "custom_fields": null,
-          "customer": "upgrade_user_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
-          "customer_address": null,
-          "customer_email": "hamlet@zulip.com",
-          "customer_name": null,
-          "customer_phone": null,
-          "customer_shipping": null,
-          "customer_tax_exempt": "none",
-          "customer_tax_ids": [],
-          "default_payment_method": null,
-          "default_source": null,
-          "default_tax_rates": [],
-          "description": null,
-          "discounts": [],
-          "due_date": null,
-          "effective_at": 1000000000,
-          "ending_balance": 0,
-          "footer": null,
-          "from_invoice": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
           "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
-          "issuer": {
-            "type": "self"
-          },
-          "last_finalization_error": null,
-          "latest_revision": null,
-          "lines": {
-            "data": [
-              {
-                "amount": 10000,
-                "currency": "usd",
-                "description": "Zulip Basic",
-                "discount_amounts": [],
-                "discountable": false,
-                "discounts": [],
-                "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
-                "invoice": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
-                "livemode": false,
-                "metadata": {},
-                "object": "line_item",
-                "parent": {
-                  "invoice_item_details": {
-                    "invoice_item": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
-                    "proration": false,
-                    "proration_details": {
-                      "credited_items": null
-                    },
-                    "subscription": null
-                  },
-                  "subscription_item_details": null,
-                  "type": "invoice_item_details"
-                },
-                "period": {
-                  "end": 1357095845,
-                  "start": 1325473445
-                },
-                "pretax_credit_amounts": [],
-                "pricing": {
-                  "price_details": {
-                    "price": "price_NORMALIZED",
-                    "product": "prod_NORMALIZED"
-                  },
-                  "type": "price_details",
-                  "unit_amount_decimal": "10000"
-                },
-                "quantity": 1,
-                "taxes": []
-              }
-            ],
-            "has_more": false,
-            "object": "list",
-            "total_count": 1,
-            "url": "/v1/invoices/upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json/lines"
-          },
+          "invoice": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
+          "is_default": true,
           "livemode": false,
-          "metadata": {
-            "billing_schedule": "2",
-            "current_plan_id": "None",
-            "license_management": "automatic",
-            "licenses": "11",
-            "on_free_trial": "False",
-            "plan_tier": "103"
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
+            "type": "payment_intent"
           },
-          "next_payment_attempt": null,
-          "number": "NORMALIZED",
-          "object": "invoice",
-          "on_behalf_of": null,
-          "parent": null,
-          "payment_settings": {
-            "default_mandate": null,
-            "payment_method_options": null,
-            "payment_method_types": null
-          },
-          "period_end": 1000000000,
-          "period_start": 1000000000,
-          "post_payment_credit_notes_amount": 0,
-          "pre_payment_credit_notes_amount": 0,
-          "receipt_number": null,
-          "rendering": {
-            "amount_tax_display": null,
-            "pdf": {
-              "page_size": "letter"
-            },
-            "template": null,
-            "template_version": null
-          },
-          "shipping_cost": null,
-          "shipping_details": null,
-          "starting_balance": 0,
-          "statement_descriptor": "Zulip Basic",
-          "status": "paid",
-          "status_transitions": {
-            "finalized_at": 1000000000,
-            "marked_uncollectible_at": null,
-            "paid_at": 1000000000,
-            "voided_at": null
-          },
-          "subtotal": 10000,
-          "subtotal_excluding_tax": 10000,
-          "test_clock": null,
-          "total": 10000,
-          "total_discount_amounts": [],
-          "total_excluding_tax": 10000,
-          "total_pretax_credit_amounts": [],
-          "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
-        },
-        "previous_attributes": {
-          "amount_paid": 0,
-          "amount_remaining": 10000,
-          "attempt_count": 0,
-          "attempted": false,
           "status": "open",
           "status_transitions": {
+            "canceled_at": null,
             "paid_at": null
           }
         }
@@ -171,15 +28,15 @@
       "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "invoice.updated"
+      "type": "invoice_payment.paid"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -210,6 +67,10 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
+          "payment_details": {
+            "customer_reference": null,
+            "order_reference": "in_1SPPAZRVfKEFJaqcze0djS"
+          },
           "payment_method": "pm_NORMALIZED",
           "payment_method_configuration_details": null,
           "payment_method_options": {
@@ -243,7 +104,7 @@
       "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -251,7 +112,7 @@
       "type": "payment_intent.succeeded"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -312,7 +173,7 @@
           "payment_method_details": {
             "card": {
               "amount_authorized": 10000,
-              "authorization_code": "832068",
+              "authorization_code": "068071",
               "brand": "visa",
               "checks": {
                 "address_line1_check": "pass",
@@ -378,7 +239,7 @@
       "type": "charge.succeeded"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -532,7 +393,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Event.list.2.json",
@@ -546,7 +407,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -700,7 +561,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "effective_at": null,
@@ -730,7 +591,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -802,7 +663,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -982,7 +843,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1029,7 +890,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1156,7 +1017,7 @@
       "type": "invoice.created"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1166,7 +1027,7 @@
           "currency": "usd",
           "default_source": null,
           "delinquent": false,
-          "description": "zulip.testserver 1b9e1a25-900",
+          "description": "zulip.testserver 9c36daef-29e",
           "discount": null,
           "email": "hamlet@zulip.com",
           "id": "upgrade_user_to_fixed_price_monthly_basic_plan--Customer.create.1.json",
@@ -1180,7 +1041,7 @@
           "livemode": false,
           "metadata": {
             "remote_realm_host": "zulip.testserver",
-            "remote_realm_uuid": "1b9e1a25-9000-419d-bb13-59cab3446e68"
+            "remote_realm_uuid": "9c36daef-29ed-478d-a237-26a7dec0f4ee"
           },
           "name": null,
           "next_invoice_sequence": 1,

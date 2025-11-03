@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -155,7 +155,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.3.json",
@@ -169,7 +169,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -323,7 +323,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "upgrade_server_to_fixed_price_monthly_basic_plan--Event.list.3.json",
@@ -337,7 +337,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -491,7 +491,7 @@
           "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_paid": 0,

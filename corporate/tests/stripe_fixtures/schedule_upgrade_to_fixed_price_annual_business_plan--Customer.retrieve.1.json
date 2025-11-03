@@ -5,7 +5,7 @@
   "currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "zulip.testserver 1b9e1a25-900",
+  "description": "zulip.testserver 9c36daef-29e",
   "discount": null,
   "email": "hamlet@zulip.com",
   "id": "schedule_upgrade_to_fixed_price_annual_business_plan--Customer.create.1.json",
@@ -69,7 +69,7 @@
   "livemode": false,
   "metadata": {
     "remote_realm_host": "zulip.testserver",
-    "remote_realm_uuid": "1b9e1a25-9000-419d-bb13-59cab3446e68"
+    "remote_realm_uuid": "9c36daef-29ed-478d-a237-26a7dec0f4ee"
   },
   "name": null,
   "next_invoice_sequence": 1,

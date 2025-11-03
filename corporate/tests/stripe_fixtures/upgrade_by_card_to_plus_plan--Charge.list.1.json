@@ -58,7 +58,7 @@
       "payment_method_details": {
         "card": {
           "amount_authorized": 120000,
-          "authorization_code": "356934",
+          "authorization_code": "277533",
           "brand": "visa",
           "checks": {
             "address_line1_check": "pass",

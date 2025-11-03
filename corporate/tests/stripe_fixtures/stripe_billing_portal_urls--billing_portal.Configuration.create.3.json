@@ -17,7 +17,8 @@
       "enabled": true
     },
     "payment_method_update": {
-      "enabled": false
+      "enabled": false,
+      "payment_method_configuration": null
     },
     "subscription_cancel": {
       "cancellation_reason": {

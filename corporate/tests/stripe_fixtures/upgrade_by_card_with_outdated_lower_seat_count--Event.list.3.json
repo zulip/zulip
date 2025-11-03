@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -170,7 +170,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -339,7 +339,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -516,78 +516,6 @@
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "invoice.updated"
-    },
-    {
-      "api_version": "2025-09-30.clover",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "amount": 48000,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
-          },
-          "amount_received": 48000,
-          "application": null,
-          "application_fee_amount": null,
-          "automatic_payment_methods": null,
-          "canceled_at": null,
-          "cancellation_reason": null,
-          "capture_method": "automatic",
-          "client_secret": "NORMALIZED",
-          "confirmation_method": "automatic",
-          "created": 1000000000,
-          "currency": "usd",
-          "customer": "cus_NORMALIZED",
-          "description": "Payment for Invoice",
-          "excluded_payment_method_types": null,
-          "id": "upgrade_by_card_with_outdated_lower_seat_count--Event.list.2.json",
-          "last_payment_error": null,
-          "latest_charge": "ch_NORMALIZED",
-          "livemode": false,
-          "metadata": {},
-          "next_action": null,
-          "object": "payment_intent",
-          "on_behalf_of": null,
-          "payment_method": "pm_NORMALIZED",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "installments": null,
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            },
-            "link": {
-              "persistent_token": null
-            }
-          },
-          "payment_method_types": [
-            "card",
-            "link"
-          ],
-          "processing": null,
-          "receipt_email": "hamlet@zulip.com",
-          "review": null,
-          "setup_future_usage": null,
-          "shipping": null,
-          "source": null,
-          "statement_descriptor": "Zulip Cloud Standard",
-          "statement_descriptor_suffix": null,
-          "status": "succeeded",
-          "transfer_data": null,
-          "transfer_group": null
-        }
-      },
-      "id": "upgrade_by_card_with_outdated_lower_seat_count--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "upgrade_by_card_with_outdated_lower_seat_count--Event.list.2.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "payment_intent.succeeded"
     }
   ],
   "has_more": false,
