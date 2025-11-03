@@ -52,7 +52,13 @@ function createRedirectPlugin() {
                         // the web app. We have relative URLs pointing to the web app
                         // in the help center, but they are not on the port help center
                         // is running on. We redirect here to our web app proxy port.
-                        if (req.url && !req.url.startsWith("/help")) {
+                        // We skip redirect for non-document requests since astro assets
+                        // don't have the /help prefix.
+                        if (
+                            req.url &&
+                            !req.url.startsWith("/help") &&
+                            req.headers.accept?.includes("text/html")
+                        ) {
                             const host = req.headers.host || "localhost";
                             const redirectUrl = new URL(req.url, `http://${host}`);
                             // We run help center on the proxy port in case of
