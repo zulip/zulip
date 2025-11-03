@@ -537,12 +537,12 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(records_json[1]["name"], "check")
         self.assertEqual(records_json[1]["file_name"], "tick.png")
         self.assertEqual(records_json[1]["realm_id"], 3)
-        self.assertTrue(os.path.isfile(records_json[0]["path"]))
+        self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[0]["path"])))
 
         self.assertEqual(records_json[2]["name"], "zulip")
         self.assertEqual(records_json[2]["file_name"], "zulip.png")
         self.assertEqual(records_json[2]["realm_id"], 3)
-        self.assertTrue(os.path.isfile(records_json[2]["path"]))
+        self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[2]["path"])))
 
     def test_map_receiver_id_to_recipient_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
