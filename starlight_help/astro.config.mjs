@@ -48,17 +48,21 @@ function createRedirectPlugin() {
                             req.url = "/help";
                         }
 
-                        // Help center dev server always runs on a port different than
+                        // Help center dev server often runs on a port different than
                         // the web app. We have relative URLs pointing to the web app
                         // in the help center, but they are not on the port help center
                         // is running on. We redirect here to our web app proxy port.
                         if (req.url && !req.url.startsWith("/help")) {
                             const host = req.headers.host || "localhost";
                             const redirectUrl = new URL(req.url, `http://${host}`);
-                            redirectUrl.port = proxyPort;
-                            res.writeHead(302, {Location: redirectUrl.toString()});
-                            res.end();
-                            return;
+                            // We run help center on the proxy port in case of
+                            // run-dev being run with `--only-help-center` flag.
+                            if (redirectUrl.port !== proxyPort) {
+                                redirectUrl.port = proxyPort;
+                                res.writeHead(302, {Location: redirectUrl.toString()});
+                                res.end();
+                                return;
+                            }
                         }
 
                         next();
