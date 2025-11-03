@@ -84,7 +84,7 @@
   },
   "shipping_cost": null,
   "shipping_details": null,
-  "starting_balance": -805,
+  "starting_balance": -559,
   "statement_descriptor": "Zulip Cloud Plus",
   "status": "draft",
   "status_transitions": {

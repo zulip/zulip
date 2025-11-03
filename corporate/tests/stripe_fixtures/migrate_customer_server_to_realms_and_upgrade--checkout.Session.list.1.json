@@ -30,7 +30,7 @@
           "type": "file"
         }
       },
-      "cancel_url": "http://selfhosting.testserver/realm/1b9e1a25-9000-419d-bb13-59cab3446e68/upgrade/?manual_license_management=false&tier=1",
+      "cancel_url": "http://selfhosting.testserver/realm/9c36daef-29ed-478d-a237-26a7dec0f4ee/upgrade/?manual_license_management=false&tier=1",
       "client_reference_id": null,
       "client_secret": null,
       "collected_information": {
@@ -103,7 +103,7 @@
       "status": "open",
       "submit_type": null,
       "subscription": null,
-      "success_url": "http://selfhosting.testserver/realm/1b9e1a25-9000-419d-bb13-59cab3446e68/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+      "success_url": "http://selfhosting.testserver/realm/9c36daef-29ed-478d-a237-26a7dec0f4ee/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
       "total_details": null,
       "ui_mode": "hosted",
       "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED",

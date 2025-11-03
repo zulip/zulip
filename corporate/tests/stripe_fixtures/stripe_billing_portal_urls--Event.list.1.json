@@ -1,39 +1,32 @@
 {
   "data": [
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
-          "amount_paid": 48000,
-          "amount_requested": 48000,
+          "configuration": "bpc_NORMALIZED",
           "created": 1000000000,
-          "currency": "usd",
+          "customer": "cus_NORMALIZED",
+          "flow": null,
           "id": "stripe_billing_portal_urls--Event.list.1.json",
-          "invoice": "in_NORMALIZED",
-          "is_default": true,
           "livemode": false,
-          "object": "invoice_payment",
-          "payment": {
-            "payment_intent": "pi_NORMALIZED",
-            "type": "payment_intent"
-          },
-          "status": "paid",
-          "status_transitions": {
-            "canceled_at": null,
-            "paid_at": 1000000000
-          }
+          "locale": null,
+          "object": "billing_portal.session",
+          "on_behalf_of": null,
+          "return_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1&setup_payment_by_invoice=false",
+          "url": "https://billing.stripe.com/p/session/test_NORMALIZED"
         }
       },
       "id": "stripe_billing_portal_urls--Event.list.1.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
-        "id": null,
-        "idempotency_key": null
+        "id": "stripe_billing_portal_urls--Event.list.1.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "invoice_payment.paid"
+      "type": "billing_portal.session.created"
     }
   ],
   "has_more": true,

@@ -6,6 +6,7 @@
   "created": 1000000000,
   "customer": "cus_NORMALIZED",
   "description": null,
+  "excluded_payment_method_types": null,
   "flow_directions": null,
   "id": "check_upgrade_parameters--SetupIntent.create.8.json",
   "last_setup_error": null,

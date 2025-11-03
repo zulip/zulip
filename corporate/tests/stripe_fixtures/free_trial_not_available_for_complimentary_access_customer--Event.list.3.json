@@ -1,42 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-09-30.clover",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "amount_paid": 10000,
-          "amount_requested": 10000,
-          "created": 1000000000,
-          "currency": "usd",
-          "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.3.json",
-          "invoice": "in_NORMALIZED",
-          "is_default": true,
-          "livemode": false,
-          "object": "invoice_payment",
-          "payment": {
-            "payment_intent": "pi_NORMALIZED",
-            "type": "payment_intent"
-          },
-          "status": "paid",
-          "status_transitions": {
-            "canceled_at": null,
-            "paid_at": 1000000000
-          }
-        }
-      },
-      "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": null,
-        "idempotency_key": null
-      },
-      "type": "invoice_payment.paid"
-    },
-    {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -230,7 +195,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.3.json",
@@ -244,7 +209,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -438,7 +403,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         }
       },
       "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.3.json",
@@ -452,7 +417,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -646,7 +611,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": 1000000000
+          "webhooks_delivered_at": null
         },
         "previous_attributes": {
           "amount_paid": 0,
@@ -670,7 +635,42 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount_paid": null,
+          "amount_requested": 4300,
+          "created": 1000000000,
+          "currency": "usd",
+          "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.3.json",
+          "invoice": "free_trial_not_available_for_complimentary_access_customer--Event.list.2.json",
+          "is_default": true,
+          "livemode": false,
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "free_trial_not_available_for_complimentary_access_customer--Event.list.2.json",
+            "type": "payment_intent"
+          },
+          "status": "open",
+          "status_transitions": {
+            "canceled_at": null,
+            "paid_at": null
+          }
+        }
+      },
+      "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.3.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "free_trial_not_available_for_complimentary_access_customer--Event.list.2.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "invoice_payment.paid"
+    },
+    {
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -701,6 +701,10 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
+          "payment_details": {
+            "customer_reference": null,
+            "order_reference": "in_1SPPAsRVfKEFJaqc5Vd0vg"
+          },
           "payment_method": "pm_NORMALIZED",
           "payment_method_configuration_details": null,
           "payment_method_options": {

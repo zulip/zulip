@@ -1,42 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-09-30.clover",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "amount_paid": 5000,
-          "amount_requested": 5000,
-          "created": 1000000000,
-          "currency": "usd",
-          "id": "sponsorship_access_for_realms_on_paid_plan--Event.list.3.json",
-          "invoice": "in_NORMALIZED",
-          "is_default": true,
-          "livemode": false,
-          "object": "invoice_payment",
-          "payment": {
-            "payment_intent": "pi_NORMALIZED",
-            "type": "payment_intent"
-          },
-          "status": "paid",
-          "status_transitions": {
-            "canceled_at": null,
-            "paid_at": 1000000000
-          }
-        }
-      },
-      "id": "sponsorship_access_for_realms_on_paid_plan--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": null,
-        "idempotency_key": null
-      },
-      "type": "invoice_payment.paid"
-    },
-    {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -191,7 +156,7 @@
           "total_excluding_tax": 48000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "sponsorship_access_for_realms_on_paid_plan--Event.list.3.json",
@@ -205,7 +170,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -360,7 +325,7 @@
           "total_excluding_tax": 48000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "sponsorship_access_for_realms_on_paid_plan--Event.list.3.json",
@@ -374,7 +339,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-09-30.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -529,7 +494,7 @@
           "total_excluding_tax": 48000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
           "amount_paid": 0,
