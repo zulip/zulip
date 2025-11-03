@@ -164,6 +164,7 @@ prod = [
 
   # Needed for reading bson files in rocketchat import tool
   "pymongo",
+  "python-bsonstream>=0.1.4",
 
   # Non-backtracking regular expressions
   "google-re2",

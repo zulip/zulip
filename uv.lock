@@ -3930,6 +3930,19 @@ wheels = [
 ]
 
 [[package]]
+name = "python-bsonstream"
+version = "0.1.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pymongo" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d6/5f/49835dc22cd0e25a7dda1e7c3810a8d35c25420ac38889c4a8dcc00e9999/python-bsonstream-0.1.4.tar.gz", hash = "sha256:f130f10850057fdfa97b43a5c3f14d09d11a3768777a67d0b05747dbaa692a61", size = 3279, upload-time = "2020-10-29T18:02:26.585Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bb/a1/f7379fef111b5c963831a2c1ddec33ad999ba1782a53deb692680925c05b/python_bsonstream-0.1.4-py3-none-any.whl", hash = "sha256:c3e9f92e74b488c7a676b5095441fe37b72c9b3b91e5ea55fe6a815c3174077f", size = 6589, upload-time = "2020-10-29T18:01:49.118Z" },
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -6163,6 +6176,7 @@ dev = [
     { name = "pynacl" },
     { name = "pyoembed" },
     { name = "python-binary-memcached" },
+    { name = "python-bsonstream" },
     { name = "python-dateutil" },
     { name = "python-debian" },
     { name = "python-digitalocean" },
@@ -6288,6 +6302,7 @@ prod = [
     { name = "pynacl" },
     { name = "pyoembed" },
     { name = "python-binary-memcached" },
+    { name = "python-bsonstream" },
     { name = "python-dateutil" },
     { name = "python-ldap" },
     { name = "python-magic" },
@@ -6399,6 +6414,7 @@ dev = [
     { name = "pynacl" },
     { name = "pyoembed" },
     { name = "python-binary-memcached" },
+    { name = "python-bsonstream", specifier = ">=0.1.4" },
     { name = "python-dateutil" },
     { name = "python-debian" },
     { name = "python-digitalocean" },
@@ -6526,6 +6542,7 @@ prod = [
     { name = "pynacl" },
     { name = "pyoembed" },
     { name = "python-binary-memcached" },
+    { name = "python-bsonstream", specifier = ">=0.1.4" },
     { name = "python-dateutil" },
     { name = "python-ldap" },
     { name = "python-magic" },
