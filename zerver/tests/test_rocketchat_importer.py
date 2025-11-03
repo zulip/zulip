@@ -14,7 +14,6 @@ from zerver.data_import.rocketchat import (
     convert_stream_subscription_data,
     do_convert_data,
     map_receiver_id_to_recipient_id,
-    map_upload_id_to_upload_data,
     map_user_id_to_user,
     map_username_to_user_id,
     process_message_attachment,
@@ -646,20 +645,6 @@ class RocketChatImporter(ZulipTestCase):
             direct_message_group_id_to_recipient_id[zerver_recipient[12]["type_id"]],
             zerver_recipient[12]["id"],
         )
-
-    def test_map_upload_id_to_upload_data(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
-
-        self.assert_length(rocketchat_data["upload"]["upload"], 4)
-        self.assert_length(upload_id_to_upload_data_map, 4)
-
-        upload_id = rocketchat_data["upload"]["upload"][0]["_id"]
-        upload_name = rocketchat_data["upload"]["upload"][0]["name"]
-        self.assertEqual(upload_id_to_upload_data_map[upload_id]["name"], upload_name)
-        self.assert_length(upload_id_to_upload_data_map[upload_id]["chunk"], 1)
 
     def test_build_reactions(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
