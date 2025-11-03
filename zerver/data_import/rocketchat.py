@@ -319,8 +319,8 @@ def build_custom_emoji(
 
         for alias in emoji_aliases:
             emoji_record = dict(
-                path=target_path,
-                s3_path=target_path,
+                path=target_sub_path,
+                s3_path=target_sub_path,
                 file_name=emoji_filename,
                 realm_id=realm_id,
                 name=alias,
