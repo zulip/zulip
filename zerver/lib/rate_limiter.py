@@ -588,8 +588,10 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
-    client = RequestNotes.get_notes(request).client
-    return (client is not None and client.name.lower() == "internal") and (
+    notes = RequestNotes.get_notes(request)
+    # Parse_client in the middleware should write notes.client_name
+    assert notes.client_name is not None
+    return (notes.client_name.lower() == "internal") and (
         is_local_addr(request.META["REMOTE_ADDR"]) or settings.DEBUG_RATE_LIMITING
     )
 
@@ -598,6 +600,7 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     """Returns whether or not a user was rate limited. Will raise a RateLimitedError exception
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
+
     if not should_rate_limit(request):
         return
 
