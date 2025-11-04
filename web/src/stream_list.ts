@@ -530,9 +530,12 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
 }
 
 export function update_subscribe_to_more_streams_link(): void {
+    // Here we filter archived channels, even if you can add yourself to
+    // them as a subscriber from a permissions standpoint, because you
+    // can't add them to your left sidebar.
     const can_subscribe_stream_count = stream_data
         .unsubscribed_subs()
-        .filter((sub) => stream_data.can_toggle_subscription(sub)).length;
+        .filter((sub) => !sub.is_archived && stream_data.can_toggle_subscription(sub)).length;
 
     const can_create_streams =
         settings_data.user_can_create_private_streams() ||
