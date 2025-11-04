@@ -2447,6 +2447,111 @@ by Pieter
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")
     @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_create_new_user_for_importer(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # Choose import from slack
+        email = "ete-slack-import@zulip.com"
+        string_id = "ete-slack-import"
+        result = self.submit_realm_creation_form(
+            email,
+            realm_subdomain=string_id,
+            realm_name="Slack import create new user",
+            import_from="slack",
+        )
+
+        # Redirect to slack data import form
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+
+        confirmation_key = find_key_by_email(email)
+        assert confirmation_key is not None
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        mock_realm = do_create_realm(
+            string_id=prereg_realm.string_id,
+            name=prereg_realm.name,
+        )
+        mock_do_import_realm.return_value = mock_realm
+
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        import_slack_data(event)
+
+        mock_save_attachment_contents.assert_called_once()
+        mock_do_convert_zipfile.assert_called_once_with(
+            mock.ANY, mock.ANY, event["slack_access_token"]
+        )
+        mock_do_import_realm.assert_called_once_with(mock.ANY, prereg_realm.string_id)
+
+        prereg_realm.refresh_from_db()
+        self.assertTrue(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+
+        confirmation_key = find_key_by_email(prereg_realm.email)
+        result = self.client_get(f"/realm/import/post_process/{confirmation_key}")
+        self.assert_in_success_response(["Select your account"], result)
+
+        # Choose to create new account for the importer.
+        result = self.client_post(
+            f"/realm/import/post_process/{confirmation_key}",
+            {
+                "user_id": "",
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        prereg_realm.refresh_from_db()
+        self.assertIsNotNone(prereg_realm.data_import_metadata["user_activation_url"])
+        self.assertEqual(
+            result["Location"], prereg_realm.data_import_metadata["user_activation_url"]
+        )
+
+        # Test that importer can reach the user registration page from realm creation email
+        # confirmation link.
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+        result = self.client_post(
+            "/new/import/slack/",
+            {
+                "key": confirmation_key,
+                "from_confirmation": "1",
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"], prereg_realm.data_import_metadata["user_activation_url"]
+        )
+
+        # Get key from activation url.
+        key = urlsplit(prereg_realm.data_import_metadata["user_activation_url"]).path.split("/")[-1]
+        self.client_post(
+            "/accounts/register/",
+            {
+                "password": "testpassword",
+                "key": key,
+                "terms": True,
+                "full_name": "Realm importer",
+                "email": prereg_realm.email,
+            },
+            subdomain=prereg_realm.string_id,
+        )
+
+        prereg_realm.refresh_from_db()
+        self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
+        self.assertEqual(prereg_realm.created_realm, mock_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+        self.assertIsNone(prereg_realm.data_import_metadata.get("user_activation_url"))
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
     def test_import_slack_data_failure_cleanup_realm_not_created(
         self,
         mock_save_attachment_contents: mock.Mock,

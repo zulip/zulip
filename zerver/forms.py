@@ -320,7 +320,7 @@ class HomepageForm(forms.Form):
 
 
 class ImportRealmOwnerSelectionForm(forms.Form):
-    user_id = forms.IntegerField()
+    user_id = forms.IntegerField(required=False)
 
 
 class RealmCreationForm(RealmDetailsForm):
