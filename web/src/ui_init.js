@@ -19,6 +19,7 @@ import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_popover from "./channel_folders_popover.ts";
@@ -177,6 +178,13 @@ import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 import * as widgets from "./widgets.ts";
+
+function update_page_loading_indicator_notice() {
+    const $notice = $("#app-loading-unsupported-browser");
+    if ($notice.length > 0 && is_browser_unsupported_old_version()) {
+        $notice.removeAttr("hidden");
+    }
+}
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -779,6 +787,8 @@ function show_try_zulip_modal() {
 }
 
 $(() => {
+    update_page_loading_indicator_notice();
+
     // Remove '?show_try_zulip_modal', if present.
     const url = new URL(window.location.href);
     if (url.searchParams.has("show_try_zulip_modal")) {
