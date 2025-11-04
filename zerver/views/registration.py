@@ -1081,7 +1081,14 @@ def realm_import_status(
         # process support writing updates to this for a better progress indicator.
         if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
             return json_success(
-                request, {"status": _("Converting Slack data… This may take a while.")}
+                request,
+                {
+                    "status": _(
+                        "Converting Slack data… This may take a while. If you "
+                        "close this tab, you can return here from the “Complete registration” "
+                        "link in your email."
+                    )
+                },
             )
         elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
             # Redirect user the file upload page if we have an error message to display.
