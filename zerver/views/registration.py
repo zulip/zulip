@@ -369,6 +369,15 @@ def registration_helper(
                 return HttpResponseRedirect(
                     reverse("realm_import_post_process", kwargs={"confirmation_key": key})
                 )
+            if prereg_realm.data_import_metadata.get("is_import_work_queued"):
+                return TemplateResponse(
+                    request,
+                    "zerver/slack_import.html",
+                    {
+                        "poll_for_import_completion": True,
+                        "key": key,
+                    },
+                )
 
             # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
             # select box in the slack import page.

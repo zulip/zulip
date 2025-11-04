@@ -2258,6 +2258,19 @@ by Pieter
             },
         )
 
+        # Test that clicking on the confirmation link redirects to status page
+        # which helps user resume the import process if they closed the tab.
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+        result = self.client_post(
+            "/new/import/slack/",
+            {
+                "key": confirmation_key,
+                "slack_access_token": access_token,
+            },
+        )
+        self.assert_in_success_response(["Import progress"], result)
+
         # We don't want to test to whole realm import process here but only that
         # realm import calls are made with correct arguments and different cases
         # are handled well.
