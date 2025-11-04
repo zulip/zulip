@@ -1667,7 +1667,19 @@ def do_convert_zipfile(
         rm_tree(slack_data_dir)
 
 
-SLACK_IMPORT_TOKEN_SCOPES = {"emoji:read", "users:read", "users:read.email", "team:read"}
+SLACK_IMPORT_TOKEN_SCOPES = {
+    # For Slack's emoji.list endpoint: https://docs.slack.dev/reference/methods/emoji.list/
+    "emoji:read",
+    # For Slack's team.info endpoint: https://docs.slack.dev/reference/methods/team.info/
+    "team:read",
+    # Required by the following endpoints:
+    # - bots.info: https://docs.slack.dev/reference/methods/bots.info/
+    # - users.info: https://docs.slack.dev/reference/methods/users.info/
+    # - users.list: https://docs.slack.dev/reference/methods/users.list/
+    "users:read",
+    # For Slack's users.info endpoint: https://docs.slack.dev/reference/methods/users.info/
+    "users:read.email",
+}
 
 
 def do_convert_directory(
