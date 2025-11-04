@@ -1358,6 +1358,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
+.invite-tips-list {
+    /* Override default bottom margin of ul tags in bootstrap. */
+    margin-bottom: 0;
+}
+
 #invite-user-form .loading_indicator_spinner {
     height: 1em;
     width: fit-content;
