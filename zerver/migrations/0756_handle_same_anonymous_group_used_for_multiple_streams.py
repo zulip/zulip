@@ -88,7 +88,7 @@ def handle_same_anonymous_group_used_for_multiple_streams(
 
                     # We have an anonymous group that was used twice;
                     # correct this database corruption by creating a
-                    # new anonymous group dupicating its contents.
+                    # new anonymous group duplicating its contents.
                     print(
                         f"Fixing duplicate anonymous group for channel {stream.id} / {setting_name}"
                     )
@@ -127,7 +127,10 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("zerver", "0755_usermessage_zerver_usermessage_message_active_mobile_push_notification_idx"),
+        (
+            "zerver",
+            "0755_usermessage_zerver_usermessage_message_active_mobile_push_notification_idx",
+        ),
     ]
 
     operations = [
