@@ -7,7 +7,7 @@ import * as z from "zod/mini";
 
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
-import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
+import render_invite_users_tips from "../templates/modal_banner/invite_users_tips.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as banners from "./banners.ts";
@@ -15,7 +15,6 @@ import type {Banner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
-import * as compose_banner from "./compose_banner.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
@@ -425,6 +424,17 @@ function generate_invite_tips_data(): Record<string, boolean> {
     };
 }
 
+const invite_tips_banner = (): Banner => {
+    const invite_tips_banner_data = generate_invite_tips_data();
+    return {
+        intent: "info",
+        label: new Handlebars.SafeString(render_invite_users_tips(invite_tips_banner_data)),
+        buttons: [],
+        close_button: false,
+        custom_classes: "invite-tips-banner",
+    };
+};
+
 function update_stream_list(): void {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
@@ -510,7 +520,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             void update_guest_visible_users_count_and_stream_ids();
         });
 
-        $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
+        $("#invite-user-modal").on("click", ".invite-setup-tips-container .banner-link", () => {
             dialog_widget.close();
         });
 
@@ -618,13 +628,17 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             current_user.is_admin
         ) {
             const invite_tips_data = generate_invite_tips_data();
-            const context = {
-                banner_type: compose_banner.INFO,
-                classname: "setup_tips_banner",
-                ...invite_tips_data,
-            };
-            $(".invite-user-modal-banners .setup-tips-container").html(
-                render_invite_tips_banner(context),
+            const should_show_invite_tips_banner = !(
+                invite_tips_data.realm_has_description &&
+                invite_tips_data.realm_has_user_set_icon &&
+                invite_tips_data.realm_has_custom_profile_fields
+            );
+            if (!should_show_invite_tips_banner) {
+                return;
+            }
+            banners.open(
+                invite_tips_banner(),
+                $("#invite-user-modal .invite-setup-tips-container"),
             );
         }
 
