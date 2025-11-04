@@ -55,7 +55,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
     visibility: visible;
     }
     }
-    #app-loading-unsupported-browser {
+    #app-loading-unsupported-browser, #app-loading-unsupported-desktop-app {
         margin-top: 25px;
     }
     #app-loading-bottom-content {
@@ -122,6 +122,13 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
         </div>
         <div id="app-loading-unsupported-browser" class="hidden">
             <p>{% trans %}Because you're using an unsupported or very old browser, Zulip may not load.{% endtrans %}</p>
+        </div>
+        <div id="app-loading-unsupported-desktop-app" class="hidden">
+            <p>
+                {% trans %}Because you're using a very old version of the desktop app, Zulip may not load.
+                <a href="https://zulip.com/apps/" target="_blank" rel="noopener noreferrer">Download the latest version.</a>
+                {% endtrans %}
+            </p>
         </div>
     </div>
     <div id="app-loading-bottom-content">

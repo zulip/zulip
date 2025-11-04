@@ -178,9 +178,14 @@ import * as util from "./util.ts";
 import * as widgets from "./widgets.js";
 
 function update_page_loading_indicator_notice() {
-    const $notice = $("#app-loading-unsupported-browser");
-    if ($notice.length > 0 && !is_browser_supported()) {
-        $notice.removeClass("hidden");
+    const $unsupported_desktop_app_notice = $("#app-loading-unsupported-desktop-app");
+    if ($unsupported_desktop_app_notice.length > 0 && page_params.insecure_desktop_app) {
+        $unsupported_desktop_app_notice.removeClass("hidden");
+        return;
+    }
+    const $unsupported_browser_notice = $("#app-loading-unsupported-browser");
+    if ($unsupported_browser_notice.length > 0 && !is_browser_supported()) {
+        $unsupported_browser_notice.removeClass("hidden");
     }
 }
 
