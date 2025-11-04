@@ -57,12 +57,19 @@ type CommonInvitationData = {
     welcome_message_custom_text?: string;
 };
 
+const DEV_ENV_EMAIL_ACCESS_BANNER: Banner = {
+    intent: "info",
+    label: new Handlebars.SafeString(render_settings_dev_env_email_access()),
+    buttons: [],
+    close_button: false,
+};
+
 function reset_invite_modal_banners(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
     $("#invite-success-banner-container").empty();
 
     if (page_params.development_environment) {
-        $("#dev_env_msg").hide().text("").removeClass(common.status_classes);
+        $("#dev-env-email-access-banner-container").empty();
     }
 }
 
@@ -183,8 +190,10 @@ function submit_invitation_form(): void {
             email_pill_widget.clear();
 
             if (page_params.development_environment) {
-                const rendered_email_msg = render_settings_dev_env_email_access();
-                $("#dev_env_msg").html(rendered_email_msg).addClass("alert-info").show();
+                banners.open(
+                    DEV_ENV_EMAIL_ACCESS_BANNER,
+                    $("#dev-env-email-access-banner-container"),
+                );
             }
 
             if ($expires_in.val() === "custom") {
