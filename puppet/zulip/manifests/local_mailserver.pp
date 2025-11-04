@@ -1,18 +1,20 @@
 class zulip::local_mailserver {
   include zulip::snakeoil
 
-  package { 'postfix':
-    # TODO/compatibility: We can remove this when upgrading directly
-    # from 10.x is no longer possible.  We do not use "purged" here,
-    # since that would remove config files, which users may have had
-    # installed.
-    ensure => absent,
+  if zulipconf('postfix', 'uninstall', true) {
+    package { 'postfix':
+      # TODO/compatibility: We can remove this when upgrading directly
+      # from 10.x is no longer possible.  We do not use "purged" here,
+      # since that would remove config files, which users may have had
+      # installed.
+      ensure => absent,
+      before => Service[$zulip::common::supervisor_service],
+    }
   }
   file { "${zulip::common::supervisor_conf_dir}/email-mirror.conf":
     ensure  => file,
     require => [
       Package[supervisor],
-      Package[postfix],
     ],
     owner   => 'root',
     group   => 'root',
