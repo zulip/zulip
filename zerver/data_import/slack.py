@@ -1781,6 +1781,8 @@ def get_data_file(path: str) -> Any:
 def check_slack_token_access(token: str, required_scopes: set[str]) -> None:
     if token.startswith("xoxp-"):
         logging.info("This is a Slack user token, which grants all rights the user has!")
+    elif not required_scopes:
+        raise ValueError("required_scopes shouldn't be empty!")
     elif token.startswith("xoxb-"):
         data = requests.get(
             "https://slack.com/api/api.test", headers={"Authorization": f"Bearer {token}"}

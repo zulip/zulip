@@ -391,6 +391,11 @@ class SlackImporter(ZulipTestCase):
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
+        self.assertEqual(
+            exception_for("xoxb-valid-token", set()),
+            "required_scopes shouldn't be empty!",
+        )
+
         check_slack_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
 
     def test_get_owner(self) -> None:
