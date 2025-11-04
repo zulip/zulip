@@ -177,15 +177,23 @@ function submit_invitation_form(): void {
         beforeSend,
         success() {
             const number_of_invites_sent = email_pill_widget.items().length;
-            ui_report.success(
-                $t_html(
-                    {
-                        defaultMessage:
-                            "{N, plural, one {User invited successfully.} other {Users invited successfully.}}",
-                    },
-                    {N: number_of_invites_sent},
-                ),
-                $invite_status,
+            banners.open(
+                {
+                    intent: "success",
+                    label: new Handlebars.SafeString(
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {User invited successfully.} other {Users invited successfully.}}",
+                            },
+                            {N: number_of_invites_sent},
+                        ),
+                    ),
+                    buttons: [],
+                    close_button: false,
+                    custom_classes: "invite-user-modal-banner",
+                },
+                $("#invite-success-banner-container"),
             );
             email_pill_widget.clear();
 
@@ -226,7 +234,7 @@ function submit_invitation_form(): void {
                 .safeParse(xhr.responseJSON);
             if (!parsed.success) {
                 // There was a fatal error, no partial processing occurred.
-                ui_report.error("", xhr, $invite_status);
+                ui_report.error($t({defaultMessage: "Failed"}), xhr, $invite_status);
             } else {
                 // Some users were not invited.
                 const invitee_emails_errored = [];
