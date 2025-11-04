@@ -1049,9 +1049,9 @@ def get_message_payload(
             # field. Note that this doesn't do a separate database query, because it uses
             # the `get_display_recipient_by_id` cache.
             display_recipients = get_display_recipient(message.recipient)
-            recipient_user_ids = set(
+            recipient_user_ids = {
                 display_recipient["id"] for display_recipient in display_recipients
-            )
+            }
             if len(recipient_user_ids) == 1:  # Recipient.PERSONAL
                 recipient_user_ids.add(message.sender_id)
             data["recipient_user_ids"] = sorted(recipient_user_ids)
