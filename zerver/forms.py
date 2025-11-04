@@ -33,7 +33,7 @@ from zerver.lib.email_validation import (
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import get_language_list
 from zerver.lib.name_restrictions import is_reserved_subdomain
-from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
+from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip, should_rate_limit
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import PreregistrationRealm, Realm, UserProfile
@@ -544,7 +544,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             logging.info("Realm is deactivated")
             return
 
-        if settings.RATE_LIMITING:
+        if should_rate_limit(request):
             try:
                 rate_limit_password_reset_form_by_email(email)
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
