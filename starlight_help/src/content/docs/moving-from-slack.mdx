@@ -9,14 +9,13 @@ import ZulipTip from "../../components/ZulipTip.astro";
 import CommunicationPolicies from "../include/_CommunicationPolicies.mdx";
 import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
 import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
+import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
+import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
 import SignUpForAPlan from "../include/_SignUpForAPlan.mdx";
 import TopicsIntro from "../include/_TopicsIntro.mdx";
 
-Welcome to Zulip! This page will guide you through the process of transitioning
-your organization from Slack to Zulip. It assumes that you have [completed your
-initial evaluation](/help/trying-out-zulip) of Zulip, decided [whether to use
-Zulip Cloud or self-host](/help/zulip-cloud-or-self-hosting), and are ready to
-introduce Zulip to your organization.
+<MovingToZulipIntro />
 
 If you're moving from other communication tools, check out the [general
 guide on moving to Zulip](/help/moving-to-zulip).
@@ -110,19 +109,14 @@ Prepare an introduction to Zulip for your organization. It often works well to
 combine a written announcement with a live presentation. Recommended topics to
 cover include:
 
-<Steps>
-  1. Brief introduction to Zulip.
-  1. Why you're making this change. How do you expect it to improve communication
-     in your organization?
-     [https://zulip.com/why-zulip/](https://zulip.com/why-zulip/) may be a
-     helpful reference.
-  1. Accompanying changes to your communication policies. Are there any changes
-     to common workflows?
+<FlattenedSteps>
+  <PrepareForTransition1 />
+
   1. Pointers to additional resources, such as Zulip's [getting started
      guide](/help/getting-started-with-zulip).
-  1. Transition timeline.
-  1. How users will be supported during the transition.
-</Steps>
+
+  <PrepareForTransition2 />
+</FlattenedSteps>
 
 ## Invite users to join
 
