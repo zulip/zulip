@@ -1371,6 +1371,173 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertFalse(user_profile.enable_marketing_emails)
 
 
+class DemoCreationTest(ZulipTestCase):
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_demo_organization(self) -> None:
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
+        signups_channel, _ = create_stream_if_needed(notification_bot.realm, "signups")
+
+        result = self.submit_demo_creation_form("demo test")
+        realm = Realm.objects.latest("date_created")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].startswith(
+                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
+            )
+        )
+
+        self.assertIn("demo-", realm.string_id)
+        self.assertIn("demo test", realm.name)
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+
+        result = self.client_get(result["Location"], subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
+
+        user_profile = UserProfile.objects.all().order_by("id").last()
+        assert user_profile is not None
+        self.assert_logged_in_user_id(user_profile.id)
+
+        # Demo organizations are created without setting an email address for the owner.
+        self.assertEqual(user_profile.delivery_email, "")
+        scheduled_email = ScheduledEmail.objects.filter(users=user_profile).last()
+        assert scheduled_email is None
+
+        self.assertIn(realm.string_id, user_profile.email)
+        self.assertEqual(
+            user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+
+        # Make sure the correct Welcome Bot direct message is sent.
+        welcome_msg = Message.objects.filter(
+            realm_id=realm.id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertIn("getting started guide", welcome_msg.content)
+        self.assertNotIn("using Zulip for a class guide", welcome_msg.content)
+        self.assertIn("demo organization", welcome_msg.content)
+
+        # Check admin organization's signups channel messages
+        recipient = signups_channel.recipient
+        messages = Message.objects.filter(realm_id=internal_realm.id, recipient=recipient).order_by(
+            "id"
+        )
+        self.assert_length(messages, 1)
+        # Check organization name, subdomain and organization type are in message content
+        self.assertIn(realm.name, messages[0].content)
+        self.assertIn(realm.string_id, messages[0].content)
+        self.assertIn("Organization type: Business", messages[0].content)
+        self.assertEqual("new demo organizations", messages[0].topic_name())
+
+    @ratelimit_rule(10, 2, domain="demo_realm_creation_by_ip")
+    def test_demo_creation_rate_limiter(self) -> None:
+        start_time = time.time()
+        with patch("time.time", return_value=start_time):
+            self.submit_demo_creation_form("demo 1")
+            self.submit_demo_creation_form("demo 2")
+
+            result = self.submit_demo_creation_form("demo 3")
+            self.assertEqual(result.status_code, 429)
+            self.assert_in_response("Rate limit exceeded.", result)
+
+            result = self.client_get("/new/demo/")
+            self.assertEqual(result.status_code, 200)
+
+        with patch("time.time", return_value=start_time + 11):
+            self.submit_demo_creation_form("demo 4")
+
+    @override_settings(OPEN_REALM_CREATION=True, USING_CAPTCHA=True, ALTCHA_HMAC_KEY="secret")
+    def test_create_demo_with_captcha(self) -> None:
+        realm_name = "demo test captcha"
+
+        result = self.client_get("/new/demo/")
+        self.assert_not_in_success_response(["Validation failed"], result)
+
+        # Without the CAPTCHA value, we get an error
+        result = self.submit_demo_creation_form(realm_name)
+        self.assert_in_success_response(["Validation failed, please try again."], result)
+
+        # With an invalid value, we also get an error
+        with self.assertLogs(level="WARNING") as logs:
+            result = self.submit_demo_creation_form(realm_name, captcha="moose")
+            self.assert_in_success_response(["Validation failed, please try again."], result)
+            self.assert_length(logs.output, 1)
+            self.assertIn("Invalid altcha solution: Invalid altcha payload", logs.output[0])
+
+        # With something which raises an exception, we also get the same error
+        with self.assertLogs(level="WARNING") as logs:
+            result = self.submit_demo_creation_form(
+                realm_name,
+                captcha=base64.b64encode(
+                    orjson.dumps(["algorithm", "challenge", "number", "salt", "signature"])
+                ).decode(),
+            )
+            self.assert_in_success_response(["Validation failed, please try again."], result)
+            self.assert_length(logs.output, 1)
+            self.assertIn(
+                "TypeError: list indices must be integers or slices, not str", logs.output[0]
+            )
+
+        # If we override the validation, we get an error because it's not in the session
+        payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
+        with (
+            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            self.assertLogs(level="WARNING") as logs,
+        ):
+            result = self.submit_demo_creation_form(realm_name, captcha=payload)
+            self.assert_in_success_response(["Validation failed, please try again."], result)
+            verify.assert_called_once_with(payload, "secret", check_expires=True)
+            self.assert_length(logs.output, 1)
+            self.assertIn("Expired or replayed altcha solution", logs.output[0])
+
+        self.assertEqual(self.client.session.get("altcha_challenges"), None)
+        result = self.client_get("/json/antispam_challenge")
+        data = self.assert_json_success(result)
+        self.assertEqual(data["algorithm"], "SHA-256")
+        self.assertEqual(data["max_number"], 500000)
+        self.assertIn("signature", data)
+        self.assertIn("challenge", data)
+        self.assertIn("salt", data)
+
+        self.assert_length(self.client.session["altcha_challenges"], 1)
+        self.assertEqual(self.client.session["altcha_challenges"][0][0], data["challenge"])
+
+        # Update the payload so the challenge matches what is in the
+        # session.  The real payload would have other keys.
+        payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
+        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+            result = self.submit_demo_creation_form(realm_name, captcha=payload)
+            self.assertEqual(result.status_code, 302)
+            verify.assert_called_once_with(payload, "secret", check_expires=True)
+
+        # And the challenge has been stripped out of the session
+        self.assertEqual(self.client.session["altcha_challenges"], [])
+
+    def test_demo_organizations_disabled(self) -> None:
+        with self.settings(OPEN_REALM_CREATION=False):
+            result = self.submit_demo_creation_form("demo test")
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response("Demo organizations are not enabled on this server.", result)
+
+        with self.settings(OPEN_REALM_CREATION=True, CORPORATE_ENABLED=False):
+            result = self.submit_demo_creation_form("demo test")
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response("Demo organizations are not enabled on this server.", result)
+
+        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+        # to be fully implemented.
+        with self.settings(OPEN_REALM_CREATION=True, CORPORATE_ENABLED=True, DEVELOPMENT=False):
+            result = self.submit_demo_creation_form("demo test")
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response("Demo organizations are not enabled on this server.", result)
+
+
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def check_able_to_create_realm(self, email: str, password: str = "test") -> None:
@@ -1804,7 +1971,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
-    def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
+    def test_create_education_organization_welcome_bot_direct_message(self) -> None:
         password = "test"
         string_id = "custom-test"
         email = "user1@test.com"
@@ -1838,7 +2005,6 @@ class RealmCreationTest(ZulipTestCase):
             realm_name=realm_name,
             enable_marketing_emails=False,
             realm_type=Realm.ORG_TYPES["education"]["id"],
-            is_demo_organization=True,
         )
         self.assertEqual(result.status_code, 302)
 
@@ -1850,10 +2016,9 @@ class RealmCreationTest(ZulipTestCase):
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
-        # Organization type is education, and organization is a demo organization.
+        # Organization type is education.
         self.assertNotIn("getting started guide", welcome_msg.content)
         self.assertIn("using Zulip for a class guide", welcome_msg.content)
-        self.assertIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_custom_language(self) -> None:
@@ -4536,6 +4701,21 @@ class UserSignUpTest(ZulipTestCase):
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+        self.assertIn("Demo organization", realm.name)
+        self.assertIn("demo-", realm.string_id)
+
+        # Make sure the correct Welcome Bot direct message is sent.
+        welcome_msg = Message.objects.filter(
+            realm_id=realm.id,
+            sender__email="welcome-bot@zulip.com",
+            recipient__type=Recipient.PERSONAL,
+        ).latest("id")
+        self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+
+        # Organization type is education, and organization is a demo organization.
+        self.assertNotIn("getting started guide", welcome_msg.content)
+        self.assertIn("using Zulip for a class guide", welcome_msg.content)
+        self.assertIn("demo organization", welcome_msg.content)
 
     def test_get_default_language_for_new_user(self) -> None:
         realm = get_realm("zulip")

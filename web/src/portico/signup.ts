@@ -96,6 +96,22 @@ $(() => {
         },
     });
 
+    // Same error element and placement as above, but without the password
+    // rule since the demo creation form does not have a password field.
+    $("#create_demo_realm").validate({
+        errorElement: "p",
+        errorPlacement($error: JQuery, $element: JQuery) {
+            $element.next(".help-inline.alert.alert-error").remove();
+            if ($element.next().is(`label[for="${$element.attr("id")!}"]`)) {
+                $error.insertAfter($element.next()).addClass("help-inline alert alert-error");
+            } else if ($element.parent().is(`label[for="${$element.attr("id")!}"]`)) {
+                $error.insertAfter($element.parent()).addClass("help-inline alert alert-error");
+            } else {
+                $error.insertAfter($element).addClass("help-inline alert alert-error");
+            }
+        },
+    });
+
     if ($("#registration").length > 0) {
         // Check if there is no input field with errors.
         if ($(".help-inline:not(:empty)").length === 0) {
@@ -127,6 +143,10 @@ $(() => {
         }
 
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
+    }
+
+    if ($("#demo-realm-creation").length > 0) {
+        $("#demo-creator-timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
     $("#registration").on("submit", () => {
