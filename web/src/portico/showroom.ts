@@ -181,6 +181,20 @@ const alert_banners: Record<string, AlertBanner> = {
         close_button: true,
         custom_classes: "navbar-alert-banner",
     },
+    "unsupported-browser": {
+        process: "unsupported-browser",
+        intent: "warning",
+        label: "Because you're using an unsupported or very old browser, Zulip may not work as expected.",
+        buttons: [
+            {
+                attention: "borderless",
+                intent: "warning",
+                label: "Learn more",
+            },
+        ],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    },
     "profile-incomplete": {
         process: "profile-incomplete",
         intent: "info",
