@@ -1677,7 +1677,7 @@ def do_convert_directory(
     threads: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
-    check_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
+    check_slack_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
 
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):
@@ -1778,7 +1778,7 @@ def get_data_file(path: str) -> Any:
         return data
 
 
-def check_token_access(token: str, required_scopes: set[str]) -> None:
+def check_slack_token_access(token: str, required_scopes: set[str]) -> None:
     if token.startswith("xoxp-"):
         logging.info("This is a Slack user token, which grants all rights the user has!")
     elif token.startswith("xoxb-"):

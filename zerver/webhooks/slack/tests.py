@@ -345,11 +345,11 @@ class SlackWebhookTests(WebhookTestCase):
     def test_missing_api_token_scope(self) -> None:
         error_message = "Slack token is missing the following required scopes: ['users:read', 'users:read.email']"
         user_facing_error_message = INVALID_SLACK_TOKEN_MESSAGE.format(error_message=error_message)
-        # We tested how `check_token_access` may raise these errors in
+        # We tested how `check_slack_token_access` may raise these errors in
         # `test_slack_importer.py`. So, for simplicitys sake the function
         # is directly mocked here to raise the ValueError we expect.
         with (
-            patch("zerver.webhooks.slack.view.check_token_access") as e,
+            patch("zerver.webhooks.slack.view.check_slack_token_access") as e,
             patch("zerver.webhooks.slack.view.send_rate_limited_pm_notification_to_bot_owner") as s,
         ):
             e.side_effect = ValueError(error_message)

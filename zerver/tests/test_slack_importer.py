@@ -37,7 +37,7 @@ from zerver.data_import.slack import (
     SlackBotNotFoundError,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
-    check_token_access,
+    check_slack_token_access,
     convert_slack_workspace_messages,
     do_convert_zipfile,
     fetch_shared_channel_users,
@@ -320,7 +320,7 @@ class SlackImporter(ZulipTestCase):
         self.assertNotIn("uuid_owner_secret", test_zerver_realm_dict)
 
     @responses.activate
-    def test_check_token_access(self) -> None:
+    def test_check_slack_token_access(self) -> None:
         def token_request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], bytes]:
             auth = request.headers.get("Authorization")
             if auth == "Bearer xoxb-broken-request":
@@ -363,7 +363,7 @@ class SlackImporter(ZulipTestCase):
 
         def exception_for(token: str, required_scopes: set[str] = SLACK_IMPORT_TOKEN_SCOPES) -> str:
             with self.assertRaises(Exception) as invalid:
-                check_token_access(token, required_scopes)
+                check_slack_token_access(token, required_scopes)
             return invalid.exception.args[0]
 
         self.assertEqual(
@@ -391,7 +391,7 @@ class SlackImporter(ZulipTestCase):
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
-        check_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
+        check_slack_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
 
     def test_get_owner(self) -> None:
         user_data = [
@@ -1883,10 +1883,10 @@ by Pieter
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
-    @mock.patch("zerver.data_import.slack.check_token_access")
+    @mock.patch("zerver.data_import.slack.check_slack_token_access")
     def test_slack_import_to_existing_database(
         self,
-        mock_check_token_access: mock.Mock,
+        mock_check_slack_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -2091,10 +2091,10 @@ by Pieter
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
-    @mock.patch("zerver.data_import.slack.check_token_access")
+    @mock.patch("zerver.data_import.slack.check_slack_token_access")
     def test_slack_import_unicode_filenames(
         self,
-        mock_check_token_access: mock.Mock,
+        mock_check_slack_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -2135,11 +2135,11 @@ by Pieter
             # uses it to generate email addresses for users without an email specified.
             do_convert_zipfile(test_slack_zip_file, output_dir, token)
 
-    @mock.patch("zerver.data_import.slack.check_token_access")
+    @mock.patch("zerver.data_import.slack.check_slack_token_access")
     @responses.activate
     def test_end_to_end_slack_import(
         self,
-        mock_check_token_access: mock.Mock,
+        mock_check_slack_token_access: mock.Mock,
     ) -> None:
         # Choose import from slack
         email = "ete-slack-import@zulip.com"
@@ -2173,7 +2173,7 @@ by Pieter
         assert confirmation_key is not None
 
         # Check that the we show an error message if the token is invalid.
-        mock_check_token_access.side_effect = ValueError("Invalid slack token")
+        mock_check_slack_token_access.side_effect = ValueError("Invalid slack token")
         result = self.client_post(
             "/new/import/slack/",
             {
@@ -2182,7 +2182,7 @@ by Pieter
             },
         )
         self.assert_in_response("Invalid slack token", result)
-        mock_check_token_access.side_effect = None
+        mock_check_slack_token_access.side_effect = None
 
         # Mock slack API response and mark token as valid
         access_token = "xoxb-valid-token"
