@@ -2,6 +2,8 @@
 
 Fixes: <!-- Issue link, or clear description.-->
 
+**How changes were tested:**
+
 <!-- If the PR makes UI changes, always include one or more still screenshots to demonstrate your changes. If it seems helpful, add a screen capture of the new functionality as well.
 
 Tooling tips: https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html
