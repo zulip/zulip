@@ -207,11 +207,18 @@ export default defineConfig({
                             label: "Zulip Cloud or self-hosting?",
                             link: "/zulip-cloud-or-self-hosting",
                         },
-                        "moving-to-zulip",
-                        "moving-from-slack",
                         "moderating-open-organizations",
                         "setting-up-zulip-for-a-class",
                         "using-zulip-for-a-class",
+                    ],
+                },
+                {
+                    label: "Guides for moving from another app",
+                    items: [
+                        "migrating-from-other-chat-tools",
+                        "moving-to-zulip",
+                        "moving-from-slack",
+                        "moving-from-discord",
                     ],
                 },
                 {
@@ -235,7 +242,6 @@ export default defineConfig({
                 {
                     label: "Setting up your organization",
                     items: [
-                        "migrating-from-other-chat-tools",
                         "create-your-organization-profile",
                         "create-user-groups",
                         "customize-organization-settings",
