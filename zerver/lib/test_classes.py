@@ -1521,7 +1521,7 @@ Output:
             realm = get_realm("zulip")
 
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-            realm, invite_only, history_public_to_subscribers
+            invite_only, history_public_to_subscribers
         )
 
         try:

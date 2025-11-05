@@ -158,7 +158,6 @@ def validate_topics_policy(
 
 
 def get_default_value_for_history_public_to_subscribers(
-    realm: Realm,
     invite_only: bool,
     history_public_to_subscribers: bool | None,
 ) -> bool:
@@ -361,7 +360,7 @@ def create_stream_if_needed(
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-        realm, invite_only, history_public_to_subscribers
+        invite_only, history_public_to_subscribers
     )
 
     group_setting_values = {}
