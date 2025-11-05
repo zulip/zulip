@@ -218,6 +218,7 @@ export default defineConfig({
                         "migrating-from-other-chat-tools",
                         "moving-to-zulip",
                         "moving-from-slack",
+                        "moving-from-teams",
                         "moving-from-discord",
                     ],
                 },
