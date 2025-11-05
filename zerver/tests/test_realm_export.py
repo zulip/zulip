@@ -210,7 +210,7 @@ class RealmExportTest(ZulipTestCase):
 
         owner = self.example_user("desdemona")
         do_change_user_setting(
-            owner,
+            [owner],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
@@ -223,14 +223,14 @@ class RealmExportTest(ZulipTestCase):
             "other Administrators to see their email address",
         )
         do_change_user_setting(
-            owner,
+            [owner],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 
         do_change_user_setting(
-            owner,
+            [owner],
             "allow_private_data_export",
             False,
             acting_user=None,
@@ -372,7 +372,7 @@ class RealmExportTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
         for user in [hamlet, aaron]:
-            do_change_user_setting(user, "allow_private_data_export", True, acting_user=None)
+            do_change_user_setting([user], "allow_private_data_export", True, acting_user=None)
 
         # Verify export consents of users.
         result = self.client_get("/json/export/realm/consents")

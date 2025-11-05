@@ -728,7 +728,7 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         # 'automatically_follow_topics_policy' set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION'.
         for user in [hamlet, cordelia]:
             do_change_user_setting(
-                user,
+                [user],
                 "automatically_follow_topics_policy",
                 UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
                 acting_user=None,
@@ -750,7 +750,7 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         # Iago has 'automatically_follow_topics_policy' set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER'.
         # DON'T automatically follow the topic, even if he starts the topic.
         do_change_user_setting(
-            iago,
+            [iago],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
@@ -795,14 +795,14 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
 
         # For hamlet, 'automatically_follow_topics_policy' set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND'.
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
             acting_user=None,
         )
         # For aaron, 'automatically_follow_topics_policy' NOT set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -833,7 +833,7 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         topic_name = "teST topic"
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "automatically_follow_topics_where_mentioned",
             True,
             acting_user=None,
@@ -873,14 +873,14 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
 
         # For hamlet, 'automatically_follow_topics_policy' set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         # For aaron, 'automatically_follow_topics_policy' NOT set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -913,14 +913,14 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
 
         # For cordelia, 'automatically_follow_topics_policy' set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         # For aaron, 'automatically_follow_topics_policy' NOT set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -965,13 +965,13 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         sub.is_muted = True
         sub.save()
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1028,7 +1028,7 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
         # user from a different realm reacted to the message.
         starnine_mit = self.mit_user("starnine")
         do_change_user_setting(
-            starnine_mit,
+            [starnine_mit],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1055,14 +1055,14 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
 
         # For iago, 'automatically_follow_topics_policy' set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            iago,
+            [iago],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         # For aaron, 'automatically_follow_topics_policy' NOT set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1117,14 +1117,14 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
 
         # For othello, 'automatically_follow_topics_policy' set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            othello,
+            [othello],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         # For aaron, 'automatically_follow_topics_policy' NOT set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1196,7 +1196,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION'.
         for user in [hamlet, cordelia]:
             do_change_user_setting(
-                user,
+                [user],
                 "automatically_unmute_topics_in_muted_streams_policy",
                 UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
                 acting_user=None,
@@ -1219,7 +1219,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER'.
         # DON'T automatically unmute the topic, even if he starts the topic.
         do_change_user_setting(
-            iago,
+            [iago],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
@@ -1272,7 +1272,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For hamlet, 'automatically_unmute_topics_in_muted_streams_policy'
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND'.
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
             acting_user=None,
@@ -1280,7 +1280,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For aaron, 'automatically_unmute_topics_in_muted_streams_policy' NOT
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1317,7 +1317,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For hamlet, 'automatically_unmute_topics_in_muted_streams_policy'
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1325,7 +1325,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For aaron, 'automatically_unmute_topics_in_muted_streams_policy' NOT
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1363,7 +1363,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For cordelia, 'automatically_unmute_topics_in_muted_streams_policy'
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1371,7 +1371,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For aaron, 'automatically_unmute_topics_in_muted_streams_policy' NOT
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1425,7 +1425,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For iago, 'automatically_unmute_topics_in_muted_streams_policy'
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            iago,
+            [iago],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1433,7 +1433,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For aaron, 'automatically_unmute_topics_in_muted_streams_policy' NOT
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1492,7 +1492,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For othello, 'automatically_unmute_topics_in_muted_streams_policy'
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            othello,
+            [othello],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1500,7 +1500,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # For aaron, 'automatically_unmute_topics_in_muted_streams_policy' NOT
         # set to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION'.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1574,7 +1574,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1602,7 +1602,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1630,7 +1630,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
         # The 'automatically_unmute_topics_in_muted_streams_policy' setting has
         # NO effect in unmuted streams.
         do_change_user_setting(
-            aaron,
+            [aaron],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1648,7 +1648,7 @@ class AutomaticallyUnmuteTopicsTests(ZulipTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "automatically_unmute_topics_in_muted_streams_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,

@@ -909,7 +909,7 @@ class TestRealmAuditLog(ZulipTestCase):
             now = timezone_now()
 
             old_value = getattr(user, setting)
-            do_change_user_setting(user, setting, value, acting_user=user)
+            do_change_user_setting([user], setting, value, acting_user=user)
             if isinstance(value, Enum):
                 new_value = value.value
             else:

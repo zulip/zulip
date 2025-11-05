@@ -13,7 +13,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]
     ) -> str:
         msg = f"Changed to {setting_name}! To revert {setting_name}, type `/{switch_command}`."
         do_change_user_setting(
-            user_profile=user_profile,
+            user_profiles=[user_profile],
             setting_name=setting,
             setting_value=setting_value,
             acting_user=user_profile,

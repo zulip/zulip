@@ -974,7 +974,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         # Test with 'realm_name_in_notification_policy' set to 'Always'
         do_change_user_setting(
-            user,
+            [user],
             "realm_name_in_email_notifications_policy",
             UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS,
             acting_user=None,
@@ -983,7 +983,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         # Test with 'realm_name_in_notification_policy' set to 'Never'
         do_change_user_setting(
-            user,
+            [user],
             "realm_name_in_email_notifications_policy",
             UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER,
             acting_user=None,
@@ -992,7 +992,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         # Test with 'realm_name_in_notification_policy' set to 'Automatic'
         do_change_user_setting(
-            user,
+            [user],
             "realm_name_in_email_notifications_policy",
             UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC,
             acting_user=None,
@@ -1047,7 +1047,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def test_message_content_disabled_in_missed_message_notifications(self) -> None:
         # Test when user disabled message content in email notifications.
         do_change_user_setting(
-            self.example_user("hamlet"),
+            [self.example_user("hamlet")],
             "message_content_in_email_notifications",
             False,
             acting_user=None,
@@ -1161,16 +1161,18 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
         # Emails have missed message content when message content is enabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(
+                [user], "message_content_in_email_notifications", True, acting_user=None
+            )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(
+                [user], "message_content_in_email_notifications", False, acting_user=None
+            )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_user=True
@@ -1182,17 +1184,19 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(
+                [user], "message_content_in_email_notifications", True, acting_user=None
+            )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_realm=True
         )
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(
+                [user], "message_content_in_email_notifications", False, acting_user=None
+            )
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False,
@@ -1854,7 +1858,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "test",
             visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
-        do_change_user_setting(hamlet, "wildcard_mentions_notify", False, acting_user=None)
+        do_change_user_setting([hamlet], "wildcard_mentions_notify", False, acting_user=None)
 
         # Topic wildcard mention in followed topic should soft reactivate the user
         # hamlet should be a topic participant
@@ -1898,7 +1902,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "test",
             visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
         )
-        do_change_user_setting(hamlet, "wildcard_mentions_notify", True, acting_user=None)
+        do_change_user_setting([hamlet], "wildcard_mentions_notify", True, acting_user=None)
 
         # Topic Wildcard mention should soft reactivate the user
         reset_hamlet_as_soft_deactivated_user()

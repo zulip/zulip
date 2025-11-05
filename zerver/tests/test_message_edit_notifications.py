@@ -449,12 +449,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.subscribe(cordelia, "Scotland")
 
         do_change_user_setting(
-            cordelia, "enable_followed_topic_email_notifications", False, acting_user=None
+            [cordelia], "enable_followed_topic_email_notifications", False, acting_user=None
         )
         do_change_user_setting(
-            cordelia, "enable_followed_topic_push_notifications", False, acting_user=None
+            [cordelia], "enable_followed_topic_push_notifications", False, acting_user=None
         )
-        do_change_user_setting(cordelia, "wildcard_mentions_notify", False, acting_user=None)
+        do_change_user_setting([cordelia], "wildcard_mentions_notify", False, acting_user=None)
         do_set_user_topic_visibility_policy(
             user_profile=cordelia,
             stream=get_stream("Scotland", cordelia.realm),
@@ -499,12 +499,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.subscribe(cordelia, "Scotland")
 
         do_change_user_setting(
-            cordelia, "enable_followed_topic_email_notifications", False, acting_user=None
+            [cordelia], "enable_followed_topic_email_notifications", False, acting_user=None
         )
         do_change_user_setting(
-            cordelia, "enable_followed_topic_push_notifications", False, acting_user=None
+            [cordelia], "enable_followed_topic_push_notifications", False, acting_user=None
         )
-        do_change_user_setting(cordelia, "wildcard_mentions_notify", False, acting_user=None)
+        do_change_user_setting([cordelia], "wildcard_mentions_notify", False, acting_user=None)
         do_set_user_topic_visibility_policy(
             user_profile=cordelia,
             stream=get_stream("Scotland", cordelia.realm),

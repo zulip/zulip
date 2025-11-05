@@ -192,7 +192,7 @@ class MissedMessageHookTest(ZulipTestCase):
         self.user_profile = self.example_user("hamlet")
         self.cordelia = self.example_user("cordelia")
         do_change_user_setting(
-            self.user_profile, "enable_online_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_online_push_notifications", False, acting_user=None
         )
         self.register_push_device(self.user_profile.id)
         self.iago = self.example_user("iago")
@@ -251,7 +251,7 @@ class MissedMessageHookTest(ZulipTestCase):
         # When `enable_offline_email_notifications` is off, email notifications
         # should not be sent for direct messages
         do_change_user_setting(
-            self.user_profile, "enable_offline_email_notifications", False, acting_user=None
+            [self.user_profile], "enable_offline_email_notifications", False, acting_user=None
         )
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -290,7 +290,7 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_enable_offline_push_notifications_setting(self) -> None:
         # When `enable_offline_push_notifications` is off, push notifications should not be sent for mentions
         do_change_user_setting(
-            self.user_profile, "enable_offline_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_offline_push_notifications", False, acting_user=None
         )
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -455,7 +455,7 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_wildcard_mentions_notify_global_setting(self) -> None:
         # With wildcard_mentions_notify=False for a user, we treat the user as not mentioned.
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -478,7 +478,7 @@ class MissedMessageHookTest(ZulipTestCase):
         # If wildcard_mentions_notify=True for a stream and False for a user, we treat the user
         # as mentioned for that stream.
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
         self.change_subscription_properties({"wildcard_mentions_notify": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
@@ -500,10 +500,10 @@ class MissedMessageHookTest(ZulipTestCase):
         # If email notifications for direct messages and mentions themselves have been turned off,
         # even turning on `wildcard_mentions_notify` should not send email notifications
         do_change_user_setting(
-            self.user_profile, "enable_offline_email_notifications", False, acting_user=None
+            [self.user_profile], "enable_offline_email_notifications", False, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", True, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", True, acting_user=None
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -528,7 +528,7 @@ class MissedMessageHookTest(ZulipTestCase):
         # Similar to the above test, but for the stream-specific version of the setting
         self.change_subscription_properties({"wildcard_mentions_notify": True})
         do_change_user_setting(
-            self.user_profile, "enable_offline_email_notifications", False, acting_user=None
+            [self.user_profile], "enable_offline_email_notifications", False, acting_user=None
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -572,7 +572,7 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_stream_push_notify_global_setting(self) -> None:
         do_change_user_setting(
-            self.user_profile, "enable_stream_push_notifications", True, acting_user=None
+            [self.user_profile], "enable_stream_push_notifications", True, acting_user=None
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -591,7 +591,7 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_stream_email_notify_global_setting(self) -> None:
         do_change_user_setting(
-            self.user_profile, "enable_stream_email_notifications", True, acting_user=None
+            [self.user_profile], "enable_stream_email_notifications", True, acting_user=None
         )
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -611,7 +611,7 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_stream_push_notify_global_setting_with_muted_stream(self) -> None:
         # Push notification should not be sent
         do_change_user_setting(
-            self.user_profile, "enable_stream_push_notifications", True, acting_user=None
+            [self.user_profile], "enable_stream_push_notifications", True, acting_user=None
         )
         self.change_subscription_properties({"is_muted": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
@@ -630,7 +630,7 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_stream_email_notify_global_setting_with_muted_topic(self) -> None:
         # Email notification should not be sent
         do_change_user_setting(
-            self.user_profile, "enable_stream_email_notifications", True, acting_user=None
+            [self.user_profile], "enable_stream_email_notifications", True, acting_user=None
         )
         do_set_user_topic_visibility_policy(
             self.user_profile,
@@ -764,10 +764,10 @@ class MissedMessageHookTest(ZulipTestCase):
     ) -> None:
         # Both push and email notifications should be sent
         do_change_user_setting(
-            self.user_profile, "enable_stream_push_notifications", True, acting_user=None
+            [self.user_profile], "enable_stream_push_notifications", True, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "enable_stream_email_notifications", True, acting_user=None
+            [self.user_profile], "enable_stream_email_notifications", True, acting_user=None
         )
         self.change_subscription_properties({"is_muted": True})
         do_set_user_topic_visibility_policy(
@@ -860,10 +860,10 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_followed_topic_email_and_push_notify(self) -> None:
         # messages sent in followed topics should send both email and push notifications.
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_email_notifications", True, acting_user=None
+            [self.user_profile], "enable_followed_topic_email_notifications", True, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_push_notifications", True, acting_user=None
+            [self.user_profile], "enable_followed_topic_push_notifications", True, acting_user=None
         )
         do_set_user_topic_visibility_policy(
             self.user_profile,
@@ -890,7 +890,10 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_followed_topic_email_notify_global_setting(self) -> None:
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+            [self.user_profile],
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
         )
         do_set_user_topic_visibility_policy(
             self.user_profile,
@@ -917,7 +920,7 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_followed_topic_push_notify_global_setting(self) -> None:
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_followed_topic_push_notifications", False, acting_user=None
         )
         do_set_user_topic_visibility_policy(
             self.user_profile,
@@ -944,13 +947,16 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_topic_wildcard_mention_in_followed_topic_notify(self) -> None:
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+            [self.user_profile],
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_followed_topic_push_notifications", False, acting_user=None
         )
 
         # By default, wildcard mentions in followed topics should send notifications, just like regular mentions.
@@ -980,13 +986,16 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_stream_wildcard_mention_in_followed_topic_notify(self) -> None:
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+            [self.user_profile],
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_followed_topic_push_notifications", False, acting_user=None
         )
 
         # By default, wildcard mentions in followed topics should send notifications, just like regular mentions.
@@ -1016,13 +1025,16 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_topic_wildcard_mention_in_followed_topic_muted_stream(self) -> None:
         # By default, topic wildcard mentions in a followed topic with muted stream DO notify.
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+            [self.user_profile],
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_followed_topic_push_notifications", False, acting_user=None
         )
 
         self.change_subscription_properties({"is_muted": True})
@@ -1052,13 +1064,16 @@ class MissedMessageHookTest(ZulipTestCase):
     def test_stream_wildcard_mention_in_followed_topic_muted_stream(self) -> None:
         # By default, stream wildcard mentions in a followed topic with muted stream DO notify.
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+            [self.user_profile],
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_followed_topic_push_notifications", False, acting_user=None
         )
 
         self.change_subscription_properties({"is_muted": True})
@@ -1087,18 +1102,21 @@ class MissedMessageHookTest(ZulipTestCase):
 
     def test_followed_topic_wildcard_mentions_notify_global_setting(self) -> None:
         do_change_user_setting(
-            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+            [self.user_profile], "wildcard_mentions_notify", False, acting_user=None
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+            [self.user_profile],
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
         )
         do_change_user_setting(
-            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+            [self.user_profile], "enable_followed_topic_push_notifications", False, acting_user=None
         )
 
         # Now, disabling `enable_followed_topic_wildcard_mentions_notify` should result in no notifications.
         do_change_user_setting(
-            self.user_profile,
+            [self.user_profile],
             "enable_followed_topic_wildcard_mentions_notify",
             False,
             acting_user=None,

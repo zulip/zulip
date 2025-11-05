@@ -599,7 +599,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         user = self.example_user("hamlet")
         do_change_user_setting(
-            user,
+            [user],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
             acting_user=None,
@@ -1560,7 +1560,7 @@ class StreamMessagesTest(ZulipTestCase):
         # during the course of the unit test.
         flush_per_request_caches()
         do_change_user_setting(
-            user_profile=sender,
+            user_profiles=[sender],
             setting_name="automatically_follow_topics_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
@@ -1575,7 +1575,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
 
         do_change_user_setting(
-            user_profile=sender,
+            user_profiles=[sender],
             setting_name="automatically_follow_topics_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -1595,7 +1595,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
 
         do_change_user_setting(
-            user_profile=sender,
+            user_profiles=[sender],
             setting_name="automatically_follow_topics_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -1630,7 +1630,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         for user in subscribers:
             do_change_user_setting(
-                user_profile=user,
+                user_profiles=[user],
                 setting_name="automatically_follow_topics_where_mentioned",
                 setting_value=True,
                 acting_user=None,
@@ -2142,7 +2142,7 @@ class StreamMessagesTest(ZulipTestCase):
         #  hamlet  |        YES        |                False
         #   iago   |        NO         |                True
         self.send_stream_message(cordelia, "Denmark", content="test", topic_name="topic-1")
-        do_change_user_setting(cordelia, "wildcard_mentions_notify", True, acting_user=None)
+        do_change_user_setting([cordelia], "wildcard_mentions_notify", True, acting_user=None)
         self.send_stream_message(hamlet, "Denmark", content="Hi @**topic**", topic_name="topic-1")
         message = most_recent_message(cordelia)
         self.assertTrue(
@@ -2152,7 +2152,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
 
         self.send_stream_message(hamlet, "Denmark", content="test", topic_name="topic-2")
-        do_change_user_setting(hamlet, "wildcard_mentions_notify", False, acting_user=None)
+        do_change_user_setting([hamlet], "wildcard_mentions_notify", False, acting_user=None)
         self.send_stream_message(cordelia, "Denmark", content="Hi @**topic**", topic_name="topic-2")
         message = most_recent_message(hamlet)
         self.assertTrue(
@@ -2161,7 +2161,7 @@ class StreamMessagesTest(ZulipTestCase):
             ).flags.topic_wildcard_mentioned.is_set
         )
 
-        do_change_user_setting(iago, "wildcard_mentions_notify", True, acting_user=None)
+        do_change_user_setting([iago], "wildcard_mentions_notify", True, acting_user=None)
         self.send_stream_message(hamlet, "Denmark", content="Hi @**topic**", topic_name="topic-3")
         message = most_recent_message(iago)
         self.assertFalse(

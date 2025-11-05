@@ -617,8 +617,8 @@ class RealmImportExportTest(ExportFile):
         iago = self.example_user("iago")
         othello = self.example_user("othello")
 
-        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=cordelia)
-        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=hamlet)
+        do_change_user_setting([cordelia], "allow_private_data_export", True, acting_user=cordelia)
+        do_change_user_setting([hamlet], "allow_private_data_export", True, acting_user=hamlet)
         exportable_user_ids = {cordelia.id, hamlet.id}
 
         pm_a_msg_id = self.send_personal_message(polonius, othello)
@@ -668,11 +668,13 @@ class RealmImportExportTest(ExportFile):
     def test_get_consented_user_ids(self) -> None:
         realm = get_realm("zulip")
         consented_user = self.example_user("iago")
-        do_change_user_setting(consented_user, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(
+            [consented_user], "allow_private_data_export", True, acting_user=None
+        )
 
         non_consented_user = self.example_user("hamlet")
         do_change_user_setting(
-            non_consented_user, "allow_private_data_export", False, acting_user=None
+            [non_consented_user], "allow_private_data_export", False, acting_user=None
         )
 
         bot_of_consented_user = self.create_test_bot(
@@ -682,7 +684,7 @@ class RealmImportExportTest(ExportFile):
         # but set explicitly just to be clear on the setup.
         # A bot of a consented user is considered consented no matter what.
         do_change_user_setting(
-            bot_of_consented_user, "allow_private_data_export", False, acting_user=None
+            [bot_of_consented_user], "allow_private_data_export", False, acting_user=None
         )
 
         deactivated_bot_of_consented_user = self.create_test_bot(
@@ -691,7 +693,10 @@ class RealmImportExportTest(ExportFile):
             full_name="Deactivated bot of consented user",
         )
         do_change_user_setting(
-            deactivated_bot_of_consented_user, "allow_private_data_export", False, acting_user=None
+            [deactivated_bot_of_consented_user],
+            "allow_private_data_export",
+            False,
+            acting_user=None,
         )
         do_deactivate_user(deactivated_bot_of_consented_user, acting_user=None)
 
@@ -700,7 +705,7 @@ class RealmImportExportTest(ExportFile):
             "bot-of-non-consented-user", non_consented_user, full_name="Bot of non-consented user"
         )
         do_change_user_setting(
-            bot_of_consented_user, "allow_private_data_export", False, acting_user=None
+            [bot_of_consented_user], "allow_private_data_export", False, acting_user=None
         )
 
         # Unless the bot has allow_private_data_export explicitly set to True. This is a rather
@@ -712,7 +717,10 @@ class RealmImportExportTest(ExportFile):
             full_name="Consented bot of non-consented user",
         )
         do_change_user_setting(
-            consented_bot_of_non_consented_user, "allow_private_data_export", True, acting_user=None
+            [consented_bot_of_non_consented_user],
+            "allow_private_data_export",
+            True,
+            acting_user=None,
         )
 
         consented_user_ids = get_consented_user_ids(realm)
@@ -767,9 +775,9 @@ class RealmImportExportTest(ExportFile):
         # Iago will be non-consenting.
         iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
-        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
-        do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
-        do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
+        do_change_user_setting([hamlet], "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting([othello], "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting([iago], "allow_private_data_export", False, acting_user=None)
 
         a_message_id = self.send_personal_message(hamlet, othello)
 
@@ -853,10 +861,10 @@ class RealmImportExportTest(ExportFile):
         # Iago will be non-consenting.
         iago = self.example_user("iago")
 
-        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
-        do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
-        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=None)
-        do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
+        do_change_user_setting([hamlet], "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting([othello], "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting([cordelia], "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting([iago], "allow_private_data_export", False, acting_user=None)
 
         # Despite both hamlet and othello having consent enabled, in a public export
         # everyone is non-consenting - so a Client object used only in a DM will not
@@ -976,17 +984,17 @@ class RealmImportExportTest(ExportFile):
 
         # Iago and Hamlet consented to export their private data.
         do_change_user_setting(
-            self.example_user("iago"), "allow_private_data_export", True, acting_user=None
+            [self.example_user("iago")], "allow_private_data_export", True, acting_user=None
         )
         do_change_user_setting(
-            self.example_user("hamlet"), "allow_private_data_export", True, acting_user=None
+            [self.example_user("hamlet")], "allow_private_data_export", True, acting_user=None
         )
 
         # Additionally, we set prospero's email visibility to NOBODY in order to test this is respected by the
         # export. His real email value should not be exported.
         non_consented_user_with_private_email = self.example_user("prospero")
         do_change_user_setting(
-            non_consented_user_with_private_email,
+            [non_consented_user_with_private_email],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
@@ -994,7 +1002,7 @@ class RealmImportExportTest(ExportFile):
         # Do the same for the consenting iago, just to verify consent causes the private email address to be
         # exported
         do_change_user_setting(
-            self.example_user("iago"),
+            [self.example_user("iago")],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
@@ -1250,15 +1258,15 @@ class RealmImportExportTest(ExportFile):
         consented_user = self.example_user("iago")
         non_consented_user = self.example_user("hamlet")
         do_change_user_setting(
-            non_consented_user,
+            [non_consented_user],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
         )
 
         # Change some user settings to test the scrubbing of settings for non-consenting users.
-        do_change_user_setting(consented_user, "web_font_size_px", 123, acting_user=None)
-        do_change_user_setting(non_consented_user, "web_font_size_px", 456, acting_user=None)
+        do_change_user_setting([consented_user], "web_font_size_px", 123, acting_user=None)
+        do_change_user_setting([non_consented_user], "web_font_size_px", 456, acting_user=None)
 
         # For testing the scrubbing of RealmAuditLogs, we generate some events that will get
         # RealmAuditLog events.
@@ -1316,7 +1324,9 @@ class RealmImportExportTest(ExportFile):
             color="#foo"
         )
         consented_user_ids = {consented_user.id}
-        do_change_user_setting(consented_user, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(
+            [consented_user], "allow_private_data_export", True, acting_user=None
+        )
 
         self.export_realm_and_create_auditlog(
             realm,

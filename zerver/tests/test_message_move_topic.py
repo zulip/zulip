@@ -1917,19 +1917,19 @@ class MessageMoveTopicTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(
-            aaron,
+            [aaron],
             "resolved_topic_notice_auto_read_policy",
             ResolvedTopicNoticeAutoReadPolicyEnum.always,
             acting_user=None,
         )
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "resolved_topic_notice_auto_read_policy",
             ResolvedTopicNoticeAutoReadPolicyEnum.except_followed,
             acting_user=None,
         )
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "resolved_topic_notice_auto_read_policy",
             ResolvedTopicNoticeAutoReadPolicyEnum.never,
             acting_user=None,
