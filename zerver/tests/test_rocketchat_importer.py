@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timezone
 from typing import Any
+from unittest import mock
 
 import orjson
 
@@ -35,7 +36,7 @@ class RocketChatImporter(ZulipTestCase):
     def test_rocketchat_data_to_dict(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-        self.assert_length(rocketchat_data, 7)
+        self.assert_length(rocketchat_data, 5)
 
         self.assert_length(rocketchat_data["user"], 6)
         self.assertEqual(rocketchat_data["user"][2]["username"], "harry.potter")
@@ -45,16 +46,8 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(rocketchat_data["room"][0]["_id"], "GENERAL")
         self.assertEqual(rocketchat_data["room"][0]["name"], "general")
 
-        self.assert_length(rocketchat_data["message"], 87)
-        self.assertEqual(rocketchat_data["message"][1]["msg"], "Hey everyone, how's it going??")
-        self.assertEqual(rocketchat_data["message"][1]["rid"], "GENERAL")
-        self.assertEqual(rocketchat_data["message"][1]["u"]["username"], "priyansh3133")
-
         self.assert_length(rocketchat_data["custom_emoji"]["emoji"], 3)
         self.assertEqual(rocketchat_data["custom_emoji"]["emoji"][0]["name"], "tick")
-
-        self.assert_length(rocketchat_data["upload"]["upload"], 4)
-        self.assertEqual(rocketchat_data["upload"]["upload"][0]["name"], "harry-ron.jpg")
 
     def test_map_user_id_to_user(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -751,10 +744,38 @@ class RocketChatImporter(ZulipTestCase):
         zerver_attachments: list[ZerverFieldsT] = []
         uploads_list: list[ZerverFieldsT] = []
 
-        upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
-
         message_with_attachment = rocketchat_data["message"][55]
 
+        attachment_mock = mock.MagicMock()
+        attachment_mock.return_value = (
+            {
+                "_id": "MmgXWQbD3hXYyGSai",
+                "name": "harry-ron.jpg",
+                "size": 149467,
+                "type": "image/jpeg",
+                "rid": "7scLEFgSgYXDqQwRM",
+                "userId": "LdBZ7kPxtKESyHPEe",
+                "store": "GridFS:Uploads",
+                "_updatedAt": datetime.datetime(
+                    2021, 7, 30, 22, 3, 11, 351000, tzinfo=timezone.utc
+                ),
+                "instanceId": "tYveC9XFjoWEn68mx",
+                "identify": {"format": "jpeg", "size": {"width": 1500, "height": 750}},
+                "complete": True,
+                "etag": "Hp6BwNq6mjqmSe4GH",
+                "path": "/ufs/GridFS:Uploads/MmgXWQbD3hXYyGSai/harry-ron.jpg",
+                "progress": 1,
+                "token": "08397aB979",
+                "uploadedAt": datetime.datetime(
+                    2021, 7, 30, 22, 3, 12, 675000, tzinfo=timezone.utc
+                ),
+                "uploading": False,
+                "url": "http://localhost:3000/ufs/GridFS:Uploads/MmgXWQbD3hXYyGSai/harry-ron.jpg",
+                "description": "Just a random pic!",
+                "typeGroup": "image",
+            },
+            iter([b"moose\n", b"thing\n"]),
+        )
         process_message_attachment(
             upload=message_with_attachment["file"],
             realm_id=3,
@@ -762,7 +783,7 @@ class RocketChatImporter(ZulipTestCase):
             user_id=3,
             zerver_attachment=zerver_attachments,
             uploads_list=uploads_list,
-            upload_id_to_upload_data_map=upload_id_to_upload_data_map,
+            attachment_lookup=attachment_mock,
             output_dir=output_dir,
         )
 
