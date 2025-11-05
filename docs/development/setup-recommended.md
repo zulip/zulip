@@ -176,7 +176,7 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
-3. Open the Docker desktop app's settings panel, and choose `osxfs (legacy)` under "Choose file sharing implementation for your containers."
+3. Open the Docker desktop app's settings panel, and uncheck "Use gRPC FUSE for file sharing" to use the `osxfs (legacy)` file sharing instead.
    :::
 
 :::{tab-item} Ubuntu/Debian
@@ -329,8 +329,8 @@ other errors. The temporary fix is to open the Docker desktop app's
 settings panel, and choose `osxfs (legacy)` under "Choose file sharing
 implementation for your containers." Once Docker restarts, you should
 be able to successfully run `vagrant up --provider=docker`. Back in
-Docker, you can return to using VirtioFS for better system performance
-while developing, but you may need to revert to `osxfs (legacy)`
+Docker, you should return to using VirtioFS so that your files sync
+properly while developing, but you may need to revert to `osxfs (legacy)`
 whenever you need to re-provision.
 
 ```{include} setup/vagrant-up.md
