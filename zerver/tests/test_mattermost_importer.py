@@ -484,7 +484,6 @@ class MatterMostImporter(ZulipTestCase):
             realm_id=3,
             message_id=1,
             user_id=2,
-            user_handler=user_handler,
             zerver_attachment=zerver_attachments,
             uploads_list=uploads_list,
             mattermost_data_dir=mattermost_data_dir,
@@ -501,7 +500,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_email"], "ron@zulip.com")
+        self.assertEqual(uploads_list[0]["user_profile_id"], 2)
 
         attachment_path = self.fixture_file_name(
             mattermost_data["post"]["direct_post"][0]["attachments"][0]["path"],

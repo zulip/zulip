@@ -384,7 +384,6 @@ def process_message_attachment(
     realm_id: int,
     message_id: int,
     user_id: int,
-    user_handler: UserHandler,
     zerver_attachment: list[ZerverFieldsT],
     uploads_list: list[ZerverFieldsT],
     upload_id_to_upload_data_map: dict[str, dict[str, Any]],
@@ -447,7 +446,6 @@ def process_message_attachment(
         content_type=upload["type"],
         user_profile_id=user_id,
         last_modified=fileinfo["created"],
-        user_profile_email=user_handler.get_user(user_id=user_id)["email"],
         s3_path=s3_path,
         size=fileinfo["size"],
     )
@@ -537,7 +535,6 @@ def process_raw_message_batch(
                 realm_id=realm_id,
                 message_id=message_id,
                 user_id=sender_user_id,
-                user_handler=user_handler,
                 uploads_list=uploads_list,
                 zerver_attachment=zerver_attachment,
                 upload_id_to_upload_data_map=upload_id_to_upload_data_map,

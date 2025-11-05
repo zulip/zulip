@@ -2047,7 +2047,7 @@ by Pieter
 
         self.assertEqual(uploads_list[0]["s3_path"], image_path)
         self.assertEqual(uploads_list[0]["realm_id"], realm_id)
-        self.assertEqual(uploads_list[0]["user_profile_email"], "alice@example.com")
+        self.assertEqual(uploads_list[0]["user_profile_id"], alice_id)
 
     def test_bot_duplicates(self) -> None:
         self.assertEqual(

@@ -876,7 +876,6 @@ class RocketChatImporter(ZulipTestCase):
             realm_id=3,
             message_id=1,
             user_id=3,
-            user_handler=user_handler,
             zerver_attachment=zerver_attachments,
             uploads_list=uploads_list,
             upload_id_to_upload_data_map=upload_id_to_upload_data_map,
@@ -893,7 +892,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_email"], "harrypotter@email.com")
+        self.assertEqual(uploads_list[0]["user_profile_id"], 3)
 
         attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
         self.assertTrue(os.path.exists(attachment_out_path))

@@ -142,7 +142,6 @@ def build_user_profile(
 def build_avatar(
     zulip_user_id: int,
     realm_id: int,
-    email: str,
     avatar_url: str,
     timestamp: Any,
     avatar_list: list[ZerverFieldsT],
@@ -154,7 +153,6 @@ def build_avatar(
         avatar_version=1,
         user_profile_id=zulip_user_id,
         last_modified=timestamp,
-        user_profile_email=email,
         s3_path="",
         size="",
     )
