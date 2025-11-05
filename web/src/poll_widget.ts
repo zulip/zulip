@@ -14,6 +14,7 @@ import render_widgets_poll_widget_results from "../templates/widgets/poll_widget
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as markdown from "./markdown.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
@@ -218,8 +219,23 @@ export function activate({
 
     function render_results(): void {
         const widget_data = poll_data.get_widget_data();
+        const processed_widget_data = {
+            ...widget_data,
+            options: widget_data.options.map((option) => ({
+                ...option,
+                option_html: (() => {
+                    try {
+                        return option.option && option.option.trim() !== ""
+                            ? markdown.parse_non_message(option.option)
+                            : option.option;
+                    } catch {
+                        return option.option;
+                    }
+                })(),
+            })),
+        };
 
-        const html = render_widgets_poll_widget_results(widget_data);
+        const html = render_widgets_poll_widget_results(processed_widget_data);
         $elem.find("ul.poll-widget").html(html);
 
         $elem
