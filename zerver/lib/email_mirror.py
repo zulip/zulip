@@ -171,7 +171,7 @@ def construct_zulip_body(
     preamble = ""
     if show_sender:
         from_address = str(message.get("From", ""))
-        preamble = f"From: {from_address}\n"
+        preamble = f"**From:** {from_address}\n"
 
     postamble = extract_and_upload_attachments(message, realm, sender)
     if postamble != "":
