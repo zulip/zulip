@@ -119,6 +119,7 @@ export function initialize(params: StateData["user_status"]): void {
         if (dct.emoji_name) {
             user_status_emoji_info.set(user_id, {
                 ...emoji.get_emoji_details_for_rendering(dct),
+                emoji_alt_code: user_settings.emojiset === "text",
             });
         }
     }

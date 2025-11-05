@@ -751,13 +751,10 @@ function handle_reaction_emoji_clicked(
 
 function handle_status_emoji_clicked(emoji_name: string): void {
     hide_emoji_popover();
-    let emoji_info = {
-        emoji_name,
+    const emoji_info = {
+        ...emoji.get_emoji_details_by_name(emoji_name),
         emoji_alt_code: user_settings.emojiset === "text",
     };
-    if (!emoji_info.emoji_alt_code) {
-        emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
-    }
     user_status_ui.set_selected_emoji_info(emoji_info);
     user_status_ui.update_button();
     user_status_ui.toggle_clear_status_button();
