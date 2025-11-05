@@ -442,6 +442,32 @@ export function initialize(): void {
         },
     });
 
+    // Tooltip in general channel settings for protected history option.
+    tippy.delegate("body", {
+        target: ".settings-radio-input-parent.protected_history_with_new_topics_permission_tooltip",
+        content: $t({
+            defaultMessage:
+                "You must allow everyone to start new topics in this channel in order to turn on protected history.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Tooltip in Advanced configurations panel (existing + new channel) of channel settings.
+    tippy.delegate("body", {
+        target: ".can_create_topic_group_container.can_create_topic_group_disabled_tooltip",
+        content: $t({
+            defaultMessage:
+                "Everyone should be allowed start topics in channels with protected history.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     tippy.delegate("body", {
         target: [
             "[data-tab-key='available'].disabled",
