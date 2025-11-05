@@ -35,13 +35,11 @@ def get_pull_request_number_or_commit_hash() -> str:
         return commit_hash
 
 
-def get_changed_api_endpoints() -> list[str]:
+def get_changelog_entries() -> str:
     changelog_path = Path("api_docs/changelog.md")
     feature_level_pattern = re.compile(r"\*\*Feature level \d+\*\*")
-    link_pattern = re.compile(r"(\[[^\]]+\]\([^)]+\))")
-
     current_feature_level_found = False
-    endpoints = []
+    changelog_entries = ""
 
     with open(changelog_path) as file:
         for line in file:
@@ -51,19 +49,24 @@ def get_changed_api_endpoints() -> list[str]:
                 current_feature_level_found = True
                 continue
 
-            if current_feature_level_found and line.strip().startswith("*"):
-                endpoints.extend(link_pattern.findall(line.split(":", 1)[0]))
+            if current_feature_level_found:
+                changelog_entries += line
 
-    return endpoints
+    return changelog_entries
 
 
 if __name__ == "__main__":
     pull_request = get_pull_request_number_or_commit_hash()
 
-    feature_level = get_feature_level(update_feature_level=False)
-    endpoints = get_changed_api_endpoints()
+    feature_level = get_feature_level(update_feature_level=False) - 1
+    changelog_entries = get_changelog_entries()
     topic = f"new feature level: {feature_level}"
-    endpoints_string = ", ".join(endpoints)
 
-    content = f"{pull_request} has updated the API documentation for the following endpoints: {endpoints_string}."
-    print(f"topic={topic}\ncontent={content}")
+    content = f"{pull_request} has updated the API documentation for the following endpoints: \n{changelog_entries}."
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a") as f:
+            f.write(f"topic={topic}\n")
+            f.write("content<<EOF\n")
+            f.write(f"{content.strip()}\n")
+            f.write("EOF\n")
