@@ -95,14 +95,14 @@ class TransferUploadsToS3Test(ZulipTestCase):
         self.assertEqual(s3_dummy1["Body"].read(), b"zulip1!")
         self.assertEqual(
             s3_dummy1["Metadata"],
-            {"realm_id": str(attachments[0].realm_id), "user_profile_id": str(hamlet.id)},
+            {"realm-id": str(attachments[0].realm_id), "user-profile-id": str(hamlet.id)},
         )
 
         s3_dummy2 = bucket.Object(attachments[1].path_id).get()
         self.assertEqual(s3_dummy2["Body"].read(), b"zulip2!")
         self.assertEqual(
             s3_dummy2["Metadata"],
-            {"realm_id": str(attachments[1].realm_id), "user_profile_id": str(othello.id)},
+            {"realm-id": str(attachments[1].realm_id), "user-profile-id": str(othello.id)},
         )
 
         s3_image = bucket.Object(attachments[2].path_id).get()
@@ -112,7 +112,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         )
         self.assertEqual(
             s3_image["Metadata"],
-            {"realm_id": str(attachments[2].realm_id), "user_profile_id": str(hamlet.id)},
+            {"realm-id": str(attachments[2].realm_id), "user-profile-id": str(hamlet.id)},
         )
 
         s3_image_thumbnail = bucket.Object(
