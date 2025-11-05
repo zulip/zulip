@@ -404,7 +404,7 @@ ul.popover-group-menu-member-list {
 #user-profile-modal {
     .modal__body {
         box-sizing: border-box;
-        height: 60vh;
+        height: var(--user-profile-modal-body-height);
         padding-left: 16px;
         padding-right: 16px;
 
@@ -535,7 +535,7 @@ ul.popover-group-menu-member-list {
             display: block;
         }
 
-        margin-bottom: 20px;
+        margin-bottom: var(--user-profile-modal-body-margin-bottom);
     }
 
     .group-tab-element-header,

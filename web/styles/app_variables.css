@@ -168,7 +168,7 @@
     This is the header, aka the navbar.
     */
     --header-height: 2.5em; /* 40px at 16px em */
-
+    --header-line-height: 40px;
     /*
     At 600px, the header starts taking up more than 5%
     of the screen. We make it shorter to leave more space
@@ -626,6 +626,9 @@
     /* Dropdown menu width. This is a legacy value that comes from bootstrap.
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
+    /* User profile modal */
+    --user-profile-modal-body-height: 60vh;
+    --user-profile-modal-body-margin-bottom: 20px;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
