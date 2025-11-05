@@ -123,6 +123,12 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             // rerender the entire message feed.
             message_live_update.rerender_messages_view();
         }
+        if (property === "can_create_topic_group") {
+            stream_ui_updates.update_history_public_to_subscribers_state(
+                $("#stream_settings"),
+                sub,
+            );
+        }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
             group_setting_value_schema.parse(value),
