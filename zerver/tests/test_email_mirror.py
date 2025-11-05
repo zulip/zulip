@@ -481,7 +481,7 @@ class TestStreamEmailMessages(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(self.example_email("hamlet"), msgtext),
+            "**From:** {}\n{}".format(self.example_email("hamlet"), msgtext),
         )
         self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
@@ -513,7 +513,7 @@ and other things
             )
             process_message(incoming_valid_message)
             message = most_recent_message(user_profile)
-            expected = "From: {}\n{}".format(self.example_email("hamlet"), expected_body)
+            expected = "**From:** {}\n{}".format(self.example_email("hamlet"), expected_body)
             self.assertEqual(message.content, expected.strip())
             self.assert_message_stream_name(message, stream.name)
             self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
@@ -554,7 +554,7 @@ and other things
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(
+            "**From:** {}\n{}".format(
                 "Test Useróąę <hamlet_ę@zulip.com>", "TestStreamEmailMessages body"
             ),
         )
