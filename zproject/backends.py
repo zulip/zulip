@@ -16,7 +16,8 @@ import binascii
 import json
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import Any, TypedDict, TypeVar, cast
@@ -2462,6 +2463,31 @@ def social_auth_finish(
     return redirect_and_log_into_subdomain(result)
 
 
+@dataclass
+class AbortFlag:
+    aborted: bool = False
+
+
+@contextmanager
+def social_auth_exception_guard(logger: logging.Logger) -> Generator[AbortFlag, None, None]:
+    abort_flag = AbortFlag()
+    try:
+        yield abort_flag
+    except (AuthFailed, HTTPError) as e:
+        # When a user's social authentication fails (e.g. because
+        # they did something funny with reloading in the middle of
+        # the flow or the IdP is unreliable and returns a bad http response),
+        # don't throw a 500, just send them back to the
+        # login page and record the event at the info log level.
+        logger.info("%s: %s", type(e).__name__, e)
+        abort_flag.aborted = True
+    except SocialAuthBaseException as e:
+        # Other python-social-auth exceptions are likely
+        # interesting enough that we should log a warning.
+        logger.warning("%s", e)
+        abort_flag.aborted = True
+
+
 class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # Whether we expect that the full_name value obtained by the
     # social backend is definitely how the user should be referred to
@@ -2495,22 +2521,12 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
         really user errors.  Returning `None` from this function will
         redirect the browser to the login page.
         """
-        try:
-            # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
-            return super().auth_complete(*args, **kwargs)
-        except (AuthFailed, HTTPError) as e:
-            # When a user's social authentication fails (e.g. because
-            # they did something funny with reloading in the middle of
-            # the flow or the IdP is unreliable and returns a bad http response),
-            # don't throw a 500, just send them back to the
-            # login page and record the event at the info log level.
-            self.logger.info("%s: %s", type(e).__name__, e)
+        result = None
+        with social_auth_exception_guard(self.logger) as abort_flag:
+            result = super().auth_complete(*args, **kwargs)
+        if abort_flag.aborted:
             return None
-        except SocialAuthBaseException as e:
-            # Other python-social-auth exceptions are likely
-            # interesting enough that we should log a warning.
-            self.logger.warning("%s", e)
-            return None
+        return result
 
     def should_auto_signup(self) -> bool:
         return False
