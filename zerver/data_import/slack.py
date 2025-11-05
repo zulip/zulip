@@ -319,7 +319,7 @@ def users_to_zerver_userprofile(
         # ref: https://zulip.com/help/change-your-profile-picture
         avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
         if avatar_source == UserProfile.AVATAR_FROM_USER:
-            build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
+            build_avatar(user_id, realm_id, avatar_url, timestamp, avatar_list)
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
             role = UserProfile.ROLE_REALM_OWNER
@@ -1261,18 +1261,12 @@ def process_message_files(
             has_link = True
             has_image = "image" in fileinfo["mimetype"]
 
-            file_user = [
-                iterate_user for iterate_user in users if message["user"] == iterate_user["id"]
-            ]
-            file_user_email = get_user_email(file_user[0], domain_name)
-
             s3_path, content_for_link = get_attachment_path_and_content(fileinfo, realm_id)
             markdown_links.append(content_for_link)
 
             build_uploads(
                 slack_user_id_to_zulip_user_id[slack_user_id],
                 realm_id,
-                file_user_email,
                 fileinfo,
                 s3_path,
                 uploads_list,
@@ -1401,7 +1395,6 @@ def build_reactions(
 def build_uploads(
     user_id: int,
     realm_id: int,
-    email: str,
     fileinfo: ZerverFieldsT,
     s3_path: str,
     uploads_list: list[ZerverFieldsT],
@@ -1412,7 +1405,6 @@ def build_uploads(
         content_type=None,
         user_profile_id=user_id,
         last_modified=fileinfo["timestamp"],
-        user_profile_email=email,
         s3_path=s3_path,
         size=fileinfo["size"],
     )

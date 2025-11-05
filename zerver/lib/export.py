@@ -2116,14 +2116,12 @@ def _get_exported_s3_record(
         record["file_name"] = file_name
 
     if "user_profile_id" in record:
-        user_profile = get_user_profile_by_id(int(record["user_profile_id"]))
-        record["user_profile_email"] = user_profile.email
-
         # Fix the record ids
         record["user_profile_id"] = int(record["user_profile_id"])
 
         # A few early avatars don't have 'realm_id' on the object; fix their metadata
         if "realm_id" not in record:
+            user_profile = get_user_profile_by_id(record["user_profile_id"])
             record["realm_id"] = user_profile.realm_id
     else:
         # There are some rare cases in which 'user_profile_id' may not be present
@@ -2263,7 +2261,6 @@ def export_uploads_from_local(
             record = dict(
                 realm_id=attachment.realm_id,
                 user_profile_id=attachment.owner.id,
-                user_profile_email=attachment.owner.email,
                 s3_path=path_id,
                 path=path_id,
                 size=stat.st_size,
@@ -2317,7 +2314,6 @@ def export_avatars_from_local(
             record = dict(
                 realm_id=realm.id,
                 user_profile_id=user.id,
-                user_profile_email=user.email,
                 avatar_version=user.avatar_version,
                 s3_path=fn,
                 path=fn,
