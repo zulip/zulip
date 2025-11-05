@@ -60,6 +60,7 @@ run_test("basics", () => {
         reaction_type: "realm_emoji",
         url: "/url/for/992",
         still_url: "/url/still/992",
+        emoji_alt_code: false,
     });
 
     user_status.set_status_emoji({
