@@ -548,6 +548,7 @@ export function show_new_stream_modal(): void {
     stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_option_state($("#stream-creation"));
     stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -565,6 +566,16 @@ function set_up_group_setting_widgets(): void {
             group_setting_widgets[setting_name],
         );
     }
+
+    // Enable or disable protected history stream privacy option when
+    // can_create_topic_group setting is updated.
+    const can_create_topic_group_widget = group_setting_widgets.can_create_topic_group!;
+    can_create_topic_group_widget.onPillCreate(() => {
+        stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    });
+    can_create_topic_group_widget.onPillRemove(() => {
+        stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    });
 }
 
 export function set_up_handlers(): void {
@@ -581,6 +592,7 @@ export function set_up_handlers(): void {
         update_announce_stream_state();
         stream_ui_updates.update_default_stream_option_state($container);
         stream_ui_updates.update_can_subscribe_group_label($container);
+        stream_ui_updates.update_can_create_topic_group_setting_state($container);
     });
 
     $container.on("change", ".default-stream input", () => {
