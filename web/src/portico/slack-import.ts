@@ -1,5 +1,5 @@
 import {Uppy} from "@uppy/core";
-import DragDrop from "@uppy/drag-drop";
+import Dashboard from "@uppy/dashboard";
 import Tus from "@uppy/tus";
 import $ from "jquery";
 import assert from "minimalistic-assert";
@@ -8,7 +8,7 @@ import * as z from "zod/mini";
 import {$t} from "../i18n.ts";
 
 $(() => {
-    if ($("#slack-import-drag-and-drop").length > 0) {
+    if ($("#slack-import-dashboard").length > 0) {
         const key = $<HTMLInputElement>("#auth_key_for_file_upload").val();
         const uppy = new Uppy({
             autoProceed: true,
@@ -38,21 +38,8 @@ $(() => {
                 },
             },
         });
-        uppy.use(DragDrop, {
-            target: "#slack-import-drag-and-drop",
-            locale: {
-                strings: {
-                    // Override the default text for the drag and drop area.
-                    dropHereOr: $t({
-                        defaultMessage:
-                            "Drag and drop your Slack export file here, or click to browse.",
-                    }),
-                    // Required by typescript to define this.
-                    browse: $t({
-                        defaultMessage: "Browse",
-                    }),
-                },
-            },
+        uppy.use(Dashboard, {
+            target: "#slack-import-dashboard",
         });
         uppy.use(Tus, {
             endpoint: "/api/v1/tus/",
@@ -68,13 +55,20 @@ $(() => {
         uppy.on("upload-success", (file, _response) => {
             assert(file !== undefined);
             $("#slack-import-start-upload-wrapper").removeClass("hidden");
+            $("#slack-import-dashboard-wrapper").addClass("hidden");
+
             $("#slack-import-uploaded-file-name").text(file.name);
             $("#slack-import-file-upload-error").text("");
             $("#realm-creation-form-slack-import .register-button").prop("disabled", false);
         });
-        // Reset uppy state to allow user replace existing uploaded file.
-        uppy.on("complete", () => {
-            uppy.clear();
+
+        $(".slack-import-upload-file").on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const dashboard = uppy.getPlugin("Dashboard")!;
+            assert(dashboard instanceof Dashboard);
+            void dashboard.openModal();
         });
     }
 
