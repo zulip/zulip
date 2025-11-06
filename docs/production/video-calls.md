@@ -119,9 +119,13 @@ type of Zoom application for your Zulip server.
    to be your app's "Client Secret".
 
 1. In `/etc/zulip/settings.py`, set `VIDEO_ZOOM_CLIENT_ID` to your
-   app's "Client ID". If your using a Zoom
-   [Server to Server OAuth app](#server-to-server-oauth-app),
-   set `VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID` to be your app's "Account ID".
+   app's "Client ID". Some Zoom enterprise customers that don't use
+   `zoom.us` will need to set `VIDEO_ZOOM_API_URL` for the Zoom API
+   server and `VIDEO_ZOOM_OAUTH_URL` for your instance's
+   authorization. If you're using a Zoom [Server to Server OAuth
+   app](#server-to-server-oauth-app), set
+   `VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID` to be your app's "Account
+   ID".
 
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
