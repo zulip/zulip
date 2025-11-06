@@ -26,7 +26,9 @@ format used by the Zulip server that they are interacting with.
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new `web_inbox_show_channel_folders` display setting,
   controlling whether any [channel folders](/help/channel-folders)
-  configured by the organization are displayed in the Inbox view.
+  configured by the organization are used to organize how conversations
+  with unread messages are displayed in the web/desktop application's
+  Inbox view.
 
 **Feature level 430**
 
@@ -166,7 +168,8 @@ No changes; API feature level used for the Zulip 11.0 release.
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new `web_left_sidebar_show_channel_folders` display setting,
   controlling whether any [channel folders](/help/channel-folders)
-  configured by the organization are displayed in the left sidebar.
+  configured by the organization are used to organize how channels
+  are displayed in the web/desktop application's left sidebar.
 
 **Feature level 410**
 

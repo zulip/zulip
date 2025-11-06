@@ -14203,16 +14203,18 @@ paths:
                 web_inbox_show_channel_folders:
                   type: boolean
                   description: |
-                    Determines whether the web/desktop application's Inbox view displays
-                    any channel folders configured by the organization.
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how conversations with unread messages
+                    are displayed in the web/desktop application's Inbox view.
 
                     **Changes**: New in Zulip 12.0 (feature level 431).
                   example: true
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
-                    Determines whether the web/desktop application's left sidebar displays
-                    any channel folders configured by the organization.
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how channels are displayed in the
+                    web/desktop application's left sidebar.
 
                     **Changes**: New in Zulip 11.0 (feature level 411).
                   example: true
@@ -17882,15 +17884,17 @@ paths:
                           web_inbox_show_channel_folders:
                             type: boolean
                             description: |
-                              Determines whether the web/desktop application's Inbox view displays
-                              any channel folders configured by the organization.
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how conversations with unread messages
+                              are displayed in the web/desktop application's Inbox view.
 
                               **Changes**: New in Zulip 12.0 (feature level 431).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
-                              Determines whether the web/desktop application's left sidebar displays
-                              any channel folders configured by the organization.
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how channels are displayed in the
+                              web/desktop application's left sidebar.
 
                               **Changes**: New in Zulip 11.0 (feature level 411).
                           web_left_sidebar_unreads_count_summary:
@@ -20802,15 +20806,17 @@ paths:
                           web_inbox_show_channel_folders:
                             type: boolean
                             description: |
-                              Determines whether the web/desktop application's Inbox view displays
-                              any channel folders configured by the organization.
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how conversations with unread messages
+                              are displayed in the web/desktop application's Inbox view.
 
                               **Changes**: New in Zulip 12.0 (feature level 431).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
-                              Determines whether the web/desktop application's left sidebar displays
-                              any channel folders configured by the organization.
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how channels are displayed in the
+                              web/desktop application's left sidebar.
 
                               **Changes**: New in Zulip 11.0 (feature level 411).
                           web_left_sidebar_unreads_count_summary:
@@ -22090,15 +22096,17 @@ paths:
                 web_inbox_show_channel_folders:
                   type: boolean
                   description: |
-                    Determines whether the web/desktop application's Inbox view displays
-                    any channel folders configured by the organization.
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how conversations with unread messages
+                    are displayed in the web/desktop application's Inbox view.
 
                     **Changes**: New in Zulip 12.0 (feature level 431).
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
-                    Determines whether the web/desktop application's left sidebar displays
-                    any channel folders configured by the organization.
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how channels are displayed in the
+                    web/desktop application's left sidebar.
 
                     **Changes**: New in Zulip 11.0 (feature level 411).
                   example: true
