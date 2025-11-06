@@ -309,6 +309,14 @@
         .my_user_status {
             padding-right: 5px;
         }
+
+        /* Zero out the margin placed to the left of the bot icon,
+           and add in the 5px of padding to the right. Specificity
+           necessitates duplicating the .pill-label class here. */
+        .pill-label .zulip-icon-bot {
+            margin-left: 0;
+            padding-right: 5px;
+        }
     }
 
     .pill:focus {

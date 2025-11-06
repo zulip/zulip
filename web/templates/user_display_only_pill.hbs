@@ -12,12 +12,12 @@
             {{~#if has_status~}}
             {{~> status_emoji status_emoji_info~}}
             {{~/if~}}
+            {{#if is_bot}}
+                <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+            {{/if}}
         </span>
     </a>
     {{#unless is_active}}
         <i class="fa fa-ban pill-deactivated deactivated-user-icon tippy-zulip-delayed-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Bot is deactivated' }}{{else}}{{t 'User is deactivated' }}{{/if}}"></i>
     {{/unless}}
-    {{#if is_bot}}
-        <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
-    {{/if}}
 </span>
