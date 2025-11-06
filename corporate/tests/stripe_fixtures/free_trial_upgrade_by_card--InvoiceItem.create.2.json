@@ -3,7 +3,7 @@
   "currency": "usd",
   "customer": "cus_NORMALIZED",
   "date": 1000000000,
-  "description": "Additional license (Jan 2, 2013 - Mar 2, 2013)",
+  "description": "Additional Zulip Cloud Standard license",
   "discountable": false,
   "discounts": [],
   "id": "free_trial_upgrade_by_card--InvoiceItem.create.2.json",
