@@ -94,9 +94,13 @@ class ReportMessageTest(ZulipTestCase):
 
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
-        channel = self.reported_message.recipient.label()
+        channel_name = self.reported_message.recipient.label()
+        channel_id = self.reported_message.recipient.type_id
         topic_name = self.reported_message.topic_name()
-        message_sent_to = f"{reporting_user_mention} reported #**{channel}>{topic_name}@{self.reported_message_id}** sent by {reported_user_mention}."
+        channel_message_link = get_message_link_syntax(
+            channel_id, channel_name, topic_name, self.reported_message_id
+        )
+        message_sent_to = f"{reporting_user_mention} reported {channel_message_link} sent by {reported_user_mention}."
         expected_message = """
 {message_sent_to}
 - Reason: **{report_type}**
