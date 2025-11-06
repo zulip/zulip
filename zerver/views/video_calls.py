@@ -5,7 +5,7 @@ import random
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any
-from urllib.parse import quote, urlencode, urljoin
+from urllib.parse import quote, urlencode, urljoin, urlsplit
 
 import requests
 from defusedxml import ElementTree
@@ -190,15 +190,15 @@ class OAuthVideoCallProvider(ABC):
 
 class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
     provider_name = "Zoom"
-    authorization_url = "https://zoom.us/oauth/authorize"
-    token_url = "https://zoom.us/oauth/token"
-    auto_refresh_url = "https://zoom.us/oauth/token"
-    create_meeting_url = "https://api.zoom.us/v2/users/me/meetings"
     authorization_scope = None
 
     def __init__(self) -> None:
         self.client_id = settings.VIDEO_ZOOM_CLIENT_ID
         self.client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+        self.authorization_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/authorize")
+        self.token_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
+        self.auto_refresh_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
+        self.create_meeting_url = urljoin(settings.VIDEO_ZOOM_API_URL, "/v2/users/me/meetings")
 
     @override
     def get_token(self, user: UserProfile) -> object | None:
@@ -260,12 +260,12 @@ def get_zoom_server_to_server_access_token(account_id: str) -> str:
     client_id = settings.VIDEO_ZOOM_CLIENT_ID.encode("utf-8")
     client_secret = str(settings.VIDEO_ZOOM_CLIENT_SECRET).encode("utf-8")
 
-    url = "https://zoom.us/oauth/token"
+    url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
     data = {"grant_type": "account_credentials", "account_id": account_id}
 
     client_information = client_id + b":" + client_secret
     encoded_client = b64encode(client_information).decode("ascii")
-    headers = {"Host": "zoom.us", "Authorization": f"Basic {encoded_client}"}
+    headers = {"Host": urlsplit(url).hostname, "Authorization": f"Basic {encoded_client}"}
 
     response = VideoCallSession().post(url, data, headers=headers)
     if not response.ok:
@@ -279,7 +279,7 @@ def get_zoom_server_to_server_call(
     user: UserProfile, access_token: str, payload: ZoomPayload
 ) -> str:
     email = user.delivery_email
-    url = f"https://api.zoom.us/v2/users/{email}/meetings"
+    url = f"{settings.VIDEO_ZOOM_API_URL}/v2/users/{email}/meetings"
     headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
     response = VideoCallSession().post(url, json=payload, headers=headers)
     if not response.ok:
