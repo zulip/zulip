@@ -122,13 +122,7 @@ export function enable_or_disable_group_permission_settings(): void {
         const $permission_pill_container_elements = $("#organization-permissions").find(
             ".pill-container",
         );
-        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
-        $permission_pill_container_elements
-            .closest(".input-group")
-            .removeClass("group_setting_disabled");
-        settings_components.enable_opening_typeahead_on_clicking_label(
-            $("#organization-permissions"),
-        );
+        settings_components.enable_group_permission_setting($permission_pill_container_elements);
         return;
     }
 
@@ -136,13 +130,7 @@ export function enable_or_disable_group_permission_settings(): void {
         const $permission_pill_container_elements = $("#organization-permissions").find(
             ".pill-container",
         );
-        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
-        $permission_pill_container_elements
-            .closest(".input-group")
-            .removeClass("group_setting_disabled");
-        settings_components.enable_opening_typeahead_on_clicking_label(
-            $("#organization-permissions"),
-        );
+        settings_components.enable_group_permission_setting($permission_pill_container_elements);
 
         // Admins are not allowed to update organization joining and group
         // related settings.
@@ -475,12 +463,8 @@ export function check_disable_direct_message_initiator_group_widget(): void {
             $("#id_realm_direct_message_initiator_group"),
         );
     } else if (current_user.is_admin) {
-        $("#id_realm_direct_message_initiator_group").find(".input").prop("contenteditable", true);
-        $("#id_realm_direct_message_initiator_group")
-            .closest(".input-group")
-            .removeClass("group_setting_disabled");
-        settings_components.enable_opening_typeahead_on_clicking_label(
-            $("#id_realm_direct_message_initiator_group").closest(".input-group"),
+        settings_components.enable_group_permission_setting(
+            $("#id_realm_direct_message_initiator_group"),
         );
     }
 }

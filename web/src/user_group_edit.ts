@@ -199,17 +199,13 @@ function update_group_permission_settings_elements(group: UserGroup): void {
     // We are concerned with the General tab for changing group permissions.
     const $group_permission_settings = $("#group_permission_settings");
 
-    const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");
     const $permission_input_groups = $group_permission_settings.find(".input-group");
 
     if (settings_data.can_manage_user_group(group.id)) {
-        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
-        $permission_input_groups.removeClass("group_setting_disabled");
-
+        settings_components.enable_group_permission_setting($permission_input_groups);
         $permission_input_groups.each(function (this: tippy.ReferenceElement) {
             $(this)[0]?._tippy?.destroy();
         });
-        settings_components.enable_opening_typeahead_on_clicking_label($group_permission_settings);
     } else {
         $permission_input_groups.each(function () {
             settings_components.initialize_disable_button_hint_popover(
