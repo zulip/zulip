@@ -35,7 +35,7 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
     def test_create_zoom_video_and_audio_links(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "oldtoken", "expires_in": -60},
         )
 
@@ -48,7 +48,7 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
         # Test creating a video link
         responses.replace(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "newtoken", "expires_in": 60},
         )
 
@@ -84,7 +84,7 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
         # Test creating an audio link
         responses.replace(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "newtoken", "expires_in": 60},
         )
 
@@ -142,7 +142,7 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
 
     @responses.activate
     def test_create_zoom_credential_error(self) -> None:
-        responses.add(responses.POST, "https://zoom.us/oauth/token", status=400)
+        responses.add(responses.POST, "https://zoom.example.com/oauth/token", status=400)
 
         response = self.client_get(
             "/calls/zoom/complete",
@@ -154,7 +154,7 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
     def test_create_zoom_refresh_error(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token", "expires_in": -60},
         )
 
@@ -164,7 +164,7 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        responses.replace(responses.POST, "https://zoom.us/oauth/token", status=400)
+        responses.replace(responses.POST, "https://zoom.example.com/oauth/token", status=400)
 
         response = self.client_post("/json/calls/zoom/create")
         self.assert_json_error(response, "Invalid Zoom access token")
@@ -173,7 +173,7 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
     def test_create_zoom_request_error(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token"},
         )
 
@@ -242,7 +242,7 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
                 "Zoom credentials have not been configured",
             )
 
-        responses.add(responses.POST, "https://zoom.us/oauth/token", status=400)
+        responses.add(responses.POST, "https://zoom.example.com/oauth/token", status=400)
         response = self.client_post("/json/calls/zoom/create")
         self.assert_json_error(response, "Invalid Zoom credentials")
 
@@ -250,7 +250,7 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
     def test_zoom_invalid_access_token_error(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token"},
         )
 
@@ -272,7 +272,7 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
     def test_zoom_unknown_email_error(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token"},
         )
 
@@ -284,7 +284,7 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
     def test_zoom_error_api_response_code_unknown(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token"},
         )
 
@@ -296,7 +296,7 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
     def test_zoom_create_video_call(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token", "expires_in": 3599},
         )
 
@@ -333,7 +333,7 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
     def test_zoom_create_audio_call(self) -> None:
         responses.add(
             responses.POST,
-            "https://zoom.us/oauth/token",
+            "https://zoom.example.com/oauth/token",
             json={"access_token": "token", "expires_in": 3599},
         )
 
