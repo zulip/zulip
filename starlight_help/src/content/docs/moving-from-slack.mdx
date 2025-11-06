@@ -8,7 +8,8 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import CommunicationPolicies from "../include/_CommunicationPolicies.mdx";
 import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
-import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
 import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
 import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
 import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
@@ -124,7 +125,11 @@ If you imported your organization from Slack, [decide how users will log
 in](/help/import-from-slack#decide-how-users-will-log-in) for the first time.
 Otherwise:
 
-<HowToInviteUsersToJoin />
+<Tabs>
+  <HowToInviteUsersToJoinImport />
+
+  <HowToInviteUsersToJoinNoImport />
+</Tabs>
 
 <ZulipTip>
   Remember to update links and login instructions to point to Zulip.

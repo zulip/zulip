@@ -8,7 +8,8 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import CommunicationPolicies from "../include/_CommunicationPolicies.mdx";
 import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
-import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
 import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
 import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
 import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
@@ -118,7 +119,11 @@ cover include:
 
 ## Invite users to join
 
-<HowToInviteUsersToJoin />
+<Tabs>
+  <HowToInviteUsersToJoinNoImport />
+
+  <HowToInviteUsersToJoinImport />
+</Tabs>
 
 <ZulipTip>
   Remember to update links and login instructions to point to Zulip.

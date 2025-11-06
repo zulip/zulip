@@ -2,6 +2,8 @@
 title: Setting up Zulip for a class
 ---
 
+import {Tabs} from "@astrojs/starlight/components";
+
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
@@ -11,7 +13,7 @@ import CreateChannelsIntro from "../include/_CreateChannelsIntro.mdx";
 import CustomizeSettingsForNewUsers from "../include/_CustomizeSettingsForNewUsers.mdx";
 import EditOrganizationProfile from "../include/_EditOrganizationProfile.mdx";
 import HowToCreateAUserGroup from "../include/_HowToCreateAUserGroup.mdx";
-import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
 import ReviewOrganizationSettingsInstructions from "../include/_ReviewOrganizationSettingsInstructions.mdx";
 
 Welcome to Zulip! This page will guide you through setting everything
@@ -255,7 +257,9 @@ invitations. You may choose to send invitations to course staff
 separately, so that they can immediately be subscribed to private
 channels for your class.
 
-<HowToInviteUsersToJoin />
+<Tabs>
+  <HowToInviteUsersToJoinNoImport />
+</Tabs>
 
 To get everyone off to a good start, you may wish to share the guide
 to [Getting started with Zulip][getting-started] and the guide to
