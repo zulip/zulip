@@ -111,10 +111,7 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
     }
 }
 
-export function update_private_stream_privacy_option_state(
-    $container: JQuery,
-    is_default_stream = false,
-): void {
+export function update_private_stream_privacy_option_state($container: JQuery): void {
     // Disable both "Private, shared history" and "Private, protected history" options.
     const $private_stream_elem = $container.find(
         `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
@@ -124,6 +121,11 @@ export function update_private_stream_privacy_option_state(
             settings_config.stream_privacy_policy_values.private_with_public_history.code,
         )}']`,
     );
+
+    // If the default stream option is checked, the private stream options are disabled.
+    const is_default_stream = util.the(
+        $container.find<HTMLInputElement>(".default-stream input"),
+    ).checked;
 
     const disable_private_stream_options =
         is_default_stream || !settings_data.user_can_create_private_streams();
@@ -313,9 +315,7 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
         is_invite_only,
     );
 
-    // If the default stream option is checked, the private stream options are disabled.
-    const is_default_stream = util.the($default_stream.find("input")).checked;
-    update_private_stream_privacy_option_state($container, is_default_stream);
+    update_private_stream_privacy_option_state($container);
 }
 
 export function update_can_subscribe_group_label($container: JQuery): void {
