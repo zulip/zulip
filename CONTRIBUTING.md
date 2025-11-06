@@ -343,10 +343,10 @@ to keep in mind.
 Our goal in the Zulip project is to develop an excellent software
 system. This requires careful attention to detail in every change we
 integrate. Maintainer time and attention is very limited, so it's
-important that changes that contributors ask us to review represent
-that contributor's best work.
+important that changes you ask us to review represent
+your _best_ work.
 
-Contributors are encouraged to use tools that help them write good
+You are encouraged to use tools that help you write good
 code, including AI tools. However, as noted above, you always need to
 understand and explain the changes you're proposing to make, whether
 or not you used an LLM as part of your process to produce them. The
@@ -366,9 +366,9 @@ guideline will be closed without review.
    trust claims they make about how Zulip works. LLMs are often wrong,
    even about details that are clearly answered in the Zulip
    documentation.
-1. Don't submit a bunch of LLM-proposed changes that easily reviewed
-   together as a single commit. Split up your changes into **[coherent
-   commits](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html)**.
+1. Split up your changes into **[coherent
+   commits](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html)**,
+   even if an LLM generates them all in one go.
 1. Don't simply ask an LLM to add **code comments**, as it will likely
    produce a bunch of text that unnecessarily explains what's already
    clear from the code. If using an LLM to generate comments, be
@@ -384,9 +384,9 @@ points that actually require discussion over long AI-generated
 comments.
 
 When you use an LLM to write a message for you, it remains **your
-responsibility** to read through the whole thing and make sure it
-makes sense to you and it represents your ideas concisely. A good rule
-of thumb is that if you can't make yourself carefully read a given LLM
+responsibility** to read through the whole thing and make sure that it
+makes sense to you and represents your ideas concisely. A good rule
+of thumb is that if you can't make yourself carefully read some LLM
 output that you generated, nobody else wants to read it either.
 
 Here are some concrete guidelines for using LLMs as part of your communication
@@ -409,7 +409,7 @@ workflows.
    in the process. Demand succinctness in your prompt.
 1. Quoting an LLM answer is usually less helpful than linking to
    **relevant primary sources**, like source code, reference
-   documentation or web standards. If you do need to quote an LLM
+   documentation, or web standards. If you do need to quote an LLM
    answer in a Zulip conversation, put the answer in a [Zulip quote
    block](https://zulip.com/help/format-a-quote), to distinguish LLM
    output from your own thoughts.
