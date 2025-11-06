@@ -17,7 +17,7 @@ from zerver.lib.topic_link_util import (
 from zerver.lib.url_encoding import pm_message_url
 from zerver.models import UserProfile
 from zerver.models.messages import Message
-from zerver.models.realms import get_realm
+from zerver.models.realms import Realm, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -116,7 +116,7 @@ class ReportMessageTest(ZulipTestCase):
 {reported_message}
 {fence}
 """.format(
-            report_type=report_type,
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=description,
             channel_message_link=channel_message_link,
             message_sent_to=message_sent_to,
@@ -232,7 +232,7 @@ class ReportMessageTest(ZulipTestCase):
 {reported_message}
 {fence}
 """.format(
-            report_type=report_type,
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=description,
             direct_message_link=direct_message_link,
             message_sent_to=message_sent_to,
@@ -284,7 +284,7 @@ class ReportMessageTest(ZulipTestCase):
 {reported_message}
 {fence}
 """.format(
-            report_type=report_type,
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=description,
             direct_message_link=direct_message_link,
             message_sent_to=message_sent_to,
@@ -331,7 +331,7 @@ class ReportMessageTest(ZulipTestCase):
 {reported_message}
 {fence}
 """.format(
-            report_type=report_type,
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=description,
             direct_message_link=direct_message_link,
             message_sent_to=message_sent_to,
@@ -387,7 +387,7 @@ class ReportMessageTest(ZulipTestCase):
 {reported_message}
 {fence}
 """.format(
-            report_type=report_type,
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=description,
             direct_message_link=direct_message_link,
             message_sent_to=message_sent_to,
@@ -443,7 +443,7 @@ class ReportMessageTest(ZulipTestCase):
 {reported_message}
 {fence}
 """.format(
-            report_type=report_type,
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=description,
             direct_message_link=direct_message_link,
             message_sent_to=message_sent_to,
@@ -499,7 +499,7 @@ class ReportMessageTest(ZulipTestCase):
 {reported_message}
 {fence}
 """.format(
-            report_type=report_type,
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=description,
             direct_message_link=direct_message_link,
             message_sent_to=message_sent_to,

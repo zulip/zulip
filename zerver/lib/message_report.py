@@ -35,6 +35,7 @@ def send_message_report(
     reported_user = reported_message.sender
     reported_user_mention = silent_mention_syntax_for_user(reported_user)
     reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
+    report_reason = Realm.REPORT_MESSAGE_REASONS[report_type]
 
     # Build reported message header
     if is_1_to_1_message(reported_message):
@@ -125,14 +126,14 @@ def send_message_report(
     )
     reported_message_preview_block = """
 ```quote
-**{report_type}**. {description}
+**{report_reason}**. {description}
 ```
 
 {fence} spoiler {original_message_string}
 {reported_message}
 {fence}
 """.format(
-        report_type=report_type,
+        report_reason=report_reason,
         description=description,
         original_message_string=original_message_string,
         reported_message=reported_message_content,
