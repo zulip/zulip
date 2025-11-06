@@ -210,6 +210,8 @@ export const navigation_view_schema = z.object({
     is_pinned: z.boolean(),
 });
 
+export type NavigationView = z.infer<typeof navigation_view_schema>;
+
 export const user_topic_schema = z.object({
     stream_id: z.number(),
     topic_name: z.string(),
