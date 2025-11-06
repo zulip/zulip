@@ -521,6 +521,14 @@ export default defineConfig({
                         "import-from-slack",
                         "import-from-rocketchat",
                         "export-your-organization",
+                        {
+                            label: "Zulip Cloud to self-hosting",
+                            link: "/cloud-to-self-hosting",
+                        },
+                        {
+                            label: "Self-hosting to Zulip Cloud",
+                            link: "/self-hosting-to-cloud",
+                        },
                     ],
                 },
                 {
