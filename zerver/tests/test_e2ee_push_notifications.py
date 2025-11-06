@@ -7,6 +7,7 @@ from django.test import override_settings
 from django.utils.timezone import now
 from firebase_admin.exceptions import InternalError
 from firebase_admin.messaging import UnregisteredError
+from typing_extensions import override
 
 from analytics.models import RealmCount
 from zerver.actions.user_groups import check_add_user_group
@@ -892,27 +893,35 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
 
 
 class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
-    def test_content_redacted(self) -> None:
-        hamlet = self.example_user("hamlet")
-        aaron = self.example_user("aaron")
-        realm = hamlet.realm
+    @override
+    def setUp(self) -> None:
+        super().setUp()
 
-        self.register_old_push_devices_for_notification()
-        self.register_push_devices_for_notification()
+        self.hamlet = self.example_user("hamlet")
+        self.aaron = self.example_user("aaron")
 
+        realm = self.hamlet.realm
+        realm.require_e2ee_push_notifications = True
+        realm.save(update_fields=["require_e2ee_push_notifications"])
+
+    def get_example_missed_message(self, content: str = "test content") -> dict[str, int | str]:
         message_id = self.send_personal_message(
-            from_user=aaron,
-            to_user=hamlet,
-            content="not-redacted",
+            from_user=self.aaron,
+            to_user=self.hamlet,
+            content=content,
             skip_capture_on_commit_callbacks=True,
         )
-        missed_message = {
+        missed_message: dict[str, int | str] = {
             "message_id": message_id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
+        return missed_message
 
-        realm.require_e2ee_push_notifications = True
-        realm.save(update_fields=["require_e2ee_push_notifications"])
+    def test_content_redacted(self) -> None:
+        self.register_old_push_devices_for_notification()
+        self.register_push_devices_for_notification()
+
+        missed_message = self.get_example_missed_message(content="not-redacted")
 
         # Verify that the content is redacted in payloads supplied to
         # 'send_notifications_to_bouncer' - payloads supplied to bouncer (legacy codepath).
@@ -926,7 +935,7 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
             ) as mock_legacy,
             mock.patch("zerver.lib.push_notifications.send_push_notifications") as mock_e2ee,
         ):
-            handle_push_notification(hamlet.id, missed_message)
+            handle_push_notification(self.hamlet.id, missed_message)
 
             mock_legacy.assert_called_once()
             self.assertEqual(mock_legacy.call_args.args[1]["alert"]["body"], "New message")
@@ -935,13 +944,7 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
             mock_e2ee.assert_called_once()
             self.assertEqual(mock_e2ee.call_args.args[1]["content"], "not-redacted")
 
-        message_id = self.send_personal_message(
-            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
-        )
-        missed_message = {
-            "message_id": message_id,
-            "trigger": NotificationTriggers.DIRECT_MESSAGE,
-        }
+        missed_message = self.get_example_missed_message()
 
         # Verify that the content is redacted in payloads supplied to
         # to functions for sending it through APNs and FCM directly.
@@ -960,7 +963,7 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
             # We have already asserted the payloads passed to E2EE codepath above.
             mock.patch("zerver.lib.push_notifications.send_push_notifications"),
         ):
-            handle_push_notification(hamlet.id, missed_message)
+            handle_push_notification(self.hamlet.id, missed_message)
 
             send_bouncer.assert_not_called()
             send_apple.assert_called_once()
@@ -968,6 +971,42 @@ class RequireE2EEPushNotificationsSettingTest(E2EEPushNotificationTestCase):
 
             self.assertEqual(send_apple.call_args.args[2]["alert"]["body"], "New message")
             self.assertEqual(send_android.call_args.args[2]["content"], "New message")
+
+    def test_content_redacted_only_android_registered(self) -> None:
+        registered_device_apple, _ = self.register_old_push_devices_for_notification()
+        registered_device_apple.delete()
+
+        missed_message = self.get_example_missed_message()
+
+        with (
+            activate_push_notification_service(),
+            mock.patch(
+                "zerver.lib.push_notifications.send_notifications_to_bouncer"
+            ) as mock_legacy,
+        ):
+            handle_push_notification(self.hamlet.id, missed_message)
+
+            mock_legacy.assert_called_once()
+            self.assertEqual(mock_legacy.call_args.args[1], {})
+            self.assertEqual(mock_legacy.call_args.args[2]["content"], "New message")
+
+    def test_content_redacted_only_apple_registered(self) -> None:
+        _, registered_device_android = self.register_old_push_devices_for_notification()
+        registered_device_android.delete()
+
+        missed_message = self.get_example_missed_message()
+
+        with (
+            activate_push_notification_service(),
+            mock.patch(
+                "zerver.lib.push_notifications.send_notifications_to_bouncer"
+            ) as mock_legacy,
+        ):
+            handle_push_notification(self.hamlet.id, missed_message)
+
+            mock_legacy.assert_called_once()
+            self.assertEqual(mock_legacy.call_args.args[1]["alert"]["body"], "New message")
+            self.assertEqual(mock_legacy.call_args.args[2], {})
 
 
 class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
