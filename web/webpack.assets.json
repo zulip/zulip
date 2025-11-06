@@ -102,7 +102,7 @@
         "jquery-validation",
         "./src/portico/signup.ts",
         "@uppy/core/css/style.min.css",
-        "@uppy/drag-drop/css/style.min.css",
+        "@uppy/dashboard/css/style.min.css",
         "./src/portico/slack-import.ts"
     ],
     "redirect-to-post": [

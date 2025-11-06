@@ -15,7 +15,7 @@
     "@sentry/browser": "^10.5.0",
     "@sentry/core": "^10.5.0",
     "@uppy/core": "^5.0.1",
-    "@uppy/drag-drop": "^5.0.1",
+    "@uppy/dashboard": "^5.0.4",
     "@uppy/image-editor": "^4.0.2",
     "@uppy/tus": "^5.0.0",
     "@uppy/utils": "^7.0.1",

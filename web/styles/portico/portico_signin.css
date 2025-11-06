@@ -1505,12 +1505,16 @@ button#register_auth_button_gitlab {
     padding-top: 5px;
 }
 
-#slack-import-drag-drop-wrapper {
+#slack-import-dashboard-wrapper {
     width: 100%;
     margin: 10px 0 0 5px;
 
-    #slack-import-drag-and-drop {
+    #slack-import-dashboard {
         margin-right: 5px;
+    }
+
+    &.hidden {
+        display: none;
     }
 }
 
@@ -1537,7 +1541,7 @@ button#register_auth_button_gitlab {
     }
 }
 
-#slack-import-drag-and-drop .uppy-DragDrop-container {
+#slack-import-dashboard .uppy-DragDrop-container {
     border: 1px dashed hsl(0deg 0% 0%);
     background-color: hsl(0deg 0% 0% / 5%);
     color: hsl(0deg 0% 40%);
