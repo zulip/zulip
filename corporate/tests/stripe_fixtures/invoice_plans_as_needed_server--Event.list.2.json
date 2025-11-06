@@ -6,59 +6,110 @@
       "data": {
         "object": {
           "amount": 4300,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
-          },
-          "amount_received": 4300,
+          "amount_captured": 4300,
+          "amount_refunded": 0,
           "application": null,
+          "application_fee": null,
           "application_fee_amount": null,
-          "automatic_payment_methods": null,
-          "canceled_at": null,
-          "cancellation_reason": null,
-          "capture_method": "automatic",
-          "client_secret": "NORMALIZED",
-          "confirmation_method": "automatic",
+          "balance_transaction": "txn_NORMALIZED",
+          "billing_details": {
+            "address": {
+              "city": "San Francisco",
+              "country": "US",
+              "line1": "123 Main St",
+              "line2": null,
+              "postal_code": "12345",
+              "state": "CA"
+            },
+            "email": null,
+            "name": "John Doe",
+            "phone": null,
+            "tax_id": null
+          },
+          "calculated_statement_descriptor": "ZULIP BASIC",
+          "captured": true,
           "created": 1000000000,
           "currency": "usd",
           "customer": "invoice_plans_as_needed_server--Customer.create.1.json",
           "description": "Payment for Invoice",
-          "excluded_payment_method_types": null,
+          "destination": null,
+          "dispute": null,
+          "disputed": false,
+          "failure_balance_transaction": null,
+          "failure_code": null,
+          "failure_message": null,
+          "fraud_details": {},
           "id": "invoice_plans_as_needed_server--Event.list.2.json",
-          "last_payment_error": null,
-          "latest_charge": "ch_NORMALIZED",
           "livemode": false,
           "metadata": {},
-          "next_action": null,
-          "object": "payment_intent",
+          "object": "charge",
           "on_behalf_of": null,
-          "payment_details": {
-            "customer_reference": null,
-            "order_reference": "in_1SQW8aRVfKEFJaqc1tMm4C"
+          "order": null,
+          "outcome": {
+            "advice_code": null,
+            "network_advice_code": null,
+            "network_decline_code": null,
+            "network_status": "approved_by_network",
+            "reason": null,
+            "risk_level": "normal",
+            "risk_score": 0,
+            "seller_message": "Payment complete.",
+            "type": "authorized"
           },
+          "paid": true,
+          "payment_intent": "invoice_plans_as_needed_server--Event.list.2.json",
           "payment_method": "pm_NORMALIZED",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
+          "payment_method_details": {
             "card": {
+              "amount_authorized": 4300,
+              "authorization_code": "669184",
+              "brand": "visa",
+              "checks": {
+                "address_line1_check": "pass",
+                "address_postal_code_check": "pass",
+                "cvc_check": "pass"
+              },
+              "country": "US",
+              "exp_month": 1,
+              "exp_year": 9999,
+              "extended_authorization": {
+                "status": "disabled"
+              },
+              "fingerprint": "NORMALIZED",
+              "funding": "credit",
+              "incremental_authorization": {
+                "status": "unavailable"
+              },
               "installments": null,
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
+              "last4": "4242",
+              "mandate": null,
+              "multicapture": {
+                "status": "unavailable"
+              },
+              "network": "visa",
+              "network_token": {
+                "used": false
+              },
+              "network_transaction_id": "100110997670110",
+              "overcapture": {
+                "maximum_amount_capturable": 4300,
+                "status": "unavailable"
+              },
+              "regulated_status": "unregulated",
+              "three_d_secure": null,
+              "wallet": null
             },
-            "link": {
-              "persistent_token": null
-            }
+            "type": "card"
           },
-          "payment_method_types": [
-            "card",
-            "link"
-          ],
-          "processing": null,
+          "radar_options": {},
           "receipt_email": "hamlet@zulip.com",
+          "receipt_number": null,
+          "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
+          "refunded": false,
           "review": null,
-          "setup_future_usage": null,
           "shipping": null,
           "source": null,
+          "source_transfer": null,
           "statement_descriptor": "Zulip Basic",
           "statement_descriptor_suffix": null,
           "status": "succeeded",
@@ -69,12 +120,12 @@
       "id": "invoice_plans_as_needed_server--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "invoice_plans_as_needed_server--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "payment_intent.succeeded"
+      "type": "charge.succeeded"
     },
     {
       "api_version": "2025-10-29.clover",
@@ -271,7 +322,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "invoice_plans_as_needed_server--Event.list.2.json",
@@ -479,7 +530,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
           "effective_at": null,
@@ -775,7 +826,7 @@
           "total_excluding_tax": 4300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
           "amount_due": 6300,
@@ -1043,7 +1094,7 @@
           "total_excluding_tax": 6300,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
           "amount_due": 0,
@@ -1229,7 +1280,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "invoice_plans_as_needed_server--Event.list.2.json",
@@ -1293,7 +1344,7 @@
       "type": "customer.updated"
     }
   ],
-  "has_more": false,
+  "has_more": true,
   "object": "list",
   "url": "/v1/events"
 }

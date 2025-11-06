@@ -34,9 +34,9 @@
           "on_behalf_of": null,
           "payment_details": {
             "customer_reference": null,
-            "order_reference": "in_1SQW9aRVfKEFJaqcj0gWHt"
+            "order_reference": "in_1SSdOgRVfKEFJaqcc9uev4"
           },
-          "payment_method": null,
+          "payment_method": "pm_NORMALIZED",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
