@@ -148,7 +148,7 @@
           "total_excluding_tax": 136000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
           "automatically_finalizes_at": 1000000000,
@@ -171,7 +171,7 @@
       "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -243,7 +243,7 @@
       "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -398,7 +398,7 @@
           "total_excluding_tax": 136000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
           "amount_due": 0,
@@ -577,7 +577,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",

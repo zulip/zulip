@@ -4,6 +4,7 @@ import operator
 import os
 import re
 import sys
+import time
 import typing
 import uuid
 from collections.abc import Callable, Mapping, Sequence
@@ -569,14 +570,34 @@ class StripeTestCase(ZulipTestCase):
         )
         assert response.status_code == 200
 
-    def send_stripe_webhook_events(self, most_recent_event: stripe.Event) -> None:
+    def send_stripe_webhook_events(
+        self, most_recent_event: stripe.Event, must_have_event: str | None = None
+    ) -> None:  # nocoverage
+        # Stripe can delay events showing up in the Event list, so we
+        # keep looking until we find the must_have_event.
+        found_must_have_event = must_have_event is None
+        num_of_attempts_to_look_for_must_have_event = 10
         while True:
             events_old_to_new = list(
                 reversed(stripe.Event.list(ending_before=most_recent_event.id))
             )
+
             if len(events_old_to_new) == 0:
-                break
+                if found_must_have_event:
+                    break
+                else:
+                    num_of_attempts_to_look_for_must_have_event -= 1
+                    if num_of_attempts_to_look_for_must_have_event == 0:
+                        raise AssertionError(
+                            f"Did not find expected event {must_have_event} after looking for it multiple times"
+                        )
+                    time.sleep(0.2)
+                    continue
+
             for event in events_old_to_new:
+                if event.type == must_have_event:
+                    found_must_have_event = True
+
                 self.send_stripe_webhook_event(event)
             most_recent_event = events_old_to_new[-1]
 
@@ -702,13 +723,14 @@ class StripeTestCase(ZulipTestCase):
         )
 
         if invoice:
+            assert talk_to_stripe is True
             # Mark the invoice as paid via stripe with the `invoice.paid` event.
             stripe.Invoice.pay(last_sent_invoice.stripe_invoice_id, paid_out_of_band=True)
 
-        # Upgrade the organization.
-        # TODO: Fix `invoice.paid` event not being present in the events list even thought the invoice was
-        # paid. This is likely due to a latency between invoice being paid and the event being generated.
-        self.send_stripe_webhook_events(last_event)
+        self.send_stripe_webhook_events(
+            last_event,
+            must_have_event="invoice.paid" if invoice else None,
+        )
         return upgrade_json_response
 
     def add_card_and_upgrade(
@@ -1810,7 +1832,7 @@ class StripeTest(StripeTestCase):
             # Customer pays the invoice
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event)
+            self.send_stripe_webhook_events(last_event, "invoice.paid")
 
             with time_machine.travel(self.now, tick=False):
                 response = self.client_get("/billing/")
@@ -1976,7 +1998,7 @@ class StripeTest(StripeTestCase):
             # Customer pays the invoice
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event)
+            self.send_stripe_webhook_events(last_event, "invoice.paid")
 
             with time_machine.travel(self.now, tick=False):
                 response = self.client_get("/billing/")
@@ -2185,7 +2207,7 @@ class StripeTest(StripeTestCase):
             [last_event] = iter(stripe.Event.list(limit=1))
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event)
+            self.send_stripe_webhook_events(last_event, "invoice.paid")
 
             invoice_plans_as_needed(free_trial_end_date)
             CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)

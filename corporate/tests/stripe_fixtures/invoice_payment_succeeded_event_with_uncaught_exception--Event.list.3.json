@@ -162,7 +162,7 @@
       "id": "invoice_payment_succeeded_event_with_uncaught_exception--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "invoice_payment_succeeded_event_with_uncaught_exception--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"

@@ -5,40 +5,23 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "address": null,
-          "balance": 0,
+          "amount_paid": 48000,
+          "amount_requested": 48000,
           "created": 1000000000,
-          "currency": null,
-          "default_source": null,
-          "delinquent": false,
-          "description": "zulip (Zulip Dev)",
-          "discount": null,
-          "email": "desdemona@zulip.com",
-          "id": "billing_page_permissions--Customer.create.1.json",
-          "invoice_prefix": "NORMALIZED",
-          "invoice_settings": {
-            "custom_fields": null,
-            "default_payment_method": "pm_NORMALIZED",
-            "footer": null,
-            "rendering_options": null
-          },
+          "currency": "usd",
+          "id": "billing_page_permissions--Event.list.1.json",
+          "invoice": "in_NORMALIZED",
+          "is_default": true,
           "livemode": false,
-          "metadata": {
-            "realm_id": "1",
-            "realm_str": "zulip"
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "pi_NORMALIZED",
+            "type": "payment_intent"
           },
-          "name": null,
-          "next_invoice_sequence": 1,
-          "object": "customer",
-          "phone": null,
-          "preferred_locales": [],
-          "shipping": null,
-          "tax_exempt": "none",
-          "test_clock": null
-        },
-        "previous_attributes": {
-          "invoice_settings": {
-            "default_payment_method": null
+          "status": "paid",
+          "status_transitions": {
+            "canceled_at": null,
+            "paid_at": 1000000000
           }
         }
       },
@@ -47,10 +30,10 @@
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "billing_page_permissions--Event.list.1.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+        "id": null,
+        "idempotency_key": null
       },
-      "type": "customer.updated"
+      "type": "invoice_payment.paid"
     }
   ],
   "has_more": true,

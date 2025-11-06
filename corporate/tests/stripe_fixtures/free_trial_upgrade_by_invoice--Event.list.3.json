@@ -5,41 +5,6 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "amount_paid": 984000,
-          "amount_requested": 984000,
-          "created": 1000000000,
-          "currency": "usd",
-          "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
-          "invoice": "free_trial_upgrade_by_invoice--Event.list.2.json",
-          "is_default": false,
-          "livemode": false,
-          "object": "invoice_payment",
-          "payment": {
-            "payment_record": "pr_test_NORMALIZEDmxeXP4o41RVfKEFJaqcRSi",
-            "type": "payment_record"
-          },
-          "status": "paid",
-          "status_transitions": {
-            "canceled_at": null,
-            "paid_at": 1000000000
-          }
-        }
-      },
-      "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "invoice_payment.paid"
-    },
-    {
-      "api_version": "2025-10-29.clover",
-      "created": 1000000000,
-      "data": {
-        "object": {
           "amount": 984000,
           "amount_capturable": 0,
           "amount_details": {
@@ -69,7 +34,7 @@
           "on_behalf_of": null,
           "payment_details": {
             "customer_reference": null,
-            "order_reference": "in_1SPR0RRVfKEFJaqcVJ9kws"
+            "order_reference": "in_1SSdNERVfKEFJaqct9lAuw"
           },
           "payment_method": null,
           "payment_method_configuration_details": null,
@@ -104,7 +69,7 @@
       "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -273,7 +238,7 @@
       "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -451,7 +416,7 @@
       "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "free_trial_upgrade_by_invoice--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
