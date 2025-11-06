@@ -1101,8 +1101,14 @@ div.overlay .flex.overlay-content > .overlay-container,
         background-color: var(
             --color-background-disabled-dropdown-widget-button
         );
+        /* TODO: Should this be 0.5 to match the spectator block below? */
         opacity: 0.7;
     }
+}
+
+.dropdown-widget-disabled-for-spectators .dropdown-widget-button {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 #edit_bot_owner_widget .dropdown_widget_value {

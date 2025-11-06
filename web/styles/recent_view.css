@@ -640,8 +640,3 @@
         box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
     }
 }
-
-.dropdown-widget-disabled-for-spectators #recent-view-filter_widget {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
