@@ -317,6 +317,10 @@
             margin-left: 0;
             padding-right: 5px;
         }
+
+        .deactivated-user-icon {
+            padding-right: 5px;
+        }
     }
 
     .pill:focus {
