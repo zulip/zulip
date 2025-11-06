@@ -57,6 +57,7 @@ export function clear(): void {
     }
 
     active_widgets.clear();
+    topic_filter_pill_widget?.clear(true);
 }
 
 export function close(): void {
@@ -81,6 +82,7 @@ export function zoom_out(): void {
     assert(widget !== undefined);
     const parent_widget = widget.get_parent();
 
+    topic_filter_pill_widget?.clear(true);
     rebuild_left_sidebar(parent_widget, stream_id);
 }
 
