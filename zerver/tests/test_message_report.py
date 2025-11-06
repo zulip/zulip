@@ -423,9 +423,7 @@ class ReportMessageTest(ZulipTestCase):
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
         iago_user_mention = silent_mention_syntax_for_user(self.example_user("iago"))
-        gdm_user_mention = (
-            f"{iago_user_mention}, {reporting_user_mention}, and {reported_user_mention}"
-        )
+        gdm_user_mention = f"{iago_user_mention} and {reporting_user_mention}"
 
         message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {gdm_user_mention}."
         direct_message_link = pm_message_url(
@@ -463,6 +461,56 @@ class ReportMessageTest(ZulipTestCase):
         ZOE = self.example_user("ZOE")
         result = self.report_message(ZOE, reported_gdm_id, report_type, description)
         self.assert_json_error(result, msg="Invalid message(s)")
+
+    def test_gdm_report_with_more_than_3_recipients(self) -> None:
+        reported_gdm_id = self.send_group_direct_message(
+            self.reported_user,
+            [self.hamlet, self.reported_user, self.example_user("ZOE"), self.example_user("iago")],
+            content="I eat cereal with water",
+        )
+        reported_gdm = self.get_last_message()
+        assert reported_gdm.id == reported_gdm_id
+
+        realm = get_realm("zulip")
+        reporting_user = self.example_user("hamlet")
+        report_type = "harassment"
+        description = "Call the police please"
+        reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
+        iago_user_mention = silent_mention_syntax_for_user(self.example_user("iago"))
+        reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
+        zoe_user_mention = silent_mention_syntax_for_user(self.example_user("ZOE"))
+        gdm_user_mention = f"{iago_user_mention}, {reporting_user_mention}, and {zoe_user_mention}"
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {gdm_user_mention}."
+        direct_message_link = pm_message_url(
+            realm,
+            dict(
+                id=reported_gdm_id,
+                display_recipient=get_display_recipient(reported_gdm.recipient),
+            ),
+        )
+
+        expected_message = """
+{message_sent_to}
+```quote
+**{report_type}**. {description}
+```
+
+{fence} spoiler **[Original message]({direct_message_link})**
+{reported_message}
+{fence}
+""".format(
+            report_type=report_type,
+            description=description,
+            direct_message_link=direct_message_link,
+            message_sent_to=message_sent_to,
+            reported_message=reported_gdm.content,
+            fence=get_unused_fence(reported_gdm.content),
+        )
+        result = self.report_message(reporting_user, reported_gdm_id, report_type, description)
+        self.assert_json_success(result)
+        reports = self.get_submitted_moderation_requests()
+        assert len(reports) == 1
+        self.assertEqual(reports[0]["content"], expected_message.strip())
 
     def test_truncate_reported_message(self) -> None:
         large_message = "." * (MAX_REPORT_MESSAGE_SNIPPET_LENGTH + 1)

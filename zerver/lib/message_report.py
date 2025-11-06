@@ -68,12 +68,15 @@ def send_message_report(
             [
                 silent_mention_syntax_for_user(user)
                 for user in get_display_recipient(reported_message.recipient)
+                if user["id"] is not reported_user.id
             ]
         )
         last_recipient_user = recipient_list.pop()
         recipient_users: str = ", ".join(recipient_list)
+        if len(recipient_list) > 1:
+            recipient_users += ","
         report_header = _(
-            "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_users}, and {last_recipient_user}."
+            "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user}."
         ).format(
             reporting_user_mention=reporting_user_mention,
             reported_user_mention=reported_user_mention,
