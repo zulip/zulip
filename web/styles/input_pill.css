@@ -385,7 +385,14 @@
 }
 
 .display_only_group_pill .zulip-icon-user-group {
-    font-size: 1.3571em; /* 19px at 14px / em */
+    /* Reserve the same square box for the user-group
+       icon as on pill images. */
+    height: var(--height-input-pill);
+    width: var(--height-input-pill);
+    /* Center the icon in the box using flex. */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 @keyframes shake {
