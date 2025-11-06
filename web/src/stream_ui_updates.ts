@@ -293,7 +293,7 @@ export function enable_or_disable_generate_email_button(sub: StreamSubscription)
     }
 }
 
-export function update_default_stream_and_stream_privacy_state($container: JQuery): void {
+export function update_default_stream_option_state($container: JQuery): void {
     const $default_stream = $container.find(".default-stream");
     const is_stream_creation = $container.attr("id") === "stream-creation";
 
@@ -314,8 +314,6 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
         "control-label-disabled default_stream_private_tooltip",
         is_invite_only,
     );
-
-    update_private_stream_privacy_option_state($container);
 }
 
 export function update_can_subscribe_group_label($container: JQuery): void {
@@ -376,7 +374,8 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         $advanced_configurations_container,
     );
 
-    update_default_stream_and_stream_privacy_state($("#stream_settings"));
+    update_default_stream_option_state($("#stream_settings"));
+    update_private_stream_privacy_option_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;

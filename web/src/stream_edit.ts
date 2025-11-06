@@ -838,9 +838,8 @@ export function initialize(): void {
                 sub,
             );
             if (sub && $subsection.hasClass("stream-permissions")) {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state(
-                    $("#stream_settings"),
-                );
+                stream_ui_updates.update_default_stream_option_state($("#stream_settings"));
+                stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
@@ -904,9 +903,8 @@ export function initialize(): void {
             const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             if ($subsection.hasClass("stream-permissions")) {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state(
-                    $("#stream_settings"),
-                );
+                stream_ui_updates.update_default_stream_option_state($("#stream_settings"));
+                stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
