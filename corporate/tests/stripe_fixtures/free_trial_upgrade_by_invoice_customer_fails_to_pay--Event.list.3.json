@@ -5,41 +5,6 @@
       "created": 1000000000,
       "data": {
         "object": {
-          "amount_paid": 984000,
-          "amount_requested": 984000,
-          "created": 1000000000,
-          "currency": "usd",
-          "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
-          "invoice": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.2.json",
-          "is_default": false,
-          "livemode": false,
-          "object": "invoice_payment",
-          "payment": {
-            "payment_record": "pr_test_NORMALIZEDqspb93V41RVfKEFJaqcX7A",
-            "type": "payment_record"
-          },
-          "status": "paid",
-          "status_transitions": {
-            "canceled_at": null,
-            "paid_at": 1000000000
-          }
-        }
-      },
-      "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "invoice_payment.paid"
-    },
-    {
-      "api_version": "2025-10-29.clover",
-      "created": 1000000000,
-      "data": {
-        "object": {
           "amount": 984000,
           "amount_capturable": 0,
           "amount_details": {
@@ -69,7 +34,7 @@
           "on_behalf_of": null,
           "payment_details": {
             "customer_reference": null,
-            "order_reference": "in_1SPP1QRVfKEFJaqcNJizb5"
+            "order_reference": "in_1SQW9xRVfKEFJaqcl2uGr5"
           },
           "payment_method": null,
           "payment_method_configuration_details": null,
@@ -104,7 +69,7 @@
       "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -218,7 +183,7 @@
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
-            "current_plan_id": "40",
+            "current_plan_id": "1",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "True",
@@ -387,7 +352,7 @@
           "livemode": false,
           "metadata": {
             "billing_schedule": "1",
-            "current_plan_id": "40",
+            "current_plan_id": "1",
             "license_management": "manual",
             "licenses": "123",
             "on_free_trial": "True",
@@ -451,7 +416,7 @@
       "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "free_trial_upgrade_by_invoice_customer_fails_to_pay--Event.list.3.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"

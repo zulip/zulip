@@ -3318,10 +3318,7 @@ class BillingSession(ABC):
             unit_amount = int(plan.price_per_license * proration_fraction + 0.5)
         invoice_item_params["unit_amount_decimal"] = str(unit_amount)
         invoice_item_params["quantity"] = ledger_entry.licenses - licenses_base
-        invoice_item_params["description"] = "Additional license ({} - {})".format(
-            ledger_entry.event_time.strftime("%b %-d, %Y"),
-            plan_renewal_or_end_date.strftime("%b %-d, %Y"),
-        )
+        invoice_item_params["description"] = f"Additional {plan.name} license"
         return invoice_item_params
 
     def update_additional_licenses_invoice_item_quantity(

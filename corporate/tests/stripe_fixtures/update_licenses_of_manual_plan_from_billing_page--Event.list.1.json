@@ -61,7 +61,7 @@
               {
                 "amount": 16000,
                 "currency": "usd",
-                "description": "Additional license (Mar 2, 2012 - Mar 2, 2013)",
+                "description": "Additional Zulip Cloud Standard license",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
