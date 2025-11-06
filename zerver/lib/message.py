@@ -1757,3 +1757,16 @@ def is_message_to_self(message: Message) -> bool:
         return message.recipient == message.sender.recipient
 
     return False
+
+
+def get_messages_with_protected_history_queryset(
+    user_profile: UserProfile, streams_with_protected_history: QuerySet[Stream]
+) -> QuerySet[UserMessage]:
+    recipient_ids = Recipient.objects.filter(
+        type=Recipient.STREAM,
+        type_id__in=streams_with_protected_history.values_list("id", flat=True),
+    ).values_list("id", flat=True)
+
+    return UserMessage.objects.filter(
+        user_profile=user_profile, message__recipient_id__in=recipient_ids
+    )
