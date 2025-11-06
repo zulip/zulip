@@ -416,6 +416,13 @@ class DocPageTest(ZulipTestCase):
             legacy_doc_response["Location"], "/integrations/asana?category=project-management"
         )
 
+        legacy_doc_with_trailing_slash_response = self.client_get(
+            "/integrations/doc/asana/",
+            follow=False,
+        )
+        self.assertEqual(legacy_doc_with_trailing_slash_response.status_code, 301)
+        self.assertEqual(legacy_doc_with_trailing_slash_response["Location"], "/integrations/asana")
+
         result = self.client_get(
             "/integrations/nonexistent_integration",
             follow=True,

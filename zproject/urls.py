@@ -742,6 +742,10 @@ i18n_urls = [
         RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
     ),
     path(
+        "integrations/doc/<str:integration_name>/",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
         "integrations/<str:integration_name>",
         integrations_doc,
         name="integration_doc",
