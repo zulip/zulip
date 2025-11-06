@@ -1,6 +1,6 @@
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
-import type {StateData} from "./state_data.ts";
+import type {NavigationView, StateData} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
 export type BuiltInViewBasicMetadata = {
@@ -167,11 +167,6 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
     },
 };
 
-export type NavigationView = {
-    fragment: string;
-    is_pinned: boolean;
-    name: string | null;
-};
 
 let navigation_views_dict: Map<string, NavigationView>;
 
