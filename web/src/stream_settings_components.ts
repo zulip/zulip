@@ -5,6 +5,7 @@ import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
@@ -25,6 +26,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
 
@@ -416,4 +418,37 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
 
 export function set_channel_creation_privacy_widget(widget: DropdownWidget): void {
     channel_creation_privacy_widget = widget;
+}
+
+const new_stream_group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
+    ["can_add_subscribers_group", null],
+    ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
+    ["can_delete_any_message_group", null],
+    ["can_delete_own_message_group", null],
+    ["can_move_messages_out_of_channel_group", null],
+    ["can_move_messages_within_channel_group", null],
+    ["can_remove_subscribers_group", null],
+    ["can_resolve_topics_group", null],
+    ["can_send_message_group", null],
+]);
+
+export function get_group_setting_widget_for_new_stream(
+    setting_name: string,
+): GroupSettingPillContainer | null {
+    const pill_widget = new_stream_group_setting_widget_map.get(setting_name);
+
+    if (pill_widget === undefined) {
+        blueslip.error("No group setting pill widget for property", {setting_name});
+        return null;
+    }
+
+    return pill_widget;
+}
+
+export function set_group_setting_widget_for_new_stream(
+    setting_name: string,
+    widget: GroupSettingPillContainer,
+): void {
+    new_stream_group_setting_widget_map.set(setting_name, widget);
 }
