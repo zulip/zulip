@@ -131,3 +131,20 @@ select.bootstrap-focus-style {
         transition: none;
     }
 }
+
+.no-pointer-events {
+    pointer-events: none !important;
+}
+
+.overflow-y-hidden {
+    overflow-y: hidden;
+}
+
+.cursor-none {
+    cursor: none;
+}
+
+.size-zero {
+    width: 0;
+    height: 0;
+}

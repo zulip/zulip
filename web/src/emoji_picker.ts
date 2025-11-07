@@ -240,7 +240,9 @@ export function hide_emoji_popover(): void {
         // Re-enable clicking events for other elements after closing
         // the popover.  This is the inverse of the hack of in the
         // handler that opens the "user status modal" emoji picker.
-        $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "all");
+        $(".app, .header, .modal__overlay, #set-user-status-modal").removeClass(
+            "no-pointer-events",
+        );
     }
     assert(emoji_popover_instance !== null); // the first conditional inside the function justifies this assert
     $(emoji_popover_instance.reference).removeClass("active-emoji-picker-reference");
@@ -888,9 +890,8 @@ function register_click_handlers(): void {
                 // status modal, we need this hack to make clicking outside
                 // the emoji picker only close the emoji picker, and not the
                 // whole user status modal.
-                $(".app, .header, .modal__overlay, #set-user-status-modal").css(
-                    "pointer-events",
-                    "none",
+                $(".app, .header, .modal__overlay, #set-user-status-modal").addClass(
+                    "no-pointer-events",
                 );
             }
         },

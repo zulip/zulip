@@ -803,7 +803,7 @@ $(() => {
                 $("#app-loading-middle-content").hide();
                 $("#app-loading-bottom-content").hide();
                 $(".app").hide();
-                $("#app-loading-error").css({visibility: "visible"});
+                $("#app-loading-error").removeClass("visibility-hidden");
             },
         });
     } else {
