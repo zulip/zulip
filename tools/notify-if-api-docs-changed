@@ -52,7 +52,7 @@ def get_changelog_entries() -> str:
             if current_feature_level_found:
                 changelog_entries += line
 
-    return changelog_entries
+    return changelog_entries.replace("\n  ", " ")
 
 
 if __name__ == "__main__":
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     changelog_entries = get_changelog_entries()
     topic = f"new feature level: {feature_level}"
 
-    content = f"{pull_request} has updated the API documentation for the following endpoints: \n{changelog_entries}."
+    content = f"{pull_request} has updated the API documentation for the following endpoints: \n{changelog_entries}"
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
