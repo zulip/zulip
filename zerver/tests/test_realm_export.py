@@ -3,6 +3,7 @@ from unittest.mock import patch
 from urllib.parse import urlsplit
 
 import botocore.exceptions
+import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -369,6 +370,26 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(admin)
 
+        def check_success_realm_export(acting_user: UserProfile, export_type: int) -> None:
+            with patch("zerver.views.realm_export.queue_event_on_commit") as mock_event_on_commit:
+                result = self.client_post(
+                    "/json/export/realm",
+                    {
+                        "export_type": export_type,
+                    },
+                )
+            self.assert_json_success(result)
+            response = orjson.loads(result.content)
+            realm_export_id = response["id"]
+            expected_event = {
+                "type": "realm_export",
+                "user_profile_id": acting_user.id,
+                "realm_export_id": realm_export_id,
+            }
+            mock_event_on_commit.assert_called_once_with("deferred_work", expected_event)
+            realm_export = RealmExport.objects.get(id=realm_export_id)
+            self.assertEqual(realm_export.type, export_type)
+
         # For standard export, this means no one consented to their
         # private data being shared.
         UserProfile.objects.filter(
@@ -377,13 +398,7 @@ class RealmExportTest(ZulipTestCase):
         ).update(
             allow_private_data_export=False,
         )
-        result = self.client_post(
-            "/json/export/realm",
-            {
-                "export_type": RealmExport.EXPORT_FULL_WITH_CONSENT,
-            },
-        )
-        self.assert_json_success(result)
+        check_success_realm_export(admin, RealmExport.EXPORT_FULL_WITH_CONSENT)
 
         # For public export, this means everyone has set their email
         # address visibility policy to nobody.
@@ -394,10 +409,4 @@ class RealmExportTest(ZulipTestCase):
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         )
 
-        result = self.client_post(
-            "/json/export/realm",
-            {
-                "export_type": RealmExport.EXPORT_PUBLIC,
-            },
-        )
-        self.assert_json_success(result)
+        check_success_realm_export(admin, RealmExport.EXPORT_PUBLIC)
