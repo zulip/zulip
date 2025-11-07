@@ -29,7 +29,7 @@ export function make_indicator(
     // width calculation, above, returns a result that's a few pixels
     // too small.  The container's div will be slightly too small,
     // but that's probably OK for our purposes.
-    $outer_container.css({"white-space": "nowrap"});
+    $outer_container.addClass("whitespace-nowrap");
 
     $container.empty();
 
@@ -72,7 +72,7 @@ export function make_indicator(
     if (height !== undefined) {
         $container.css({height});
     } else {
-        $container.css({height: 0});
+        $container.addClass("size-zero");
     }
 
     $outer_container.data("destroying", false);
@@ -84,7 +84,7 @@ export function destroy_indicator($container: JQuery): void {
     }
     $container.data("destroying", true);
     $container.empty();
-    $container.css({width: 0, height: 0});
+    $container.addClass("size-zero");
 }
 
 export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): void {
@@ -93,7 +93,7 @@ export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): vo
     } else {
         $elt.attr("src", loading_white_image);
     }
-    $elt.css("display", "inline-block");
+    $elt.show();
 }
 
 export function show_spinner($button_element: JQuery, $spinner: JQuery): void {

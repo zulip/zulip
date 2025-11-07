@@ -9,13 +9,13 @@ import * as helpers from "./helpers.ts";
 const is_remotely_hosted = $("#sponsorship-form").attr("data-is-remotely-hosted") === "True";
 
 function show_submit_loading_indicator(): void {
-    $("#sponsorship-button .sponsorship-button-loader").css("display", "inline-block");
+    $("#sponsorship-button .sponsorship-button-loader").show();
     $("#sponsorship-button").prop("disabled", true);
     $("#sponsorship-button .sponsorship-button-text").hide();
 }
 
 function hide_submit_loading_indicator(): void {
-    $("#sponsorship-button .sponsorship-button-loader").css("display", "none");
+    $("#sponsorship-button .sponsorship-button-loader").hide();
     $("#sponsorship-button").prop("disabled", false);
     $("#sponsorship-button .sponsorship-button-text").show();
 }

@@ -943,7 +943,7 @@ export function initialize(): void {
                 instance.setContent(ui_util.parse_html(error_message));
                 // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
                 // is in the error message.
-                $(instance.popper).find(".tippy-content").css("display", "block");
+                $(instance.popper).find(".tippy-content").show();
                 return undefined;
             }
             return false;
