@@ -814,11 +814,17 @@ export function process_topic_edit(
     recent_view_data.conversations.delete(recent_view_util.get_topic_key(old_stream_id, old_topic));
 
     const old_topic_msgs = message_util.get_loaded_messages_in_topic(old_stream_id, old_topic);
-    process_messages(old_topic_msgs);
 
     new_stream_id = new_stream_id || old_stream_id;
     const new_topic_msgs = message_util.get_loaded_messages_in_topic(new_stream_id, new_topic);
-    process_messages(new_topic_msgs);
+
+    for (const msg of [...old_topic_msgs, ...new_topic_msgs]) {
+        recent_view_data.process_message(msg);
+    }
+
+    // It is best to re-render the complete UI instead of
+    // handling all edge cases that can arise due to topic edit.
+    complete_rerender();
 }
 
 export function topic_in_search_results(
