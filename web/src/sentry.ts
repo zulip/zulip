@@ -1,6 +1,8 @@
 import * as Sentry from "@sentry/browser";
 import * as z from "zod/mini";
 
+import {is_browser_supported} from "./browser_support.ts";
+
 type UserInfo = {
     id?: string;
     realm: string;
@@ -45,7 +47,7 @@ export function shouldCreateSpanForRequest(url: string): boolean {
     return parsed.pathname !== "/json/events";
 }
 
-if (sentry_params !== undefined) {
+if (sentry_params !== undefined && is_browser_supported()) {
     const sample_rates = new Map([
         // This is controlled by shouldCreateSpanForRequest, above, but also put here for consistency
         ["call GET /json/events", 0],
