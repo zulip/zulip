@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -55,10 +56,36 @@ def get_changelog_entries() -> str:
     return changelog_entries.replace("\n  ", " ")
 
 
+def get_feature_level_before_commit() -> int:
+    with open(os.environ["GITHUB_EVENT_PATH"]) as f:
+        event = json.load(f)
+
+    before_sha = event["before"]
+    version_file_path = "version.py"
+
+    try:
+        version_content_before_commit = subprocess.check_output(
+            ["git", "show", f"{before_sha}:{version_file_path}"], text=True
+        )
+    except subprocess.CalledProcessError:
+        sys.exit(1)
+
+    lines = version_content_before_commit.split("\n")
+    for line in lines:
+        if line.startswith("API_FEATURE_LEVEL = "):
+            match = re.search(r"\d+", line)
+            if match:
+                return int(match.group())
+    return 0
+
+
 if __name__ == "__main__":
     pull_request = get_pull_request_number_or_commit_hash()
 
     feature_level = get_feature_level(update_feature_level=False) - 1
+    if feature_level <= get_feature_level_before_commit():
+        sys.exit(1)
+
     changelog_entries = get_changelog_entries()
     topic = f"new feature level: {feature_level}"
 
