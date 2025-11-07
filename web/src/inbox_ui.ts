@@ -1033,7 +1033,7 @@ function is_other_channels_only_visible_folder(): boolean {
 
 function show_empty_inbox_text(has_visible_unreads: boolean): void {
     if (!has_visible_unreads) {
-        $("#inbox-list").css("border-width", 0);
+        $("#inbox-list").removeClass("has-border");
         if (search_keyword) {
             $("#inbox-empty-with-search").show();
             $("#inbox-empty-without-search").hide();
@@ -1044,7 +1044,7 @@ function show_empty_inbox_text(has_visible_unreads: boolean): void {
         }
     } else {
         $(".inbox-empty-text").hide();
-        $("#inbox-list").css("border-width", "1px");
+        $("#inbox-list").addClass("has-border");
     }
 }
 
@@ -1083,7 +1083,7 @@ export function update_channel_view(channel_id: number): void {
 
 function show_empty_inbox_channel_view_text(is_empty: boolean): void {
     if (is_empty) {
-        $("#inbox-list").css("border-width", "0");
+        $("#inbox-list").removeClass("has-border");
         if (search_keyword) {
             $("#inbox-empty-channel-view-with-search").show();
             $("#inbox-empty-channel-view-without-search").hide();
@@ -1094,7 +1094,7 @@ function show_empty_inbox_channel_view_text(is_empty: boolean): void {
     } else {
         $("#inbox-empty-channel-view-with-search").hide();
         $("#inbox-empty-channel-view-without-search").hide();
-        $("#inbox-list").css("border-width", "1px");
+        $("#inbox-list").addClass("has-border");
     }
 }
 

@@ -324,6 +324,10 @@
             }
         }
 
+        #inbox-list.has-border {
+            border-width: 1px;
+        }
+
         #inbox-collapsed-note {
             display: none;
             overflow: hidden;

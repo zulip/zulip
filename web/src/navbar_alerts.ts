@@ -495,7 +495,7 @@ export function initialize(): void {
 
     $("#navbar_alerts_wrapper").on("click", ".accept-bankruptcy", function (this: HTMLElement) {
         const $accept_button = $(this);
-        $accept_button.prop("disabled", true).css("pointer-events", "none");
+        $accept_button.prop("disabled", true);
         const $banner = $(this).closest(".banner");
         unread_ops.mark_all_as_read();
         setTimeout(() => {

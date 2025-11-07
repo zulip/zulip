@@ -2373,3 +2373,16 @@ label.preferences-radio-choice-label {
         }
     }
 }
+
+.settings-dropdown-popper-styles {
+    min-width: 300px;
+}
+
+.settings-dropdown-popper-styles .simplebar-content {
+    width: max-content;
+    min-width: 100%;
+}
+
+.skip-video-button-margin {
+    margin-left: 12px;
+}

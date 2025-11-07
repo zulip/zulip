@@ -878,7 +878,7 @@ export class Typeahead<ItemType extends string | object> {
             // cursor, which in turn prevents the currently hovered
             // element from being selected.  The mousemove handler
             // overrides this logic.
-            $(e.currentTarget).find("a").css("cursor", "none");
+            $(e.currentTarget).find("a").addClass("cursor-none");
             return;
         }
         this.$menu.find(".active").removeClass("active");

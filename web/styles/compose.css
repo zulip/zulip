@@ -1084,6 +1084,10 @@ textarea.new_message_textarea {
     }
 }
 
+.new_message_textarea.min-height-3em {
+    min-height: 3em;
+}
+
 #message-content-container,
 #compose_recipient_box {
     color: var(--color-text-default);
