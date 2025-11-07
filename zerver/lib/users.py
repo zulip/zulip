@@ -979,6 +979,8 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
         is_imported_stub=user_profile.is_imported_stub,
+        is_mirror_dummy=user_profile.is_mirror_dummy,
+        is_imported_and_not_activated=user_profile.is_mirror_dummy and not user_profile.is_active,
     )
 
 

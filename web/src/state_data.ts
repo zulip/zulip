@@ -123,6 +123,8 @@ export const user_schema = z.intersection(
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
         is_inaccessible_user: z.optional(z.boolean()),
+        is_imported_and_not_activated: z.optional(z.boolean()), // indicates if the user account was imported and not manually created
+        is_mirror_dummy: z.optional(z.boolean()),
         is_system_bot: z.optional(z.literal(true)),
     }),
     z.discriminatedUnion("is_bot", [

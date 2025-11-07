@@ -109,6 +109,10 @@
                     <span class="popover-menu-label">{{t "{user_time} local time" }}</span>
                 </li>
             {{/if}}
+            {{else if is_imported_and_not_activated}}
+            <li role="none" class="popover-menu-list-item text-item italic hidden-for-spectators">
+                <span class="popover-menu-label">{{t "This user has not activated their account"}}</span>
+            </li>
         {{else}}
             <li role="none" class="popover-menu-list-item text-item italic hidden-for-spectators">
                 {{#if is_bot}}
