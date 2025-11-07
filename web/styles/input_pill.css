@@ -370,6 +370,13 @@
     }
 }
 
+.creator_details > .display_only_pill {
+    /* On channel and group creation details,
+       align the pill contents better with
+       the surrounding text. */
+    vertical-align: baseline;
+}
+
 .creator_details > .display_only_pill.inline_with_text_pill {
     padding: 0;
 
