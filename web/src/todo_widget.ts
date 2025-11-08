@@ -415,6 +415,19 @@ export function activate({
             throttled_update_add_task_button();
         });
 
+        // Add Enter key support for adding tasks
+        $elem.find("input.add-task, input.add-desc").on("keydown", (e) => {
+            e.stopPropagation();
+
+            if (e.key === "Enter") {
+                const $add_task_button = $elem.find("button.add-task");
+                if (!$add_task_button.prop("disabled")) {
+                    $add_task_button.trigger("click");
+                }
+                return;
+            }
+        });
+
         $elem.find("input.todo-task-list-title").on("keyup", (e) => {
             e.stopPropagation();
             update_edit_controls();
