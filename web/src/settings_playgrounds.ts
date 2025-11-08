@@ -159,9 +159,9 @@ function build_page(): void {
         });
 
     const $search_pygments_box = $<HTMLInputElement>("input#playground_pygments_language");
-    const $alias_suggestion_banner = $(
-        '<div class="playground-alias-suggestion-banner alert" style="display: none; margin-top: 8px; margin-bottom: 0;"></div>',
-    );
+    const $alias_suggestion_banner = $("<div>")
+        .addClass("playground-alias-suggestion-banner alert")
+        .hide();
     $search_pygments_box.closest(".input-group").after($alias_suggestion_banner);
     let language_labels = new Map<string, string>();
 
@@ -216,7 +216,12 @@ function build_page(): void {
             alias_match.aliases,
             "narrow",
         );
-        const message = $t_html(
+        const button_text = $t(
+            {defaultMessage: "Use {pretty_name}"},
+            {pretty_name: alias_match.pretty_name},
+        );
+        // This HTML is sanitized by $t_html, which is safe to use with .html()
+        const rendered_message = $t_html(
             {
                 defaultMessage:
                     "By the way, you can have this playground apply to {aliases}. Would you like to use <strong>{pretty_name}</strong> instead?",
@@ -227,11 +232,11 @@ function build_page(): void {
             },
         );
 
-        const $button = $(
-            '<button type="button" class="button small" style="margin-left: 8px;">' +
-                $t({defaultMessage: "Use {pretty_name}"}, {pretty_name: alias_match.pretty_name}) +
-                "</button>",
-        );
+        const $message_span = $("<span>").html(rendered_message);
+        const $button = $("<button>")
+            .attr("type", "button")
+            .addClass("button small playground-alias-suggestion-button")
+            .text(button_text);
 
         $button.on("click", () => {
             $search_pygments_box.val(alias_match.full_option_key);
@@ -242,7 +247,8 @@ function build_page(): void {
         });
 
         $alias_suggestion_banner
-            .html(message)
+            .empty()
+            .append($message_span)
             .append($button)
             .removeClass("alert-error alert-success")
             .addClass("alert-info")

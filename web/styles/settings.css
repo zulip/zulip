@@ -208,6 +208,16 @@ h3,
     #playground_url_template {
         width: calc(100% - 10em - 6em);
     }
+
+    .playground-alias-suggestion-banner {
+        display: none;
+        margin-top: 8px;
+        margin-bottom: 0;
+
+        .playground-alias-suggestion-button {
+            margin-left: 8px;
+        }
+    }
 }
 
 #language_selection_modal {
