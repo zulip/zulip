@@ -6,7 +6,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_string
+from zerver.lib.validator import WildValue, check_int, check_string, check_bool
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import (
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -83,11 +83,25 @@ def get_code_push_commits_body(payload: WildValue) -> str:
         }
         for commit in payload["resource"].get("commits", [])
     ]
+    # Detect force push if the ref update includes a 'forced' field.
+    # Azure DevOps may include a 'forced' flag in refUpdates entries; if present,
+    # pass it through to the common git message formatter so the message
+    # indicates a force push similarly to GitHub.
+    forced = False
+    if payload["resource"].get("refUpdates"):
+        try:
+            if "forced" in payload["resource"]["refUpdates"][0]:
+                forced = payload["resource"]["refUpdates"][0]["forced"].tame(check_bool)
+        except Exception:
+            # If payload shape differs, just ignore and treat as non-forced push.
+            forced = False
+
     return get_push_commits_event_message(
         get_code_push_user_name(payload),
         compare_url,
         get_code_push_branch_name(payload),
         commits_data,
+        force_push=forced,
     )
 
 
