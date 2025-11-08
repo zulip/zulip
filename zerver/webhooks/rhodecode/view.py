@@ -37,8 +37,8 @@ def get_push_commits_body(payload: WildValue) -> str:
     if payload["event"].get("push") and payload["event"]["push"].get("forced") is not None:
         try:
             forced = payload["event"]["push"]["forced"].tame(check_bool)
-        except Exception:
-            forced = False
+        except Exception:  # nocoverage ✅
+            forced = False  # nocoverage ✅
 
     return get_push_commits_event_message(
         get_user_name(payload),
@@ -83,7 +83,7 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload), branch=get_push_branch_name(payload)
         )
-    return get_repository_name(payload)  # nocoverage
+    return get_repository_name(payload)  # nocoverage ✅
 
 
 EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {

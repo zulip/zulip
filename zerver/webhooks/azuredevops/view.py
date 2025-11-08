@@ -151,7 +151,7 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
             id=get_code_pull_request_id(payload),
             title=get_code_pull_request_title(payload),
         )
-    return get_code_repository_name(payload)  # nocoverage
+    return get_code_repository_name(payload)  # nocoverage ✅
 
 
 def get_event_name(payload: WildValue, branches: str | None) -> str | None:

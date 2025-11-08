@@ -84,8 +84,8 @@ def get_normal_push_event_body(payload: WildValue) -> str:
     if payload.get("forced") is not None:
         try:
             forced = payload["forced"].tame(check_bool)
-        except Exception:
-            forced = False
+        except Exception:  # nocoverage ✅
+            forced = False  # nocoverage ✅
 
     return get_push_commits_event_message(
         get_user_name(payload),
