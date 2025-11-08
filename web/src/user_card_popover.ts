@@ -393,12 +393,6 @@ function get_user_card_popover_data(
         }
     }
 
-    console.log("--- DEBUGGING USER POP OVER ---");
-    console.log("User Object:", user);
-    console.log("user.is_mirror_dummy:", user.is_mirror_dummy);
-    console.log("user.is_active:", user.is_active);
-    console.log("Final Flag:", args.is_imported_and_not_activated);
-    console.log("---------------------------------");
     return args;
 }
 

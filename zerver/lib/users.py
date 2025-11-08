@@ -1080,6 +1080,10 @@ def get_user_dicts_in_realm(
     accessible_user_dicts: list[RawUserDict] = []
     inaccessible_user_dicts: list[APIUserDict] = []
     for user_dict in all_user_dicts:
+        user_dict["is_mirror_dummy"] = user_dict.get("is_mirror_dummy", False)
+        user_dict["is_imported_and_not_activated"] = user_dict.get(
+            "is_mirror_dummy", False
+        ) and not user_dict.get("is_active", True)
         if user_dict["id"] in accessible_user_ids or user_dict["is_bot"]:
             accessible_user_dicts.append(user_dict)
         else:
