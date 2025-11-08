@@ -92,7 +92,7 @@ def get_code_push_commits_body(payload: WildValue) -> str:
         try:
             if "forced" in payload["resource"]["refUpdates"][0]:
                 forced = payload["resource"]["refUpdates"][0]["forced"].tame(check_bool)
-        except Exception: # nocoverage
+        except Exception:  # nocoverage
             # If payload shape differs, just ignore and treat as non-forced push.
             forced = False  # nocoverage
 
