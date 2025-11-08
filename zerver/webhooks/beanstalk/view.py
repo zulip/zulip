@@ -43,8 +43,8 @@ def build_message_from_gitlog(
     if forced is not None:
         try:
             force_flag = bool(forced)
-        except Exception: # nocoverage
-            force_flag = False # nocoverage
+        except Exception:  # nocoverage
+            force_flag = False  # nocoverage
 
     content = get_push_commits_event_message(
         pusher, url, short_ref, commits_data, deleted=deleted, force_push=force_flag
