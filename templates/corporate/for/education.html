@@ -1,0 +1,393 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Zulip for education" %}
+
+{% set PAGE_DESCRIPTION = "Make Zulip the communication hub for your class.
+  Online, in-person, and anything in between. Free for most classes!" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+
+<div class="portico-landing why-page solutions-page">
+    <div class="hero bg-education">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Teach a course with Zulip.</h1>
+            <p>Online, in-person, and anything in between. <br/><a href="#feature-pricing">Free</a> for most classes!</p>
+        </div>
+        <div class="hero-text">
+            Learn how <a href="/case-studies/tum/">Technical University of Munich</a>,
+            <br /><a href="/case-studies/ucsd/">University of California San Diego</a>,
+            <br />and <a href="/case-studies/recurse-center/">Recurse Center</a> are using Zulip.
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="#feature-pricing" class="button">
+                {{ _('Education pricing') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-intro">
+        <h1 class="center"> Make Zulip the communication hub for your class. </h1>
+        <p>
+            Zulip is the <a href="/why-zulip/">organized team chat</a> app that is ideal for both live and asynchronous conversations. Post lecture notes and announcements, answer students’ questions, and coordinate with teaching staff all in one place.
+        </p>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Use topics to organize the discussion
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/introduction-to-topics">Zulip topics</a> create a separate space for each discussion.
+                        </div>
+                    </li>
+                    <li><div class="list-content"> Questions and answers are easy to find, so each question is only asked once.</div></li>
+                    <li><div class="list-content">Refer to relevant points by <a href="/help/link-to-a-message-or-conversation">linking to a message or a topic.</a></div></li>
+                    <li><div class="list-content">Keep discussions orderly by <a href="/help/rename-a-topic">moving</a> or <a href="/help/move-content-to-another-topic">splitting</a> topics when conversations digress.</div></li>
+                    <li><div><a href="/help/resolve-a-topic">Mark the topic ✓ resolved</a> when done!</div></li>
+
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        Zulip has the best user experience of all the chat apps I’ve tried. With the discussion organized by topic within each channel, Zulip is the only app that makes hundreds of conversations manageable.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a href="https://ciip.in.tum.de/people/lasser.html">Tobias Lasser</a>, lecturer at the Technical University of Munich Department of Informatics
+                    </div>
+                    <a class="case-study-link" href="/case-studies/tum/" target="_blank">Learn more about how TUM uses Zulip ↗</a>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image topics-image">
+                <img alt="" src="{{ static('images/landing-page/education/streams_and_topics_day.png') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/education/message_formatting_day_1.png') }}" />
+            </div>
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/education/message_formatting_day_2.png') }}" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Powerful formatting
+                </h1>
+                <ul>
+                    <li><div class="list-content"><a href="/help/format-your-message-using-markdown#latex">Type LaTeX</a> directly into your Zulip message, and see it beautifully rendered.</div></li>
+                    <li><div class="list-content">Structure your points with bulleted and numbered <a href="/help/format-your-message-using-markdown#lists">lists</a>.</div></li>
+                    <li><div class="list-content"><a href="/help/code-blocks">Zulip code blocks</a> come with syntax highlighting for over 250 languages, and integrated <a href="/help/code-blocks#code-playgrounds">code playgrounds.</a></div></li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        I used Piazza &amp; Zulip. Piazza lets students ask questions anonymously. Zulip better all-around for chatting, announcements, group work (has built-in LaTeX, as well as threading). Zulip basically replaced email for my class. Easy to pick up if you&#39;ve used Slack &amp; email before.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; Joshua Grochow (@joshuagrochow), <a href="https://twitter.com/joshuagrochow/status/1336008355911970822">December 7, 2020</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/education/message_formatting_day_1.png') }}" />
+            </div>
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/education/message_formatting_day_2.png') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Interactive messaging
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Use <a href="/help/emoji-reactions">emoji
+                            reactions</a> for lightweight
+                            interactions. Have fun
+                            with <a href="/help/custom-emoji">custom
+                            emoji</a> and gather feedback
+                            with <a href="/help/create-a-poll">polls</a>.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Hide answers behind <a href="/help/format-your-message-using-markdown#spoilers">spoilers</a>, letting students think before they read.</div></li>
+                    <li><div class="list-content">Share lecture notes and reading materials with <a href="/help/share-and-upload-files">drag-and-drop file uploads</a>.</div></li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        Participants across six continents signed up for my graduate-level classes when I decided to open them up to the world during the pandemic. Zulip became a central hub for asynchronous Q&A and posting Zoom links for lectures, whiteboard PDFs, and announcements. Zulip’s topics, and the ability to change the topic of someone else's message, has made it much easier for me to keep things coherent. It’s super easy to discuss technical material using the TeX integration, and spoilers are a great way to answer questions about homework without depriving students of a chance to keep thinking about the problem on their own.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a href="https://kskedlaya.org/">Kiran S. Kedlaya</a>, Professor of Mathematics at University of California San Diego
+                    </div>
+                    <a class="case-study-link" href="/case-studies/ucsd/" target="_blank">Learn more about how UCSD uses Zulip ↗</a>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="message-screenshot message-starred">
+                <img alt="" src="{{ static('images/landing-page/education/interactive_messaging_day_1.png') }}" />
+            </div>
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/education/interactive_messaging_day_2.png') }}" />
+            </div>
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/education/interactive_messaging_day_3.png') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/flexible-administration.svg') }}" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Flexible administration and moderation
+                </h1>
+                <ul>
+                    <li><div class="list-content">Zulip offers dozens of features for <a href="/help/moderating-open-organizations">moderating discussions.</a></div></li>
+                    <li>
+                        <div class="list-content">Assign permissions to course staff with <a
+                            href="/help/manage-permissions">fine-grained settings</a> for <a
+                            href="/help/user-roles">user roles</a>, <a
+                            href="/help/user-groups">user groups</a> (like TAs), and <a
+                            href="/help/introduction-to-users">individual
+                            users</a>.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Make an announcement channel where only course staff <a href="/help/channel-posting-policy">can post messages</a>.</div></li>
+                    <li><div class="list-content">Quickly add staff and students to the right channels. Automatically subscribe users <a href="/help/set-default-channels-for-new-users">when they join</a>, subscribe a <a href="/help/user-groups">group of users</a>, or copy membership from another channel.</div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/flexible-administration.svg') }}" />
+            </div>
+        </div>
+    </div>
+
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Maintain student privacy
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Zulip Cloud is built with <a href="/policies/privacy">privacy</a> and <a href="/security/">security</a> in mind. We will never sell data or ads.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Zulip is <a href="https://github.com/zulip">100% open source</a>. We work hard to make it <a href="https://zulip.readthedocs.io/en/latest/production/install.html">easy to set up</a> and run a self-hosted Zulip installation, where you have full control of the data.</div></li>
+                    <li><div class="list-content">Email addresses <a href="/help/configure-email-visibility">can be hidden</a>, and students <a href="/help/status-and-availability#disable-updating-availability">don’t have to share</a> when they are online.</div></li>
+                    <li><div class="list-content">Students can <a href="/help/mute-a-user">mute</a> anyone they'd rather not interact with.</div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/privacy.svg') }}" />
+            </div>
+        </div>
+    </div>
+
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Never miss a beat
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            With <a href="/apps/">apps for every platform</a>, you can check Zulip at your computer or on your phone.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Zulip alerts you about timely messages with
+                            <a href="/help/channel-notifications">fully customizable</a> mobile, email and desktop notifications.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">Mention <a href="/help/mention-a-user-or-group">users</a>, <a href="/help/user-groups">groups of users</a> or <a href="/help/dm-mention-alert-notifications#wildcard-mentions">everyone</a> when you need their attention.</div>
+                    </li>
+                    <li>
+                        <div class="list-content">Use Zulip in your language of choice, with translations into <a href="https://hosted.weblate.org/projects/zulip/">23 languages</a>.</div>
+                    </li>
+                    <li>
+                        <div class="list-content">Zulip works reliably for organizations with thousands of users online at once.</div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        We are a public university that offers free education to
+                        33,000 students across 13 cities in Brazil. We started
+                        using Zulip in early 2020, and it works perfectly for
+                        our needs. Zulip’s interface is simple and intuitive.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; Rafael Cordeiro, head of IT at <a href="https://www.utfpr.edu.br/">UTFPR</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-end">
+        <div class="feature-pricing" id="feature-pricing">
+            <h1 class="center"> Zulip Cloud for Education plans </h1>
+            <div class="for-education-pricing-model">
+                <div class="padded-content">
+                    <div class="pricing-container">
+                        <div class="price-box" id="for-education-free-price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Free</h2>
+                                <div class="description">
+                                    Recommended for a typical class.
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>All features on this page</li>
+                                    <li>10,000 messages of search history</li>
+                                    <li>File storage up to 5 GB total</li>
+                                    <li><a href="/features/">Complete</a> team chat solution</li>
+                                    <li><a href="/integrations/">Hundreds of integrations</a></li>
+                                    <li>Advanced <a href="/help/user-roles">roles</a> and <a href="/help/manage-permissions">permissions</a></li>
+                                    <li><a href="/help/guest-users">Guest</a> accounts</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content free-text">
+                                    <div class="pricing-details">
+                                        Free
+                                    </div>
+                                    <a href="/new/" class="button green">
+                                        Create organization
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Standard for Education</h2>
+                                <div class="description">
+                                    For large classes and departments.
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>Unlimited search history</li>
+                                    <li>File storage up to 5 GB per user</li>
+                                    <li><a href="/help/message-retention-policy">Message retention policies</a></li>
+                                    <li>Brand Zulip with your logo</li>
+                                    <li>Priority commercial support</li>
+                                    <li><a href="/help/public-access-option">Public access option</a></li>
+                                    <li>Additional legal agreements</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="standard-price-box">
+                                        <p>Education (for-profit)</p>
+                                        <div class="price">1</div>
+                                        <div class="details">
+                                            <span class="pricing-period">per user per month</span>
+                                            <br />
+                                            with annual billing discount
+                                            <br />
+                                            $1.20/month billed monthly
+                                        </div>
+                                    </div>
+                                    <div class="standard-price-box">
+                                        <p>Education (non-profit)</p>
+                                        <div class="price">0<span class="price-cents">.67</span></div>
+                                        <div class="details">
+                                            <span class="pricing-period">per user per month</span>
+                                            <br />
+                                            with annual billing discount
+                                            <br />
+                                            $0.80/month billed monthly
+                                        </div>
+                                    </div>
+                                    <a href="/accounts/go/?next=/sponsorship/" class="button green standard-register-button">
+                                        Request education pricing
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="price-asterisk">
+                <a href="/help/zulip-cloud-billing#education-pricing">Learn
+                more</a> about education pricing, or contact <a
+                href="mailto:sales@zulip.com">sales@zulip.com</a> with any
+                questions.
+            </p>
+        </div>
+
+        <p>
+            Learn about using Zulip
+            for <a href="/for/events/">conferences</a> and
+            <a href="/for/research/">research communities</a>.  If you have any
+            questions or feedback, please contact us
+            at <a href="mailto:sales@zulip.com">sales@zulip.com</a>. You
+            can also drop by
+            our <a href="/development-community/">friendly development
+            community at chat.zulip.org</a> to ask for help or suggest
+            improvements!
+        </p>
+    </div>
+
+    {% include "zerver/compare-education.html" %}
+
+</div>
+
+{% endblock %}

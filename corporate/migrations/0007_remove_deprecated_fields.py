@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("corporate", "0006_nullable_stripe_customer_id"),
     ]

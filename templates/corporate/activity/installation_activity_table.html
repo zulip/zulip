@@ -1,0 +1,152 @@
+<h3 class="installation-activity-header">Installation activity: {{ num_active_sites }} active sites</h3>
+
+<p class="installation-activity-header">{{ utctime }}</p>
+
+<h4>Other views:</h4>
+<ul>
+    <li><a href="/stats/installation">Server total /stats style graphs</a></li>
+    <li><a href="/activity/remote">Remote servers</a></li>
+    <li><a href="/activity/integrations">Integrations by client</a></li>
+    {% if not export %}
+    <li><a href="/activity?export=true">Export installation chart</a></li>
+    {% else %}
+    <li><a href="/activity">Non-export installation chart</a></li>
+    {% endif %}
+</ul>
+
+<h4>Counts chart key:</h4>
+<ul>
+    <li><strong>active (site)</strong> - has ≥5 DAUs</li>
+    <li>sites are listed if ≥1 users active in last 2 weeks</li>
+    <li><strong>user</strong> - registered user, not deactivated, not a bot</li>
+    <li><strong>active (user)</strong> - sent a message, or advanced the pointer (reading messages doesn't count unless advances the pointer)</li>
+    <li><strong>ARR</strong> (Annual recurring revenue) - the number of users they are paying for * annual price/user.</li>
+    <li><strong>Rate</strong> - % of full price the customer pays, or will pay, if on a paid plan.</li>
+    <li><strong>Links</strong>
+        <ul>
+            <li><strong><i class="fa fa-home"></i></strong> - realm's Zulip</li>
+            <li><strong><i class="fa fa-pie-chart"></i></strong> - realm's stats page</li>
+            <li><strong><i class="fa fa-gear"></i></strong> - realm's support page</li>
+        </ul>
+    </li>
+    <li><strong>DAU</strong> (daily active users) - users active in last 24hr</li>
+    <li><strong>WAU</strong> (weekly active users) - users active in last 7 * 24hr</li>
+    <li><strong>Human message</strong> - message sent by non-bot user, and not with known-bot client</li>
+</ul>
+
+<table class="table summary-table sortable table-striped table-bordered">
+
+    <thead class="activity-head">
+        <tr>
+            {% if not export %}
+            <th>Links</th>
+            {% endif %}
+            <th>Realm</th>
+            <th>Created (green if ≤12wk)</th>
+            {% if billing_enabled %}
+            <th>Plan type</th>
+            <th>ARR</th>
+            <th>Rate (%)</th>
+            {% endif %}
+            <th>Organization type</th>
+            <th>Referrer</th>
+            <th>DAU</th>
+            <th>WAU</th>
+            <th>Total users</th>
+            <th>Bots</th>
+            {% if not export %}
+            <th></th>
+            {% endif %}
+            <th colspan=8>Human messages sent, last 8 UTC days (today-so-far first)</th>
+            {% if export %}
+            <th>Admin emails</th>
+            {% endif %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            {% if not export %}
+            <td>
+                {{ row.realm_url }}
+                {{ row.stats_link }}
+                {{ row.activity_link }}
+            </td>
+            {% endif %}
+            <td>
+                {{ row.support_link }}
+            </td>
+
+            <td {% if row.is_new %}
+              class="good" {% else %}
+              class="neutral" {% endif %} >
+                {{ row.date_created_day }}
+            </td>
+
+            {% if billing_enabled %}
+            <td>
+                {{ row.plan_type_string }}
+            </td>
+
+            <td class="number">
+                {% if row.arr %}
+                {{ row.arr }}
+                {% endif %}
+            </td>
+
+            <td class="number">
+                {% if row.effective_rate != "" %}
+                {{ row.effective_rate }}
+                {% endif %}
+            </td>
+            {% endif %}
+
+            <td>
+                {{ row.org_type_string }}
+            </td>
+
+            <td>
+                {{ row.how_realm_creator_found_zulip }}
+            </td>
+
+            <td class="number">
+                {{ row.dau_count }}
+            </td>
+
+            <td class="number">
+                {{ row.wau_count }}
+            </td>
+
+            <td class="number">
+                {{ row.user_profile_count }}
+            </td>
+
+            <td class="number">
+                {{ row.bot_count }}
+            </td>
+            {% if not export %}
+            <td>&nbsp;</td>
+            {% endif %}
+            {% if row.history %}
+            {{ row.history|safe }}
+            {% else %}
+            <td colspan=8></td>
+            {% endif %}
+
+            {% if export %}
+            <td>
+                {{ row.admin_emails }}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot class="activity-foot">
+        <tr>
+            {% for total in totals %}
+            <td>{{ total }}</td>
+            {% endfor %}
+        </tr>
+    </tfoot>
+</table>

@@ -1,0 +1,31 @@
+<div class="remote-sponsorship-details">
+    <p class="support-section-header">💸 Discounts and sponsorship information:</p>
+    <b>Sponsorship pending</b>: {{ sponsorship_data.sponsorship_pending }}<br />
+    {% if sponsorship_data.has_discount %}
+        {% if sponsorship_data.monthly_discounted_price %}
+            <b>Discounted price (monthly)</b>: {{ dollar_amount(sponsorship_data.monthly_discounted_price) }}%<br />
+        {% endif %}
+        {% if sponsorship_data.annual_discounted_price %}
+            <b>Discounted price (annual)</b>: {{ dollar_amount(sponsorship_data.monthly_discounted_price) }}%<br />
+        {% endif %}
+    {% else %}
+        <b>Discounted price</b>: None<br />
+    {% endif %}
+    <b>Minimum licenses</b>: {{ sponsorship_data.minimum_licenses }}<br />
+    {% if sponsorship_data.required_plan_tier %}
+        {% for plan_tier in REMOTE_PLAN_TIERS %}
+            {% if sponsorship_data.required_plan_tier == plan_tier.value %}
+                <b>Required plan tier</b>: {{ plan_tier.name }}<br />
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <b>Required plan tier</b>: None<br />
+    {% endif %}
+</div>
+
+{% if sponsorship_data.sponsorship_pending %}
+    {% with %}
+        {% set latest_sponsorship_request = sponsorship_data.latest_sponsorship_request %}
+        {% include 'corporate/support/sponsorship_request_details.html' %}
+    {% endwith %}
+{% endif %}

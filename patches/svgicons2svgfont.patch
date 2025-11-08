@@ -1,0 +1,27 @@
+diff --git a/src/index.js b/src/index.js
+index ae8106081908e6ef98ebac640b506d8dbc34d00e..6ab77b98e9d7ab69d7addab4586512a380f464c7 100755
+--- a/src/index.js
++++ b/src/index.js
+@@ -3,7 +3,6 @@
+ 
+ 'use strict';
+ 
+-const { ucs2 } = require('punycode');
+ const { Transform } = require('stream');
+ const Sax = require('sax');
+ const { SVGPathData } = require('svg-pathdata');
+@@ -479,9 +478,11 @@ class SVGIcons2SVGFontStream extends Transform {
+       delete glyph.paths;
+       const d = glyphPath.round(this._options.round).encode();
+       glyph.unicode.forEach((unicode, i) => {
+-        const unicodeStr = ucs2
+-          .decode(unicode)
+-          .map((point) => '&#x' + point.toString(16).toUpperCase() + ';')
++        const unicodeStr = [...unicode]
++          .map(
++            (char) =>
++              '&#x' + char.codePointAt(0).toString(16).toUpperCase() + ';',
++          )
+           .join('');
+ 
+         this.push(

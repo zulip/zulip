@@ -1,0 +1,7 @@
+<span class="stream-or-topic-reference">
+    {{~#if stream~}}
+        {{> inline_decorated_channel_name stream=stream show_colored_icon=show_colored_icon}}
+        {{#if topic_display_name~}} &gt; {{/if}}
+    {{~/if~}}
+    <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{~ topic_display_name ~}}</span>
+</span>

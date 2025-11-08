@@ -1,0 +1,309 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "landing-page-hello" %}
+
+{% set PAGE_TITLE = "Zulip — organized team chat" %}
+
+{% set PAGE_DESCRIPTION = "Zulip is an organized team chat app for distributed
+  teams of all sizes." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block content %}
+    {% include 'zerver/landing_nav.html' %}
+    <div class="portico-hello-page">
+        <div class='body-bg'>
+            <div class='body-bg__layer'></div>
+        </div>
+        <div class="screen-1">
+            <h1>Organized chat for distributed&nbsp;teams</h1>
+            <div class='appshot-1'>
+                <picture>
+                    <!-- dark theme is only with webp images, since webp support was at the same time or earlier than prefers-color-scheme https://caniuse.com/?search=prefers-color-scheme https://caniuse.com/webp -->
+                    <source class='appshot-1__img'
+                      type="image/webp"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-dark-2x.webp') }}"
+                      media="(min-width: 941px) and (prefers-color-scheme: dark)"/>
+                    <source class='appshot-1__img'
+                      type="image/webp"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-dark-2x.webp') }}"
+                      media="(max-width: 940px) and (prefers-color-scheme: dark)"/>
+                    <source width="1095" height="496" class='appshot-1__img'
+                      type="image/webp"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-2x.webp') }}"
+                      media="(min-width: 941px)"/>
+                    <source class='appshot-1__img'
+                      type="image/webp"
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-2x.webp') }}"
+                      media="(max-width: 940px)"/>
+                    <source class='appshot-1__img'
+                      srcset="{{ static('images/landing-page/hello/generated/screen-1-mobile-2x.jpg') }}"
+                      media="(max-width: 940px)"/>
+                    <img alt="" width="1095" height="496" class='appshot-1__img' src="{{ static('images/landing-page/hello/generated/screen-1-2x.jpg') }}"/>
+                </picture>
+                <div class="cta-buttons">
+                    <a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">
+                        See it in use
+                        <div class="cta-desc">in an open organization</div>
+                    </a>
+                    <a href="/new/">
+                        Create an organization
+                        <div class="cta-desc">in 1 minute for free</div>
+                    </a>
+                    <a href="/request-demo/">
+                        Get a demo
+                        <div class="cta-desc">request a call</div>
+                    </a>
+                </div>
+            </div>
+            <div class="client-logos">
+                <div class='client-logos-div client-logos__logo_pilot'></div>
+                <div class='client-logos-div client-logos__logo_linux_foundation'></div>
+                <div class='client-logos-div client-logos__logo_tum'></div>
+                <div class='client-logos-div client-logos__logo_wikimedia'></div>
+                <div class='client-logos-div client-logos__logo_rust'></div>
+                <div class='client-logos-div client-logos__logo_dr_on_demand'></div>
+            </div>
+        </div>
+        <div class="screen-2">
+            <div class="screen-2__container">
+                <div>
+                    <h2 class="screen-2__header">Designed for async conversations.</h2>
+                    <div class="screen-2__subtitle">Here's what it looks like in action.</div>
+                </div>
+                <div class="screen-2__tabs">
+                    <input type="radio" id="screen-2__tab1" name="screen-2__tabs-radio" class="screen-2__tab-input" checked />
+                    <input type="radio" id="screen-2__tab2" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <input type="radio" id="screen-2__tab3" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <input type="radio" id="screen-2__tab4" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <input type="radio" id="screen-2__tab5" name="screen-2__tabs-radio" class="screen-2__tab-input" />
+                    <ul>
+                        <li>
+                            <label for="screen-2__tab1">
+                                Get an overview of conversations with unread messages in your inbox.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab2">
+                                Focus on one conversation at a time, no matter how many others are happening.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab3">
+                                Reply to each conversation in context.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab4">
+                                Conversations continue seamlessly over time.
+                            </label>
+                        </li>
+                        <li>
+                            <label for="screen-2__tab5">
+                                Start a new conversation by giving it a brief topic.
+                            </label>
+                        </li>
+                    </ul>
+                    <div class="screen-2__tabs-content">
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/01-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/01-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/02-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/02-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/03-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/03-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/04-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/04-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                        <div class="screen-2__tab-image">
+                            <picture>
+                                <source
+                                  srcset="{{ static('images/landing-page/hello/generated/05-tab-cont-dark-2x.jpg') }}"
+                                  media="(prefers-color-scheme: dark)" />
+                                <img alt="" src="{{ static('images/landing-page/hello/generated/05-tab-cont-2x.jpg') }}"/>
+                            </picture>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="screen-3">
+            <div class="screen-3__container">
+                <div class="screen-3__content">
+                    <h2 class="screen-3__header">Zulip empowers remote and flexible work.</h2>
+                    <div class="screen-3__subtitle">Check out these case studies to see the impact.</div>
+                    <div class='screen-3__quotes'>
+                        <a class="quote" href="/case-studies/atolio/">
+                            <div class="quote__text">
+                                <h4>Work better together</h4>
+                                The first-class threads in Zulip are <strong>absolutely critical to how we work</strong>. So many people on Hacker News talk about using Zulip — I'm so glad we joined them!
+                            </div>
+                            <div class="quote__source">
+                                <strong>David Lanstein</strong>, <i>co-founder and CEO of Atolio</i>
+                            </div>
+                        </a>
+                        <a class="quote" href="/case-studies/idrift/">
+                            <div class="quote__text">
+                                <h4>Empower leaders</h4>
+                                Using Zulip significantly <strong>increases the size of the team</strong> for which a manager can meaningfully know what’s going on.
+                            </div>
+                            <div class="quote__source">
+                                <strong>Gaute Lund</strong>, <i>co-founder of iDrift AS</i>
+                            </div>
+                        </a>
+                        <a class="quote" href="/case-studies/rust/">
+                            <div class="quote__text">
+                                <h4>Make decisions faster</h4>
+                                Some decisions that were blocked for months on
+                                GitHub were <strong>resolved within 24 hours</strong> on Zulip.
+                            </div>
+                            <div class="quote__source">
+                                <strong>Josh Triplett</strong>, <i>Rust Language team co-lead</i>
+                            </div>
+                        </a>
+                        <a class="quote" href="https://monadical.com/posts/how-to-make-remote-work-part-two-zulip.html">
+                            <div class="quote__text">
+                                <h4>Simplify knowledge management</h4>
+                                Using Zulip in a way that feels natural creates
+                                an <strong>organized repository</strong> of knowledge <i>as a
+                                side effect</i>.
+                            </div>
+                            <div class="quote__source">
+                                <strong>Max McCrea</strong>, <i>Co-founder of Monadical</i>
+                            </div>
+                        </a>
+                        <a class="quote" href="/case-studies/end-point/">
+                            <div class="quote__text">
+                                <h4>Organize 100s of workstreams</h4>
+                                Other apps like Slack would struggle with
+                                organizing the flow of information in a complex
+                                organization like ours. Zulip’s UI makes it easy
+                                to <strong>access all the information you need</strong>.
+                            </div>
+                            <div class="quote__source">
+                                <strong>Jon Jensen</strong>, <i>CTO of End Point
+                                Dev</i>
+                            </div>
+                        </a>
+                        <a class="quote" href="/case-studies/gut-contact/">
+                            <div class="quote__text">
+                                <h4>Communicate with efficiency</h4>
+                                I don’t like going back to Slack now. It’s just
+                                not as efficient a way to <strong>organize
+                                communication</strong>.
+                            </div>
+                            <div class="quote__source">
+                                <strong>James van Lommel</strong>, <i>Director of Engineering at Semsee</i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="screen-4">
+            <div class="screen-4__container">
+                <div class="screen-4__content">
+                    <img alt="" class="switch-diagram mirror-image" loading="lazy" width="300"
+                      src="{{ static('images/landing-page/education/privacy.svg') }}"
+                      />
+                    <div class="screen-4__desc">
+                        <h2 class="screen-4__header">You own your data</h2>
+                        <p>
+                            Escape corporate vendor lock-in. You can <a
+                            href="/self-hosting/">self-host</a> Zulip’s 100% <a
+                            href="https://github.com/zulip/zulip#readme">open-source</a>
+                            software for full data sovereignty, or start
+                            with a convenient <a href="/plans">cloud
+                            solution</a> and <a
+                            href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server">move</a>
+                            any time.
+                        </p>
+                        <p>
+                            We make it easy to switch from <a
+                            href="/help/moving-from-slack">Slack</a>, <a
+                            href="/help/moving-from-teams">Teams</a> and <a
+                            href="/help/migrating-from-other-chat-tools">other
+                            tools</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="badges">
+                <a class="badge-getapp" href="https://www.getapp.com/collaboration-software/web-collaboration/category-leaders">
+                    <img alt="" src="https://brand-assets.getapp.com/badge/05c62fe0-cb84-41bf-ae2d-cd0105373a2c.svg"/>
+                </a>
+                <a class="badge-capterra" href="https://www.capterra.com/p/197945/Zulip/">
+                    <img alt="" src="https://brand-assets.capterra.com/badge/d7c03c95-8f34-466e-b964-546b102899f1.svg"/>
+                </a>
+            </div>
+        </div>
+        <div class="screen-5">
+            <div class="screen-5__container">
+                <h2 class="screen-5__header">Curious to learn more?</h2>
+                <div class="screen-5__subtitle">Dive into our detailed guide for organizations like yours.</div>
+                <div class="screen-5__cards">
+                    <a href="/for/business/" class="card">
+                        <div class="card__text">
+                            <h4 class="right-arrow-icon">Business</h4>
+                            Organizations from small businesses to enterprises communicate more efficiently.
+                        </div>
+                    </a>
+                    <a href="/for/research/" class="card">
+                        <div class="card__text">
+                            <h4 class="right-arrow-icon">Research</h4>
+                            For your group, lab, department or scientific field.
+                        </div>
+                    </a>
+                    <a href="/for/education/" class="card">
+                        <div class="card__text">
+                            <h4 class="right-arrow-icon">Education</h4>
+                            Communication hub for classes, in-person or online.
+                        </div>
+                    </a>
+                    <a href="/for/open-source/" class="card">
+                        <div class="card__text">
+                            <h4 class="right-arrow-icon">Open-source</h4>
+                            Grow and engage your community.
+                        </div>
+                    </a>
+                    <a href="/for/communities/" class="card">
+                        <div class="card__text">
+                            <h4 class="right-arrow-icon">Non-profits, Governments</h4>
+                            Free or highly-discounted plans are available for most non-business uses.
+                        </div>
+                    </a>
+                    <a href="/for/events/" class="card">
+                        <div class="card__text">
+                            <h4 class="right-arrow-icon">Events and conferences</h4>
+                            For organizers and attendees at your conference, workshop, or hackathon.
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'zerver/footer.html' %}
+{% endblock %}

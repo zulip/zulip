@@ -1,16 +1,21 @@
 import ctypes
+import logging
 import sys
 import threading
 import time
+from collections.abc import Callable
 from types import TracebackType
-from typing import Callable, Optional, Tuple, Type, TypeVar
+from typing import TypeVar
+
+from typing_extensions import override
 
 # Based on https://code.activestate.com/recipes/483752/
 
 
-class TimeoutExpired(Exception):
+class TimeoutExpiredError(Exception):
     """Exception raised when a function times out."""
 
+    @override
     def __str__(self) -> str:
         return "Function call timed out."
 
@@ -18,12 +23,12 @@ class TimeoutExpired(Exception):
 ResultT = TypeVar("ResultT")
 
 
-def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
+def unsafe_timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     """Call the function in a separate thread.
     Return its return value, or raise an exception,
     within approximately 'timeout' seconds.
 
-    The function may receive a TimeoutExpired exception
+    The function may receive a TimeoutExpiredError exception
     anywhere in its code, which could have arbitrary
     unsafe effects (resources not released, etc.).
     It might also fail to receive the exception and
@@ -37,17 +42,18 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     class TimeoutThread(threading.Thread):
         def __init__(self) -> None:
             threading.Thread.__init__(self)
-            self.result: Optional[ResultT] = None
-            self.exc_info: Tuple[
-                Optional[Type[BaseException]],
-                Optional[BaseException],
-                Optional[TracebackType],
+            self.result: ResultT | None = None
+            self.exc_info: tuple[
+                type[BaseException] | None,
+                BaseException | None,
+                TracebackType | None,
             ] = (None, None, None)
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
             self.daemon = True
 
+        @override
         def run(self) -> None:
             try:
                 self.result = func()
@@ -55,42 +61,41 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
                 self.exc_info = sys.exc_info()
 
         def raise_async_timeout(self) -> None:
-            # Called from another thread.
-            # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
-            assert self.ident is not None  # Thread should be running; c_long expects int
-            tid = ctypes.c_long(self.ident)
-            result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                tid, ctypes.py_object(TimeoutExpired)
+            # This function is called from another thread; we attempt
+            # to raise a TimeoutExpiredError in _this_ thread.
+            assert self.ident is not None
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                ctypes.c_ulong(self.ident),
+                ctypes.py_object(TimeoutExpiredError),
             )
-            if result > 1:
-                # "if it returns a number greater than one, you're in trouble,
-                # and you should call it again with exc=NULL to revert the effect"
-                #
-                # I was unable to find the actual source of this quote, but it
-                # appears in the many projects across the Internet that have
-                # copy-pasted this recipe.
-                ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
 
     thread = TimeoutThread()
     thread.start()
     thread.join(timeout)
 
     if thread.is_alive():
-        # Gamely try to kill the thread, following the dodgy approach from
-        # https://stackoverflow.com/a/325528/90777
-        #
-        # We need to retry, because an async exception received while the
-        # thread is in a system call is simply ignored.
+        # We need to retry, because an async exception received while
+        # the thread is in a system call is simply ignored.
         for i in range(10):
             thread.raise_async_timeout()
             time.sleep(0.1)
             if not thread.is_alive():
                 break
-        raise TimeoutExpired
+        if thread.exc_info[1] is not None:
+            # Re-raise the exception we sent, if possible, so the
+            # stacktrace originates in the slow code
+            raise thread.exc_info[1].with_traceback(thread.exc_info[2])
+        # If we don't have that for some reason (e.g. we failed to
+        # kill it), just raise from here; the thread _may still be
+        # running_ because it failed to see any of our exceptions, and
+        # we just ignore it.
+        if thread.is_alive():  # nocoverage
+            logging.warning("Failed to time out backend thread")
+        raise TimeoutExpiredError  # nocoverage
 
     if thread.exc_info[1] is not None:
-        # Raise the original stack trace so our error messages are more useful.
-        # from https://stackoverflow.com/a/4785766/90777
+        # Died with some other exception; re-raise it
         raise thread.exc_info[1].with_traceback(thread.exc_info[2])
-    assert thread.result is not None  # assured if above did not reraise
+
+    assert thread.result is not None
     return thread.result

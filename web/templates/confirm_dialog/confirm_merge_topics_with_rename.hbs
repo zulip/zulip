@@ -1,0 +1,7 @@
+<p>
+    {{#tr}}
+    The topic <z-topic-name>{topic_display_name}</z-topic-name> already exists in this channel.
+    Are you sure you want to combine messages from these topics? This cannot be undone.
+    {{#*inline "z-topic-name"}}<strong class="white-space-preserve-wrap {{#if is_empty_string_topic}}empty-topic-display{{/if}}">{{> @partial-block}}</strong>{{/inline}}
+    {{/tr}}
+</p>

@@ -1,0 +1,22 @@
+<form id="realm-data-deletion-form">
+    <div class="input-group">
+        <label for="delete-realm-data-in" class="modal-field-label">{{t "After how much time should all data for this organization be permanently deleted (users, channels, messages, etc.)?" }}</label>
+        <select id="delete-realm-data-in" name="delete-realm-data-in" class="modal_select bootstrap-focus-style">
+            {{#each delete_in_options}}
+                <option {{#if this.default }}selected{{/if}} value="{{this.value}}">{{this.description}}</option>
+            {{/each}}
+        </select>
+        <p class="time-input-formatted-description"></p>
+        <div id="custom-realm-deletion-time" class="dependent-settings-block custom-time-input-container">
+            <label class="modal-field-label">{{custom_deletion_input_label}}</label>
+            <input id="custom-deletion-time-input" name="custom-deletion-time-input" class="custom-time-input-value inline-block modal_text_input" type="text" autocomplete="off" value="" maxlength="4"/>
+            <select id="custom-deletion-time-unit" name="custom-deletion-time-unit" class="custom-time-input-unit bootstrap-focus-style modal_select" >
+                {{#each time_choices}}
+                    <option value="{{this.name}}">{{this.description}}</option>
+                {{/each}}
+            </select>
+            <p class="custom-time-input-formatted-description"></p>
+        </div>
+    </div>
+</form>
+<p>{{t "Are you sure you want to deactivate this organization? All users will lose access to their Zulip accounts." }}</p>

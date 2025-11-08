@@ -36,7 +36,7 @@ current_version = version.ZULIP_VERSION
 if is_invalid_upgrade(current_version, new_version):
     print(
         FAIL + "Your current version is very old. Please first upgrade to version "
-        "1.4.3 and then upgrade to {}.".format(new_version) + ENDC
+        f"1.4.3 and then upgrade to {new_version}." + ENDC
     )
     shutil.rmtree(extract_path)
     sys.exit(1)

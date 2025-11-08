@@ -1,23 +1,32 @@
 {
   "amount": 984000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED0001",
+  "customer": "cus_NORMALIZED",
   "date": 1000000000,
-  "description": "Zulip Standard",
+  "description": "Zulip Cloud Standard",
   "discountable": false,
-  "id": "ii_NORMALIZED00000000000001",
-  "invoice": null,
+  "discounts": [],
+  "id": "upgrade_by_invoice--Event.list.2.json",
+  "invoice": "in_NORMALIZED",
   "livemode": false,
   "metadata": {},
+  "net_amount": 984000,
   "object": "invoiceitem",
+  "parent": null,
   "period": {
     "end": 1357095845,
     "start": 1325473445
   },
-  "plan": null,
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "8000"
+  },
   "proration": false,
   "quantity": 123,
-  "subscription": null,
   "tax_rates": [],
-  "unit_amount": 8000
+  "test_clock": null
 }

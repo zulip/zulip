@@ -4,7 +4,7 @@ datafile=$(mktemp)
 
 # We expect other Nagios checks to monitor for whether no queue
 # workers are running, so we give that condition a pass
-processes=$(pgrep -f '^python.* /home/zulip/deployments/current/manage.py process_queue')
+processes=$(pgrep -xf 'python.* /home/zulip/deployments/current/manage.py process_queue .*')
 if [ -z "$processes" ]; then
     echo "No workers running"
     exit 0

@@ -1,3 +1,5 @@
+import orjson
+
 from zerver.lib.test_classes import ZulipTestCase
 
 
@@ -7,8 +9,7 @@ class LegacySubjectTest(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to="Verona",
-            client="test suite",
+            to=orjson.dumps("Verona").decode(),
             content="Test message",
         )
 

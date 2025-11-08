@@ -1,0 +1,6 @@
+{{#if should_add_guest_user_indicator}}
+<span class="user-name">{{name}}</span>&nbsp;<i class="guest-indicator">({{t 'guest' }})</i>
+{{else}}
+<span class="user-name">{{name}}</span>
+{{/if}}
+{{#if is_current_user}}&nbsp;<span class="my_user_status">{{t '(you)'}}</span>{{/if}}

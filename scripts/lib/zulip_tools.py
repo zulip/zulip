@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import configparser
-import datetime
 import functools
 import hashlib
 import json
@@ -9,14 +8,17 @@ import logging
 import os
 import pwd
 import random
-import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import time
 import uuid
-from typing import Any, Dict, List, Sequence, Set
+import zoneinfo
+from collections.abc import Sequence
+from datetime import datetime, timedelta
+from typing import IO, Any, Literal, overload
 from urllib.parse import SplitResult
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
@@ -31,7 +33,9 @@ FAIL = "\033[91m"
 ENDC = "\033[0m"
 BLACKONYELLOW = "\x1b[0;30;43m"
 WHITEONRED = "\x1b[0;37;41m"
-BOLDRED = "\x1B[1;31m"
+BOLDRED = "\x1b[1;31m"
+BOLD = "\x1b[1m"
+GRAY = "\x1b[90m"
 
 GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
@@ -46,7 +50,7 @@ def overwrite_symlink(src: str, dst: str) -> None:
         # Note: creating a temporary filename like this is not generally
         # secure.  It’s fine in this case because os.symlink refuses to
         # overwrite an existing target; we handle the error and try again.
-        tmp = os.path.join(dir, ".{}.{:010x}".format(base, random.randrange(1 << 40)))
+        tmp = os.path.join(dir, f".{base}.{random.randrange(1 << 40):010x}")
         try:
             os.symlink(src, tmp)
         except FileExistsError:
@@ -90,8 +94,7 @@ def parse_cache_script_args(description: str) -> argparse.Namespace:
         "--no-print-headings",
         dest="no_headings",
         action="store_true",
-        help="If specified then script will not print headings for "
-        "what will be deleted/kept back.",
+        help="If specified then script will not print headings for what will be deleted/kept back.",
     )
 
     args = parser.parse_args()
@@ -105,15 +108,41 @@ def get_deploy_root() -> str:
     )
 
 
+def parse_version_from(deploy_path: str, merge_base: bool = False) -> str:
+    if not os.path.exists(os.path.join(deploy_path, "zulip-git-version")):
+        try:
+            # Pull this tool from _our_ deploy root, since it may not
+            # exist historically, but run it the cwd of the old
+            # deploy, so we set up its remote.
+            subprocess.check_call(
+                [os.path.join(get_deploy_root(), "scripts", "lib", "update-git-upstream")],
+                cwd=deploy_path,
+                preexec_fn=su_to_zulip,
+            )
+            subprocess.check_call(
+                [os.path.join(deploy_path, "tools", "cache-zulip-git-version")],
+                cwd=deploy_path,
+                preexec_fn=su_to_zulip,
+            )
+        except subprocess.CalledProcessError:
+            pass
+    try:
+        varname = "ZULIP_MERGE_BASE" if merge_base else "ZULIP_VERSION"
+        return subprocess.check_output(
+            [sys.executable, "-c", f"from version import {varname}; print({varname})"],
+            cwd=deploy_path,
+            text=True,
+        ).strip()
+    except subprocess.CalledProcessError:
+        return "0.0.0"
+
+
 def get_deployment_version(extract_path: str) -> str:
     version = "0.0.0"
     for item in os.listdir(extract_path):
         item_path = os.path.join(extract_path, item)
         if item.startswith("zulip-server") and os.path.isdir(item_path):
-            with open(os.path.join(item_path, "version.py")) as f:
-                result = re.search('ZULIP_VERSION = "(.*)"', f.read())
-                if result:
-                    version = result.groups()[0]
+            version = parse_version_from(item_path)
             break
     return version
 
@@ -158,7 +187,7 @@ def su_to_zulip(save_suid: bool = False) -> None:
 
 
 def make_deploy_path() -> str:
-    timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
+    timestamp = datetime.now().strftime(TIMESTAMP_FORMAT)  # noqa: DTZ005
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 
@@ -197,19 +226,19 @@ def get_deployment_lock(error_rerun_script: str) -> None:
             print(
                 WARNING
                 + "Another deployment in progress; waiting for lock... "
-                + "(If no deployment is running, rmdir {})".format(LOCK_DIR)
-                + ENDC
+                + f"(If no deployment is running, rmdir {LOCK_DIR})"
+                + ENDC,
+                flush=True,
             )
-            sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
         print(
             FAIL
             + "Deployment already in progress.  Please run\n"
-            + "  {}\n".format(error_rerun_script)
+            + f"  {error_rerun_script}\n"
             + "manually when the previous deployment finishes, or run\n"
-            + "  rmdir {}\n".format(LOCK_DIR)
+            + f"  rmdir {LOCK_DIR}\n"
             + "if the previous deployment crashed."
             + ENDC
         )
@@ -222,23 +251,31 @@ def release_deployment_lock() -> None:
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
-    print("+ {}".format(" ".join(map(shlex.quote, args))))
+    print(f"+ {shlex.join(args)}", flush=True)
 
     try:
         subprocess.check_call(args, **kwargs)
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as error:
         print()
-        print(
-            WHITEONRED
-            + "Error running a subcommand of {}: {}".format(
-                sys.argv[0],
-                " ".join(map(shlex.quote, args)),
+        if error.returncode < 0:
+            try:
+                signal_name = signal.Signals(-error.returncode).name
+            except ValueError:
+                signal_name = f"unknown signal {-error.returncode}"
+            print(
+                WHITEONRED
+                + f"Subcommand of {sys.argv[0]} died with {signal_name}: {shlex.join(args)}"
+                + ENDC
             )
-            + ENDC
-        )
-        print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
+        else:
+            print(
+                WHITEONRED
+                + f"Subcommand of {sys.argv[0]} failed with exit status {error.returncode}: {shlex.join(args)}"
+                + ENDC
+            )
+            print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
-        raise
+        sys.exit(1)
 
 
 def log_management_command(cmd: Sequence[str], log_path: str) -> None:
@@ -253,7 +290,7 @@ def log_management_command(cmd: Sequence[str], log_path: str) -> None:
     logger.addHandler(file_handler)
     logger.setLevel(logging.INFO)
 
-    logger.info("Ran %s", " ".join(map(shlex.quote, cmd)))
+    logger.info("Ran %s", shlex.join(cmd))
 
 
 def get_environment() -> str:
@@ -262,29 +299,33 @@ def get_environment() -> str:
     return "dev"
 
 
-def get_recent_deployments(threshold_days: int) -> Set[str]:
+def get_recent_deployments(threshold_days: int | None) -> set[str]:
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
-    threshold_date = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
-    for dir_name in os.listdir(DEPLOYMENTS_DIR):
-        target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
-        if not os.path.isdir(target_dir):
-            # Skip things like uwsgi sockets, symlinks, etc.
-            continue
-        if not os.path.exists(os.path.join(target_dir, "zerver")):
-            # Skip things like "lock" that aren't actually a deployment directory
-            continue
-        try:
-            date = datetime.datetime.strptime(dir_name, TIMESTAMP_FORMAT)
-            if date >= threshold_date:
+    if threshold_days is not None:
+        threshold_date = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
+    else:
+        threshold_date = None
+    if os.path.isdir(DEPLOYMENTS_DIR):
+        for dir_name in os.listdir(DEPLOYMENTS_DIR):
+            target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
+            if not os.path.isdir(target_dir):
+                # Skip things like uwsgi sockets, symlinks, etc.
+                continue
+            if not os.path.exists(os.path.join(target_dir, "zerver")):
+                # Skip things like "lock" that aren't actually a deployment directory
+                continue
+            try:
+                date = datetime.strptime(dir_name, TIMESTAMP_FORMAT)  # noqa: DTZ007
+                if threshold_date is None or date >= threshold_date:
+                    recent.add(target_dir)
+            except ValueError:
+                # Always include deployments whose name is not in the format of a timestamp.
                 recent.add(target_dir)
-        except ValueError:
-            # Always include deployments whose name is not in the format of a timestamp.
-            recent.add(target_dir)
-            # If it is a symlink then include the target as well.
-            if os.path.islink(target_dir):
-                recent.add(os.path.realpath(target_dir))
+                # If it is a symlink then include the target as well.
+                if os.path.islink(target_dir):
+                    recent.add(os.path.realpath(target_dir))
     if os.path.exists("/root/zulip"):
         recent.add("/root/zulip")
     return recent
@@ -293,19 +334,19 @@ def get_recent_deployments(threshold_days: int) -> Set[str]:
 def get_threshold_timestamp(threshold_days: int) -> int:
     # Given number of days, this function returns timestamp corresponding
     # to the time prior to given number of days.
-    threshold = datetime.datetime.now() - datetime.timedelta(days=threshold_days)
+    threshold = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
     threshold_timestamp = int(time.mktime(threshold.utctimetuple()))
     return threshold_timestamp
 
 
 def get_caches_to_be_purged(
-    caches_dir: str, caches_in_use: Set[str], threshold_days: int
-) -> Set[str]:
+    caches_dir: str, caches_in_use: set[str], threshold_days: int
+) -> set[str]:
     # Given a directory containing caches, a list of caches in use
     # and threshold days, this function return a list of caches
     # which can be purged. Remove the cache only if it is:
     # 1: Not in use by the current installation(in dev as well as in prod).
-    # 2: Not in use by a deployment not older than `threshold_days`(in prod).
+    # 2: Not in use by a deployment not older than `threshold_days` (in prod).
     # 3: Not in use by '/root/zulip'.
     # 4: Not older than `threshold_days`.
     caches_to_purge = set()
@@ -322,15 +363,18 @@ def get_caches_to_be_purged(
 
 def purge_unused_caches(
     caches_dir: str,
-    caches_in_use: Set[str],
+    caches_in_use: set[str],
     cache_type: str,
     args: argparse.Namespace,
 ) -> None:
+    if not os.path.exists(caches_dir):
+        return
+
     all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
-    may_be_perform_purging(
+    maybe_perform_purging(
         caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose, args.no_headings
     )
     if args.verbose:
@@ -341,11 +385,12 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
     sha = hashlib.sha1()
 
     filenames = [
-        "static/assets/zulip-emoji/zulip.png",
+        "web/images/zulip-emoji/zulip.png",
         "tools/setup/emoji/emoji_map.json",
         "tools/setup/emoji/build_emoji",
         "tools/setup/emoji/emoji_setup_utils.py",
         "tools/setup/emoji/emoji_names.py",
+        "zerver/management/data/unified_reactions.json",
     ]
 
     for filename in filenames:
@@ -355,30 +400,16 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
 
     # Take into account the version of `emoji-datasource-google` package
     # while generating success stamp.
-    PACKAGE_FILE_PATH = os.path.join(zulip_path, "package.json")
-    with open(PACKAGE_FILE_PATH) as fp:
-        parsed_package_file = json.load(fp)
-    dependency_data = parsed_package_file["dependencies"]
-
-    if "emoji-datasource-google" in dependency_data:
-        with open(os.path.join(zulip_path, "yarn.lock")) as fp:
-            (emoji_datasource_version,) = re.findall(
-                r"^emoji-datasource-google@"
-                + re.escape(dependency_data["emoji-datasource-google"])
-                + r':\n  version "(.*)"',
-                fp.read(),
-                re.M,
-            )
-    else:
-        emoji_datasource_version = "0"
+    with open(os.path.join(zulip_path, "node_modules/emoji-datasource-google/package.json")) as fp:
+        emoji_datasource_version = json.load(fp)["version"]
     sha.update(emoji_datasource_version.encode())
 
     return sha.hexdigest()
 
 
-def may_be_perform_purging(
-    dirs_to_purge: Set[str],
-    dirs_to_keep: Set[str],
+def maybe_perform_purging(
+    dirs_to_purge: set[str],
+    dirs_to_keep: set[str],
     dir_type: str,
     dry_run: bool,
     verbose: bool,
@@ -387,21 +418,21 @@ def may_be_perform_purging(
     if dry_run:
         print("Performing a dry run...")
     if not no_headings:
-        print("Cleaning unused {}s...".format(dir_type))
+        print(f"Cleaning unused {dir_type}s...")
 
     for directory in dirs_to_purge:
         if verbose:
-            print("Cleaning unused {}: {}".format(dir_type, directory))
+            print(f"Cleaning unused {dir_type}: {directory}")
         if not dry_run:
             run_as_root(["rm", "-rf", directory])
 
     for directory in dirs_to_keep:
         if verbose:
-            print("Keeping used {}: {}".format(dir_type, directory))
+            print(f"Keeping used {dir_type}: {directory}")
 
 
 @functools.lru_cache(None)
-def parse_os_release() -> Dict[str, str]:
+def parse_os_release() -> dict[str, str]:
     """
     Example of the useful subset of the data:
     {
@@ -412,10 +443,11 @@ def parse_os_release() -> Dict[str, str]:
      'PRETTY_NAME': 'Ubuntu 18.04.3 LTS',
     }
 
-    VERSION_CODENAME (e.g. 'bionic') is nice and human-readable, but
-    we avoid using it, as it is not available on RHEL-based platforms.
+    VERSION_CODENAME (e.g. 'bionic') is nice and readable to Ubuntu
+    developers, but we avoid using it, as it is not available on
+    RHEL-based platforms.
     """
-    distro_info = {}  # type: Dict[str, str]
+    distro_info: dict[str, str] = {}
     with open("/etc/os-release") as fp:
         for line in fp:
             line = line.strip()
@@ -429,7 +461,7 @@ def parse_os_release() -> Dict[str, str]:
 
 
 @functools.lru_cache(None)
-def os_families() -> Set[str]:
+def os_families() -> set[str]:
     """
     Known families:
     debian (includes: debian, ubuntu)
@@ -442,6 +474,14 @@ def os_families() -> Set[str]:
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
 
 
+def get_tzdata_zi() -> IO[str]:
+    for path in zoneinfo.TZPATH:
+        filename = os.path.join(path, "tzdata.zi")
+        if os.path.exists(filename):
+            return open(filename)
+    raise RuntimeError("Missing time zone data (tzdata.zi)")
+
+
 def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[str]) -> str:
     # see is_digest_obsolete for more context
     sha1sum = hashlib.sha1()
@@ -450,7 +490,7 @@ def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[st
             sha1sum.update(file_to_hash.read())
 
     for extra_string in extra_strings:
-        sha1sum.update(extra_string.encode("utf-8"))
+        sha1sum.update(extra_string.encode())
 
     return sha1sum.hexdigest()
 
@@ -511,7 +551,7 @@ def is_root() -> bool:
     return False
 
 
-def run_as_root(args: List[str], **kwargs: Any) -> None:
+def run_as_root(args: list[str], **kwargs: Any) -> None:
     sudo_args = kwargs.pop("sudo_args", [])
     if not is_root():
         args = ["sudo", *sudo_args, "--", *args]
@@ -523,10 +563,10 @@ def assert_not_running_as_root() -> None:
     if is_root():
         pwent = get_zulip_pwent()
         msg = (
-            "{shortname} should not be run as root. Use `su {user}` to switch to the 'zulip'\n"
-            "user before rerunning this, or use \n  su {user} -c '{name} ...'\n"
+            f"{os.path.basename(script_name)} should not be run as root. Use `su {pwent.pw_name}` to switch to the 'zulip'\n"
+            f"user before rerunning this, or use \n  su {pwent.pw_name} -c '{script_name} ...'\n"
             "to switch users and run this as a single command."
-        ).format(name=script_name, shortname=os.path.basename(script_name), user=pwent.pw_name)
+        )
         print(msg)
         sys.exit(1)
 
@@ -539,30 +579,41 @@ def assert_running_as_root(strip_lib_from_paths: bool = False) -> None:
     if strip_lib_from_paths:
         script_name = script_name.replace("scripts/lib/upgrade", "scripts/upgrade")
     if not is_root():
-        print("{} must be run as root.".format(script_name))
+        print(f"{script_name} must be run as root.")
         sys.exit(1)
 
 
+@overload
 def get_config(
     config_file: configparser.RawConfigParser,
     section: str,
     key: str,
-    default_value: str = "",
-) -> str:
-    if config_file.has_option(section, key):
-        return config_file.get(section, key)
-    return default_value
-
-
-def set_config(
+    default_value: None = None,
+) -> str | None: ...
+@overload
+def get_config(
     config_file: configparser.RawConfigParser,
     section: str,
     key: str,
-    value: str,
-) -> None:
-    if not config_file.has_section(section):
-        config_file.add_section(section)
-    config_file.set(section, key, value)
+    default_value: str,
+) -> str: ...
+@overload
+def get_config(
+    config_file: configparser.RawConfigParser, section: str, key: str, default_value: bool
+) -> bool: ...
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str | bool | None = None,
+) -> str | bool | None:
+    if config_file.has_option(section, key):
+        val = config_file.get(section, key)
+        if isinstance(default_value, bool):
+            # This list is parallel to puppet/zulip/lib/puppet/functions/zulipconf.rb
+            return val.lower() in ["1", "y", "t", "true", "yes", "enable", "enabled"]
+        return val
+    return default_value
 
 
 def get_config_file() -> configparser.RawConfigParser:
@@ -571,21 +622,27 @@ def get_config_file() -> configparser.RawConfigParser:
     return config_file
 
 
-def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
-    return get_config(config_file, "deployment", "deploy_options", "").strip().split()
+def get_deploy_options(config_file: configparser.RawConfigParser) -> list[str]:
+    return shlex.split(get_config(config_file, "deployment", "deploy_options", ""))
 
 
-def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
+def get_tornado_ports(config_file: configparser.RawConfigParser) -> list[int]:
     ports = []
     if config_file.has_section("tornado_sharding"):
-        ports = [int(port) for port in config_file.options("tornado_sharding")]
+        ports = sorted(
+            {
+                int(port)
+                for key in config_file.options("tornado_sharding")
+                for port in key.removesuffix("_regex").split("_")
+            }
+        )
     if not ports:
         ports = [9800]
     return ports
 
 
 def get_or_create_dev_uuid_var_path(path: str) -> str:
-    absolute_path = "{}/{}".format(get_dev_uuid_var_path(), path)
+    absolute_path = f"{get_dev_uuid_var_path()}/{path}"
     os.makedirs(absolute_path, exist_ok=True)
     return absolute_path
 
@@ -594,12 +651,97 @@ def is_vagrant_env_host(path: str) -> bool:
     return ".vagrant" in os.listdir(path)
 
 
+def has_application_server(once: bool = False) -> bool:
+    if once:
+        return os.path.exists("/etc/supervisor/conf.d/zulip/zulip-once.conf")
+    return (
+        # Current path
+        os.path.exists("/etc/supervisor/conf.d/zulip/zulip.conf")
+        # Old path, relevant for upgrades
+        or os.path.exists("/etc/supervisor/conf.d/zulip.conf")
+    )
+
+
+def has_process_fts_updates() -> bool:
+    return (
+        # Current path
+        os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf")
+        # Old path, relevant for upgrades
+        or os.path.exists("/etc/supervisor/conf.d/zulip_db.conf")
+    )
+
+
 def deport(netloc: str) -> str:
     """Remove the port from a hostname:port string.  Brackets on a literal
     IPv6 address are included."""
     r = SplitResult("", netloc, "", "", "")
     assert r.hostname is not None
     return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
+
+
+def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(add_help=add_help)
+    parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
+    parser.add_argument(
+        "--skip-checks", action="store_true", help="Skip syntax and database checks"
+    )
+    which_services = parser.add_mutually_exclusive_group()
+    which_services.add_argument(
+        "--skip-client-reloads",
+        action="store_true",
+        help="Do not send reload events to web clients",
+    )
+    which_services.add_argument(
+        "--only-django",
+        action="store_true",
+        help=f"Only {action} Django (not Tornado or workers)",
+    )
+    which_services.add_argument(
+        "--tornado-reshard",
+        action="store_true",
+        help="Restart changed Tornado shards",
+    )
+    if action == "restart":
+        parser.add_argument(
+            "--less-graceful",
+            action="store_true",
+            help="Restart with more concern for expediency than minimizing availability interruption",
+        )
+    return parser
+
+
+def atomic_nagios_write(
+    name: str,
+    status: Literal["ok", "warning", "critical", "unknown"],
+    message: str | None = None,
+    event_time: int | None = None,
+) -> int:
+    if message is None:
+        message = status
+    if event_time is None:
+        event_time = int(time.time())
+    if status == "ok":
+        status_int = 0
+    elif status == "warning":
+        status_int = 1
+    elif status == "critical":
+        status_int = 2
+    elif status == "unknown":
+        status_int = 3
+
+    path = "/var/lib/nagios_state/" + name
+    with open(path + ".tmp", "w") as fh:
+        fh.write("|".join([str(event_time), str(status_int), status, message]) + "\n")
+    os.rename(path + ".tmp", path)
+
+    # Return code should be if the cron job ran to completion
+    # successfully, not if the result of the check was outside of
+    # bounds ("ok" / "critical"); this prevents the Sentry cron
+    # wrapper from spamming with a "failure" email if the nagios check
+    # requires multiple failures in a row.
+    if status == "unknown":
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

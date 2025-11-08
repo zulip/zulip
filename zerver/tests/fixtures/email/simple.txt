@@ -1,6 +1,6 @@
 To: {stream_to_address}
 From: {sender}
-Subject: Testing Email Mirror
+Subject: Testing email mirror
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 

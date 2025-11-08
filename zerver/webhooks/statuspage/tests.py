@@ -2,12 +2,12 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class StatuspageHookTests(WebhookTestCase):
-    STREAM_NAME = "statuspage-test"
+    CHANNEL_NAME = "statuspage-test"
     URL_TEMPLATE = "/api/v1/external/statuspage?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "statuspage"
+    WEBHOOK_DIR_NAME = "statuspage"
 
     def test_statuspage_incident(self) -> None:
-        expected_topic = "Database query delays: All Systems Operational"
+        expected_topic_name = "Database query delays: All Systems Operational"
         expected_message = """
 **Database query delays**:
 * State: **identified**
@@ -15,13 +15,13 @@ class StatuspageHookTests(WebhookTestCase):
 """.strip()
         self.check_webhook(
             "incident_created",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_statuspage_incident_update(self) -> None:
-        expected_topic = "Database query delays: All Systems Operational"
+        expected_topic_name = "Database query delays: All Systems Operational"
         expected_message = """
 **Database query delays**:
 * State: **resolved**
@@ -29,17 +29,27 @@ class StatuspageHookTests(WebhookTestCase):
 """.strip()
         self.check_webhook(
             "incident_update",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
     def test_statuspage_component(self) -> None:
-        expected_topic = "Database component: Service Under Maintenance"
+        expected_topic_name = "Database component: Service Under Maintenance"
         expected_message = "**Database component** has changed status from **operational** to **under_maintenance**."
         self.check_webhook(
             "component_status_update",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_statuspage_anomalous_payload(self) -> None:
+        result = self.client_post(
+            self.url,
+            {},
+            content_type="application/json",
+        )
+        self.assert_json_error(
+            result, "Unable to parse request: Did Statuspage generate this event?", 400
         )

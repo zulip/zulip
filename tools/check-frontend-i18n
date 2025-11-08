@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-from typing import List
-
-# check for the venv
-from lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 import argparse
 import json
 import os
@@ -13,15 +6,17 @@ import subprocess
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
 from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
 
 
-def find_handlebars(translatable_strings: List[str]) -> List[str]:
-    errored = []
-    for string in translatable_strings:
-        if "{{" in string:
-            errored.append(string)
-    return errored
+def find_handlebars(translatable_strings: list[str]) -> list[str]:
+    return [string for string in translatable_strings if "{{" in string]
 
 
 if __name__ == "__main__":
@@ -32,7 +27,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.no_generate:
-        subprocess.call(["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT)
+        subprocess.check_call(
+            ["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT
+        )
 
     with open("locale/en/translations.json") as f:
         data = json.load(f)
@@ -41,12 +38,12 @@ if __name__ == "__main__":
     if not found:
         sys.exit(0)
 
-    print(WARNING + "Translation strings contain handlebars:" + ENDC)
+    print(WARNING + "Translation strings contain Handlebars:" + ENDC)
     print("\n".join(found))
 
     print(
         WARNING
-        + "See https://zulip.readthedocs.io/en/latest/translating/translating.html#frontend-translations "
+        + "See https://zulip.readthedocs.io/en/latest/translating/internationalization.html#web-application-translations "
         "on how you can insert variables in the frontend translatable "
         "strings." + ENDC
     )

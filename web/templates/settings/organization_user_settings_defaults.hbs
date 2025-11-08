@@ -1,0 +1,14 @@
+<div id="realm-user-default-settings" class="settings-section" data-name="organization-level-user-defaults">
+    {{#if is_admin}}
+    <div>
+        {{#tr}}
+            Configure the <z-link>default personal preference settings</z-link>
+            for new users joining your organization.
+            {{#*inline "z-link"}}<a href="/help/configure-default-new-user-settings" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+        {{/tr}}
+    </div>
+    {{/if}}
+    {{> preferences . prefix="realm_" for_realm_settings=true full_name=full_name}}
+
+    {{> notification_settings . prefix="realm_" for_realm_settings=true}}
+</div>

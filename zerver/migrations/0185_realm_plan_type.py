@@ -5,7 +5,6 @@ SELF_HOSTED = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0184_rename_custom_field_types"),
     ]

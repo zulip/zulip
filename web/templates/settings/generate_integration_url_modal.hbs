@@ -1,0 +1,52 @@
+<div class="input-group">
+    <div class="integration-url-name-wrapper integration-url-parameter">
+        {{> ../dropdown_widget_with_label
+          widget_name="integration-name"
+          label=(t "Integration")}}
+    </div>
+</div>
+<div class="input-group">
+    <div class="integration-url-stream-wrapper integration-url-parameter">
+        {{> ../dropdown_widget_with_label
+          widget_name="integration-url-stream"
+          label=(t "Where to send notifications")}}
+    </div>
+</div>
+<div class="input-group control-label-disabled">
+    <label class="checkbox">
+        <input type="checkbox" id="integration-url-override-topic" class="integration-url-parameter" disabled/>
+        <span class="rendered-checkbox"></span>
+    </label>
+    <label class="inline" for="integration-url-override-topic">
+        {{t "Send all notifications to a single topic"}}
+    </label>
+</div>
+<div class="input-group hide">
+    <label for="integration-url-topic-input" class="modal-label-field">{{t "Topic"}}</label>
+    <input type="text" id="integration-url-topic-input" class="modal_text_input integration-url-parameter" maxlength="{{ max_topic_length }}" />
+</div>
+<div id="integration-url-config-options-container">
+    <!-- Dynamic Config Options will be rendered here -->
+</div>
+<div id="integration-events-parameter" class="input-group hide">
+    <label class="checkbox">
+        <input type="checkbox" id="show-integration-events"/>
+        <span class="rendered-checkbox"></span>
+    </label>
+    <label class="inline" for="show-integration-events">
+        {{t "Filter events that will trigger notifications?"}}
+    </label>
+</div>
+<div class="input-group hide" id="integrations-event-container">
+    <label for="integrations-event-options">{{t "Events to include:"}}</label>
+    <div class="integration-all-events-buttons">
+        {{> ../components/action_button attention="quiet" intent="neutral" id="add-all-integration-events" label=(t "Check all") }}
+        {{> ../components/action_button attention="quiet" intent="neutral" id="remove-all-integration-events" label=(t "Uncheck all") }}
+    </div>
+    <div id="integrations-event-options"></div>
+</div>
+<hr />
+<p class="integration-url-header">{{t "URL for your integration"}}</p>
+<div class="integration-url">
+    {{default_url_message}}
+</div>

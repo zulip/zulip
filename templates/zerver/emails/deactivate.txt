@@ -1,0 +1,9 @@
+{% trans %}
+Your Zulip account on {{ realm_url }} has been deactivated, and you will no longer be able to log in.
+{% endtrans %}
+
+{% if deactivation_notification_comment %}
+{{ _("The administrators provided the following comment:") }}
+
+{{ deactivation_notification_comment }}
+{% endif %}

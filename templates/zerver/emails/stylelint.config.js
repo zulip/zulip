@@ -1,6 +1,7 @@
-"use strict";
+// @ts-check
 
-module.exports = {
+/** @type {import("stylelint").Config} */
+export default {
     extends: ["../../../stylelint.config"],
     rules: {
         // Add some exceptions for recommended rules

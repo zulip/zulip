@@ -1,0 +1,6 @@
+{% trans %}Click the link below to confirm your email and log in to Zulip plan management for {{remote_realm_host}}.{% endtrans %}
+
+
+{{ _("Confirm and log in") }}: {{ confirmation_url }}
+
+{% trans %}Questions? Learn more at {{ billing_help_link }} or contact {{ billing_contact_email }}.{% endtrans %}

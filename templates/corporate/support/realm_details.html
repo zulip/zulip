@@ -1,0 +1,207 @@
+<div class="realm-support-information">
+    <span class="cloud-label">Cloud realm</span>
+    {% if realm.deactivated %}
+    <span class="deactivated-label">DEACTIVATED</span>
+    {% endif %}
+    <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
+    {% if realm.plan_type == SPONSORED_PLAN_TYPE %}
+        <p class="support-section-header">On 100% sponsored Zulip Standard Free 🎉</p>
+    {% endif %}
+    {% if realm_support_data[realm.id].sponsorship_data.has_discount %}
+        <p class="support-section-header">Has a discount 💸</p>
+    {% endif %}
+    {% set realm_is_scrubbed = realm_support_data[realm.id].is_scrubbed %}
+    {% if realm_is_scrubbed %}
+    <b>Realm has been scrubbed</b>
+    {% elif realm.deactivated_redirect %}
+    <b>Placeholder realm</b><br />
+    <b>Redirects to</b>: {{ realm.deactivated_redirect }}
+    <a title="Copy URL" class="copy-button" data-clipboard-text="{{ realm.deactivated_redirect }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% else %}
+    <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.url }}">{{ realm.url }}</a> |
+    <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
+    <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
+    <b>Date created</b>: {{ realm.date_created|timesince }} ago<br />
+    {% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
+    <b>Owners</b>: {{ owner_emails_string }}
+    {% if owner_emails_string %}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ owner_emails_string }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% endif %}
+    <br />
+    {% set admin_emails_string = get_realm_admin_emails_as_string(realm) %}
+    <b>Admins</b>: {{ admin_emails_string }}
+    {% if admin_emails_string %}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ admin_emails_string }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    {% endif %}
+    <br />
+    {% set first_human_user = realm.get_first_human_user() %}
+    {% if first_human_user %}
+    <b>First human user</b>: {{ first_human_user.delivery_email  }}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ first_human_user.delivery_email }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    <br />
+    {% else %}
+    <b>First human user</b>:
+    <br />
+    {% endif %}
+    {% set billing_admins = realm.get_billing_admins_delivery_email() %}
+    {% if billing_admins %}
+    <b>Billing admins</b>: {{ billing_admins  }}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ billing_admins }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    <br />
+    {% else %}
+    <b>Billing admins</b>:
+    <br />
+    {% endif %}
+    <br />
+    {% with %}
+        {% set realm = realm %}
+        {% set user_data = realm_support_data[realm.id].user_data %}
+        {% include 'corporate/support/basic_realm_data.html' %}
+    {% endwith %}
+    <br />
+    <b>File upload usage</b>: {{ realm_support_data[realm.id].file_upload_usage }}<br />
+    {% endif %}
+</div>
+{% if realm_is_scrubbed %}
+{% elif not realm.deactivated_redirect %}
+<div>
+    <div class="realm-management-actions">
+        <p class="support-section-header">🛠️ Realm management:</p>
+        <form method="POST" class="support-form">
+            <b>Status</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="status">
+                <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
+                <option value="deactivated" {% if realm.deactivated %}selected{% endif %}>Deactivated</option>
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        {% if not realm.deactivated %}
+        <form method="POST" class="support-form">
+            <b>New subdomain</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="text" name="new_subdomain" required />
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="support-form">
+            <b>Organization type</b>:<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="org_type" id="org_type">
+                {% for organization_type in ORGANIZATION_TYPES %}
+                    {% if realm.org_type == organization_type.id %}
+                        <option value="{{ organization_type.id }}" selected>{{ organization_type.name }}</option>
+                    {% else %}
+                        <option value="{{ organization_type.id }}">{{ organization_type.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="support-form">
+            <b>Plan type</b>: <i class="fa fa-question-circle-o" data-tippy-content="
+            Will also update maximum daily invitations to be the default value for the new plan type.
+            " data-tippy-maxWidth="auto"></i><br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <select name="plan_type">
+                {% for plan_type in REALM_PLAN_TYPES %}
+                    {% if realm.plan_type == plan_type.value %}
+                        <option value="{{ plan_type.value }}" selected>{{ plan_type.name }}</option>
+                    {% else %}
+                        <option value="{{ plan_type.value }}">{{ plan_type.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="support-form">
+            <b>Maximum daily invitations</b>: <i class="fa fa-question-circle-o" data-tippy-content="
+            Setting to zero will attempt to reset this to the default maximum for the current plan type.
+            " data-tippy-maxWidth="auto"></i><br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="number" name="max_invites" value="{{ realm.max_invites }}" min="0" required />
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        {% endif %}
+    </div>
+    {% if realm.deactivated %}
+    <div class="support-sponsorship-container">
+        {% with %}
+            {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/sponsorship_details.html' %}
+        {% endwith %}
+    </div>
+    {% elif realm.plan_type != SPONSORED_PLAN_TYPE %}
+    <div class="support-sponsorship-container">
+        {% with %}
+            {% set sponsorship_data = realm_support_data[realm.id].sponsorship_data %}
+            {% set PLAN_TYPES = REALM_PLAN_TYPES_FOR_DISCOUNT %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/sponsorship_forms_support.html' %}
+        {% endwith %}
+    </div>
+    {% endif %}
+    {% if realm_support_data[realm.id].plan_data.current_plan %}
+    <div class="current-plan-container">
+        {% with %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/current_plan_details.html' %}
+        {% endwith %}
+
+        {% with %}
+            {% set current_plan = realm_support_data[realm.id].plan_data.current_plan %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/current_plan_forms_support.html' %}
+        {% endwith %}
+    </div>
+    {% endif %}
+
+    {% if realm_support_data[realm.id].plan_data.next_plan %}
+    <div class="next-plan-container">
+        {% with %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/next_plan_details.html' %}
+        {% endwith %}
+    </div>
+    {% elif not realm.deactivated %}
+    <div class="next-plan-container">
+        {% with %}
+            {% set plan_data = realm_support_data[realm.id].plan_data %}
+            {% set remote_id = realm.id %}
+            {% set remote_type = "realm_id" %}
+            {% include 'corporate/support/next_plan_forms_support.html' %}
+        {% endwith %}
+    </div>
+    {% endif %}
+    {% if realm.deactivated %}
+    <form method="POST" class="scrub-realm-form support-form">
+        <h3>❌ Scrub realm</h3>
+        {{ csrf_input }}
+        <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+        <input type="hidden" name="scrub_realm" value="true" />
+        <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
+    </form>
+    {% endif %}
+</div>
+{% endif %}

@@ -1,0 +1,412 @@
+<div id="organization-permissions" data-name="organization-permissions" class="settings-section">
+    <form class="admin-realm-form org-permissions-form">
+
+        <div id="org-join-settings" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>
+                    {{t "Joining the organization" }}
+                    <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
+                </h3>
+                {{> settings_save_discard_widget section_name="join-settings" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                <div id="realm_invite_required_container" {{#unless user_has_email_set}}class="disabled_setting_tooltip"{{/unless}}>
+                    {{> settings_checkbox
+                      setting_name="realm_invite_required"
+                      prefix="id_"
+                      is_checked=realm_invite_required
+                      is_disabled=(not user_has_email_set)
+                      label=admin_settings_label.realm_invite_required}}
+                </div>
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_invite_users_group"
+                  label=group_setting_labels.can_invite_users_group}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_create_multiuse_invite_group"
+                  label=group_setting_labels.create_multiuse_invite_group}}
+
+                <div class="input-group">
+                    <label for="id_realm_org_join_restrictions" class="settings-field-label">{{t "Restrict email domains of new users" }}</label>
+                    <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                        <option value="no_restriction">{{t "No restrictions" }}</option>
+                        <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
+                        <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
+                    </select>
+                    <div class="dependent-settings-block">
+                        <p id="allowed_domains_label" class="inline-block"></p>
+                        {{#if is_owner }}
+                        <a id="show_realm_domains_modal" role="button">{{t "[Configure]" }}</a>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="input-group time-limit-setting">
+                    <label for="id_realm_waiting_period_threshold" class="settings-field-label">
+                        {{t "Waiting period before new members turn into full members" }}
+                        {{> ../help_link_widget link="/help/restrict-permissions-of-new-members" }}
+                    </label>
+                    <select name="realm_waiting_period_threshold" id="id_realm_waiting_period_threshold" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="time-limit">
+                        {{> dropdown_options_widget option_values=waiting_period_threshold_dropdown_values}}
+                    </select>
+                    {{!-- This setting is hidden unless `custom_period` --}}
+                    <div class="dependent-settings-block">
+                        <label for="id_realm_waiting_period_threshold_custom_input" class="inline-block">{{t "Waiting period (days)" }}:</label>
+                        <input type="text" id="id_realm_waiting_period_threshold_custom_input"
+                          name="realm_waiting_period_threshold_custom_input"
+                          class="time-limit-custom-input"
+                          value="{{ realm_waiting_period_threshold }}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-stream-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Channel permissions" }}
+                    {{> ../help_link_widget link="/help/channel-permissions" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="stream-permissions" }}
+            </div>
+            <div class="m-10 organization-permissions-parent">
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_public_channel_group"
+                  label=group_setting_labels.can_create_public_channel_group}}
+
+                {{> upgrade_tip_widget . }}
+                {{> settings_checkbox
+                  setting_name="realm_enable_spectator_access"
+                  prefix="id_"
+                  is_checked=realm_enable_spectator_access
+                  label=admin_settings_label.realm_enable_spectator_access
+                  is_disabled=disable_enable_spectator_access_setting
+                  help_link="/help/public-access-option"}}
+
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_create_web_public_channel_group"
+                  label=group_setting_labels.can_create_web_public_channel_group
+                  value_type="number"}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_private_channel_group"
+                  label=group_setting_labels.can_create_private_channel_group}}
+
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_add_subscribers_group"
+                  label=group_setting_labels.can_add_subscribers_group}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_mention_many_users_group"
+                  label=group_setting_labels.can_mention_many_users_group
+                  help_link="/help/restrict-wildcard-mentions"}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_set_topics_policy_group"
+                  label=group_setting_labels.can_set_topics_policy_group
+                  help_link="/help/require-topics"}}
+            </div>
+        </div>
+
+        <div id="org-group-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Group permissions" }}
+                    {{> ../help_link_widget link="/help/manage-user-groups" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="group-permissions" }}
+            </div>
+            <div class="m-10 organization-permissions-parent">
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_manage_all_groups"
+                  label=group_setting_labels.can_manage_all_groups}}
+                {{> upgrade_tip_widget . }}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_groups"
+                  label=group_setting_labels.can_create_groups}}
+            </div>
+        </div>
+
+        <div id="org-direct-message-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Direct message permissions" }}
+                    {{> ../help_link_widget link="/help/restrict-direct-messages" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="direct-message-permissions" }}
+            </div>
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_permission_group"
+              label=group_setting_labels.direct_message_permission_group}}
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_direct_message_initiator_group"
+              label=group_setting_labels.direct_message_initiator_group}}
+        </div>
+
+        <div id="org-msg-editing" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message editing" }}
+                    {{> ../help_link_widget link="/help/restrict-message-editing-and-deletion" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="msg-editing" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{> settings_checkbox
+                  setting_name="realm_allow_message_editing"
+                  prefix="id_"
+                  is_checked=realm_allow_message_editing
+                  label=admin_settings_label.realm_allow_message_editing}}
+
+                <div class="input-group">
+                    <label for="id_realm_message_edit_history_visibility_policy" class="settings-field-label">{{t "Allow viewing the history of a message?"}}</label>
+                    <select name="realm_message_edit_history_visibility_policy" id="id_realm_message_edit_history_visibility_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                        {{> dropdown_options_widget option_values=message_edit_history_visibility_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group time-limit-setting">
+                    <label for="id_realm_message_content_edit_limit_seconds" class="settings-field-label">{{t "Time limit for editing messages" }}</label>
+                    <select name="realm_message_content_edit_limit_seconds" id="id_realm_message_content_edit_limit_seconds" class="prop-element settings_select bootstrap-focus-style" {{#unless realm_allow_message_editing}}disabled{{/unless}} data-setting-widget-type="time-limit">
+                        {{#each msg_edit_limit_dropdown_values}}
+                            <option value="{{value}}">{{text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-settings-block">
+                        <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'Time limit'}}:&nbsp;
+                        </label>
+                        <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                          name="realm_message_content_edit_limit_minutes"
+                          class="time-limit-custom-input"
+                          autocomplete="off"
+                          value="{{ realm_message_content_edit_limit_minutes }}"
+                          {{#unless realm_allow_message_editing}}disabled{{/unless}}/>&nbsp;
+                        <span class="time-unit-text">
+                            {{t "{realm_message_content_edit_limit_minutes, plural, one {minute} other {minutes}}"}}
+                        </span>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-moving-msgs" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Moving messages" }}
+                    {{> ../help_link_widget link="/help/restrict-moving-messages" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="moving-msgs" }}
+            </div>
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_topics_group"
+              label=group_setting_labels.can_move_messages_between_topics_group}}
+
+            <div class="input-group time-limit-setting">
+                <label for="id_realm_move_messages_within_stream_limit_seconds" class="settings-field-label">{{t "Time limit for editing topics" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
+                <select name="realm_move_messages_within_stream_limit_seconds" id="id_realm_move_messages_within_stream_limit_seconds" class="prop-element settings_select" data-setting-widget-type="time-limit">
+                    {{#each msg_move_limit_dropdown_values}}
+                        <option value="{{value}}">{{text}}</option>
+                    {{/each}}
+                </select>
+                <div class="dependent-settings-block">
+                    <label for="id_realm_move_messages_within_stream_limit_minutes" class="inline-block realm-time-limit-label">
+                        {{t 'Time limit'}}:&nbsp;
+                    </label>
+                    <input type="text" id="id_realm_move_messages_within_stream_limit_minutes"
+                      name="realm_move_messages_within_stream_limit_minutes"
+                      class="time-limit-custom-input"
+                      autocomplete="off"/>&nbsp;
+                    <span class="time-unit-text">
+                        {{t "{realm_move_messages_within_stream_limit_minutes, plural, one {minute} other {minutes}}"}}
+                    </span>
+                </div>
+            </div>
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_move_messages_between_channels_group"
+              label=group_setting_labels.can_move_messages_between_channels_group}}
+
+            <div class="input-group time-limit-setting">
+                <label for="id_realm_move_messages_between_streams_limit_seconds" class="settings-field-label">{{t "Time limit for moving messages between channels" }} <i>({{t "does not apply to moderators and administrators" }})</i></label>
+                <select name="realm_move_messages_between_streams_limit_seconds" id="id_realm_move_messages_between_streams_limit_seconds" class="prop-element bootstrap-focus-style settings_select" data-setting-widget-type="time-limit">
+                    {{#each msg_move_limit_dropdown_values}}
+                        <option value="{{value}}">{{text}}</option>
+                    {{/each}}
+                </select>
+                <div class="dependent-settings-block">
+                    <label for="id_realm_move_messages_between_streams_limit_minutes" class="inline-block realm-time-limit-label">
+                        {{t 'Time limit'}}:&nbsp;
+                    </label>
+                    <input type="text" id="id_realm_move_messages_between_streams_limit_minutes"
+                      name="realm_move_messages_between_streams_limit_minutes"
+                      class="time-limit-custom-input"
+                      autocomplete="off"/>&nbsp;
+                    <span class="time-unit-text">
+                        {{t "{realm_move_messages_between_streams_limit_minutes, plural, one {minute} other {minutes}}"}}
+                    </span>
+                </div>
+            </div>
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_resolve_topics_group"
+              label=group_setting_labels.can_resolve_topics_group}}
+        </div>
+
+        <div id="org-msg-deletion" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message deletion" }}
+                    {{> ../help_link_widget link="/help/delete-a-message" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="msg-deletion" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_any_message_group"
+                  label=group_setting_labels.can_delete_any_message_group}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_delete_own_message_group"
+                  label=group_setting_labels.can_delete_own_message_group}}
+
+                <div class="input-group time-limit-setting">
+                    <label for="id_realm_message_content_delete_limit_seconds" class="settings-field-label">
+                        {{t "Time limit for deleting messages" }} <i>({{t "does not apply to users who can delete any message" }})</i>
+                    </label>
+                    <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element bootstrap-focus-style settings_select" data-setting-widget-type="time-limit">
+                        {{#each msg_delete_limit_dropdown_values}}
+                            <option value="{{value}}">{{text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-settings-block">
+                        <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t "Time limit" }}:&nbsp;
+                        </label>
+                        <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                          name="realm_message_content_delete_limit_minutes"
+                          class="time-limit-custom-input"
+                          autocomplete="off"
+                          value="{{ realm_message_content_delete_limit_minutes }}"/>&nbsp;
+                        <span class="time-unit-text">{{t "{realm_message_content_delete_limit_minutes, plural, one {minute} other {minutes}}"}}</span>
+                    </div>
+                </div>
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_set_delete_message_policy_group"
+                  label=group_setting_labels.can_set_delete_message_policy_group}}
+            </div>
+        </div>
+
+        <div id="org-user-identity" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "User identity" }}
+                    {{> ../help_link_widget link="/help/restrict-name-and-email-changes" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="user-identity" }}
+            </div>
+            <div class="inline-block organization-permissions-parent">
+                {{> settings_checkbox
+                  setting_name="realm_require_unique_names"
+                  prefix="id_"
+                  is_checked=realm_require_unique_names
+                  label=admin_settings_label.realm_require_unique_names}}
+
+                {{> settings_checkbox
+                  setting_name="realm_name_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_name_changes_disabled
+                  label=admin_settings_label.realm_name_changes_disabled}}
+
+                {{> settings_checkbox
+                  setting_name="realm_email_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_email_changes_disabled
+                  label=admin_settings_label.realm_email_changes_disabled}}
+
+                {{> settings_checkbox
+                  setting_name="realm_avatar_changes_disabled"
+                  prefix="id_"
+                  is_checked=realm_avatar_changes_disabled
+                  label=admin_settings_label.realm_avatar_changes_disabled}}
+
+            </div>
+        </div>
+
+        <div id="org-guest-settings" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Guests" }}</h3>
+                {{> settings_save_discard_widget section_name="guest-settings" }}
+            </div>
+
+            <div class="inline-block organization-permissions-parent">
+                {{> settings_checkbox
+                  setting_name="realm_enable_guest_user_indicator"
+                  prefix="id_"
+                  is_checked=realm_enable_guest_user_indicator
+                  label=admin_settings_label.realm_enable_guest_user_indicator}}
+
+                {{> settings_checkbox
+                  setting_name="realm_enable_guest_user_dm_warning"
+                  prefix="id_"
+                  is_checked=realm_enable_guest_user_dm_warning
+                  label=admin_settings_label.realm_enable_guest_user_dm_warning}}
+
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_access_all_users_group"
+                  label=group_setting_labels.can_access_all_users_group
+                  value_type="number"
+                  help_link="/help/guest-users#configure-whether-guests-can-see-all-other-users"}}
+            </div>
+        </div>
+
+        <div id="org-other-permissions" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Other permissions" }}</h3>
+                {{> settings_save_discard_widget section_name="other-permissions" }}
+            </div>
+            <div class="m-10 inline-block organization-permissions-parent">
+                {{#if is_plan_self_hosted}}
+                    {{> group_setting_value_pill_input
+                      setting_name="realm_can_manage_billing_group"
+                      label=group_setting_labels.can_manage_billing_group
+                      help_link="https://zulip.com//help/self-hosted-billing"
+                      }}
+                {{else}}
+                    {{> group_setting_value_pill_input
+                      setting_name="realm_can_manage_billing_group"
+                      label=group_setting_labels.can_manage_billing_group
+                      help_link="/help/zulip-cloud-billing"
+                      }}
+                {{/if}}
+
+                <div class="disabled-unfinished-feature"
+                  {{#unless server_can_summarize_topics}}style="display: none"{{/unless}}>
+                    {{#unless server_can_summarize_topics}}
+                        <div class="tip">
+                            {{#if is_plan_self_hosted}}
+                            {{t "AI summaries are not enabled on this server."}}
+                            {{else}}
+                            {{t "AI summaries are not available on Zulip Cloud yet."}}
+                            {{/if}}
+                        </div>
+                    {{/unless}}
+                    {{> group_setting_value_pill_input
+                      setting_name="realm_can_summarize_topics_group"
+                      label=group_setting_labels.can_summarize_topics_group}}
+                </div>
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_write_only_bots_group"
+                  label=group_setting_labels.can_create_write_only_bots_group}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_bots_group"
+                  label=group_setting_labels.can_create_bots_group}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_add_custom_emoji_group"
+                  label=group_setting_labels.can_add_custom_emoji_group}}
+            </div>
+        </div>
+    </form>
+</div>

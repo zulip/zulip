@@ -24,15 +24,15 @@ The Zulip plugin is now registered with Redmine!
 
 ### Global settings
 
-1. On your {{ settings_html|safe }}, create a new Redmine bot.
+1. {!create-an-incoming-webhook.md!}
 
-2. Log into your Redmine instance, click on **Administration** in the top-left
+2. Log in to your Redmine instance, click on **Administration** in the top-left
 corner, then click on **Plugins**.
 
 3. Find the **Redmine Zulip** plugin, and click **Configure**. Fill
 out the following fields:
 
-    * Zulip URL (e.g `https://yourZulipDomain.zulipchat.com/`)
+    * Zulip URL (e.g `{{ zulip_url }}`)
     * Zulip Bot E-mail
     * Zulip Bot API key
     * Stream name __*__

@@ -5,7 +5,6 @@ CORPORATE = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0085_fix_bots_with_none_bot_type"),
     ]

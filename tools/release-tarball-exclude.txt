@@ -1,14 +1,14 @@
 .gitignore
 .gitattributes
-static/assets
 corporate/
 static/
+web/
 tools/
 zilencer/
 templates/corporate
 templates/zilencer
-puppet/zulip_ops
+puppet/kandra
 zproject/dev_settings.py
 zproject/test_settings.py
 zerver/tests
-frontend_tests
+starlight_help/

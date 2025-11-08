@@ -1,0 +1,18 @@
+{{#if zulip_icon}}
+<i class="navbar-icon zulip-icon zulip-icon-{{zulip_icon}}" aria-hidden="true"></i>
+{{else if icon}}
+<i class="navbar-icon fa fa-{{icon}}" aria-hidden="true"></i>
+{{/if}}
+{{#if title}}
+<span class="message-header-navbar-title">{{title}}</span>
+{{/if}}
+{{#if title_html}}
+<span class="message-header-navbar-title">{{{title_html}}}</span>
+{{/if}}
+{{#if stream}}
+    {{#if stream.is_archived}}
+    <span class="message-header-archived">
+        <i class="archived-indicator">({{t 'archived' }})</i>
+    </span>
+    {{/if}}
+{{/if}}

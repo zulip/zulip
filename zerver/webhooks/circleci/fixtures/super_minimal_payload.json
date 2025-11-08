@@ -1,9 +1,0 @@
-{
-    "payload": {
-        "branch": "master",
-        "reponame": "zulip",
-        "status": "failed",
-        "build_url": "https:\/\/circleci.com\/gh\/zulip\/zulip\/48056",
-        "username": "timabbott"
-    }
-}

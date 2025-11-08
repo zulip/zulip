@@ -1,0 +1,52 @@
+diff --git a/index.js b/index.js
+index 8cc85d49192c244d6f895ee38bfca59bec7f78f5..9f7789da1d8de0dd845d08c3be3825016b5a2253 100644
+--- a/index.js
++++ b/index.js
+@@ -183,12 +183,14 @@ module.exports = stylelint.createPlugin(
+           (blacklist.indexOf(val) > -1 || val === "all")
+         ) {
+           const index = declarationValueIndex(decl) + node.sourceIndex;
++          const endIndex = index + node.value.length;
+           stylelint.utils.report({
+             ruleName,
+             result,
+             node: decl,
+             message: messages.rejected("transition", node.value),
+             index,
++            endIndex,
+           });
+         }
+       });
+@@ -217,12 +219,15 @@ module.exports = stylelint.createPlugin(
+         });
+ 
+         if (nodes.length && transitionProp.length === 0) {
++          const index = declarationValueIndex(decl) + nodes[0].index;
++          const endIndex = index + nodes[0].value.length;
+           stylelint.utils.report({
+             ruleName,
+             result,
+             node: decl,
+             message: messages.rejected("transition", "all"),
+-            index: declarationValueIndex(decl) + nodes[0].index,
++            index,
++            endIndex,
+           });
+           return;
+         }
+@@ -230,6 +235,7 @@ module.exports = stylelint.createPlugin(
+ 
+       for (const prop of nodes) {
+         const index = declarationValueIndex(decl) + prop.index;
++        const endIndex = index + prop.value.length;
+         const val = unprefixed(prop.value);
+         if (
+           ignored.indexOf(val) === -1 &&
+@@ -241,6 +247,7 @@ module.exports = stylelint.createPlugin(
+             node: decl,
+             message: messages.rejected("transition", prop.value),
+             index,
++            endIndex,
+           });
+         }
+       }

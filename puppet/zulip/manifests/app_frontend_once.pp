@@ -2,51 +2,84 @@
 # in a cluster.
 
 class zulip::app_frontend_once {
-  file { '/etc/cron.d/send-digest-emails':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/send-digest-emails',
+  include zulip::hooks::send_zulip_update_announcements
+
+  $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
+  $proxy_port = zulipconf('http_proxy', 'port', '4750')
+  if $proxy_host != '' and $proxy_port != '' {
+    $proxy = "http://${proxy_host}:${proxy_port}"
+  } else {
+    $proxy = ''
+  }
+  file { "${zulip::common::supervisor_conf_dir}/zulip-once.conf":
+    ensure  => file,
+    require => [Package[supervisor], Exec['stage_updated_sharding']],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/supervisor/zulip-once.conf.template.erb'),
+    notify  => Service[$zulip::common::supervisor_service],
   }
 
-  file { '/etc/cron.d/update-analytics-counts':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/update-analytics-counts',
+  # Every-hour
+  zulip::cron { 'update-analytics-counts':
+    minute => '5',
+  }
+  zulip::cron { 'check-analytics-state':
+    minute => '30',
+  }
+  zulip::cron { 'promote-new-full-members':
+    minute => '35',
+  }
+  zulip::cron { 'send_zulip_update_announcements':
+    minute => '47',
   }
 
-  file { '/etc/cron.d/check-analytics-state':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/check-analytics-state',
+  # Daily
+  zulip::cron { 'soft-deactivate-users':
+    hour   => '5',
+    minute => '0',
+    manage => 'soft_deactivate_users -d',
+  }
+  zulip::cron { 'delete-old-unclaimed-attachments':
+    hour   => '5',
+    minute => '0',
+    manage => 'delete_old_unclaimed_attachments -f',
+  }
+  zulip::cron { 'archive-messages':
+    hour   => '6',
+    minute => '0',
+  }
+  zulip::cron { 'send-digest-emails':
+    hour   => '18',
+    minute => '0',
+    manage => 'enqueue_digest_emails',
+  }
+  # Most deploys will re-run this for all streams, daily; large
+  # deploys may set this to a number >= 25 to only update streams with
+  # recent potential changes.
+  $update_subscriber_count_incremental = zulipconf('application_server', 'update_subscriber_count_incremental', '')
+  if $update_subscriber_count_incremental != '' {
+    $update_subscriber_count_arg = " --since ${update_subscriber_count_incremental}"
+  } else {
+    $update_subscriber_count_arg = ''
+  }
+  zulip::cron { 'update_subscriber_counts':
+    hour   => '6',
+    minute => '0',
+    manage => "update_subscriber_counts${update_subscriber_count_arg}"
+  }
+  zulip::cron { 'clearsessions':
+    hour   => '22',
+    minute => '22',
   }
 
-  file { '/etc/cron.d/soft-deactivate-users':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/soft-deactivate-users',
+  # Weekly
+  zulip::cron { 'update-channel-recently-active-status':
+    hour   => '5',
+    minute => '0',
+    dow    => '0',
+    manage => 'update_channel_recently_active_status',
   }
 
-  file { '/etc/cron.d/archive-messages':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/archive-messages',
-  }
-
-  file { '/etc/cron.d/clearsessions':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/clearsessions',
-  }
 }

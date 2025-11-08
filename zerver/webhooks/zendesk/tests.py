@@ -1,22 +1,23 @@
-from typing import Dict
+from typing_extensions import override
 
 from zerver.lib.test_classes import WebhookTestCase
 
 
 class ZenDeskHookTests(WebhookTestCase):
-    STREAM_NAME = "zendesk"
+    CHANNEL_NAME = "zendesk"
     URL_TEMPLATE = "/api/v1/external/zendesk?stream={stream}"
 
-    def get_payload(self, fixture_name: str) -> Dict[str, str]:
+    @override
+    def get_payload(self, fixture_name: str) -> dict[str, str]:
         return {
             "ticket_title": self.TICKET_TITLE,
             "ticket_id": str(self.TICKET_ID),
             "message": self.MESSAGE,
-            "stream": self.STREAM_NAME,
+            "stream": self.CHANNEL_NAME,
         }
 
     def do_test(self, expected_topic: str, expected_message: str) -> None:
-        self.api_stream_message(
+        self.api_channel_message(
             self.test_user,
             "",
             expected_topic,

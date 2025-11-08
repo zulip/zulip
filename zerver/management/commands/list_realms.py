@@ -2,6 +2,8 @@ import sys
 from argparse import ArgumentParser
 from typing import Any
 
+from typing_extensions import override
+
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm
 
@@ -14,11 +16,13 @@ Usage examples:
 ./manage.py list_realms
 ./manage.py list_realms --all"""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--all", action="store_true", help="Print all the configuration settings of the realms."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realms = Realm.objects.all()
 
@@ -35,12 +39,12 @@ Usage examples:
                 if realm.deactivated:
                     print(
                         self.style.ERROR(
-                            outer_format.format(realm.id, display_string_id, realm.name, realm.uri)
+                            outer_format.format(realm.id, display_string_id, realm.name, realm.url)
                         )
                     )
                     deactivated = True
                 else:
-                    print(outer_format.format(realm.id, display_string_id, realm.name, realm.uri))
+                    print(outer_format.format(realm.id, display_string_id, realm.name, realm.url))
             if deactivated:
                 print(self.style.WARNING("\nRed rows represent deactivated realms."))
             sys.exit(0)
@@ -50,10 +54,11 @@ Usage examples:
         for realm in realms:
             # Start with just all the fields on the object, which is
             # hacky but doesn't require any work to maintain.
-            realm_dict = realm.__dict__
+            realm_dict = vars(realm).copy()
             # Remove a field that is confusingly useless
             del realm_dict["_state"]
-            # Fix the one bitfield to display useful data
+
+            # This is not an attribute of realm strictly speaking, but valuable info to include.
             realm_dict["authentication_methods"] = str(realm.authentication_methods_dict())
 
             for key in identifier_attributes:

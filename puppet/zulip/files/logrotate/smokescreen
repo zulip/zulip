@@ -1,0 +1,10 @@
+/var/log/zulip/smokescreen.log
+{
+    missingok
+    rotate 14
+    daily
+    compress
+    delaycompress
+    notifempty
+    copytruncate
+}

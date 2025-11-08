@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+import argparse
+import hashlib
+import os
+import re
+import sys
+import tempfile
+from typing import IO, cast
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+import boto3.session
+from mypy_boto3_s3 import S3Client
+from natsort import natsorted
+
+
+def sha256_contents(f: IO[bytes]) -> str:
+    sha256_hash = hashlib.sha256()
+    for byte_block in iter(lambda: f.read(4096), b""):
+        sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+
+parser = argparse.ArgumentParser(description="Upload a Zulip release")
+parser.add_argument(
+    dest="filename",
+    help="Tarball to upload",
+    metavar="FILE",
+)
+args = parser.parse_args()
+if not os.path.exists(args.filename):
+    parser.error(f"File does not exist: {args.filename}")
+new_basename = os.path.basename(args.filename)
+if not new_basename.startswith("zulip-server-") or not new_basename.endswith(".tar.gz"):
+    parser.error("File does not match zulip-server-*.tar.gz")
+
+session = boto3.session.Session()
+client: S3Client = session.client("s3")
+bucket = session.resource("s3", region_name="us-east-1").Bucket("zulip-download")
+
+file_hashes: dict[str, str] = {}
+with open(args.filename, "rb") as new_file:
+    print(f"Hashing {new_basename}..")
+    file_hashes[new_basename] = sha256_contents(new_file)
+
+print("Fetching existing hashes..")
+for obj_summary in bucket.objects.filter(Prefix="server/zulip-server-"):
+    head = client.head_object(Bucket=bucket.name, Key=obj_summary.key)
+    assert obj_summary.key.startswith("server/")
+    filename = obj_summary.key.removeprefix("server/")
+    if filename in file_hashes:
+        print(f"  {filename} was already uploaded, skipping existing hash")
+        continue
+    metadata = head["Metadata"]
+    if "sha256sum" not in metadata:
+        print(f"  {filename} does not have SHA256 metadata!")
+        with tempfile.TemporaryFile() as obj_contents:
+            print("    Downloading..")
+            bucket.download_fileobj(Key=obj_summary.key, Fileobj=obj_contents)
+            obj_contents.seek(0)
+            print("    Hashing..")
+            metadata["sha256sum"] = sha256_contents(obj_contents)
+            print(f"    Got {metadata['sha256sum']}")
+
+        print("    Updating..")
+        obj_summary.copy_from(
+            ContentType=head["ContentType"],
+            CopySource=f"{bucket.name}/{obj_summary.key}",
+            Metadata=metadata,
+            MetadataDirective="REPLACE",
+        )
+
+    file_hashes[filename] = metadata["sha256sum"]
+
+ordered_filenames = cast(list[str], natsorted(file_hashes.keys(), reverse=True))
+assert ordered_filenames[0] == "zulip-server-latest.tar.gz"
+
+print(f"Uploading {new_basename}..")
+extra = {
+    "Metadata": {"sha256sum": file_hashes[new_basename]},
+    "ACL": "public-read",
+    "ContentType": "application/gzip",
+}
+bucket.upload_file(
+    Filename=args.filename,
+    Key=f"server/{new_basename}",
+    ExtraArgs=extra,
+)
+
+if (
+    next(name for name in ordered_filenames if re.match(r"^zulip-server-(\d+\.\d+)\.tar.gz$", name))
+    == new_basename
+):
+    print("This looks like the most recent full release; copying to zulip-server-latest.tar.gz..")
+    bucket.copy(
+        CopySource={"Bucket": bucket.name, "Key": f"server/{new_basename}"},
+        Key="server/zulip-server-latest.tar.gz",
+        ExtraArgs=extra,
+    )
+    file_hashes["zulip-server-latest.tar.gz"] = file_hashes[new_basename]
+else:
+    print("Not copying to zulip-server-latest.tar.gz!")
+
+print("Updating SHA256SUMS.txt..")
+contents = ""
+for ordered_filename in ordered_filenames:
+    # natsorted type annotation is insufficiently generic
+    assert isinstance(ordered_filename, str)
+    contents += f"{file_hashes[ordered_filename]}  {ordered_filename}\n"
+bucket.put_object(
+    ACL="public-read",
+    Body=contents.encode(),
+    ContentType="text/plain",
+    Key="server/SHA256SUMS.txt",
+)

@@ -1,0 +1,34 @@
+<div class="custom_user_field" name="{{ field.name }}" data-field-id="{{ field.id }}">
+    <span class="custom-user-field-label-wrapper {{#if field.required}}required-field-wrapper{{/if}}">
+        <label class="settings-field-label inline-block" for="id_custom_profile_field_input_{{ field.id }}">{{ field.name }}</label>
+        <span class="required-symbol {{#unless is_empty_required_field}}hidden{{/unless}}"> *</span>
+    </span>
+    <div class="alert-notification custom-field-status"></div>
+    <div class="settings-profile-user-field-hint">{{ field.hint }}</div>
+    <div class="settings-profile-user-field {{#if is_empty_required_field}}empty-required-field{{/if}} {{#unless editable_by_user}}not-editable-by-user-input-wrapper{{/unless}}{{#if (and is_date_field editable_by_user)}}editable-date-field{{/if}}">
+        {{#if is_long_text_field}}
+        <textarea id="id_custom_profile_field_input_{{ field.id }}" maxlength="500" class="custom_user_field_value settings_textarea" name="{{ field.id }}" {{#unless editable_by_user}}disabled{{/unless}}>{{ field_value.value }}</textarea>
+        {{else if is_select_field}}
+        <select id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style" name="{{ field.id }}" {{#unless editable_by_user}}disabled{{/unless}}>
+            <option value=""></option>
+            {{#each field_choices}}
+                <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
+            {{/each}}
+        </select>
+        {{else if is_user_field }}
+        <div class="pill-container person_picker {{#unless editable_by_user}}not-editable-by-user disabled{{/unless}}" name="{{ field.id }}">
+            <div class="input" {{#if editable_by_user}}contenteditable="true"{{/if}}></div>
+        </div>
+        {{else if is_date_field }}
+        <input class="custom_user_field_value datepicker {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" data-field-id="{{ field.id }}" type="text"
+          value="{{ field_value.value }}" {{#unless editable_by_user}}disabled{{/unless}}/>
+        {{#if editable_by_user}}<span class="remove_date"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></span>{{/if}}
+        {{else if is_url_field }}
+        <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_url_input{{else}}settings_url_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" {{#unless editable_by_user}}disabled{{/unless}}/>
+        {{else if is_pronouns_field}}
+        <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
+        {{else}}
+        <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
+        {{/if}}
+    </div>
+</div>

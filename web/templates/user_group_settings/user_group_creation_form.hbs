@@ -1,0 +1,81 @@
+<div class="hide two-pane-settings-right-simplebar-container" id="user-group-creation" tabindex="-1" role="dialog"
+  aria-label="{{t 'User group creation' }}">
+    <form id="user_group_creation_form">
+        <div class="two-pane-settings-creation-simplebar-container" data-simplebar data-simplebar-tab-index="-1">
+            <div class="alert user_group_create_info"></div>
+            <div id="user_group_creating_indicator"></div>
+            <div class="user-group-creation-body">
+                <div class="configure_user_group_settings user_group_creation">
+                    <section id="user-group-name-container">
+                        <label for="create_user_group_name" class="settings-field-label">
+                            {{t "User group name" }}
+                        </label>
+                        <input type="text" name="user_group_name" id="create_user_group_name" class="settings_text_input"
+                          placeholder="{{t 'User group name' }}" value="" autocomplete="off" maxlength="{{ max_user_group_name_length }}"/>
+                        <div id="user_group_name_error" class="user_group_creation_error"></div>
+                        <a id="deactivated_group_rename"></a>
+                    </section>
+                    <section id="user-group-description-container">
+                        <label for="create_user_group_description" class="settings-field-label">
+                            {{t "User group description" }}
+                        </label>
+                        <input type="text" name="user_group_description" id="create_user_group_description" class="settings_text_input"
+                          placeholder="{{t 'User group description' }}" value="" autocomplete="off" />
+                    </section>
+                    <section id="user-group-permission-container">
+                        <div class="group-permissions settings-subsection-parent" id="new_group_permission_settings">
+                            <div class="subsection-header">
+                                <h3 class="user_group_setting_subsection_title">{{t "Group permissions" }}
+                                </h3>
+                            </div>
+
+                            {{> group_permissions prefix="id_new_group_" group_setting_labels=all_group_setting_labels.group}}
+                        </div>
+                    </section>
+                </div>
+                <div class="user_group_members_container user_group_creation">
+                    <section id="choose_member_section">
+                        <h4 class="user_group_setting_subsection_title">
+                            <label for="people_to_add_in_group">{{t "Choose members" }}</label>
+                        </h4>
+                        <div id="user_group_membership_error" class="user_group_creation_error"></div>
+                        <div class="controls" id="people_to_add_in_group"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <div class="settings-sticky-footer">
+            <div class="settings-sticky-footer-left">
+                {{> ../components/action_button
+                  label=(t "Back to settings")
+                  custom_classes="hide"
+                  attention="quiet"
+                  intent="brand"
+                  id="user_group_go_to_configure_settings"
+                  }}
+            </div>
+            <div class="settings-sticky-footer-right">
+                {{> ../components/action_button
+                  label=(t "Cancel")
+                  custom_classes="create_user_group_cancel inline-block"
+                  attention="quiet"
+                  intent="neutral"
+                  }}
+                {{> ../components/action_button
+                  label=(t "Create")
+                  custom_classes="finalize_create_user_group hide"
+                  attention="quiet"
+                  intent="brand"
+                  type="submit"
+                  }}
+                {{> ../components/action_button
+                  label=(t "Continue to add members")
+                  id="user_group_go_to_members"
+                  custom_classes="inline-block"
+                  attention="quiet"
+                  intent="brand"
+                  }}
+            </div>
+        </div>
+    </form>
+</div>

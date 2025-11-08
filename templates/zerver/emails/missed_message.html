@@ -1,0 +1,58 @@
+{% extends "zerver/emails/email_base_messages.html" %}
+
+{% block content %}
+    {% if show_message_content %}
+        {% for recipient_block in messages %}
+            {% for sender_block in recipient_block.senders %}
+                <div class="missed_message">
+                    {% for message_block in sender_block.content %}
+                        {{ message_block.html|safe }}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% else %}
+    <div class="missed_message no-content-explanation">
+    {% if message_content_disabled_by_realm %}
+    {% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}This email does not include message content because your organization <a class="content_disabled_help_link" href="{{ help_url }}">hides message content</a> in email notifications.{% endtrans %}
+    {% elif message_content_disabled_by_user %}
+    {% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}This email does not include message content because you have chosen to <a class="content_disabled_help_link" href="{{ help_url }}">hide message content</a> in email notifications.{% endtrans %}
+    {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block manage_preferences %}
+<div class="email-preferences">
+    &mdash;<br />
+    {% if personal_mentioned %}
+    {% trans %}You are receiving this because you were personally mentioned.{% endtrans %}<br />
+    {% elif mentioned_user_group_name %}
+    {% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned.{% endtrans %}<br />
+    {% elif topic_wildcard_mentioned_in_followed_topic %}
+    {% trans %}You are receiving this because all topic participants were mentioned in #{{ channel_name }} > {{ topic_name }}.{% endtrans %}<br />
+    {% elif stream_wildcard_mentioned_in_followed_topic %}
+    {% trans %}You are receiving this because you have wildcard mention notifications enabled for topics you follow.{% endtrans %}<br />
+    {% elif topic_wildcard_mentioned %}
+    {% trans %}You are receiving this because all topic participants were mentioned in #{{ channel_name }} > {{ topic_name }}.{% endtrans %}<br />
+    {% elif stream_wildcard_mentioned %}
+    {% trans %}You are receiving this because everyone was mentioned in #{{ channel_name }}.{% endtrans %}<br />
+    {% elif followed_topic_email_notify %}
+    {% trans %}You are receiving this because you have email notifications enabled for topics you follow.{% endtrans %}<br />
+    {% elif stream_email_notify %}
+    {% trans %}You are receiving this because you have email notifications enabled for #{{ channel_name }}.{% endtrans %}<br />
+    {% endif %}
+    {% if reply_to_zulip %}
+    {% trans notif_url=realm_url + "/#settings/notifications" %}Reply to this email directly, <a href="{{ narrow_url }}">view it in {{ realm_name }} Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %}
+    {% elif not show_message_content %}
+    {% trans notif_url=realm_url + "/#settings/notifications" %}<a href="{{ narrow_url }}">View or reply in {{ realm_name }} Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %} <br />
+    {% else %}
+    {% trans notif_url=realm_url + "/#settings/notifications" %}<a href="{{ narrow_url }}">Reply in {{ realm_name }} Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %} <br />
+    <br />
+    {% trans url="https://zulip.readthedocs.io/en/latest/production/email-gateway.html" %}
+    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href="{{ url }}">help</a>).
+    {% endtrans %}
+
+    {% endif %}
+</div>
+{% endblock %}

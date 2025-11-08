@@ -1,8 +1,10 @@
+from collections.abc import Iterable
 from typing import Any
 
 from django.core.management.base import CommandParser
+from typing_extensions import override
 
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
 from zerver.lib.message import maybe_update_first_visible_message_id
 from zerver.models import Realm
 
@@ -10,6 +12,7 @@ from zerver.models import Realm
 class Command(ZulipBaseCommand):
     help = """Calculate the value of first visible message ID and store it in cache"""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument(
@@ -20,11 +23,13 @@ class Command(ZulipBaseCommand):
             required=True,
         )
 
+    @override
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
         target_realm = self.get_realm(options)
 
         if target_realm is None:
-            realms = Realm.objects.all()
+            realms: Iterable[Realm] = Realm.objects.all()
         else:
             realms = [target_realm]
 

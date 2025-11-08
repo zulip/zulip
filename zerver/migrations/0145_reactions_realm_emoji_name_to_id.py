@@ -1,15 +1,15 @@
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Any
 
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def realm_emoji_name_to_id(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Reaction = apps.get_model("zerver", "Reaction")
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
-    realm_emoji_by_realm_id: Dict[int, Dict[str, Any]] = defaultdict(dict)
+    realm_emoji_by_realm_id: dict[int, dict[str, Any]] = defaultdict(dict)
     for realm_emoji in RealmEmoji.objects.all():
         realm_emoji_by_realm_id[realm_emoji.realm_id][realm_emoji.name] = {
             "id": str(realm_emoji.id),
@@ -33,7 +33,7 @@ def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             reaction.save()
 
 
-def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Reaction = apps.get_model("zerver", "Reaction")
     for reaction in Reaction.objects.filter(reaction_type="realm_emoji"):
         reaction.emoji_code = reaction.emoji_name
@@ -41,7 +41,6 @@ def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0144_remove_realm_create_generic_bot_by_admins_only"),
     ]

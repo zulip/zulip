@@ -1,0 +1,14 @@
+{{#with user_topic}}
+<tr data-stream-id="{{stream_id}}" data-stream="{{stream}}" data-topic="{{topic}}" data-date-updated="{{date_updated_str}}" data-visibility-policy="{{visibility_policy}}">
+    <td class="user-topic-stream">{{stream}}</td>
+    <td class="white-space-preserve-wrap user-topic {{#if ../is_empty_string_topic}}empty-topic-display{{/if}}">{{../topic_display_name}}</td>
+    <td>
+        <select class="settings_user_topic_visibility_policy list_select bootstrap-focus-style" data-setting-widget-type="number">
+            {{#each ../user_topic_visibility_policy_values}}
+                <option value='{{this.code}}' {{#if (eq this.code ../visibility_policy)}}selected{{/if}}>{{this.description}}</option>
+            {{/each}}
+        </select>
+    </td>
+    <td class="topic_date_updated">{{date_updated_str}}</td>
+</tr>
+{{/with}}

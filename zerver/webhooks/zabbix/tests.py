@@ -5,17 +5,17 @@ from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class ZabbixHookTests(WebhookTestCase):
-    STREAM_NAME = "zabbix"
+    CHANNEL_NAME = "zabbix"
     URL_TEMPLATE = "/api/v1/external/zabbix?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "zabbix"
+    WEBHOOK_DIR_NAME = "zabbix"
 
     def test_zabbix_alert_message(self) -> None:
         """
         Tests if zabbix alert is handled correctly
         """
-        expected_topic = "www.example.com"
+        expected_topic_name = "www.example.com"
         expected_message = "PROBLEM (Average) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
-        self.check_webhook("zabbix_alert", expected_topic, expected_message)
+        self.check_webhook("zabbix_alert", expected_topic_name, expected_message)
 
     def test_zabbix_invalid_payload_with_missing_data(self) -> None:
         """

@@ -3,8 +3,8 @@ class zulip::postgresql_base {
   include zulip::postgresql_common
   include zulip::process_fts_updates
 
-  case $::osfamily {
-    'debian': {
+  case $facts['os']['family'] {
+    'Debian': {
       $postgresql = "postgresql-${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/share/postgresql/${zulip::postgresql_common::version}"
       $postgresql_confdirs = [
@@ -16,11 +16,8 @@ class zulip::postgresql_base {
       $tsearch_datadir = "${postgresql_sharedir}/tsearch_data"
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_apt_repo'
-      $postgresql_restart = "pg_ctlcluster ${zulip::postgresql_common::version} main restart"
-      $postgresql_dict_dict = '/var/cache/postgresql/dicts/en_us.dict'
-      $postgresql_dict_affix = '/var/cache/postgresql/dicts/en_us.affix'
     }
-    'redhat': {
+    'RedHat': {
       $postgresql = "postgresql${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/pgsql-${zulip::postgresql_common::version}/share"
       $postgresql_confdirs = [
@@ -32,28 +29,12 @@ class zulip::postgresql_base {
       $tsearch_datadir = "${postgresql_sharedir}/tsearch_data/"
       $pgroonga_setup_sql_path = "${postgresql_sharedir}/pgroonga_setup.sql"
       $setup_system_deps = 'setup_yum_repo'
-      $postgresql_restart = "systemctl restart postgresql-${zulip::postgresql_common::version}"
-      # TODO Since we can't find the PostgreSQL dicts directory on CentOS yet, we
-      # link directly to the hunspell directory.
-      $postgresql_dict_dict = '/usr/share/myspell/en_US.dic'
-      $postgresql_dict_affix = '/usr/share/myspell/en_US.aff'
     }
     default: {
       fail('osfamily not supported')
     }
   }
 
-  file { "${tsearch_datadir}/en_us.dict":
-    ensure  => 'link',
-    require => Package[$postgresql],
-    target  => $postgresql_dict_dict,
-  }
-  file { "${tsearch_datadir}/en_us.affix":
-    ensure  => 'link',
-    require => Package[$postgresql],
-    target  => $postgresql_dict_affix,
-
-  }
   file { "${tsearch_datadir}/zulip_english.stop":
     ensure  => file,
     require => Package[$postgresql],
@@ -61,55 +42,39 @@ class zulip::postgresql_base {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/postgresql/zulip_english.stop',
+    tag     => ['postgresql_upgrade'],
   }
-  file { "${zulip::common::nagios_plugins_dir}/zulip_postgresql":
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgresql',
-  }
+  zulip::nagios_plugins { 'zulip_postgresql': }
 
-  $pgroonga = zulipconf('machine', 'pgroonga', '')
-  if $pgroonga == 'enabled' {
+  $pgroonga = zulipconf('machine', 'pgroonga', false)
+  if $pgroonga {
     # Needed for optional our full text search system
-
-    # Removed 2020-12 in version 4.0; these lines can be removed when
-    # we drop support for upgrading from Zulip 3 or older.
-    package{"${postgresql}-pgroonga":
-      ensure  => 'purged',
-    }
-
     package{"${postgresql}-pgdg-pgroonga":
-      ensure  => 'installed',
-      require => [Package[$postgresql],
-                  Exec[$setup_system_deps]],
+      ensure  => latest,
+      require => [
+        Package[$postgresql],
+        Exec[$setup_system_deps]
+      ],
+      tag     => ['postgresql_upgrade'],
     }
-
-    file { $pgroonga_setup_sql_path:
-      ensure  => file,
+    exec { 'pgroonga-config':
       require => Package["${postgresql}-pgdg-pgroonga"],
-      owner   => 'postgres',
-      group   => 'postgres',
-      mode    => '0640',
-      source  => 'puppet:///modules/zulip/postgresql/pgroonga_setup.sql',
-    }
-
-    exec{'create_pgroonga_extension':
-      require => File[$pgroonga_setup_sql_path],
-      # lint:ignore:140chars
-      command => "bash -c 'cat ${pgroonga_setup_sql_path} | su postgres -c \"psql -v ON_ERROR_STOP=1 zulip\" && touch ${pgroonga_setup_sql_path}.applied'",
-      # lint:endignore
-      creates => "${pgroonga_setup_sql_path}.applied",
+      unless  => @("EOT"/$),
+          test -f ${pgroonga_setup_sql_path}.applied &&
+          test "$(dpkg-query --show --showformat='\${Version}' "${postgresql}-pgdg-pgroonga")" \
+             = "$(cat ${pgroonga_setup_sql_path}.applied)"
+          | EOT
+      command => "${facts['zulip_scripts_path']}/setup/pgroonga-config ${postgresql_sharedir}",
     }
   }
 
-  $s3_backups_key        = zulipsecret('secrets', 's3_backups_key', '')
-  $s3_backups_secret_key = zulipsecret('secrets', 's3_backups_secret_key', '')
-  $s3_backups_bucket     = zulipsecret('secrets', 's3_backups_bucket', '')
-  if $s3_backups_key != '' and $s3_backups_secret_key != '' and $s3_backups_bucket != '' {
+  $backups_s3_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
+  $backups_directory = zulipconf('postgresql', 'backups_directory', '')
+  if $backups_s3_bucket != '' or $backups_directory != '' {
     include zulip::postgresql_backups
+  } else {
+    file { '/etc/cron.d/pg_backup_and_purge':
+      ensure => absent,
+    }
   }
 }

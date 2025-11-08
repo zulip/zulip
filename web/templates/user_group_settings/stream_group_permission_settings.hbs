@@ -1,0 +1,21 @@
+<div class="settings-subsection-parent" data-stream-id="{{stream.stream_id}}">
+    <div class="subsection-header">
+        <h3>
+            {{> ../inline_decorated_channel_name stream=stream }}
+        </h3>
+        {{> ../settings/settings_save_discard_widget show_only_indicator=false }}
+    </div>
+
+    <div class="subsection-settings">
+        {{#each assigned_permissions}}
+            {{> ../settings/settings_checkbox
+              setting_name=setting_name
+              prefix=../id_prefix
+              is_checked=true
+              label=(lookup ../setting_labels setting_name)
+              is_disabled=(not can_edit)
+              tooltip_message=tooltip_message
+              }}
+        {{/each}}
+    </div>
+</div>

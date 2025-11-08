@@ -1,0 +1,19 @@
+{{#with stream}}
+<tr class="default_stream_row hidden-remove-button-row" data-stream-id="{{stream_id}}">
+    <td>
+        {{#if invite_only}}<i class="fa fa-lock" aria-hidden="true"></i>{{/if}}
+        <span class="default_stream_name">{{name}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td class="actions">
+        {{> ../components/icon_button
+          icon="close"
+          intent="danger"
+          custom_classes="remove-default-stream tippy-zulip-delayed-tooltip hidden-remove-button"
+          aria-label=(t "Remove from default")
+          data-tippy-content=(t "Remove from default")
+          }}
+    </td>
+    {{/if}}
+</tr>
+{{/with}}

@@ -1,0 +1,153 @@
+{
+  "data": [
+    {
+      "account_country": "US",
+      "account_name": "NORMALIZED",
+      "account_tax_ids": null,
+      "amount_due": 10000,
+      "amount_overpaid": 0,
+      "amount_paid": 0,
+      "amount_remaining": 10000,
+      "amount_shipping": 0,
+      "application": null,
+      "attempt_count": 0,
+      "attempted": false,
+      "auto_advance": true,
+      "automatic_tax": {
+        "disabled_reason": null,
+        "enabled": false,
+        "liability": null,
+        "provider": null,
+        "status": null
+      },
+      "automatically_finalizes_at": null,
+      "billing_reason": "manual",
+      "collection_method": "send_invoice",
+      "created": 1000000000,
+      "currency": "usd",
+      "custom_fields": null,
+      "customer": "cus_NORMALIZED",
+      "customer_address": null,
+      "customer_email": "user-0-test-realm-5@zulip.com",
+      "customer_name": null,
+      "customer_phone": null,
+      "customer_shipping": null,
+      "customer_tax_exempt": "none",
+      "customer_tax_ids": [],
+      "default_payment_method": null,
+      "default_source": null,
+      "default_tax_rates": [],
+      "description": null,
+      "discounts": [],
+      "due_date": 1000000000,
+      "effective_at": 1000000000,
+      "ending_balance": 0,
+      "footer": null,
+      "from_invoice": null,
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+      "id": "downgrade_small_realms_behind_on_payments_as_needed--Invoice.create.2.json",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
+      "issuer": {
+        "type": "self"
+      },
+      "last_finalization_error": null,
+      "latest_revision": null,
+      "lines": {
+        "data": [
+          {
+            "amount": 10000,
+            "currency": "usd",
+            "description": "Zulip Cloud Standard",
+            "discount_amounts": [],
+            "discountable": false,
+            "discounts": [],
+            "id": "downgrade_small_realms_behind_on_payments_as_needed--Invoice.finalize_invoice.2.json",
+            "invoice": "downgrade_small_realms_behind_on_payments_as_needed--Invoice.create.2.json",
+            "livemode": false,
+            "metadata": {},
+            "object": "line_item",
+            "parent": {
+              "invoice_item_details": {
+                "invoice_item": "ii_NORMALIZED",
+                "proration": false,
+                "proration_details": {
+                  "credited_items": null
+                },
+                "subscription": null
+              },
+              "subscription_item_details": null,
+              "type": "invoice_item_details"
+            },
+            "period": {
+              "end": 1000000000,
+              "start": 1000000000
+            },
+            "pretax_credit_amounts": [],
+            "pricing": {
+              "price_details": {
+                "price": "price_NORMALIZED",
+                "product": "prod_NORMALIZED"
+              },
+              "type": "price_details",
+              "unit_amount_decimal": "10000"
+            },
+            "quantity": 1,
+            "taxes": []
+          }
+        ],
+        "has_more": false,
+        "object": "list",
+        "total_count": 1,
+        "url": "/v1/invoices/downgrade_small_realms_behind_on_payments_as_needed--Invoice.create.2.json/lines"
+      },
+      "livemode": false,
+      "metadata": {},
+      "next_payment_attempt": null,
+      "number": "NORMALIZED",
+      "object": "invoice",
+      "on_behalf_of": null,
+      "parent": null,
+      "payment_settings": {
+        "default_mandate": null,
+        "payment_method_options": null,
+        "payment_method_types": null
+      },
+      "period_end": 1000000000,
+      "period_start": 1000000000,
+      "post_payment_credit_notes_amount": 0,
+      "pre_payment_credit_notes_amount": 0,
+      "receipt_number": null,
+      "rendering": {
+        "amount_tax_display": null,
+        "pdf": {
+          "page_size": "letter"
+        },
+        "template": null,
+        "template_version": null
+      },
+      "shipping_cost": null,
+      "shipping_details": null,
+      "starting_balance": 0,
+      "statement_descriptor": "Zulip Cloud Standard",
+      "status": "open",
+      "status_transitions": {
+        "finalized_at": 1000000000,
+        "marked_uncollectible_at": null,
+        "paid_at": null,
+        "voided_at": null
+      },
+      "subtotal": 10000,
+      "subtotal_excluding_tax": 10000,
+      "test_clock": null,
+      "total": 10000,
+      "total_discount_amounts": [],
+      "total_excluding_tax": 10000,
+      "total_pretax_credit_amounts": [],
+      "total_taxes": [],
+      "webhooks_delivered_at": 1000000000
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/invoices"
+}

@@ -1,0 +1,8 @@
+[program:prometheus_redis_exporter]
+command=/usr/local/bin/secret-env-wrapper REDIS_PASSWORD=redis_password <%= @bin %>
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/redis_exporter.log

@@ -1,0 +1,34 @@
+{{#each profile_fields}}
+    <li data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
+        {{#unless ../for_user_card_popover}}
+            <div class="name">{{this.name}}</div>
+        {{/unless}}
+        {{#if this.is_link}}
+            <div class="custom-user-url-field">
+                <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{this.value}}</a>
+                <span tabindex="0" class="copy-button copy-custom-field-url tippy-zulip-tooltip" aria-label="{{t 'Copy URL' }}" data-tippy-content="{{t 'Copy URL' }}">
+                    <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
+                </span>
+            </div>
+        {{else if this.is_external_account}}
+            <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
+                {{#if (eq this.subtype "github") }}
+                <i class="fa fa-github" aria-hidden="true"></i>
+                {{else if (eq this.subtype "twitter") }}
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+                {{/if}}
+                {{this.value}}
+            </a>
+        {{else if this.is_user_field}}
+            <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                <div class="input" contenteditable="false" style="display: none;"></div>
+            </div>
+        {{else}}
+            {{#if this.rendered_value}}
+            <span class="value rendered_markdown {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>
+            {{else}}
+            <span class="value {{#if ../for_user_card_popover}}tippy-zulip-tooltip"{{/if}} data-tippy-content="{{this.name}}">{{this.value}}</span>
+            {{/if}}
+        {{/if}}
+    </li>
+{{/each}}

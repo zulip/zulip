@@ -1,18 +1,27 @@
-Receive user reviews from your tracked apps on AppFollow
-using the Zulip AppFollow integration!
+# Zulip AppFollow integration
 
-1. {!create-stream.md!}
+Receive user reviews from your tracked apps on AppFollow!
 
-1. {!create-bot-construct-url-indented.md!}
+{start_tabs}
 
-1. In AppFollow, click on **Integrations** on the left sidebar, and click **Add new integration**.
-Click on your app under **Tracked apps**.
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-webhook-url-basic.md!}
+
+1. In AppFollow, go to **Integrations**, and select **Add new
+   integration**. Select your app under **Tracked apps**.
 
 1. Search for **WebHook URL**, and click **Add integration**.
 
-1. Set **Webhook URL** to the URL constructed above, and fill out the rest
-of the form. Click **Add integration**.
+1. Set **WebHook URL** to the URL generated above, and fill out the rest
+   of the form. Click **Add integration**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/appfollow/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

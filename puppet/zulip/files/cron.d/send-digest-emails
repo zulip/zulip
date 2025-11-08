@@ -1,6 +1,0 @@
-MAILTO=root
-
-# Send digest emails once a day. Time is in UTC.
-# NOTE: If the time of this cron job is changed, fix the ignore long queue time
-# period in `check-rabbitmq-queue`.
-0 18 * * *   zulip cd /home/zulip/deployments/current && ./manage.py enqueue_digest_emails

@@ -1,0 +1,17 @@
+<div class="input-group">
+    {{!-- We are using snake case for one of the classes since setting_name
+    is always in snake case and it would be weird to have the resultant id
+    be a mix of two types of cases. --}}
+    <label class="group-setting-label {{setting_name}}_label">
+        {{label}}
+        {{#if label_parens_text}}(<i>{{label_parens_text}}</i>){{/if}}
+        {{#if help_link}}
+        {{> ../help_link_widget link=help_link }}
+        {{/if}}
+    </label>
+    <div class="pill-container person_picker prop-element" id="{{#if prefix}}{{prefix}}{{else}}id_{{/if}}{{setting_name}}" data-setting-widget-type="group-setting-type">
+        <div class="input" contenteditable="true" data-placeholder="{{t 'Add roles, groups or users' }}">
+            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+        </div>
+    </div>
+</div>

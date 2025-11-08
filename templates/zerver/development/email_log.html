@@ -1,0 +1,73 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "dev-email-log" %}
+
+{% block title %}
+<title>Email log | Zulip Dev</title>
+{% endblock %}
+
+{% block content %}
+<div class="container" id="dev-email-log-container">
+    <div class="dev-email-log-header">
+        <div class="dev-email-log-actions">
+            All emails sent in the Zulip development environment are logged here. <a href="/emails/clear">Clear this log</a>
+            | <a href="/emails/generate">Manually generate most emails</a>
+            | <a href="#" class="open-forward-email-modal">Forward emails to an email account</a>
+        </div>
+        <div class="dev-email-log-text-only">
+            <label>
+                <input type="checkbox" autocomplete="off" id="toggle"/>
+                <strong>Show text only version</strong>
+            </label>
+        </div>
+    </div>
+    <div class="dev-email-log-content">
+        {{ log |safe }}
+    </div>
+    <div id="forward_email_modal" class="micromodal" aria-hidden="true">
+        <div class="modal__overlay" tabindex="-1">
+            <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+                <header class="modal__header">
+                    <h1 class="modal__title dialog_heading">
+                        {{ _('Forward emails to an email account') }}
+                    </h1>
+                    <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                </header>
+                <main class="modal__content">
+                    <div class="input-group">
+                        <form id="smtp_form">
+                            {{ csrf_input }}
+                            <div class="dev-forward-email-alert" id="smtp_form_status">
+                                Updated successfully.
+                            </div>
+                            <label for="forward">
+                                Forwards all emails sent in the development environment to an external mail account.
+                            </label>
+                            <label class="radio">
+                                <input name="forward" type="radio" value="enabled" {% if forward_address %}checked{% endif %}/>Yes
+                            </label>
+                            <label class="radio">
+                                <input name="forward" type="radio" value="disabled" {% if not forward_address %}checked{% endif %}/>No
+                            </label>
+                            <div id="forward_address_sections" {% if not forward_address %}class="hide"{% endif %} >
+                                <label for="forward_address"><strong>Address to which emails should be forwarded</strong></label>
+                                <input type="text" id="address" name="forward_address" placeholder="eg: your-email@example.com" value="{{forward_address}}"/>
+                            </div>
+                            <div class="dev-forward-email-alert">
+                                You must set up SMTP as described
+                                <a target="_blank" rel="noopener noreferrer" href="https://zulip.readthedocs.io/en/latest/subsystems/email.html#development-and-testing"> here</a>
+                                first before enabling this.
+                            </div>
+                        </form>
+                    </div>
+                </main>
+                <footer class="modal__footer">
+                    <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Close') }}</button>
+                    <button class="modal__button dialog_submit_button">
+                        <span>{{ _('Update') }}</span>
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

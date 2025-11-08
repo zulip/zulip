@@ -1,6 +1,6 @@
 import orjson
 
-from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
+from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
@@ -106,7 +106,7 @@ class AlertWordTests(ZulipTestCase):
         do_add_alert_words(user2, ["another"])
 
         realm_words = alert_words_in_realm(user2.realm)
-        self.assertEqual(len(realm_words), 2)
+        self.assert_length(realm_words, 2)
         self.assertEqual(set(realm_words.keys()), {user1.id, user2.id})
         self.assertEqual(set(realm_words[user1.id]), set(self.interesting_alert_word_list))
         self.assertEqual(set(realm_words[user2.id]), {"another"})
@@ -116,8 +116,8 @@ class AlertWordTests(ZulipTestCase):
         self.login_user(user)
 
         result = self.client_get("/json/users/me/alert_words")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["alert_words"], [])
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["alert_words"], [])
 
     def test_json_list_nonempty(self) -> None:
         user = self.get_user()
@@ -125,8 +125,8 @@ class AlertWordTests(ZulipTestCase):
 
         self.login_user(user)
         result = self.client_get("/json/users/me/alert_words")
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
     def test_json_list_add(self) -> None:
         user = self.get_user()
@@ -136,8 +136,14 @@ class AlertWordTests(ZulipTestCase):
             "/json/users/me/alert_words",
             {"alert_words": orjson.dumps(["one ", "\n two", "three"]).decode()},
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
+
+        result = self.client_post(
+            "/json/users/me/alert_words",
+            {"alert_words": orjson.dumps(["long" * 26]).decode()},
+        )
+        self.assert_json_error(result, "alert_words[0] is too long (limit: 100 characters)")
 
     def test_json_list_remove(self) -> None:
         user = self.get_user()
@@ -147,14 +153,14 @@ class AlertWordTests(ZulipTestCase):
             "/json/users/me/alert_words",
             {"alert_words": orjson.dumps(["one", "two", "three"]).decode()},
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
         result = self.client_delete(
             "/json/users/me/alert_words", {"alert_words": orjson.dumps(["one"]).decode()}
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"two", "three"})
 
     def message_does_alert(self, user: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so our user is notified"""
@@ -170,8 +176,8 @@ class AlertWordTests(ZulipTestCase):
             "/json/users/me/alert_words",
             {"alert_words": orjson.dumps(["one", "two", "three"]).decode()},
         )
-        self.assert_json_success(result)
-        self.assertEqual(set(result.json()["alert_words"]), {"one", "two", "three"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(set(response_dict["alert_words"]), {"one", "two", "three"})
 
         # Alerts in the middle of messages work.
         self.assertTrue(self.message_does_alert(user, "Normal alert one time"))
@@ -191,6 +197,11 @@ class AlertWordTests(ZulipTestCase):
         # We don't cause alerts for matches in URLs.
         self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one/ URLs"))
         self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one URLs"))
+
+        # We don't cause alerts for matches within a word.
+        self.assertFalse(
+            self.message_does_alert(user, "Don't alert on clone, twofold or seventytwofold")
+        )
 
     def test_update_alert_words(self) -> None:
         user = self.get_user()
@@ -212,7 +223,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "new ALERT for you",
             },
         )
@@ -225,7 +235,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "sorry false alarm",
             },
         )

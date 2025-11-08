@@ -4,10 +4,9 @@ import glob
 import os
 import re
 import sys
-from typing import List
 
 
-def validate_order(order: List[int], length: int) -> None:
+def validate_order(order: list[int], length: int) -> None:
     if len(order) != length:
         print("Please enter the sequence of all the conflicting files at once")
         sys.exit(1)
@@ -18,16 +17,16 @@ def validate_order(order: List[int], length: int) -> None:
             sys.exit(1)
 
 
-def renumber_migration(conflicts: List[str], order: List[int], last_correct_migration: str) -> None:
-    stack: List[str] = []
+def renumber_migration(conflicts: list[str], order: list[int], last_correct_migration: str) -> None:
+    stack: list[str] = []
     for i in order:
         if conflicts[i - 1][0:4] not in stack:
             stack.append(conflicts[i - 1][0:4])
         else:
             # Replace dependencies with the last correct migration
-            file = fileinput.FileInput("zerver/migrations/" + conflicts[i - 1], inplace=True)
-            for line in file:
-                print(re.sub(r"[\d]+(_[a-z0-9]+)+", last_correct_migration, line), end="")
+            with fileinput.FileInput("zerver/migrations/" + conflicts[i - 1], inplace=True) as file:
+                for line in file:
+                    print(re.sub(r"[\d]+(_[a-z0-9]+)+", last_correct_migration, line), end="")
 
             # Rename the migration indexing at the end
             new_name = conflicts[i - 1].replace(
@@ -38,9 +37,9 @@ def renumber_migration(conflicts: List[str], order: List[int], last_correct_migr
             last_correct_migration = new_name.replace(".py", "")
 
 
-def resolve_conflicts(conflicts: List[str], files_list: List[str]) -> None:
+def resolve_conflicts(conflicts: list[str], files_list: list[str]) -> None:
     print("Conflicting migrations:")
-    for i in range(0, len(conflicts)):
+    for i in range(len(conflicts)):
         print(str(i + 1) + ". " + conflicts[i])
 
     order_input = input("Enter the order in which these migrations should be arranged: ")
@@ -54,11 +53,10 @@ def resolve_conflicts(conflicts: List[str], files_list: List[str]) -> None:
 
 
 if __name__ == "__main__":
-
-    MIGRATIONS_TO_SKIP = {"0209", "0261"}
+    MIGRATIONS_TO_SKIP = {"0209", "0261", "0501", "0001"}
     while True:
-        conflicts: List[str] = []
-        stack: List[str] = []
+        conflicts: list[str] = []
+        stack: list[str] = []
         files_list = [os.path.basename(path) for path in glob.glob("zerver/migrations/????_*.py")]
         file_index = [file[0:4] for file in files_list]
 
@@ -66,19 +64,20 @@ if __name__ == "__main__":
             migration_number = file[0:4]
             counter = file_index.count(migration_number)
 
-            if counter > 1 and file[0:4] not in stack:
+            if (
+                counter > 1
+                and file[0:4] not in stack
                 # When we need to backport migrations to a previous
                 # release, we sometimes end up with multiple having
                 # the same ID number (which isn't a problem; the
                 # migrations graph structure, not the IDs, is what
                 # matters).
-                if migration_number not in MIGRATIONS_TO_SKIP:
-                    conflicts += [
-                        file_name
-                        for file_name in files_list
-                        if file_name.startswith(migration_number)
-                    ]
-                    stack.append(migration_number)
+                and migration_number not in MIGRATIONS_TO_SKIP
+            ):
+                conflicts += [
+                    file_name for file_name in files_list if file_name.startswith(migration_number)
+                ]
+                stack.append(migration_number)
 
         if len(conflicts) > 0:
             resolve_conflicts(conflicts, files_list)

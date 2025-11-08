@@ -1,23 +1,37 @@
+# Zulip Front integration
+
 Front lets you manage all of your communication channels in one place,
 and helps your team collaborate around every message. Follow these steps
 to receive Front notifications without leaving Zulip!
 
-1. {!create-stream.md!}
+{start_tabs}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
-1. Go to the **Settings** page of your Front organization. Click on the
-**Integrations** tab, and enable the **Webhooks** integration. Click on
-the **Rules** tab, and add a new rule. Select the events you would like to
-be notified about. Set the URL of the target webhook to the URL
-constructed above.
+1. {!generate-webhook-url-basic.md!}
 
-1. Go to the **Settings** page of your Zulip organization. Click on the
-**Linkifiers** tab, and add a new linkifier. Set the pattern to
-`cnv_(?P<id>[0-9a-z]+)`. Set the URL format string to
-`https://app.frontapp.com/open/cnv_%(id)s`. This step is necessary to map
-Front conversations to topics in Zulip.
+1. Go to the **Settings** page of your Front organization, and select
+   the **App store** tab. Search for the **Webhooks** integration that's
+   published by Front, and enable the app.
+
+1. Select the **Rules** tab, and add a new shared rule. Set the **When**
+   and **If** conditions you would like to be notified about. Set **Send
+   to a Webhook** as the action, and input the URL generated above in
+   the **Target Webhook** field. Click **Save**.
+
+1. [Add a new linkifier](/help/add-a-custom-linkifier) in your Zulip
+   organization. Set the pattern to `cnv_(?P<id>[0-9a-z]+)` and the URL
+   template to `https://app.frontapp.com/open/cnv_{id}`. This step maps
+   Front conversations to topics in Zulip.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/front/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

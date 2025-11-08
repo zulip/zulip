@@ -1,0 +1,462 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Zulip for researchers and academics" %}
+
+{% set PAGE_DESCRIPTION = "Make Zulip the communication hub for your research
+  group, department or scientific field. Organized team chat ideal for both
+  live and asynchronous conversations." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+
+<div class="portico-landing why-page solutions-page">
+    <div class="hero bg-education">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Zulip for research</h1>
+            <p>
+                Chat for your project, research group, department or scientific
+                field. <br/><a href="/plans/">Zulip Cloud Standard</a> is free for academic
+                research!
+            </p>
+        </div>
+        <div class="hero-text">
+            Learn how the <a href="/case-studies/lean/">Lean theorem prover
+            community</a> is using Zulip.
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/accounts/go/?next=/sponsorship/" class="button">
+                {{ _('Request sponsorship') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="feature-intro">
+        <h1 class="center"> Make Zulip the communication hub for your research community. </h1>
+        <p>
+            Zulip is the <a href="/why-zulip/">organized team chat</a> app that is ideal for both live and asynchronous conversations. Coordinate with collaborators, post questions and ideas, and learn from others in your field.
+        </p>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Use topics to organize the discussion
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/introduction-to-topics">Zulip
+                            topics</a> create a separate space for each
+                            discussion.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Find active conversations, or see what happened while you were away,
+                            with the <a href="/help/recent-conversations">Recent conversations</a> view.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Keep discussions orderly
+                            by <a href="/help/rename-a-topic">moving</a>
+                            or <a href="/help/move-content-to-another-topic">splitting</a>
+                            topics when conversations digress.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Check out <a href="/for/communities/">Zulip for communities</a>
+                            to learn how Zulip empowers welcoming communities by making it
+                            easy to participate on your own time.
+                        </div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        The Lean community switched from Gitter to Zulip in early 2018,
+                        and never looked back. Zulip’s model of conversations labeled with topics has been
+                        essential for organising research work and simultaneously
+                        onboarding newcomers as our community scaled. My experience with
+                        both the app and the website is extremely positive!
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a href="https://www.imperial.ac.uk/people/k.buzzard">Kevin Buzzard</a>,
+                        Professor of Pure Mathematics at
+                        <a href="https://www.imperial.ac.uk/">Imperial College London</a>
+                    </div>
+                    <a class="case-study-link" href="/case-studies/lean/"
+                      target="_blank">How the Lean prover
+                    community uses Zulip ↗</a>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image topics-image">
+                <img alt="" src="{{ static('images/landing-page/research/streams_and_topics_day.png') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Lasting knowledge repository
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Maintain access to your organization's entire
+                            message history with free <a href="/plans/">Zulip
+                            Cloud Standard</a> hosting. Information is at your
+                            fingertips with Zulip's <a
+                            href="/help/search-for-messages">powerful full-text
+                            search</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere">Permanently link</a>
+                            to a Zulip conversation or a message in context
+                            from emails, notes, talk slides, or anywhere else.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            With the <a href="/help/public-access-option">public
+                            access option</a>, anyone can view, browse, and
+                            search your organization's public content — no
+                            account required.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Zulip is <a href="https://github.com/zulip">100%
+                            free and open-source software</a>, so you are never
+                            locked into a proprietary tool.  You can move your
+                            data with our high quality <a
+                            href="/help/export-your-organization">export</a> and
+                            <a
+                              href="https://zulip.readthedocs.io/en/latest/production/export-and-import.html">import</a>
+                            tools.
+                        </div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        +10 or maybe even 💯 for <a href="https://twitter.com/zulip">@zulip</a>. Was originally put onto it by <a href="https://twitter.com/five9a2">@five9a2</a> (thanks!). Have since used it at all levels - my research group (~10 ppl), my dept group (CS Theory, ~30 ppl), my research community (algebraic complexity), and small collaborations. All great!
+                    </blockquote>
+                    <div class="author">
+                        &mdash; Joshua Grochow (@joshuagrochow), <a href="https://twitter.com/joshuagrochow/status/1383141209934163969">April 16, 2021</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Powerful formatting
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/format-your-message-using-markdown#latex">Type LaTeX</a>
+                            directly into your Zulip message, and see it beautifully rendered.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            <a href="/help/code-blocks">Zulip code blocks</a>
+                            come with syntax highlighting for over 250 languages, and integrated
+                            <a href="/help/code-blocks#code-playgrounds">code playgrounds.</a>
+                        </div>
+                    </li>
+                    <li><div class="list-content">Structure your points with bulleted and numbered <a href="/help/format-your-message-using-markdown#lists">lists</a>.</div></li>
+                    <li>
+                        <div class="list-content">
+                            If you made a mistake, no worries! You
+                            can <a href="/help/edit-a-message">edit your
+                            message</a>, or move it to a
+                            different <a href="/help/move-content-to-another-topic">topic</a>
+                            or <a href="/help/move-content-to-another-channel">channel</a>.
+                        </div>
+                    </li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        I&#39;ve been using <a href="https://twitter.com/zulip">@zulip</a> recently for my research collaborations, and I was pleasantly surprised how effective it is! The excellent LaTeX rendering and clever threading make it far superior to email and Slack. I found myself shifting most of my research correspondences to Zulip.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; Tom Gur (@TomGur), <a href="https://twitter.com/TomGur/status/1294322062274842624">August 14, 2020</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/events/message_formatting_day.png') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/research/interactive_messaging_day_1.png') }}" />
+            </div>
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/research/interactive_messaging_day_2.png') }}" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Interactive messaging
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Start a <a href="/help/start-a-call">video
+                            call</a> with the click of a button, or
+                            make plans for later without worrying
+                            about time zones
+                            using <a href="/help/format-your-message-using-markdown#global-times">global
+                            times</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Use <a href="/help/emoji-reactions">emoji
+                            reactions</a> for lightweight
+                            interactions. Have fun
+                            with <a href="/help/custom-emoji">custom
+                            emoji</a> and gather feedback
+                            with <a href="/help/create-a-poll">polls</a>.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Share papers, presentations or images with <a href="/help/share-and-upload-files">drag-and-drop file uploads</a>.</div></li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        For more than a year, Zulip has been the cornerstone of our online
+                        Category Theory community. We greatly appreciate the seamless
+                        integration of Latex in every message as well as being able to get
+                        sidetracked (which, let's face it, happens a lot with
+                        mathematicians) without compromising an entire conversation: we
+                        can simply create a new topic for every tangent! Moreover, the
+                        flexible channels-and-topics system greatly helps us navigate
+                        through the constant influx of messages, as it is simple to tell
+                        if a message is relevant to one's interests.
+                        <br />
+                        <br />
+                        All in all, Zulip
+                        enabled us to create an unprecedentedly extensive, active and
+                        vibrant community for all category theory enthusiasts out there.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a
+                        href="https://www8.cs.fau.de/people/stelios/">Stelios
+                        Tsampas</a>, postdoctoral researcher at <a href="https://www.fau.eu/">FAU</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/research/interactive_messaging_day_1.png') }}" />
+            </div>
+            <div class="message-screenshot">
+                <img alt="" src="{{ static('images/landing-page/research/interactive_messaging_day_2.png') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Flexible administration and moderation
+                </h1>
+                <ul>
+                    <li><div class="list-content">Invite new members with <a href="/help/invite-new-users">multi-use invite links</a>, or allow anyone to <a href="/help/restrict-account-creation#set-whether-invitations-are-required-to-join">join without an invitation</a>.</div></li>
+                    <li>
+                        <div class="list-content">
+                            Automatically subscribe members to
+                            channels <a href="/help/set-default-channels-for-new-users">when
+                            they join.</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Manage your community with <a
+                            href="/help/manage-permissions">fine-grained
+                            permission settings</a> you can assign to <a
+                            href="/help/user-roles">user roles</a>,
+                            <a href="/help/user-groups">user groups</a>, and <a
+                            href="/help/introduction-to-users">individual users</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
+                            Zulip offers dozens of features
+                            for <a href="/help/moderating-open-organizations">moderating
+                            discussions</a>. Members can
+                            also <a href="/help/mute-a-user">mute</a> anyone they'd rather
+                            not interact with.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/flexible-administration.svg') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container alternate-grid">
+        <div class="feature-half md-hide">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    When and how you want it
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            With <a href="/apps/">apps for every
+                            platform</a>, you can check Zulip at your computer or on your
+                            phone. Zulip works great in a browser, so no download is
+                            required.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Zulip alerts you about timely messages with <a href="/help/channel-notifications">fully customizable</a> mobile, email and desktop notifications.</div></li>
+                    <li>
+                        <div class="list-content">
+                            Mention <a href="/help/mention-a-user-or-group">users</a>, <a href="/help/user-groups">groups
+                            of users</a>
+                            or <a href="/help/dm-mention-alert-notifications#wildcard-mentions">everyone</a>
+                            when you need their attention.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Use Zulip in your language of choice, with translations into <a href="https://hosted.weblate.org/projects/zulip/">23 languages</a>.</div></li>
+                </ul>
+                <div class="quote">
+                    <blockquote>
+                        As a research consortium spread across 14 locations in
+                        Germany, we use Zulip to communicate with each other in
+                        a low-threshold manner, without the overhead of email.
+                        Even with more than 200 users across different
+                        institutions, Zulip’s model of topic-labeled
+                        conversations makes it easy for our team members to keep
+                        up-to-date on what's relevant, and work productively
+                        together.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; Christina Schüttler, IT department Team Lead, University
+                        Hospital Erlangen
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="feature-half md-display">
+            <div class="feature-image">
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-container">
+        <div class="feature-half">
+            <div class="feature-text">
+                <h1>
+                    Make the move today
+                </h1>
+                <ul>
+                    <li>
+                        <div class="list-content">
+                            Zulip's founder is a former MIT PhD student, and we love
+                            helping academics succeed. Learn about using Zulip
+                            for <a href="/for/education/">teaching</a> and
+                            <a href="/for/events/">conferences</a>.
+                        </div>
+                    </li>
+                    <li><div class="list-content">Getting started or moving from another platform is easy! Import your existing organization from <a href="/help/import-from-slack">Slack</a>, <a href="/help/import-from-mattermost">Mattermost</a>, or <a href="/help/import-from-rocketchat">Rocket.Chat</a>.</div></li>
+                    <li><div class="list-content">If you have any questions, please contact us at <a href="mailto:sales@zulip.com">sales@zulip.com</a>. You can also drop by our <a href="/development-community/">friendly development community at chat.zulip.org</a> to ask for help or suggest improvements!</div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="feature-half">
+            <div class="feature-image">
+                <div class="quote">
+                    <blockquote>
+                        I have to use Slack for some other research groups
+                        I collaborate with, but my own graduate students
+                        voted to switch to Zulip a few years ago and it's
+                        just vastly better.
+                    </blockquote>
+                    <div class="author">
+                        &mdash; <a href="https://cs.stanford.edu/~keithw/">Keith Winstein</a>, Assistant Professor of Computer Science at <a href="https://www.stanford.edu/">Stanford University</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-end">
+        <div class="bottom-register-buttons extra_margin_before_footer">
+            <h1>
+                <a href="/plans/">Zulip Cloud Standard</a> is free for
+                academic research!
+            </h1>
+            <div class="hero-buttons center">
+                <a href="/new/" class="button">
+                    {{ _('Create organization') }}
+                </a>
+                <a href="/accounts/go/?next=/sponsorship/" class="button">
+                    {{ _('Request sponsorship') }}
+                </a>
+                <a href="/self-hosting/" class="button">
+                    {{ _('Self-host Zulip') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

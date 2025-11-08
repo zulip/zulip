@@ -1,0 +1,65 @@
+---
+title: Introduction to channels
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import ChannelsIntro from "../include/_ChannelsIntro.mdx";
+import MobileChannels from "../include/_MobileChannels.mdx";
+
+import BarChartIcon from "~icons/fa/bar-chart";
+import SortAlphaAscIcon from "~icons/fa/sort-alpha-asc";
+import UserOIcon from "~icons/fa/user-o";
+import SubscriberPlusIcon from "~icons/zulip-icon/subscriber-plus";
+
+<ChannelsIntro />
+
+## Browse and subscribe to channels
+
+Everyone other than [guests](/help/guest-users) can subscribe to any
+[public](/help/channel-permissions#public-channels) or
+[web-public](/help/channel-permissions#web-public-channels) channel. Channel
+administrators can [configure](/help/configure-who-can-subscribe) who can
+subscribe to [private](/help/channel-permissions#private-channels) channels.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/available" />
+
+      1. Scroll through the list of channels. You can use the **search box** near the
+         top of the menu to filter the list by channel name or description.
+      1. Click the **subscribe to channel**
+         (<SubscriberPlusIcon class="zulip-unplugin-icon subscriber-plus-icon" />)
+         icon to the left of a channel to subscribe to it.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      You can click on the icons in the upper right to sort the list of channels
+      **by name** (<SortAlphaAscIcon />),
+      **by number of subscribers** (<UserOIcon />), or
+      **by estimated weekly traffic** (<BarChartIcon />).
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MobileChannels />
+
+      1. Scroll to the bottom of the list of subscribed channels.
+      1. Tap **All Channels**.
+      1. Scroll through the list of channels.
+      1. Use the toggle to the right of the channel name to subscribe to it.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to topics](/help/introduction-to-topics)
+* [Create channels](/help/create-channels)
+* [Channel permissions](/help/channel-permissions)
+* [View channel information](/help/view-channel-information)

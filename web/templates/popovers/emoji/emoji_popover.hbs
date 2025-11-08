@@ -1,0 +1,19 @@
+<div class="emoji-picker-popover" data-emoji-destination="{{#if message_id }}reaction{{else if is_status_emoji_popover}}status{{else}}composition{{/if}}">
+    <div class="emoji-popover">
+        <div class="popover-filter-input-wrapper">
+            <input id="emoji-popover-filter" class="popover-filter-input filter_text_input" type="text" autocomplete="off" placeholder="{{t 'Filter' }}" autofocus/>
+        </div>
+        <div class="emoji-popover-category-tabs">
+            {{#each emoji_categories}}
+                <span class="emoji-popover-tab-item {{#if @first}} active {{/if}}" data-tab-name='{{name}}' title='{{name}}'><i class="fa {{icon}}"></i></span>
+            {{/each}}
+        </div>
+        <div class="emoji-popover-emoji-map" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
+        </div>
+        <div class="emoji-search-results-container" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false" data-message-id="{{message_id}}">
+            <div class="emoji-popover-results-heading">{{t "Search results" }}</div>
+            <div class="emoji-search-results"></div>
+        </div>
+    </div>
+    <div class="emoji-showcase-container"></div>
+</div>

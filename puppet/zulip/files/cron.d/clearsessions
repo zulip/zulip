@@ -1,4 +1,0 @@
-MAILTO=root
-
-# Clear all expired Django sessions at 10:22 PM every day.
-22 22 * * *   zulip cd /home/zulip/deployments/current && ./manage.py clearsessions

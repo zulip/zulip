@@ -1,0 +1,19 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Rate limit exceeded") }} | Zulip</title>
+{% endblock %}
+
+{% block error_page_content %}
+<img src="{{ static('images/errors/500art.svg') }}" alt=""/>
+<div class="errorbox">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _("Rate limit exceeded.") }}</h1>
+        <p>
+            {% trans %}Your server has exceeded the limit for how
+            often this action can be performed.{% endtrans %}
+            {% trans %}You can try again in {{retry_after}} seconds.{% endtrans %}
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,16 +1,18 @@
 from zerver.lib.test_classes import WebhookTestCase
 
-TOPIC = "Zulip HQ"
+TOPIC_NAME = "Zulip HQ"
 
 
 class BasecampHookTests(WebhookTestCase):
-    STREAM_NAME = "basecamp"
+    CHANNEL_NAME = "basecamp"
     URL_TEMPLATE = "/api/v1/external/basecamp?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "basecamp"
+    WEBHOOK_DIR_NAME = "basecamp"
 
     def test_basecamp_makes_doc_active(self) -> None:
-        expected_message = "Tomasz activated the document [New doc](https://3.basecamp.com/3688623/buckets/2957043/documents/432522214)."
-        self._send_and_test_message("doc_active", expected_message)
+        expected_message = "Tomasz activated the document [Sponsorship Package Outline](https://3.basecamp.com/3688623/buckets/2957043/documents/432522214)."
+        self._send_and_test_message(
+            "doc_active", expected_message, "Event Planning - Annual Conference"
+        )
 
     def test_basecamp_makes_doc_archived(self) -> None:
         expected_message = "Tomasz archived the document [new doc](https://3.basecamp.com/3688623/buckets/2957043/documents/434455988)."
@@ -136,5 +138,7 @@ class BasecampHookTests(WebhookTestCase):
         expected_message = "Tomasz created the [comment](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624#__recording_427058780) of the task [New task](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624)."
         self._send_and_test_message("comment_created", expected_message)
 
-    def _send_and_test_message(self, fixture_name: str, expected_message: str) -> None:
-        self.check_webhook(fixture_name, TOPIC, expected_message)
+    def _send_and_test_message(
+        self, fixture_name: str, expected_message: str, topic_name: str = TOPIC_NAME
+    ) -> None:
+        self.check_webhook(fixture_name, topic_name, expected_message)

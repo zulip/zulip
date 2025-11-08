@@ -1,4 +1,0 @@
-# We don't actually need a valid Kerberos cache since these are sent
-# unauth anyway -- but a cache is required for zwrite to run.
-
-* * * * * zulip env KRB5CCNAME=/home/zulip/ccache/zmirror-tabbott zwrite -c zulip-mirror-nagios -i nagios-test -m test -Szulip-nagios@mit.edu -d -q >/dev/null 2>/dev/null

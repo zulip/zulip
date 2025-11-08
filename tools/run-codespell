@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# Fix common misspellings in text files (config: .codespellignore)
+# Based on
+# https://github.com/bitcoin/bitcoin/blob/master/test/lint/lint-spelling.sh
+#
+# We plan to replace this script with the `tools/lint` system as soon as we can.
+
+IGNORE_WORDS_FILE=.codespellignore
+if [ "$#" -eq 0 ]; then
+    echo "No argument specified. Checking on the entire repo..."
+    FILES_TO_BE_CHECKED="$(
+        git ls-files -- \
+            ':!*.asc' \
+            ':!*.svg' \
+            ':!*/fixtures/*' \
+            ':!docs/THIRDPARTY' \
+            ':!docs/translating' \
+            ':!locale' \
+            ':!postgresql.conf.template.erb' \
+            ':!tools/setup/emoji/emoji_map.json' \
+            ':!tools/setup/emoji/emoji_names.py' \
+            ':!pnpm-lock.yaml' \
+            ':!zerver/management/data/unified_reactions.json'
+    )"
+    mapfile -t FILES_TO_BE_CHECKED <<<"$FILES_TO_BE_CHECKED"
+else
+    FILES_TO_BE_CHECKED=("$@")
+    echo "Checking ${FILES_TO_BE_CHECKED[*]@Q}"
+fi
+
+if ! codespell --ignore-words="$IGNORE_WORDS_FILE" -- "${FILES_TO_BE_CHECKED[@]}"; then
+    echo "You may check the files for typo again using ./tools/run-codespell <file 1> <file 2> ... <file n>"
+    exit 1
+fi

@@ -11,36 +11,35 @@ megabytes of dependencies, so you will need an **active, reasonably fast,
 internet connection throughout the entire installation processes.** You can
 [configure a proxy][configure-proxy] if you need one.
 
-## Recommended setup (Vagrant)
+## Recommended setup
 
 **For first-time contributors, we recommend using the
-[Vagrant development environment][install-vagrant]**.
+[Vagrant development environment][install-vagrant]** on
+macOS and Linux based OS and [WSL 2 setup][install-via-wsl] on Windows.
 
-This method creates a virtual machine (for Windows and macOS) or a
+## Vagrant setup
+
+[Vagrant setup][install-vagrant] creates a virtual machine (for Windows and macOS) or a
 Linux container (otherwise) inside which the Zulip server and all
 related services will run. Vagrant adds a bit of overhead to using the
 Zulip development server, but provides an isolated environment that is
 easy to install, update, and uninstall. It has been well-tested and
 performs well.
 
-## Advanced setup (non-Vagrant)
+## Advanced setup
 
 Zulip also supports a wide range of ways to install the Zulip
 development environment:
 
-* On popular Linux platforms, you can **[install directly][install-direct]**.
-* On **other Linux/UNIX** distributions, you'll need to follow slightly different
-  instructions to **[install manually][install-generic]**.
-* On Windows, you can **[install directly][install-via-wsl]** via WSL 2.
+- On Linux platforms, you can **[install directly][install-direct]**.
+- On Windows, you can **[install directly][install-via-wsl]** via WSL 2.
 
 ## Slow internet connections
 
 If you have a very slow network connection, however, you may want to
 avoid using Vagrant (which involves downloading an Ubuntu virtual
-machine or Linux container) and either
-[install directly][install-direct] (recommended), or use
-[the manual install process][install-generic] instead.  These options
-only support Linux.
+machine or Linux container) and [install directly][install-direct] on
+a Linux system.
 
 An alternative option if you have poor network connectivity is to rent
 a cloud server and install the Zulip development environment for
@@ -69,21 +68,20 @@ need to.
 Once you've installed the Zulip development environment, you'll want
 to read these documents to learn how to use it:
 
-* [Using the development environment][using-dev-env]
-* [Testing][testing] (and [Configuring CI][ci])
+- [Using the development environment][using-dev-env]
+- [Testing][testing] (and [Configuring CI][ci])
 
 And if you've set up the Zulip development environment on a remote
 machine, take a look at our tips for
 [developing remotely][dev-remote].
 
 [dev-remote]: remote.md
-[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-generic]: ../development/setup-advanced.html#installing-manually-on-unix
-[install-vagrant]: ../development/setup-vagrant.md
+[install-direct]: setup-advanced.md#installing-directly-on-ubuntu-debian-centos-or-fedora
+[install-vagrant]: setup-recommended.md
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
-[configure-proxy]: ../development/setup-vagrant.html#specifying-a-proxy
+[configure-proxy]: setup-recommended.md#specifying-a-proxy
 [using-dev-env]: using.md
 [testing]: ../testing/testing.md
-[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
-[install-via-wsl]: ../development/setup-advanced.html#installing-directly-on-windows-10-experimental
+[ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
+[install-via-wsl]: setup-recommended.md

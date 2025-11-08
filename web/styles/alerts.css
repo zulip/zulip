@@ -1,0 +1,250 @@
+:root {
+    --color-alert-red: hsl(16deg 60% 45%);
+    --color-alert-error-red: hsl(0deg 80% 40%);
+}
+
+.alert-display {
+    display: none;
+
+    &.show {
+        display: block;
+    }
+}
+
+.alert-animations {
+    /* TODO: Remove these animations in favour of those
+       in web/styles/banners.css, once all the alert popups
+       have been converted to use the new banner component. */
+    &.show {
+        animation-name: fadeIn;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+
+    &.fade-out {
+        animation-name: fadeOut;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+
+    .faded {
+        opacity: 0.7;
+    }
+}
+
+.home-error-bar {
+    display: none;
+}
+
+/* alert box component changes */
+
+#alert-popup-container {
+    /* Ensure alert box remains in viewport, regardless of scroll
+       position in message list. */
+    position: fixed;
+    /* Offset to account for the top padding + 5px from the top. */
+    top: calc(5px + (-1 * var(--popup-banner-translate-y-distance)));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 900px;
+    z-index: 220;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Set top padding to account for the translate-y motion of the
+       animation to prevent the vertical scroll bar from appearing. */
+    padding-top: var(--popup-banner-translate-y-distance);
+
+    @media (width < $lg_min) {
+        max-width: 90%;
+    }
+}
+
+.alert-box {
+    display: flex;
+    /* Using column-reverse flex direction enables a stack-like
+       behavior where the most recent alert is always on top. */
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 5px;
+
+    .alert {
+        @extend .alert-animations;
+
+        box-sizing: border-box;
+        width: 100%;
+        border-radius: 4px;
+        background-color: hsl(0deg 0% 100%);
+
+        position: relative;
+
+        /* gives room for the error icon and the exit button. */
+        padding: 10px 50px;
+
+        text-shadow: none;
+
+        color: var(--color-alert-red);
+        border: 1px solid var(--color-alert-red);
+        box-shadow: 0 0 2px var(--color-alert-red);
+
+        &::before {
+            float: left;
+            margin-left: -38px;
+
+            font-family: FontAwesome;
+            font-size: 1.3em;
+            line-height: 1;
+            overflow: hidden;
+            content: "\f071";
+
+            color: hsl(16deg 60% 55%);
+        }
+
+        &::after {
+            clear: both;
+            content: "";
+            display: table;
+        }
+
+        &.alert-error {
+            color: var(--color-alert-error-red);
+            border: 1px solid var(--color-alert-error-red);
+            box-shadow: 0 0 2px var(--color-alert-error-red);
+
+            &::before {
+                color: var(--color-alert-error-red);
+            }
+        }
+
+        .exit {
+            float: right;
+            margin: -10px -50px -10px 0;
+            padding: 13px 10px;
+
+            font-size: 2.5em;
+            font-weight: 300;
+            line-height: 1ex;
+            overflow: hidden;
+
+            cursor: pointer;
+
+            &::after {
+                content: "\d7";
+            }
+        }
+    }
+}
+
+/* animation section */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+}
+
+#request-progress-status-banner {
+    display: none;
+    align-items: center;
+    padding: 5px 10px;
+    margin-top: 10px;
+    grid-template-columns: 80px auto 50px;
+
+    &.show {
+        display: grid !important;
+    }
+
+    &.alert-loading {
+        .alert-zulip-logo,
+        .loading-indicator {
+            display: block;
+        }
+
+        /* Hide exit button since clicking it will be useless in
+           this scenario. */
+        .exit {
+            display: none;
+        }
+    }
+
+    &.alert-success .success-indicator {
+        display: block;
+    }
+
+    &.alert-loading,
+    &.alert-success {
+        border-color: hsl(156deg 28% 70%);
+        box-shadow: 0 0 2px hsl(156deg 28% 70%);
+
+        .exit {
+            color: hsl(156deg 30% 50%);
+        }
+    }
+
+    &::before {
+        content: "";
+        margin-left: 0;
+    }
+
+    .alert-zulip-logo {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+    }
+
+    .loading-indicator {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+    }
+
+    .success-indicator {
+        display: none;
+        margin: auto;
+        grid-column: 1 / 2;
+        grid-row-start: 1;
+        padding: 7px;
+        font-size: 1.5em;
+        line-height: 0;
+        color: hsl(156deg 30% 50%);
+    }
+
+    .alert-content {
+        grid-column: 2 / 3;
+        grid-row-start: 1;
+        color: var(--color-request-progress-status-alert-text);
+    }
+
+    .exit {
+        float: unset;
+        margin: 0;
+        margin-left: auto;
+        grid-column: 3 / 4;
+        grid-row-start: 1;
+        line-height: 0;
+    }
+}

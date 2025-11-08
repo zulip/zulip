@@ -1,16 +1,17 @@
 import os
-import sys
 import tempfile
 from argparse import ArgumentParser
 from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
-from zerver.lib.actions import do_deactivate_realm
+from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Message, Reaction, UserProfile
+from zerver.models import RealmExport
 
 
 class Command(ZulipBaseCommand):
@@ -32,7 +33,7 @@ class Command(ZulipBaseCommand):
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
     * ScheduledEmail (not relevant on a new server)
     * RemoteZulipServer (unlikely to be migrated)
-    * third_party_api_results cache (this means rerending all old
+    * third_party_api_results cache (this means rerendering all old
       messages could be expensive)
 
     Things that will break as a result of the export:
@@ -61,29 +62,27 @@ class Command(ZulipBaseCommand):
 
     * Use `./manage.py import` to import the realm
 
-    * Use `./manage.py reactivate_realm` to reactivate the realm, so
-      users can log in again.
-
     * Inform the users about the things broken above.
 
     We recommend testing by exporting without `--deactivate` first, to
     make sure you have the procedure right and minimize downtime.
 
     Performance: In one test, the tool exported a realm with hundreds
-    of users and ~1M messages of history with --threads=1 in about 3
-    hours of serial runtime (goes down to ~50m with --threads=6 on a
+    of users and ~1M messages of history with --parallel=1 in about 3
+    hours of serial runtime (goes down to ~50m with --parallel=6 on a
     machine with 8 CPUs).  Importing that same data set took about 30
     minutes.  But this will vary a lot depending on the average number
     of recipients of messages in the realm, hardware, etc."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--output", dest="output_dir", help="Directory to write exported data to."
         )
         parser.add_argument(
-            "--threads",
+            "--parallel",
             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-            help="Threads to use in exporting UserMessage objects in parallel",
+            help="Processes to use in exporting UserMessage objects in parallel",
         )
         parser.add_argument(
             "--public-only",
@@ -93,93 +92,44 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--deactivate-realm",
             action="store_true",
-            help="Deactivate the realm immediately before exporting",
+            help=(
+                "Deactivate the realm immediately before exporting; the exported data "
+                "will show the realm as active"
+            ),
         )
         parser.add_argument(
-            "--consent-message-id",
-            type=int,
-            help="ID of the message advertising users to react with thumbs up",
+            "--export-full-with-consent",
+            action="store_true",
+            help="Whether to export private data of users who consented",
         )
         parser.add_argument(
             "--upload",
             action="store_true",
             help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
         )
-        parser.add_argument(
-            "--delete-after-upload",
-            action="store_true",
-            help="Automatically delete the local tarball after a successful export",
-        )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
         output_dir = options["output_dir"]
         public_only = options["public_only"]
-        consent_message_id = options["consent_message_id"]
+        export_full_with_consent = options["export_full_with_consent"]
+        assert not (public_only and export_full_with_consent)
 
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
-        num_threads = int(options["threads"])
-        if num_threads < 1:
-            raise CommandError("You must have at least one thread.")
+        processes = int(options["parallel"])
+        if processes < 1:
+            raise CommandError("You must have at least one process.")
 
-        if public_only and consent_message_id is not None:
-            raise CommandError("Please pass either --public-only or --consent-message-id")
+        if public_only and export_full_with_consent:
+            raise CommandError("Please pass either --public-only or --export-full-with-consennt")
 
         if options["deactivate_realm"] and realm.deactivated:
             raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
-
-        if consent_message_id is not None:
-            try:
-                message = Message.objects.get(id=consent_message_id)
-            except Message.DoesNotExist:
-                raise CommandError("Message with given ID does not exist. Aborting...")
-
-            if message.last_edit_time is not None:
-                raise CommandError("Message was edited. Aborting...")
-
-            # Since the message might have been sent by
-            # Notification Bot, we can't trivially check the realm of
-            # the message through message.sender.realm.  So instead we
-            # check the realm of the people who reacted to the message
-            # (who must all be in the message's realm).
-            reactions = Reaction.objects.filter(
-                message=message,
-                # outbox = 1f4e4
-                emoji_code="1f4e4",
-                reaction_type="unicode_emoji",
-            )
-            for reaction in reactions:
-                if reaction.user_profile.realm != realm:
-                    raise CommandError(
-                        "Users from a different realm reacted to message. Aborting..."
-                    )
-
-            print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
-
-            user_count = (
-                UserProfile.objects.filter(
-                    realm_id=realm.id,
-                    is_active=True,
-                    is_bot=False,
-                )
-                .exclude(
-                    # We exclude guests, because they're not a priority for
-                    # looking at whether most users are being exported.
-                    role=UserProfile.ROLE_GUEST,
-                )
-                .count()
-            )
-            print(
-                f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total non-guest users\n"
-            )
-
-            proceed = input("Continue? [y/N] ")
-            if proceed.lower() not in ("y", "yes"):
-                raise CommandError("Aborting!")
 
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
@@ -204,20 +154,37 @@ class Command(ZulipBaseCommand):
 
         if options["deactivate_realm"]:
             print(f"\033[94mDeactivating realm\033[0m: {realm.string_id}")
-            do_deactivate_realm(realm)
+            do_deactivate_realm(
+                realm,
+                acting_user=None,
+                deactivation_reason="self_hosting_migration",
+                email_owners=False,
+            )
 
         def percent_callback(bytes_transferred: Any) -> None:
-            sys.stdout.write(".")
-            sys.stdout.flush()
+            print(end=".", flush=True)
+
+        if public_only:
+            export_type = RealmExport.EXPORT_PUBLIC
+        elif export_full_with_consent:
+            export_type = RealmExport.EXPORT_FULL_WITH_CONSENT
+        else:
+            export_type = RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+
+        export_row = RealmExport.objects.create(
+            realm=realm,
+            type=export_type,
+            acting_user=None,
+            status=RealmExport.REQUESTED,
+            date_requested=timezone_now(),
+        )
 
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(
-            realm=realm,
+            export_row=export_row,
             output_dir=output_dir,
-            threads=num_threads,
+            processes=processes,
             upload=options["upload"],
-            public_only=public_only,
-            delete_after_upload=options["delete_after_upload"],
             percent_callback=percent_callback,
-            consent_message_id=consent_message_id,
+            export_as_active=True if options["deactivate_realm"] else None,
         )

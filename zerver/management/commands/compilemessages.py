@@ -1,8 +1,8 @@
-import json
 import os
 import re
+import unicodedata
 from subprocess import CalledProcessError, check_output
-from typing import Any, Dict, List
+from typing import Any
 
 import orjson
 import polib
@@ -10,13 +10,15 @@ from django.conf import settings
 from django.conf.locale import LANG_INFO
 from django.core.management.base import CommandParser
 from django.core.management.commands import compilemessages
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
-from django.utils.translation.trans_real import to_language
+from django.utils.translation import to_language
 from pyuca import Collator
+from typing_extensions import override
 
 
 class Command(compilemessages.Command):
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         super().add_arguments(parser)
 
@@ -24,6 +26,7 @@ class Command(compilemessages.Command):
             "--strict", "-s", action="store_true", help="Stop execution in case of errors."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         super().handle(*args, **options)
         self.strict = options["strict"]
@@ -65,12 +68,12 @@ class Command(compilemessages.Command):
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
         try:
             team = polib.pofile(po_filename).metadata["Language-Team"]
-            return team[: team.rindex(" (")]
+            return team[: team.rindex(" <")]
         except (KeyError, ValueError):
             raise Exception(f"Unknown language {locale}")
 
-    def get_locales(self) -> List[str]:
-        output = check_output(["git", "ls-files", "locale"], universal_newlines=True)
+    def get_locales(self) -> list[str]:
+        output = check_output(["git", "ls-files", "locale"], text=True)
         tracked_files = output.split()
         regex = re.compile(r"locale/(\w+)/LC_MESSAGES/django.po")
         locales = ["en"]
@@ -85,7 +88,7 @@ class Command(compilemessages.Command):
         locale_path = f"{settings.DEPLOY_ROOT}/locale"
         output_path = f"{locale_path}/language_options.json"
 
-        data: Dict[str, List[Dict[str, Any]]] = {"languages": []}
+        data: dict[str, list[dict[str, Any]]] = {"languages": []}
 
         try:
             locales = self.get_locales()
@@ -96,7 +99,7 @@ class Command(compilemessages.Command):
             locales.append("en")
             locales = list(set(locales))
 
-        for locale in locales:
+        for locale in sorted(locales):
             if locale == "en":
                 data["languages"].append(
                     {
@@ -113,7 +116,7 @@ class Command(compilemessages.Command):
                 # Not a locale.
                 continue
 
-            info: Dict[str, Any] = {}
+            info: dict[str, Any] = {}
             code = to_language(locale)
             percentage = self.get_translation_percentage(locale_path, locale)
             try:
@@ -126,19 +129,22 @@ class Command(compilemessages.Command):
                 with override_language(code):
                     name_local = _(name)
 
-            info["name"] = name
-            info["name_local"] = name_local
+            info["name"] = unicodedata.normalize("NFC", name)
+            info["name_local"] = unicodedata.normalize("NFC", name_local)
             info["code"] = code
             info["locale"] = locale
             info["percent_translated"] = percentage
             data["languages"].append(info)
 
-        with open(output_path, "w") as writer:
-            json.dump(data, writer, indent=2, sort_keys=True)
-            writer.write("\n")
+        with open(output_path, "wb") as writer:
+            writer.write(
+                orjson.dumps(
+                    data,
+                    option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+                )
+            )
 
     def get_translation_percentage(self, locale_path: str, locale: str) -> int:
-
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))
         not_translated = len(po.untranslated_entries())
@@ -146,22 +152,9 @@ class Command(compilemessages.Command):
 
         # frontend stats
         with open(self.get_json_filename(locale_path, locale), "rb") as reader:
-            for key, value in orjson.loads(reader.read()).items():
+            for value in orjson.loads(reader.read()).values():
                 total += 1
                 if value == "":
                     not_translated += 1
-
-        # mobile stats
-        with open(os.path.join(locale_path, "mobile_info.json"), "rb") as mob:
-            mobile_info = orjson.loads(mob.read())
-        try:
-            info = mobile_info[locale]
-        except KeyError:
-            if self.strict:
-                raise
-            info = {"total": 0, "not_translated": 0}
-
-        total += info["total"]
-        not_translated += info["not_translated"]
 
         return (total - not_translated) * 100 // total

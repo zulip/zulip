@@ -1,0 +1,30 @@
+<div>
+    {{#if edit_history_access}}
+        {{#if edited}}
+            {{#if moved}}
+            <div>{{t "View edit and move history"}}</div>
+            {{else}}
+            <div>{{t "View edit history"}}</div>
+            {{/if}}
+        {{else if moved}}
+            <div>{{t "View move history"}}</div>
+        {{/if}}
+    {{else if message_moved_and_move_history_access}}
+        <div>{{t "View move history"}}</div>
+    {{/if}}
+    {{#if edited}}
+        <div class="tooltip-inner-content italic">
+            {{t 'Last edited {edited_time_string}.'}}
+        </div>
+    {{/if}}
+    {{#if moved}}
+    <div class="tooltip-inner-content italic">
+        {{t 'Last moved {moved_time_string}.'}}
+    </div>
+    {{/if}}
+</div>
+{{#if edit_history_access}}
+{{tooltip_hotkey_hints "Shift" "H"}}
+{{else if message_moved_and_move_history_access}}
+{{tooltip_hotkey_hints "Shift" "H"}}
+{{/if}}

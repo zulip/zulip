@@ -1,0 +1,640 @@
+.showing-cloud .self-hosted-comparison,
+.showing-self-hosted .cloud-comparison {
+    display: none;
+}
+
+.zulip-plans-comparison {
+    --color-heading-text: hsl(0deg 0% 100%);
+    --color-table-text: hsl(223deg 40% 25%);
+    --color-table-background: hsl(0deg 0% 100% / 80%);
+    --color-table-link: hsl(210deg 94% 30%);
+    --color-table-link-hover: hsl(210deg 100% 45%);
+    --color-table-link-active: hsl(210deg 100% 40%);
+    --color-table-link-decoration: hsl(210deg 94% 30% / 20%);
+    --color-table-link-decoration-hover: hsl(210deg 100% 45% / 70%);
+    --color-table-link-decoration-active: hsl(210deg 100% 40%);
+    --border-radius-table: 11px;
+
+    .icon-cloud {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='%23313F68' d='M4.333 13.333c-1.01 0-1.875-.35-2.591-1.05-.717-.7-1.075-1.555-1.075-2.566 0-.867.26-1.64.783-2.317A3.465 3.465 0 0 1 3.5 6.1a4.525 4.525 0 0 1 1.667-2.483A4.561 4.561 0 0 1 8 2.667c1.3 0 2.403.452 3.308 1.358.906.906 1.359 2.008 1.359 3.308a2.91 2.91 0 0 1 1.908.992c.506.572.758 1.242.758 2.008 0 .834-.291 1.542-.875 2.125a2.893 2.893 0 0 1-2.125.875h-8Z' opacity='.5'/%3e%3c/svg%3e");
+    }
+
+    .icon-self-hosted {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3e%3cpath fill='%23313F68' fill-opacity='.5' d='M11.333 10.667a.98.98 0 0 0 .709-.284.957.957 0 0 0 .291-.716.964.964 0 0 0-.291-.709.965.965 0 0 0-.709-.291.957.957 0 0 0-.716.291.979.979 0 0 0-.284.709.971.971 0 0 0 1 1ZM1.333 6 3.6 3.733c.122-.122.264-.22.425-.291.161-.073.336-.109.525-.109h6.883c.19 0 .364.036.525.109.161.072.303.17.425.291L14.667 6H1.333Zm1.334 6.667a1.29 1.29 0 0 1-.95-.384 1.29 1.29 0 0 1-.384-.95v-4h13.334v4c0 .378-.13.695-.392.95a1.298 1.298 0 0 1-.942.384H2.667Z'/%3e%3c/svg%3e");
+    }
+
+    .icon-infinity {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cpath fill='black' fill-rule='evenodd' d='M2.464 8.464A5 5 0 0 1 6 7c2.16 0 4.155 1.251 6 3.4C13.845 8.251 15.84 7 18 7a5 5 0 1 1 0 10c-2.16 0-4.155-1.251-6-3.4-1.845 2.149-3.84 3.4-6 3.4a5 5 0 0 1-3.536-8.536ZM10.731 12C8.983 9.857 7.4 9 6 9a3 3 0 1 0 0 6c1.4 0 2.983-.857 4.731-3Zm2.538 0c1.748 2.143 3.331 3 4.731 3a3 3 0 0 0 0-6c-1.4 0-2.983.857-4.731 3Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+    }
+
+    .icon-check {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cpath fill='black' fill-rule='evenodd' d='M20.707 5.793a1 1 0 0 1 0 1.414l-11 11a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L9 16.086 19.293 5.793a1 1 0 0 1 1.414 0Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+    }
+
+    .icon-x {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cpath fill='black' d='M18.707 6.707a1 1 0 0 0-1.414-1.414L12 10.586 6.707 5.293a1 1 0 0 0-1.414 1.414L10.586 12l-5.293 5.293a1 1 0 1 0 1.414 1.414L12 13.414l5.293 5.293a1 1 0 0 0 1.414-1.414L13.414 12l5.293-5.293Z'/%3e%3c/svg%3e");
+    }
+
+    .icon-wrench {
+        --icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' viewBox='0 0 24 24'%3e%3cpath fill='black' fill-rule='evenodd' d='M16.578 3.36a5.25 5.25 0 0 0-5.866 7.302.75.75 0 0 1-.153.84l-6.91 6.91a1.371 1.371 0 0 0 1.94 1.94l6.91-6.91a.75.75 0 0 1 .839-.154 5.25 5.25 0 0 0 7.301-5.866l-2.915 2.915a1.75 1.75 0 0 1-2.45 0l-.006-.005-1.605-1.606a1.75 1.75 0 0 1 0-2.45l.005-.005 2.91-2.91Zm-2.293-1.503a6.75 6.75 0 0 1 3.993.491.75.75 0 0 1 .22 1.214l-3.766 3.766a.25.25 0 0 0 0 .347l1.593 1.593a.25.25 0 0 0 .347 0L20.438 5.5a.75.75 0 0 1 1.214.221 6.75 6.75 0 0 1-8.445 9.131l-6.557 6.56a2.871 2.871 0 1 1-4.06-4.06l6.558-6.56a6.75 6.75 0 0 1 5.138-8.935Z' clip-rule='evenodd'/%3e%3c/svg%3e");
+    }
+
+    .icon {
+        vertical-align: middle;
+        display: inline-block;
+        flex-shrink: 0;
+        background-color: currentcolor;
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-image: var(--icon);
+        width: 24px;
+        height: 24px;
+    }
+
+    .icon-plan {
+        /* Smaller icons within the table headings. */
+        width: 16px;
+        height: 16px;
+    }
+
+    .icon-with-copy {
+        /* Treat copy and a nearby icon as
+           a unit when reflowing text for narrower
+           viewports. */
+        display: inline-block;
+    }
+
+    .grouped-icons {
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    h2 {
+        font-family: var(--font-ss3);
+        font-weight: 450;
+        font-size: 44px;
+        line-height: 120%;
+        text-align: center;
+        margin: 64px 0 10px;
+        color: var(--color-heading-text);
+    }
+
+    .h2-subheader {
+        font-family: var(--font-ops);
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 145%;
+        text-align: center;
+        color: var(--color-heading-text);
+        /* Let subheader text fill the same area as
+           text in the comparison table below. */
+        padding: 0 14px;
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid hsl(0deg 0% 100% / 50%) !important;
+            transition: border 0.4s ease-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+
+            &:hover {
+                border-bottom: 2px solid hsl(0deg 0% 100%) !important;
+                transition: none;
+            }
+        }
+    }
+
+    .comparison-tabs {
+        width: max-content;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        gap: 3px;
+        background-color: hsl(0deg 0% 100% / 70%);
+        padding: 3px;
+        border-radius: 6px;
+    }
+
+    .comparison-tab {
+        font-family: var(--font-ops);
+        font-size: 14px;
+        padding: 4px 16px;
+        color: hsl(223deg 40% 30%);
+        font-weight: 600;
+        border: none;
+        background-color: hsl(0deg 0% 100% / 0%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        align-items: center;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: background-color 120ms ease-out;
+    }
+
+    .comparison-tab:hover {
+        transition: none;
+        background-color: hsl(0deg 0% 100% / 40%);
+    }
+
+    .comparison-tab:active {
+        background-color: hsl(0deg 0% 100% / 70%);
+    }
+
+    .comparison-tab._selected {
+        background-color: hsl(0deg 0% 100% / 80%);
+        cursor: default;
+    }
+
+    .comparison-table {
+        font-family: var(--font-ss3);
+        font-size: 16px;
+        line-height: 18px;
+        text-align: center;
+        border-collapse: collapse;
+        margin: 24px auto 48px;
+        border-radius: var(--border-radius-table);
+        color: var(--color-table-text);
+        background: var(--color-table-background);
+    }
+
+    .comparison-table a {
+        color: var(--color-table-link);
+        text-underline-offset: 4px;
+        text-decoration-thickness: 1px;
+        text-decoration-color: var(--color-table-link-decoration);
+    }
+
+    .comparison-table a:hover {
+        color: var(--color-table-link-hover);
+        text-decoration-color: var(--color-table-link-decoration-hover);
+    }
+
+    .comparison-table a:active {
+        color: var(--color-table-link-active);
+        text-decoration-color: var(--color-table-link-decoration-active);
+    }
+
+    .comparison-table tr {
+        transition: background-color 200ms ease-out;
+    }
+
+    .comparison-table tbody tr:hover {
+        background-color: hsl(0deg 0% 100% / 30%);
+    }
+
+    .comparison-table th:first-child {
+        border-top-left-radius: var(--border-radius-table);
+    }
+
+    .comparison-table th:last-child {
+        border-top-right-radius: var(--border-radius-table);
+    }
+
+    .comparison-table th,
+    .comparison-table .subheader {
+        position: sticky;
+        font-weight: 700;
+        color: hsl(223deg 40% 30% / 100%);
+        background: hsl(209deg 41% 94%);
+    }
+
+    .comparison-table th .icon {
+        display: none;
+    }
+
+    .subheader-filler {
+        background: hsl(209deg 41% 94%);
+    }
+
+    .comparison-table th {
+        padding: 12px 2px 10px;
+        top: 60px;
+        z-index: 1;
+    }
+
+    .comparison-table td.subheader.comparison-table-feature {
+        font-weight: 600;
+        color: hsl(223deg 40% 30% / 80%);
+        top: 64px;
+        z-index: 2;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        text-transform: uppercase;
+        font-size: 15px;
+        letter-spacing: 0.1ch;
+    }
+
+    .comparison-table td {
+        padding: 8px;
+        border-top: 1px solid hsl(209deg 40% 40% / 30%);
+        line-height: 18px;
+    }
+
+    .comparison-table colgroup col:first-child {
+        width: 340px;
+    }
+
+    .comparison-table colgroup col {
+        width: 112px;
+    }
+
+    .comparison-table th.comparison-table-feature,
+    .comparison-table td.comparison-table-feature {
+        text-align: left;
+        padding-left: 14px;
+    }
+
+    .comparison-table td.comparison-table-feature {
+        color: hsl(223deg 40% 16%);
+    }
+
+    .comparison-table-feature-desc {
+        font-size: 14px;
+        opacity: 0.7;
+        margin-top: 4px;
+    }
+
+    .comparison-value-positive {
+        color: hsl(147deg 80% 29% / 100%);
+    }
+
+    .comparison-value-warning {
+        color: hsl(42deg 85% 35% / 100%);
+    }
+
+    .comparison-value-negative {
+        color: hsl(224deg 8% 50% / 100%);
+    }
+
+    .comparison-value-positive,
+    .comparison-value-warning,
+    .comparison-value-negative {
+        /* Set positioning context for use
+           with tooltip hovers on icons. */
+        position: relative;
+        /* Make non-icon text (e.g., "Billed hourly")
+           less prominent than other text in the table's
+           rows or columns. */
+        font-size: 0.9em;
+    }
+
+    .comparison-value-positive::after,
+    .comparison-value-warning::after,
+    .comparison-value-negative::after {
+        content: attr(data-title);
+        white-space: nowrap;
+        font-size: 14px;
+        line-height: 14px;
+        font-weight: 400;
+        display: block;
+        padding: 2px 4px;
+        border-radius: 5px;
+        background-color: hsl(208deg 43% 93%);
+        /* the color of mixed hover row with bg */
+        position: absolute;
+        top: calc(50% + 11px);
+        left: 50%;
+        /* Keep tooltips over top of other elements,
+           including the headers within the table. */
+        z-index: 3;
+        transform: translateX(-50%);
+        visibility: hidden;
+        opacity: 0;
+        transition:
+            visibility 301s linear,
+            opacity 250ms ease-out;
+    }
+
+    .comparison-value-positive:hover::after,
+    .comparison-value-warning:hover::after,
+    .comparison-value-negative:hover::after {
+        transition:
+            visibility 0s linear,
+            opacity 250ms ease-out;
+        transition-delay: 200ms;
+        visibility: visible;
+        opacity: 1;
+    }
+
+    @media (width <= 940px) {
+        h1 {
+            font-size: 40px;
+        }
+
+        .h1-subheader {
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 32px;
+            margin-bottom: 4px;
+        }
+
+        .h2-subheader {
+            font-size: 14px;
+        }
+    }
+
+    @media (width <= 730px) {
+        .comparison-table th {
+            font-size: 14px;
+            line-height: 18px;
+            box-sizing: border-box;
+            height: 44px;
+            padding: 4px 2px;
+        }
+
+        .comparison-table td {
+            font-size: 14px;
+            line-height: 18px;
+        }
+
+        .comparison-table td.subheader.comparison-table-feature {
+            font-size: 13px;
+            line-height: 16px;
+            box-sizing: border-box;
+            padding-top: 10px;
+            padding-bottom: 8px;
+        }
+
+        .comparison-table td.comparison-table-feature {
+            font-size: 14px;
+        }
+
+        .comparison-table-feature-desc {
+            font-size: 12px;
+            line-height: 14px;
+        }
+    }
+
+    @media (width <= 500px) {
+        .comparison-table th {
+            font-size: 13px;
+            line-height: 14px;
+        }
+
+        .comparison-table th.comparison-table-feature,
+        .comparison-table td.comparison-table-feature {
+            padding-left: 8px;
+        }
+
+        .comparison-table td {
+            padding: 4px 2px;
+            border-top: 1px solid hsl(209deg 40% 40% / 30%);
+            line-height: 18px;
+        }
+
+        .comparison-table td.comparison-value-positive,
+        .comparison-table td.comparison-value-warning,
+        .comparison-table td.comparison-value-negative {
+            font-size: 13px;
+            line-height: 14px;
+        }
+
+        .comparison-value-positive::after,
+        .comparison-value-warning::after,
+        .comparison-value-negative::after {
+            display: none;
+        }
+    }
+}
+
+/* No header to accommodate on self-hosted realms,
+   so keep sticky headers at the top of the viewport. */
+.zulip-plans-comparison.is-self-hosted-realm {
+    .comparison-table {
+        th,
+        td.subheader.comparison-table-feature {
+            top: 0;
+        }
+    }
+}
+
+/* Change comparison-table visibility on /plans
+   based on active plan tab. */
+
+#showing-tab-cloud,
+#showing-tab-hosted,
+#showing-tab-all {
+    .comparison-tab-cloud,
+    .comparison-tab-self-hosted,
+    .comparison-tab-all {
+        background-color: hsl(0deg 0% 100% / 0%);
+        cursor: pointer;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100% / 40%);
+        }
+    }
+}
+
+.showing-cloud:not(:has(div[id^="showing-tab"])),
+#showing-tab-cloud {
+    .comparison-tab-cloud {
+        background-color: hsl(0deg 0% 100%);
+        cursor: default;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100%);
+        }
+    }
+
+    #self-hosted-plan-comparison,
+    #all-plan-comparison,
+    .subheader-open-source,
+    .subheader-self-hosted-legend,
+    .self-hosted-feature-only,
+    .self-hosted-cell {
+        display: none;
+    }
+
+    #cloud-plan-comparison,
+    .cloud-cell {
+        display: revert;
+    }
+
+    /* When only Cloud plans appear in the comparison table,
+       we need to set the border-radius here that is otherwise
+       displayed on the table itself.
+
+       TODO: Unset this property when the header row is stuck,
+       so that the little flutter of feature-table lines cannot
+       be seen by eagle-eyed users. */
+    th.last-cloud-th {
+        border-top-right-radius: var(--border-radius-table);
+    }
+}
+
+.showing-self-hosted:not(:has(div[id^="showing-tab"])),
+#showing-tab-hosted {
+    .comparison-tab-self-hosted {
+        background-color: hsl(0deg 0% 100%);
+        cursor: default;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100%);
+        }
+    }
+
+    #cloud-plan-comparison,
+    #all-plan-comparison,
+    .cloud-cell {
+        display: none;
+    }
+
+    #self-hosted-plan-comparison,
+    .subheader-open-source,
+    .subheader-self-hosted-legend,
+    .self-hosted-feature-only,
+    .self-hosted-cell {
+        display: revert;
+    }
+
+    th.last-cloud-th {
+        border-top-right-radius: unset;
+    }
+}
+
+#showing-tab-all {
+    .comparison-tab-all {
+        background-color: hsl(0deg 0% 100%);
+        cursor: default;
+
+        &:hover {
+            background-color: hsl(0deg 0% 100%);
+        }
+    }
+
+    #cloud-plan-comparison,
+    #self-hosted-plan-comparison {
+        display: none;
+    }
+
+    .subheader-open-source,
+    .subheader-self-hosted-legend,
+    #all-plan-comparison,
+    .cloud-cell,
+    .self-hosted-cell,
+    .self-hosted-feature-only {
+        display: revert;
+    }
+
+    th.last-cloud-th {
+        border-top-right-radius: unset;
+    }
+
+    .comparison-table th .icon {
+        display: revert;
+    }
+
+    .comparison-table th {
+        vertical-align: top;
+    }
+
+    .comparison-table th.comparison-table-feature {
+        padding-top: 28px;
+    }
+
+    .comparison-table td.stuck {
+        padding-top: 24px;
+    }
+
+    @media (width <= 730px) {
+        .comparison-table th {
+            padding: 8px 2px;
+        }
+
+        .comparison-table th.comparison-table-feature {
+            padding-top: 24px;
+            padding-left: 14px;
+        }
+
+        .comparison-table td.subheader.comparison-table-feature {
+            /* Line up features with plan titles. */
+            line-height: 18px;
+        }
+
+        .comparison-table td.stuck {
+            padding-top: 20px;
+            padding-bottom: 6px;
+            vertical-align: top;
+        }
+    }
+
+    @media (width <= 684px) {
+        .comparison-table td.stuck {
+            height: 60px;
+        }
+    }
+
+    @media (width <= 500px) {
+        .comparison-table td.subheader.comparison-table-feature {
+            /* Line up features with plan titles. */
+            line-height: 14px;
+            min-width: auto;
+        }
+
+        .comparison-table td.stuck {
+            top: 64px;
+            height: 55px;
+        }
+    }
+
+    @media (width <= 405px) {
+        /* For very tiny views, we get rid of the luxury
+           of any horizontal padding that's left. */
+        .comparison-table-feature,
+        .cloud-cell,
+        .self-hosted-cell {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        /* Keep the comparison-table features from
+           colliding with the left screen edge, though. */
+        .comparison-table-feature {
+            padding-left: 2px;
+        }
+    }
+}
+
+@media (width <= 500px) {
+    .comparison-table td.subheader.comparison-table-feature {
+        min-width: max-content;
+    }
+}
+
+@media (width <= 460px) {
+    .zulip-plans-comparison .comparison-tab-all {
+        display: none;
+    }
+}
+
+@media (width <= 356px) {
+    .zulip-plans-comparison
+        .comparison-table
+        td.subheader.comparison-table-feature {
+        height: 51px;
+        top: 60px;
+    }
+
+    .zulip-plans-comparison .comparison-table th {
+        height: 51px;
+    }
+}
+
+.features-page {
+    /* Always suppress subheadings on /features */
+    #cloud-plan-comparison,
+    #self-hosted-plan-comparison,
+    #all-plan-comparison {
+        display: none !important;
+    }
+    /* Maintain the margin-top ordinarily set on
+       the subheadings. */
+    .comparison-tabs {
+        margin-top: 64px;
+    }
+}

@@ -1,0 +1,24 @@
+<form id="demo_organization_add_email_form">
+    <div class="input-group">
+        <label for="demo_organization_add_email" class="modal-field-label">{{t "Email" }}</label>
+        <input id="demo_organization_add_email" type="text" name="email" class="modal_text_input" value="{{delivery_email}}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
+    </div>
+    <div class="input-group">
+        <label for="demo_owner_email_address_visibility" class="modal-field-label">
+            {{t "Who can access your email address"}}
+            {{> help_link_widget link="/help/configure-email-visibility" }}
+        </label>
+        <select id="demo_owner_email_address_visibility" name="demo_owner_email_address_visibility" class="modal_select bootstrap-focus-style">
+            {{#each email_address_visibility_values}}
+                <option value="{{this.code}}">{{this.description}}</option>
+            {{/each}}
+        </select>
+    </div>
+    <div class="input-group">
+        <label for="demo_organization_update_full_name" class="modal-field-label">{{t "Name" }}</label>
+        <p id="demo-owner-update-email-field-hint">
+            {{t "If you haven't updated your name, consider doing so before inviting other users to join."}}
+        </p>
+        <input id="demo_organization_update_full_name" name="full_name" type="text" class="modal_text_input" value="{{full_name}}" maxlength="60" />
+    </div>
+</form>

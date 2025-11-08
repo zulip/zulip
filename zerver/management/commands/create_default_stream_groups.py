@@ -1,8 +1,10 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import ensure_stream
+from typing_extensions import override
+
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.streams import ensure_stream
 from zerver.models import DefaultStreamGroup
 
 
@@ -13,8 +15,9 @@ Create default stream groups which the users can choose during sign up.
 ./manage.py create_default_stream_groups -s gsoc-1,gsoc-2,gsoc-3 -d "Google summer of code"  -r zulip
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
         parser.add_argument(
             "-n",
@@ -34,13 +37,14 @@ Create default stream groups which the users can choose during sign up.
             "-s", "--streams", required=True, help="A comma-separated list of stream names."
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
         streams = []
         stream_names = {stream.strip() for stream in options["streams"].split(",")}
-        for stream_name in set(stream_names):
+        for stream_name in stream_names:
             stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
@@ -60,4 +64,4 @@ Create default stream groups which the users can choose during sign up.
             print(default_stream_group.description)
             for stream in default_stream_group.streams.all():
                 print(stream.name)
-            print("")
+            print()

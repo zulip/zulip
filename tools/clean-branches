@@ -2,9 +2,9 @@
 set -e
 
 # usage: clean-branches
-# Deletes any local branches which are ancestors of origin/master,
+# Deletes any local branches which are ancestors of origin/main,
 # and also any branches in origin which are ancestors of
-# origin/master and are named like $USER-*.
+# origin/main and are named like $USER-*.
 
 # usage: clean-branches --reviews
 # Deletes all the above mentioned branches as well as branches
@@ -18,13 +18,13 @@ fi
 push_args=()
 
 function is_merged() {
-    ! git rev-list -n 1 origin/master.."$1" | grep -q .
+    ! git rev-list -n 1 origin/main.."$1" | grep -q .
 }
 
 function clean_ref() {
     ref="$1"
     case "$ref" in
-        */master | */HEAD)
+        */main | */HEAD)
             return
             ;;
 
@@ -56,8 +56,8 @@ function clean_ref() {
     esac
 }
 
-if [ "$(git symbolic-ref HEAD)" != 'refs/heads/master' ]; then
-    echo "Check out master before you run this script." >&2
+if [ "$(git symbolic-ref HEAD)" != 'refs/heads/main' ]; then
+    echo "Check out main before you run this script." >&2
     exit 1
 fi
 

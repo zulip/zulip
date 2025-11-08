@@ -1,0 +1,45 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Error") }} | Zulip</title>
+{% endblock %}
+
+{% block error_page_content %}
+<div class="errorbox">
+    <div class="errorcontent">
+        {% if csrf_failure %}
+        <h1 class="lead">{{ _("Access forbidden (403)") }}</h1>
+        <p>
+            {% trans %}
+            Your request could not be completed because your
+            browser did not send the credentials required to authenticate
+            your access. To resolve this issue:
+            {% endtrans %}
+        </p>
+
+        <ol>
+            <li>
+                {% trans %}
+                Make sure that your browser allows cookies for this site.
+                {% endtrans %}
+            </li>
+            <li>
+                {% trans %}
+                Check for any browser privacy settings or extensions
+                that block Referer headers, and disable them for
+                this site.
+                {% endtrans %}
+            </li>
+        </ol>
+        {% elif status_code == 405 %}
+        <h1 class="lead">{{ _("Method not allowed (405)") }}</h1>
+        <p>
+            {% trans %}
+            If this error is unexpected, you can
+            <a href="mailto:{{ support_email }}">contact support</a>.
+            {% endtrans %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

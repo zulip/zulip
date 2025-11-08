@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# This tool generates code in shell which is meant to be inline'd into
+# a larger script; called with a variable name and a path, it produces
+# a script which will result in that variable being set to the path to
+# the contents of that path.
+#
+# This is used in bootstrap-aws-installer to bundle local files into
+# the EC2 user data, so that those canonical versions can be used to
+# bootstrap the host.
+set -eu
+
+var="$1"
+file="$2"
+
+mode="$(stat -c "%a" "$file")"
+
+encoded="$(gzip --stdout "$file" | base64)"
+cat <<embedded-shell-output
+$var="\$(mktemp)"
+chmod "$mode" "\$$var"
+base64 -d <<"encoded-shell-script" | gzip -d > "\$$var"
+$encoded
+encoded-shell-script
+embedded-shell-output

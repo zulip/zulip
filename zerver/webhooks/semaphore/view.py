@@ -1,16 +1,17 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Optional, Tuple
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import get_short_sha
 from zerver.models import UserProfile
 
-# Semaphore Classic Templates
+# Semaphore Classic templates
 
 BUILD_TEMPLATE = """
 [Build {build_number}]({build_url}) {status}:
@@ -25,7 +26,7 @@ DEPLOY_TEMPLATE = """
 * **Server**: {server_name}
 """.strip()
 
-# Semaphore 2.0 Templates
+# Semaphore 2.0 templates
 
 # Currently, Semaphore 2.0 only supports GitHub, while Semaphore Classic
 # supports Bitbucket too. The payload does not have URLs for commits, tags,
@@ -49,14 +50,14 @@ PUSH_TEMPLATE = """
 
 GH_PULL_REQUEST_TEMPLATE = """
 [{pipeline_name}]({workflow_url}) pipeline **{pipeline_result}**:
-* **Pull Request**: [{pull_request_title}]({pull_request_url})
+* **Pull request**: [{pull_request_title}]({pull_request_url})
 * **Branch**: {branch_name}
 * **Author**: [{author_name}]({author_url})
 """.strip()
 
 PULL_REQUEST_TEMPLATE = """
 [{pipeline_name}]({workflow_url}) pipeline **{pipeline_result}**:
-* **Pull Request**: {pull_request_title} (#{pull_request_number})
+* **Pull request**: {pull_request_title} (#{pull_request_number})
 * **Branch**: {branch_name}
 * **Author**: {author_name}
 """.strip()
@@ -86,65 +87,67 @@ GITHUB_URL_TEMPLATES = {
     "user": "https://github.com/{username}",
 }
 
+ALL_EVENT_TYPES = ["build", "tag", "unknown", "branch", "deploy", "pull_request"]
 
-@webhook_view("Semaphore")
-@has_request_variables
+
+@webhook_view("Semaphore", all_event_types=ALL_EVENT_TYPES)
+@typed_endpoint
 def api_semaphore_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    *,
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-
-    content, project_name, branch_name = (
+    content, project_name, branch_name, event = (
         semaphore_classic(payload) if "event" in payload else semaphore_2(payload)
     )
-    subject = (
+    topic_name = (
         TOPIC_TEMPLATE.format(project=project_name, branch=branch_name)
         if branch_name
         else project_name
     )
-    check_send_webhook_message(request, user_profile, subject, content)
-    return json_success()
+    check_send_webhook_message(request, user_profile, topic_name, content, event)
+    return json_success(request)
 
 
-def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
+def semaphore_classic(payload: WildValue) -> tuple[str, str, str, str]:
     # semaphore only gives the last commit, even if there were multiple commits
     # since the last build
-    branch_name = payload["branch_name"]
-    project_name = payload["project_name"]
-    result = payload["result"]
-    event = payload["event"]
-    commit_id = payload["commit"]["id"]
-    commit_url = payload["commit"]["url"]
-    author_email = payload["commit"]["author_email"]
-    message = summary_line(payload["commit"]["message"])
+    branch_name = payload["branch_name"].tame(check_string)
+    project_name = payload["project_name"].tame(check_string)
+    result = payload["result"].tame(check_string)
+    event = payload["event"].tame(check_string)
+    commit_id = payload["commit"]["id"].tame(check_string)
+    commit_url = payload["commit"]["url"].tame(check_string)
+    author_email = payload["commit"]["author_email"].tame(check_string)
+    message = summary_line(payload["commit"]["message"].tame(check_string))
 
     if event == "build":
-        build_url = payload["build_url"]
-        build_number = payload["build_number"]
+        build_url = payload["build_url"].tame(check_string)
+        build_number = payload["build_number"].tame(check_int)
         content = BUILD_TEMPLATE.format(
             build_number=build_number,
             build_url=build_url,
             status=result,
-            commit_hash=commit_id[:7],
+            commit_hash=get_short_sha(commit_id),
             commit_message=message,
             commit_url=commit_url,
             email=author_email,
         )
 
     elif event == "deploy":
-        build_url = payload["build_html_url"]
-        build_number = payload["build_number"]
-        deploy_url = payload["html_url"]
-        deploy_number = payload["number"]
-        server_name = payload["server_name"]
+        build_url = payload["build_html_url"].tame(check_string)
+        build_number = payload["build_number"].tame(check_int)
+        deploy_url = payload["html_url"].tame(check_string)
+        deploy_number = payload["number"].tame(check_int)
+        server_name = payload["server_name"].tame(check_string)
         content = DEPLOY_TEMPLATE.format(
             deploy_number=deploy_number,
             deploy_url=deploy_url,
             build_number=build_number,
             build_url=build_url,
             status=result,
-            commit_hash=commit_id[:7],
+            commit_hash=get_short_sha(commit_id),
             commit_message=message,
             commit_url=commit_url,
             email=author_email,
@@ -154,42 +157,43 @@ def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str]:
     else:  # should never get here
         content = f"{event}: {result}"
 
-    return content, project_name, branch_name
+    return content, project_name, branch_name, event
 
 
-def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
-    repo_url = payload["repository"]["url"]
-    project_name = payload["project"]["name"]
-    organization_name = payload["organization"]["name"]
-    author_name = payload["revision"]["sender"]["login"]
-    workflow_id = payload["workflow"]["id"]
+def semaphore_2(payload: WildValue) -> tuple[str, str, str | None, str]:
+    repo_url = payload["repository"]["url"].tame(check_string)
+    project_name = payload["project"]["name"].tame(check_string)
+    organization_name = payload["organization"]["name"].tame(check_string)
+    author_name = payload["revision"]["sender"]["login"].tame(check_string)
+    workflow_id = payload["workflow"]["id"].tame(check_string)
     context = dict(
         author_name=author_name,
         author_url=GITHUB_URL_TEMPLATES["user"].format(repo_url=repo_url, username=author_name),
-        pipeline_name=payload["pipeline"]["name"],
-        pipeline_result=payload["pipeline"]["result"],
+        pipeline_name=payload["pipeline"]["name"].tame(check_string),
+        pipeline_result=payload["pipeline"]["result"].tame(check_string),
         workflow_url=f"https://{organization_name}.semaphoreci.com/workflows/{workflow_id}",
     )
+    event = payload["revision"]["reference_type"].tame(check_string)
 
-    if payload["revision"]["reference_type"] == "branch":  # push event
-        commit_id = payload["revision"]["commit_sha"]
-        branch_name = payload["revision"]["branch"]["name"]
+    if event == "branch":  # push event
+        commit_id = payload["revision"]["commit_sha"].tame(check_string)
+        branch_name = payload["revision"]["branch"]["name"].tame(check_string)
         context.update(
             branch_name=branch_name,
             commit_id=commit_id,
-            commit_hash=commit_id[:7],
-            commit_message=summary_line(payload["revision"]["commit_message"]),
+            commit_hash=get_short_sha(commit_id),
+            commit_message=summary_line(payload["revision"]["commit_message"].tame(check_string)),
             commit_url=GITHUB_URL_TEMPLATES["commit"].format(
                 repo_url=repo_url, commit_id=commit_id
             ),
         )
         template = GH_PUSH_TEMPLATE if is_github_repo(repo_url) else PUSH_TEMPLATE
         content = template.format(**context)
-    elif payload["revision"]["reference_type"] == "pull_request":
+    elif event == "pull_request":
         pull_request = payload["revision"]["pull_request"]
-        branch_name = pull_request["branch_name"]
-        pull_request_title = pull_request["name"]
-        pull_request_number = pull_request["number"]
+        branch_name = pull_request["branch_name"].tame(check_string)
+        pull_request_title = pull_request["name"].tame(check_string)
+        pull_request_number = pull_request["number"].tame(check_string)
         pull_request_url = GITHUB_URL_TEMPLATES["pull_request"].format(
             repo_url=repo_url, pr_number=pull_request_number
         )
@@ -201,9 +205,9 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         )
         template = GH_PULL_REQUEST_TEMPLATE if is_github_repo(repo_url) else PULL_REQUEST_TEMPLATE
         content = template.format(**context)
-    elif payload["revision"]["reference_type"] == "tag":
+    elif event == "tag":
         branch_name = ""
-        tag_name = payload["revision"]["tag"]["name"]
+        tag_name = payload["revision"]["tag"]["name"].tame(check_string)
         tag_url = GITHUB_URL_TEMPLATES["tag"].format(repo_url=repo_url, tag_name=tag_name)
         context.update(
             tag_name=tag_name,
@@ -213,13 +217,13 @@ def semaphore_2(payload: Dict[str, Any]) -> Tuple[str, str, Optional[str]]:
         content = template.format(**context)
     else:  # should never get here: unknown event
         branch_name = ""
-        context.update(event_name=payload["revision"]["reference_type"])
+        context.update(event_name=event)
         content = DEFAULT_TEMPLATE.format(**context)
-    return content, project_name, branch_name
+    return content, project_name, branch_name, event
 
 
 def is_github_repo(repo_url: str) -> bool:
-    return urlparse(repo_url).hostname == "github.com"
+    return urlsplit(repo_url).hostname == "github.com"
 
 
 def summary_line(message: str) -> str:

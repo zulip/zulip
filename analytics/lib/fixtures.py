@@ -1,6 +1,5 @@
 from math import sqrt
-from random import gauss, random, seed
-from typing import List
+from random import Random
 
 from analytics.lib.counts import CountStat
 
@@ -16,7 +15,7 @@ def generate_time_series_data(
     frequency: str = CountStat.DAY,
     partial_sum: bool = False,
     random_seed: int = 26,
-) -> List[int]:
+) -> list[int]:
     """
     Generate semi-realistic looking time series data for testing analytics graphs.
 
@@ -36,6 +35,8 @@ def generate_time_series_data(
     partial_sum -- If True, return partial sum of the series.
     random_seed -- Seed for random number generator.
     """
+    rng = Random(random_seed)
+
     if frequency == CountStat.HOUR:
         length = days * 24
         seasonality = [non_business_hours_base] * 24 * 7
@@ -44,13 +45,13 @@ def generate_time_series_data(
                 seasonality[24 * day + hour] = business_hours_base
         holidays = []
         for i in range(days):
-            holidays.extend([random() < holiday_rate] * 24)
+            holidays.extend([rng.random() < holiday_rate] * 24)
     elif frequency == CountStat.DAY:
         length = days
         seasonality = [8 * business_hours_base + 16 * non_business_hours_base] * 5 + [
             24 * non_business_hours_base
         ] * 2
-        holidays = [random() < holiday_rate for i in range(days)]
+        holidays = [rng.random() < holiday_rate for i in range(days)]
     else:
         raise AssertionError(f"Unknown frequency: {frequency}")
     if length < 2:
@@ -58,20 +59,17 @@ def generate_time_series_data(
             f"Must be generating at least 2 data points. Currently generating {length}"
         )
     growth_base = growth ** (1.0 / (length - 1))
-    values_no_noise = [
-        seasonality[i % len(seasonality)] * (growth_base ** i) for i in range(length)
-    ]
+    values_no_noise = [seasonality[i % len(seasonality)] * (growth_base**i) for i in range(length)]
 
-    seed(random_seed)
-    noise_scalars = [gauss(0, 1)]
+    noise_scalars = [rng.gauss(0, 1)]
     for i in range(1, length):
         noise_scalars.append(
-            noise_scalars[-1] * autocorrelation + gauss(0, 1) * (1 - autocorrelation)
+            noise_scalars[-1] * autocorrelation + rng.gauss(0, 1) * (1 - autocorrelation)
         )
 
     values = [
         0 if holiday else int(v + sqrt(v) * noise_scalar * spikiness)
-        for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays)
+        for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays, strict=False)
     ]
     if partial_sum:
         for i in range(1, length):

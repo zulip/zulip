@@ -1,0 +1,532 @@
+.markdown {
+    /* Copied from app_variables.css to be used in portico pages. */
+    --color-copy-button: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-button-hover: hsl(229deg 9% 36%);
+    --color-copy-button-active: color-mix(
+        in oklch,
+        hsl(229deg 9% 36%) 70%,
+        transparent
+    );
+    --color-copy-button-success: hsl(146deg 90% 27%);
+    /* User circles */
+    /* stylelint-disable color-no-hex */
+    --color-user-circle-active: light-dark(#43a35e, #4cdc75);
+    --color-user-circle-idle: light-dark(#f5b266, #ae640a);
+    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    --gradient-user-circle-idle: linear-gradient(
+        to right,
+        var(--color-user-circle-idle) 5%,
+        light-dark(
+                color-mix(
+                    in srgb,
+                    var(--color-user-circle-idle) 78.9%,
+                    transparent
+                ),
+                var(--color-user-circle-idle)
+            )
+            25%,
+        transparent 100%
+    );
+    /* stylelint-enable color-no-hex */
+
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.5;
+
+    & h1[id],
+    h2[id],
+    h3[id],
+    h4[id] {
+        &::before {
+            display: block;
+            content: " ";
+            visibility: hidden;
+        }
+    }
+
+    & h2[id],
+    h3[id],
+    h4[id] {
+        &::before {
+            margin-top: -10px;
+            height: 10px;
+        }
+    }
+
+    & h1 {
+        border-bottom: 1px solid hsl(0deg 0% 93%);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+
+        &[id] {
+            &::before {
+                margin-top: -30px;
+                height: 30px;
+            }
+        }
+
+        &#zulip-administration {
+            font-size: 1.75em;
+            padding: 10px 0;
+            margin-bottom: 0;
+            line-height: 100%;
+        }
+    }
+
+    & h2 {
+        font-size: 1.5em;
+        line-height: 1.25;
+        margin: 20px 0 5px;
+    }
+
+    & h3 {
+        font-size: 1.25em;
+        line-height: 1.25;
+        opacity: 1;
+        margin: 20px 0 5px;
+    }
+
+    & h1,
+    h2,
+    h3 {
+        font-weight: 700;
+        user-select: none;
+
+        &:hover {
+            cursor: pointer;
+
+            &::after {
+                display: inline-block;
+                font: normal normal normal 16px/1 FontAwesome;
+
+                cursor: pointer;
+                content: "\f0c1";
+                margin-left: 5px;
+                vertical-align: middle;
+            }
+        }
+    }
+
+    & h5,
+    h6 {
+        margin: 10px 0;
+        line-height: 20px;
+    }
+
+    /* Since markdown doesn't make it easy to put an HTML element around a
+       markdown table, we instead have a model of putting an empty div
+       before it to configure a specific table's styling. */
+    & div.centered_table + table td:not(:first-child),
+    div.centered_table + table th {
+        text-align: center;
+    }
+
+    .legend_symbol {
+        position: absolute;
+        left: calc(340px);
+        transform: translateX(-50%);
+
+        /* Adjust for 50px closed left sidebar state */
+        @media (width <= 800px) {
+            left: calc(5% + 50px);
+        }
+    }
+
+    .legend_label {
+        position: relative;
+        left: calc(30px);
+    }
+
+    & li {
+        line-height: 150%;
+    }
+
+    & ol {
+        counter-reset: item;
+        list-style: none;
+
+        & > li {
+            position: relative;
+            vertical-align: top;
+            /* This needs to be wide enough for 2-digit numbers. */
+            padding-left: 33px;
+            top: -2px;
+            counter-increment: item;
+
+            &::before {
+                position: absolute;
+                top: 0;
+                left: 0;
+                content: counter(item);
+                display: inline-block;
+                vertical-align: top;
+                padding: 3px 6.5px 3px 7.5px;
+                margin-right: 5px;
+                background-color: hsl(170deg 48% 54%);
+                color: hsl(0deg 0% 100%);
+                border-radius: 100%;
+                font-size: 0.9em;
+                line-height: 1.1;
+                text-align: center;
+            }
+
+            .codehilite {
+                background-color: hsl(0deg 0% 100%);
+
+                & pre {
+                    white-space: pre;
+                    overflow-x: auto;
+                }
+            }
+
+            & > ul {
+                margin-bottom: 5px;
+            }
+        }
+
+        @media (width <= 500px) {
+            margin-left: 0;
+        }
+    }
+
+    & ul {
+        margin: 0 10px 15px 25px;
+
+        /* Avoid extra whitespace after nested bulleted lists. */
+        & ul {
+            margin: 0 20px;
+        }
+
+        & > li {
+            margin: 5px 0 10px;
+
+            & > p {
+                margin: 0 0 5px;
+            }
+
+            & > p:first-child {
+                margin: 0;
+            }
+        }
+    }
+
+    .content {
+        padding: 30px;
+        max-width: 700px;
+        background-color: hsl(0deg 0% 100%);
+
+        & ol li p:not(:first-child) {
+            display: block;
+        }
+
+        & > ol {
+            margin: 15px 10px;
+
+            & > li {
+                margin: 2.5px 0;
+            }
+        }
+
+        & i.icon-collapsed-state {
+            transform: rotate(270deg);
+        }
+
+        @media (width <= 500px) {
+            padding: 10px;
+        }
+    }
+
+    & i.zulip-icon {
+        margin: 0 2px 2px;
+        vertical-align: middle;
+    }
+
+    & i.zulip-icon.mobile-help {
+        color: hsl(244deg 69% 62%);
+    }
+
+    & a {
+        color: hsl(176deg 46% 41%);
+        font-weight: 600;
+
+        & code {
+            color: hsl(176deg 46% 41%);
+        }
+    }
+
+    & strong {
+        font-weight: 600;
+    }
+
+    & img {
+        vertical-align: top;
+        box-shadow: 0 0 4px hsl(0deg 0% 0% / 5%);
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+
+        &.inline {
+            height: 1.4em;
+            box-shadow: none;
+        }
+
+        &.emoji-small {
+            width: 20px;
+            box-shadow: none;
+            border: none;
+            vertical-align: sub;
+        }
+
+        &.emoji-big {
+            width: 25px;
+            box-shadow: none;
+            border: none;
+        }
+
+        &.help-center-icon {
+            width: 24px;
+            box-shadow: none;
+            border: none;
+        }
+    }
+
+    .warn,
+    .tip,
+    .keyboard_tip {
+        position: relative;
+        display: block;
+        background-color: hsl(210deg 22% 96%);
+        border: 1px solid hsl(210deg 22% 90%);
+        border-radius: 4px;
+        padding: 10px;
+        margin: 5px 0;
+
+        & p {
+            margin-bottom: 0;
+        }
+
+        & p:first-of-type {
+            display: inline;
+        }
+    }
+
+    .tip,
+    .keyboard_tip {
+        background-color: hsl(46deg 63% 95%);
+        border: 1px solid hsl(46deg 63% 84%);
+    }
+
+    .tip::before {
+        display: inline;
+        content: "\f0eb   Tip:  ";
+        font-family: FontAwesome, "Source Sans 3 VF", sans-serif;
+        font-weight: 600;
+    }
+
+    .keyboard_tip::before {
+        display: inline;
+        content: "\f11c   Keyboard shortcut:  ";
+        font-family: FontAwesome, "Source Sans 3 VF", sans-serif;
+        font-weight: 600;
+    }
+
+    .user-circle {
+        /* We make the circles slightly larger than in the
+           sidebar UI, so they look good next to the copy. */
+        font-size: 0.7em;
+        display: inline-block;
+        /* 1.5px at 11.2px/1em */
+        vertical-align: 0.1339em;
+    }
+
+    .user-circle-active {
+        color: var(--color-user-circle-active);
+    }
+
+    .user-circle-idle {
+        background: var(--gradient-user-circle-idle);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .with_avatar .user-circle-idle {
+        background: var(--gradient-user-circle-idle-avatar);
+    }
+
+    .user-circle-offline {
+        color: var(--color-user-circle-offline);
+    }
+
+    .user-circle-deactivated {
+        color: var(--color-user-circle-deactivated);
+    }
+
+    & kbd {
+        /* Same as kbd in app_components.css */
+        display: inline-block;
+        border: 1px solid hsl(0deg 0% 80%);
+        border-radius: 4px;
+        font-weight: 600;
+        white-space: nowrap;
+        background-color: hsl(0deg 0% 98%);
+        color: hsl(0deg 0% 20%);
+        text-shadow: 0 1px 0 hsl(0deg 0% 100%);
+        /* Different from app_components.css */
+        /* Removed margin setting */
+        font-size: 0.85em;
+        padding: 0 0.4em;
+
+        &.arrow-key {
+            /* Same as in informational_overlays.css */
+            line-height: 1;
+            padding: 0 0.2em 0.2em;
+            /* Different from informational_overlays.css */
+            font-size: 1.2em;
+        }
+    }
+
+    & code {
+        /* Same font-family as zulip.css */
+        font-family: "Source Code Pro", monospace;
+        /* Same as base rules for code elements in rendered_markdown.css */
+        font-size: 0.825em;
+        unicode-bidi: embed;
+        direction: ltr;
+        color: hsl(0deg 0% 0%);
+        border-radius: 3px;
+        /* Different from base rules for code elements in rendered_markdown.css */
+        white-space: initial;
+        padding: 0 4px;
+        background-color: hsl(0deg 0% 93%);
+        overflow-wrap: break-word;
+    }
+
+    .codehilite {
+        /* Relative positioning is used to place the copy-to-clipboard button
+           in the top-right corner. */
+        position: relative;
+    }
+
+    & pre {
+        & code {
+            font-size: 14px;
+            white-space: pre-wrap;
+            padding: 0;
+            color: inherit;
+            background-color: transparent;
+            border: 0;
+        }
+    }
+
+    .copy-codeblock {
+        cursor: pointer;
+        /* Invisible default button */
+        background: none;
+        border: none;
+        padding: 0;
+        position: absolute;
+        /* Position the button in the top-right corner */
+        top: 10px;
+        right: 10px;
+        line-height: 3px;
+
+        &:focus {
+            outline-offset: -1px;
+            outline-color: hsl(176deg 46% 41%);
+        }
+    }
+
+    .copy-button {
+        display: flex;
+        border-radius: 4px;
+        color: var(--color-copy-button);
+        /* 2px at 16px/1em */
+        padding: 0.125em;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color-copy-button-hover);
+        }
+
+        &:active {
+            color: var(--color-copy-button-active);
+        }
+
+        &.copy-button-success {
+            color: var(--color-copy-button-success);
+        }
+    }
+
+    .tabbed-section {
+        & ol {
+            margin-left: 15px;
+            margin-top: 10px;
+        }
+
+        & ul.nav {
+            margin: 0;
+
+            & li {
+                display: inline-block;
+                padding: 5px 14px;
+                margin: 0;
+
+                cursor: pointer;
+
+                &.active {
+                    color: hsl(176deg 46% 41%);
+                    margin-bottom: -1px;
+
+                    border: 1px solid hsl(0deg 0% 87%);
+                    border-bottom: 1px solid hsl(0deg 0% 100%);
+                    border-radius: 4px 4px 0 0;
+                }
+            }
+        }
+
+        &.no-tabs ul.nav {
+            display: none;
+        }
+
+        .blocks {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid hsl(0deg 0% 87%);
+
+            .tab-content {
+                display: none;
+            }
+        }
+
+        &.has-tabs .blocks {
+            border-radius: 0 6px 6px;
+        }
+
+        &.no-tabs .blocks {
+            border-radius: 6px;
+        }
+
+        &.no-tabs .blocks > .tab-content,
+        &.has-tabs .blocks > .active {
+            display: block;
+        }
+    }
+
+    & blockquote {
+        padding: 0 0 0 15px;
+        margin: 0 0 20px;
+        border-left: 5px solid hsl(0deg 0% 93%);
+
+        & p {
+            font-size: 17.5px;
+            font-weight: 300;
+            line-height: 1.25;
+            margin-bottom: 0;
+        }
+    }
+}

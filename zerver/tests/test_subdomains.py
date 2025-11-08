@@ -1,8 +1,13 @@
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 from unittest import mock
 
-from zerver.lib.subdomains import get_subdomain
+from django.conf import settings
+
+import zerver.lib.upload
+from zerver.lib.subdomains import get_subdomain, is_static_or_current_realm_url
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import create_s3_buckets, use_s3_backend
 from zerver.models import Realm
 
 
@@ -57,3 +62,44 @@ class SubdomainsTest(ZulipTestCase):
         test(ROOT, "foo.example.org", external_host="example.org:12345")
         test(ROOT, "foo.example.org", external_host="example.org:443", plusport=False)
         test("foo", "foo.example.org:443", external_host="example.org:443")
+
+    def test_is_static_or_current_realm_url(self) -> None:
+        realm = self.example_user("hamlet").realm
+
+        def test(url: str) -> bool:
+            return is_static_or_current_realm_url(url, realm)
+
+        self.assertTrue(test("/static/images/logo/zulip-org-logo.svg"))
+        self.assertTrue(test("/anything"))
+        self.assertFalse(test("https://zulip.com"))
+        self.assertFalse(test("http://zulip.com"))
+        self.assertTrue(test(f"{realm.url}"))
+
+        self.assertFalse(test(f"{realm.url}@www.google.com"))
+
+        # We don't have an existing configuration STATIC_URL with this
+        # format, but it's worth testing in case that changes.
+        with self.settings(STATIC_URL="https://zulipstatic.example.com"):
+            evil_url = f"{settings.STATIC_URL}@evil.example.com"
+            self.assertEqual(evil_url, "https://zulipstatic.example.com@evil.example.com")
+            self.assertTrue(test(f"{settings.STATIC_URL}/x"))
+            self.assertFalse(test(evil_url))
+            self.assertFalse(test(f"{evil_url}/x"))
+            self.assertTrue(test(f"{realm.url}"))
+            self.assertTrue(test("/static/images/logo/zulip-org-logo.svg"))
+            self.assertTrue(test("/anything"))
+
+    @use_s3_backend
+    def test_is_static_or_current_realm_url_with_s3(self) -> None:
+        create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        realm = self.example_user("hamlet").realm
+
+        def test(url: str) -> bool:
+            return is_static_or_current_realm_url(url, realm)
+
+        upload_backend = zerver.lib.upload.upload_backend
+        self.assertTrue(test(upload_backend.get_realm_icon_url(realm.id, version=1)))
+        self.assertTrue(test(upload_backend.get_realm_logo_url(realm.id, version=1, night=False)))
+        self.assertTrue(test(upload_backend.get_avatar_url("deadbeefcafe")))
+        self.assertTrue(test(upload_backend.get_emoji_url("emoji.gif", realm.id)))

@@ -2,11 +2,10 @@
 
 from django.db import migrations, models
 
-from zerver.models import generate_email_token_for_stream
+from zerver.models.streams import generate_email_token_for_stream
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0211_add_users_field_to_scheduled_email"),
     ]

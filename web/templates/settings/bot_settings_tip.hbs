@@ -1,0 +1,15 @@
+{{#unless can_create_any_bots}}
+    {{#if can_create_incoming_webhooks}}
+        {{> ../components/banner
+          label=(t "You can create bots that can only send messages.")
+          intent="info"
+          custom_classes="admin-permissions-banner"
+          }}
+    {{else}}
+        {{> ../components/banner
+          label=(t "You do not have permission to create bots.")
+          intent="info"
+          custom_classes="admin-permissions-banner"
+          }}
+    {{/if}}
+{{/unless}}

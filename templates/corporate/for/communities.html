@@ -1,0 +1,82 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Zulip for communities" %}
+
+{% set PAGE_DESCRIPTION = "Zulip is designed with communities in mind, including
+  open-source projects, research collaborations, and volunteer organizations.
+  Reach out for a sponsorship!" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page">
+    <div class="hero bg-education">
+        <div class="bg-dimmer"></div>
+        <h1 class="center">Zulip for communities</h1>
+        <p>
+            Volunteer organizations &nbsp;•&nbsp; Professional communities
+            &nbsp;•&nbsp; Local groups &nbsp;•&nbsp; Support groups
+            &nbsp;•&nbsp; Creator communities &nbsp;•&nbsp; Hobby groups
+            &nbsp;•&nbsp; Alumni communities &nbsp;•&nbsp; Friends and family
+            <br />
+        </p>
+        <div class="hero-text">
+            Learn how the <a href="/case-studies/recurse-center/">Recurse
+            Center</a>, <a href="/case-studies/rust/">Rust language</a>,
+            <a href="/case-studies/asciidoctor/">Asciidoctor</a>, and&nbsp;<a
+            href="/case-studies/lean/">Lean math </a>
+            communities are using Zulip.
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/accounts/go/?next=/sponsorship/" class="button">
+                {{ _('Request sponsorship') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/for/communities.md') }}
+            </div>
+        </div>
+    </div>
+    <div class="bottom-register-buttons extra_margin_before_footer">
+        <div class="bottom-text-large">
+            <p>
+                See Zulip in action in the <a
+                href="https://chat.zulip.org/?show_try_zulip_modal">Zulip
+                development community</a>, or in other open communities that
+                have <a href="/help/communities-directory">opted in</a> to be
+                listed in our
+                <a href="/communities/">directory</a>. Please contact <a
+                href="mailto:sales@zulip.com">sales@zulip.com</a> with any
+                questions.
+            </p>
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/accounts/go/?next=/sponsorship/" class="button">
+                {{ _('Request sponsorship') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

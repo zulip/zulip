@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -eu
 
+# shellcheck source=lib/git-tools.bash
+. "$(dirname "$0")"/lib/git-tools.bash
+
 usage() {
     echo "Usage: $0 <ZULIP_VERSION>" >&2
     exit 1
@@ -26,32 +29,24 @@ fi
 version="$1"
 prefix="zulip-server-$version"
 
+require_clean_work_tree 'build a release tarball'
+
 set -x
 GITID=$(git rev-parse HEAD)
 
-if ! git diff --exit-code >/dev/null; then
-    set +x
-    echo "ERROR: tarballs builds are based on a commit hash so your changes "
-    echo "will not be included; you should commit or stash them based on "
-    echo "what you want and then try again."
-    echo
-    git diff
-    exit 1
-fi
-
 umask 022
 
-TMPDIR=$(mktemp -d)
-TARBALL=$TMPDIR/$prefix.tar
+OUTPUT_DIR=${OUTPUT_DIR:-$(mktemp -d)}
+TARBALL=$OUTPUT_DIR/$prefix.tar
 BASEDIR=$(pwd)
 
 git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
-cd "$TMPDIR"
+cd "$OUTPUT_DIR"
 tar -xf "$TARBALL"
 while read -r i; do
-    rm -r --interactive=never "${TMPDIR:?}/$prefix/$i"
-done <"$TMPDIR/$prefix/tools/release-tarball-exclude.txt"
+    rm -r --interactive=never "${OUTPUT_DIR:?}/$prefix/$i"
+done <"$OUTPUT_DIR/$prefix/tools/release-tarball-exclude.txt"
 tar -cf "$TARBALL" "$prefix"
 rm -rf "$prefix"
 
@@ -63,15 +58,25 @@ fi
 cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
-git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
+git checkout-index -f -a --prefix "$OUTPUT_DIR/$prefix/"
 
 # Add the Git version information file
-./tools/cache-zulip-git-version
-mv zulip-git-version "$TMPDIR/$prefix/"
+if [[ "$version" =~ ^[0-9]+\.[0-9]+(-[0-9a-z]+)?$ ]]; then
+    # We override the merge-base, to avoid having to push the commits before building the tarball.
+    OVERRIDE_MERGE_BASE="$version" ./tools/cache-zulip-git-version
+    generated_version=$(head -n1 zulip-git-version)
+    if [ "$generated_version" != "$version" ]; then
+        echo "Version $version looks like a release version, but is not tagged yet!  Got $generated_version"
+        exit 1
+    fi
+else
+    ./tools/cache-zulip-git-version
+fi
+mv zulip-git-version "$OUTPUT_DIR/$prefix/"
 
-cd "$TMPDIR/$prefix"
+cd "$OUTPUT_DIR/$prefix"
 
-ln -s "$BASEDIR/zulip-py3-venv" .
+env -u PYTHONDEVMODE -u PYTHONWARNINGS uv sync --frozen
 
 # create var/log directory in the new temporary checkout
 mkdir -p "var/log"
@@ -102,13 +107,17 @@ find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png'
 echo "$GITID" >build_id
 echo "$version" >version
 
-cd "$TMPDIR"
+cd "$OUTPUT_DIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/locale" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
+# We don't include starlight_help/dist_no_relative_links since that is only useful for zulip.com
+# and zulip.com doesn't use tarballs for deployment.
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/locale" "$prefix/staticfiles.json" "$prefix/webpack-stats-production.json" "$prefix/starlight_help/dist"
 
 rm -rf "$prefix"
 
 gzip "$TARBALL"
 
 set +x
-echo "Generated $TARBALL.gz"
+TARBALL="$TARBALL.gz"
+
+echo "Generated $TARBALL"

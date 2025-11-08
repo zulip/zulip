@@ -1,6 +1,7 @@
 {
     "channel": "#prometheus-alerts",
     "username": "Alertmanager",
+    "blocks": null,
     "attachments": [
         {
             "title": "[FIRING:2] InstanceDown for api-server (env=\"prod\", severity=\"critical\")",

@@ -1,0 +1,36 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Security | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Making sure your information stays protected is our
+  highest priority. Learn how Zulip’s security strategy covers all aspects of our
+  product and business." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page">
+    <div class="hero bg-pycon security">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Zulip security</h1>
+            <p></p>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/security.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

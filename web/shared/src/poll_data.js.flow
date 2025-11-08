@@ -1,0 +1,46 @@
+// @flow strict
+
+/**
+ * The data encoded in a submessage that acts on a poll widget.
+ *
+ * In reality these are more specific than this type.  But they're currently
+ * completely undocumented in the API:
+ *   https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/.60.2Esubmessages.60.20on.20message.20objects/near/1358493
+ * so we don't attempt to go any further here.
+ */
+type PollEvent = {...};
+
+declare export class PollData {
+    constructor({
+        message_sender_id: number,
+        current_user_id: number,
+        is_my_poll: boolean,
+        question: string,
+        options: interface {entries(): Iterable<[number, string]>},
+        comma_separated_names: (user_ids: number[]) => string,
+        report_error_function: (msg: string) => void,
+    }): void;
+
+    set_question(question: string): void;
+
+    get_question(): string;
+
+    set_input_mode(): void;
+
+    clear_input_mode(): void;
+
+    get_input_mode(): boolean;
+
+    get_widget_data(): {
+        question: string,
+        options: Array<{
+            option: string,
+            names: string,
+            count: number,
+            key: string,
+            current_user_vote: boolean,
+        }>,
+    };
+
+    handle_event(sender_id: number, data: PollEvent): void;
+}

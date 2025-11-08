@@ -1,21 +1,30 @@
 {
   "account_country": "US",
-  "account_name": "Dev account",
+  "account_name": "NORMALIZED",
+  "account_tax_ids": null,
   "amount_due": 80697,
+  "amount_overpaid": 0,
   "amount_paid": 0,
   "amount_remaining": 80697,
-  "application_fee_amount": null,
+  "amount_shipping": 0,
+  "application": null,
   "attempt_count": 0,
   "attempted": false,
   "auto_advance": true,
-  "billing": "charge_automatically",
+  "automatic_tax": {
+    "disabled_reason": null,
+    "enabled": false,
+    "liability": null,
+    "provider": null,
+    "status": null
+  },
+  "automatically_finalizes_at": null,
   "billing_reason": "manual",
-  "charge": null,
   "collection_method": "charge_automatically",
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED0001",
+  "customer": "cus_NORMALIZED",
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -26,102 +35,178 @@
   "default_payment_method": null,
   "default_source": null,
   "default_tax_rates": [],
-  "description": "",
-  "discount": null,
-  "due_date": 1000000000,
+  "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+  "discounts": [],
+  "due_date": null,
+  "effective_at": 1000000000,
   "ending_balance": 0,
   "footer": null,
-  "hosted_invoice_url": "https://pay.stripe.com/invoice/invst_NORMALIZED0000000000000002",
-  "id": "in_NORMALIZED00000000000002",
-  "invoice_pdf": "https://pay.stripe.com/invoice/invst_NORMALIZED0000000000000002/pdf",
+  "from_invoice": null,
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED/test_NORMALIZED?s=ap",
+  "id": "invoice_plan--Invoice.create.2.json",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED/test_NORMALIZED/pdf?s=ap",
+  "issuer": {
+    "type": "self"
+  },
+  "last_finalization_error": null,
+  "latest_revision": null,
   "lines": {
     "data": [
       {
         "amount": 7255,
         "currency": "usd",
         "description": "Additional license (Feb 5, 2013 - Jan 2, 2014)",
+        "discount_amounts": [],
         "discountable": false,
-        "id": "ii_NORMALIZED00000000000003",
-        "invoice_item": "ii_NORMALIZED00000000000003",
+        "discounts": [],
+        "id": "invoice_plan--Invoice.finalize_invoice.2.json",
+        "invoice": "invoice_plan--Invoice.create.2.json",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
+        "parent": {
+          "invoice_item_details": {
+            "invoice_item": "ii_NORMALIZED",
+            "proration": false,
+            "proration_details": {
+              "credited_items": null
+            },
+            "subscription": null
+          },
+          "subscription_item_details": null,
+          "type": "invoice_item_details"
+        },
         "period": {
           "end": 1388631845,
           "start": 1360033445
         },
-        "plan": null,
-        "proration": false,
-        "quantity": 1,
-        "subscription": null,
-        "tax_amounts": [],
-        "tax_rates": [],
-        "type": "invoiceitem"
-      },
-      {
-        "amount": 56000,
-        "currency": "usd",
-        "description": "Zulip Standard - renewal",
-        "discountable": false,
-        "id": "ii_NORMALIZED00000000000004",
-        "invoice_item": "ii_NORMALIZED00000000000004",
-        "livemode": false,
-        "metadata": {},
-        "object": "line_item",
-        "period": {
-          "end": 1388631845,
-          "start": 1357095845
+        "pretax_credit_amounts": [],
+        "pricing": {
+          "price_details": {
+            "price": "price_NORMALIZED",
+            "product": "prod_NORMALIZED"
+          },
+          "type": "price_details",
+          "unit_amount_decimal": "7255"
         },
-        "plan": null,
-        "proration": false,
-        "quantity": 7,
-        "subscription": null,
-        "tax_amounts": [],
-        "tax_rates": [],
-        "type": "invoiceitem"
+        "quantity": 1,
+        "taxes": []
       },
       {
         "amount": 17442,
         "currency": "usd",
         "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
+        "discount_amounts": [],
         "discountable": false,
-        "id": "ii_NORMALIZED00000000000005",
-        "invoice_item": "ii_NORMALIZED00000000000005",
+        "discounts": [],
+        "id": "invoice_plan--Invoice.finalize_invoice.2.json",
+        "invoice": "invoice_plan--Invoice.create.2.json",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
+        "parent": {
+          "invoice_item_details": {
+            "invoice_item": "ii_NORMALIZED",
+            "proration": false,
+            "proration_details": {
+              "credited_items": null
+            },
+            "subscription": null
+          },
+          "subscription_item_details": null,
+          "type": "invoice_item_details"
+        },
         "period": {
           "end": 1357095845,
           "start": 1334113445
         },
-        "plan": null,
-        "proration": false,
+        "pretax_credit_amounts": [],
+        "pricing": {
+          "price_details": {
+            "price": "price_NORMALIZED",
+            "product": "prod_NORMALIZED"
+          },
+          "type": "price_details",
+          "unit_amount_decimal": "5814"
+        },
         "quantity": 3,
-        "subscription": null,
-        "tax_amounts": [],
-        "tax_rates": [],
-        "type": "invoiceitem"
+        "taxes": []
+      },
+      {
+        "amount": 56000,
+        "currency": "usd",
+        "description": "Zulip Cloud Standard - renewal",
+        "discount_amounts": [],
+        "discountable": false,
+        "discounts": [],
+        "id": "invoice_plan--Invoice.finalize_invoice.2.json",
+        "invoice": "invoice_plan--Invoice.create.2.json",
+        "livemode": false,
+        "metadata": {},
+        "object": "line_item",
+        "parent": {
+          "invoice_item_details": {
+            "invoice_item": "ii_NORMALIZED",
+            "proration": false,
+            "proration_details": {
+              "credited_items": null
+            },
+            "subscription": null
+          },
+          "subscription_item_details": null,
+          "type": "invoice_item_details"
+        },
+        "period": {
+          "end": 1388631845,
+          "start": 1357095845
+        },
+        "pretax_credit_amounts": [],
+        "pricing": {
+          "price_details": {
+            "price": "price_NORMALIZED",
+            "product": "prod_NORMALIZED"
+          },
+          "type": "price_details",
+          "unit_amount_decimal": "8000"
+        },
+        "quantity": 7,
+        "taxes": []
       }
     ],
     "has_more": false,
     "object": "list",
     "total_count": 3,
-    "url": "/v1/invoices/in_NORMALIZED00000000000002/lines"
+    "url": "/v1/invoices/invoice_plan--Invoice.create.2.json/lines"
   },
   "livemode": false,
   "metadata": {},
   "next_payment_attempt": 1000000000,
-  "number": "NORMALI-0002",
+  "number": "NORMALIZED",
   "object": "invoice",
-  "paid": false,
-  "payment_intent": "pi_1F96BCGh0CmXqmnwfafGafrD",
+  "on_behalf_of": null,
+  "parent": null,
+  "payment_settings": {
+    "default_mandate": null,
+    "payment_method_options": null,
+    "payment_method_types": null
+  },
   "period_end": 1000000000,
   "period_start": 1000000000,
   "post_payment_credit_notes_amount": 0,
   "pre_payment_credit_notes_amount": 0,
   "receipt_number": null,
+  "rendering": {
+    "amount_tax_display": null,
+    "pdf": {
+      "page_size": "letter"
+    },
+    "template": null,
+    "template_version": null
+  },
+  "shipping_cost": null,
+  "shipping_details": null,
   "starting_balance": 0,
-  "statement_descriptor": "Zulip Standard",
+  "statement_descriptor": "Zulip Cloud Standard",
   "status": "open",
   "status_transitions": {
     "finalized_at": 1000000000,
@@ -129,11 +214,13 @@
     "paid_at": null,
     "voided_at": null
   },
-  "subscription": null,
   "subtotal": 80697,
-  "tax": null,
-  "tax_percent": null,
+  "subtotal_excluding_tax": 80697,
+  "test_clock": null,
   "total": 80697,
-  "total_tax_amounts": [],
+  "total_discount_amounts": [],
+  "total_excluding_tax": 80697,
+  "total_pretax_credit_amounts": [],
+  "total_taxes": [],
   "webhooks_delivered_at": 1000000000
 }

@@ -1,19 +1,20 @@
-from django.db import migrations
+from django.db import migrations, models
+from django.db.models import Q
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0094_realm_filter_url_validator"),
     ]
 
     operations = [
-        migrations.RunSQL(
-            """
-            CREATE INDEX IF NOT EXISTS zerver_usermessage_unread_message_id
-                ON zerver_usermessage (user_profile_id, message_id)
-                WHERE (flags & 1) = 0;
-            """,
-            reverse_sql="DROP INDEX zerver_usermessage_unread_message_id;",
+        migrations.AddIndex(
+            model_name="usermessage",
+            index=models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andz=1),
+                name="zerver_usermessage_unread_message_id",
+            ),
         ),
     ]

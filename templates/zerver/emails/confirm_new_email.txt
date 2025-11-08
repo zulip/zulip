@@ -1,10 +1,10 @@
 {% trans -%}
-Hi {{ user_name }},
+Hi,
 {%- endtrans %}
 
 
 {% trans -%}
-We received a request to change the email address for the Zulip account on {{ realm_uri }} from {{ old_email }} to {{ new_email }}. To confirm this change, please click below:
+We received a request to change the email address for the Zulip account on {{ realm_url }} from {{ old_email }} to {{ new_email }}. To confirm this change, please click below:
 {%- endtrans %}
 
 

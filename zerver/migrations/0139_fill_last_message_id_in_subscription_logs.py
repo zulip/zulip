@@ -1,9 +1,9 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def backfill_last_message_id(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def backfill_last_message_id(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     event_type = ["subscription_created", "subscription_deactivated", "subscription_activated"]
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
     subscription_logs = RealmAuditLog.objects.filter(
@@ -13,7 +13,6 @@ def backfill_last_message_id(apps: StateApps, schema_editor: DatabaseSchemaEdito
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0138_userprofile_realm_name_in_notifications"),
     ]

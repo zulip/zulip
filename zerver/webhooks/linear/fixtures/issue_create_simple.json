@@ -1,0 +1,41 @@
+{
+    "action": "create",
+    "createdAt": "2023-04-11T09:59:47.094Z",
+    "data": {
+        "id": "a4344dc7-7d8d-4b28-a93c-553ac9aba41a",
+        "createdAt": "2023-04-11T09:59:47.094Z",
+        "updatedAt": "2023-04-11T09:59:47.094Z",
+        "number": 43,
+        "title": "Very small font in tooltip",
+        "priority": 0,
+        "boardOrder": 0,
+        "sortOrder": -27663,
+        "teamId": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+        "previousIdentifiers": [],
+        "creatorId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "stateId": "a19a64b3-1d56-4ecb-b40e-d14aee5e9368",
+        "priorityLabel": "No priority",
+        "subscriberIds": [
+            "674c90c8-35ea-454d-8ca4-5548258fd795"
+        ],
+        "labelIds": [],
+        "description": "The tooltips at the \"Select Drawing\" and \"Edit Drawing\" buttons have a very small font and therefore are not very legible. Apart from this, the wording of the text has to be changed to fit better with the overall design pattern.",
+        "descriptionData": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"text\":\"The tooltips at the \\\"Select Drawing\\\" and \\\"Edit Drawing\\\" buttons have a very small font and therefore are not very legible. Apart from this, the wording of the text has to be changed to fit better with the overall design pattern.\",\"type\":\"text\"}]}]}",
+        "state": {
+            "id": "a19a64b3-1d56-4ecb-b40e-d14aee5e9368",
+            "color": "#e2e2e2",
+            "name": "Todo",
+            "type": "unstarted"
+        },
+        "team": {
+            "id": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+            "key": "WEB",
+            "name": "Webhooks"
+        },
+        "labels": []
+    },
+    "url": "https://linear.app/webhooks/issue/WEB-43/very-small-font-in-tooltip",
+    "type": "Issue",
+    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
+    "webhookTimestamp": 1681207187330
+}

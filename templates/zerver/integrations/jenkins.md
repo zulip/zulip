@@ -1,6 +1,6 @@
-1. {!create-stream.md!}
+1. {!create-channel.md!}
 
-1. {!create-a-bot-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
 1. Install the "Zulip" plugin by going to
    **Manage Jenkins > Manage Plugins > Available**,
@@ -31,9 +31,9 @@
    If you don't specify a custom topic, the project name will be used as the
    topic instead. Then click **Save**.
 
-   ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
+    ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
 
-   When your builds fail or succeed, you'll see a message as shown below.
+    When your builds fail or succeed, you'll see a message as shown below.
 
 {!congrats.md!}
 
@@ -49,11 +49,11 @@ To learn more, see the [plugin's README](https://github.com/jenkinsci/zulip-plug
 
 1. Did you set up a post-build action for your project?
 
-1. Does the stream you picked (e.g. `jenkins`) already exist?
+1. Does the stream you picked (e.g., `jenkins`) already exist?
    If not, create the stream and make sure you're subscribed to it.
 
 1. Are your API key and email address correct? Test them
-   using [our curl API](/api).
+   using [our curl API](/api/).
 
 1. Configure a Jenkins log recorder for **jenkins.plugins.zulip**
    and check why your messages fail to send.

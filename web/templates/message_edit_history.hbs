@@ -1,0 +1,65 @@
+{{! Client-side Handlebars template for viewing message edit history. }}
+
+{{#each edited_messages}}
+    <div class="message-edit-message-row overlay-message-row" data-message-edit-history-id="{{timestamp}}">
+        <div class="message-edit-message-info-box overlay-message-info-box" tabindex="0">
+            {{#if is_stream }}
+            <div class="message_header message_header_stream">
+                <div class="message-header-contents" style="background: {{recipient_bar_color}};">
+                    <div class="message_label_clickable stream_label">
+                        <span class="private_message_header_name">{{ edited_by_notice }}</span>
+                    </div>
+                    <div class="recipient_row_date" title="{{t 'Last modified'}}">{{t "{edited_at_time}" }}
+
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="message_header message_header_private_message">
+                <div class="message-header-contents">
+                    <div class="message_label_clickable stream_label">
+                        <span class="private_message_header_name">{{ edited_by_notice }}</span>
+                    </div>
+                    <div class="recipient_row_date" title="{{t 'Last modified'}}">{{t "{edited_at_time}" }}</div>
+                </div>
+            </div>
+            {{/if}}
+            <div class="message_row{{#unless is_stream}} private-message{{/unless}}" role="listitem">
+                <div class="messagebox">
+                    <div class="messagebox-content">
+                        {{#if initial_entry_for_move_history}}
+                        <div class="message_content message_edit_history_content">
+                            <p>{{t "Channel" }}: <span class="highlight_text_inserted">{{ new_stream }}</span></p>
+                            <p>{{t "Topic" }}:
+                                <span class="highlight_text_inserted {{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{ new_topic_display_name }}</span>
+                            </p>
+                        </div>
+                        {{else}}
+                        {{#if stream_changed}}
+                        <div class="message_content message_edit_history_content">
+                            <p>{{t "Channel" }}: <span class="highlight_text_inserted">{{ new_stream }}</span>
+                                <span class="highlight_text_deleted">{{ prev_stream }}</span>
+                            </p>
+                        </div>
+                        {{/if}}
+                        {{#if topic_edited}}
+                        <div class="message_content message_edit_history_content">
+                            <p>{{t "Topic" }}:
+                                <span class="highlight_text_inserted {{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{ new_topic_display_name }}</span>
+                                <span class="highlight_text_deleted {{#if is_empty_string_prev_topic}}empty-topic-display{{/if}}">{{ prev_topic_display_name }}</span>
+                            </p>
+                        </div>
+                        {{/if}}
+                        {{#if body_to_render}}
+                        <div class="message_content rendered_markdown message_edit_history_content">
+                            {{ rendered_markdown body_to_render}}
+                        </div>
+                        {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/each}}
+

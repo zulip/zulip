@@ -1,0 +1,15 @@
+<div
+  class="main-view-banner success message_scheduled_success_compose_banner"
+  data-scheduled-message-id="{{scheduled_message_id}}">
+    <div class="main-view-banner-elements-wrapper">
+        <p class="banner_content">
+            {{#if minimum_scheduled_message_delay_minutes_note}}
+                {{t 'Messages must be scheduled at least {minimum_scheduled_message_delay_minutes} minutes in the future.'}}
+            {{/if}}
+            {{t 'Your message has been scheduled for {deliver_at}.'}}
+            <a href="#scheduled">{{t "View scheduled messages"}}</a>
+        </p>
+        <button class="main-view-banner-action-button undo_scheduled_message" >{{t "Undo"}}</button>
+    </div>
+    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
+</div>

@@ -1,35 +1,38 @@
-from typing import Callable, Dict, Optional, Set, Tuple
+from collections.abc import Callable
+from email.errors import HeaderParseError
+from email.headerregistry import Address
 
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.name_restrictions import is_disposable_domain
 
 # TODO: Move DisposableEmailError, etc. into here.
-from zerver.models import (
+from zerver.models import Realm, RealmDomain
+from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    Realm,
-    RealmDomain,
-    email_to_domain,
-    email_to_username,
-    get_users_by_delivery_email,
-    is_cross_realm_bot_email,
 )
+from zerver.models.users import get_users_by_delivery_email, is_cross_realm_bot_email
 
 
-def validate_disposable(email: str) -> None:
-    if is_disposable_domain(email_to_domain(email)):
+def validate_is_not_disposable(email: str) -> None:
+    try:
+        domain = Address(addr_spec=email).domain
+    except (HeaderParseError, ValueError):
+        raise DisposableEmailError
+
+    if is_disposable_domain(domain):
         raise DisposableEmailError
 
 
 def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
     if not realm.emails_restricted_to_domains:
-        # Should we also do '+' check for non-resticted realms?
+        # Should we also do '+' check for non-restricted realms?
         if realm.disallow_disposable_email_addresses:
-            return validate_disposable
+            return validate_is_not_disposable
 
         # allow any email through
         return lambda email: None
@@ -59,16 +62,17 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
         a small whitelist.
         """
 
-        if "+" in email_to_username(email):
+        address = Address(addr_spec=email)
+        if "+" in address.username:
             raise EmailContainsPlusError
 
-        domain = email_to_domain(email)
+        domain = address.domain.lower()
 
         if domain in allowed_domains:
             return
 
         while len(domain) > 0:
-            subdomain, sep, domain = domain.partition(".")
+            _subdomain, _sep, domain = domain.partition(".")
             if domain in allowed_subdomains:
                 return
 
@@ -93,8 +97,7 @@ def email_allowed_for_realm(email: str, realm: Realm) -> None:
 def validate_email_is_valid(
     email: str,
     validate_email_allowed_in_realm: Callable[[str], None],
-) -> Optional[str]:
-
+) -> str | None:
     try:
         validators.validate_email(email)
     except ValidationError:
@@ -118,9 +121,11 @@ def email_reserved_for_system_bots_error(email: str) -> str:
 
 def get_existing_user_errors(
     target_realm: Realm,
-    emails: Set[str],
+    emails: set[str],
+    *,
+    allow_inactive_mirror_dummies: bool,
     verbose: bool = False,
-) -> Dict[str, Tuple[str, bool]]:
+) -> dict[str, tuple[str, bool]]:
     """
     We use this function even for a list of one emails.
 
@@ -129,7 +134,7 @@ def get_existing_user_errors(
     to cross-realm bots and mirror dummies too.
     """
 
-    errors: Dict[str, Tuple[str, bool]] = {}
+    errors: dict[str, tuple[str, bool]] = {}
 
     users = get_users_by_delivery_email(emails, target_realm).only(
         "delivery_email",
@@ -163,7 +168,7 @@ def get_existing_user_errors(
             # HAPPY PATH!  Most people invite users that don't exist yet.
             return
 
-        if existing_user_profile.is_mirror_dummy:
+        if existing_user_profile.is_mirror_dummy and allow_inactive_mirror_dummies:
             if existing_user_profile.is_active:
                 raise AssertionError("Mirror dummy user is already active!")
             return
@@ -190,7 +195,7 @@ def get_existing_user_errors(
 
 
 def validate_email_not_already_in_realm(
-    target_realm: Realm, email: str, verbose: bool = True
+    target_realm: Realm, email: str, *, allow_inactive_mirror_dummies: bool, verbose: bool = True
 ) -> None:
     """
     NOTE:
@@ -201,10 +206,15 @@ def validate_email_not_already_in_realm(
         for any endpoint that takes multiple emails,
         such as the "invite" interface.
     """
-    error_dict = get_existing_user_errors(target_realm, {email}, verbose)
+    error_dict = get_existing_user_errors(
+        target_realm,
+        {email},
+        allow_inactive_mirror_dummies=allow_inactive_mirror_dummies,
+        verbose=verbose,
+    )
 
     # Loop through errors, the only key should be our email.
     for key, error_info in error_dict.items():
         assert key == email
-        msg, deactivated = error_info
+        msg, _deactivated = error_info
         raise ValidationError(msg)

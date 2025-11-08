@@ -1,0 +1,32 @@
+{
+  "amount": 200000,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": "Zulip Business",
+  "discountable": false,
+  "discounts": [],
+  "id": "stripe_billing_portal_urls_for_remote_server--Event.list.2.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 200000,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1357095845,
+    "start": 1325473445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "8000"
+  },
+  "proration": false,
+  "quantity": 25,
+  "tax_rates": [],
+  "test_clock": null
+}

@@ -1,0 +1,321 @@
+.message_header {
+    vertical-align: middle;
+    text-align: left;
+    /* We can overflow-y if the font size gets big */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    position: relative;
+    z-index: 0;
+    background-color: var(--color-background);
+
+    .message-header-contents {
+        font-size: 1.0714em; /* 15px at 14px em */
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 1.8666em; /* 28px at 15px em */
+        border: 1px solid var(--color-message-header-contents-border);
+        border-bottom-color: var(--color-message-header-contents-border-bottom);
+        border-radius: 7px 7px 0 0;
+    }
+
+    &.message_header_stream {
+        /* Add box shadow to hide message border (first one) and message
+           selected box shadow (second one) that are visible
+           due to top borders of sticky recipient bar being curved. */
+        box-shadow:
+            -1px -5px 0 5px var(--color-background),
+            1px -5px 0 0 var(--color-background);
+
+        & .message_label_clickable {
+            user-select: text;
+            color: var(--color-text-message-header);
+
+            &:hover {
+                color: var(--color-text-message-header);
+                text-decoration: none;
+            }
+        }
+
+        & .message_label_clickable:focus {
+            outline: none;
+            text-decoration: none;
+        }
+
+        .stream_topic_separator {
+            line-height: 0;
+            color: var(--color-message-header-icon-non-interactive);
+            position: relative;
+            top: 0.5px;
+        }
+
+        .stream_topic {
+            display: inline-block;
+            padding: 5px 6px 5px 2px;
+            height: 1.2142em; /* 17px at 14px em */
+            line-height: 1.2142em; /* 17px at 14px em */
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            .message_label_clickable.narrows_by_topic {
+                position: relative;
+                top: 0.5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                span.stream-topic-inner {
+                    white-space: pre;
+                }
+            }
+        }
+
+        .stream-privacy i {
+            font-size: 1.0714em; /* 15px at 14px em */
+
+            &.zulip-icon-globe,
+            &.zulip-icon-hashtag {
+                position: relative;
+                top: -0.5px;
+            }
+        }
+
+        .recipient_bar_controls {
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+
+        .recipient_bar_controls:focus-within {
+            opacity: 1;
+            transition: opacity 0.1s ease-in;
+        }
+
+        /* Show the bar controls on hover with a slight delay */
+        &:hover {
+            .recipient_bar_controls {
+                opacity: 1;
+                transition: opacity 0.15s ease-in 0.1s;
+            }
+        }
+
+        /* Always show controls when header is sticky */
+        &.sticky_header {
+            .recipient_bar_controls {
+                opacity: 1;
+                transition: opacity 0.15s ease-in;
+            }
+        }
+    }
+}
+
+.message_header_private_message {
+    /* This is required for box-shadow appear above the message content. */
+    z-index: 1;
+    box-shadow:
+        -1px -5px 0 5px var(--color-background),
+        1px -5px 0 0 var(--color-background);
+    background-color: var(--color-background);
+
+    .message-header-contents {
+        border-color: var(--color-private-message-header-border);
+        border-bottom-color: var(--color-private-message-header-border-bottom);
+        background-color: var(--color-background-private-message-header);
+    }
+
+    .message_label_clickable {
+        user-select: text;
+        display: flex;
+        padding: 5px 0 5px 10px;
+        font-weight: 600;
+        height: 1.4142em; /* 19px at 14px em */
+        line-height: 1.4142em; /* 19px at 14px em */
+        color: var(--color-text-message-header);
+
+        &:hover {
+            color: var(--color-text-message-header) !important;
+            text-decoration: none;
+        }
+
+        &:focus {
+            outline: none;
+            text-decoration: none;
+        }
+
+        .private_message_header_icon {
+            font-size: 1.0714em; /* 15px at 14px em */
+            position: relative;
+            top: 1px;
+            width: 1.0666em; /* 16px at 15px em */
+            height: 1.0666em; /* 16px at 15px em */
+        }
+
+        .private_message_header_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            i.zulip-icon-bot {
+                vertical-align: middle;
+                position: relative;
+                top: -1px;
+                padding-left: 0.3em;
+            }
+        }
+    }
+}
+
+.message-feed {
+    .recipient_row {
+        /* Browser overlaps extra top padding of message header and
+           the bottom border message if this margin is not present. */
+        margin-bottom: 1px;
+        border-radius: 5px;
+
+        .message_row:last-of-type {
+            border-radius: 0 0 7px 7px;
+            border-bottom: 1px solid var(--color-message-list-border);
+
+            .unread-marker-fill {
+                border-radius: 0 0 0 7px;
+                height: calc(100% - 2px);
+            }
+
+            .messagebox {
+                border-radius: 0 0 7px 7px;
+                padding-bottom: 4px;
+            }
+        }
+
+        .message_header + .message_row {
+            .messagebox {
+                padding-top: 5px;
+            }
+        }
+    }
+
+    .message_header {
+        position: sticky;
+        top: var(--navbar-fixed-height);
+        /* Needs to be higher than the z-index of date_row. */
+        z-index: 4;
+        box-shadow: 0 -1px 0 0 var(--color-background);
+
+        .message-header-contents {
+            margin-top: var(--header-padding-bottom);
+        }
+
+        &.sticky_header {
+            box-shadow: var(--unread-marker-left) -1px 0 0
+                var(--color-background);
+
+            .recipient_row_date {
+                display: block;
+            }
+        }
+    }
+}
+
+.stream_label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 2px 5px 10px;
+    height: 1.2142em; /* 17px at 14px em */
+    line-height: 1.2142em; /* 17px at 14px em */
+    position: relative;
+    top: 0.5px;
+    text-decoration: none;
+    font-weight: 600;
+    overflow: hidden;
+
+    .zulip-icon.zulip-icon-globe {
+        position: relative;
+        top: 1px;
+    }
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    .stream-privacy {
+        min-width: unset;
+        width: 1.1428em; /* 16px at 14px em */
+        height: 1.1428em; /* 16px at 14px em */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .hashtag {
+            padding-right: 0;
+
+            &::after {
+                font-size: 1.1428em; /* 16px at 14px em */
+            }
+        }
+    }
+
+    .message-header-stream-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .message-header-stream-archived {
+        color: var(--color-text-message-header-archived);
+    }
+}
+
+.recipient_bar_controls {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.on_hover_topic_read {
+    opacity: 0.7;
+
+    &:hover {
+        cursor: pointer;
+        opacity: 1;
+    }
+}
+
+.recipient_row_date {
+    color: var(--color-date);
+    font-size: calc(12em / 14);
+    padding: 0 10px;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 17px; /* identical to box height, or 131% */
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding-top: 1px;
+
+    /* Display the date when unchanged only for sticky headers. */
+    &.recipient_row_date_unchanged {
+        display: none;
+
+        .sticky_header & {
+            display: block;
+        }
+    }
+
+    &.hide-date-separator-header {
+        display: none;
+    }
+}
+
+.recipient_bar_icon {
+    color: var(--color-message-header-icon-interactive);
+    opacity: 0.2;
+    padding-left: 6px;
+    padding-right: 6px;
+
+    &:hover {
+        opacity: 0.4 !important;
+        cursor: pointer;
+    }
+}

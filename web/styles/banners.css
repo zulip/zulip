@@ -1,0 +1,232 @@
+.banner-wrapper {
+    container: banner / inline-size;
+}
+
+.banner {
+    box-sizing: border-box;
+    display: grid;
+    grid-template: var(--banner-grid-template-rows) / var(
+            --banner-grid-template-columns
+        );
+    grid-template-areas: var(--banner-grid-template-areas);
+    place-items: start;
+    border: 1px solid;
+    border-radius: 6px;
+}
+
+.banner-link {
+    color: var(--color-text-link);
+    text-decoration: none;
+    text-decoration-color: var(--color-text-link-decoration);
+
+    &:hover {
+        color: var(--color-text-link-hover);
+        text-decoration-color: var(--color-text-link-decoration-hover);
+    }
+
+    &:active {
+        color: var(--color-text-link-active);
+        text-decoration-color: currentcolor;
+    }
+}
+
+.banner-content {
+    grid-area: banner-content;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 0 0.625em; /* 10px at 16px/1em */
+}
+
+.banner-label {
+    /* We allow the banner label to grow and shrink, and set
+       the flex basis to 60% of the query container's width.
+       When the width of the banner label goes below this
+       flex basis value, the banner action buttons are wrapped
+       on to the next line.  */
+    flex: 1 1 60cqw;
+    /* The padding and line-height values for the banner label
+       are identical to those of the action buttons', to match
+       the height of both of these elements. This is required to
+       align the banner children elements vertically, since we
+       cannot use flexbox center alignment as we also need to
+       account for the UI when the banner has a muli-line label.
+    */
+    padding: 0.25em 0; /* 4px at 16px/1em */
+    line-height: 1.25; /* 20px at 16px/1em */
+    text-align: start;
+}
+
+.banner-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em; /* 8px at 16px/1em */
+}
+
+.banner-action-buttons:empty {
+    display: none;
+}
+
+.banner-close-button {
+    display: flex;
+    grid-area: banner-close-button;
+    padding: 0.6875em; /* 11px at 16px/1em */
+    margin-left: 0.3125em; /* 5px at 16px/1em */
+
+    &:focus-visible {
+        outline-offset: -2px;
+    }
+}
+
+.navbar-alert-banner {
+    border: unset;
+    border-bottom: 1px solid;
+    border-radius: 0;
+    place-items: start center;
+
+    .banner-content {
+        justify-content: center;
+        flex-wrap: nowrap;
+    }
+
+    .banner-label {
+        /* Reset to initial value */
+        flex: 0 1 auto;
+    }
+
+    .banner-action-buttons {
+        flex-wrap: nowrap;
+    }
+}
+
+/* This utility class defines the structure of the medium-type
+   navbar banners where the banner action buttons are placed
+   below the banner label. This utility class is required since
+   unlike the normal banners, the navbar counterparts have
+   horizontally centered elements, wherein the flex-basis logic
+   won't apply and we need to manually apply these properties
+   based on the container size queries below. */
+.navbar-alert-medium-banner {
+    .banner-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .banner-label {
+        text-align: center;
+    }
+
+    .banner-action-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@container banner (width >= 44em) and (width < 63em) {
+    .navbar-alert-banner[data-process="desktop-notifications"] {
+        @extend .navbar-alert-medium-banner;
+    }
+}
+
+@container banner (width < 44em) {
+    .navbar-alert-banner {
+        @extend .navbar-alert-medium-banner;
+    }
+}
+
+@container banner (width < 25em) {
+    .banner-content {
+        flex-direction: column;
+    }
+
+    .banner-label {
+        /* Reset to initial value */
+        flex: 0 1 auto;
+    }
+
+    .banner-action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+.banner-neutral {
+    background-color: var(--color-background-neutral-banner);
+    color: var(--color-text-neutral-banner);
+    border-color: var(--color-border-neutral-banner);
+}
+
+.banner-brand {
+    background-color: var(--color-background-brand-banner);
+    color: var(--color-text-brand-banner);
+    border-color: var(--color-border-brand-banner);
+}
+
+.banner-info {
+    background-color: var(--color-background-info-banner);
+    color: var(--color-text-info-banner);
+    border-color: var(--color-border-info-banner);
+}
+
+.banner-success {
+    background-color: var(--color-background-success-banner);
+    color: var(--color-text-success-banner);
+    border-color: var(--color-border-success-banner);
+}
+
+.banner-warning {
+    background-color: var(--color-background-warning-banner);
+    color: var(--color-text-warning-banner);
+    border-color: var(--color-border-warning-banner);
+}
+
+.banner-danger {
+    background-color: var(--color-background-danger-banner);
+    color: var(--color-text-danger-banner);
+    border-color: var(--color-border-danger-banner);
+}
+
+@keyframes popup-banner-fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes popup-banner-fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+}
+
+.popup-banner-animations {
+    animation-name: popup-banner-fadeIn;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+
+    &.fade-out {
+        animation-name: popup-banner-fadeOut;
+    }
+}
+
+.popup-banner {
+    @extend .popup-banner-animations;
+
+    width: 100%;
+}

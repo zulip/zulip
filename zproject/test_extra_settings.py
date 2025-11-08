@@ -1,10 +1,11 @@
 import os
-from typing import Dict, List, Tuple
 
 import ldap
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.lib.db import TimeTrackingConnection
+from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
+from zerver.lib.types import AnalyticsDataUploadLevel
+from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (
@@ -14,7 +15,6 @@ from .settings import (
     EXTERNAL_HOST,
     LOCAL_DATABASE_PASSWORD,
     LOGGING,
-    WEBPACK_LOADER,
 )
 
 FULL_STACK_ZULIP_TEST = "FULL_STACK_ZULIP_TEST" in os.environ
@@ -24,10 +24,7 @@ PUPPETEER_TESTS = "PUPPETEER_TESTS" in os.environ
 FAKE_EMAIL_DOMAIN = "zulip.testserver"
 
 # Clear out the REALM_HOSTS set in dev_settings.py
-REALM_HOSTS: Dict[str, str] = {}
-
-# Used to clone DBs in backend tests.
-BACKEND_DATABASE_TEMPLATE = "zulip_test_template"
+REALM_HOSTS: dict[str, str] = {}
 
 DATABASES["default"] = {
     "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
@@ -37,7 +34,10 @@ DATABASES["default"] = {
     "SCHEMA": "zulip",
     "ENGINE": "django.db.backends.postgresql",
     "TEST_NAME": "django_zulip_tests",
-    "OPTIONS": {"connection_factory": TimeTrackingConnection},
+    "OPTIONS": {
+        "connection_factory": TimeTrackingConnection,
+        "cursor_factory": TimeTrackingCursor,
+    },
 }
 
 
@@ -49,22 +49,21 @@ else:
     CAMO_URI = "https://external-content.zulipcdn.net/external_content/"
     CAMO_KEY = "dummy"
 
-if PUPPETEER_TESTS:
-    # Disable search pills prototype for production use
-    SEARCH_PILLS_ENABLED = False
-
 if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
     RUNNING_OPENAPI_CURL_TEST = True
 
 if "GENERATE_STRIPE_FIXTURES" in os.environ:
     GENERATE_STRIPE_FIXTURES = True
 
+if "GENERATE_LITELLM_FIXTURES" in os.environ:
+    GENERATE_LITELLM_FIXTURES = True
+
 if "BAN_CONSOLE_OUTPUT" in os.environ:
     BAN_CONSOLE_OUTPUT = True
 
 # Decrease the get_updates timeout to 1 second.
 # This allows frontend tests to proceed quickly to the next test step.
-POLL_TIMEOUT = 1000
+EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS = 1
 
 # Stores the messages in `django.core.mail.outbox` rather than sending them.
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
@@ -85,7 +84,6 @@ AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch(
     "ou=users,dc=zulip,dc=com", ldap.SCOPE_ONELEVEL, "(mail=%(email)s)"
 )
 
-TEST_SUITE = True
 RATE_LIMITING = False
 RATE_LIMITING_AUTHENTICATE = False
 # Don't use RabbitMQ from the test suite -- the user_profile_ids for
@@ -93,10 +91,6 @@ RATE_LIMITING_AUTHENTICATE = False
 # real app.
 USING_RABBITMQ = False
 
-# Disable the tutorial because it confuses the client tests.
-TUTORIAL_ENABLED = False
-
-# Disable use of memcached for caching
 CACHES["database"] = {
     "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     "LOCATION": "zulip-database-test-cache",
@@ -112,26 +106,15 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Use production config from Webpack in tests
 if PUPPETEER_TESTS:
-    WEBPACK_FILE = "webpack-stats-production.json"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "webpack-stats-production.json")
 else:
-    WEBPACK_FILE = os.path.join("var", "webpack-stats-test.json")
-WEBPACK_LOADER["DEFAULT"]["BUNDLE_DIR_NAME"] = "webpack-bundles/"
-WEBPACK_LOADER["DEFAULT"]["STATS_FILE"] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE)
-
-# Don't auto-restart Tornado server during automated tests
-AUTORELOAD = False
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-test.json")
+WEBPACK_BUNDLES = "webpack-bundles/"
 
 if not PUPPETEER_TESTS:
     # Use local memory cache for backend tests.
     CACHES["default"] = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    }
-
-    # This logger is used only for automated tests validating the
-    # error-handling behavior of the zulip_admins handler.
-    LOGGING["loggers"]["zulip.test_zulip_admins_handler"] = {
-        "handlers": ["zulip_admins"],
-        "propagate": False,
     }
 
     # Here we set various loggers to be less noisy for unit tests.
@@ -140,6 +123,7 @@ if not PUPPETEER_TESTS:
 
     set_loglevel("zulip.requests", "CRITICAL")
     set_loglevel("zulip.management", "CRITICAL")
+    set_loglevel("zulip.auth", "WARNING")
     set_loglevel("django.request", "ERROR")
     set_loglevel("django_auth_ldap", "WARNING")
     set_loglevel("fakeldap", "ERROR")
@@ -147,29 +131,33 @@ if not PUPPETEER_TESTS:
     set_loglevel("zerver.lib.push_notifications", "WARNING")
     set_loglevel("zerver.lib.digest", "ERROR")
     set_loglevel("zerver.lib.email_mirror", "ERROR")
-    set_loglevel("zerver.worker.queue_processors", "WARNING")
+    set_loglevel("zerver.worker", "WARNING")
     set_loglevel("stripe", "WARNING")
 
-# Enable file:/// hyperlink support by default in tests
-ENABLE_FILE_LINKS = True
-
-# These settings are set dynamically in `zerver/lib/test_runner.py`:
-TEST_WORKER_DIR = ""
+# This is set dynamically in `zerver/lib/test_runner.py`.
 # Allow setting LOCAL_UPLOADS_DIR in the environment so that the
 # frontend/API tests in test_server.py can control this.
 if "LOCAL_UPLOADS_DIR" in os.environ:
     LOCAL_UPLOADS_DIR = os.getenv("LOCAL_UPLOADS_DIR")
+    assert LOCAL_UPLOADS_DIR is not None
+    LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars")
+    LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files")
 # Otherwise, we use the default value from dev_settings.py
 
 S3_KEY = "test-key"
 S3_SECRET_KEY = "test-secret-key"
 S3_AUTH_UPLOADS_BUCKET = "test-authed-bucket"
 S3_AVATAR_BUCKET = "test-avatar-bucket"
+S3_EXPORT_BUCKET = "test-export-bucket"
 
 INLINE_URL_EMBED_PREVIEW = False
 
 HOME_NOT_LOGGED_IN = "/login/"
 LOGIN_URL = "/accounts/login/"
+
+# If dev_settings.py found a key or cert file to use here, ignore it.
+APNS_TOKEN_KEY_FILE: str | None = None
+APNS_CERT_FILE: str | None = None
 
 # By default will not send emails when login occurs.
 # Explicitly set this to True within tests that must have this on.
@@ -193,11 +181,20 @@ SOCIAL_AUTH_APPLE_KEY = "KEYISKEY"
 SOCIAL_AUTH_APPLE_TEAM = "TEAMSTRING"
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
 
-APPLE_JWK = get_from_file_if_exists("zerver/tests/fixtures/apple/jwk")
-APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
-    "zerver/tests/fixtures/apple/token_gen_private_key"
-)
 
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, OIDCIdPConfigDict] = {
+    "testoidc": {
+        "display_name": "Test OIDC",
+        "oidc_url": "https://example.com/api/openid",
+        "display_icon": None,
+        "client_id": "key",
+        "secret": "secret",
+    }
+}
+SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
+
+
+VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "account_id"
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 
@@ -207,11 +204,24 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
-PUSH_NOTIFICATION_BOUNCER_URL = None
 
-THUMBOR_URL = "http://127.0.0.1:9995"
-THUMBNAIL_IMAGES = True
-THUMBOR_SERVES_CAMO = True
+DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = False
+ZULIP_SERVICES_URL = f"http://push.{EXTERNAL_HOST}"
+
+# Disable all Zulip services by default. Tests can activate them by
+# overriding settings explicitly when they want to enable something,
+# often using activate_push_notification_service.
+ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
+ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
+ZULIP_SERVICE_SECURITY_ALERTS = False
+
+# Hack: This should be computed in computed_settings, but the transmission
+# of test settings overrides is wonky. See test_settings for more details.
+ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
+
+# The most common value used by tests. Set it as the default so that it doesn't
+# have to be repeated every time.
+ZULIP_SERVICES_URL = "https://push.zulip.org.example.com"
 
 # Logging the emails while running the tests adds them
 # to /emails page.
@@ -239,10 +249,12 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "emailAddress": "support@example.com",
 }
 
-SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {
     "test_idp": {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+        "slo_url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/Logout",
+        "sp_initiated_logout_enabled": True,
         "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",
@@ -253,10 +265,42 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS = {
     },
 }
 
-RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
+RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {
     "api_by_user": [],
+    "api_by_ip": [],
+    "api_by_remote_server": [],
     "authenticate_by_username": [],
+    "sends_email_by_ip": [],
+    "email_change_by_user": [],
     "password_reset_form_by_email": [],
+    "sends_email_by_remote_server": [],
 }
 
-FREE_TRIAL_DAYS = None
+CLOUD_FREE_TRIAL_DAYS: int | None = None
+SELF_HOSTING_FREE_TRIAL_DAYS: int | None = None
+
+SCIM_CONFIG: dict[str, SCIMConfigDict] = {
+    "zulip": {
+        "bearer_token": "token1234",
+        "scim_client_name": "test-scim-client",
+        "name_formatted_included": True,
+    }
+}
+
+# This override disables the grace period for undoing resolving/unresolving
+# a topic in tests.
+# This allows tests to not worry about the special behavior during the grace period.
+# Otherwise they would have to do lots of mocking of the timer to work around this.
+RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 0
+
+KATEX_SERVER = False
+
+ROOT_DOMAIN_LANDING_PAGE = False
+
+# Disable verifying webhook signatures in tests by default.
+# Tests that intend to verify webhook signatures should override this setting.
+VERIFY_WEBHOOK_SIGNATURES = False
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "full_name": "cn",
+}

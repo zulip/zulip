@@ -20,7 +20,7 @@ the main server app, this is [zulip/zulip][github-zulip-zulip].
 
 Next, clone your fork to your local machine:
 
-```
+```console
 $ git clone --config pull.rebase https://github.com/YOUR_USERNAME/zulip.git
 Cloning into 'zulip'
 remote: Counting objects: 86768, done.
@@ -32,12 +32,12 @@ Checking connectivity... done.
 ```
 
 (The `--config pull.rebase` option configures Git so that `git pull`
-will behave like `git pull --rebase` by default.  Using `git pull
---rebase` to update your changes to resolve merge conflicts is
-expected by essentially all of open source projects, including Zulip.
-You can also set that option after cloning using `git config --add
-pull.rebase true`, or just be careful to always run `git pull
---rebase`, never `git pull`).
+will behave like `git pull --rebase` by default. Using
+`git pull --rebase` to update your changes to resolve merge conflicts
+is expected by essentially all of open source projects, including
+Zulip. You can also set that option after cloning using
+`git config --add pull.rebase true`, or just be careful to always run
+`git pull --rebase`, never `git pull`).
 
 Note: If you receive an error while cloning, you may not have [added your ssh
 key to GitHub][github-help-add-ssh-key].
@@ -56,7 +56,7 @@ your fork.
 
 First, show the currently configured remote repository:
 
-```
+```console
 $ git remote -v
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)
 origin  git@github.com:YOUR_USERNAME/zulip.git (push)
@@ -65,10 +65,10 @@ origin  git@github.com:YOUR_USERNAME/zulip.git (push)
 Note: If you've cloned the repository using a graphical client, you may already
 have the upstream remote repository configured. For example, when you clone
 [zulip/zulip][github-zulip-zulip] with the GitHub desktop client it configures
-the remote repository `zulip` and you see the following output from `git remote
--v`:
+the remote repository `zulip` and you see the following output from
+`git remote -v`:
 
-```
+```console
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)
 origin  git@github.com:YOUR_USERNAME/zulip.git (push)
 zulip    https://github.com/zulip/zulip.git (fetch)
@@ -78,13 +78,13 @@ zulip    https://github.com/zulip/zulip.git (push)
 If your client hasn't automatically configured a remote for zulip/zulip, you'll
 need to with:
 
-```
+```console
 $ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 Finally, confirm that the new remote repository, upstream, has been configured:
 
-```
+```console
 $ git remote -v
 origin  git@github.com:YOUR_USERNAME/zulip.git (fetch)
 origin  git@github.com:YOUR_USERNAME/zulip.git (push)
@@ -115,13 +115,13 @@ will run tests for new refs you push to GitHub and email you the outcome
 
 Running CI against your fork can help save both your and the
 Zulip maintainers time by making it easy to test a change fully before
-submitting a pull request.  We generally recommend a workflow where as
+submitting a pull request. We generally recommend a workflow where as
 you make changes, you use a fast edit-refresh cycle running individual
-tests locally until your changes work.  But then once you've gotten
+tests locally until your changes work. But then once you've gotten
 the tests you'd expect to be relevant to your changes working, push a
 branch to run the full test suite in GitHub Actions before
-you create a pull request.  While you wait for GitHub Actions jobs
-to run, you can start working on your next task.  When the tests finish,
+you create a pull request. While you wait for GitHub Actions jobs
+to run, you can start working on your next task. When the tests finish,
 you can create a pull request that you already know passes the tests.
 
 GitHub Actions will run all the jobs by default on your forked repository.
@@ -135,6 +135,6 @@ You can check the `Actions` tab of your repository to see the builds.
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [github-actions]: https://docs.github.com/en/actions
-[zulip-rtd-dev-first-time]: ../development/setup-vagrant.md
+[zulip-rtd-dev-first-time]: ../development/setup-recommended.md
 [zulip-rtd-dev-overview]: ../development/overview.md
-[zulip-rtd-tools-setup]: ../git/zulip-tools.html#set-up-git-repo-script
+[zulip-rtd-tools-setup]: zulip-tools.md#set-up-git-repo-script

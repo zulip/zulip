@@ -1,31 +1,50 @@
+# Zulip Freshdesk integration
+
 See customer support interactions in Zulip with our Freshdesk
 integration!
 
-1. {!create-stream.md!}
+### Create Zulip bot for Freshdesk notifications
 
-1. {!create-bot-construct-url-indented.md!}
+{start_tabs}
+
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-webhook-url-basic.md!}
+
+{end_tabs}
+
 
 ### Add notifications for new Freshdesk tickets
 
-1. Go to your Freshdesk **Admin** page. Under **Helpdesk Productivity**,
-   click on **Dispatch'r**. Click on **New rule**.
+{start_tabs}
 
-1. Set **Rule Name** to a name of your choice, such as `Zulip`. There isn't a shortcut
-   for "always generate a notification on ticket creation", so we'll have to
-   fake it by picking two complementary conditions: when the source **is email**,
-   and when the source **is not email**. Set up the **Conditions** for the
-   new rule, like so:
+1. Go to your Freshdesk **Admin** page.
 
-    ![](/static/images/integrations/freshdesk/001.png)
+1. Under **Helpdesk Productivity**, select **Dispatch'r**, and then
+   select **New rule**.
 
-1. Under **Actions**, set the **Select Action** dropdown to **Trigger Webhook**.
-   Set **Request Type** to **POST**, and set **Callback URL** to the URL
-   constructed above.
+1. Set **Rule Name** to a name of your choice, such as `Zulip`.
 
-1. Check the **Requires Authentication** checkbox. Set **Username** to the email
-   of the bot created above, and set **Password** to the bot's API key. Set
-   **Encoding** to **JSON** and select the **Advanced** option. Copy and paste
-   the following JSON into the **Content** box:
+1. There isn't a shortcut to "always generate a notification on ticket
+   creation", so we'll have to fake it by picking two complementary
+   conditions: when the source **is email**, and when the source **is
+   not email**. Set up the **Conditions** for the new rule, like so:
+
+     ![](/static/images/integrations/freshdesk/001.png)
+
+1. Under **Actions**, set the **Select Action** dropdown to **Trigger
+   Webhook**.
+
+1. Set **Request Type** to **POST**, and set **Callback URL** to the URL
+   [generated above][create-bot].
+
+1. Toggle the **Requires Authentication** checkbox.
+
+1. Set **Username** to the email of the bot [created above][create-bot],
+   and set **Password** to the bot's API key.
+
+1. Set **Encoding** to **JSON**, and select the **Advanced** option.
+   Copy and paste the following JSON into the **Content** box:
 
     ```
     {% raw %}
@@ -46,15 +65,22 @@ integration!
     {% endraw %}
     ```
 
-    Click **Save**.
+1. Click **Save**.
 
-### Get notifications for changes to existing tickets
+{end_tabs}
 
-1. Go to your Freshdesk **Admin** page. Under **Helpdesk Productivity**,
-   click on **Observer**, and click on **New rule**.
+### Get notifications for changes to existing Freshdesk tickets
+
+{start_tabs}
+
+1. Go to your Freshdesk **Admin** page.
+
+1. Under **Helpdesk Productivity**, select **Observer**, and then select
+   **New rule**.
 
 1. Set **Rule Name** to a name of your choice, such as `Zulip`.
-   Under **involves any of these events**, create new events as shown below:
+
+1. Under **involves any of these events**, create new events as shown below:
 
     ![](/static/images/integrations/freshdesk/002.png)
 
@@ -67,13 +93,18 @@ integration!
     ![](/static/images/integrations/freshdesk/003.png)
 
 1. Under **perform these actions**, set the **Select Action** dropdown
-   to **Trigger Webhook**. Set **Request Type** to **POST**, and set
-   **Callback URL** to the URL constructed above.
+   to **Trigger Webhook**.
 
-1. Check the **Requires Authentication** checkbox. Set **Username** to the email
-   of the bot created above, and set **Password** to the bot's API key. Set
-   **Encoding** to **JSON** and select the **Advanced** option. Copy and paste
-   the following JSON into the **Content** box:
+1. Set **Request Type** to **POST**, and set **Callback URL** to the URL
+   [generated above][create-bot].
+
+1. Toggle the **Requires Authentication** checkbox.
+
+1. Set **Username** to the email of the bot [created above][create-bot],
+   and set **Password** to the bot's API key.
+
+1. Set **Encoding** to **JSON** and select the **Advanced** option.
+   Copy and paste the following JSON into the **Content** box:
 
     ```
     {% raw %}
@@ -94,8 +125,16 @@ integration!
     {% endraw %}
     ```
 
-    Click **Save**.
+1. Select **Save**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/freshdesk/004.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
+
+[create-bot]: #create-zulip-bot-for-freshdesk-notifications

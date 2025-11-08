@@ -23,5 +23,6 @@ class Migration(migrations.Migration):
                 AND zerver_stream.deactivated;
             """,
             reverse_sql="",
+            elidable=True,
         ),
     ]

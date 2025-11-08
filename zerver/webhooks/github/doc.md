@@ -1,19 +1,37 @@
+# Zulip GitHub integration
+
 Get GitHub notifications in Zulip!
 
-1. {!create-stream.md!}
+{start_tabs}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
-   {!git-webhook-url-with-branches-indented.md!}
+1. Decide where to send {{ integration_display_name }} notifications, and
+   [generate the integration URL](/help/generate-integration-url). You'll be
+   able to configure which branches you'll receive notifications from, and
+   whether to exclude notifications from private repositories.
 
-1. Go to your repository on GitHub and click on the **Settings** tab.
-   Select **Webhooks**. Click on **Add webhook**. GitHub may prompt
-   you for your password.
+1. On your repository's web page, go to **Settings**. Select **Webhooks**,
+   and click **Add webhook**. GitHub may prompt you for your password.
 
-1. Set **Payload URL** to the URL constructed above. Set **Content type**
-   to `application/json`. Select the events you would like to receive
-   notifications for, and click **Add Webhook**.
+1. Set **Payload URL** to the URL generated above. Set **Content type**
+   to `application/json`. Select the [events](#filtering-incoming-events)
+   you'd like to be notified about, and click **Add Webhook**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/github/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+- [GitHub's webhook events documentation][github-webhook-events]
+
+- [Zulip GitHub Actions integration](/integrations/github-actions)
+
+{!webhooks-url-specification.md!}
+
+[github-webhook-events]: https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads

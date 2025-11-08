@@ -2,7 +2,7 @@ import os
 import re
 
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 attachment_url_re = re.compile(r"[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)")
@@ -11,10 +11,10 @@ attachment_url_re = re.compile(r"[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)")
 def attachment_url_to_path_id(attachment_url: str) -> str:
     path_id_raw = re.sub(r"[/\-]user[\-_]uploads[/\.-]", "", attachment_url)
     # Remove any extra '.' after file extension. These are probably added by the user
-    return re.sub("[.]+$", "", path_id_raw, re.M)
+    return re.sub(r"[.]+$", "", path_id_raw, flags=re.MULTILINE)
 
 
-def check_and_create_attachments(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def check_and_create_attachments(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     STREAM = 2
     Message = apps.get_model("zerver", "Message")
     Attachment = apps.get_model("zerver", "Attachment")
@@ -43,7 +43,6 @@ def check_and_create_attachments(apps: StateApps, schema_editor: DatabaseSchemaE
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0040_realm_authentication_methods"),
     ]

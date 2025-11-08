@@ -2,8 +2,8 @@ import os
 import subprocess
 import sys
 import time
-from contextlib import contextmanager
-from typing import Iterator, Optional
+from collections.abc import Iterator
+from contextlib import ExitStack, contextmanager
 
 # Verify the Zulip venv is available.
 from tools.lib import sanity_check
@@ -32,7 +32,7 @@ def set_up_django(external_host: str) -> None:
     os.environ["PYTHONUNBUFFERED"] = "y"
 
 
-def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> None:
+def assert_server_running(server: "subprocess.Popen[bytes]", log_file: str | None) -> None:
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         message = "Server died unexpectedly!"
@@ -41,7 +41,7 @@ def assert_server_running(server: "subprocess.Popen[bytes]", log_file: Optional[
         raise RuntimeError(message)
 
 
-def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> bool:
+def server_is_up(server: "subprocess.Popen[bytes]", log_file: str | None) -> bool:
     assert_server_running(server, log_file)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
@@ -55,49 +55,52 @@ def server_is_up(server: "subprocess.Popen[bytes]", log_file: Optional[str]) -> 
 def test_server_running(
     skip_provision_check: bool = False,
     external_host: str = "testserver",
-    log_file: Optional[str] = None,
+    log_file: str | None = None,
     dots: bool = False,
+    enable_help_center: bool = False,
 ) -> Iterator[None]:
-    log = sys.stdout
-    if log_file:
-        if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
-            log = open(log_file, "a")
-            log.write("\n\n")
-        else:
-            log = open(log_file, "w")
+    with ExitStack() as stack:
+        log = sys.stdout
+        if log_file:
+            if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
+                log = stack.enter_context(open(log_file, "a"))
+                log.write("\n\n")
+            else:
+                log = stack.enter_context(open(log_file, "w"))
 
-    set_up_django(external_host)
+        set_up_django(external_host)
 
-    update_test_databases_if_required(rebuild_test_database=True)
+        update_test_databases_if_required(rebuild_test_database=True)
 
-    # Run this not through the shell, so that we have the actual PID.
-    run_dev_server_command = ["tools/run-dev.py", "--test", "--streamlined"]
-    if skip_provision_check:
-        run_dev_server_command.append("--skip-provision-check")
-    server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
+        # Run this not through the shell, so that we have the actual PID.
+        run_dev_server_command = ["tools/run-dev", "--test", "--streamlined"]
+        if skip_provision_check:
+            run_dev_server_command.append("--skip-provision-check")
+        if enable_help_center:
+            run_dev_server_command.append("--help-center-static-build")
+        server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
 
-    try:
-        # Wait for the server to start up.
-        sys.stdout.write("\nWaiting for test server (may take a while)")
-        if not dots:
-            sys.stdout.write("\n\n")
-        t = time.time()
-        while not server_is_up(server, log_file):
-            if dots:
-                sys.stdout.write(".")
-                sys.stdout.flush()
-            time.sleep(0.4)
-            if time.time() - t > MAX_SERVER_WAIT:
-                raise Exception("Timeout waiting for server")
-        sys.stdout.write("\n\n--- SERVER IS UP! ---\n\n")
+        try:
+            # Wait for the server to start up.
+            print(end="\nWaiting for test server (may take a while)")
+            if not dots:
+                print("\n", flush=True)
+            t = time.time()
+            while not server_is_up(server, log_file):
+                if dots:
+                    print(end=".", flush=True)
+                time.sleep(0.4)
+                if time.time() - t > MAX_SERVER_WAIT:
+                    raise Exception("Timeout waiting for server")
+            print("\n\n--- SERVER IS UP! ---\n", flush=True)
 
-        # DO OUR ACTUAL TESTING HERE!!!
-        yield
+            # DO OUR ACTUAL TESTING HERE!!!
+            yield
 
-    finally:
-        assert_server_running(server, log_file)
-        server.terminate()
-        server.wait()
+        finally:
+            assert_server_running(server, log_file)
+            server.terminate()
+            server.wait()
 
 
 if __name__ == "__main__":

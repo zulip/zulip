@@ -1,35 +1,39 @@
 """Webhooks for external integrations."""
+
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import orjson
 from defusedxml.ElementTree import fromstring as xml_fromstring
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
-from zerver.lib.request import has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
+from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
+from zerver.lib.utils import assert_is_not_none
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> tuple[str, str, str]:
     payload = xml_fromstring(request.body)
 
-    def get_text(attrs: List[str]) -> str:
+    def get_text(attrs: list[str]) -> str:
         start = payload
-        try:
-            for attr in attrs:
-                start = start.find(attr)
-            return start.text
-        except AttributeError:
-            return ""
+        for attr in attrs:
+            child = start.find(attr)
+            if child is None:
+                return ""
+            start = child
+        assert start.text is not None
+        return start.text
 
-    event_type = payload.find("event_type").text
-    description = payload.find("description").text
-    project_id = payload.find("project_id").text
+    event_type = assert_is_not_none(payload.find("event_type")).text
+    description = assert_is_not_none(payload.find("description")).text
+    assert description is not None
+    project_id = assert_is_not_none(payload.find("project_id")).text
     story_id = get_text(["stories", "story", "id"])
     # Ugh, the URL in the XML data is not a clickable URL that works for the user
     # so we try to build one that the user can actually click on
@@ -46,10 +50,10 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
     more_info = f" [(view)]({url})."
 
     if event_type == "story_update":
-        subject = name
+        topic_name = name
         content = description + more_info
     elif event_type == "note_create":
-        subject = "Comment added"
+        topic_name = "Comment added"
         content = description + more_info
     elif event_type == "story_create":
         issue_desc = get_text(["stories", "story", "description"])
@@ -58,9 +62,9 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
         estimate = get_text(["stories", "story", "estimate"])
         if estimate != "":
             estimate = f" worth {estimate} story points"
-        subject = name
+        topic_name = name
         content = f"{description} ({issue_status} {issue_type}{estimate}):\n\n~~~ quote\n{issue_desc}\n~~~\n\n{more_info}"
-    return subject, content
+    return topic_name, content, f"{event_type}_v3"
 
 
 UNSUPPORTED_EVENT_TYPES = [
@@ -72,10 +76,21 @@ UNSUPPORTED_EVENT_TYPES = [
     "story_delete_activity",
     "story_move_into_project_activity",
     "epic_update_activity",
+    "label_create_activity",
+]
+
+ALL_EVENT_TYPES = [
+    "story_update_v3",
+    "note_create_v3",
+    "story_create_v3",
+    "story_move_activity_v5",
+    "story_create_activity_v5",
+    "story_update_activity_v5",
+    "comment_create_activity_v5",
 ]
 
 
-def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> tuple[str, str, str]:
     payload = orjson.loads(request.body)
 
     event_type = payload["kind"]
@@ -96,9 +111,9 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
     changes = payload.get("changes", [])
 
     content = ""
-    subject = f"#{story_id}: {story_name}"
+    topic_name = f"#{story_id}: {story_name}"
 
-    def extract_comment(change: Dict[str, Any]) -> Optional[str]:
+    def extract_comment(change: dict[str, Any]) -> str | None:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None
@@ -159,23 +174,23 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
         # Known but unsupported Pivotal event types
         pass
     else:
-        raise UnsupportedWebhookEventType(event_type)
+        raise UnsupportedWebhookEventTypeError(event_type)
 
-    return subject, content
+    return topic_name, content, f"{event_type}_v5"
 
 
-@webhook_view("Pivotal")
-@has_request_variables
+@webhook_view("Pivotal", all_event_types=ALL_EVENT_TYPES)
+@typed_endpoint_without_parameters
 def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    subject = content = None
+    topic_name = content = None
     try:
-        subject, content = api_pivotal_webhook_v3(request, user_profile)
+        topic_name, content, event_type = api_pivotal_webhook_v3(request, user_profile)
     except Exception:
         # Attempt to parse v5 JSON payload
-        subject, content = api_pivotal_webhook_v5(request, user_profile)
+        topic_name, content, event_type = api_pivotal_webhook_v5(request, user_profile)
 
     if not content:
-        return json_error(_("Unable to handle Pivotal payload"))
+        raise JsonableError(_("Unable to handle Pivotal payload"))
 
-    check_send_webhook_message(request, user_profile, subject, content)
-    return json_success()
+    check_send_webhook_message(request, user_profile, topic_name, content, event_type)
+    return json_success(request)

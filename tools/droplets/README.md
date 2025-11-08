@@ -19,7 +19,7 @@ API token.
 ## Step 2: Create your DigitalOcean API token
 
 Once you've been added to the Zulip team,
-[login](https://cloud.digitalocean.com/droplets) to the DigitalOcean control
+[log in](https://cloud.digitalocean.com/droplets) to the DigitalOcean control
 panel and [create your personal API token][do-create-api-token]. **Make sure
 you create your API token under the Zulip team.** (It should look something
 like [this][image-zulip-team]).
@@ -52,20 +52,21 @@ Now you're ready to use the script.
 
 `create.py` takes two arguments
 
-* GitHub username
-* Tags (Optional argument)
+- GitHub username
+- Tags (Optional argument)
 
 ```
 $ python3 create.py <username>
 $ python3 create.py <username> --tags <tag>
 $ python3 create.py <username> --tags <tag1> <tag2> <tag3>
 ```
+
 Assigning tags to droplets like `GCI` can be later useful for
 listing all the droplets created during GCI.
 [Tags](https://www.digitalocean.com/community/tutorials/how-to-tag-digitalocean-droplets)
 may contain letters, numbers, colons, dashes, and underscores.
 
-You'll need to run this from the Zulip development environment (e.g. in
+You'll need to run this from the Zulip development environment (e.g., in
 Vagrant).
 
 The script will also stop if a droplet has already been created for the
@@ -75,6 +76,7 @@ user. If you want to recreate a droplet for a user you can pass the
 ```
 $ python3 create.py <username> --recreate
 ```
+
 This will destroy the old droplet and create a new droplet for
 the user.
 
@@ -97,8 +99,8 @@ Your remote Zulip dev server has been created!
   `ssh zulipdev@<username>.zulipdev.org` on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
 - There is no password; your account is configured to use your SSH keys.
-- Once you log in, you should see `(zulip-py3-venv) ~$`.
-- To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
+- Once you log in, you should see `(zulip-server) ~$`.
+- To start the dev server, `cd zulip` and then run `./tools/run-dev`.
 - While the dev server is running, you can see the Zulip server in your browser
   at http://<username>.zulipdev.org:9991.
 
@@ -120,74 +122,27 @@ so they are notified.
 
 ## Updating the base image
 
-Rough steps:
-
-1. Get the `ssh` key for `base.zulipdev.org` from Tim, Vishnu or Rishi.
-1. Power up the `base.zulipdev.org` droplet from the digitalocean UI. You
-   probably have to be logged in in the Zulip organization view, rather than
-   via your personal account.
-1. `ssh zulipdev@base.zulipdev.org`
-1. `git pull upstream master`
-1. `tools/provision`
-1. `git clean -f`, in case things were added/removed from `.gitignore`.
-1. `tools/run-dev.py`, let it run to completion, and then Ctrl-C (to clear
-   out anything in the RabbitMQ queue, load messages, etc).
-1. `tools/run-dev.py`, and check that `base.zulipdev.org:9991` is up and running.
-1. `> ~/.bash_history && history -c && sudo shutdown -h now` to clear any command
-   line history (To reduce chance of confusing new contributors in case you made a typo)
-   and shutdown the droplet.
-1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
-1. Wait for several minutes.
-1. Do something like `curl -X GET -H "Content-Type: application/json"
-   -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
-   (maybe with a different page number, and replace your API_KEY).
+1. Switch to the Zulip organization.
+1. Create a new droplet, with:
+   - "Regular with SSD" / "2GB RAM / 1 CPU"
+   - Select your SSH key; this will not be built into the image, and
+     is only for access to debug if the build does not succeed.
+   - Check "Monitoring", "IPv6", and "User data"
+   - Paste the contents of `tools/droplets/new-droplet-image` into the
+     text box which says `Enter user data here...`
+   - Name it (e.g., `base-ubuntu-22-04.zulipdev.org`)
+1. Wait for the host to boot.
+1. Wait for the host to complete provisioning and shut down; this will take
+   about 15 minutes.
+1. Go to the Snapshots tab on the image, and "Take a Snapshot".
+1. Wait for several minutes for it to complete.
+1. "Add to region" the snapshot into `NYC3`, `SFO3`, `BLR1`, and `FRA1`.
+1. `curl -u <API_KEY>: https://api.digitalocean.com/v2/snapshots | jq .`
 1. Replace `template_id` in `create.py` in this directory with the
    appropriate `id`.
-1. Test that everything works.
-1. Open a PR with the updated template_id in zulip/zulip!
-
-## Creating a new base image
-Creating a new base image happens rarely since updating the base image is good enough most of the time.
-Check out https://chat.zulip.org/#narrow/stream/3-backend/topic/new.20base.20dev.20droplet to view the
-discussion when we attempted to do upgrade last time.
-
-Rough steps:
-
-1. Get the `ssh` key for `base.zulipdev.org` from Tim, Vishnu or Rishi.
-1. Log in to the Zulip organization view, rather than via your personal account.
-1. Create a new droplet in DigitalOcean with 2GB RAM and `base.zulipdev.org` as the
-   SSH authentication key.
-1. Login to the droplet as root user. Make sure to point the SSH program to the private
-   key of `base.zulipdev.org` during this step.
-1. Create a user called `zulipdev` and add it to the `sudo` group.
-1. Make sudo of `zulipdev` user passwordless by including
-   `zulipdev ALL=(ALL) NOPASSWD:ALL` in  `/etc/sudoers.d/90-cloud-init-users`
-1. Copy the `authorized_keys` file of `root` user to the `.ssh` directory of `zulipdev` user
-1. Switch to `zulipdev` user and set the permissions for the `.ssh` folder to `700` and
-   `.ssh/authorized_keys` to `600`.
-1. Clone `https://github.com/zulip/zulip` repository in the home directory of `zulipdev`.
-1. `git remote rename origin upstream`
-1. `git clean -f`, in case things were added/removed from `.gitignore`.
-1. `tools/provision`
-1. Insert `NODENAME=zulip@localhost` to `/etc/rabbitmq/rabbitmq-env.conf`
-1. `tools/provision`
-1. `tools/run-dev.py`, and check that `base.zulipdev.org:9991` is up and running.
-1. Clone `https://github.com/zulip/python-zulip-api` repository in the home directory of `zulipdev`.
-1. `git remote rename origin upstream`
-1. `git clean -f`, in case things were added/removed from `.gitignore`.
-1. `./tools/provision`.
-1. `> ~/.bash_history && history -c && exit`
-1. SSH to root user.
-1. `> ~/.bash_history && history -c && sudo shutdown -h now`
-1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
-1. Wait for several minutes.
-1. Do something like `curl -X GET -H "Content-Type: application/json"
-   -u <API_KEY>: "https://api.digitalocean.com/v2/images?page=11" | grep --color=always base.zulipdev.org`
-   (maybe with a different page number, and replace your API_KEY).
-1. Replace `template_id` in `create.py` in this directory with the
-   appropriate `id`.
-1. Test that everything works.
-1. Open a PR with the updated template_id in zulip/zulip!
+1. Clean up by destroying the droplet (but _leaving_ all "associated
+   resources"), and removing the DNS entry for `base.zulipdev.org`
+1. Open a PR with the updated `template_id`.
 
 ## Remotely debugging a droplet
 
@@ -210,7 +165,6 @@ They can remove your SSH keys by running:
 ```
 $ python3 ~/zulip/tools/droplets/add_mentor.py <your username> --remove
 ```
-
 
 # Creating a production droplet
 

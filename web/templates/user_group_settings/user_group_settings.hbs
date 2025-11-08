@@ -1,0 +1,84 @@
+<div class="group_settings_header" data-group-id="{{group.id}}">
+    <div class="tab-container"></div>
+    <div class="button-group">
+        <div class="join_leave_button_wrapper inline-block">
+            {{#if is_direct_member}}
+            {{> ../components/action_button label=(t "Leave group") custom_classes="join_leave_button" type="button"
+              attention="quiet" intent="neutral" }}
+            {{else}}
+            {{> ../components/action_button label=(t "Join group") custom_classes="join_leave_button" type="button"
+              attention="quiet" intent="brand" }}
+            {{/if}}
+        </div>
+        {{> ../components/icon_button icon="user-group-x" intent="danger" custom_classes="deactivate-group-button deactivate tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t 'Deactivate group') }}
+        {{> ../components/icon_button icon="user-group-plus" intent="success" custom_classes="reactivate-group-button reactivate tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t 'Reactivate group') }}
+    </div>
+</div>
+<div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
+    <div class="inner-box">
+
+        <div class="group_general_settings group_setting_section" data-group-section="general">
+            <div class="group-reactivation-error-banner"></div>
+            <div class="group-banner"></div>
+            <div class="group-header">
+                <div class="group-name-wrapper">
+                    <span class="group-name" title="{{group.name}}">{{group.name}}</span>
+                </div>
+                <div class="group_change_property_info alert-notification"></div>
+                <div class="button-group">
+                    {{> ../components/icon_button icon="user-group-edit" intent="neutral" custom_classes="tippy-zulip-delayed-tooltip"
+                      data-tippy-content=(t 'Change group info') id="open_group_info_modal" }}
+                </div>
+            </div>
+            <div class="group-description-wrapper">
+                <span class="group-description">
+                    {{group.description}}
+                </span>
+            </div>
+
+            <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
+                <div class="subsection-header">
+                    <h3 class="user_group_setting_subsection_title">
+                        {{t "Group permissions" }}
+                        {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
+                    </h3>
+                    {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
+                </div>
+
+                {{> group_permissions prefix="id_" group_setting_labels=all_group_setting_labels.group}}
+            </div>
+
+            <div class="group_detail_box">
+                <div class="user_group_details_box_header">
+                    <h3 class="user_group_setting_subsection_title">
+                        {{t "User group details" }}
+                    </h3>
+                </div>
+                <div class="creator_details group_details_box_subsection">
+                    {{> ../creator_details . }}
+                </div>
+                <div class="group_details_box_subsection">
+                    {{t "User group ID"}}<br/>
+                    {{group.id}}
+                </div>
+            </div>
+        </div>
+
+        <div class="group_member_settings group_setting_section" data-group-section="members">
+            <div class="edit_members_for_user_group">
+                {{> user_group_members .}}
+            </div>
+        </div>
+
+        <div class="group_setting_section" data-group-section="permissions">
+            <div class="group-assigned-permissions">
+                <span class="no-permissions-for-group-text {{#unless group_has_no_permissions}}hide{{/unless}}">
+                    {{t 'This group has no assigned permissions.'}}
+                </span>
+                {{> group_permission_settings .}}
+            </div>
+        </div>
+    </div>
+</div>

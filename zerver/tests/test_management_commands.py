@@ -1,41 +1,44 @@
+import hashlib
 import os
 import re
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 from unittest import mock, skipUnless
 from unittest.mock import MagicMock, call, patch
+from urllib.parse import quote, quote_plus
 
 from django.apps import apps
 from django.conf import settings
 from django.core.management import call_command, find_commands
+from django.core.management.base import CommandError
+from django.db.models import Q
+from django.db.models.functions import Lower
 from django.test import override_settings
-from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
-from confirmation.models import RealmCreationKey, generate_realm_creation_url
-from zerver.lib.actions import do_add_reaction, do_create_user
-from zerver.lib.management import CommandError, ZulipBaseCommand, check_config
+from confirmation.models import Confirmation, generate_realm_creation_url
+from zerver.actions.create_user import do_create_user
+from zerver.actions.user_settings import do_change_user_setting
+from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
-from zerver.models import (
-    Message,
-    Reaction,
-    Realm,
-    Recipient,
-    UserProfile,
-    get_realm,
-    get_stream,
-    get_user_profile_by_email,
-)
+from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_user_profile_by_email
 
 
 class TestCheckConfig(ZulipTestCase):
     def test_check_config(self) -> None:
         check_config()
-        with self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]):
-            with self.assertRaisesRegex(
+        with (
+            self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]),
+            self.assertRaisesRegex(
                 CommandError, "Error: You must set asdf in /etc/zulip/settings.py."
-            ):
-                check_config()
+            ),
+        ):
+            check_config()
 
     @override_settings(WARN_NO_EMAIL=True)
     def test_check_send_email(self) -> None:
@@ -44,6 +47,7 @@ class TestCheckConfig(ZulipTestCase):
 
 
 class TestZulipBaseCommand(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.zulip_realm = get_realm("zulip")
@@ -90,12 +94,12 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.assertEqual(get_user_profile_by_email(email), user_profile)
 
     def get_users_sorted(
-        self, options: Dict[str, Any], realm: Optional[Realm], **kwargs: Any
-    ) -> List[UserProfile]:
+        self, options: dict[str, Any], realm: Realm | None, **kwargs: Any
+    ) -> list[UserProfile]:
         user_profiles = self.command.get_users(options, realm, **kwargs)
         return sorted(user_profiles, key=lambda x: x.email)
 
-    def sorted_users(self, users: List[UserProfile]) -> List[UserProfile]:
+    def sorted_users(self, users: list[UserProfile]) -> list[UserProfile]:
         return sorted(users, key=lambda x: x.email)
 
     def test_get_users(self) -> None:
@@ -126,11 +130,11 @@ class TestZulipBaseCommand(ZulipTestCase):
             self.command.get_users(dict(users=user_emails), self.zulip_realm)
 
         self.assertEqual(
-            self.command.get_users(dict(users=self.example_email("iago")), self.zulip_realm),
+            list(self.command.get_users(dict(users=self.example_email("iago")), self.zulip_realm)),
             [self.example_user("iago")],
         )
 
-        self.assertEqual(self.command.get_users(dict(users=None), None), [])
+        self.assertEqual(list(self.command.get_users(dict(users=None), None)), [])
 
     def test_get_users_with_all_users_argument_enabled(self) -> None:
         expected_user_profiles = self.sorted_users(
@@ -197,6 +201,7 @@ class TestZulipBaseCommand(ZulipTestCase):
 
 
 class TestCommandsCanStart(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.commands = [
@@ -210,9 +215,8 @@ class TestCommandsCanStart(ZulipTestCase):
     def test_management_commands_show_help(self) -> None:
         with stdout_suppressed():
             for command in self.commands:
-                with self.subTest(management_command=command):
-                    with self.assertRaises(SystemExit):
-                        call_command(command, "--help")
+                with self.subTest(management_command=command), self.assertRaises(SystemExit):
+                    call_command(command, "--help")
         # zerver/management/commands/runtornado.py sets this to True;
         # we need to reset it here.  See #3685 for details.
         settings.RUNNING_INSIDE_TORNADO = False
@@ -221,6 +225,7 @@ class TestCommandsCanStart(ZulipTestCase):
 class TestSendWebhookFixtureMessage(ZulipTestCase):
     COMMAND_NAME = "send_webhook_fixture_message"
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.fixture_path = os.path.join("some", "fake", "path.json")
@@ -297,61 +302,78 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         # Enter email
         with self.assertRaises(Realm.DoesNotExist):
             get_realm("test")
-        result = self.client_post(generated_link, {"email": email})
+        result = self.client_post(
+            generated_link,
+            {
+                "email": email,
+                "realm_name": "Zulip test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_default_language": "en",
+                "realm_subdomain": "custom-test",
+                "import_from": "none",
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(re.search(r"/accounts/do_confirm/\w+$", result["Location"]))
 
         # Bypass sending mail for confirmation, go straight to creation form
         result = self.client_get(result["Location"])
-        self.assert_in_response('action="/accounts/register/"', result)
+        self.assert_in_response('action="/realm/register/"', result)
 
         # Original link is now dead
         result = self.client_get(generated_link)
-        self.assert_in_success_response(
-            ["The organization creation link has expired or is not valid."], result
-        )
+        self.assert_in_success_response(["Organization creation link expired or invalid"], result)
 
     @override_settings(OPEN_REALM_CREATION=False)
     def test_generate_link_confirm_email(self) -> None:
         email = "user1@test.com"
+        realm_name = "Zulip test"
+        string_id = "custom-test"
         generated_link = generate_realm_creation_url(by_admin=False)
 
-        result = self.client_post(generated_link, {"email": email})
+        result = self.client_post(
+            generated_link,
+            {
+                "email": email,
+                "realm_name": realm_name,
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_default_language": "en",
+                "realm_subdomain": string_id,
+                "import_from": "none",
+            },
+        )
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(re.search(f"/accounts/new/send_confirm/{email}$", result["Location"]))
+        self.assertEqual(
+            f"/accounts/new/send_confirm/?email={quote(email)}&realm_name={quote_plus(realm_name)}&realm_type=10&realm_default_language=en&realm_subdomain={string_id}",
+            result["Location"],
+        )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started", result)
+        self.assert_in_response("check your email", result)
 
         # Original link is now dead
         result = self.client_get(generated_link)
-        self.assert_in_success_response(
-            ["The organization creation link has expired or is not valid."], result
-        )
+        self.assert_in_success_response(["Organization creation link expired or invalid"], result)
 
     @override_settings(OPEN_REALM_CREATION=False)
     def test_realm_creation_with_random_link(self) -> None:
         # Realm creation attempt with an invalid link should fail
         random_link = "/new/5e89081eb13984e0f3b130bf7a4121d153f1614b"
         result = self.client_get(random_link)
-        self.assert_in_success_response(
-            ["The organization creation link has expired or is not valid."], result
-        )
+        self.assert_in_success_response(["Organization creation link expired or invalid"], result)
 
     @override_settings(OPEN_REALM_CREATION=False)
     def test_realm_creation_with_expired_link(self) -> None:
         generated_link = generate_realm_creation_url(by_admin=True)
-        key = generated_link[-24:]
-        # Manually expire the link by changing the date of creation
-        obj = RealmCreationKey.objects.get(creation_key=key)
-        obj.date_created = obj.date_created - timedelta(
-            days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1
-        )
-        obj.save()
+        key = generated_link.split("/")[-1]
+        # Manually expire the link by changing the date of expiry.
+        confirmation = Confirmation.objects.get(confirmation_key=key)
+        assert confirmation.expiry_date is not None
+
+        confirmation.expiry_date -= timedelta(days=settings.CAN_CREATE_REALM_LINK_VALIDITY_DAYS + 1)
+        confirmation.save()
 
         result = self.client_get(generated_link)
-        self.assert_in_success_response(
-            ["The organization creation link has expired or is not valid."], result
-        )
+        self.assert_in_success_response(["Organization creation link expired or invalid"], result)
 
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
@@ -380,7 +402,7 @@ class TestPasswordRestEmail(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(outbox[0]),
-            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn("reset your password", outbox[0].body)
 
@@ -457,9 +479,10 @@ class TestConvertMattermostData(ZulipTestCase):
     COMMAND_NAME = "convert_mattermost_data"
 
     def test_if_command_calls_do_convert_data(self) -> None:
-        with patch(
-            "zerver.management.commands.convert_mattermost_data.do_convert_data"
-        ) as m, patch("builtins.print") as mock_print:
+        with (
+            patch("zerver.management.commands.convert_mattermost_data.do_convert_data") as m,
+            patch("builtins.print") as mock_print,
+        ):
             mm_fixtures = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
             call_command(self.COMMAND_NAME, mm_fixtures, f"--output={output_dir}")
@@ -483,85 +506,43 @@ class TestInvoicePlans(ZulipTestCase):
         m.assert_called_once()
 
 
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+class TestDowngradeSmallRealmsBehindOnPayments(ZulipTestCase):
+    COMMAND_NAME = "downgrade_small_realms_behind_on_payments"
+
+    def test_if_command_calls_downgrade_small_realms_behind_on_payments_as_needed(self) -> None:
+        with patch(
+            "zilencer.management.commands.downgrade_small_realms_behind_on_payments.downgrade_small_realms_behind_on_payments_as_needed"
+        ) as m:
+            call_command(self.COMMAND_NAME)
+
+        m.assert_called_once()
+
+
 class TestExport(ZulipTestCase):
     COMMAND_NAME = "export"
 
-    def test_command_with_consented_message_id(self) -> None:
-        realm = get_realm("zulip")
-        self.send_stream_message(
-            self.example_user("othello"),
-            "Verona",
-            topic_name="Export",
-            content="Outbox emoji for export",
+    def test_command_to_export_full_with_consent(self) -> None:
+        do_change_user_setting(
+            self.example_user("iago"), "allow_private_data_export", True, acting_user=None
         )
-        message = Message.objects.last()
-        do_add_reaction(
-            self.example_user("iago"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
-        )
-        do_add_reaction(
-            self.example_user("hamlet"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
+        do_change_user_setting(
+            self.example_user("desdemona"), "allow_private_data_export", True, acting_user=None
         )
 
-        with patch("zerver.management.commands.export.export_realm_wrapper") as m, patch(
-            "builtins.print"
-        ) as mock_print, patch("builtins.input", return_value="y") as mock_input:
-            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
+        with (
+            patch("zerver.management.commands.export.export_realm_wrapper") as m,
+            patch("builtins.print") as mock_print,
+        ):
+            call_command(self.COMMAND_NAME, "-r=zulip", "--export-full-with-consent")
             m.assert_called_once_with(
-                realm=realm,
-                public_only=False,
-                consent_message_id=message.id,
-                delete_after_upload=False,
-                threads=mock.ANY,
+                export_row=mock.ANY,
+                processes=mock.ANY,
                 output_dir=mock.ANY,
                 percent_callback=mock.ANY,
                 upload=False,
+                export_as_active=None,
             )
-            mock_input.assert_called_once_with("Continue? [y/N] ")
-
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("\033[94mExporting realm\033[0m: zulip"),
-                call("\n\033[94mMessage content:\033[0m\nOutbox emoji for export\n"),
-                call(
-                    "\033[94mNumber of users that reacted outbox:\033[0m 2 / 9 total non-guest users\n"
-                ),
-            ],
-        )
-
-        with self.assertRaisesRegex(CommandError, "Message with given ID does not"), patch(
-            "builtins.print"
-        ) as mock_print:
-            call_command(self.COMMAND_NAME, "-r=zulip", "--consent-message-id=123456")
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("\033[94mExporting realm\033[0m: zulip"),
-            ],
-        )
-
-        message.last_edit_time = timezone_now()
-        message.save()
-        with self.assertRaisesRegex(CommandError, "Message was edited. Aborting..."), patch(
-            "builtins.print"
-        ) as mock_print:
-            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("\033[94mExporting realm\033[0m: zulip"),
-            ],
-        )
-
-        message.last_edit_time = None
-        message.save()
-        do_add_reaction(
-            self.mit_user("sipbtest"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
-        )
-        with self.assertRaisesRegex(
-            CommandError, "Users from a different realm reacted to message. Aborting..."
-        ), patch("builtins.print") as mock_print:
-            call_command(self.COMMAND_NAME, "-r=zulip", f"--consent-message-id={message.id}")
 
         self.assertEqual(
             mock_print.mock_calls,
@@ -569,3 +550,267 @@ class TestExport(ZulipTestCase):
                 call("\033[94mExporting realm\033[0m: zulip"),
             ],
         )
+
+
+class TestSendCustomEmail(ZulipTestCase):
+    COMMAND_NAME = "send_custom_email"
+
+    def test_custom_email_with_dry_run(self) -> None:
+        path = "templates/zerver/tests/markdown/test_nested_code_blocks.md"
+        user = self.example_user("hamlet")
+        other_user = self.example_user("cordelia")
+
+        with patch("builtins.print") as mock_print:
+            call_command(
+                self.COMMAND_NAME,
+                "-r=zulip",
+                f"--path={path}",
+                f"-u={user.delivery_email}",
+                "--subject=Test email",
+                "--from-name=zulip@zulip.example.com",
+                "--dry-run",
+            )
+            self.assertEqual(
+                mock_print.mock_calls[1:],
+                [
+                    call("Would send the above email to:"),
+                    call("  hamlet@zulip.com (zulip)"),
+                ],
+            )
+
+        with patch("builtins.print") as mock_print:
+            call_command(
+                self.COMMAND_NAME,
+                "-r=zulip",
+                f"--path={path}",
+                f"-u={user.delivery_email},{other_user.delivery_email}",
+                "--subject=Test email",
+                "--from-name=zulip@zulip.example.com",
+                "--dry-run",
+            )
+            self.assertEqual(
+                mock_print.mock_calls[1:],
+                [
+                    call("Would send the above email to:"),
+                    call("  cordelia@zulip.com (zulip)"),
+                    call("  hamlet@zulip.com (zulip)"),
+                ],
+            )
+
+        # Verify log entries not created in dry-run
+        audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
+        self.assert_length(audit_logs, 0)
+
+    def test_custom_email_duplicate_prevention_by_user(self) -> None:
+        path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+
+        # Generate email hash
+        with open(path) as f:
+            text = f.read()
+            email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
+
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        othello = self.example_user("othello")
+
+        call_command(
+            self.COMMAND_NAME,
+            f"--path={path}",
+            f"-u={iago.delivery_email},{prospero.delivery_email}",
+        )
+
+        # Verify RealmAuditLog entries were created
+        audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
+        self.assert_length(audit_logs, 2)
+        self.assertEqual(email_template_hash, audit_logs[0].extra_data["email_id"])
+        self.assertEqual("Test subject", audit_logs[0].extra_data["email_subject"])
+
+        # Second send attempt - should send one email and exclude the two users that already received the email
+
+        with patch("builtins.print") as mock_print:
+            call_command(
+                self.COMMAND_NAME,
+                f"--path={path}",
+                f"-u={iago.delivery_email},{prospero.delivery_email},{othello.delivery_email}",
+            )
+
+            self.assertEqual(
+                mock_print.mock_calls[0:],
+                [
+                    call("Excluded 2 users who already received this email"),
+                ],
+            )
+        new_audit_logs = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT
+        )
+        self.assert_length(new_audit_logs, 3)
+        self.assertEqual(email_template_hash, new_audit_logs[0].extra_data["email_id"])
+        self.assertEqual("Test subject", audit_logs[0].extra_data["email_subject"])
+
+        othello_audit_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, modified_user=othello
+        )
+        self.assert_length(othello_audit_log, 1)
+
+    def test_custom_marketing_email_duplicate_prevention_by_email(self) -> None:
+        path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+
+        # Ensure that marketing includes two users with two different realms and different roles
+        realm1 = get_realm("lear")
+        realm2 = get_realm("zephyr")
+
+        shared_email = "DUPLICATE@example.com"
+
+        admin_user = do_create_user(
+            email=shared_email,
+            password="password",
+            realm=realm1,
+            full_name="Admin User",
+            role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+            acting_user=None,
+            tos_version=settings.TERMS_OF_SERVICE_VERSION,
+        )
+        admin_user.save()
+
+        owner_user = do_create_user(
+            email=shared_email.lower(),
+            password="password",
+            realm=realm2,
+            full_name="Owner User",
+            role=UserProfile.ROLE_REALM_OWNER,
+            acting_user=None,
+            tos_version=settings.TERMS_OF_SERVICE_VERSION,
+        )
+
+        owner_user.save()
+
+        # Get the total number of marketing emails to be sent
+        users = UserProfile.objects.filter(
+            is_active=True,
+            is_bot=False,
+            is_mirror_dummy=False,
+            realm__deactivated=False,
+            enable_marketing_emails=True,
+        ).filter(
+            Q(long_term_idle=False)
+            | Q(
+                role__in=[
+                    UserProfile.ROLE_REALM_OWNER,
+                    UserProfile.ROLE_REALM_ADMINISTRATOR,
+                ]
+            )
+        )
+
+        users = users.annotate(lower_email=Lower("delivery_email")).distinct("lower_email")
+
+        users_count = users.count()
+        users_emails = users.values_list("lower_email", flat=True)
+
+        # Get the email hash
+        with open(path) as f:
+            text = f.read()
+            email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
+
+        call_command(
+            self.COMMAND_NAME,
+            f"--path={path}",
+            "--marketing",
+        )
+
+        # Verify RealmAuditLog entries were created
+        audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
+        self.assert_length(audit_logs, users_count)
+
+        # Verify the email_id
+        self.assertEqual(email_template_hash, audit_logs[0].extra_data["email_id"])
+
+        # Verify modified_user email
+        modified_users_email = audit_logs.annotate(
+            lower_email=Lower("modified_user__delivery_email")
+        ).values_list("lower_email", flat=True)
+        self.assertEqual(set(users_emails), set(modified_users_email))
+
+        # Verify only one email was sent (to one of the two users created before)
+        audit_logs_duplicate = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
+            modified_user__in=[admin_user, owner_user],
+        )
+        self.assert_length(audit_logs_duplicate, 1)
+
+        # Verify the email addresses match (case-insensitive)
+        assert audit_logs_duplicate[0].modified_user is not None
+        self.assertEqual(
+            audit_logs_duplicate[0].modified_user.delivery_email.lower(),
+            shared_email.lower(),
+        )
+
+        # Verify the second call prevents sending duplication emails
+        with patch("builtins.print") as mock_print:
+            call_command(
+                self.COMMAND_NAME,
+                f"--path={path}",
+                "--marketing",
+            )
+
+            self.assertEqual(
+                mock_print.mock_calls[0:],
+                [
+                    call(f"Excluded {users_count} users who already received this email"),
+                ],
+            )
+
+        # Verify no additional audit logs were created for these users
+        audit_logs_after_second_send = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
+            modified_user__in=[admin_user, owner_user],
+        )
+        self.assert_length(audit_logs_after_second_send, 1)  # Still only 1
+
+    def test_email_sending_failure_does_not_create_audit_log(self) -> None:
+        """Test that audit log entries are not created when email sending fails"""
+        path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        # Verify no audit logs exist initially
+        initial_audit_count = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT
+        ).count()
+
+        # Mock email sending to raise an exception
+        with patch("zerver.lib.send_email.send_immediate_email") as mock_send:
+            # Configure mock to raise EmailNotDeliveredError
+            from zerver.lib.send_email import EmailNotDeliveredError
+
+            mock_send.side_effect = EmailNotDeliveredError("SMTP connection failed")
+
+            # Attempt to send emails (should fail silently due to suppress() in send_one_email)
+            call_command(
+                self.COMMAND_NAME,
+                f"--path={path}",
+                "-r=zulip",
+                f"-u={hamlet.delivery_email},{cordelia.delivery_email}",
+            )
+
+            # Verify that email sending was attempted
+            self.assertEqual(mock_send.call_count, 2)  # Once for each user
+
+        # Verify no audit log entries were created
+        final_audit_count = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT
+        ).count()
+        self.assertEqual(final_audit_count, initial_audit_count)
+
+
+class TestSendZulipUpdateAnnouncements(ZulipTestCase):
+    COMMAND_NAME = "send_zulip_update_announcements"
+
+    def test_reset_level(self) -> None:
+        realm = get_realm("zulip")
+        realm.zulip_update_announcements_level = 9
+        realm.save()
+
+        call_command(self.COMMAND_NAME, "--reset-level=5")
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.zulip_update_announcements_level, 5)

@@ -1,21 +1,22 @@
 import re
-from typing import Any, Callable, Dict, Match, Optional
+from collections.abc import Callable
+from re import Match
+from typing import Any
+from urllib.parse import urljoin
 
 import magic
 import requests
 from django.conf import settings
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 
 from version import ZULIP_VERSION
-from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
+from zerver.lib.cache import cache_with_key, preview_url_cache_key
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
+from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
-# FIXME: Should we use a database cache or a memcached in production? What if
-# opengraph data is changed for a site?
-# Use an in-memory cache for development, to make it easy to develop this code
-CACHE_NAME = "database" if not settings.DEVELOPMENT else "in-memory"
 # Based on django.core.validators.URLValidator, with ftp support removed.
 link_regex = re.compile(
     r"^(?:http)s?://"  # http:// or https://
@@ -28,16 +29,21 @@ link_regex = re.compile(
 
 # Use Chrome User-Agent, since some sites refuse to work on old browsers
 ZULIP_URL_PREVIEW_USER_AGENT = (
-    "Mozilla/5.0 (compatible; ZulipURLPreview/{version}; +{external_host})"
-).format(version=ZULIP_VERSION, external_host=settings.ROOT_DOMAIN_URI)
+    f"Mozilla/5.0 (compatible; ZulipURLPreview/{ZULIP_VERSION}; +{settings.ROOT_DOMAIN_URI})"
+)
 
 # FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!
 HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
 TIMEOUT = 15
 
 
-def is_link(url: str) -> Optional[Match[str]]:
-    return link_regex.match(smart_text(url))
+class PreviewSession(OutgoingSession):
+    def __init__(self) -> None:
+        super().__init__(role="preview", timeout=TIMEOUT, headers=HEADERS)
+
+
+def is_link(url: str) -> Match[str] | None:
+    return link_regex.match(smart_str(url))
 
 
 def guess_mimetype_from_content(response: requests.Response) -> str:
@@ -51,7 +57,7 @@ def guess_mimetype_from_content(response: requests.Response) -> str:
 
 def valid_content_type(url: str) -> bool:
     try:
-        response = requests.get(url, stream=True, headers=HEADERS, timeout=TIMEOUT)
+        response = PreviewSession().get(url, stream=True)
     except requests.RequestException:
         return False
 
@@ -77,42 +83,33 @@ def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 @catch_network_errors
-@cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
-def get_link_embed_data(
-    url: str, maxwidth: int = 640, maxheight: int = 480
-) -> Optional[Dict[str, Any]]:
+@cache_with_key(preview_url_cache_key)
+def get_link_embed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> UrlEmbedData | None:
     if not is_link(url):
         return None
 
     if not valid_content_type(url):
         return None
 
-    # We are using two different mechanisms to get the embed data
-    # 1. Use OEmbed data, if found, for photo and video "type" sites
-    # 2. Otherwise, use a combination of Open Graph tags and Meta tags
-    data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight) or {}
-    if data.get("oembed"):
+    # The oembed data from pyoembed may be complete enough to return
+    # as-is; if so, we use it.  Otherwise, we use it as a _base_ for
+    # the other, less sophisticated techniques which we apply as
+    # successive fallbacks.
+    data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight)
+    if data is not None and isinstance(data, UrlOEmbedData):
         return data
 
-    response = requests.get(mark_sanitized(url), stream=True, headers=HEADERS, timeout=TIMEOUT)
-    if response.ok:
-        og_data = OpenGraphParser(
-            response.content, response.headers.get("Content-Type")
-        ).extract_data()
-        for key in ["title", "description", "image"]:
-            if not data.get(key) and og_data.get(key):
-                data[key] = og_data[key]
+    response = PreviewSession().get(mark_sanitized(url), stream=True)
+    if not response.ok:
+        return None
 
-        generic_data = (
-            GenericParser(response.content, response.headers.get("Content-Type")).extract_data()
-            or {}
-        )
-        for key in ["title", "description", "image"]:
-            if not data.get(key) and generic_data.get(key):
-                data[key] = generic_data[key]
+    if data is None:
+        data = UrlEmbedData()
+
+    for parser_class in (OpenGraphParser, GenericParser):
+        parser = parser_class(response.content, response.headers.get("Content-Type"))
+        data.merge(parser.extract_data())
+
+    if data.image:
+        data.image = urljoin(response.url, data.image)
     return data
-
-
-@get_cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME)
-def link_embed_data_from_cache(url: str, maxwidth: int = 640, maxheight: int = 480) -> Any:
-    return

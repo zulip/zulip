@@ -1,0 +1,41 @@
+<div class="popover-menu color-picker-popover no-auto-hide-left-sidebar-overlay" data-simplebar data-simplebar-tab-index="-1">
+    <div class="message_header message_header_stream" data-stream-id="{{stream_id}}">
+        <div class="message-header-contents" style="background: {{recipient_bar_color}};">
+            <div class="message_label_clickable stream_label">
+                <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
+                    {{> ../stream_privacy .}}
+                </span>
+                {{#if stream_name}}
+                <span class="message-header-stream-name">
+                    {{~stream_name~}}
+                </span>
+                {{else}}
+                &nbsp;
+                {{/if}}
+            </div>
+            <button class="color_picker_confirm_button icon-button icon-button-square icon-button-neutral tippy-zulip-delayed-tooltip" data-tooltip-template-id="color-picker-confirm-button-tooltip-template" aria-label="{{t 'Confirm new color' }}" tabindex="0">
+                <i class="zulip-icon zulip-icon-check"></i>
+            </button>
+        </div>
+    </div>
+    <ul role="menu" class="popover-menu-list">
+        <li role="none">
+            <div role="group" class="color-swatch-list" aria-label="{{t 'Stream color' }}">
+                {{#each stream_color_palette as |row|}}
+                    {{#each row as |hex_color|}}
+                        <input type="radio" id="color-{{hex_color}}" class="color-swatch-input" name="color-picker-select" data-swatch-color="{{hex_color}}" {{#if (eq hex_color ../stream_color )}}checked{{/if}} />
+                        <label role="menuitemradio" class="color-swatch-label tippy-zulip-delayed-tooltip" for="color-{{hex_color}}" style="background-color: {{hex_color}};" aria-label="{{hex_color}}" data-tippy-content="{{hex_color}}" data-swatch-color="{{hex_color}}" data-row="{{@../index}}" data-column="{{@index}}" tabindex="0"></label>
+                    {{/each}}
+                {{/each}}
+            </div>
+        </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <label role="menuitem" class="custom-color-picker popover-menu-link" tabindex="0">
+                <i class="custom-color-swatch-icon popover-menu-icon" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Custom color"}}</span>
+                <input type="color" class="color-picker-input" tabindex="-1" value="{{stream_color}}" />
+            </label>
+        </li>
+    </ul>
+</div>

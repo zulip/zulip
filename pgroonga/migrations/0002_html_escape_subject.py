@@ -1,12 +1,12 @@
 from django.db import connection, migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from psycopg2.sql import SQL
 
 from zerver.lib.migrate import do_batch_update
 
 
-def rebuild_pgroonga_index(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def rebuild_pgroonga_index(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     with connection.cursor() as cursor:
         do_batch_update(
             cursor,

@@ -1,0 +1,17 @@
+<div id="message-row-{{message_list_id}}-{{msg/id}}" data-message-id="{{msg/id}}"
+  class="message_row{{#unless msg/is_stream}} private-message{{/unless}}{{#if include_sender}} messagebox-includes-sender{{/if}}{{#if mention_classname}} {{mention_classname}}{{/if}}{{#if msg.unread}} unread{{/if}} {{#if msg.locally_echoed}}locally-echoed{{/if}} selectable_row"
+  role="listitem">
+    {{#if want_date_divider}}
+    <div class="unread_marker date_unread_marker"><div class="unread-marker-fill"></div></div>
+    <div class="date_row no-select">
+        {{{date_divider_html}}}
+    </div>
+    {{/if}}
+    <div class="unread_marker message_unread_marker"><div class="unread-marker-fill"></div></div>
+    <div class="messagebox">
+        <div class="messagebox-content {{#if status_message}}is-me-message{{/if}}">
+            {{> message_body .}}
+            {{!-- message_edit_form.hbs is inserted here when editing a message. --}}
+        </div>
+    </div>
+</div>

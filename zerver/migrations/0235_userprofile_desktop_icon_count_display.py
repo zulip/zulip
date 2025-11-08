@@ -5,7 +5,6 @@ DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0234_add_external_account_custom_profile_field"),
     ]

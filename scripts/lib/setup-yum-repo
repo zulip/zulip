@@ -53,7 +53,7 @@ elif [ "$is_rhel" = true ]; then
     yum localinstall -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-latest-x86_64/pgdg-redhat10-10-2.noarch.rpm
     yum localinstall -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm
 else
-    # TODO only fedora33 for now
+    # TODO make the postgres version a variable.
     PGVER=13
-    dnf install -y "https://download.postgresql.org/pub/repos/yum/reporpms/F-33-x86_64/pgdg-fedora-repo-latest.noarch.rpm"
+    dnf install -y "https://download.postgresql.org/pub/repos/yum/reporpms/F-$RHVER-x86_64/pgdg-fedora-repo-latest.noarch.rpm"
 fi

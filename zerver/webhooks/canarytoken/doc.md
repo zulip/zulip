@@ -1,19 +1,32 @@
-See your Thinkst Canarytoken alerts in Zulip! This integration works with Canarytokens from
-[canarytokens.org][canarytokens], not Thinkst's paid product - see the
-[Thinkst](/integrations/doc/thinkst) integration for those!
+# Zulip Thinkst Canarytoken integration
 
-1. {!create-stream.md!}
+See your Thinkst Canarytoken alerts in Zulip!
 
-1. {!create-bot-construct-url-indented.md!}
+This integration works with Canarytokens from
+[canarytokens.org][canarytokens], not Thinkst's paid product. See the
+[Zulip Thinkst integration](/integrations/thinkst) for those!
 
-1. Go to [canarytokens.org][canarytokens], and select the type of
-   webhook that you want to create and add a reminder note.
-   In the "Provide an email address of webhook URL" field, enter the constructed
-   URL above.
-   Finally, click **Create my canarytoken**.
+{start_tabs}
+
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-webhook-url-basic.md!}
+
+1. Go to [canarytokens.org][canarytokens].
+
+1. From the **Select your token**  dropdown, choose the type of webhook
+   that you want to create. In the **Provide an email address or webhook
+   URL** field, enter the generated URL above. Add a reminder note, and
+   click **Create my Canarytoken**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/canarytoken/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
 
 [canarytokens]: https://canarytokens.org

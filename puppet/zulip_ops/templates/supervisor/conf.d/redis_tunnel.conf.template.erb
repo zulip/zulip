@@ -1,8 +1,0 @@
-[program:redis-tunnel]
-command=autossh -M 0 -N -L 127.0.0.1:6379:127.0.0.1:6379 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 <%= @redis_hostname %>
-priority=50
-user=zulip
-autostart=true
-autorestart=true
-redirect_stderr=true
-stdout_logfile=/var/log/zulip/redis_tunnel.log

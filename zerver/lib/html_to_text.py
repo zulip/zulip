@@ -1,13 +1,12 @@
-from typing import Mapping, Union
+from collections.abc import Mapping
 
 from bs4 import BeautifulSoup
-from django.http import HttpRequest
 from django.utils.html import escape
 
 from zerver.lib.cache import cache_with_key, open_graph_description_cache_key
 
 
-def html_to_text(content: Union[str, bytes], tags: Mapping[str, str] = {"p": " | "}) -> str:
+def html_to_text(content: str | bytes, tags: Mapping[str, str] = {"p": " | "}) -> str:
     bs = BeautifulSoup(content, features="lxml")
     # Skip any admonition (warning) blocks, since they're
     # usually something about users needing to be an
@@ -16,8 +15,8 @@ def html_to_text(content: Union[str, bytes], tags: Mapping[str, str] = {"p": " |
     for tag in bs.find_all("div", class_="admonition"):
         tag.clear()
 
-    # Skip code-sections, which just contains navigation instructions.
-    for tag in bs.find_all("div", class_="code-section"):
+    # Skip tabbed-sections, which just contain navigation instructions.
+    for tag in bs.find_all("div", class_="tabbed-section"):
         tag.clear()
 
     text = ""
@@ -35,5 +34,5 @@ def html_to_text(content: Union[str, bytes], tags: Mapping[str, str] = {"p": " |
 
 
 @cache_with_key(open_graph_description_cache_key, timeout=3600 * 24)
-def get_content_description(content: bytes, request: HttpRequest) -> str:
+def get_content_description(content: bytes, request_url: str) -> str:
     return html_to_text(content)

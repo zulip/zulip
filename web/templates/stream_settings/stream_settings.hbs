@@ -1,0 +1,198 @@
+<div class="stream_settings_header" data-stream-id="{{sub.stream_id}}">
+    <div class="tab-container"></div>
+    {{#with sub}}
+    <div class="button-group">
+        <div class="sub_unsub_button_wrapper inline-block {{#unless should_display_subscription_button }}cannot-subscribe-tooltip{{/unless}}" data-tooltip-template-id="cannot-subscribe-tooltip-template">
+            <template id="cannot-subscribe-tooltip-template">
+                <span>
+                    {{#tr}}
+                        Cannot subscribe to private channel <z-stream></z-stream>
+                        {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=../sub}}{{/inline}}
+                    {{/tr}}
+                </span>
+            </template>
+            <button class="action-button subscribe-button sub_unsub_button {{#if subscribed}}action-button-quiet-neutral{{else}}action-button-quiet-brand{{/if}} {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
+                {{#if subscribed }}
+                    {{t "Unsubscribe" }}
+                {{else}}
+                    {{t "Subscribe" }}
+                {{/if}}
+            </button>
+        </div>
+        {{> ../components/action_button
+          icon="eye"
+          attention="quiet"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip"
+          data-tooltip-template-id="view-stream-tooltip-template"
+          id="preview-stream-button"
+          hidden=(not should_display_preview_button)
+          }}
+        {{> ../components/icon_button
+          icon="archive"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip deactivate"
+          data-tippy-content=(t 'Archive channel')
+          }}
+        {{> ../components/icon_button
+          icon="unarchive"
+          intent="success"
+          custom_classes="tippy-zulip-delayed-tooltip reactivate"
+          data-tippy-content=(t 'Unarchive channel')
+          }}
+    </div>
+    {{/with}}
+</div>
+<div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
+    <div class="inner-box">
+        <div class="stream-creation-confirmation-banner"></div>
+        <div class="stream_section" data-stream-section="general">
+            {{#with sub}}
+            <div class="stream-settings-tip-container">
+                {{> stream_settings_tip .}}
+            </div>
+            <div class="stream-header">
+                {{> stream_privacy_icon
+                  invite_only=invite_only
+                  is_web_public=is_web_public
+                  is_archived=is_archived }}
+                <div class="stream-name">
+                    <span class="sub-stream-name" data-tippy-content="{{name}}">{{name}}</span>
+                </div>
+                <div class="stream_change_property_info alert-notification"></div>
+                <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
+                    {{> ../components/icon_button
+                      icon="edit"
+                      intent="neutral"
+                      custom_classes="tippy-zulip-delayed-tooltip"
+                      id="open_stream_info_modal"
+                      data-tippy-content=(t 'Edit channel name and description' )
+                      }}
+                </div>
+            </div>
+            <div class="stream-description">
+                {{> stream_description
+                  rendered_description=rendered_description
+                  }}
+            </div>
+            {{> stream_permissions .
+              stream_privacy_policy_values=../stream_privacy_policy_values
+              stream_privacy_policy=../stream_privacy_policy
+              stream_topics_policy_values=../stream_topics_policy_values
+              empty_string_topic_display_name=../empty_string_topic_display_name
+              check_default_stream=../check_default_stream
+              zulip_plan_is_not_limited=../zulip_plan_is_not_limited
+              upgrade_text_for_wide_organization_logo=../upgrade_text_for_wide_organization_logo
+              is_business_type_org=../is_business_type_org
+              has_billing_access=../has_billing_access
+              org_level_message_retention_setting=../org_level_message_retention_setting
+              is_stream_edit=true
+              prefix="id_"
+              group_setting_labels=../group_setting_labels
+              channel_folder_widget_name="folder_id"
+              is_admin=../is_admin
+              }}
+            {{/with}}
+            <div class="stream_details_box">
+                <div class="stream_details_box_header">
+                    <h3 class="stream_setting_subsection_title">
+                        {{t "Channel details" }}
+                    </h3>
+                    <div class="stream_email_address_error alert-notification"></div>
+                </div>
+                {{#with sub}}
+                <div class="creator_details stream_details_subsection">
+                    {{> ../creator_details .}}
+                </div>
+                <div class="stream_details_subsection">
+                    {{t "Channel ID"}}<br/>
+                    {{stream_id}}
+                </div>
+                {{/with}}
+                <div class="input-group stream-email-box">
+                    <label for="copy_stream_email_button" class="title inline-block">Email address</label>
+                    <p class="field-hint">
+                        {{t "You can use email to send messages to Zulip channels."}}
+                        {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
+                    </p>
+                    <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
+                        {{> ../components/action_button
+                          label=(t "Generate email address")
+                          attention="quiet"
+                          intent="neutral"
+                          type="button"
+                          custom_classes="copy_email_button"
+                          id="copy_stream_email_button"
+                          disabled=(not can_access_stream_email)
+                          }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div id="personal-stream-settings" class="stream_section" data-stream-section="personal">
+            <div class="subsection-parent">
+                <div class="subsection-header">
+                    <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
+                    <div class="stream_change_property_status alert-notification"></div>
+                </div>
+                {{#each other_settings}}
+                    <div class="input-group">
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          is_muted=(lookup ../sub "is_muted")
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=false
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
+                    </div>
+                {{/each}}
+                <div class="input-group">
+                    <label class="settings-field-label channel-color-label">{{t "Channel color" }}</label>
+                    <button class="action-button action-button-quiet-neutral stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
+                        <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
+                        <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>
+                    </button>
+                </div>
+            </div>
+            <div class="subsection-parent">
+                <div class="subsection-header">
+                    <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
+                    <div class="stream_change_property_status alert-notification"></div>
+                </div>
+                <p>{{t "In muted channels, channel notification settings apply only to unmuted topics." }}</p>
+                <div class="input-group">
+                    {{> ../components/action_button
+                      label=(t "Reset to default notifications")
+                      attention="quiet"
+                      intent="neutral"
+                      custom_classes="reset-stream-notifications-button"
+                      type="button"
+                      }}
+                </div>
+                {{#each notification_settings}}
+                    <div class="input-group">
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=true
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="stream_section" data-stream-section="subscribers">
+            {{#with sub}}
+            <div class="edit_subscribers_for_stream">
+                {{> stream_members .}}
+            </div>
+            {{/with}}
+        </div>
+    </div>
+</div>

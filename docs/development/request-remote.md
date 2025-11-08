@@ -1,6 +1,6 @@
-```eval_rst
-:orphan:
-```
+---
+orphan: true
+---
 
 # How to request a remote Zulip development instance
 
@@ -11,7 +11,7 @@ development environment already set up.
 The machines (droplets) are being generously provided by
 [DigitalOcean](https://www.digitalocean.com/). Thank you DigitalOcean!
 
-## Step 1: Join GitHub and create SSH Keys
+## Step 1: Join GitHub and create SSH keys
 
 To contribute to Zulip and to use a remote Zulip developer instance, you'll
 need a GitHub account. If you don't already have one, sign up
@@ -43,8 +43,8 @@ zulip/zulip, you are ready to request your Zulip developer instance.
 If you haven't already, create an account on https://chat.zulip.org/.
 
 Next, join the [development
-help](https://chat.zulip.org/#narrow/stream/49-development-help) stream. Create a
-new **stream message** with your GitHub username as the **topic** and request
+help](https://chat.zulip.org/#narrow/channel/49-development-help) channel. Create a
+new **channel message** with your GitHub username as the **topic** and request
 your remote dev instance. **Please make sure you have completed steps 1 and 2
 before doing so**. A core developer should reply letting you know they're
 working on creating it as soon as they are available to help.
@@ -60,21 +60,24 @@ Once your remote dev instance is ready:
   `ssh zulipdev@<username>.zulipdev.org` on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
 - There is no password; your account is configured to use your SSH keys.
-- Once you log in, you should see `(zulip-py3-venv) ~$`.
-- To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
+- Once you log in, you should see `(zulip-server) ~$`.
+- To start the dev server, `cd zulip` and then run `./tools/run-dev`.
 - While the dev server is running, you can see the Zulip server in your browser
-  at http://username.zulipdev.org:9991.
+  at http://zulip.username.zulipdev.org:9991.
+- The development server actually runs on all subdomains of
+  `username.zulipdev.org`; this is important for testing Zulip's
+  support for multiple organizations in your development server.
 
 Once you've confirmed you can connect to your remote server, take a look at:
 
-* [developing remotely](../development/remote.md) for tips on using the remote dev
+- [developing remotely](remote.md) for tips on using the remote dev
   instance, and
-* our [Git & GitHub Guide](../git/index.md) to learn how to use Git with Zulip.
+- our [Git & GitHub guide](../git/index.md) to learn how to use Git with Zulip.
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Using the development environment](../development/using.md)
-* [Testing](../testing/testing.md)
+- [Using the development environment](using.md)
+- [Testing](../testing/testing.md)
 
 [github-join]: https://github.com/join
 [github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+args="$(getopt -o '' --long check -- "$@")"
+eval "set -- $args"
+check=false
+while true; do
+    case "$1" in
+        --check)
+            check=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+username="$1"
+shift
+
+homedir="$(getent passwd "$username" | cut -d: -f6)"
+sshdir="$homedir/.ssh"
+
+umask 077
+workdir=$(mktemp -d)
+chown "$username:$username" "$workdir"
+cleanup() { ls -al "$workdir" && rm -rf "$workdir"; }
+trap cleanup EXIT
+
+umask 033
+
+for ssh_secret_name in "$@"; do
+    keydata="$(/srv/zulip-aws-tools/bin/aws --output text \
+        secretsmanager get-secret-value \
+        --secret-id "$ssh_secret_name" \
+        --query SecretString)"
+    for keyfile in $(jq -r 'keys[]' <<<"$keydata"); do
+        touch "$workdir/$keyfile"
+        if [[ "$keyfile" != *".pub" ]]; then
+            chmod 600 "$workdir/$keyfile"
+        fi
+        jq -r ".[\"$keyfile\"]" <<<"$keydata" | base64 -d >"$workdir/$keyfile"
+        chown "$username:$username" "$workdir/$keyfile"
+    done
+done
+
+if [ "$check" = "true" ]; then
+    diff -rN -x config -x authorized_keys -x known_hosts \
+        "$workdir/" "$sshdir/"
+    exit 0
+fi
+
+rsync -av --delete \
+    --exclude config --exclude authorized_keys --exclude known_hosts \
+    "$workdir/" "$sshdir/"

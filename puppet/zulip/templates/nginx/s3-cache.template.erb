@@ -1,0 +1,26 @@
+# nginx does its own DNS resolution, which is necessary here to
+# resolve the IP of the S3 server.  Point it at whatever is configured
+# first in /etc/resolv.conf.  The validity duration is set to match
+# S3's DNS validity.
+resolver <%= @nginx_resolver_ip %> valid=300s;
+resolver_timeout 10s;
+
+# This cache is only used if S3 file storage is configured.
+proxy_cache_path /srv/zulip-uploaded-files-cache
+    levels=1:2
+    keys_zone=uploads:<%= @s3_memory_cache_size %>
+    inactive=<%= @s3_cache_inactive_time %>
+    max_size=<%= @s3_disk_cache_size %>;
+
+# This is used when proxying requests to S3; we wish to know if the
+# proxied request is asking to override the Content-Disposition in its
+# response, so we can adjust our cache key.  Unfortunately, $arg_foo
+# style variables pre-parsed from query parameters don't work with
+# query parameters with dashes, so we parse it out by hand.  Despite
+# needing to be declared at the 'http' level,. nginx applies maps like
+# this lazily, so this only affects internal S3 proxied requests.
+
+map $args $s3_disposition_cache_key {
+    default "";
+    "~(^|&)(?<param>response-content-disposition=[^&]+)" "?$param";
+}

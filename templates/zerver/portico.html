@@ -3,8 +3,8 @@
 
 {# A base template for stuff like login, register, etc.
 
-    Not inside the app itself, but covered by the same structure,
-    hence the name.
+Not inside the app itself, but covered by the same structure,
+hence the name.
 #}
 
 {% block content %}
@@ -20,8 +20,8 @@
             </div>
         </div>
     </div>
-    <div class="alert-box"></div>
-    {% if not isolated_page %}
+    <div class="blueslip-error-container"></div>
+    {% if not isolated_page and not skip_footer %}
     {% include 'zerver/footer.html' %}
     {% endif %}
 </div>

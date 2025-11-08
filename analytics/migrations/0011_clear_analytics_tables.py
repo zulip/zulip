@@ -1,9 +1,9 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def clear_analytics_tables(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def clear_analytics_tables(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserCount = apps.get_model("analytics", "UserCount")
     StreamCount = apps.get_model("analytics", "StreamCount")
     RealmCount = apps.get_model("analytics", "RealmCount")
@@ -18,11 +18,10 @@ def clear_analytics_tables(apps: StateApps, schema_editor: DatabaseSchemaEditor)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0010_clear_messages_sent_values"),
     ]
 
     operations = [
-        migrations.RunPython(clear_analytics_tables),
+        migrations.RunPython(clear_analytics_tables, elidable=True),
     ]

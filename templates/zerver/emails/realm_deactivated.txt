@@ -1,0 +1,19 @@
+{% set localized_date = event_date|localize %}
+{% if scheduled_deletion_date %}
+{% set deletion_date = scheduled_deletion_date|localize %}
+{% endif %}
+{% if acting_user and initiated_deactivation %}
+    {% trans %}You have deactivated your Zulip organization, {{ realm_name }}, on {{ localized_date }}. {% endtrans %}
+{% elif acting_user %}
+    {% trans %}Your Zulip organization, {{ realm_name }}, was deactivated by {{ deactivating_owner }} on {{ localized_date }}. {% endtrans %}
+{% else %}
+    {% trans %}Your Zulip organization, {{ realm_name }}, was deactivated on {{ localized_date }}. {% endtrans %}
+{% endif %}
+{% if data_already_deleted %}
+    {% trans %}All data associated with this organization has been permanently deleted.{% endtrans %}
+{% elif scheduled_deletion_date %}
+    {% trans %}All data associated with this organization will be permanently deleted on {{ deletion_date }}.{% endtrans %}
+{% endif %}
+
+
+{% trans%}If you have any questions or concerns, please reply to this email as soon as possible.{% endtrans %}

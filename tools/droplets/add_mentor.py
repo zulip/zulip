@@ -14,7 +14,6 @@ import re
 import socket
 import sys
 from argparse import ArgumentParser
-from typing import List
 
 import requests
 
@@ -30,7 +29,7 @@ append_key = """\
 """
 
 
-def get_mentor_keys(username: str) -> List[str]:
+def get_mentor_keys(username: str) -> list[str]:
     url = f"https://api.github.com/users/{username}/keys"
 
     r = requests.get(url)
@@ -52,7 +51,7 @@ if __name__ == "__main__":
 
     if args.remove:
         remove_re = re.compile(
-            "#<{0}>{{{{.+}}}}<{0}>(\n)?".format(args.username), re.DOTALL | re.MULTILINE
+            rf"#<{args.username}>{{{{.+}}}}<{args.username}>(\n)?", re.DOTALL | re.MULTILINE
         )
 
         with open(authorized_keys, "r+") as f:
@@ -67,8 +66,7 @@ if __name__ == "__main__":
     else:
         keys = get_mentor_keys(args.username)
         with open(authorized_keys, "a") as f:
-            for key in keys:
-                f.write(append_key.format(username=args.username, key=key))
+            f.writelines(append_key.format(username=args.username, key=key) for key in keys)
 
         print(f"Successfully added {args.username}'s SSH key!")
         print("Can you let your mentor know that they can connect to this machine with:\n")

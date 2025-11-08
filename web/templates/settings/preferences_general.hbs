@@ -1,0 +1,73 @@
+<div class="general-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+    <!-- this is inline block so that the alert notification can sit beside
+    it. If there's not an alert, don't make it inline-block.-->
+    <div class="subsection-header">
+        <h3>{{t "General" }}</h3>
+        {{> settings_save_discard_widget section_name="general-settings" show_only_indicator=(not for_realm_settings) }}
+    </div>
+    {{#unless for_realm_settings}}
+        {{> ../dropdown_widget_with_label
+          widget_name="default_language"
+          label=settings_label.default_language_settings_label
+          value_type="string"
+          help_link="/help/change-your-language"}}
+    {{/unless}}
+
+    <div class="input-group">
+        <label for="{{prefix}}twenty_four_hour_time" class="settings-field-label">{{ settings_label.twenty_four_hour_time }}</label>
+        <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element settings_select bootstrap-focus-style" id="{{prefix}}twenty_four_hour_time" data-setting-widget-type="string">
+            {{#each twenty_four_hour_time_values}}
+                <option value='{{ this.value }}'>{{ this.description }}</option>
+            {{/each}}
+        </select>
+    </div>
+    <div class="input-group">
+        <label for="{{prefix}}color_scheme" class="settings-field-label">{{t "Theme" }}</label>
+        <div id="{{prefix}}color_scheme" class="tab-picker prop-element" data-setting-widget-type="radio-group" data-setting-choice-type="number">
+            <input type="radio" id="{{prefix}}theme_select_automatic" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.automatic.code}}" />
+            <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_automatic" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
+                <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+            </label>
+            <input type="radio" id="{{prefix}}theme_select_light" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.light.code}}" />
+            <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_light" aria-label="{{t 'Select light theme' }}" data-tippy-content="{{t 'Light theme' }}" tabindex="0">
+                <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i>
+            </label>
+            <input type="radio" id="{{prefix}}theme_select_dark" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.dark.code}}" />
+            <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_dark" aria-label="{{t 'Select dark theme' }}" data-tippy-content="{{t 'Dark theme' }}" tabindex="0">
+                <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i>
+            </label>
+            <span class="slider"></span>
+        </div>
+    </div>
+
+    {{> settings_checkbox
+      setting_name="enter_sends"
+      is_checked=settings_object.enter_sends
+      label=settings_label.enter_sends
+      prefix=prefix}}
+
+    <div class="information-density-settings">
+        <div class="font-size-setting info-density-controls">
+            <div class="title">{{t "Font size"}}</div>
+            {{> info_density_control_button_group
+              property="web_font_size_px"
+              default_icon_class="zulip-icon-type-big"
+              property_value=settings_object.web_font_size_px
+              display_value=settings_object.web_font_size_px
+              for_settings_ui=true
+              prefix=prefix
+              }}
+        </div>
+        <div class="line-height-setting info-density-controls">
+            <div class="title">{{t "Line spacing"}}</div>
+            {{> info_density_control_button_group
+              property="web_line_height_percent"
+              default_icon_class="zulip-icon-line-height-big"
+              property_value=settings_object.web_line_height_percent
+              display_value=web_line_height_percent_display_value
+              for_settings_ui=true
+              prefix=prefix
+              }}
+        </div>
+    </div>
+</div>

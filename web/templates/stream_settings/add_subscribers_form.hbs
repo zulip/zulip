@@ -1,0 +1,36 @@
+<div class="add_subscribers_container add-button-container">
+    <div class="pill-container person_picker">
+        <div class="input" contenteditable="true"
+          data-placeholder="{{t 'Add subscribers.' }}">
+            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+        </div>
+    </div>
+    {{#if (not hide_add_button)}}
+        <div class="add_subscriber_button_wrapper add-users-button-wrapper inline-block">
+            {{> ../components/action_button
+              label=(t "Add")
+              custom_classes="add-subscriber-button add-users-button"
+              attention="quiet"
+              intent="brand"
+              type="submit"
+              }}
+
+            {{> ../components/icon_button
+              icon="check"
+              intent="success"
+              custom_classes="check hidden-below"
+              disabled=true
+              }}
+        </div>
+    {{/if}}
+</div>
+<div class="add-subscribers-subtitle">
+    {{#tr}}
+        Enter a <z-user-roles-link>user role</z-user-roles-link>,
+        <z-user-groups-link>user group</z-user-groups-link>,
+        or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
+        {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</div>

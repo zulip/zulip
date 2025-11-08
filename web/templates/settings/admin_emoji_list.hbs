@@ -1,0 +1,32 @@
+{{#with emoji}}
+<tr class="emoji_row" id="emoji_{{name}}" data-emoji-name="{{name}}">
+    <td>
+        <span class="emoji_name">{{display_name}}</span>
+    </td>
+    <td>
+        <span class="emoji_image">
+            <a href="{{source_url}}" target="_blank" rel="noopener noreferrer">
+                <img class="emoji" src="{{source_url}}" alt="{{display_name}}" />
+            </a>
+        </span>
+    </td>
+    <td>
+        {{#if author}}
+        {{#with author}}
+        <span class="emoji_author panel_user_list">{{> ../user_display_only_pill . display_value=full_name img_src=avatar_url}}</span>
+        {{/with}}
+        {{else}}
+        <span class="emoji_author">{{t "Unknown author" }}</span>
+        {{/if}}
+    </td>
+    <td>
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip delete"
+          disabled=(not can_delete_emoji)
+          data-tippy-content=(t "Deactivate")
+          }}
+    </td>
+</tr>
+{{/with}}

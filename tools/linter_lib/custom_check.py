@@ -1,5 +1,3 @@
-from typing import List
-
 from zulint.custom_rules import Rule, RuleList
 
 # Rule help:
@@ -13,6 +11,9 @@ from zulint.custom_rules import Rule, RuleList
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
+    "zerver/lib/topic_sqlalchemy.py",
+    # This is tied to legacy events.
+    "zerver/lib/event_types.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
@@ -21,21 +22,29 @@ FILES_WITH_LEGACY_SUBJECT = {
     # These use subject in the email sense, and will
     # probably always be exempt:
     "zerver/lib/email_mirror.py",
+    "zerver/lib/email_notifications.py",
     "zerver/lib/send_email.py",
+    "zerver/lib/typed_endpoint.py",
     "zerver/tests/test_new_users.py",
     "zerver/tests/test_email_mirror.py",
+    "zerver/tests/test_message_notification_emails.py",
     "zerver/tests/test_email_notifications.py",
+    # This uses subject in authentication protocols sense:
+    "zerver/tests/test_auth_backends.py",
     # These are tied more to our API than our DB model.
     "zerver/openapi/python_examples.py",
     "zerver/tests/test_openapi.py",
     # This has lots of query data embedded, so it's hard
     # to fix everything until we migrate the DB to "topic".
     "zerver/tests/test_message_fetch.py",
+    "zerver/tests/test_message_topics.py",
+    # This is actually email subjects
+    "zerver/lib/email_mirror_server.py",
 }
 
-shebang_rules: List["Rule"] = [
+shebang_rules: list["Rule"] = [
     {
-        "pattern": "^#!",
+        "pattern": r"\A#!",
         "description": "zerver library code shouldn't have a shebang line.",
         "include_only": {"zerver/"},
     },
@@ -43,60 +52,62 @@ shebang_rules: List["Rule"] = [
     # that NixOS provides at a fixed path (outside a
     # buildFHSUserEnv sandbox).
     {
-        "pattern": "^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))",
+        "pattern": r"\A#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))",
         "description": "Use `#!/usr/bin/env foo` instead of `#!/path/foo`"
         " for interpreters other than sh.",
     },
     {
-        "pattern": "^#!/usr/bin/env python$",
+        "pattern": r"\A#!/usr/bin/env python$",
         "description": "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`.",
     },
 ]
 
-trailing_whitespace_rule: "Rule" = {
-    "pattern": r"\s+$",
-    "strip": "\n",
-    "description": "Fix trailing whitespace",
-}
-whitespace_rules: List["Rule"] = [
-    # This linter should be first since bash_rules depends on it.
-    trailing_whitespace_rule,
+base_whitespace_rules: list["Rule"] = [
+    {
+        "pattern": r"[\t ]+$",
+        "exclude": {"tools/ci/success-http-headers.template.txt"},
+        "description": "Fix trailing whitespace",
+    },
+    {
+        "pattern": r"[^\n]\Z",
+        "description": "Missing newline at end of file",
+    },
+]
+whitespace_rules: list["Rule"] = [
+    *base_whitespace_rules,
     {
         "pattern": "http://zulip.readthedocs.io",
         "description": "Use HTTPS when linking to ReadTheDocs",
     },
     {
         "pattern": "\t",
-        "strip": "\n",
-        "exclude": {
-            "tools/ci/success-http-headers.template.txt",
-            "tools/ci/success-http-headers.template.debian.txt",
-        },
         "description": "Fix tab-based whitespace",
     },
+    {
+        "pattern": r"(?i:webapp)",
+        "description": "Web app should be two words",
+    },
 ]
-comma_whitespace_rule: List["Rule"] = [
+comma_whitespace_rule: list["Rule"] = [
     {
         "pattern": ", {2,}[^#/ ]",
-        "exclude": {"zerver/tests", "frontend_tests/node_tests", "corporate/tests"},
+        "exclude": {"zerver/tests", "web/tests", "corporate/tests"},
         "description": "Remove multiple whitespaces after ','",
         "good_lines": ["foo(1, 2, 3)", "foo = bar  # some inline comment"],
         "bad_lines": ["foo(1,  2, 3)", "foo(1,    2, 3)"],
     },
 ]
-markdown_whitespace_rules: List["Rule"] = [
-    *(rule for rule in whitespace_rules if rule["pattern"] != r"\s+$"),
+markdown_whitespace_rules: list["Rule"] = [
+    *(rule for rule in whitespace_rules if rule["pattern"] != r"[\t ]+$"),
     # Two spaces trailing a line with other content is okay--it's a Markdown line break.
     # This rule finds one space trailing a non-space, three or more trailing spaces, and
     # spaces on an empty line.
     {
-        "pattern": r"((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)",
-        "strip": "\n",
+        "pattern": r"((?<![\t ])[\t ]$)|([\t ][\t ][\t ]+$)|(^[\t ]+$)",
         "description": "Fix trailing whitespace",
     },
     {
         "pattern": "^#+[A-Za-z0-9]",
-        "strip": "\n",
         "description": "Missing space after # in heading",
         "good_lines": ["### some heading", "# another heading"],
         "bad_lines": ["###some heading", "#another heading"],
@@ -105,11 +116,19 @@ markdown_whitespace_rules: List["Rule"] = [
 
 
 js_rules = RuleList(
-    langs=["js"],
+    langs=["cjs", "js", "ts"],
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude": {"static/js/util.js", "frontend_tests/"},
+            "exclude": {
+                "web/src/message_store.ts",
+                "web/src/server_event_types.ts",
+                "web/src/util.ts",
+                "web/src/message_events_util.ts",
+                "web/src/message_helper.ts",
+                "web/src/server_message.ts",
+                "web/tests/",
+            },
             "exclude_pattern": "emails",
             "description": "avoid subject in JS code",
             "good_lines": ["topic_name"],
@@ -120,75 +139,50 @@ js_rules = RuleList(
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
-            "pattern": r"i18n\.t\([^)]+[^,\{\)]$",
-            "description": "i18n string should not be a multiline string",
-        },
-        {
-            "pattern": r"""i18n\.t\(['"].+?['"]\s*\+""",
-            "description": "Do not concatenate arguments within i18n.t()",
-        },
-        {
-            "pattern": r"""i18n\.t\([a-zA-Z]""",
-            "exclude": {"static/js/templates.js"},
-            "description": "Do not pass a variable into i18n.t; it will not be exported to Transifex for translation.",
-        },
-        {
-            "pattern": r"i18n\.t\(.+\).*\+",
+            "pattern": r"\$t\(.+\).*\+",
             "description": "Do not concatenate i18n strings",
         },
-        {"pattern": r"\+.*i18n\.t\(.+\)", "description": "Do not concatenate i18n strings"},
+        {"pattern": r"\+.*\$t\(.+\)", "description": "Do not concatenate i18n strings"},
         {
             "pattern": "[.]html[(]",
-            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|i18n\.t|rendered_|$|\)|error_text|widget_elem|\$error|\$\("<p>"\))""",
+            "exclude_pattern": r"""\.html\(("|'|render_|\w+_html|html|message\.content|postprocess_content|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
-                "static/js/portico",
-                "static/js/lightbox.js",
-                "static/js/ui_report.js",
-                "static/js/confirm_dialog.js",
-                "frontend_tests/",
+                "web/src/portico",
+                "web/src/lightbox.ts",
+                "web/src/ui_report.ts",
+                "web/src/dialog_widget.ts",
+                "web/tests/",
             },
-            "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from handlebars and thus is already sanitized.",
+            "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from Handlebars and thus is already sanitized.",
         },
         {
             "pattern": "[\"']json/",
             "description": "Relative URL for JSON route not supported by i18n",
         },
-        # This rule is constructed with + to avoid triggering on itself
-        {"pattern": "^[ ]*//[A-Za-z0-9]", "description": "Missing space after // in comment"},
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
-            "description": "Strings passed to $().text should be wrapped in i18n.t() for internationalization",
-            "exclude": {"frontend_tests/node_tests/"},
-        },
-        {
-            "pattern": r"""compose_error\(["']""",
-            "description": "Argument to compose_error should be a literal string enclosed "
-            "by i18n.t()",
-        },
-        {
-            "pattern": r"ui.report_success\(",
-            "description": "Deprecated function, use ui_report.success.",
+            "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
+            "exclude": {
+                "web/tests/",
+                "web/src/billing/",
+            },
         },
         {
             "pattern": r"""report.success\(["']""",
-            "description": "Argument to ui_report.success should be a literal string enclosed "
-            "by i18n.t()",
-        },
-        {
-            "pattern": r"ui.report_error\(",
-            "description": "Deprecated function, use ui_report.error.",
+            "description": "Argument to ui_report.success should be a literal string translated "
+            "by $t_html()",
         },
         {
             "pattern": r"""report.error\(["'][^'"]""",
-            "description": "Argument to ui_report.error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.error("")', 'ui_report.error(_("text"))'],
             "bad_lines": ['ui_report.error("test")'],
         },
         {
             "pattern": r"""report.client_error\(["'][^'"]""",
-            "description": "Argument to ui_report.client_error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.client_error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.client_error("")', 'ui_report.client_error(_("text"))'],
             "bad_lines": ['ui_report.client_error("test")'],
         },
@@ -203,27 +197,42 @@ js_rules = RuleList(
             "description": "Use channel module for AJAX calls",
             "exclude": {
                 # Internal modules can do direct network calls
-                "static/js/blueslip.js",
-                "static/js/channel.js",
+                "web/src/blueslip.ts",
+                "web/src/channel.ts",
                 # External modules that don't include channel.js
-                "static/js/stats/",
-                "static/js/portico/",
-                "static/js/billing/",
+                "web/src/stats/",
+                "web/src/portico/",
+                "web/src/billing/",
             },
             "good_lines": ["channel.get(...)"],
             "bad_lines": ["$.get()", "$.post()", "$.ajax()"],
         },
         {
             "pattern": "style ?=",
+            "exclude_pattern": r"(const |\S)style ?=",
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
-                "frontend_tests/node_tests/copy_and_paste.js",
-                "frontend_tests/node_tests/upload.js",
-                "static/js/upload.js",
-                "static/js/stream_color.js",
+                "web/tests/compose_paste.test.cjs",
+                "web/tests/postprocess_content.test.cjs",
             },
-            "good_lines": ["#my-style {color: blue;}"],
+            "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
+        },
+        {
+            "pattern": r"assert\(",
+            "description": "Use 'assert.ok' instead of 'assert'. We avoid the use of 'assert' as it can easily be confused with 'assert.equal'.",
+            "include_only": {"web/tests/"},
+            "good_lines": ["assert.ok(...)"],
+            "bad_lines": ["assert(...)"],
+        },
+        {
+            "pattern": r"allowHTML|(?i:data-tippy-allowHTML)",
+            "description": "Never use Tippy.js allowHTML; for an HTML tooltip, get a DocumentFragment with ui_util.parse_html.",
+        },
+        {
+            "pattern": r"\.rewire_",
+            "description": "Never call rewire_* functions directly. Use override_rewire.",
+            "include_only": {"web/tests/"},
         },
         *whitespace_rules,
     ],
@@ -234,11 +243,21 @@ python_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude_pattern": "subject to the|email|outbox",
+            "exclude_pattern": "subject to the|email|outbox|account deactivation|is subject to",
             "description": "avoid subject as a var",
             "good_lines": ["topic_name"],
             "bad_lines": ['subject="foo"', " MAX_SUBJECT_LEN"],
             "exclude": FILES_WITH_LEGACY_SUBJECT,
+            "exclude_line": {
+                ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+                ("zerver/lib/streams.py", '.exclude(subject="")'),
+                ("zerver/views/streams.py", "message__subject__iexact=topic_name,"),
+                ("zerver/lib/message_cache.py", 'and obj["subject"] == ""'),
+                (
+                    "zerver/lib/message_cache.py",
+                    'obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME',
+                ),
+            },
             "include_only": {
                 "zerver/data_import/",
                 "zerver/lib/",
@@ -252,17 +271,21 @@ python_rules = RuleList(
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
-            "pattern": "^(?!#)@login_required",
+            "pattern": r"^[\t ]*(?!#)@login_required",
             "description": "@login_required is unsupported; use @zulip_login_required",
             "good_lines": ["@zulip_login_required", "# foo @login_required"],
             "bad_lines": ["@login_required", " @login_required"],
         },
         {
-            "pattern": "^user_profile[.]save[(][)]",
+            "pattern": r"^[\t ]*user_profile[.]save[(][)]",
             "description": "Always pass update_fields when saving user_profile objects",
             "exclude_line": {
                 (
-                    "zerver/lib/actions.py",
+                    "zerver/actions/bots.py",
+                    "user_profile.save()  # Can't use update_fields because of how the foreign key works.",
+                ),
+                (
+                    "zerver/actions/create_user.py",
                     "user_profile.save()  # Can't use update_fields because of how the foreign key works.",
                 ),
             },
@@ -277,13 +300,27 @@ python_rules = RuleList(
             "bad_lines": ["def foo(self: Any):"],
         },
         {
-            "pattern": "assertEquals[(]",
-            "description": "Use assertEqual, not assertEquals (which is deprecated).",
-            "good_lines": ["assertEqual(1, 2)"],
-            "bad_lines": ["assertEquals(1, 2)"],
+            "pattern": r"assertEqual[(]len[(][^\n ]*[)],",
+            "description": "Use the assert_length helper instead of assertEqual(len(..), ..).",
+            "good_lines": ["assert_length(data, 2)"],
+            "bad_lines": ["assertEqual(len(data), 2)"],
+            "exclude_line": {
+                ("zerver/tests/test_validators.py", "self.assertEqual(len(x), 2)"),
+                ("zerver/tests/test_validators.py", 'self.assertEqual(len(x["b"]), 3)'),
+            },
         },
         {
-            "pattern": r"#\s*type:\s*ignore(?!\[[^][]+\] +# +\S)",
+            "pattern": r"assertTrue[(]len[(][^\n ]*[)]",
+            "description": "Use assert_length or assertGreater helper instead of assertTrue(len(..) ..).",
+            "good_lines": ["assert_length(data, 2)", "assertGreater(len(data), 2)"],
+            "bad_lines": [
+                "assertTrue(len(data) == 2)",
+                "assertTrue(len(data) >= 2)",
+                "assertTrue(len(data) > 2)",
+            ],
+        },
+        {
+            "pattern": r"#[\t ]*type:[\t ]*ignore(?!\[[^]\n[]+\] +# +\S)",
             "exclude": {"tools/tests", "zerver/lib/test_runner.py", "zerver/tests"},
             "description": '"type: ignore" should always end with "# type: ignore[code] # explanation for why"',
             "good_lines": ["foo = bar  # type: ignore[code] # explanation"],
@@ -307,6 +344,7 @@ python_rules = RuleList(
         {
             "pattern": "django.utils.translation",
             "include_only": {"test/", "zerver/views/development/"},
+            "exclude": {"zerver/views/development/dev_login.py"},
             "description": "Test strings should not be tagged for translation",
             "good_lines": [""],
             "bad_lines": ["django.utils.translation"],
@@ -316,24 +354,6 @@ python_rules = RuleList(
             "description": "We prefer user_id over userid.",
             "good_lines": ["id = alice.user_id"],
             "bad_lines": ["id = alice.userid"],
-        },
-        {
-            "pattern": r"json_success\({}\)",
-            "description": "Use json_success() to return nothing",
-            "good_lines": ["return json_success()"],
-            "bad_lines": ["return json_success({})"],
-        },
-        {
-            "pattern": r"\Wjson_error\(_\(?\w+\)",
-            "exclude": {"zerver/tests", "zerver/views/development/"},
-            "description": "Argument to json_error should be a literal string enclosed by _()",
-            "good_lines": ['return json_error(_("string"))'],
-            "bad_lines": ["return json_error(_variable)", "return json_error(_(variable))"],
-        },
-        {
-            "pattern": r"""\Wjson_error\(['"].+[),]$""",
-            "exclude": {"zerver/tests"},
-            "description": "Argument to json_error should a literal string enclosed by _()",
         },
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {
@@ -347,10 +367,6 @@ python_rules = RuleList(
             "description": "Argument to JsonableError should be a literal string enclosed by _()",
         },
         {
-            "pattern": r"""([a-zA-Z0-9_]+)=REQ\(['"]\1['"]""",
-            "description": "REQ's first argument already defaults to parameter name",
-        },
-        {
             "pattern": r"self\.client\.(get|post|patch|put|delete)",
             "description": """Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
@@ -358,14 +374,11 @@ python_rules = RuleList(
         },
         # Directly fetching Message objects in e.g. views code is often a security bug.
         {
-            "pattern": "[^r]Message.objects.get",
+            "pattern": "[^a-z]Message.objects.get",
             "exclude": {
                 "zerver/tests",
-                "zerver/lib/onboarding.py",
                 "zilencer/management/commands/add_mock_conversation.py",
-                "zerver/worker/queue_processors.py",
                 "zerver/management/commands/export.py",
-                "zerver/lib/export.py",
             },
             "description": "Please use access_message() to fetch Message objects",
         },
@@ -376,20 +389,8 @@ python_rules = RuleList(
         },
         {
             "pattern": "get_stream[(]",
-            "include_only": {"zerver/views/", "zerver/lib/actions.py"},
-            "exclude_line": {
-                # This one in check_message is kinda terrible, since it's
-                # how most instances are written, but better to exclude something than nothing
-                ("zerver/lib/actions.py", "stream = get_stream(stream_name, realm)"),
-                ("zerver/lib/actions.py", 'return get_stream("signups", realm)'),
-            },
+            "include_only": {"zerver/views/", "zerver/actions/"},
             "description": "Please use access_stream_by_*() to fetch Stream objects",
-        },
-        {
-            "pattern": "datetime[.](now|utcnow)",
-            "include_only": {"zerver/", "analytics/"},
-            "description": "Don't use datetime in backend code.\n"
-            "See https://zulip.readthedocs.io/en/latest/contributing/code-style.html#naive-datetime-objects",
         },
         {
             "pattern": "from os.path",
@@ -400,12 +401,6 @@ python_rules = RuleList(
             "description": "Use import os instead of import os.path",
         },
         {
-            "pattern": r"(logging|logger)\.warn\W",
-            "description": "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
-            "good_lines": ["logging.warning('I am a warning.')", "logger.warning('warning')"],
-            "bad_lines": ["logging.warn('I am a warning.')", "logger.warn('warning')"],
-        },
-        {
             "pattern": r"\.pk",
             "exclude_pattern": "[.]_meta[.]pk",
             "description": "Use `id` instead of `pk`.",
@@ -413,24 +408,18 @@ python_rules = RuleList(
             "bad_lines": ["if my_django_model.pk == 42"],
         },
         {
-            "pattern": r"^\s*#\s*type:",
+            "pattern": r"^[\t ]*#[\t ]*type:",
             "description": "Comment-style function type annotation. Use Python3 style annotations instead.",
         },
         {
-            "pattern": r"\S\s*#\s*type:(?!\s*ignore)",
-            "exclude": {
-                "scripts/lib/hash_reqs.py",
-                "scripts/lib/setup_venv.py",
-                "scripts/lib/zulip_tools.py",
-                "tools/lib/provision.py",
-            },
+            "pattern": r"\S[\t ]*#[\t ]*type:(?![\t ]*ignore)",
             "description": "Comment-style variable type annotation. Use Python 3.6 style annotations instead.",
             "good_lines": ["a: List[int] = []"],
             "bad_lines": ["a = []  # type: List[int]"],
         },
         {
-            "pattern": r": *(?!Optional)[^ ].*= models[.].*null=True",
-            "include_only": {"zerver/models.py"},
+            "pattern": r": *(?!Optional)[^\n ].*= models[.].*null=True",
+            "include_only": {"zerver/models/"},
             "description": "Model variable with null=true not annotated as Optional.",
             "good_lines": [
                 "desc: Optional[Text] = models.TextField(null=True)",
@@ -446,7 +435,7 @@ python_rules = RuleList(
         {
             "pattern": r": *Optional.*= models[.].*\)",
             "exclude_pattern": "null=True",
-            "include_only": {"zerver/models.py"},
+            "include_only": {"zerver/models/"},
             "description": "Model variable annotated with Optional but variable does not have null=true.",
             "good_lines": [
                 "desc: Optional[Text] = models.TextField(null=True)",
@@ -460,12 +449,13 @@ python_rules = RuleList(
             ],
         },
         {
-            "pattern": "exit[(]1[)]",
+            "pattern": r"exit[(][1-9]\d*[)]",
             "include_only": {"/management/commands/"},
             "description": "Raise CommandError to exit with failure in management commands",
+            "exclude": {"zerver/management/commands/process_queue.py"},
         },
         {
-            "pattern": ".is_realm_admin =",
+            "pattern": r"\.is_realm_admin =",
             "description": "Use do_change_user_role function rather than setting UserProfile's is_realm_admin attribute directly.",
             "exclude": {
                 "zerver/migrations/0248_userprofile_role_start.py",
@@ -473,7 +463,7 @@ python_rules = RuleList(
             },
         },
         {
-            "pattern": ".is_guest =",
+            "pattern": r"\.is_guest =",
             "description": "Use do_change_user_role function rather than setting UserProfile's is_guest attribute directly.",
             "exclude": {
                 "zerver/migrations/0248_userprofile_role_start.py",
@@ -484,10 +474,32 @@ python_rules = RuleList(
             "pattern": "\\.(called(_once|_with|_once_with)?|not_called|has_calls|not_called)[(]",
             "description": 'A mock function is missing a leading "assert_"',
         },
+        {
+            "pattern": r"transaction\.atomic$|transaction\.atomic\(\)|savepoint=True",
+            "description": "Use 'durable=True' or 'savepoint=False' argument explicitly to avoid the possibility of creating savepoints.",
+            "exclude": {"confirmation/migrations/", "zerver/migrations/", "zilencer/migrations/"},
+            "exclude_line": {
+                (
+                    "zerver/actions/create_user.py",
+                    "with suppress(IntegrityError), transaction.atomic(savepoint=True):",
+                ),
+                (
+                    "zerver/lib/test_classes.py",
+                    "with transaction.atomic(savepoint=True):",
+                ),
+                (
+                    "zerver/tests/test_subs.py",
+                    "with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):",
+                ),
+                (
+                    "zproject/backends.py",
+                    "@transaction.atomic(savepoint=True)  # intentional use of savepoint=True",
+                ),
+            },
+        },
         *whitespace_rules,
+        *shebang_rules,
     ],
-    max_length=110,
-    shebang_rules=shebang_rules,
 )
 
 bash_rules = RuleList(
@@ -504,12 +516,11 @@ bash_rules = RuleList(
             "include_only": {"scripts/"},
             "exclude": {
                 "scripts/lib/install",
-                "scripts/setup/configure-rabbitmq",
             },
         },
-        *whitespace_rules[0:1],
+        *base_whitespace_rules,
+        *shebang_rules,
     ],
-    shebang_rules=shebang_rules,
 )
 
 css_rules = RuleList(
@@ -519,20 +530,20 @@ css_rules = RuleList(
     ],
 )
 
-prose_style_rules: List["Rule"] = [
+prose_style_rules: list["Rule"] = [
     {
-        "pattern": r'^[^{].*?[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs/custom-markdown
-        "exclude": {"docs/documentation/api.md"},
+        "pattern": r'^[\t ]*[^\n{].*?[^\n\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs/custom-markdown
+        "exclude": {"docs/documentation/api.md", "templates/corporate/policies/privacy.md"},
         "description": "javascript should be spelled JavaScript",
     },
     {
-        "pattern": r"""[^\/\-\."'\_\=\>]([gG]ithub)[^\.\-\_"\<]""",  # exclude usage in hrefs/divs
+        "pattern": r"""[^\n\/\-\."'\_\=\>]([gG]ithub)[^\n\.\-\_"\<]""",  # exclude usage in hrefs/divs
         "description": "github should be spelled GitHub",
     },
     {
         "pattern": "[oO]rganisation",  # exclude usage in hrefs/divs
         "description": "Organization is spelled with a z",
-        "exclude_line": {("docs/translating/french.md", "* organization - **organisation**")},
+        "exclude_line": {("docs/translating/french.md", "- organization - **organisation**")},
     },
     {"pattern": "!!! warning", "description": "!!! warning is invalid; it's spelled '!!! warn'"},
     {"pattern": "Terms of service", "description": "The S in Terms of Service is capitalized"},
@@ -542,12 +553,19 @@ prose_style_rules: List["Rule"] = [
     },
     *comma_whitespace_rule,
 ]
-html_rules: List["Rule"] = [
+html_rules: list["Rule"] = [
     *whitespace_rules,
     *prose_style_rules,
     {
         "pattern": "subject|SUBJECT",
-        "exclude": {"templates/zerver/email.html"},
+        "exclude": {
+            "templates/zerver/email.html",
+            "zerver/tests/fixtures/email",
+            "templates/corporate/for/business.html",
+            "templates/corporate/support/support_request.html",
+            "templates/corporate/support/support_request_thanks.html",
+            "templates/zerver/emails/support_request.html",
+        },
         "exclude_pattern": "email subject",
         "description": "avoid subject in templates",
         "good_lines": ["topic_name"],
@@ -557,12 +575,17 @@ html_rules: List["Rule"] = [
         "pattern": r'placeholder="[^{#](?:(?!\.com).)+$',
         "description": "`placeholder` value should be translatable.",
         "exclude_line": {
-            ("templates/zerver/register.html", 'placeholder="acme"'),
-            ("templates/zerver/register.html", 'placeholder="Acme or Ακμή"'),
+            ("templates/zerver/realm_creation_form.html", 'placeholder="acme"'),
+            ("templates/zerver/slack_import.html", 'placeholder="xoxb-…"'),
         },
-        "exclude": {"templates/analytics/support.html"},
+        "exclude": {
+            "templates/corporate",
+            # We have URL template and Pygments language name as placeholders
+            # in the below template which we don't want to be translatable.
+            "web/templates/settings/playground_settings_admin.hbs",
+        },
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="left-sidebar-search-input" type="text" placeholder="{{ _(\'Filter left sidebar\') }}" />'
         ],
         "bad_lines": ['<input placeholder="foo">'],
     },
@@ -571,20 +594,29 @@ html_rules: List["Rule"] = [
         "description": "Likely missing quoting in HTML attribute",
         "good_lines": ['<a href="{{variable}}">'],
         "bad_lines": ["<a href={{variable}}>"],
+        # Exclude the use of URL templates from this check.
+        # Exclude the use GET parameters in URLs from this check.
+        "exclude_pattern": "={code}|\\?[a-z]+={|\\&[a-z]+={",
+        "exclude": {
+            "templates/corporate/pricing_model.html",
+        },
     },
     {
         "pattern": " '}}",
         "description": "Likely misplaced quoting in translation tags",
-        "good_lines": ["{{t 'translateable string' }}"],
-        "bad_lines": ["{{t 'translateable string '}}"],
+        "good_lines": ["{{t 'translatable string' }}"],
+        "bad_lines": ["{{t 'translatable string '}}"],
     },
     {
         "pattern": "placeholder='[^{]",
         "description": "`placeholder` value should be translatable.",
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="left-sidebar-search-input" type="text" placeholder="{{ _(\'Filter left sidebar\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
+        "exclude": {
+            "templates/corporate",
+        },
     },
     {
         "pattern": "aria-label='[^{]",
@@ -603,16 +635,11 @@ html_rules: List["Rule"] = [
         "bad_lines": ['<button aria-label="foo"></button>'],
     },
     {
-        "pattern": 'script src="http',
+        "pattern": r'<script[^<>]*\ssrc=[\'"]?(?:https?:|//)',
         "description": "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
-        "exclude": {
-            "templates/corporate/billing.html",
-            "templates/zerver/hello.html",
-            "templates/corporate/upgrade.html",
-        },
-        "good_lines": ["{{ render_entrypoint('landing-page') }}"],
         "bad_lines": [
-            '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'
+            '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>',
+            '<script async src="https://platform.twitter.com/widgets.js"></script>',
         ],
     },
     {
@@ -625,17 +652,22 @@ html_rules: List["Rule"] = [
         "pattern": r'title="[^{\:]',
         "exclude": {
             "templates/zerver/emails",
-            "templates/analytics/realm_details.html",
-            "templates/analytics/support.html",
+            "templates/corporate/support/realm_details.html",
+            "templates/corporate/support/remote_server_support.html",
+            "templates/corporate/support/support.html",
+            "templates/corporate/support/remote_realm_details.html",
         },
         "description": "`title` value should be translatable.",
     },
     {
         "pattern": r"""\Walt=["'][^{"']""",
         "description": "alt argument should be enclosed by _() or it should be an empty string.",
-        "exclude": {
-            "static/templates/settings/display_settings.hbs",
-            "templates/zerver/app/keyboard_shortcuts.html",
+        "exclude_line": {
+            (
+                # Emoji should not be tagged for translation.
+                "web/templates/keyboard_shortcuts.hbs",
+                '<img alt=":thumbs_up:"',
+            ),
         },
         "good_lines": ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
         "bad_lines": ['<img alt="Foo Image" />'],
@@ -647,11 +679,20 @@ html_rules: List["Rule"] = [
         "bad_lines": ['<img alt="{{ " />'],
     },
     {
+        "pattern": r"link=\"help/",
+        "description": "Relative links to help center should start with /help/",
+        "good_lines": ['link="/help/foo"'],
+        "bad_lines": ['link="help/foo"'],
+    },
+    {
         "pattern": r"\bon\w+ ?=",
-        "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
+        "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead, "
         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
         "the DOM is ready (inside a $(function () {...}) block).",
-        "exclude": {"templates/zerver/dev_login.html", "templates/corporate/upgrade.html"},
+        "exclude": {
+            "templates/zerver/development/dev_login.html",
+            "templates/corporate/billing/upgrade.html",
+        },
         "good_lines": ["($('#foo').on('click', function () {}"],
         "bad_lines": [
             "<button id='foo' onclick='myFunction()'>Foo</button>",
@@ -661,58 +702,55 @@ html_rules: List["Rule"] = [
     {
         "pattern": "style ?=",
         "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
-        "exclude_pattern": r'.*style ?=["'
-        + "'"
-        + "](display: ?none|background: {{|color: {{|background-color: {{).*",
+        "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*""",
         "exclude": {
             # 5xx page doesn't have external CSS
-            "static/html/5xx.html",
+            "web/html/5xx.html",
             # exclude_pattern above handles color, but have other issues:
-            "static/templates/draft.hbs",
-            "static/templates/subscription.hbs",
-            "static/templates/single_message.hbs",
+            "web/templates/draft.hbs",
+            "web/templates/stream_settings/browse_streams_list_item.hbs",
+            "web/templates/user_group_settings/browse_user_groups_list_item.hbs",
+            "web/templates/single_message.hbs",
             # Old-style email templates need to use inline style
             # attributes; it should be possible to clean these up
-            # when we convert these templates to use premailer.
+            # when we convert these templates to use css-inline.
             "templates/zerver/emails/email_base_messages.html",
             # Email log templates; should clean up.
             "templates/zerver/email.html",
-            "templates/zerver/email_log.html",
+            "templates/zerver/development/email_log.html",
             # Social backend logos are dynamically loaded
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
-            # Probably just needs to be changed to display: none so the exclude works
-            "templates/zerver/app/navbar.html",
             # Needs the width cleaned up; display: none is fine
-            "static/templates/settings/account_settings.hbs",
+            "web/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
-            "static/templates/user_profile_modal.hbs",
-            "static/templates/pm_list_item.hbs",
+            "web/templates/user_profile_modal.hbs",
+            "web/templates/pm_list_item.hbs",
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
-            "templates/zerver/billing_nav.html",
-            "templates/zerver/app/home.html",
-            "templates/zerver/features.html",
+            "templates/corporate/features.html",
             "templates/zerver/portico-header.html",
-            "templates/corporate/billing.html",
-            "templates/corporate/upgrade.html",
+            "templates/corporate/billing/billing.html",
+            "templates/corporate/billing/upgrade.html",
             # Miscellaneous violations to be cleaned up
-            "static/templates/user_info_popover_title.hbs",
-            "static/templates/subscription_invites_warning_modal.hbs",
+            "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
-            "templates/zerver/config_error.html",
+            "templates/zerver/config_error/container.html",
             "templates/zerver/dev_env_email_access_details.html",
             "templates/zerver/confirm_continue_registration.html",
             "templates/zerver/register.html",
             "templates/zerver/accounts_send_confirm.html",
-            "templates/zerver/integrations/index.html",
             "templates/zerver/documentation_main.html",
-            "templates/analytics/realm_summary_table.html",
-            "templates/corporate/zephyr.html",
-            "templates/corporate/zephyr-mirror.html",
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
         "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
+    },
+    {
+        "pattern": r"(?i:data-tippy-allowHTML)",
+        "description": "Never use data-tippy-allowHTML; for an HTML tooltip, set data-tooltip-template-id to the id of a <template> containing the tooltip content.",
+        "exclude": {
+            "templates/corporate/support/sponsorship_discount_forms.html",
+        },
     },
 ]
 
@@ -722,7 +760,7 @@ handlebars_rules = RuleList(
         *html_rules,
         {
             "pattern": "[<]script",
-            "description": "Do not use inline <script> tags here; put JavaScript in static/js instead.",
+            "description": "Do not use inline <script> tags here; put JavaScript in web/src instead.",
         },
         {
             "pattern": "{{ t (\"|')",
@@ -752,6 +790,15 @@ handlebars_rules = RuleList(
             "pattern": '{{t "[^"]+ " }}',
             "description": "Translatable strings should not have trailing spaces.",
         },
+        {
+            "pattern": r'"{{t "',
+            "description": "Invalid quoting for HTML element with translated string.",
+        },
+        {
+            "pattern": r'href="#"',
+            "description": 'Avoid href="#" for elements with a JavaScript click handler.',
+            "exclude": {"web/templates/navbar.hbs"},
+        },
     ],
 )
 
@@ -767,6 +814,11 @@ jinja2_rules = RuleList(
             "pattern": r"{{ _(.+) }}[\.\?!]",
             "description": "Period should be part of the translatable string.",
         },
+        {
+            "pattern": r'{% set entrypoint = "dev-',
+            "exclude": {"templates/zerver/development/"},
+            "description": "Development entry points (dev-) must not be imported in production.",
+        },
     ],
 )
 
@@ -780,10 +832,9 @@ json_rules = RuleList(
         # version of the tab-based whitespace rule (we can't just use
         # exclude in whitespace_rules, since we only want to ignore
         # JSON files with tab-based whitespace, not webhook code).
-        trailing_whitespace_rule,
+        *base_whitespace_rules,
         {
             "pattern": "\t",
-            "strip": "\n",
             "exclude": {"zerver/webhooks/"},
             "description": "Fix tab-based whitespace",
         },
@@ -794,28 +845,6 @@ json_rules = RuleList(
         },
     ],
 )
-
-markdown_docs_length_exclude = {
-    # Has some example Vagrant output that's very long
-    "docs/development/setup-vagrant.md",
-    # Have wide output in code blocks
-    "docs/subsystems/logging.md",
-    "docs/subsystems/schema-migrations.md",
-    # Have curl commands with JSON that would be messy to wrap
-    "zerver/webhooks/helloworld/doc.md",
-    "zerver/webhooks/trello/doc.md",
-    # Has a very long configuration line
-    "templates/zerver/integrations/perforce.md",
-    # Has some example code that could perhaps be wrapped
-    "templates/zerver/api/incoming-webhooks-walkthrough.md",
-    "templates/zerver/api/get-messages.md",
-    # This macro has a long indented URL
-    "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
-    "templates/zerver/api/update-notification-settings.md",
-    # These two are the same file and have some too-long lines for GitHub badges
-    "README.md",
-    "docs/overview/readme.md",
-}
 
 markdown_rules = RuleList(
     langs=["md"],
@@ -829,10 +858,17 @@ markdown_rules = RuleList(
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
             "exclude": {
-                "docs/overview/contributing.md",
+                "api_docs/",
+                "docs/contributing/contributing.md",
                 "docs/overview/readme.md",
                 "docs/README.md",
                 "docs/subsystems/email.md",
+            },
+            "exclude_line": {
+                (
+                    "docs/overview/changelog.md",
+                    "[latest-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html",
+                ),
             },
             "include_only": {"docs/"},
             "description": "Use relative links (../foo/bar.html) to other documents in docs/",
@@ -844,6 +880,7 @@ markdown_rules = RuleList(
         },
         {
             "pattern": r"\][(][^#h]",
+            "exclude_pattern": "mailto:",
             "include_only": {"README.md", "CONTRIBUTING.md"},
             "description": "Use absolute links from docs served by GitHub",
         },
@@ -852,60 +889,123 @@ markdown_rules = RuleList(
             "include_only": {"docs/"},
             "description": "Don't link directly to line numbers",
         },
+        {
+            "pattern": r"[eE]\.g\.[^,]",
+            "description": "Likely missing comma after 'e.g.'",
+        },
     ],
-    max_length=120,
-    length_exclude=markdown_docs_length_exclude,
-    exclude_files_in="templates/zerver/help/",
 )
 
 help_markdown_rules = RuleList(
-    langs=["md"],
+    langs=["mdx"],
     rules=[
-        *markdown_rules.rules,
         {
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
-            "include_only": {"templates/zerver/help/"},
+            "include_only": {"starlight_help/src/content/docs/"},
+            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",
-            "include_only": {"templates/zerver/help/"},
-            "exclude": {"templates/zerver/help/change-organization-url.md"},
+            "include_only": {"starlight_help/src/content/docs/"},
+            "exclude": {"starlight_help/src/content/docs/change-organization-url.mdx"},
             "good_lines": ["Organization", "deactivate_realm", "realm_filter"],
             "bad_lines": ["Users are in a realm", "Realm is the best model"],
             "description": "Realms are referred to as Organizations in user-facing docs.",
+            # Keycloak uses the term realm as well.
+            # Additionally, we allow -realm- as that appears in /api/ doc URLs.
+            "exclude_pattern": "(-realm-|[kK]eycloak)",
         },
     ],
-    length_exclude=markdown_docs_length_exclude,
 )
 
 puppet_rules = RuleList(
     langs=["pp"],
     rules=[
+        *whitespace_rules,
         {
-            "pattern": r"(include\s+|\$)zulip::(profile|base)\b",
+            "pattern": r"(include[\t ]+|\$)zulip::(profile|base)\b",
             "exclude": {
                 "puppet/zulip/manifests/profile/",
-                "puppet/zulip_ops/manifests/",
+                "puppet/kandra/manifests/",
                 "puppet/zulip/manifests/dockervoyager.pp",
             },
             "description": "Abstraction layering violation; only profiles should reference profiles or zulip::base",
         },
         {
-            "pattern": r"(include\s+|\$)zulip_ops::(profile|base)\b",
+            "pattern": r"(include[\t ]+|\$)kandra::(profile|base)\b",
             "exclude": {
                 "puppet/zulip/manifests/",
-                "puppet/zulip_ops/manifests/profile/",
+                "puppet/kandra/manifests/profile/",
             },
-            "description": "Abstraction layering violation; only profiles should reference profiles or zulip_ops::base",
+            "description": "Abstraction layering violation; only profiles should reference profiles or kandra::base",
+        },
+    ],
+)
+
+openapi_rules = RuleList(
+    langs=["yaml"],
+    rules=[
+        *whitespace_rules,
+        {
+            "pattern": "True|TRUE|False|FALSE|Null|NULL",
+            "include_only": {"zerver/openapi/"},
+            "description": "Use lowercase for true, false and null in API documentation.",
         },
     ],
 )
 
 txt_rules = RuleList(
-    langs=["txt", "text", "yaml", "rst", "yml"],
+    langs=["txt", "text", "yaml", "yml"],
     rules=whitespace_rules,
 )
+
+svg_rules = RuleList(
+    langs=["svg"],
+    rules=[
+        {
+            "pattern": r"fill=(['\"])(.*?)\1",
+            "description": "System icons ignore fill values, so do not include the fill property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            # This file needs the fill property to define the fill as
+            # a linear gradient. We cannot define the gradient in CSS
+            # in a clean way and thus we have decided to define the
+            # gradient in the SVG itself.
+            "exclude": {"web/shared/icons/user-circle-idle.svg"},
+        },
+        {
+            "pattern": "fill:",
+            "description": "System icons ignore fill values, so do not include the fill property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": r"fill-rule=(['\"])(.*?)\1",
+            "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "fill-rule:",
+            "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": r"stroke=(['\"])(.*?)\1",
+            "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "stroke:",
+            "description": "System icons ignore stroke values, so do not include the stroke property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+        {
+            "pattern": "class=",
+            "description": "System icons ignore class values, so do not include the class property.",
+            "include_only": {"web/shared/icons/", "web/images/icons/"},
+        },
+    ],
+)
+
 non_py_rules = [
     handlebars_rules,
     jinja2_rules,
@@ -917,4 +1017,6 @@ non_py_rules = [
     bash_rules,
     txt_rules,
     puppet_rules,
+    openapi_rules,
+    svg_rules,
 ]

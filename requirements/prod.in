@@ -1,6 +1,0 @@
-# After editing this file, you MUST afterward run
-# /tools/update-locked-requirements to update requirements/prod.txt.
-# See requirements/README.md for more detail.
--r common.in
-# Used for running the Zulip production Django server
-uWSGI

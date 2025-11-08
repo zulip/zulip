@@ -1,0 +1,122 @@
+<div id="account-settings" class="settings-section" data-name="account-and-privacy">
+    <div class="alert" id="dev-account-settings-status"></div>
+    <div class="account-settings-form">
+        <div id="user_details_section">
+            <h3 class="inline-block account-settings-heading">{{t "Account" }}</h3>
+            <div class="alert-notification account-alert-notification" id="account-settings-status"></div>
+            <form class="grid">
+                {{#if user_has_email_set}}
+                <div class="input-group">
+                    <label class="settings-field-label {{#unless user_can_change_email}}cursor-text{{/unless}}" for="change_email_button">{{t "Email" }}</label>
+                    <div class="change-email">
+                        <div id="email_field_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
+                            <input type="email" value="{{current_user.delivery_email}}" class="settings_text_input" disabled="disabled" />
+                        </div>
+                        {{> ../components/icon_button
+                          id="change_email_button"
+                          icon="edit"
+                          intent="neutral"
+                          custom_classes="tippy-zulip-delayed-tooltip"
+                          hidden=(not user_can_change_email)
+                          aria-label=(t "Change your email")
+                          data-tippy-content=(t "Change your email")
+                          }}
+                    </div>
+                    <div id="email-change-status"></div>
+                </div>
+                {{else}}
+                {{! Demo organizations before the owner has configured an email address. }}
+                <div class="input-group">
+                    <p>
+                        {{#tr}}
+                            Add your email to <z-link-invite-users-help>invite other users</z-link-invite-users-help>
+                            or <z-link-convert-demo-organization-help>convert to a permanent Zulip organization</z-link-convert-demo-organization-help>.
+                            {{#*inline "z-link-invite-users-help"}}<a href="/help/invite-new-users" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                            {{#*inline "z-link-convert-demo-organization-help"}}<a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                        {{/tr}}
+                    </p>
+                    {{> ../components/action_button
+                      id="demo_organization_add_email_button"
+                      label=(t "Add email")
+                      attention="quiet"
+                      intent="brand"
+                      }}
+                </div>
+                {{/if}}
+            </form>
+
+            {{#if page_params.two_fa_enabled }}
+            <p for="two_factor_auth" class="inline-block title">
+                {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
+                <a target="_blank" rel="noopener noreferrer" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Set up two factor authentication' }}">[{{t "Setup" }}]</a>
+            </p>
+            {{/if}}
+
+            <form class="password-change-form grid">
+                {{#if user_can_change_password}}
+                <div>
+                    <label class="settings-field-label" for="change_password">{{t "Password" }}</label>
+                    <div class="input-group">
+                        {{> ../components/action_button
+                          label=(t "Change your password")
+                          attention="quiet"
+                          intent="neutral"
+                          id="change_password"
+                          }}
+                    </div>
+                </div>
+                {{/if}}
+            </form>
+
+            <div class="input-group deactivate-buttons-group">
+                <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
+                    {{> ../components/action_button
+                      label=(t "Deactivate account")
+                      attention="quiet"
+                      intent="danger"
+                      id="user_deactivate_account_button"
+                      disabled=user_is_only_organization_owner
+                      }}
+                </div>
+                {{#if owner_is_only_user_in_organization}}
+                    {{> ../components/action_button
+                      label=(t "Deactivate organization")
+                      attention="quiet"
+                      intent="danger"
+                      custom_classes="deactivate_realm_button"
+                      }}
+                {{/if}}
+            </div>
+        </div>
+
+        {{> privacy_settings . for_realm_settings=false prefix="user_" read_receipts_help_icon_tooltip_text=send_read_receipts_tooltip hide_read_receipts_tooltip=realm.realm_enable_read_receipts}}
+
+        <div id="api_key_button_box">
+            <h3>{{t "API key" }}</h3>
+
+            <div class="input-group">
+                <p class="api-key-note">
+                    {{#tr}}
+                    An API key can be used to programmatically access a Zulip account.
+                    Anyone with access to your API key has the ability to read your messages, send
+                    messages on your behalf, and otherwise impersonate you on Zulip, so you should
+                    guard your API key as carefully as you guard your password. <br />
+                    We recommend creating bots and using the bots' accounts and API keys to access
+                    the Zulip API, unless the task requires access to your account.
+                    {{/tr}}
+                </p>
+                <div id="api_key_button_container" class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
+                    {{> ../components/action_button
+                      label=(t "Manage your API key")
+                      attention="quiet"
+                      intent="neutral"
+                      id="api_key_button"
+                      disabled=(not user_has_email_set)
+                      }}
+                </div>
+            </div>
+        </div>
+        <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked
+        to avoid password being inserted by password manager too aggressively. -->
+    </div>
+</div>

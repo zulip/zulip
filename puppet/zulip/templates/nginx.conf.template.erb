@@ -2,10 +2,11 @@ user zulip;
 
 worker_processes auto;
 pid /var/run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
 
-worker_rlimit_nofile 40000;
+worker_rlimit_nofile 1000000;
 events {
-    worker_connections 40000;
+    worker_connections <%= @worker_connections %>;
 
     use epoll;
 
@@ -18,7 +19,7 @@ http {
     tcp_nodelay on;
     keepalive_timeout 65;
     types_hash_max_size 2048;
-    client_max_body_size 80m;
+    client_max_body_size 25m;
 
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
@@ -32,8 +33,8 @@ http {
     reset_timedout_connection on;
 
     gzip on;
-    gzip_disable "msie6";
     gzip_proxied any;
+    gzip_comp_level 3;
     gzip_types
       application/javascript
       application/json
@@ -60,4 +61,9 @@ http {
 
     include /etc/nginx/conf.d/*.conf;
     include /etc/nginx/sites-enabled/*;
+
+    map $host $help_alias {
+        zulip.com /home/zulip/deployments/current/starlight_help/dist_no_relative_links/;
+        default   /home/zulip/deployments/current/starlight_help/dist/;
+    }
 }

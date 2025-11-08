@@ -1,0 +1,29 @@
+#reminders-overlay-container,
+#scheduled_messages_overlay_container {
+    .no-overlay-messages {
+        display: none;
+
+        &:only-child {
+            display: block;
+        }
+    }
+}
+
+#scheduled_message_indicator {
+    display: block;
+    margin-left: 10px;
+    font-style: italic;
+    color: hsl(0deg 0% 53%);
+}
+
+#reminders-overlay-container .message_content {
+    cursor: auto;
+}
+
+.schedule-reminder-note {
+    /* Horizontal resizing in the popover doesn't look good at all. */
+    resize: vertical;
+    width: 100%;
+    min-width: 10em;
+    padding: 3px;
+}

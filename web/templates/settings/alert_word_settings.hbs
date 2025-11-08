@@ -1,0 +1,32 @@
+<div id="alert-word-settings" class="settings-section" data-name="alert-words">
+    <form id="alert_word_info_box">
+        <p class="alert-word-settings-note">
+            {{t "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive."}}
+        </p>
+    </form>
+    {{> ../components/action_button
+      label=(t "Add alert word")
+      attention="quiet"
+      intent="brand"
+      id="open-add-alert-word-modal"
+      }}
+
+    <div class="settings_panel_list_header">
+        <h3>{{t "Alert words"}}</h3>
+    </div>
+    <div class="banner-wrapper" id="alert_word_status"></div>
+    <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
+        <table class="table table-striped wrapped-table">
+            <thead class="table-sticky-headers">
+                <tr>
+                    <th data-sort="alphabetic" data-sort-prop="word">{{t "Word" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    <th class="actions">{{t "Actions" }}</th>
+                </tr>
+            </thead>
+            <tbody id="alert-words-table" class="alert-words-table"
+              data-empty="{{t 'There are no current alert words.' }}"></tbody>
+        </table>
+    </div>
+</div>

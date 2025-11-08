@@ -1,0 +1,37 @@
+<div class="micromodal" id="{{modal_unique_id}}" aria-hidden="true">
+    <div class="modal__overlay {{#unless close_on_overlay_click}}ignore-overlay-click{{/unless}}" tabindex="-1">
+        <div {{#if id}}id="{{id}}" {{/if}}class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    {{#if heading_html}}
+                        {{{ heading_html }}}
+                    {{else}}
+                        {{ text_heading }}
+                    {{/if}}
+                    {{#if link}}
+                    {{> help_link_widget . }}
+                    {{/if}}
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
+                <div class="alert" id="dialog_error"></div>
+                {{{ body_html }}}
+            </main>
+            <footer class="modal__footer">
+                {{#if footer_minor_text }}
+                <div class="dialog-widget-footer-minor-text">{{footer_minor_text}}</div>
+                {{/if}}
+                {{#unless single_footer_button}}
+                <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{{ exit_button_html }}}</button>
+                {{/unless}}
+                <div class="dialog_submit_button_container">
+                    <button class="modal__button dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
+                        <span class="submit-button-text">{{{ submit_button_html }}}</span>
+                        <span class="modal__spinner"></span>
+                    </button>
+                </div>
+            </footer>
+        </div>
+    </div>
+</div>

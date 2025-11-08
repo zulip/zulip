@@ -1,0 +1,65 @@
+<div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
+    <form class="edit_bot_form name-setting">
+        <div class="alert" id="bot-edit-form-error"></div>
+        <div class="input-group name_change_container">
+            <label for="edit_bot_full_name" class="modal-field-label">{{t "Name" }}</label>
+            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" maxlength="{{max_bot_name_length}}" />
+        </div>
+        <input type="hidden" name="is_full_name" value="true" />
+        <div class="input-group email_change_container">
+            <label for="email" class="modal-field-label">{{t "Email" }}</label>
+            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+        </div>
+        <div class="input-group user_id_container">
+            <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
+            <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
+        </div>
+        <div class="input-group">
+            <label for="bot-role-select" class="modal-field-label">{{t 'Role' }}
+                {{> ../help_link_widget link="/help/user-roles" }}
+            </label>
+            <select name="bot-role-select" id="bot-role-select" class="modal_select bootstrap-focus-style" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
+                {{> dropdown_options_widget option_values=user_role_values}}
+            </select>
+        </div>
+        {{> ../dropdown_widget_with_label
+          widget_name="edit_bot_owner"
+          label=(t 'Owner')}}
+
+        <div id="service_data">
+        </div>
+        <div class="input-group edit-avatar-section">
+            <label class="modal-field-label">{{t "Avatar" }}</label>
+            {{!-- Shows the current avatar --}}
+            <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
+            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
+            <div class="edit_bot_avatar_file"></div>
+            <div class="edit_bot_avatar_preview_text">
+                <img class="edit_bot_avatar_preview_image" />
+            </div>
+            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Change avatar" }}</button>
+            <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
+            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+        </div>
+    </form>
+    {{#if is_incoming_webhook_bot}}
+    <div class="input-group">
+        <button class="button rounded generate_url_for_integration">
+            {{t 'Generate URL for an integration' }}
+        </button>
+    </div>
+    {{/if}}
+    <div class="input-group">
+        {{#if is_active}}
+        <button class="button rounded button-danger deactivate-bot-button">
+            {{t 'Deactivate bot' }}
+        </button>
+        {{else}}
+        <span>
+            <button class="button rounded reactivate-user-button">
+                {{t 'Reactivate bot' }}
+            </button>
+        </span>
+        {{/if}}
+    </div>
+</div>

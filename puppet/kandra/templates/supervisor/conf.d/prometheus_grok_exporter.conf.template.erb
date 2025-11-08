@@ -1,0 +1,8 @@
+[program:prometheus_grok_exporter]
+command=<%= @bin %> -config /etc/grok_exporter.yaml
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/grok_exporter.log

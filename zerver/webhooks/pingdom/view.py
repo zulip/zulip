@@ -1,12 +1,11 @@
-# Webhooks pfor external integrations.
-from typing import Any, Dict
-
+# Webhooks for external integrations.
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -36,43 +35,48 @@ SUPPORTED_CHECK_TYPES = (
     "PORT_TCP",
 )
 
+ALL_EVENT_TYPES = list(SUPPORTED_CHECK_TYPES)
 
-@webhook_view("Pingdom")
-@has_request_variables
+
+@webhook_view("Pingdom", all_event_types=ALL_EVENT_TYPES)
+@typed_endpoint
 def api_pingdom_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    *,
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     check_type = get_check_type(payload)
 
     if check_type in SUPPORTED_CHECK_TYPES:
-        subject = get_subject_for_http_request(payload)
+        topic_name = get_topic_for_http_request(payload)
         body = get_body_for_http_request(payload)
     else:
-        raise UnsupportedWebhookEventType(check_type)
+        raise UnsupportedWebhookEventTypeError(check_type)
 
-    check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
-
-
-def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
-    return PINGDOM_TOPIC_TEMPLATE.format(name=payload["check_name"])
+    check_send_webhook_message(request, user_profile, topic_name, body, check_type)
+    return json_success(request)
 
 
-def get_body_for_http_request(payload: Dict[str, Any]) -> str:
-    current_state = payload["current_state"]
-    previous_state = payload["previous_state"]
+def get_topic_for_http_request(payload: WildValue) -> str:
+    return PINGDOM_TOPIC_TEMPLATE.format(name=payload["check_name"].tame(check_string))
+
+
+def get_body_for_http_request(payload: WildValue) -> str:
+    current_state = payload["current_state"].tame(check_string)
+    previous_state = payload["previous_state"].tame(check_string)
 
     data = {
-        "service_url": payload["check_params"]["hostname"],
+        "service_url": payload["check_params"]["hostname"].tame(check_string),
         "previous_state": previous_state,
         "current_state": current_state,
         "type": get_check_type(payload),
     }
     body = MESSAGE_TEMPLATE.format(**data)
     if current_state == "DOWN" and previous_state == "UP":
-        description = DESC_TEMPLATE.format(description=payload["long_description"])
+        description = DESC_TEMPLATE.format(
+            description=payload["long_description"].tame(check_string)
+        )
         body += description
     else:
         body = f"{body[:-1]}."
@@ -80,5 +84,5 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     return body
 
 
-def get_check_type(payload: Dict[str, Any]) -> str:
-    return payload["check_type"]
+def get_check_type(payload: WildValue) -> str:
+    return payload["check_type"].tame(check_string)

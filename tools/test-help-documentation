@@ -4,19 +4,19 @@ import contextlib
 import os
 import subprocess
 import sys
-from typing import Iterator
+from collections.abc import Iterator
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# check for the venv
-from lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 os.chdir(ZULIP_PATH)
 sys.path.insert(0, ZULIP_PATH)
 
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
 from tools.lib.test_script import add_provision_check_override_param
+from tools.lib.test_server import test_server_running
 
 parser = argparse.ArgumentParser()
 add_provision_check_override_param(parser)
@@ -26,16 +26,20 @@ parser.add_argument(
     action="store_true",
     help="Skip checking of external links.",
 )
+parser.add_argument(
+    "--help-center",
+    dest="enable_help_center",
+    action="store_true",
+    help="Test help center generated as part of the astro build process. If this option is set to True, this script assumes that you already have performend the build step.",
+)
 options = parser.parse_args()
-
-from tools.lib.test_server import test_server_running
 
 os.makedirs("var/help-documentation", exist_ok=True)
 
 LOG_FILE = "var/help-documentation/server.log"
 external_host = "localhost:9981"
 
-extra_args = ["-a", "validate_html=set"]
+extra_args = []
 
 if options.skip_external_link_check:
     extra_args += ["-a", "skip_external=set"]
@@ -60,13 +64,21 @@ def vnu_servlet() -> Iterator[None]:
         proc.terminate()
 
 
-with vnu_servlet(), test_server_running(
-    options.skip_provision_check, external_host, log_file=LOG_FILE, dots=True
+with (
+    vnu_servlet(),
+    test_server_running(
+        options.skip_provision_check,
+        external_host,
+        log_file=LOG_FILE,
+        dots=True,
+        enable_help_center=options.enable_help_center,
+    ),
 ):
     ret_help_doc = subprocess.call(
         ["scrapy", "crawl_with_status", *extra_args, "help_documentation_crawler"],
         cwd="tools/documentation_crawler",
     )
+    extra_args += ["-a", "validate_html=set"]
     ret_api_doc = subprocess.call(
         ["scrapy", "crawl_with_status", *extra_args, "api_documentation_crawler"],
         cwd="tools/documentation_crawler",

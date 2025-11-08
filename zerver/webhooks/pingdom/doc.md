@@ -1,22 +1,33 @@
+# Zulip Pingdom integration
+
 Zulip supports integration with Pingdom and can notify you of
 uptime status changes from your Pingdom dashboard.
 
-1. {!create-stream.md!}
+{start_tabs}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
-1.  Next, go to the following URL:
+1. {!generate-webhook-url-basic.md!}
 
-    `https://my.pingdom.com/reports/integration/settings`
+1. In Pingdom, open the **Integrations** menu, and click
+   **Add integration**.
 
-1.  Create your integration by clicking on the **Add Integration** button
-    and filling the form like so:
+1. For **Type**, select **Webhook**. Set **Name** to a name of your
+   choice, like `Zulip`, and set **URL** to the URL generated above.
+   Make sure **Active** is toggle, and click **Save integration**.
 
-    ![](/static/images/integrations/pingdom/001.png)
+1. Finally, when creating a new check or editing an existing check,
+   toggle the integration created above in the **Connect Integrations**
+   section for that check.
 
-1.  Last, during creating or editing your check, scroll down to
-    **Connect Integrations** section and ensure your integration is checked.
+{end_tabs}
 
 {!congrats.md!}
 
-![](/static/images/integrations/pingdom/002.png)
+![](/static/images/integrations/pingdom/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

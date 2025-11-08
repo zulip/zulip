@@ -1,0 +1,18 @@
+<!--
+The linearGradient in this SVG is trying to emulate the gradient that
+the user-circle-idle class applies to this SVG for the new help center
+built on top of starlight. This linearGradient would not have any
+effect on the current webapp icon since the gradient in this SVG is
+stripped off when the webapp converts this SVG to font.
+-->
+<svg viewBox="0 0 11 11" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="user-circle-idle-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="5%" stop-color="var(--color-user-circle-idle)" stop-opacity="1" />
+      <stop offset="25%" stop-color="var(--color-user-circle-idle)" stop-opacity="0.789" />
+      <stop offset="100%" stop-color="var(--color-user-circle-idle)" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <path d="M 0 5.5 C 0 2.462433 2.462432 0 5.5 0 C 8.53754 0 11 2.462433 11 5.5 C 11 8.53754 8.53754 11 5.5 11 C 2.462432 11 0 8.53754 0 5.5 Z" 
+        fill="url(#user-circle-idle-gradient)"/>
+</svg>

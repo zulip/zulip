@@ -1,0 +1,13 @@
+<form id="add-todo-form" class="new-style">
+    <label class="todo-label">{{t "To-do list title" }}</label>
+    <div class="todo-title-input-container">
+        <input type="text" id="todo-title-input" autocomplete="off" value="{{t 'Task list' }}" class="modal_text_input" />
+    </div>
+    <label class="todo-label">{{t "Tasks" }}</label>
+    <p>{{t "Anyone can add more tasks after the to-do list is posted."}}</p>
+    <ul class="todo-options-list" data-simplebar data-simplebar-tab-index="-1">
+        {{> todo_modal_task }}
+        {{> todo_modal_task }}
+        {{> todo_modal_task }}
+    </ul>
+</form>

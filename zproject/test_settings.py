@@ -16,9 +16,10 @@ import os
 # it can be set there, at the right place in the settings.py flow.
 # Ick.
 os.environ["EXTERNAL_HOST"] = os.getenv("TEST_EXTERNAL_HOST", "testserver")
+os.environ["ZULIP_TEST_SUITE"] = "true"
 
-from .settings import *  # noqa: F401,F403 isort: skip
-from .test_extra_settings import *  # noqa: F401,F403 isort: skip
+from .settings import *  # noqa: F403 isort: skip
+from .test_extra_settings import *  # noqa: F403 isort: skip
 
 # Do not add any code after these wildcard imports!  Add it to
 # test_extra_settings instead.

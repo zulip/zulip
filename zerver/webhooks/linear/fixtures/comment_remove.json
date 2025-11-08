@@ -1,0 +1,25 @@
+{
+    "action": "remove",
+    "createdAt": "2023-04-11T10:22:42.436Z",
+    "data": {
+        "id": "c7cafc52-994d-4984-a217-bff9f9aa9473",
+        "createdAt": "2023-04-11T10:21:34.858Z",
+        "updatedAt": "2023-04-11T10:22:24.895Z",
+        "body": "In responding to any system outage or incident, it is essential to perform a comprehensive impact analysis and cost evaluation. By examining factors such as the extent of the outage, the affected systems or services, the number of users affected, and any error messages or logs generated during the incident, we can gain a detailed understanding of the incident's scope.\n\nThis information is then critical in prioritizing resolution efforts and reducing the impact on our organization's operations. Additionally, conducting cost realization allows us to assess the financial implications of the outage and make informed decisions about allocating resources for future incidents.\n\nOverall, performing a thorough impact analysis and cost realization is an effective way to manage incidents and prevent similar issues from recurring.",
+        "issueId": "f9a37fcf-eb52-44be-a52c-0477f70e9952",
+        "userId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "editedAt": "2023-04-11T10:22:24.895Z",
+        "reactionData": [],
+        "issue": {
+            "id": "f9a37fcf-eb52-44be-a52c-0477f70e9952",
+            "title": "Thorough Impact Analysis and Cost Realization"
+        },
+        "user": {
+            "id": "674c90c8-35ea-454d-8ca4-5548258fd795",
+            "name": "Satyam Bansal"
+        }
+    },
+    "type": "Comment",
+    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
+    "webhookTimestamp": 1681208562499
+}

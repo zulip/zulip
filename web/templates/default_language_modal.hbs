@@ -1,0 +1,25 @@
+<p>
+    {{t "A language is marked as 100% translated only if every string in the web, desktop,
+      and mobile apps is translated, including administrative UI and error messages." }}
+</p>
+<p>
+    {{#tr}}
+        Zulip's translations are contributed by our amazing community of volunteer
+        translators. If you'd like to help, see the
+        <z-link>Zulip translation guidelines</z-link>.
+        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="https://zulip.readthedocs.io/en/latest/translating/translating.html">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</p>
+<div class="default_language_modal_table">
+    {{#each language_list}}
+        <div class="language_block">
+            <a class="language" data-code="{{this.code}}" data-name="{{this.name}}">
+                {{#if this.selected}}
+                <b>{{this.name_with_percent}}</b>
+                {{else}}
+                {{this.name_with_percent}}
+                {{/if}}
+            </a>
+        </div>
+    {{/each}}
+</div>

@@ -165,7 +165,7 @@ This project seems to be proceeding well; I'm looking forward to testing it
 out soon.
 
 I should clarify what I said earlier about "not having anything since 1.6
-related to this." On master we are actually touching a lot of email-related
+related to this." On main we are actually touching a lot of email-related
 code.
 
 ah, I see, the other files just isolated them, makes sense. I guess I'll

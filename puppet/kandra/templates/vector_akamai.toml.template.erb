@@ -1,0 +1,62 @@
+# Akamai Datastream2 logs all accesses into AWS S3:
+# https://techdocs.akamai.com/datastream2/docs/stream-amazon-s3
+#
+# The S3 bucket is configured to send event notifications to the SQS
+# queue, which this host is allowed to read from.  This consumer
+# deletes the messages from the queue, and the S3 bucket is
+# configured to purge old logs.
+# https://vector.dev/docs/reference/configuration/sources/aws_s3/
+
+<% @pipelines.each do |key,sqs_url| %>
+[sources.s3_akamai_<%= key %>]
+  type = "aws_s3"
+  region = "us-east-1"
+  compression = "gzip"
+  sqs.delete_message = true
+  sqs.poll_secs = 15
+  sqs.queue_url = "<%= sqs_url %>"
+
+[transforms.akamai_parse_<%= key %>]
+  type = "remap"
+  inputs = ["s3_akamai_<%= key %>"]
+  source = '''
+  . = parse_json!(string!(.message))
+  .turnAroundTimeSec = to_int!(.turnAroundTimeMSec) / 1000.0
+  '''
+
+[transforms.akamai_logs2metrics_<%= key %>]
+  type = "log_to_metric"
+  inputs = ["akamai_parse_<%= key %>"]
+
+  [[transforms.akamai_logs2metrics_<%= key %>.metrics]]
+    field = "cacheStatus"
+    name = "requests_cache_count"
+    namespace = "akamai_<%= key %>"
+    type = "counter"
+      [transforms.akamai_logs2metrics_<%= key %>.metrics.tags]
+      status_code = "{{statusCode}}"
+      cached = "{{cacheStatus}}"
+      host = "{{reqHost}}"
+
+  [[transforms.akamai_logs2metrics_<%= key %>.metrics]]
+    field = "bytes"
+    name = "requests_bytes"
+    namespace = "akamai_<%= key %>"
+    type = "counter"
+    increment_by_value = true
+      [transforms.akamai_logs2metrics_<%= key %>.metrics.tags]
+      status_code = "{{statusCode}}"
+      cached = "{{cacheStatus}}"
+      host = "{{reqHost}}"
+
+  [[transforms.akamai_logs2metrics_<%= key %>.metrics]]
+    field = "turnAroundTimeSec"
+    name = "turnaround_time_sec"
+    namespace = "akamai_<%= key %>"
+    type = "histogram"
+      [transforms.akamai_logs2metrics_<%= key %>.metrics.tags]
+      status_code = "{{statusCode}}"
+      cached = "{{cacheStatus}}"
+      host = "{{reqHost}}"
+
+<% end %>

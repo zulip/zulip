@@ -1,10 +1,10 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def change_realm_audit_log_event_type_tense(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
     RealmAuditLog.objects.filter(event_type="user_change_password").update(
@@ -19,7 +19,6 @@ def change_realm_audit_log_event_type_tense(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0174_userprofile_delivery_email"),
     ]

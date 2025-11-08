@@ -1,0 +1,305 @@
+.message_reactions {
+    overflow: hidden;
+    user-select: none;
+
+    &:has(.message_reaction) {
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
+    }
+
+    .message_reaction_container {
+        &.disabled {
+            cursor: not-allowed;
+        }
+    }
+
+    .message_reaction {
+        display: flex;
+        /* Set a pixel and half padding to maintain
+           pill height adjacent own reactions. */
+        padding: 1.5px 4px 1.5px 3px;
+        box-sizing: border-box;
+        min-width: 44px;
+        cursor: pointer;
+        color: var(--color-message-reaction-text);
+        background-color: var(--color-message-reaction-background);
+        border: 1px solid var(--color-message-reaction-border);
+        border-radius: 21px;
+        align-items: center;
+        box-shadow: inset 0 0 5px 0 var(--color-message-reaction-shadow-inner);
+        transition:
+            transform 100ms linear,
+            font-weight 100ms linear; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+
+        &.reacted {
+            color: var(--color-message-reaction-text-reacted);
+            background-color: var(--color-message-reaction-background-reacted);
+            border-color: var(--color-message-reaction-border-reacted);
+            /* Make this border thicker by half a pixel,
+               to make own reactions more prominent. */
+            border-width: 1.5px;
+            /* Reduce the padding top and bottom by half
+               a pixel accordingly, to maintain the same
+               pill height. */
+            padding: 1px 4px 1px 3px;
+            font-weight: var(--font-weight-message-reaction);
+            box-shadow: none;
+        }
+
+        &.disabled {
+            pointer-events: none;
+        }
+
+        &:hover {
+            background-color: var(--color-message-reaction-background-hover);
+        }
+
+        &:active {
+            transform: scale(var(--scale-message-reaction-active));
+        }
+
+        .emoji {
+            margin: 1px 3px;
+            /* 17px at 14px/1em */
+            height: 1.2143em;
+            width: 1.2143em;
+            /* Preserve the emoji's dimensions, no
+               matter what the flexbox does. */
+            flex-shrink: 0;
+            /* Don't inherit position: relative; from
+               the base .emoji class. */
+            position: static;
+        }
+
+        .emoji_alt_code {
+            /* Apply the same margins as on graphical emoji. */
+            margin: 1px 3px;
+            font-size: 0.8em;
+        }
+    }
+
+    .message_reaction_count {
+        /* 90% works out here to 12.6px */
+        font-size: 90%;
+        /* No top and bottom margin; just allow
+           flexbox to handle the vertical alignment. */
+        margin: 0 3px;
+        /* Set the 12.6px text on a 13px line;
+           the goal is to center correctly on the
+           vertical with square emoji, resulting in
+           equal space above and below the reaction
+           count/name.
+           13px at 12.6/1em */
+        line-height: 1.0317em;
+    }
+
+    .message_reaction:hover .message_reaction_count {
+        color: var(--color-message-reaction-button-text-hover);
+    }
+
+    &:hover .reaction_button {
+        visibility: visible;
+        pointer-events: all;
+    }
+
+    .emoji-message-control-button-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .reaction_button {
+        visibility: hidden;
+        pointer-events: none;
+        /* Set top/bottom padding to accommodate borders
+           and padding around reaction pills. */
+        padding: 4px 6px;
+        border-radius: 21px;
+        color: var(--color-message-reaction-button-text);
+        background-color: var(--color-message-reaction-button-background);
+        border: 1px solid var(--color-message-reaction-button-border);
+
+        & i {
+            font-size: 1em;
+            color: var(--color-message-reaction-button-text);
+        }
+
+        &:hover i {
+            color: var(--color-message-reaction-button-text-hover);
+        }
+
+        &:hover {
+            color: var(--color-message-reaction-button-text-hover);
+            background-color: var(
+                --color-message-reaction-button-background-hover
+            );
+            border: 1px solid var(--color-message-reaction-button-border-hover);
+            border-color: var(--color-message-reaction-button-border-hover);
+            box-shadow: inset 0 0 5px 0
+                var(--color-message-reaction-shadow-inner);
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        .message_reaction_count {
+            font-weight: 700;
+            color: var(--color-message-reaction-button-text);
+            margin-right: 0;
+            line-height: 14px;
+        }
+
+        &:hover .message_reaction_count {
+            color: var(--color-message-reaction-button-text-hover);
+        }
+    }
+}
+
+.active-emoji-picker-reference,
+.active-playground-links-reference {
+    visibility: visible !important;
+    pointer-events: all !important;
+    opacity: 1 !important;
+}
+
+.emoji-picker-popover {
+    padding: 0;
+    user-select: none;
+
+    .emoji-popover {
+        width: 16.6667em; /* 250px at 15px/em */
+
+        .emoji-popover-category-tabs {
+            /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+            display: flex;
+            background-color: var(--color-background-emoji-picker-popover);
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+
+            .emoji-popover-tab-item {
+                font-size: 1.0667em; /* 16px at 15px/em */
+                display: inline-block;
+                padding-top: 0.5em; /* 8px at 16px/em */
+                width: 1.5625em; /* 25px at 16px/em */
+                height: 1.5625em; /* 25px at 16px/em */
+                text-align: center;
+                cursor: pointer;
+                /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
+                flex-grow: 1;
+
+                &.active {
+                    background-color: var(
+                        --color-background-emoji-picker-popover-tab-item-active
+                    );
+                }
+            }
+        }
+
+        .emoji-popover-emoji-map,
+        .emoji-search-results-container {
+            padding: 0;
+            position: relative;
+            overflow: hidden auto;
+            display: block;
+            width: 16.4667em; /* 247px at 15px/em */
+            padding-left: 0.2em; /* 3px at 15px/em */
+        }
+
+        .emoji-popover-emoji-map {
+            height: 16.6667em; /* 250px at 15px/em */
+
+            .emoji-popover-subheading {
+                font-weight: 600;
+                padding: 0.3333em 0.2em; /* 5px 3px at 15px/em */
+            }
+        }
+
+        .emoji-popover-emoji {
+            display: inline-block;
+            margin: 0;
+            padding: 0.4em; /* 6px at 15px/em */
+            cursor: pointer;
+            border-radius: 0.5em;
+            height: 1.6667em; /* 25px at 15px/em */
+            width: 1.6667em; /* 25px at 15px/em */
+
+            &:focus {
+                background-color: var(
+                    --color-background-emoji-picker-emoji-focus
+                );
+                /* Only dark mode takes a box shadow on
+                   the emoji-picker's focused emoji. */
+                box-shadow: 0 0 1px
+                    var(--color-box-shadow-emoji-picker-emoji-focus);
+                outline: none;
+            }
+
+            &.reacted {
+                background-color: var(
+                    --color-background-emoji-picker-emoji-reacted
+                );
+                border-color: var(--color-border-emoji-picker-emoji-reacted);
+            }
+
+            &.reacted:focus {
+                background-color: var(
+                    --color-background-emoji-picker-emoji-reacted-focus
+                );
+            }
+
+            &.hide {
+                display: none;
+            }
+
+            .emoji {
+                height: 1.6667em; /* 25px at 15px/em */
+                width: 1.6667em; /* 25px at 15px/em */
+            }
+        }
+
+        .emoji-search-results-container {
+            /* Keep it hidden initially to avoid it taking extra height
+               when the emoji popover is initially rendered which can
+               cause the popover to render at incorrect position when
+               the search container is hidden `onMount`. */
+            display: none;
+            height: 18.8667em; /* 283px at 15px/em */
+
+            .emoji-popover-results-heading {
+                font-size: 1.1333em; /* 17px at 15px/em */
+                font-weight: 600;
+                padding: 0.2941em 0.1765em 0.1765em 0.2941em; /* 5px 3px 3px 5px at 17px/em */
+            }
+        }
+    }
+
+    .emoji-showcase-container {
+        position: relative;
+        background-color: var(--color-background-emoji-picker-popover);
+        min-height: 2.9333em; /* 44px at 15px/em */
+        width: 16.6667em; /* 250px at 15px/em */
+        border-radius: 0 0 6px 6px;
+
+        .emoji-preview {
+            position: absolute;
+            width: 2.1333em; /* 32px at 15px/em */
+            height: 2.1333em; /* 32px at 15px/em */
+            left: 0.3333em; /* 5px at 15px/em */
+            top: 0.4em; /* 6px at 15px/em */
+            margin-top: 0;
+        }
+
+        .emoji-canonical-name {
+            font-size: 1.0667em; /* 16px at 15px/em */
+            position: relative;
+            top: 0.75em; /* 12px at 16px/em */
+            margin-left: 3.125em; /* 50px at 16px/em */
+            font-weight: 600;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+    }
+}
+
+.typeahead .emoji {
+    top: 2px;
+}

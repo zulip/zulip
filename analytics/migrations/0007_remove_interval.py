@@ -3,7 +3,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0006_add_subgroup_to_unique_constraints"),
     ]

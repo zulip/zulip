@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Hackish tool for attempting to find unused IDs / classes in our CSS
 
-for n in $(perl -lne 'print $1 while /[#.]([a-zA-Z0-9_-]+)/g' static/styles/zulip.css | sort -u); do
-    if [ "$(git grep "$n" | grep -cv '^static/styles/zulip.css')" -eq 0 ]; then
+for n in $(perl -lne 'print $1 while /[#.]([a-zA-Z0-9_-]+)/g' web/styles/zulip.css | sort -u); do
+    if [ "$(git grep "$n" | grep -cv '^web/styles/zulip.css')" -eq 0 ]; then
         echo "$n"
     fi
 done

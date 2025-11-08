@@ -2,11 +2,11 @@ from typing import Any
 
 from django.conf import settings
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def fix_messages(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """Conceptually, this migration cleans up the old NEW_USER_BOT and FEEDBACK_BOT
     UserProfile objects (their implementations were removed long ago).
 
@@ -38,9 +38,7 @@ def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
         return
 
     def get_bot_by_delivery_email(email: str) -> Any:
-        return UserProfile.objects.select_related().get(
-            delivery_email__iexact=email.strip(), realm=internal_realm
-        )
+        return UserProfile.objects.get(delivery_email__iexact=email.strip(), realm=internal_realm)
 
     notification_bot = get_bot_by_delivery_email(settings.NOTIFICATION_BOT)
 
@@ -79,7 +77,6 @@ def fix_messages(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0272_realm_default_code_block_language"),
     ]

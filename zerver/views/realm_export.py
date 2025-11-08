@@ -1,96 +1,145 @@
 from datetime import timedelta
+from typing import Annotated
 
-import orjson
-from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
+from pydantic import Json
 
 from analytics.models import RealmCount
+from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_delete_realm_export, notify_realm_export
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import get_realm_exports_serialized
-from zerver.lib.queue import queue_json_publish
-from zerver.lib.response import json_error, json_success
-from zerver.models import RealmAuditLog, UserProfile
+from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.response import json_success
+from zerver.lib.send_email import FromAddress
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint_validators import check_int_in_validator
+from zerver.models import RealmExport, UserProfile
 
 
+@transaction.atomic(durable=True)
 @require_realm_admin
-def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
-    # Currently only supports public-data-only exports.
-    event_type = RealmAuditLog.REALM_EXPORTED
-    event_time = timezone_now()
+@typed_endpoint
+def export_realm(
+    request: HttpRequest,
+    user: UserProfile,
+    *,
+    export_type: Json[
+        Annotated[
+            int,
+            check_int_in_validator(
+                [RealmExport.EXPORT_PUBLIC, RealmExport.EXPORT_FULL_WITH_CONSENT]
+            ),
+        ]
+    ] = RealmExport.EXPORT_PUBLIC,
+) -> HttpResponse:
     realm = user.realm
     EXPORT_LIMIT = 5
-    # Conservative limit on the size of message history in
-    # organizations being exported; this exists to protect Zulip
-    # against a possible unmonitored accidental DoS caused by trying
-    # to export an organization with huge history.
+
+    # Exporting organizations with a huge amount of history can
+    # potentially consume a lot of disk or otherwise have accidental
+    # DoS risk; for that reason, we require large exports to be done
+    # manually on the command line.
+    #
+    # It's very possible that higher limits would be completely safe.
     MAX_MESSAGE_HISTORY = 250000
-    MAX_UPLOAD_QUOTA = 10 * 1024 * 1024 * 1024
+    MAX_UPLOAD_QUOTA = 20 * 1024 * 1024 * 1024
 
     # Filter based upon the number of events that have occurred in the delta
     # If we are at the limit, the incoming request is rejected
-    event_time_delta = event_time - timedelta(days=7)
-    limit_check = RealmAuditLog.objects.filter(
-        realm=realm, event_type=event_type, event_time__gte=event_time_delta
-    )
-    if len(limit_check) >= EXPORT_LIMIT:
-        return json_error(_("Exceeded rate limit."))
+    event_time_delta = timezone_now() - timedelta(days=7)
+    limit_check = RealmExport.objects.filter(
+        realm=realm, date_requested__gte=event_time_delta
+    ).count()
+    if limit_check >= EXPORT_LIMIT:
+        raise JsonableError(_("Exceeded rate limit."))
 
-    total_messages = sum(
-        realm_count.value
-        for realm_count in RealmCount.objects.filter(
-            realm=user.realm, property="messages_sent:client:day"
-        )
+    # The RealmCount analytics table lets us efficiently get an estimate
+    # for the number of messages in an organization. It won't match the
+    # actual number of messages in the export, because this measures the
+    # number of messages that went to DMs / Group DMs / public or private
+    # channels at the time they were sent.
+    # Thus, messages that were deleted or moved between channels and
+    # private messages for which the users didn't consent for export will be
+    # treated differently for this check vs. in the export code.
+    realm_count_query = RealmCount.objects.filter(
+        realm=realm, property="messages_sent:message_type:day"
     )
+    if export_type == RealmExport.EXPORT_PUBLIC:
+        realm_count_query.filter(subgroup="public_stream")
+    exportable_messages_estimate = sum(realm_count.value for realm_count in realm_count_query)
+
     if (
-        total_messages > MAX_MESSAGE_HISTORY
+        exportable_messages_estimate > MAX_MESSAGE_HISTORY
         or user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA
     ):
-        return json_error(
+        raise JsonableError(
             _("Please request a manual export from {email}.").format(
-                email=settings.ZULIP_ADMINISTRATOR,
+                email=FromAddress.SUPPORT,
             )
         )
 
-    row = RealmAuditLog.objects.create(
-        realm=realm, event_type=event_type, event_time=event_time, acting_user=user
+    row = RealmExport.objects.create(
+        realm=realm,
+        type=export_type,
+        acting_user=user,
+        status=RealmExport.REQUESTED,
+        date_requested=timezone_now(),
     )
 
     # Allow for UI updates on a pending export
-    notify_realm_export(user)
+    notify_realm_export(realm)
 
     # Using the deferred_work queue processor to avoid
     # killing the process after 60s
     event = {
         "type": "realm_export",
-        "time": event_time,
-        "realm_id": realm.id,
         "user_profile_id": user.id,
-        "id": row.id,
+        "realm_export_id": row.id,
     }
-    queue_json_publish("deferred_work", event)
-    return json_success()
+    queue_event_on_commit("deferred_work", event)
+    return json_success(request, data={"id": row.id})
 
 
 @require_realm_admin
 def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
-    realm_exports = get_realm_exports_serialized(user)
-    return json_success({"exports": realm_exports})
+    realm_exports = get_realm_exports_serialized(user.realm)
+    return json_success(request, data={"exports": realm_exports})
 
 
 @require_realm_admin
 def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int) -> HttpResponse:
     try:
-        audit_log_entry = RealmAuditLog.objects.get(
-            id=export_id, realm=user.realm, event_type=RealmAuditLog.REALM_EXPORTED
-        )
-    except RealmAuditLog.DoesNotExist:
-        return json_error(_("Invalid data export ID"))
+        export_row = RealmExport.objects.get(realm_id=user.realm_id, id=export_id)
+    except RealmExport.DoesNotExist:
+        raise JsonableError(_("Invalid data export ID"))
 
-    export_data = orjson.loads(audit_log_entry.extra_data)
-    if "deleted_timestamp" in export_data:
-        return json_error(_("Export already deleted"))
-    do_delete_realm_export(user, audit_log_entry)
-    return json_success()
+    if export_row.status == RealmExport.DELETED:
+        raise JsonableError(_("Export already deleted"))
+    if export_row.status == RealmExport.FAILED:
+        raise JsonableError(_("Export failed, nothing to delete"))
+    if export_row.status in [RealmExport.REQUESTED, RealmExport.STARTED]:
+        raise JsonableError(_("Export still in progress"))
+    do_delete_realm_export(export_row, user)
+    return json_success(request)
+
+
+@require_realm_admin
+def get_users_export_consents(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    rows = UserProfile.objects.filter(realm=user.realm, is_active=True, is_bot=False).values(
+        "id",
+        "allow_private_data_export",
+        "email_address_visibility",
+    )
+    export_consents = [
+        {
+            "user_id": row["id"],
+            "consented": row["allow_private_data_export"],
+            "email_address_visibility": row["email_address_visibility"],
+        }
+        for row in rows
+    ]
+    return json_success(request, data={"export_consents": export_consents})

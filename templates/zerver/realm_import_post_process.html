@@ -1,0 +1,50 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "register" %}
+
+{% block title %}
+<title>{{ _("Finalize organization import") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app register-page">
+    <div class="app-main register-page-container new-style flex full-page center">
+        <div class="register-form left" id="realm-import-post-process">
+            <div class="lead">
+                <h1 class="get-started">{{ _("Organization import completed!") }}</h1>
+            </div>
+            <div class="white-box">
+                <form method="post" class="form-inline" action="{{ url('realm_import_post_process', args=[key]) }}">
+                    {{ csrf_input }}
+                    <div class="input-box no-validation">
+                        <input type='hidden' name='key' value='{{ key }}' />
+                    </div>
+                    <div class="input-box slack-import-extra-info">
+                        <div class="not-editable-realm-field">
+                            {% trans %}
+                            No account in the imported data matched the email address you've verified with Zulip
+                            (<strong>{{ verified_email }}</strong>).
+                            Select an account to associate your email address with.
+                            {% endtrans %}
+                        </div>
+                    </div>
+                    <div class="input-box">
+                        <label for="email" class="inline-block label-title">{{ _("Select your account") }}</label>
+                        <select id="realm-import-owner" name="user_id" class="required">
+                            {% for user in users %}
+                                <option value="{{ user.id }}">
+                                    {{ user.full_name }} ({{user.delivery_email}})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-box">
+                        <button type="submit" class="register-button">
+                            {{ _("Confirm") }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

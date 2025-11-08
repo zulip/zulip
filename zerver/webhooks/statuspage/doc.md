@@ -1,8 +1,12 @@
+# Zulip Statuspage integration
+
 Get Zulip notifications for your Statuspage.io subscriptions!
 
-1. {!create-stream.md!}
+{start_tabs}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-an-incoming-webhook.md!}
+
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your Statuspage Dashboard, and click on **Notifications**
    near the bottom-left corner. Select the **Webhook** tab. If webhook
@@ -12,10 +16,18 @@ Get Zulip notifications for your Statuspage.io subscriptions!
    **Subscribers**, and select **Add subscriber**.
 
 1. Set **Subscriber type** to **Webhook**. Set **Endpoint URL** to
-   the URL constructed above, and provide an email address. Statuspage
+   the URL generated above, and provide an email address. Statuspage
    will send email notifications to this address if the webhook endpoint
-   fails. Finally, click **Add Subscriber**.
+   fails. Click **Add Subscriber**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/statuspage/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

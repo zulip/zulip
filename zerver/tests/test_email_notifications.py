@@ -1,27 +1,27 @@
-import random
-import re
-from email.headerregistry import Address
-from typing import List, Sequence
+import tempfile
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import ldap
 import orjson
-from django.conf import settings
 from django.core import mail
+from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.lib.actions import do_change_notification_settings, do_change_user_role
 from zerver.lib.email_notifications import (
+    convert_html_to_markdown,
     enqueue_welcome_emails,
-    fix_emojis,
-    fix_spoilers_in_html,
-    handle_missedmessage_emails,
-    relative_to_full_url,
+    get_onboarding_email_schedule,
+    send_account_registered_email,
 )
-from zerver.lib.send_email import FromAddress, send_custom_email
+from zerver.lib.send_email import send_custom_email, send_custom_server_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import ScheduledEmail, UserProfile, get_realm, get_stream
+from zerver.lib.test_helpers import mock_queue_publish
+from zerver.models import Realm, ScheduledEmail, UserProfile
+from zerver.models.realms import get_realm
+from zilencer.models import RemoteZulipServer
 
 
 class TestCustomEmails(ZulipTestCase):
@@ -30,63 +30,157 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         reply_to = "reply_to_test"
         from_name = "from_name_test"
-        markdown_template_path = "templates/zerver/emails/email_base_default.source.html"
-        send_custom_email(
-            [hamlet],
-            {
+
+        with tempfile.NamedTemporaryFile() as markdown_template:
+            markdown_template.write(b"# Some heading\n\nSome content\n{{ realm_name }}")
+            markdown_template.flush()
+            send_custom_email(
+                UserProfile.objects.filter(id=hamlet.id),
+                dry_run=False,
+                options={
+                    "markdown_template_path": markdown_template.name,
+                    "reply_to": reply_to,
+                    "subject": email_subject,
+                    "from_name": from_name,
+                },
+            )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        self.assert_length(msg.reply_to, 1)
+        self.assertEqual(msg.reply_to[0], reply_to)
+        self.assertNotIn("{% block content %}", msg.body)
+        self.assertIn("# Some heading", msg.body)
+        self.assertIn("Zulip Dev", msg.body)
+        self.assertNotIn("{{ realm_name }}", msg.body)
+        self.assertNotIn("</div>", msg.body)
+
+        assert isinstance(msg, EmailMultiAlternatives)
+        self.assertIn("Some heading</h1>", str(msg.alternatives[0][0]))
+        self.assertNotIn("{{ realm_name }}", str(msg.alternatives[0][0]))
+
+    def test_send_custom_email_remote_server(self) -> None:
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+        markdown_template_path = "templates/corporate/policies/index.md"
+        send_custom_server_email(
+            remote_servers=RemoteZulipServer.objects.all(),
+            dry_run=False,
+            options={
                 "markdown_template_path": markdown_template_path,
                 "reply_to": reply_to,
                 "subject": email_subject,
                 "from_name": from_name,
             },
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, email_subject)
-        self.assertEqual(len(msg.reply_to), 1)
+        self.assertEqual(msg.to, ["remotezulipserver@zulip.com"])
+        self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
+        # Verify that the HTML version contains the footer.
+        assert isinstance(msg, EmailMultiAlternatives)
+        self.assertIn(
+            "You are receiving this email to update you about important changes to Zulip",
+            str(msg.alternatives[0][0]),
+        )
+        self.assertIn("Unsubscribe", str(msg.alternatives[0][0]))
+        # Verify that the Text version contains the footer.
+        self.assertIn(
+            "You are receiving this email to update you about important changes to Zulip", msg.body
+        )
+        self.assertIn("Unsubscribe", msg.body)
 
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
         )
         send_custom_email(
-            [hamlet],
-            {
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
                 "markdown_template_path": markdown_template_path,
             },
         )
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         msg = mail.outbox[0]
-        self.assertEqual(msg.subject, "Test Subject")
+        self.assertEqual(msg.subject, "Test subject")
         self.assertFalse(msg.reply_to)
-        self.assertEqual("Test body", msg.body)
+        self.assertIn("Test body", msg.body)
+
+    def test_send_custom_email_context(self) -> None:
+        hamlet = self.example_user("hamlet")
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
+        )
+        send_custom_email(
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+            },
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+
+        # We default to not including an unsubscribe link in the headers
+        self.assertEqual(msg.extra_headers.get("X-Auto-Response-Suppress"), "All")
+        self.assertIsNone(msg.extra_headers.get("List-Unsubscribe"))
+
+        mail.outbox = []
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+        )
+
+        def add_context(context: dict[str, object], user: UserProfile) -> None:
+            context["unsubscribe_link"] = "some@email"
+            context["custom"] = str(user.id)
+
+        send_custom_email(
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+            },
+            add_context=add_context,
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.extra_headers.get("X-Auto-Response-Suppress"), "All")
+        self.assertEqual(msg.extra_headers.get("List-Unsubscribe"), "<some@email>")
+        self.assertIn(f"Test body with {hamlet.id} value", msg.body)
 
     def test_send_custom_email_no_argument(self) -> None:
         hamlet = self.example_user("hamlet")
         from_name = "from_name_test"
         email_subject = "subject_test"
-        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.source.html"
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.md"
+        )
 
-        from zerver.lib.send_email import NoEmailArgumentException
+        from zerver.lib.send_email import NoEmailArgumentError
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
-            [hamlet],
-            {
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
             },
         )
 
         self.assertRaises(
-            NoEmailArgumentException,
+            NoEmailArgumentError,
             send_custom_email,
-            [hamlet],
-            {
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
             },
@@ -97,73 +191,84 @@ class TestCustomEmails(ZulipTestCase):
         from_name = "from_name_test"
         email_subject = "subject_test"
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
         )
 
-        from zerver.lib.send_email import DoubledEmailArgumentException
+        from zerver.lib.send_email import DoubledEmailArgumentError
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
-            [hamlet],
-            {
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
             },
         )
 
         self.assertRaises(
-            DoubledEmailArgumentException,
+            DoubledEmailArgumentError,
             send_custom_email,
-            [hamlet],
-            {
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
             },
         )
 
-    def test_send_custom_email_admins_only(self) -> None:
-        admin_user = self.example_user("hamlet")
-        do_change_user_role(admin_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        non_admin_user = self.example_user("cordelia")
-
-        markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
-        )
-        send_custom_email(
-            [admin_user, non_admin_user],
-            {
-                "markdown_template_path": markdown_template_path,
-                "admins_only": True,
-            },
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
+    def test_send_custom_email_dry_run(self) -> None:
+        hamlet = self.example_user("hamlet")
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+        markdown_template_path = "templates/zerver/tests/markdown/test_nested_code_blocks.md"
+        with patch("builtins.print") as _:
+            send_custom_email(
+                UserProfile.objects.filter(id=hamlet.id),
+                dry_run=True,
+                options={
+                    "markdown_template_path": markdown_template_path,
+                    "reply_to": reply_to,
+                    "subject": email_subject,
+                    "from_name": from_name,
+                },
+            )
+            self.assert_length(mail.outbox, 0)
 
 
 class TestFollowupEmails(ZulipTestCase):
-    def test_day1_email_context(self) -> None:
+    def test_account_registered_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
-        enqueue_welcome_emails(hamlet)
-        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
-        email_data = orjson.loads(scheduled_emails[0].data)
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(hamlet)
+        m.assert_called_once()
+        email_data = m.call_args[0][1]
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
-        self.assertEqual(email_data["context"]["getting_started_link"], "https://zulip.com")
+        self.assertEqual(
+            email_data["context"]["getting_user_started_link"],
+            "http://zulip.testserver/help/getting-started-with-zulip",
+        )
         self.assertNotIn("ldap_username", email_data["context"])
 
         ScheduledEmail.objects.all().delete()
 
         iago = self.example_user("iago")
-        enqueue_welcome_emails(iago)
-        scheduled_emails = ScheduledEmail.objects.filter(users=iago)
-        email_data = orjson.loads(scheduled_emails[0].data)
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(iago)
+        m.assert_called_once()
+        email_data = m.call_args[0][1]
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
         self.assertEqual(
-            email_data["context"]["getting_started_link"],
-            "http://zulip.testserver/help/getting-your-organization-started-with-zulip",
+            email_data["context"]["getting_organization_started_link"],
+            "http://zulip.testserver/help/moving-to-zulip",
+        )
+        self.assertEqual(
+            email_data["context"]["getting_user_started_link"],
+            "http://zulip.testserver/help/getting-started-with-zulip",
         )
         self.assertNotIn("ldap_username", email_data["context"])
 
@@ -179,20 +284,22 @@ class TestFollowupEmails(ZulipTestCase):
             "ou=users,dc=zulip,dc=com", ldap.SCOPE_ONELEVEL, "(uid=%(email)s)"
         ),
     )
-    def test_day1_email_ldap_case_a_login_credentials(self) -> None:
+    def test_account_registered_email_ldap_case_a_login_credentials(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
-        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+        with (
+            self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map),
+            mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
+        ):
             self.login_with_return(
                 "newuser_email_as_uid@zulip.com",
                 self.ldap_password("newuser_email_as_uid@zulip.com"),
             )
             user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user)
-
-            self.assertEqual(len(scheduled_emails), 2)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
+            m.assert_called_once()
+            email_data = m.call_args[0][1]
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(
                 email_data["context"]["ldap_username"], "newuser_email_as_uid@zulip.com"
@@ -204,21 +311,22 @@ class TestFollowupEmails(ZulipTestCase):
             "zproject.backends.ZulipDummyBackend",
         )
     )
-    def test_day1_email_ldap_case_b_login_credentials(self) -> None:
+    def test_account_registered_email_ldap_case_b_login_credentials(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
-        with self.settings(
-            LDAP_APPEND_DOMAIN="zulip.com",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        with (
+            self.settings(
+                LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+            ),
+            mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
         ):
             self.login_with_return("newuser@zulip.com", self.ldap_password("newuser"))
 
             user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user)
-
-            self.assertEqual(len(scheduled_emails), 2)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
+            m.assert_called_once()
+            email_data = m.call_args[0][1]
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser")
 
@@ -228,950 +336,336 @@ class TestFollowupEmails(ZulipTestCase):
             "zproject.backends.ZulipDummyBackend",
         )
     )
-    def test_day1_email_ldap_case_c_login_credentials(self) -> None:
+    def test_account_registered_email_ldap_case_c_login_credentials(self) -> None:
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
 
-        with self.settings(
-            LDAP_EMAIL_ATTR="mail",
-            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        with (
+            self.settings(LDAP_EMAIL_ATTR="mail", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map),
+            mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
         ):
             self.login_with_return("newuser_with_email", self.ldap_password("newuser_with_email"))
             user = UserProfile.objects.get(delivery_email="newuser_email@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(users=user)
-
-            self.assertEqual(len(scheduled_emails), 2)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
+            m.assert_called_once()
+            email_data = m.call_args[0][1]
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser_with_email")
 
     def test_followup_emails_count(self) -> None:
         hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
+        realm = get_realm("zulip")
 
-        enqueue_welcome_emails(self.example_user("hamlet"))
-        # Hamlet has account only in Zulip realm so both day1 and day2 emails should be sent
+        # Hamlet has account only in Zulip realm so all onboarding emails should be sent
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("hamlet"))
+            enqueue_welcome_emails(self.example_user("hamlet"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
         )
-        self.assertEqual(2, len(scheduled_emails))
+        self.assert_length(scheduled_emails, 2)
         self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_topics",
         )
         self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
         )
 
         ScheduledEmail.objects.all().delete()
 
-        enqueue_welcome_emails(cordelia)
+        # The onboarding_zulip_guide email should not be sent to non-admin users in organizations
+        # that are sent the `/for/communities/` guide; see note in enqueue_welcome_emails.
+        realm.org_type = Realm.ORG_TYPES["community"]["id"]
+        realm.save()
+
+        # Hamlet is not an admin so the `/for/communities/` zulip_guide should not be sent
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("hamlet"))
+            enqueue_welcome_emails(self.example_user("hamlet"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
+        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
+            "scheduled_timestamp"
+        )
+        self.assert_length(scheduled_emails, 1)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_topics",
+        )
+
+        ScheduledEmail.objects.all().delete()
+
+        # Iago is an admin so the `/for/communities/` zulip_guide should be sent
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("iago"))
+            enqueue_welcome_emails(self.example_user("iago"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
+        scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
+        self.assert_length(scheduled_emails, 2)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_topics",
+        )
+        self.assertEqual(
+            orjson.loads(scheduled_emails[1].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
+        )
+
+        ScheduledEmail.objects.all().delete()
+
+        # The organization_type context for "education_nonprofit" orgs is simplified to be "education"
+        realm.org_type = Realm.ORG_TYPES["education_nonprofit"]["id"]
+        realm.save()
+
+        # Cordelia has account in more than 1 realm so onboarding_zulip_topics email should not be sent
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("cordelia"))
+            enqueue_welcome_emails(self.example_user("cordelia"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
+
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+            "scheduled_timestamp"
+        )
+        self.assert_length(scheduled_emails, 1)
+        self.assertEqual(
+            orjson.loads(scheduled_emails[0].data)["template_prefix"],
+            "zerver/emails/onboarding_zulip_guide",
+        )
+
+        ScheduledEmail.objects.all().delete()
+
+        # Only a subset of Realm.ORG_TYPES are sent the zulip_guide_followup email
+        realm.org_type = Realm.ORG_TYPES["other"]["id"]
+        realm.save()
+
+        # In this case, Cordelia should only be sent the account_registered email
+        with mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m:
+            send_account_registered_email(self.example_user("cordelia"))
+            enqueue_welcome_emails(self.example_user("cordelia"))
+        m.assert_called_once()
+        self.assertEqual(m.call_args[0][1]["template_prefix"], "zerver/emails/account_registered")
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
-        # Cordelia has account in more than 1 realm so day2 email should not be sent
-        self.assertEqual(len(scheduled_emails), 1)
-        email_data = orjson.loads(scheduled_emails[0].data)
-        self.assertEqual(email_data["template_prefix"], "zerver/emails/followup_day1")
+        self.assert_length(scheduled_emails, 0)
+
+    def test_followup_emails_for_regular_realms(self) -> None:
+        cordelia = self.example_user("cordelia")
+        with self.captureOnCommitCallbacks(execute=True) as callbacks:
+            send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
+            enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+
+            scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+                "scheduled_timestamp"
+            )
+            self.assert_length(scheduled_emails, 2)
+            self.assertEqual(
+                orjson.loads(scheduled_emails[0].data)["template_prefix"],
+                "zerver/emails/onboarding_zulip_guide",
+            )
+            self.assertEqual(
+                orjson.loads(scheduled_emails[1].data)["template_prefix"],
+                "zerver/emails/onboarding_team_to_zulip",
+            )
+
+        # The insert into the deferred_email_senders queue
+        self.assert_length(callbacks, 1)
+
+        # Exiting the block does the email-sending
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        message = outbox[0]
+        self.assertIn("you have created a new Zulip organization", message.body)
+        self.assertNotIn("demo org", message.body)
+
+    def test_followup_emails_for_demo_realms(self) -> None:
+        cordelia = self.example_user("cordelia")
+        cordelia.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(
+            days=30
+        )
+        cordelia.realm.save()
+        with self.captureOnCommitCallbacks(execute=True) as callbacks:
+            send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
+            enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+
+            scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
+                "scheduled_timestamp"
+            )
+            self.assert_length(scheduled_emails, 2)
+            self.assertEqual(
+                orjson.loads(scheduled_emails[0].data)["template_prefix"],
+                "zerver/emails/onboarding_zulip_guide",
+            )
+            self.assertEqual(
+                orjson.loads(scheduled_emails[1].data)["template_prefix"],
+                "zerver/emails/onboarding_team_to_zulip",
+            )
+
+        # The insert into the deferred_email_senders queue
+        self.assert_length(callbacks, 1)
+
+        # Exiting the block does the email-sending
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        message = outbox[0]
+        self.assertIn("you have created a new demo Zulip organization", message.body)
+
+    def test_onboarding_zulip_guide_with_invalid_org_type(self) -> None:
+        cordelia = self.example_user("cordelia")
+        realm = get_realm("zulip")
+
+        invalid_org_type_id = 999
+        realm.org_type = invalid_org_type_id
+        realm.save()
+
+        with self.assertLogs(level="ERROR") as m:
+            enqueue_welcome_emails(self.example_user("cordelia"))
+
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
+        self.assert_length(scheduled_emails, 0)
+        self.assertEqual(
+            m.output,
+            [f"ERROR:root:Unknown organization type '{invalid_org_type_id}'"],
+        )
 
 
-class TestMissedMessages(ZulipTestCase):
-    def normalize_string(self, s: str) -> str:
-        s = s.strip()
-        return re.sub(r"\s+", " ", s)
-
-    def _get_tokens(self) -> List[str]:
-        return ["mm" + str(random.getrandbits(32)) for _ in range(30)]
-
-    def _test_cases(
+class TestOnboardingEmailDelay(ZulipTestCase):
+    def verify_onboarding_email_schedule(
         self,
-        msg_id: int,
-        verify_body_include: List[str],
-        email_subject: str,
-        send_as_user: bool,
-        verify_html_body: bool = False,
-        show_message_content: bool = True,
-        verify_body_does_not_include: Sequence[str] = [],
-        trigger: str = "",
+        user: UserProfile,
+        date_joined: str,
+        onboarding_zulip_topics: int,
+        onboarding_zulip_guide: int,
+        onboarding_team_to_zulip: int,
     ) -> None:
-        othello = self.example_user("othello")
-        hamlet = self.example_user("hamlet")
-        tokens = self._get_tokens()
-        with patch("zerver.lib.email_mirror.generate_missed_message_token", side_effect=tokens):
-            handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id, "trigger": trigger}])
-        if settings.EMAIL_GATEWAY_PATTERN != "":
-            reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (t,) for t in tokens]
-            reply_to_emails = [
-                str(Address(display_name="Zulip", addr_spec=address))
-                for address in reply_to_addresses
-            ]
-        else:
-            reply_to_emails = ["noreply@testserver"]
-        msg = mail.outbox[0]
-        from_email = str(
-            Address(display_name="Zulip missed messages", addr_spec=FromAddress.NOREPLY)
+        DAY_OF_WEEK = {
+            "Monday": datetime(2018, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Tuesday": datetime(2018, 1, 2, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Wednesday": datetime(2018, 1, 3, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Thursday": datetime(2018, 1, 4, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Friday": datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Saturday": datetime(2018, 1, 6, 1, 0, 0, 0, tzinfo=timezone.utc),
+            "Sunday": datetime(2018, 1, 7, 1, 0, 0, 0, tzinfo=timezone.utc),
+        }
+        WEEKEND = [6, 7]
+
+        user.date_joined = DAY_OF_WEEK[date_joined]
+        onboarding_email_schedule = get_onboarding_email_schedule(user)
+
+        # onboarding_zulip_topics
+        day_sent = (
+            DAY_OF_WEEK[date_joined] + onboarding_email_schedule["onboarding_zulip_topics"]
+        ).isoweekday()
+        self.assertEqual(day_sent, onboarding_zulip_topics)
+        self.assertNotIn(day_sent, WEEKEND)
+
+        # onboarding_zulip_guide
+        day_sent = (
+            DAY_OF_WEEK[date_joined] + onboarding_email_schedule["onboarding_zulip_guide"]
+        ).isoweekday()
+        self.assertEqual(day_sent, onboarding_zulip_guide)
+        self.assertNotIn(day_sent, WEEKEND)
+
+        # onboarding_team_to_zulip
+        day_sent = (
+            DAY_OF_WEEK[date_joined] + onboarding_email_schedule["onboarding_team_to_zulip"]
+        ).isoweekday()
+        self.assertEqual(day_sent, onboarding_team_to_zulip)
+        self.assertNotIn(day_sent, WEEKEND)
+
+    def test_get_onboarding_email_schedule(self) -> None:
+        user_profile = self.example_user("hamlet")
+
+        # joined Monday: schedule = Wednesday:3, Friday:5, Tuesday:2
+        self.verify_onboarding_email_schedule(user_profile, "Monday", 3, 5, 2)
+
+        # joined Tuesday: schedule = Thursday:4, Monday:1, Wednesday:3
+        self.verify_onboarding_email_schedule(user_profile, "Tuesday", 4, 1, 3)
+
+        # joined Wednesday: schedule = Friday:5, Tuesday:2, Thursday:4
+        self.verify_onboarding_email_schedule(user_profile, "Wednesday", 5, 2, 4)
+
+        # joined Thursday: schedule = Monday:1, Wednesday:3, Friday:5
+        self.verify_onboarding_email_schedule(user_profile, "Thursday", 1, 3, 5)
+
+        # joined Friday: schedule = Tuesday:2, Thursday:4, Monday:1
+        self.verify_onboarding_email_schedule(user_profile, "Friday", 2, 4, 1)
+
+        # joined Saturday: schedule = Monday:1, Wednesday:3, Friday:5
+        self.verify_onboarding_email_schedule(user_profile, "Saturday", 1, 3, 5)
+
+        # joined Sunday: schedule = Tuesday:2, Thursday:4, Monday:1
+        self.verify_onboarding_email_schedule(user_profile, "Sunday", 2, 4, 1)
+
+    def test_time_offset_for_onboarding_email_schedule(self) -> None:
+        user_profile = self.example_user("hamlet")
+        days_delayed = {
+            "4": timedelta(days=4, hours=-1),
+            "6": timedelta(days=6, hours=-1),
+            "8": timedelta(days=8, hours=-1),
+        }
+
+        # Time offset of America/Phoenix is -07:00
+        user_profile.timezone = "America/Phoenix"
+
+        # Test date_joined == Friday in UTC, but Thursday in the user's time zone
+        user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
+        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
+
+        # onboarding_zulip_topics email sent on Monday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_topics"],
+            days_delayed["4"],
+        )
+
+        # onboarding_zulip_guide sent on Wednesday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_zulip_guide"],
+            days_delayed["6"],
+        )
+
+        # onboarding_team_to_zulip sent on Friday
+        self.assertEqual(
+            onboarding_email_schedule["onboarding_team_to_zulip"],
+            days_delayed["8"],
+        )
+
+
+class TestCustomWelcomeEmailSender(ZulipTestCase):
+    def test_custom_welcome_email_sender(self) -> None:
+        name = "Nonreg Email"
+        email = self.nonreg_email("test")
+        with override_settings(
+            WELCOME_EMAIL_SENDER={
+                "name": name,
+                "email": email,
+            }
+        ):
+            hamlet = self.example_user("hamlet")
+            enqueue_welcome_emails(hamlet)
+            scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
+                "scheduled_timestamp"
+            )
+            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assertEqual(email_data["from_name"], name)
+            self.assertEqual(email_data["from_address"], email)
+
+
+class TestHtmlToMarkdown(ZulipTestCase):
+    def test_html_to_markdown_unicode(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
         )
-        self.assertEqual(len(mail.outbox), 1)
-        if send_as_user:
-            from_email = f'"{othello.full_name}" <{othello.email}>'
-        self.assertEqual(self.email_envelope_from(msg), settings.NOREPLY_EMAIL_ADDRESS)
-        self.assertEqual(self.email_display_from(msg), from_email)
-        self.assertEqual(msg.subject, email_subject)
-        self.assertEqual(len(msg.reply_to), 1)
-        self.assertIn(msg.reply_to[0], reply_to_emails)
-        if verify_html_body:
-            for text in verify_body_include:
-                self.assertIn(text, self.normalize_string(msg.alternatives[0][0]))
-        else:
-            for text in verify_body_include:
-                self.assertIn(text, self.normalize_string(msg.body))
-        for text in verify_body_does_not_include:
-            self.assertNotIn(text, self.normalize_string(msg.body))
-
-        self.assertEqual(msg.extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
-
-    def _realm_name_in_missed_message_email_subject(
-        self, realm_name_in_notifications: bool
-    ) -> None:
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Extremely personal message!",
-        )
-        verify_body_include = ["Extremely personal message!"]
-        email_subject = "PMs with Othello, the Moor of Venice"
-
-        if realm_name_in_notifications:
-            email_subject = "PMs with Othello, the Moor of Venice [Zulip Dev]"
-        self._test_cases(msg_id, verify_body_include, email_subject, False)
-
-    def _extra_context_in_missed_stream_messages_mention(
-        self, send_as_user: bool, show_message_content: bool = True
-    ) -> None:
-        for i in range(0, 11):
-            self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
-        self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
-        msg_id = self.send_stream_message(
-            self.example_user("othello"), "denmark", "@**King Hamlet**"
-        )
-
-        if show_message_content:
-            verify_body_include = [
-                "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev.",
-            ]
-            email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
-        else:
-            # Test in case if message content in missed email message are disabled.
-            verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
-                " Manage email preferences: http://zulip.testserver/#settings/notifications",
-            ]
-
-            email_subject = "New missed messages"
-            verify_body_does_not_include = [
-                "Denmark > test",
-                "Othello, the Moor of Venice",
-                "1 2 3 4 5 6 7 8 9 10 @**King Hamlet**",
-                "private",
-                "group",
-                "Reply to this email directly, or view it in Zulip",
-            ]
-        self._test_cases(
-            msg_id,
-            verify_body_include,
-            email_subject,
-            send_as_user,
-            show_message_content=show_message_content,
-            verify_body_does_not_include=verify_body_does_not_include,
-            trigger="mentioned",
-        )
-
-    def _extra_context_in_missed_stream_messages_wildcard_mention(
-        self, send_as_user: bool, show_message_content: bool = True
-    ) -> None:
-        for i in range(1, 6):
-            self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
-        self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
-        msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "@**all**")
-
-        if show_message_content:
-            verify_body_include = [
-                "Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev.",
-            ]
-            email_subject = "#Denmark > test"
-            verify_body_does_not_include: List[str] = []
-        else:
-            # Test in case if message content in missed email message are disabled.
-            verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
-                " Manage email preferences: http://zulip.testserver/#settings/notifications",
-            ]
-            email_subject = "New missed messages"
-            verify_body_does_not_include = [
-                "Denmark > test",
-                "Othello, the Moor of Venice",
-                "1 2 3 4 5 @**all**",
-                "private",
-                "group",
-                "Reply to this email directly, or view it in Zulip",
-            ]
-        self._test_cases(
-            msg_id,
-            verify_body_include,
-            email_subject,
-            send_as_user,
-            show_message_content=show_message_content,
-            verify_body_does_not_include=verify_body_does_not_include,
-            trigger="wildcard_mentioned",
-        )
-
-    def _extra_context_in_missed_stream_messages_email_notify(self, send_as_user: bool) -> None:
-        for i in range(0, 11):
-            self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
-        self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
-        msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "12")
-        verify_body_include = [
-            "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 12 -- ",
-            "You are receiving this because you have email notifications enabled for this stream.",
-        ]
-        email_subject = "#Denmark > test"
-        self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user, trigger="stream_email_notify"
-        )
-
-    def _extra_context_in_missed_stream_messages_mention_two_senders(
-        self, send_as_user: bool
-    ) -> None:
-        for i in range(0, 3):
-            self.send_stream_message(self.example_user("cordelia"), "Denmark", str(i))
-        msg_id = self.send_stream_message(
-            self.example_user("othello"), "Denmark", "@**King Hamlet**"
-        )
-        verify_body_include = [
-            "Cordelia Lear: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- ",
-            "You are receiving this because you were mentioned in Zulip Dev.",
-        ]
-        email_subject = "#Denmark > test"
-        self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user, trigger="mentioned"
-        )
-
-    def _extra_context_in_personal_missed_stream_messages(
-        self,
-        send_as_user: bool,
-        show_message_content: bool = True,
-        message_content_disabled_by_user: bool = False,
-        message_content_disabled_by_realm: bool = False,
-    ) -> None:
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Extremely personal message!",
-        )
-
-        if show_message_content:
-            verify_body_include = ["Extremely personal message!"]
-            email_subject = "PMs with Othello, the Moor of Venice"
-            verify_body_does_not_include: List[str] = []
-        else:
-            if message_content_disabled_by_realm:
-                verify_body_include = [
-                    "This email does not include message content because your organization has disabled",
-                    "http://zulip.testserver/help/hide-message-content-in-emails",
-                    "View or reply in Zulip",
-                    " Manage email preferences: http://zulip.testserver/#settings/notifications",
-                ]
-            elif message_content_disabled_by_user:
-                verify_body_include = [
-                    "This email does not include message content because you have disabled message ",
-                    "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                    "View or reply in Zulip",
-                    " Manage email preferences: http://zulip.testserver/#settings/notifications",
-                ]
-            email_subject = "New missed messages"
-            verify_body_does_not_include = [
-                "Othello, the Moor of Venice",
-                "Extremely personal message!",
-                "mentioned",
-                "group",
-                "Reply to this email directly, or view it in Zulip",
-            ]
-        self._test_cases(
-            msg_id,
-            verify_body_include,
-            email_subject,
-            send_as_user,
-            show_message_content=show_message_content,
-            verify_body_does_not_include=verify_body_does_not_include,
-        )
-
-    def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Extremely personal message!",
-        )
-        verify_body_include = ["Reply to this email directly, or view it in Zulip"]
-        email_subject = "PMs with Othello, the Moor of Venice"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
-
-    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Extremely personal message!",
-        )
-        verify_body_include = ["Do not reply to this email."]
-        email_subject = "PMs with Othello, the Moor of Venice"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
-
-    def _extra_context_in_huddle_missed_stream_messages_two_others(
-        self, send_as_user: bool, show_message_content: bool = True
-    ) -> None:
-        msg_id = self.send_huddle_message(
-            self.example_user("othello"),
-            [
-                self.example_user("hamlet"),
-                self.example_user("iago"),
-            ],
-            "Group personal message!",
-        )
-
-        if show_message_content:
-            verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
-            email_subject = "Group PMs with Iago and Othello, the Moor of Venice"
-            verify_body_does_not_include: List[str] = []
-        else:
-            verify_body_include = [
-                "This email does not include message content because you have disabled message ",
-                "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
-                " Manage email preferences: http://zulip.testserver/#settings/notifications",
-            ]
-            email_subject = "New missed messages"
-            verify_body_does_not_include = [
-                "Iago",
-                "Othello, the Moor of Venice Othello, the Moor of Venice",
-                "Group personal message!",
-                "mentioned",
-                "Reply to this email directly, or view it in Zulip",
-            ]
-        self._test_cases(
-            msg_id,
-            verify_body_include,
-            email_subject,
-            send_as_user,
-            show_message_content=show_message_content,
-            verify_body_does_not_include=verify_body_does_not_include,
-        )
-
-    def _extra_context_in_huddle_missed_stream_messages_three_others(
-        self, send_as_user: bool
-    ) -> None:
-        msg_id = self.send_huddle_message(
-            self.example_user("othello"),
-            [
-                self.example_user("hamlet"),
-                self.example_user("iago"),
-                self.example_user("cordelia"),
-            ],
-            "Group personal message!",
-        )
-
-        verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
-        email_subject = "Group PMs with Cordelia Lear, Iago, and Othello, the Moor of Venice"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
-
-    def _extra_context_in_huddle_missed_stream_messages_many_others(
-        self, send_as_user: bool
-    ) -> None:
-        msg_id = self.send_huddle_message(
-            self.example_user("othello"),
-            [
-                self.example_user("hamlet"),
-                self.example_user("iago"),
-                self.example_user("cordelia"),
-                self.example_user("prospero"),
-            ],
-            "Group personal message!",
-        )
-
-        verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
-        email_subject = "Group PMs with Cordelia Lear, Iago, and 2 others"
-        self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
-
-    def _deleted_message_in_missed_stream_messages(self, send_as_user: bool) -> None:
-        msg_id = self.send_stream_message(
-            self.example_user("othello"), "denmark", "@**King Hamlet** to be deleted"
-        )
-
-        hamlet = self.example_user("hamlet")
-        self.login("othello")
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id), {"message_id": msg_id, "content": " "}
-        )
-        self.assert_json_success(result)
-        handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
-
-    def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Extremely personal message! to be deleted!",
-        )
-
-        hamlet = self.example_user("hamlet")
-        self.login("othello")
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id), {"message_id": msg_id, "content": " "}
-        )
-        self.assert_json_success(result)
-        handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
-
-    def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool) -> None:
-        msg_id = self.send_huddle_message(
-            self.example_user("othello"),
-            [
-                self.example_user("hamlet"),
-                self.example_user("iago"),
-            ],
-            "Group personal message!",
-        )
-
-        hamlet = self.example_user("hamlet")
-        iago = self.example_user("iago")
-        self.login("othello")
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id), {"message_id": msg_id, "content": " "}
-        )
-        self.assert_json_success(result)
-        handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
-        handle_missedmessage_emails(iago.id, [{"message_id": msg_id}])
-        self.assertEqual(len(mail.outbox), 0)
-
-    def test_realm_name_in_notifications(self) -> None:
-        # Test with realm_name_in_notifications for hamlet disabled.
-        self._realm_name_in_missed_message_email_subject(False)
-
-        # Enable realm_name_in_notifications for hamlet and test again.
-        hamlet = self.example_user("hamlet")
-        hamlet.realm_name_in_notifications = True
-        hamlet.save(update_fields=["realm_name_in_notifications"])
-
-        # Empty the test outbox
-        mail.outbox = []
-        self._realm_name_in_missed_message_email_subject(True)
-
-    def test_message_content_disabled_in_missed_message_notifications(self) -> None:
-        # Test when user disabled message content in email notifications.
-        do_change_notification_settings(
-            self.example_user("hamlet"), "message_content_in_email_notifications", False
-        )
-        self._extra_context_in_missed_stream_messages_mention(False, show_message_content=False)
-        mail.outbox = []
-        self._extra_context_in_missed_stream_messages_wildcard_mention(
-            False, show_message_content=False
-        )
-        mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
-            False, show_message_content=False, message_content_disabled_by_user=True
-        )
-        mail.outbox = []
-        self._extra_context_in_huddle_missed_stream_messages_two_others(
-            False, show_message_content=False
-        )
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention(True)
-
-    def test_extra_context_in_missed_stream_messages(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user_wildcard(self) -> None:
-        self._extra_context_in_missed_stream_messages_wildcard_mention(True)
-
-    def test_extra_context_in_missed_stream_messages_wildcard(self) -> None:
-        self._extra_context_in_missed_stream_messages_wildcard_mention(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_as_user_two_senders(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention_two_senders(True)
-
-    def test_extra_context_in_missed_stream_messages_two_senders(self) -> None:
-        self._extra_context_in_missed_stream_messages_mention_two_senders(False)
-
-    def test_reply_to_email_in_personal_missed_stream_messages(self) -> None:
-        self._reply_to_email_in_personal_missed_stream_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_missed_stream_messages_email_notify_as_user(self) -> None:
-        self._extra_context_in_missed_stream_messages_email_notify(True)
-
-    def test_extra_context_in_missed_stream_messages_email_notify(self) -> None:
-        self._extra_context_in_missed_stream_messages_email_notify(False)
-
-    @override_settings(EMAIL_GATEWAY_PATTERN="")
-    def test_reply_warning_in_personal_missed_stream_messages(self) -> None:
-        self._reply_warning_in_personal_missed_stream_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_personal_missed_stream_messages_as_user(self) -> None:
-        self._extra_context_in_personal_missed_stream_messages(True)
-
-    def test_extra_context_in_personal_missed_stream_messages(self) -> None:
-        self._extra_context_in_personal_missed_stream_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_huddle_missed_stream_messages_two_others_as_user(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_two_others(True)
-
-    def test_extra_context_in_huddle_missed_stream_messages_two_others(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_two_others(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_huddle_missed_stream_messages_three_others_as_user(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_three_others(True)
-
-    def test_extra_context_in_huddle_missed_stream_messages_three_others(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_three_others(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_huddle_missed_stream_messages_many_others_as_user(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_many_others(True)
-
-    def test_extra_context_in_huddle_missed_stream_messages_many_others(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_many_others(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_missed_stream_messages_as_user(self) -> None:
-        self._deleted_message_in_missed_stream_messages(True)
-
-    def test_deleted_message_in_missed_stream_messages(self) -> None:
-        self._deleted_message_in_missed_stream_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_personal_missed_stream_messages_as_user(self) -> None:
-        self._deleted_message_in_personal_missed_stream_messages(True)
-
-    def test_deleted_message_in_personal_missed_stream_messages(self) -> None:
-        self._deleted_message_in_personal_missed_stream_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_huddle_missed_stream_messages_as_user(self) -> None:
-        self._deleted_message_in_huddle_missed_stream_messages(True)
-
-    def test_deleted_message_in_huddle_missed_stream_messages(self) -> None:
-        self._deleted_message_in_huddle_missed_stream_messages(False)
-
-    def test_realm_message_content_allowed_in_email_notifications(self) -> None:
-        user = self.example_user("hamlet")
-
-        # When message content is allowed at realm level
-        realm = get_realm("zulip")
-        realm.message_content_allowed_in_email_notifications = True
-        realm.save(update_fields=["message_content_allowed_in_email_notifications"])
-
-        # Emails have missed message content when message content is enabled by the user
-        do_change_notification_settings(user, "message_content_in_email_notifications", True)
-        mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=True)
-
-        # Emails don't have missed message content when message content is disabled by the user
-        do_change_notification_settings(user, "message_content_in_email_notifications", False)
-        mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
-            False, show_message_content=False, message_content_disabled_by_user=True
-        )
-
-        # When message content is not allowed at realm level
-        # Emails don't have missed message irrespective of message content setting of the user
-        realm = get_realm("zulip")
-        realm.message_content_allowed_in_email_notifications = False
-        realm.save(update_fields=["message_content_allowed_in_email_notifications"])
-
-        do_change_notification_settings(user, "message_content_in_email_notifications", True)
-        mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
-            False, show_message_content=False, message_content_disabled_by_realm=True
-        )
-
-        do_change_notification_settings(user, "message_content_in_email_notifications", False)
-        mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
-            False,
-            show_message_content=False,
-            message_content_disabled_by_user=True,
-            message_content_disabled_by_realm=True,
-        )
-
-    def test_realm_emoji_in_missed_message(self) -> None:
-        realm = get_realm("zulip")
-
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Extremely personal message with a realm emoji :green_tick:!",
-        )
-        realm_emoji_id = realm.get_active_emoji()["green_tick"]["id"]
-        realm_emoji_url = (
-            f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_id}.png"
-        )
-        verify_body_include = [
-            f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick" style="height: 20px;">'
-        ]
-        email_subject = "PMs with Othello, the Moor of Venice"
-        self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
-        )
-
-    def test_emojiset_in_missed_message(self) -> None:
-        hamlet = self.example_user("hamlet")
-        hamlet.emojiset = "twitter"
-        hamlet.save(update_fields=["emojiset"])
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Extremely personal message with a hamburger :hamburger:!",
-        )
-        verify_body_include = [
-            '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
-        ]
-        email_subject = "PMs with Othello, the Moor of Venice"
-        self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
-        )
-
-    def test_stream_link_in_missed_message(self) -> None:
-        msg_id = self.send_personal_message(
-            self.example_user("othello"),
-            self.example_user("hamlet"),
-            "Come and join us in #**Verona**.",
-        )
-        stream_id = get_stream("Verona", get_realm("zulip")).id
-        href = f"http://zulip.testserver/#narrow/stream/{stream_id}-Verona"
-        verify_body_include = [
-            f'<a class="stream" data-stream-id="{stream_id}" href="{href}">#Verona</a'
-        ]
-        email_subject = "PMs with Othello, the Moor of Venice"
-        self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
-        )
-
-    def test_sender_name_in_missed_message(self) -> None:
-        hamlet = self.example_user("hamlet")
-        msg_id_1 = self.send_stream_message(
-            self.example_user("iago"), "Denmark", "@**King Hamlet**"
-        )
-        msg_id_2 = self.send_stream_message(self.example_user("iago"), "Verona", "* 1\n *2")
-        msg_id_3 = self.send_personal_message(self.example_user("iago"), hamlet, "Hello")
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {"message_id": msg_id_1, "trigger": "mentioned"},
-                {"message_id": msg_id_2, "trigger": "stream_email_notify"},
-                {"message_id": msg_id_3},
-            ],
-        )
-
-        self.assertIn("Iago: @**King Hamlet**\n\n--\nYou are", mail.outbox[0].body)
-        # If message content starts with <p> tag the sender name is appended inside the <p> tag.
-        self.assertIn(
-            '<p><b>Iago</b>: <span class="user-mention"', mail.outbox[0].alternatives[0][0]
-        )
-
-        self.assertIn("Iago: * 1\n *2\n\n--\nYou are receiving", mail.outbox[1].body)
-        # If message content does not starts with <p> tag sender name is appended before the <p> tag
-        self.assertIn(
-            "       <b>Iago</b>: <ul>\n<li>1<br/>\n *2</li>\n</ul>\n",
-            mail.outbox[1].alternatives[0][0],
-        )
-
-        self.assertEqual("Hello\n\n--\n\nReply", mail.outbox[2].body[:16])
-        # Sender name is not appended to message for PM missed messages
-        self.assertIn(
-            ">\n                    \n                        <p>Hello</p>\n",
-            mail.outbox[2].alternatives[0][0],
-        )
-
-    def test_multiple_missed_personal_messages(self) -> None:
-        hamlet = self.example_user("hamlet")
-        msg_id_1 = self.send_personal_message(
-            self.example_user("othello"), hamlet, "Personal Message 1"
-        )
-        msg_id_2 = self.send_personal_message(
-            self.example_user("iago"), hamlet, "Personal Message 2"
-        )
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {"message_id": msg_id_1},
-                {"message_id": msg_id_2},
-            ],
-        )
-        self.assertEqual(len(mail.outbox), 2)
-        email_subject = "PMs with Othello, the Moor of Venice"
-        self.assertEqual(mail.outbox[0].subject, email_subject)
-        email_subject = "PMs with Iago"
-        self.assertEqual(mail.outbox[1].subject, email_subject)
-
-    def test_multiple_stream_messages(self) -> None:
-        hamlet = self.example_user("hamlet")
-        msg_id_1 = self.send_stream_message(self.example_user("othello"), "Denmark", "Message1")
-        msg_id_2 = self.send_stream_message(self.example_user("iago"), "Denmark", "Message2")
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {"message_id": msg_id_1, "trigger": "stream_email_notify"},
-                {"message_id": msg_id_2, "trigger": "stream_email_notify"},
-            ],
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        email_subject = "#Denmark > test"
-        self.assertEqual(mail.outbox[0].subject, email_subject)
-
-    def test_multiple_stream_messages_and_mentions(self) -> None:
-        """Subject should be stream name and topic as usual."""
-        hamlet = self.example_user("hamlet")
-        msg_id_1 = self.send_stream_message(self.example_user("iago"), "Denmark", "Regular message")
-        msg_id_2 = self.send_stream_message(
-            self.example_user("othello"), "Denmark", "@**King Hamlet**"
-        )
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {"message_id": msg_id_1, "trigger": "stream_email_notify"},
-                {"message_id": msg_id_2, "trigger": "mentioned"},
-            ],
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        email_subject = "#Denmark > test"
-        self.assertEqual(mail.outbox[0].subject, email_subject)
-
-    def test_message_access_in_emails(self) -> None:
-        # Messages sent to a protected history-private stream shouldn't be
-        # accessible/available in emails before subscribing
-        stream_name = "private_stream"
-        self.make_stream(stream_name, invite_only=True, history_public_to_subscribers=False)
-        user = self.example_user("iago")
-        self.subscribe(user, stream_name)
-        late_subscribed_user = self.example_user("hamlet")
-
-        self.send_stream_message(user, stream_name, "Before subscribing")
-
-        self.subscribe(late_subscribed_user, stream_name)
-
-        self.send_stream_message(user, stream_name, "After subscribing")
-
-        mention_msg_id = self.send_stream_message(user, stream_name, "@**King Hamlet**")
-
-        handle_missedmessage_emails(
-            late_subscribed_user.id,
-            [
-                {"message_id": mention_msg_id, "trigger": "mentioned"},
-            ],
-        )
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "#private_stream > test")  # email subject
-        email_text = mail.outbox[0].message().as_string()
-        self.assertNotIn("Before subscribing", email_text)
-        self.assertIn("After subscribing", email_text)
-        self.assertIn("@**King Hamlet**", email_text)
-
-    def test_stream_mentions_multiple_people(self) -> None:
-        """Subject should be stream name and topic as usual."""
-        hamlet = self.example_user("hamlet")
-        msg_id_1 = self.send_stream_message(
-            self.example_user("iago"), "Denmark", "@**King Hamlet**"
-        )
-        msg_id_2 = self.send_stream_message(
-            self.example_user("othello"), "Denmark", "@**King Hamlet**"
-        )
-        msg_id_3 = self.send_stream_message(
-            self.example_user("cordelia"), "Denmark", "Regular message"
-        )
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {"message_id": msg_id_1, "trigger": "mentioned"},
-                {"message_id": msg_id_2, "trigger": "mentioned"},
-                {"message_id": msg_id_3, "trigger": "stream_email_notify"},
-            ],
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        email_subject = "#Denmark > test"
-        self.assertEqual(mail.outbox[0].subject, email_subject)
-
-    def test_multiple_stream_messages_different_topics(self) -> None:
-        """Should receive separate emails for each topic within a stream."""
-        hamlet = self.example_user("hamlet")
-        msg_id_1 = self.send_stream_message(self.example_user("othello"), "Denmark", "Message1")
-        msg_id_2 = self.send_stream_message(
-            self.example_user("iago"), "Denmark", "Message2", topic_name="test2"
-        )
-
-        handle_missedmessage_emails(
-            hamlet.id,
-            [
-                {"message_id": msg_id_1, "trigger": "stream_email_notify"},
-                {"message_id": msg_id_2, "trigger": "stream_email_notify"},
-            ],
-        )
-        self.assertEqual(len(mail.outbox), 2)
-        email_subjects = {mail.outbox[0].subject, mail.outbox[1].subject}
-        valid_email_subjects = {"#Denmark > test", "#Denmark > test2"}
-        self.assertEqual(email_subjects, valid_email_subjects)
-
-    def test_relative_to_full_url(self) -> None:
-        zulip_realm = get_realm("zulip")
-        zephyr_realm = get_realm("zephyr")
-        # Run `relative_to_full_url()` function over test fixtures present in
-        # 'markdown_test_cases.json' and check that it converts all the relative
-        # URLs to absolute URLs.
-        fixtures = orjson.loads(self.fixture_data("markdown_test_cases.json"))
-        test_fixtures = {}
-        for test in fixtures["regular_tests"]:
-            test_fixtures[test["name"]] = test
-        for test_name in test_fixtures:
-            test_data = test_fixtures[test_name]["expected_output"]
-            output_data = relative_to_full_url("http://example.com", test_data)
-            if re.search(r"""(?<=\=['"])/(?=[^<]+>)""", output_data) is not None:
-                raise AssertionError(
-                    "Relative URL present in email: "
-                    + output_data
-                    + "\nFailed test case's name is: "
-                    + test_name
-                    + "\nIt is present in markdown_test_cases.json"
-                )
-
-        # Specific test cases.
-
-        # A path similar to our emoji path, but not in a link:
-        test_data = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
-        actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = "<p>Check out the file at: '/static/generated/emoji/images/emoji/'</p>"
-        self.assertEqual(actual_output, expected_output)
-
-        # An uploaded file
-        test_data = '<a href="/user_uploads/{realm_id}/1f/some_random_value">/user_uploads/{realm_id}/1f/some_random_value</a>'
-        test_data = test_data.format(realm_id=zephyr_realm.id)
-        actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = (
-            '<a href="http://example.com/user_uploads/{realm_id}/1f/some_random_value">'
-            + "/user_uploads/{realm_id}/1f/some_random_value</a>"
-        )
-        expected_output = expected_output.format(realm_id=zephyr_realm.id)
-        self.assertEqual(actual_output, expected_output)
-
-        # A profile picture like syntax, but not actually in an HTML tag
-        test_data = '<p>Set src="/avatar/username@example.com?s=30"</p>'
-        actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'
-        self.assertEqual(actual_output, expected_output)
-
-        # A narrow URL which begins with a '#'.
-        test_data = (
-            '<p><a href="#narrow/stream/test/topic/test.20topic/near/142"'
-            + 'title="#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
-        )
-        actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = (
-            '<p><a href="http://example.com/#narrow/stream/test/topic/test.20topic/near/142" '
-            + 'title="http://example.com/#narrow/stream/test/topic/test.20topic/near/142">Conversation</a></p>'
-        )
-        self.assertEqual(actual_output, expected_output)
-
-        # Scrub inline images.
-        test_data = (
-            '<p>See this <a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" '
-            + 'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p>'
-            + '<div class="message_inline_image"><a href="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" '
-            + 'target="_blank" title="avatar_103.jpeg"><img src="/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg"></a></div>'
-        )
-        test_data = test_data.format(realm_id=zulip_realm.id)
-        actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = (
-            '<div><p>See this <a href="http://example.com/user_uploads/{realm_id}/52/fG7GM9e3afz_qsiUcSce2tl_/avatar_103.jpeg" target="_blank" '
-            + 'title="avatar_103.jpeg">avatar_103.jpeg</a>.</p></div>'
-        )
-        expected_output = expected_output.format(realm_id=zulip_realm.id)
-        self.assertEqual(actual_output, expected_output)
-
-        # A message containing only an inline image URL preview, we do
-        # somewhat more extensive surgery.
-        test_data = (
-            '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" '
-            + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
-            + '<img data-src-fullsize="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" '
-            + 'src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
-        )
-        actual_output = relative_to_full_url("http://example.com", test_data)
-        expected_output = (
-            '<p><a href="https://www.google.com/images/srpr/logo4w.png" '
-            + 'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">'
-            + "https://www.google.com/images/srpr/logo4w.png</a></p>"
-        )
-        self.assertEqual(actual_output, expected_output)
-
-    def test_spoilers_in_html_emails(self) -> None:
-        test_data = '<div class="spoiler-block"><div class="spoiler-header">\n\n<p><a>header</a> text</p>\n</div><div class="spoiler-content" aria-hidden="true">\n\n<p>content</p>\n</div></div>\n\n<p>outside spoiler</p>'
-        actual_output = fix_spoilers_in_html(test_data, "en")
-        expected_output = '<div><div class="spoiler-block">\n\n<p><a>header</a> text<span> </span><span class="spoiler-title" title="Open Zulip to see the spoiler content">(Open Zulip to see the spoiler content)</span></p>\n</div>\n\n<p>outside spoiler</p></div>'
-        self.assertEqual(actual_output, expected_output)
-
-        # test against our markdown_test_cases so these features do not get out of sync.
-        fixtures = orjson.loads(self.fixture_data("markdown_test_cases.json"))
-        test_fixtures = {}
-        for test in fixtures["regular_tests"]:
-            if "spoiler" in test["name"]:
-                test_fixtures[test["name"]] = test
-        for test_name in test_fixtures:
-            test_data = test_fixtures[test_name]["expected_output"]
-            output_data = fix_spoilers_in_html(test_data, "en")
-            assert "spoiler-header" not in output_data
-            assert "spoiler-content" not in output_data
-            assert "spoiler-block" in output_data
-            assert "spoiler-title" in output_data
-
-    def test_spoilers_in_text_emails(self) -> None:
-        content = "@**King Hamlet**\n\n```spoiler header text\nsecret-text\n```"
-        msg_id = self.send_stream_message(self.example_user("othello"), "Denmark", content)
-        verify_body_include = ["header text", "Open Zulip to see the spoiler content"]
-        verify_body_does_not_include = ["secret-text"]
-        email_subject = "#Denmark > test"
-        send_as_user = False
-        self._test_cases(
-            msg_id,
-            verify_body_include,
-            email_subject,
-            send_as_user,
-            trigger="mentioned",
-            verify_body_does_not_include=verify_body_does_not_include,
-        )
-
-    def test_fix_emoji(self) -> None:
-        # An emoji.
-        test_data = (
-            '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8" role="img" title="cloud with lightning and rain">'
-            + ":cloud_with_lightning_and_rain:</span>.</p>"
-        )
-        actual_output = fix_emojis(test_data, "http://example.com", "google")
-        expected_output = (
-            '<p>See <img alt=":cloud_with_lightning_and_rain:" src="http://example.com/static/generated/emoji/images-google-64/26c8.png" '
-            + 'title="cloud with lightning and rain" style="height: 20px;">.</p>'
-        )
-        self.assertEqual(actual_output, expected_output)

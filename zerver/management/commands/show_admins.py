@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
 
@@ -9,9 +10,11 @@ from zerver.lib.management import ZulipBaseCommand
 class Command(ZulipBaseCommand):
     help = """Show the owners and administrators in an organization."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # True because of required=True above

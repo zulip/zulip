@@ -77,8 +77,6 @@ cat >"$config" <<EOF
 # Based on /usr/share/ssl-cert/ssleay.cnf from Debian's \`ssl-cert\`
 # package, which is used for the system's snakeoil cert in /etc/ssl/.
 
-RANDFILE            = /dev/urandom
-
 [ req ]
 default_bits        = 2048
 distinguished_name  = req_distinguished_name

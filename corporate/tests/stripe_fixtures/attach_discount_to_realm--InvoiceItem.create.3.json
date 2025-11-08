@@ -1,44 +1,32 @@
 {
-  "amount": -36000,
+  "amount": 24000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED0001",
+  "customer": "cus_NORMALIZED",
   "date": 1000000000,
-  "description": "Payment (Card ending in 4242)",
+  "description": "Zulip Cloud Standard - renewal",
   "discountable": false,
   "discounts": [],
-  "id": "ii_NORMALIZED00000000000004",
-  "invoice": null,
+  "id": "attach_discount_to_realm--InvoiceItem.create.3.json",
+  "invoice": "in_NORMALIZED",
   "livemode": false,
   "metadata": {},
+  "net_amount": 24000,
   "object": "invoiceitem",
+  "parent": null,
   "period": {
-    "end": 1000000000,
-    "start": 1000000000
+    "end": 1388631845,
+    "start": 1357095845
   },
-  "plan": null,
-  "price": {
-    "active": false,
-    "billing_scheme": "per_unit",
-    "created": 1000000000,
-    "currency": "usd",
-    "id": "price_1HufhyD2X8vgpBNG58auoETW",
-    "livemode": false,
-    "lookup_key": null,
-    "metadata": {},
-    "nickname": null,
-    "object": "price",
-    "product": "prod_IVh6Yrwv6xv7Bm",
-    "recurring": null,
-    "tiers_mode": null,
-    "transform_quantity": null,
-    "type": "one_time",
-    "unit_amount": -36000,
-    "unit_amount_decimal": "-36000"
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "4000"
   },
   "proration": false,
-  "quantity": 1,
-  "subscription": null,
+  "quantity": 6,
   "tax_rates": [],
-  "unit_amount": -36000,
-  "unit_amount_decimal": "-36000"
+  "test_clock": null
 }

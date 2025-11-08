@@ -1,0 +1,74 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Download the Zulip app for your device" %}
+
+{% set PAGE_DESCRIPTION = "Zulip has apps for every platform. Download the Zulip
+  app for macOS, Windows, Linux, Android, iOS or Terminal." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style media="screen">
+    .app.portico-page { padding-bottom: 0px; }
+</style>
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing apps">
+    <div class="hero">
+        <div id="waves"></div>
+        <div class="inner-content">
+            <div class="info">
+                <div class="flex">
+                    <div class="cta">
+                        <h1>Zulip for <span class="platform"></span></h1>
+                        <p class="description"></p>
+                        <a class="desktop-download-link no-action" hidden href=""><span class="button green">Download Zulip for <span class="platform"></span></span></a>
+                        <a class="download-from-google-play-store" hidden href=""><img src="{{ static('images/store-badges/google-play-badge.png') }}" alt=""/></a>
+                        <a class="download-from-apple-app-store" hidden href=""><img src="{{ static('images/store-badges/app-store-badge.svg') }}" alt=""/></a>
+                        <span id="download-from-microsoft-store" hidden>or <a href="https://apps.microsoft.com/store/detail/XP8HN41S4PLGZ3">download from the Microsoft Store</a></span>
+                        <span id="download-android-apk" hidden>or manually download APK for the <a class="android-apk-current" href="">current</a> or <a class="android-apk-legacy" href="">legacy</a> app</span>
+                        <span id="download-mac-intel" hidden>or <a href="">download <strong>Intel</strong> processor build <i>(some older Macs)</i></a></span>
+                        <p class="download-instructions"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="other-apps">
+        <h2>Apps for every platform.</h2>
+
+        <div class="apps">
+            <a class="" href="/apps/mac">
+                <i class="icon fa fa-apple" data-label="macOS"></i>
+            </a>
+            <a class="" href="/apps/windows">
+                <i class="icon fa fa-windows" data-label="Windows"></i>
+            </a>
+            <a class="" href="/apps/linux">
+                <i class="icon fa fa-linux" data-label="Linux"></i>
+            </a>
+            <a class="" href="/apps/android">
+                <i class="icon fa fa-android" data-label="Android"></i>
+            </a>
+            <a class="" href="/apps/ios">
+                <i class="icon fa fa-mobile-phone" data-label="iOS"></i>
+            </a>
+            <a href="https://github.com/zulip/zulip-terminal#readme">
+                <i class="icon fa fa-terminal" data-label="Terminal (beta)"></i>
+            </a>
+        </div>
+        <div id="third-party-apps">
+            Zulip also works great in pinned
+            <a href="/help/supported-browsers">browser tabs</a>
+            and multi-protocol desktop chat apps
+            like <a href="https://rambox.pro">Rambox</a>
+            and <a href="https://ferdium.org/">Ferdium</a>.
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,9 @@
 import sys
 import unittest
-from typing import Optional
 
 try:
     from tools.lib.template_parser import (
-        TemplateParserException,
+        TemplateParserError,
         is_django_block_tag,
         tokenize,
         validate,
@@ -18,12 +17,12 @@ class ParserTest(unittest.TestCase):
     def _assert_validate_error(
         self,
         error: str,
-        fn: Optional[str] = None,
-        text: Optional[str] = None,
-        check_indent: bool = True,
+        fn: str | None = None,
+        text: str | None = None,
+        template_format: str | None = None,
     ) -> None:
-        with self.assertRaisesRegex(TemplateParserException, error):
-            validate(fn=fn, text=text, check_indent=check_indent)
+        with self.assertRaisesRegex(TemplateParserError, error):
+            validate(fn=fn, text=text, template_format=template_format)
 
     def test_is_django_block_tag(self) -> None:
         self.assertTrue(is_django_block_tag("block"))
@@ -48,7 +47,25 @@ class ParserTest(unittest.TestCase):
                 <p>{{stream}}</p>
             {{/with}}
             """
-        validate(text=my_html)
+        validate(text=my_html, template_format="handlebars")
+
+    def test_validate_handlebars_partial_block(self) -> None:
+        my_html = """
+            {{#> generic_thing }}
+                <p>hello!</p>
+            {{/generic_thing}}
+            """
+        validate(text=my_html, template_format="handlebars")
+
+    def test_validate_bad_handlebars_partial_block(self) -> None:
+        my_html = """
+            {{#> generic_thing }}
+                <p>hello!</p>
+            {{# generic_thing}}
+            """
+        self._assert_validate_error(
+            "Missing end tag for the token at row 4 13!", text=my_html, template_format="handlebars"
+        )
 
     def test_validate_comment(self) -> None:
         my_html = """
@@ -64,7 +81,7 @@ class ParserTest(unittest.TestCase):
                 <p>bar</p>
             {% endif %}
             """
-        validate(text=my_html)
+        validate(text=my_html, template_format="django")
 
         my_html = """
             {% block "content" %}
@@ -85,7 +102,7 @@ class ParserTest(unittest.TestCase):
         my_html = """
             <b>foo</i>
         """
-        self._assert_validate_error("Mismatched tag.", text=my_html)
+        self._assert_validate_error(r"Mismatched tags: \(b != i\)", text=my_html)
 
     def test_validate_bad_indentation(self) -> None:
         my_html = """
@@ -93,7 +110,7 @@ class ParserTest(unittest.TestCase):
                 foo
                 </p>
         """
-        self._assert_validate_error("Bad indentation.", text=my_html, check_indent=True)
+        self._assert_validate_error("Indentation for start/end tags does not match.", text=my_html)
 
     def test_validate_state_depth(self) -> None:
         my_html = """
@@ -106,39 +123,105 @@ class ParserTest(unittest.TestCase):
             {{# foo
         """
         self._assert_validate_error(
-            '''Tag missing "}}" at Line 2 Col 13:"{{# foo
+            '''Tag missing "}}" at line 2 col 13:"{{# foo
         "''',
             text=my_html,
+            template_format="handlebars",
         )
 
     def test_validate_incomplete_handlebars_tag_2(self) -> None:
         my_html = """
             {{# foo }
         """
-        self._assert_validate_error('Tag missing "}}" at Line 2 Col 13:"{{# foo }\n"', text=my_html)
+        self._assert_validate_error(
+            'Tag missing "}}" at line 2 col 13:"{{# foo }\n"',
+            text=my_html,
+            template_format="handlebars",
+        )
+
+    def test_validate_incomplete_handlebars_tag_3(self) -> None:
+        my_html = "{{# foo}"
+        self._assert_validate_error(
+            'Tag missing "}}" at line 1 col 1:"{{# foo}"',
+            text=my_html,
+            template_format="handlebars",
+        )
+
+    def test_validate_triple_stache_var_1(self) -> None:
+        my_html = """
+            {{{ foo}}
+        """
+        self._assert_validate_error(
+            'Tag missing "}}}" at line 2 col 13:"{{{ foo}}\n"',
+            text=my_html,
+            template_format="handlebars",
+        )
+
+    def test_validate_triple_stache_var_2(self) -> None:
+        my_html = """
+            {{{ foo}~}
+        """
+        self._assert_validate_error(
+            'Tag missing "}}}" at line 2 col 13:"{{{ foo}~}"',
+            text=my_html,
+            template_format="handlebars",
+        )
+
+    def test_validate_triple_stache_var_3(self) -> None:
+        my_html = """
+            {{{ foo }}}
+        """
+        self._assert_validate_error(
+            "Unescaped variables in triple staches {{{ }}} must be suffixed with `_html`",
+            text=my_html,
+            template_format="handlebars",
+        )
+
+    def test_validate_triple_stache_var_4(self) -> None:
+        my_html = """
+            {{{ foo_html }~}}
+        """
+        validate(text=my_html, template_format="handlebars")
+
+    def test_validate_triple_stache_var_5(self) -> None:
+        my_html = "{{{ foo_html}}}"
+        validate(text=my_html, template_format="handlebars")
+
+    def test_validate_triple_stache_var_6(self) -> None:
+        my_html = "{{~{ bar_html}}}"
+        validate(text=my_html, template_format="handlebars")
+
+    def test_validate_triple_stache_var_7(self) -> None:
+        my_html = "{{~{ bar_html}~}}"
+        validate(text=my_html, template_format="handlebars")
 
     def test_validate_incomplete_django_tag_1(self) -> None:
         my_html = """
             {% foo
         """
         self._assert_validate_error(
-            '''Tag missing "%}" at Line 2 Col 13:"{% foo
+            '''Tag missing "%}" at line 2 col 13:"{% foo
         "''',
             text=my_html,
+            template_format="django",
         )
 
     def test_validate_incomplete_django_tag_2(self) -> None:
         my_html = """
             {% foo %
         """
-        self._assert_validate_error('Tag missing "%}" at Line 2 Col 13:"{% foo %\n"', text=my_html)
+        self._assert_validate_error(
+            'Tag missing "%}" at line 2 col 13:"{% foo %\n"',
+            text=my_html,
+            template_format="django",
+        )
 
     def test_validate_incomplete_html_tag_1(self) -> None:
         my_html = """
             <b
         """
         self._assert_validate_error(
-            '''Tag missing ">" at Line 2 Col 13:"<b
+            '''Tag missing ">" at line 2 col 13:"<b
         "''',
             text=my_html,
         )
@@ -151,12 +234,12 @@ class ParserTest(unittest.TestCase):
             <a href=""
         """
         self._assert_validate_error(
-            '''Tag missing ">" at Line 2 Col 13:"<a href=""
+            '''Tag missing ">" at line 2 col 13:"<a href=""
         "''',
             text=my_html1,
         )
         self._assert_validate_error(
-            '''Unbalanced Quotes at Line 2 Col 13:"<a href="
+            '''Unbalanced quotes at line 2 col 13:"<a href="
         "''',
             text=my_html,
         )
@@ -168,7 +251,6 @@ class ParserTest(unittest.TestCase):
         self._assert_validate_error("Tag name missing", text=my_html)
 
     def test_code_blocks(self) -> None:
-
         # This is fine.
         my_html = """
             <code>
@@ -189,10 +271,9 @@ class ParserTest(unittest.TestCase):
         self._assert_validate_error("Code tag is split across two lines.", text=my_html)
 
     def test_anchor_blocks(self) -> None:
-
         # This is allowed, although strange.
         my_html = """
-            <a hef="/some/url">
+            <a href="/some/url">
             Click here
             for more info.
             </a>"""
@@ -217,7 +298,10 @@ class ParserTest(unittest.TestCase):
         this is foo
         {% endif %}
         """
-        validate(text=my_html)
+        validate(
+            text=my_html,
+            template_format="django",
+        )
 
     def test_validate_jinja2_whitespace_markers_2(self) -> None:
         my_html = """
@@ -225,7 +309,10 @@ class ParserTest(unittest.TestCase):
         this is foo
         {%- endif %}
         """
-        validate(text=my_html)
+        validate(
+            text=my_html,
+            template_format="django",
+        )
 
     def test_validate_jinja2_whitespace_markers_3(self) -> None:
         my_html = """
@@ -233,7 +320,10 @@ class ParserTest(unittest.TestCase):
         this is foo
         {% endif -%}
         """
-        validate(text=my_html)
+        validate(
+            text=my_html,
+            template_format="django",
+        )
 
     def test_validate_jinja2_whitespace_markers_4(self) -> None:
         my_html = """
@@ -241,7 +331,10 @@ class ParserTest(unittest.TestCase):
         this is foo
         {% endif %}
         """
-        validate(text=my_html)
+        validate(
+            text=my_html,
+            template_format="django",
+        )
 
     def test_validate_mismatch_jinja2_whitespace_markers_1(self) -> None:
         my_html = """
@@ -249,7 +342,11 @@ class ParserTest(unittest.TestCase):
         this is foo
         {%- if bar %}
         """
-        self._assert_validate_error("Missing end tag", text=my_html)
+        self._assert_validate_error(
+            "Missing end tag",
+            text=my_html,
+            template_format="django",
+        )
 
     def test_validate_jinja2_whitespace_type2_markers(self) -> None:
         my_html = """
@@ -257,26 +354,29 @@ class ParserTest(unittest.TestCase):
         this is foo
         {% endif %}
         """
-        validate(text=my_html)
+        validate(
+            text=my_html,
+            template_format="django",
+        )
 
     def test_tokenize(self) -> None:
-        tag = "<meta whatever>bla"
+        tag = "<!DOCTYPE html>"
         token = tokenize(tag)[0]
-        self.assertEqual(token.kind, "html_special")
+        self.assertEqual(token.kind, "html_doctype")
 
         tag = "<a>bla"
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, "html_start")
         self.assertEqual(token.tag, "a")
 
-        tag = "<br>bla"
+        tag = "<br />bla"
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, "html_singleton")
         self.assertEqual(token.tag, "br")
 
         tag = "<input>bla"
         token = tokenize(tag)[0]
-        self.assertEqual(token.kind, "html_singleton")
+        self.assertEqual(token.kind, "html_start")  # We later mark this an error.
         self.assertEqual(token.tag, "input")
 
         tag = "<input />bla"
@@ -290,36 +390,41 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(token.tag, "a")
 
         tag = "{{#with foo}}bla"
-        token = tokenize(tag)[0]
+        token = tokenize(tag, template_format="handlebars")[0]
         self.assertEqual(token.kind, "handlebars_start")
         self.assertEqual(token.tag, "with")
 
         tag = "{{/with}}bla"
-        token = tokenize(tag)[0]
+        token = tokenize(tag, template_format="handlebars")[0]
         self.assertEqual(token.kind, "handlebars_end")
         self.assertEqual(token.tag, "with")
 
+        tag = "{{#> compose_banner }}bla"
+        token = tokenize(tag, template_format="handlebars")[0]
+        self.assertEqual(token.kind, "handlebars_partial_block")
+        self.assertEqual(token.tag, "compose_banner")
+
         tag = "{% if foo %}bla"
-        token = tokenize(tag)[0]
+        token = tokenize(tag, template_format="django")[0]
         self.assertEqual(token.kind, "django_start")
         self.assertEqual(token.tag, "if")
 
         tag = "{% endif %}bla"
-        token = tokenize(tag)[0]
+        token = tokenize(tag, template_format="django")[0]
         self.assertEqual(token.kind, "django_end")
         self.assertEqual(token.tag, "if")
 
         tag = "{% if foo -%}bla"
-        token = tokenize(tag)[0]
+        token = tokenize(tag, template_format="django")[0]
         self.assertEqual(token.kind, "jinja2_whitespace_stripped_start")
         self.assertEqual(token.tag, "if")
 
         tag = "{%- endif %}bla"
-        token = tokenize(tag)[0]
+        token = tokenize(tag, template_format="django")[0]
         self.assertEqual(token.kind, "jinja2_whitespace_stripped_end")
         self.assertEqual(token.tag, "if")
 
         tag = "{%- if foo -%}bla"
-        token = tokenize(tag)[0]
+        token = tokenize(tag, template_format="django")[0]
         self.assertEqual(token.kind, "jinja2_whitespace_stripped_type2_start")
         self.assertEqual(token.tag, "if")

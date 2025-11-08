@@ -1,38 +1,47 @@
-# The Zulip roadmap
+# Roadmap
 
-Zulip has received a great deal of interest and attention since it was
-released as free and open source software by Dropbox.  That attention
-has come with a lot of active development work from members of the
-Zulip community.
+We welcome participation from our user community in influencing the Zulip
+roadmap. If a bug or missing feature is causing significant pain for you, we'd
+love to hear from you, either in
+[chat.zulip.org](https://zulip.com/development-community/) or on the relevant
+GitHub issue.
 
-From when Zulip was released in September 2015 through today (November
-2017), more than 350 people have contributed over 5000 pull requests to the
-various Zulip repositories. So a lot of what gets done is driven by
-contributor interest. That being said, our focus areas for the next few
-months are:
-* The mobile experience
-* Visual polish of the main webapp
-* Building out our API, bots and integrations framework
-* Onboarding
+Please an include an explanation of your use case: such details can be extremely
+helpful in designing appropriately general solutions, and also helps us identify
+cases where an existing solution can solve your problem. See our guide on
+[suggesting features and improvements](../contributing/suggesting-features.md)
+for more details.
 
-We also use the [blocker][label-blocker] and [high priority][label-high]
-labels in the main server repository to more granularly track issues that
-the project's leadership believes would significantly improve the project.
-We should emphasize that the majority of issues resolved in regular
-Zulip development are not tagged with one of these labels; while it's
-essential to make progress on priority projects, the Zulip community feels
-strongly that all the little issues are, in aggregate, just as important as
-priority projects.
+## Server and web app roadmap
 
-We welcome participation from the community in influencing the Zulip
-roadmap.  If a bug or missing feature is causing significant pain for your
-organization, we appreciate your commenting to that effect, either in
-[chat.zulip.org](../contributing/chat-zulip-org.md) or on the
-relevant GitHub issue, with an explanation of how the issue impacts
-your use case. See [Reporting issues](contributing.html#reporting-issues)
-for more information.
+The Zulip server project uses GitHub projects and labels to structure
+communication about priorities:
 
-[label-blocker]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
-[label-high]:
-https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
+- We use a [GitHub project
+  board](https://github.com/orgs/zulip/projects/9/views/13) to publicly track
+  goals for major releases. The items with the "Done" status will be included in
+  the next major release. Otherwise, the project board should be seen a list of
+  priorities being _considered_ for the release, not a guarantee that features
+  will be included. As the release date approaches, features that will not make
+  it into the release are dropped from the project board on an ongoing basis.
+
+- The [high priority][label-high] label tags issues that we consider important.
+  It is reviewed in the planning stage of the release cycle to identify
+  priorities for the next release.
+
+- The [help wanted][label-help-wanted] label tags issues that are open for
+  contributions.
+
+The Zulip community feels strongly that all the little issues are, in
+aggregate, just as important as the big things. Many resolved issues
+are never explicitly tagged as release goals.
+
+[label-high]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
+[label-help-wanted]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22
+
+## Mobile app roadmap
+
+We use a [GitHub project
+board](https://github.com/orgs/zulip/projects/5/views/4) to publicly track
+milestones for Zulip's [next-generation mobile
+app](https://blog.zulip.com/2024/12/12/new-flutter-mobile-app-beta/).

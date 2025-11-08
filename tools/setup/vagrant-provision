@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -x
+set -e
+set -o pipefail
+
+# Code should go here, rather than tools/provision, only if it is
+# something that we don't want to happen when running provision in a
+# development environment not using Vagrant.
+
+# Set the Ubuntu mirror
+[ ! "$UBUNTU_MIRROR" ] || sudo sed -i 's|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |'"$UBUNTU_MIRROR"' |' /etc/apt/sources.list
+
+# Set the MOTD on the system to have Zulip instructions
+sudo ln -nsf /srv/zulip/tools/setup/dev-motd /etc/update-motd.d/99-zulip-dev
+sudo rm -f /etc/update-motd.d/10-help-text /etc/update-motd.d/99-bento
+sudo dpkg --purge landscape-common
+sudo dpkg-divert --add --rename /etc/default/motd-news
+sudo sh -c 'echo ENABLED=0 > /etc/default/motd-news'
+
+# Set default locale, this prevents errors if the user has another locale set.
+if ! grep -q 'LC_ALL=C.UTF-8' /etc/default/locale; then
+    echo "LC_ALL=C.UTF-8" | sudo tee -a /etc/default/locale
+fi
+
+# Set an environment variable, so that we won't print the virtualenv
+# shell warning (it'll be wrong, since the shell is dying anyway)
+export SKIP_VENV_SHELL_WARNING=1
+
+# End `set -x`, so that the end of provision doesn't look like an error
+# message after a successful run.
+set +x
+
+# Check if the zulip directory is writable
+if [ ! -w /srv/zulip ]; then
+    echo "The vagrant user is unable to write to the zulip directory."
+    echo "To fix this, run the following commands on the host machine:"
+    # sudo is required since our uid is not 1000
+    echo '    vagrant halt -f'
+    echo '    rm -rf /PATH/TO/ZULIP/CLONE/.vagrant'
+    # shellcheck disable=SC2016
+    echo '    sudo chown -R 1000:$(id -g) /PATH/TO/ZULIP/CLONE'
+    echo "Replace /PATH/TO/ZULIP/CLONE with the path to where zulip code is cloned."
+    echo "You can resume setting up your vagrant environment by running:"
+    echo "    vagrant up"
+    exit 1
+fi
+# Provision the development environment
+ln -nsf /srv/zulip ~/zulip
+/srv/zulip/tools/provision
+
+# Run any custom provision hooks the user has configured
+if [ -f /srv/zulip/tools/custom_provision ]; then
+    chmod +x /srv/zulip/tools/custom_provision
+    /srv/zulip/tools/custom_provision
+fi

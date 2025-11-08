@@ -19,7 +19,7 @@ elif [[ "$MODE" == "test" ]]; then
     DBNAME=zulip_test
     STATUS_FILE_NAME=migration_status_test
 else
-    echo "Usage Instructions"
+    echo "Usage instructions"
     echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
     echo "or specify 'test'"
     exit 1
@@ -52,7 +52,7 @@ DBNAME_BASE=${DBNAME}_base
 if ! pg_isready -U "$POSTGRES_USER" -q; then
     set +x
     echo
-    echo 'ERROR: PostgreSQL Server is not running! Ensure the service is enabled.'
+    echo 'ERROR: PostgreSQL server is not running! Ensure the service is enabled.'
     # shellcheck disable=SC2016
     echo 'ERROR: Try `sudo service postgresql start`?'
     echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$POSTGRES_USER"
@@ -61,7 +61,7 @@ fi
 
 # We need to remove the stamp file indicating that the database
 # is properly provisioned with migrations.
-uuid_var_path=$($(readlink -f "$(dirname "$0")/../../scripts/lib/zulip_tools.py") get_dev_uuid)
+uuid_var_path=$("$(readlink -f "$(dirname "$0")/../../scripts/lib/zulip_tools.py")" get_dev_uuid)
 rm -f "$uuid_var_path/$STATUS_FILE_NAME"
 
 "${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DEFAULT_DB" <<EOF
@@ -75,12 +75,12 @@ ALTER USER $USERNAME CREATEDB;
 ALTER ROLE $USERNAME SET search_path TO $SEARCH_PATH;
 
 DO \$\$BEGIN
-    CREATE USER $VAGRANTUSERNAME;
+    CREATE USER "$VAGRANTUSERNAME"; 
 EXCEPTION WHEN duplicate_object THEN
     RAISE NOTICE '$VAGRANTUSERNAME user already exists';
 END\$\$;
-GRANT $USERNAME TO $VAGRANTUSERNAME;
-ALTER ROLE $VAGRANTUSERNAME SET search_path TO $SEARCH_PATH;
+GRANT $USERNAME TO "$VAGRANTUSERNAME";
+ALTER ROLE "$VAGRANTUSERNAME" SET search_path TO $SEARCH_PATH;
 EOF
 
 umask go-rw
@@ -108,7 +108,14 @@ EOF
 
 "${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" <<EOF
 CREATE EXTENSION pgroonga;
-GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
+
+-- Work around https://github.com/pgroonga/pgroonga/issues/335
+SELECT unnest(
+    CASE WHEN current_setting('server_version_num')::integer >= 150000
+        AND current_setting('pgroonga.enable_wal', TRUE) = 'on' IS NOT TRUE THEN
+        ARRAY['ALTER SYSTEM SET pgroonga.enable_wal = ''on''', 'SELECT pg_reload_conf()']
+    END
+) \gexec
 EOF
 
 psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF

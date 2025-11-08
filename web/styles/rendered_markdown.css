@@ -1,0 +1,1020 @@
+/* We use a custom counter here for Safari to
+   get better control of its counter positioning.
+   Because Safari does not recognize `content`
+   properties on `::marker`, the style here better
+   approximates the same styles set on `::marker`
+   below. */
+@counter-style numbers {
+    system: numeric;
+    symbols: "0" "1" "2" "3" "4" "5" "6" "7" "8" "9";
+    suffix: ".";
+}
+
+.rendered_markdown {
+    & p {
+        margin: 0 0 var(--markdown-interelement-space-px);
+
+        &:has(+ ul, + ol) {
+            /* When a paragraph is immediately followed
+               by a list sibling, we reduce the paragraph's
+               ordinary bottom space by half. */
+            margin-bottom: calc(var(--markdown-interelement-space-px) / 2);
+        }
+    }
+
+    /* The spacing between two paragraphs is double the usual value.
+       We coordinate this spacing matches so that it matches the
+       spacing between paragraphs in two consecutive 1-line messages. */
+    & p + p {
+        margin-top: var(--markdown-interelement-doubled-space-px);
+    }
+
+    & ul {
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        /* Because browsers use inline padding, we set the
+           same property here to offset bullets. */
+        padding-inline-start: 1.1ch;
+        /* By setting Unicode characters of our own, we
+           gain better, cross-browser alignment of bullets. */
+        list-style-type: "•";
+
+        & ul {
+            list-style-type: "◦";
+
+            & ul {
+                list-style-type: "▪︎";
+            }
+        }
+
+        & > li {
+            /* This aligns bullets to roughly the
+               center of a single-digit counter.
+               11.2px at 16px/1em */
+            padding-inline-start: 0.7em;
+        }
+
+        & > li::marker {
+            /* This is an eyeballed value, but it makes the
+               otherwise diminutive markers specified above
+               both larger *and* better vertically centered. */
+            font-size: 1.3em;
+            /* We do not want the line-height for the item text
+               affected by the larger font-size, though. So we
+               zero it out. */
+            line-height: 0;
+        }
+    }
+
+    & ol {
+        /* For the sake of Safari, we reference the `numbers`
+           counter defined on `@counter-style` above. */
+        list-style: numbers;
+        /* To preserve the `start` attribute on lists that
+           begin with a number other than 1, we update the
+           `counter-reset` in postprocess_content.ts. */
+        counter-reset: count;
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        /* Because browsers use inline padding, we set the
+           same here to offset the counters. */
+        padding-inline-start: 2.1ch;
+
+        & > li {
+            counter-increment: count 1;
+            /* 3.2px at 16px/1em */
+            padding-inline-start: 0.2em;
+        }
+
+        & > li::marker {
+            content: counter(count, decimal) ". ";
+        }
+    }
+
+    /* To avoid cutting off the focus ring on links, we set
+       padding on first children most likely to take links.
+       We account for this extra space on `.message_content`. */
+    & > p:first-child,
+    & > ul:first-child,
+    & > ol:first-child {
+        padding-top: var(--message-box-link-focus-ring-block-padding);
+    }
+
+    /* We set margin according to the length of the longest list counter.
+       The values here keep the counters flush left, just like paragraph
+       text. */
+    .counter-length-1 {
+        padding-inline-start: 2.1ch;
+    }
+
+    .counter-length-2 {
+        padding-inline-start: 3.1ch;
+    }
+
+    .counter-length-3 {
+        padding-inline-start: 4.1ch;
+    }
+
+    .counter-length-4 {
+        padding-inline-start: 5.1ch;
+    }
+
+    .counter-length-5 {
+        padding-inline-start: 6.1ch;
+    }
+
+    .counter-length-6 {
+        padding-inline-start: 7.1ch;
+    }
+
+    & hr {
+        border-bottom: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid hsl(0deg 0% 87%);
+        /* Override Bootstrap with doubled interelement space */
+        margin: calc(var(--markdown-interelement-space-px) * 2) 0;
+    }
+
+    /* Headings */
+    & h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: 600;
+        line-height: 1.4;
+        /* Headings take a margin-top because of the pronounced extra
+           space they require, but are zeroed out below when they open
+           a message. */
+        margin-top: 15px;
+        margin-bottom: var(--markdown-interelement-space-px);
+    }
+
+    /* Headings: Ensure that messages that start with a heading don't have
+       a weirdly blank area at the very start of the message. */
+    & h1:first-child,
+    h2:first-child,
+    h3:first-child,
+    h4:first-child,
+    h5:first-child,
+    h6:first-child {
+        margin-top: 0;
+    }
+
+    /* We use a modest progression of heading sizes to make them stand out
+       from normal next but avoid taking up too much space. */
+    & h1 {
+        font-size: 1.4em;
+    }
+
+    & h2 {
+        font-size: 1.3em;
+    }
+
+    & h3 {
+        font-size: 1.2em;
+    }
+
+    & h4 {
+        font-size: 1.1em;
+    }
+
+    & h5 {
+        font-size: 1.05em;
+    }
+
+    & h6 {
+        font-size: 1em;
+    }
+
+    /* Formatting for blockquotes */
+    & blockquote {
+        /* This keeps the blockquote text block
+           aligned with list-item text blocks.
+           12.4px at 16px/1em */
+        padding: 0;
+        padding-inline-start: 0.775em;
+    }
+
+    & blockquote,
+    .message_embed {
+        /* We want to keep the border roughly centered
+           with bullets and single-digit list markers.
+           3.5px at 16px/1em */
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 0.2188em;
+        border-inline-start: 4px solid
+            var(--color-text-message-blockquote-border);
+    }
+
+    /* Formatting for Markdown tables */
+    & table {
+        padding-right: 10px;
+        margin: 0 5px var(--markdown-interelement-space-px);
+        width: 99%;
+        display: block;
+        max-width: fit-content;
+        overflow-x: auto;
+        white-space: nowrap;
+        border-collapse: collapse;
+    }
+
+    & thead {
+        background-color: var(--color-background-rendered-markdown-thead);
+    }
+
+    & tr {
+        display: table-row;
+        vertical-align: inherit;
+    }
+
+    & tr th {
+        border: 1px solid var(--color-border-rendered-markdown-table);
+        padding: 4px;
+        text-align: left;
+    }
+
+    & tr td {
+        border: 1px solid var(--color-border-rendered-markdown-table);
+        padding: 4px;
+    }
+
+    /* Emoji; sized to be easily understood while not overwhelming text. */
+    .emoji {
+        /* The box for emoji is allowed to be larger than the size of the
+           line-height. */
+        height: var(--length-line-oversize-block);
+        width: var(--length-line-oversize-block);
+        /* A negative top and bottom margin adjustment allows emoji
+           to size larger than the size of the line, without disturbing
+           the surrounding lines of text. */
+        margin: var(--length-line-oversize-block-margin-adjust) auto;
+        /* We set the alignment programmatically, as an em value.
+           Because the negative margins above are equal, top and bottom,
+           this vertical offset value works without adjustment for
+           oversize emoji blocks. */
+        vertical-align: var(--line-fitted-vertical-align-offset-em);
+    }
+
+    /* Mentions and alert words */
+    .user-group-mention,
+    .user-mention,
+    .topic-mention {
+        padding: 0 3px;
+        border-radius: 3px;
+        white-space: nowrap;
+        /* Reduce the font-size to reduce the
+           footprint of the background highlight. */
+        font-size: 0.95em;
+    }
+
+    .mention-content-wrapper {
+        /* Restore the font-size to match the rest
+           of the message area. */
+        font-size: 1.0526em;
+    }
+
+    .user-mention {
+        color: var(--color-text-other-mention);
+        background-color: var(--color-background-text-direct-mention);
+
+        &.user-mention-me {
+            color: var(--color-text-self-direct-mention);
+            font-weight: 600;
+        }
+
+        &:hover {
+            background-color: var(--color-background-text-hover-direct-mention);
+        }
+    }
+
+    .user-mention,
+    .user-group-mention {
+        /* We have to explicitly mention this for compose box preview
+           where cursor is set to not-allowed */
+        cursor: pointer;
+    }
+
+    /* We show the same cursor as the parent element for `@all`
+       mention */
+    .user-mention-all {
+        cursor: inherit;
+    }
+
+    .user-mention[data-user-id="*"],
+    .user-group-mention,
+    .topic-mention {
+        color: var(--color-text-other-mention);
+        background-color: var(--color-background-text-group-mention);
+
+        &.user-mention-me {
+            color: var(--color-text-self-group-mention);
+            font-weight: 600;
+        }
+    }
+
+    .stream-topic {
+        /* Display whitespace within topics. */
+        white-space: pre-wrap;
+    }
+
+    .user-group-mention {
+        &:hover {
+            background-color: var(--color-background-text-hover-group-mention);
+        }
+    }
+
+    .alert-word {
+        background-color: var(--color-background-alert-word);
+    }
+
+    /* Timestamps */
+    & time {
+        background: hsl(0deg 0% 93%);
+        border-radius: 3px;
+        box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
+        white-space: nowrap;
+        margin: 0 2px;
+        /* Reduce the font-size to reduce the
+           footprint of the timestamp block. */
+        font-size: 0.95em;
+
+        .timestamp-content-wrapper {
+            /* Restore the font-size to match the rest
+               of the message area, and apply the layout
+               for the icon. */
+            font-size: 1.0526em;
+            padding: 0 0.2em;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+
+        .markdown-timestamp-icon {
+            align-self: center;
+        }
+    }
+
+    /* LaTeX styling */
+    .katex-display {
+        /* KaTeX sometimes overdraws its bounding box by a little, so we
+           enlarge its scrolling area by adding 3px of padding to its top
+           and bottom. To prevent what will appear as extra whitespace,
+           we reduce surrounding margins by the same 3px. */
+        padding: 3px 0;
+        margin: -3px 0;
+        overflow: auto hidden;
+    }
+
+    .katex-mathml annotation {
+        /* Because annotations are never displayable, browser user-agent
+           stylesheets mark them as not displayable, which has the
+           side effect of having them not be included in the HTML
+           version of copying the content. Override this, so KaTeX can
+           be copy/pasted within Zulip. */
+        user-select: all;
+        display: inline;
+    }
+
+    .tex-error {
+        color: hsl(0deg 0% 50%);
+    }
+
+    /* Spoiler styling */
+    .spoiler-block {
+        border: hsl(0deg 0% 50%) 1px solid;
+        padding: 2px 8px 2px 10px;
+        border-radius: 10px;
+        /* Space any subsequent Markdown content the same
+           distance as adjacent paragraphs are spaced. */
+        margin: 0 0 var(--markdown-interelement-doubled-space-px);
+
+        .spoiler-header {
+            /* We use flexbox to display the spoiler message
+               and button. */
+            display: flex;
+            align-items: center;
+            padding: 8px 5px;
+            font-weight: bold;
+
+            .spoiler-header-text {
+                /* Disallow margin from ordinary rendered-markdown
+                   elements. The header's vertical space is handled
+                   independently by padding on .spoiler-header. */
+                margin-bottom: 0;
+                /* Message grows to push the arrow to the right,
+                   but shrinks so as to allow long multi-line
+                   spoiler messages to wrap. */
+                flex: 1 1 auto;
+            }
+
+            time {
+                /* Time tag pushes the arrow out of view when overflow,
+                   adding white-space property prevents this by wrapping
+                   the element */
+                white-space: normal;
+            }
+        }
+
+        .spoiler-content {
+            overflow: hidden;
+            border-top: hsl(0deg 0% 50%) 0 solid;
+            transition:
+                /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+                height 0.4s ease-in-out,
+                border-top 0.4s step-end,
+                padding 0.4s step-end; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            padding: 0;
+            height: 0;
+
+            &.spoiler-content-open {
+                border-top: hsl(0deg 0% 50%) 1px solid;
+                transition:
+                    /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+                    height 0.4s ease-in-out,
+                    border-top 0.4s step-start,
+                    padding 0.4s step-start; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+                padding: 5px;
+                height: auto;
+            }
+        }
+
+        .spoiler-button {
+            /* Keep the button to a consistent right-hand edge. */
+            padding-right: 3px;
+
+            &:hover .spoiler-arrow {
+                &::before,
+                &::after {
+                    background-color: hsl(0deg 0% 50%);
+                }
+            }
+        }
+
+        .spoiler-arrow {
+            float: right;
+            width: 15px;
+            cursor: pointer;
+            transition: transform 0.4s ease;
+            transform: rotate(45deg);
+
+            &::before,
+            &::after {
+                position: absolute;
+                content: "";
+                display: inline-block;
+                width: 12px;
+                height: 3px;
+                background-color: hsl(0deg 0% 83%);
+                transition: transform 0.4s ease;
+            }
+
+            &::after {
+                position: absolute;
+                transform: rotate(90deg);
+                top: -5px;
+                left: 5px;
+            }
+
+            &.spoiler-button-open {
+                transform: rotate(45deg) translate(-5px, -5px);
+
+                &::before {
+                    transform: translate(10px, 0);
+                }
+
+                &::after {
+                    transform: rotate(90deg) translate(10px, 0);
+                }
+            }
+        }
+    }
+
+    /* embedded link previews */
+    .message-thumbnail-gallery {
+        display: flex;
+        flex-flow: row wrap;
+        place-items: center center;
+        gap: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
+    }
+
+    /* We used to use this for certain dropbox previews, we are keeping
+       this around as to not break any previous instances of these
+       previews. */
+    .message_inline_image_title {
+        font-weight: bold;
+    }
+
+    .twitter-image,
+    .message-media-preview-image,
+    .message-media-preview-video {
+        /* Set a background for the image; the background will be visible
+           behind the width of the transparent border. */
+        border: solid 3px transparent;
+        transition: background 0.3s ease;
+        background: var(--color-background-image-thumbnail);
+
+        &:hover {
+            background: var(--color-background-image-thumbnail-hover);
+        }
+
+        & .media-anchor-element {
+            display: block;
+        }
+
+        & .media-image-element {
+            display: block;
+            object-fit: scale-down;
+
+            /* Sizing CSS for inline images requires care, because images load
+               asynchronously, and browsers will unfortunately jump your
+               scroll position when elements load above the current
+               position in the message feed in a way that changes the
+               height of elements. (As of March 2022, both Firefox and
+               Chrome exhibit this problem, though in Chrome it is pretty
+               subtle).
+
+               We prevent this by utilizing dimensions on the `<img>` elements,
+               but further care is needed because different layout mechanisms,
+               including inline-block, can ignore those dimensions. For that
+               reason, we enforce a minimum 4em square for "dinky" images,
+               and set the scaled-down width on all others via JavaScript.
+
+               If there are several images next to each other, we display
+               them in a grid format; the same considerations require
+               use to either use a scrollable region or set a predictable
+               size for images so that the browser statically knows whether
+               it'll need to overflow. We choose predictable sizes here. */
+
+            /* Ensure a reasonable clickable area on
+               extremely tall or extremely wide images. */
+            min-width: 4em;
+            min-height: 4em;
+
+            /* Constrain height to 10em, but otherwise keep
+               the width to the size of the gallery, and
+               therefore the message area. */
+            max-height: 10em;
+            max-width: 100%;
+
+            /* Allow height and width to grow as needed, though
+               note we set the scaled-down `width` property on
+               each image in JavaScript to keep flexbox from
+               collapsing to the min-height and min-width values
+               set above... */
+            width: auto;
+            height: auto;
+        }
+
+        img.image-loading-placeholder {
+            content: var(--svg-url-thumbnail-loader);
+        }
+    }
+
+    .twitter-tweet {
+        border: 1px solid hsl(0deg 0% 87%);
+        padding: 0.5em 0.75em;
+        margin-bottom: 0.25em;
+        overflow-wrap: anywhere;
+        min-height: 48px;
+    }
+
+    .twitter-avatar {
+        float: left;
+        width: 48px;
+        height: 48px;
+        margin-right: 0.75em;
+    }
+
+    /* We used to use this for certain dropbox previews, we are keeping
+       this around as to not break any previous instances of these
+       previews. */
+    .message_inline_ref {
+        margin-bottom: var(--markdown-interelement-space-px);
+        margin-inline-start: 5px;
+        height: 50px;
+        display: block !important;
+        border: none !important;
+    }
+
+    .media-image-element {
+        cursor: zoom-in;
+    }
+
+    .youtube-video .media-image-element,
+    .vimeo-video .media-image-element,
+    .embed-video .media-image-element {
+        cursor: pointer;
+    }
+
+    .youtube-video .media-image-element {
+        /* We do this for the sake of increasing
+           the size of older YouTube thumbnail
+           previews, but there are no ill effects
+           on newer preview images. */
+        object-fit: contain;
+    }
+
+    .message_inline_video,
+    .message_inline_animated_image_still,
+    .youtube-video .media-anchor-element {
+        /* Once collections of thumbnails are set to render as
+           flex items, this can be updated to use `display: grid`
+           instead of `display: inline-grid`. */
+        display: inline-grid;
+        grid-template: "media" minmax(0, auto) / minmax(0, auto);
+        place-items: center center;
+
+        &:hover {
+            &::after {
+                transform: scale(1);
+            }
+        }
+
+        /* The .media-anchor-selector is for all media
+           except YouTube, which needs to place
+           .media-image-element on the grid. */
+        & .media-anchor-element,
+        & .media-image-element {
+            grid-area: media;
+        }
+
+        &::after {
+            grid-area: media;
+            content: "";
+            background-image: url("../images/play_button.svg");
+            background-position: center center;
+            background-repeat: no-repeat;
+            /* 32px at 14px/1em */
+            background-size: 2.2857em;
+            /* Match the box to the play button's
+               background-size value. */
+            width: 2.2857em;
+            height: 2.2857em;
+            border-radius: 100%;
+            transform: scale(0.8);
+            transition: transform 0.2s;
+        }
+
+        & .media-video-element {
+            display: block;
+            object-fit: contain;
+            /* Since we do not yet read height and width
+               values for media thumbnails, we carry forward
+               reasonable dimensions for a landscape thumbnail
+               here. */
+            height: 8em;
+            width: 12em;
+        }
+    }
+
+    .youtube-video .media-anchor-element {
+        /* We display the youtube-video anchor
+           as a grid, not inline grid, to avoid
+           additional space beneath the thumbnail. */
+        display: grid;
+    }
+
+    .media-audio-wrapper {
+        vertical-align: middle;
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+    }
+
+    .media-audio-element {
+        flex: 0 1 auto;
+        /* Allow browser-native media players
+           to resize in narrow viewports. */
+        max-width: calc(100% - 30px);
+    }
+
+    .media-audio-download {
+        flex: 0 0 20px;
+        margin-left: 5px;
+        display: flex;
+        place-content: center center;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .message_embed {
+        display: grid;
+        grid-template-columns:
+            [thumbnail-start] var(--length-message-preview-embeds)
+            [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
+            [data-container-end fader-end];
+        grid-template-rows:
+            [border-start thumbnail-start data-container-start] calc(
+                var(--length-message-preview-embeds) - 10%
+            )
+            [fader-start] 10% [data-container-end thumbnail-end border-end fader-end];
+        column-gap: 5px;
+        /* We want to control the height without worrying about
+           padding... */
+        box-sizing: border-box;
+        /* ...though we will account for 10px of padding in the
+           height itself, so that the fade effect on long description
+           text works as expected. */
+        height: calc(var(--length-message-preview-embeds) + 10px);
+        padding: 5px;
+
+        .message_embed_title {
+            font-size: 1.2em;
+            /* 5px at 16.8px (1.2 * 14px) */
+            margin-top: -0.2976em;
+            /* We set the markdown link colors here so
+               that the ellipsis takes it on truncated
+               lines. The ellipsis will not take an
+               underline even if we specify one, so
+               that is deliberately omitted here. */
+            color: var(--color-markdown-link);
+
+            &:hover {
+                color: var(--color-markdown-link-hover);
+            }
+
+            .message-embed-title-link {
+                /* Line-clamp lines seem to have a small
+                   interline area that's not clickable
+                   unless we set the anchor to display as
+                   a block. */
+                display: block;
+            }
+        }
+
+        .message_embed_title,
+        .message_embed_description {
+            /* Clamp multi-line titles and descriptions
+               to two lines. */
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            /* Break overflowing words as necessary. */
+            overflow-wrap: break-word;
+        }
+
+        .message_embed_image {
+            display: block;
+            grid-area: thumbnail;
+            /* Keep the embed image square. */
+            max-height: var(--length-message-preview-embeds);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .data-container {
+            grid-area: data-container;
+        }
+    }
+
+    & a:not(.icon-button) {
+        color: var(--color-markdown-link);
+        text-decoration: none;
+
+        & code {
+            color: var(--color-markdown-code-link);
+        }
+
+        &:hover,
+        &:focus {
+            color: var(--color-markdown-link-hover);
+            text-decoration: underline;
+
+            & code {
+                color: var(--color-markdown-code-link-hover);
+            }
+        }
+    }
+
+    & pre {
+        direction: ltr;
+        /* code block text is a bit smaller than normal text */
+        font-size: 0.825em;
+        line-height: 1.4;
+        white-space: pre;
+        overflow-x: auto;
+        word-break: break-all;
+        overflow-wrap: normal;
+        margin: 0 0 var(--markdown-interelement-space-px);
+        padding: 5px 7px 3px;
+        display: block;
+        border-radius: 4px;
+
+        &:hover .code-buttons-container {
+            visibility: visible;
+        }
+
+        /* Hide the code buttons container when the user is
+           clicking on the code block other than the buttons.
+           This allows the user to select part of the the code
+           without the buttons interfering with the selection. */
+        &:active .code-buttons-container:not(:hover) {
+            visibility: hidden;
+        }
+    }
+
+    & pre code {
+        font-size: inherit;
+        padding: 0;
+        white-space: inherit;
+        overflow-x: scroll;
+        /* Unset to avoid compounding alpha values */
+        background-color: unset;
+        color: inherit;
+        border: 0;
+    }
+
+    & code {
+        /* 11.55px when body is the default 14px; this is chosen to be
+        slightly above the 11.5px threshold where the height jumps by a
+        pixel on most platforms. */
+        font-size: 0.825em;
+        unicode-bidi: embed;
+        direction: ltr;
+        white-space: pre-wrap;
+        /* 1px at 14px/1em */
+        padding: 0.0714em 2px;
+        color: var(--color-markdown-code-text);
+        background-color: var(--color-markdown-code-background);
+        border-radius: 3px;
+    }
+
+    /* Container for buttons inside code blocks. */
+    .code-buttons-container {
+        /* Break white-space treatment inherited from <pre> */
+        white-space: collapse;
+        /* Present buttons in a flexbox layout. */
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        /* Having absolute positioning here ensures that the element
+        doesn't scroll along with the code div in narrow windows */
+        position: absolute;
+        top: 4px;
+        right: 0;
+        padding: 0 4px;
+        /* Invisible unless <pre> is hovered. */
+        visibility: hidden;
+        z-index: 0;
+    }
+
+    /* The properties of the code_external_link button are copied from the
+       copy-button class in app_components.css. */
+    .code_external_link {
+        display: flex;
+        border-radius: 4px;
+        color: var(--color-copy-button);
+        /* 2px at 16px/1em */
+        padding: 0.125em;
+        cursor: pointer;
+
+        &:hover,
+        :focus-visible {
+            background-color: var(--color-copy-button-square-bg-hover);
+        }
+
+        &:active {
+            background-color: var(--color-copy-button-square-bg-active);
+            color: var(--color-copy-button-square-active);
+        }
+    }
+
+    .copy_codeblock,
+    .code_external_link {
+        font-size: 1.1363em;
+        border: 1px solid var(--color-copy-button-square-bg-active);
+        backdrop-filter: blur(20px);
+    }
+}
+
+.group_mention,
+.direct_mention {
+    & .rendered_markdown pre {
+        background-color: var(--color-markdown-pre-background-mentions);
+        border-color: var(--color-markdown-pre-border-mentions);
+    }
+
+    & .rendered_markdown code {
+        background-color: var(--color-markdown-code-background-mentions);
+    }
+
+    & .rendered_markdown pre code {
+        background-color: unset;
+        border-color: unset;
+    }
+}
+
+.preview_content .copy_codeblock {
+    /* We avoid displaying copy_codeblock button in previews, because it
+       feels odd given that you can just copy-paste the code out of
+       the "edit" state.  We may change this decision when we add
+       menu options for viewing the code in a coding playground. */
+    display: none;
+}
+
+.informational-overlays .copy_codeblock {
+    display: none;
+}
+
+.message_edit_history_content .copy_codeblock {
+    /*  Copy code block button is hidden in edit history, this is done
+        because of issues faced in copying code blocks in edit history
+        modal. This may be changed later as we decide upon a proper ux
+        for displaying edit-history. */
+    display: none;
+}
+
+.message_edit_history_content .code_external_link {
+    right: 5px;
+}
+
+.preview_content .code_external_link {
+    right: 12px;
+}
+
+@media (width < $sm_min) {
+    .rendered_markdown .message_embed {
+        height: auto;
+
+        .message_embed_image {
+            width: 100%;
+            height: 100px;
+        }
+
+        .data-container {
+            display: block;
+            max-width: 100%;
+            margin-top: 10px;
+        }
+    }
+}
+
+.codehilite {
+    display: block !important;
+    border: none !important;
+    background: none !important;
+
+    /* Set a relative positioning context to more precisely
+       position .code-buttons-container. This eliminates
+       problems with positioning shifts associated with
+       code blocks in spoilers, too. */
+    position: relative;
+
+    & pre {
+        color: var(--color-markdown-pre-text);
+        /* This is necessary to remove the background color
+           set by Pygments. */
+        background-color: var(--color-markdown-pre-background);
+        border: 1px solid var(--color-markdown-pre-border);
+    }
+}
+
+/* Both the horizontal scrollbar in <pre/> as well as
+   vertical scrollbar in the <textarea/> is styled similarly. */
+.message_edit_form textarea,
+.rendered_markdown pre {
+    /* Ensure the horizontal scrollbar is visible on Mac */
+    &::-webkit-scrollbar {
+        height: 8px;
+        width: 10px;
+        background-color: hsl(0deg 0% 0% / 5%);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: hsl(0deg 0% 0% / 30%);
+        border-radius: 20px;
+        cursor: auto;
+        transition: background-color 0.2s ease;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: hsl(0deg 0% 0% / 60%);
+    }
+}
+
+/* Search highlight used in both topics and rendered_markdown */
+.highlight {
+    background-color: hsl(51deg 100% 79%);
+}
+
+/* For elements where we want to show as much markdown content we can
+   in a single line and then hide the overflowing part. */
+.single-line-rendered-markdown {
+    /* Any element which can `wrap` in the above defined elements. */
+    code,
+    .stream-topic {
+        white-space: nowrap;
+    }
+}
+
+.user-mention {
+    i.zulip-icon-bot {
+        vertical-align: middle;
+        position: relative;
+        top: -1px;
+        padding-left: 0.3em;
+    }
+}

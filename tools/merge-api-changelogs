@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+import os
+import subprocess
+import sys
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+from zerver.openapi.merge_api_changelogs import (
+    get_feature_level,
+    get_unmerged_changelogs,
+    merge_changelogs,
+    remove_unmerged_changelog_files,
+    update_feature_level_in_api_docs,
+)
+
+if __name__ == "__main__":
+    ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.chdir(ZULIP_PATH)
+
+    changelogs = get_unmerged_changelogs()
+    if changelogs:
+        new_feature_level = get_feature_level()
+        merge_changelogs(changelogs, new_feature_level)
+        update_feature_level_in_api_docs(new_feature_level)
+        remove_unmerged_changelog_files()
+
+        commit_message = f"api: Increment API feature level to {new_feature_level}."
+
+        try:
+            subprocess.run(["git", "add", "-u"], check=True)
+            subprocess.run(["git", "commit", "-m", commit_message], check=True)
+        except subprocess.CalledProcessError as e:
+            print(e)
+            sys.exit(1)

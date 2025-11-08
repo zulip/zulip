@@ -1,20 +1,27 @@
-from disposable_email_domains import blacklist
+from disposable_email_domains import blocklist
+from django.conf import settings
 
 
 def is_reserved_subdomain(subdomain: str) -> bool:
+    if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
+        return True
+    if subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN:
+        return True
     if subdomain in ZULIP_RESERVED_SUBDOMAINS:
         return True
-    if subdomain[-1] == "s" and subdomain[:-1] in ZULIP_RESERVED_SUBDOMAINS:
+    if subdomain.endswith("s") and subdomain.removesuffix("s") in ZULIP_RESERVED_SUBDOMAINS:
         return True
     if subdomain in GENERIC_RESERVED_SUBDOMAINS:
         return True
-    if subdomain[-1] == "s" and subdomain[:-1] in GENERIC_RESERVED_SUBDOMAINS:
+    if subdomain.endswith("s") and subdomain.removesuffix("s") in GENERIC_RESERVED_SUBDOMAINS:
+        return True
+    if settings.CORPORATE_ENABLED and ("zulip" in subdomain or "kandra" in subdomain):
         return True
     return False
 
 
 def is_disposable_domain(domain: str) -> bool:
-    if domain.lower() in WHITELISTED_EMAIL_DOMAINS:
+    if domain.lower() in OVERRIDE_ALLOW_EMAIL_DOMAINS:
         return False
     return domain.lower() in DISPOSABLE_DOMAINS
 
@@ -27,6 +34,7 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "thread",
     "installation",
     "organization",
+    "your-org",
     "realm",
     "team",
     "subdomain",
@@ -43,6 +51,8 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "testing",
     "nagios",
     "nginx",
+    "mg",
+    "front-mail",
     # website pages
     "server",
     "client",
@@ -97,11 +107,10 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "open",
     "code",
     "license",
-    # intership programs
+    # internship programs
     "intern",
     "outreachy",
     "gsoc",
-    "gci",
     "externship",
     # Things that sound like security
     "auth",
@@ -129,6 +138,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "admindashboard",
     "administrator",
     "adsense",
+    "advice",
     "adword",
     "affiliate",
     "alpha",
@@ -136,6 +146,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "api",
     "assets",
     "audio",
+    "avatar",
     "badges",
     "beta",
     "billing",
@@ -163,6 +174,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "cpanel",
     "css",
     "cssproxy",
+    "customer",
     "customise",
     "customize",
     "dashboard",
@@ -205,6 +217,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "graphs",
     "guide",
     "hack",
+    "hello",
     "help",
     "home",
     "hostmaster",
@@ -251,6 +264,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "networks",
     "new",
     "newsite",
+    "onboarding",
     "official",
     "ogg",
     "online",
@@ -275,6 +289,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "private",
     "profile",
     "public",
+    "question",
     "random",
     "redirect",
     "register",
@@ -341,6 +356,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "webdisk",
     "webmail",
     "webmaster",
+    "welcome",
     "whm",
     "whois",
     "wiki",
@@ -353,9 +369,10 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "xoxo",
 }
 
-DISPOSABLE_DOMAINS = set(blacklist)
+DISPOSABLE_DOMAINS = set(blocklist)
 
-WHITELISTED_EMAIL_DOMAINS = {
+OVERRIDE_ALLOW_EMAIL_DOMAINS = {
+    "airsi.de",
     # Controlled by https://www.abine.com; more legitimate than most
     # disposable domains
     "opayq.com",

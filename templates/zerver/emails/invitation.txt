@@ -5,4 +5,8 @@
 {{ _("To get started, click the link below.") }}
     <{{ activate_url }}>
 
-{% trans %}Contact us any time at {{ support_email }} if you run into trouble,have any feedback, or just want to chat!{% endtrans %}
+{% if corporate_enabled %}
+    {% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
+{% else %}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at {{ support_email }}.{% endtrans %}
+{% endif %}

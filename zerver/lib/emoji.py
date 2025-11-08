@@ -1,15 +1,22 @@
+import hashlib
 import os
 import re
-from typing import Optional, Tuple
+from dataclasses import dataclass
 
 import orjson
-from django.utils.translation import ugettext as _
+from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import OrganizationAdministratorRequired
-from zerver.lib.request import JsonableError
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.mime_types import guess_extension
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
+from zerver.models.realm_emoji import (
+    get_all_custom_emoji_for_realm,
+    get_name_keyed_dict_for_active_realm_emoji,
+)
 
 emoji_codes_path = static_path("generated/emoji/emoji_codes.json")
 if not os.path.exists(emoji_codes_path):  # nocoverage
@@ -29,12 +36,21 @@ EMOTICON_CONVERSIONS = emoji_codes["emoticon_conversions"]
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = (re.escape(emoticon) for emoticon in possible_emoticons)
-terminal_symbols = ",.;?!()\\[\\] \"'\\n\\t"  # from composebox_typeahead.js
-emoticon_regex = (
-    f"(?<![^{terminal_symbols}])(?P<emoticon>("
-    + ")|(".join(possible_emoticon_regexes)
-    + f"))(?![^{terminal_symbols}])"
+terminal_symbols = r",.;?!()\[\] \"'\n\t"  # from composebox_typeahead.ts
+EMOTICON_RE = (
+    rf"(?<![^{terminal_symbols}])(?P<emoticon>("
+    + r")|(".join(possible_emoticon_regexes)
+    + rf"))(?![^{terminal_symbols}])"
 )
+
+
+def data_url() -> str:
+    # This bakes a hash into the URL, which looks something like
+    # static/webpack-bundles/files/64.0cdafdf0b6596657a9be.png
+    # This is how Django deals with serving static files in a cacheable way.
+    # See PR #22275 for details.
+    return staticfiles_storage.url("generated/emoji/emoji_api.json")
+
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: str) -> str:
@@ -46,23 +62,40 @@ def translate_emoticons(text: str) -> str:
     return translated
 
 
-def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
-    realm_emojis = realm.get_active_emoji()
-    realm_emoji = realm_emojis.get(emoji_name)
+@dataclass
+class EmojiData:
+    emoji_code: str
+    reaction_type: str
+
+
+def get_emoji_data(realm_id: int, emoji_name: str) -> EmojiData:
+    # Even if emoji_name is either in name_to_codepoint or named "zulip",
+    # we still need to call get_realm_active_emoji.
+    realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm_id)
+    realm_emoji = realm_emoji_dict.get(emoji_name)
+
     if realm_emoji is not None:
-        return str(realm_emojis[emoji_name]["id"]), Reaction.REALM_EMOJI
+        emoji_code = str(realm_emoji["id"])
+        return EmojiData(emoji_code=emoji_code, reaction_type=Reaction.REALM_EMOJI)
+
     if emoji_name == "zulip":
-        return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
+        return EmojiData(emoji_code=emoji_name, reaction_type=Reaction.ZULIP_EXTRA_EMOJI)
+
     if emoji_name in name_to_codepoint:
-        return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
-    raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
+        emoji_code = name_to_codepoint[emoji_name]
+        return EmojiData(emoji_code=emoji_code, reaction_type=Reaction.UNICODE_EMOJI)
+
+    raise JsonableError(_("Emoji '{emoji_name}' does not exist").format(emoji_name=emoji_name))
 
 
 def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_type: str) -> None:
     # For a given realm and emoji type, checks whether an emoji
     # code is valid for new reactions, or not.
     if emoji_type == "realm_emoji":
-        realm_emojis = realm.get_emoji()
+        # We cache emoji, so this generally avoids a round trip,
+        # but it does require deserializing a bigger data structure
+        # than we need.
+        realm_emojis = get_all_custom_emoji_for_realm(realm.id)
         realm_emoji = realm_emojis.get(emoji_code)
         if realm_emoji is None:
             raise JsonableError(_("Invalid custom emoji."))
@@ -85,43 +118,53 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_ty
         raise JsonableError(_("Invalid emoji type."))
 
 
-def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str] = None) -> None:
-    """Raises an exception if the user cannot administer the target realm
-    emoji name in their organization."""
-
-    # Realm administrators can always administer emoji
+def check_remove_custom_emoji(user_profile: UserProfile, emoji_name: str) -> None:
+    # normal users can remove emoji they themselves added
     if user_profile.is_realm_admin:
         return
-    if user_profile.realm.add_emoji_by_admins_only:
-        raise OrganizationAdministratorRequired()
 
-    # Otherwise, normal users can add emoji
-    if emoji_name is None:
-        return
-
-    # Additionally, normal users can remove emoji they themselves added
     emoji = RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).first()
     current_user_is_author = (
         emoji is not None and emoji.author is not None and emoji.author.id == user_profile.id
     )
-    if not user_profile.is_realm_admin and not current_user_is_author:
+    if not current_user_is_author:
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 
 
 def check_valid_emoji_name(emoji_name: str) -> None:
     if emoji_name:
-        if re.match(r"^[0-9a-z.\-_]+(?<![.\-_])$", emoji_name):
+        if re.match(r"^[0-9a-z\-_]+(?<![\-_])$", emoji_name):
             return
-        raise JsonableError(_("Invalid characters in emoji name"))
+        if re.match(r"^[0-9a-z\-_]+$", emoji_name):
+            raise JsonableError(_("Emoji names must end with either a letter or digit."))
+        raise JsonableError(
+            _(
+                "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
+            )
+        )
     raise JsonableError(_("Emoji name is missing"))
 
 
-def get_emoji_url(emoji_file_name: str, realm_id: int) -> str:
-    return upload_backend.get_emoji_url(emoji_file_name, realm_id)
+def get_emoji_url(emoji_file_name: str, realm_id: int, still: bool = False) -> str:
+    return upload_backend.get_emoji_url(emoji_file_name, realm_id, still)
 
 
-def get_emoji_file_name(emoji_file_name: str, emoji_id: int) -> str:
-    _, image_ext = os.path.splitext(emoji_file_name)
-    return "".join((str(emoji_id), image_ext))
+def get_emoji_file_name(content_type: str, emoji_id: int) -> str:
+    image_ext = guess_extension(content_type, strict=False)
+    # The only callsite of this pre-limits the content_type to a
+    # reasonable set that we know have extensions.
+    assert image_ext is not None
+
+    # We salt this with a server-side secret so that it is not
+    # enumerable by clients, and will not collide on the server.  New
+    # realm imports may pass a synthetic emoji_id, which is fine as
+    # long as it starts at 1, and as such later emoji cannot collide
+    # unless there is a legit hash collision.
+    #
+    # We truncate the hash at 8 characters, as this is enough entropy
+    # to make collisions vanishingly unlikely.  In the event of a
+    # collusion, the id will advance and a manual retry will succeed.
+    hash_key = settings.AVATAR_SALT.encode() + b":" + str(emoji_id).encode()
+    return "".join((hashlib.sha256(hash_key).hexdigest()[0:8], image_ext))

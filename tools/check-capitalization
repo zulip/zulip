@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# check for the venv
-from lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 import argparse
 import json
 import os
@@ -13,10 +8,16 @@ import subprocess
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
 from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
 from tools.lib.capitalization import check_capitalization
 
-DJANGO_PO_REGEX = re.compile('msgid "(.*?)"')
+DJANGO_PO_REGEX = re.compile(r'msgid "(.*?)"')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -31,7 +32,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.no_generate:
-        subprocess.call(["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT)
+        subprocess.check_call(
+            ["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT
+        )
 
     with open("locale/en/translations.json") as f:
         data = json.load(f)
@@ -68,7 +71,10 @@ if __name__ == "__main__":
         docs_url = (
             "https://zulip.readthedocs.io/en/latest/translating/translating.html#capitalization"
         )
-        print(WARNING + "See " + docs_url + ENDC)
+        print()
+        print(WARNING + "You can usually find strings using `git grep 'String to find'`" + ENDC)
+        print(WARNING + "See also " + docs_url + ENDC)
+        print()
         print(FAIL + "Failed!" + ENDC)
         sys.exit(1)
     else:

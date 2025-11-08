@@ -4,11 +4,13 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from unittest import skip
+from unittest.mock import patch
+
 from django.db.migrations.state import StateApps
+from typing_extensions import override
 
 from zerver.lib.test_classes import MigrationsTestCase
-from zerver.lib.test_helpers import use_db_models
-from zerver.models import get_stream
 
 # Important note: These tests are very expensive, and details of
 # Django's database transaction model mean it does not super work to
@@ -21,68 +23,35 @@ from zerver.models import get_stream
 #
 #   django.db.utils.OperationalError: cannot ALTER TABLE
 #   "zerver_subscription" because it has pending trigger events
-#
-# As a result, we generally mark these tests as skipped once they have
-# been tested for a migration being merged.
 
 
-class SubsNotificationSettingsTestCase(MigrationsTestCase):  # nocoverage
-    __unittest_skip__ = True
+@skip("Fails because newer migrations have since been merged.")  # nocoverage
+class RenameUserHotspot(MigrationsTestCase):
+    migrate_from = "0492_realm_push_notifications_enabled_and_more"
+    migrate_to = "0493_rename_userhotspot_to_onboardingstep"
 
-    migrate_from = "0220_subscription_notification_settings"
-    migrate_to = "0221_subscription_notifications_data_migration"
-    RECIPIENT_PERSONAL = 1
-    RECIPIENT_STREAM = 2
+    @override
+    def setUp(self) -> None:
+        with patch("builtins.print") as _:
+            super().setUp()
 
-    @use_db_models
+    @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        Recipient = apps.get_model("zerver", "Recipient")
-        Subscription = apps.get_model("zerver", "Subscription")
+        self.assertRaises(LookupError, lambda: apps.get_model("zerver", "onboardingstep"))
 
-        iago = self.example_user("iago")
-        iago.enable_stream_desktop_notifications = True
-        iago.enable_stream_audible_notifications = False
-        iago.enable_desktop_notifications = True
-        iago.enable_online_push_notifications = True
-        iago.enable_sounds = False
-        iago.save()
+        UserHotspot = apps.get_model("zerver", "userhotspot")
 
-        stream_name = "Denmark"
-        denmark = get_stream(stream_name, iago.realm)
-        denmark_recipient = Recipient.objects.get(type=self.RECIPIENT_STREAM, type_id=denmark.id)
-        denmark_sub = Subscription.objects.get(user_profile=iago, recipient=denmark_recipient)
-        denmark_sub.desktop_notifications = False
-        denmark_sub.audible_notifications = False
-        denmark_sub.save(update_fields=["desktop_notifications", "audible_notifications"])
+        expected_field_names = {"id", "hotspot", "timestamp", "user"}
+        fields_name = {field.name for field in UserHotspot._meta.get_fields()}
 
-        iago_recipient = Recipient.objects.get(type=self.RECIPIENT_PERSONAL, type_id=iago.id)
-        iago_sub = Subscription.objects.get(user_profile=iago, recipient=iago_recipient)
-        iago_sub.desktop_notifications = False
-        iago_sub.audible_notifications = False
-        iago_sub.push_notifications = True
-        iago_sub.save(
-            update_fields=["desktop_notifications", "audible_notifications", "push_notifications"]
-        )
+        self.assertEqual(fields_name, expected_field_names)
 
-    def test_subs_migrated(self) -> None:
-        UserProfile = self.apps.get_model("zerver", "UserProfile")
-        Recipient = self.apps.get_model("zerver", "Recipient")
-        Realm = self.apps.get_model("zerver", "Realm")
-        Subscription = self.apps.get_model("zerver", "Subscription")
-        Stream = self.apps.get_model("zerver", "Stream")
+    def test_renamed_model_and_field(self) -> None:
+        self.assertRaises(LookupError, lambda: self.apps.get_model("zerver", "userhotspot"))
 
-        realm = Realm.objects.get(string_id="zulip")
-        iago = UserProfile.objects.get(email="iago@zulip.com", realm=realm)
-        stream_name = "Denmark"
-        denmark = Stream.objects.get(realm=iago.realm, name=stream_name)
-        denmark_recipient = Recipient.objects.get(type=self.RECIPIENT_STREAM, type_id=denmark.id)
-        denmark_sub = Subscription.objects.get(user_profile=iago, recipient=denmark_recipient)
-        self.assertEqual(denmark_sub.desktop_notifications, False)
-        self.assertIsNone(denmark_sub.audible_notifications)
+        OnboardingStep = self.apps.get_model("zerver", "onboardingstep")
 
-        # Zulip ignores subscription's notification related settings for PMs so don't migrate them.
-        iago_recipient = Recipient.objects.get(type=self.RECIPIENT_PERSONAL, type_id=iago.id)
-        iago_sub = Subscription.objects.get(user_profile=iago, recipient=iago_recipient)
-        self.assertEqual(iago_sub.desktop_notifications, False)
-        self.assertEqual(iago_sub.audible_notifications, False)
-        self.assertEqual(iago_sub.push_notifications, True)
+        expected_field_names = {"id", "onboarding_step", "timestamp", "user"}
+        fields_name = {field.name for field in OnboardingStep._meta.get_fields()}
+
+        self.assertEqual(fields_name, expected_field_names)

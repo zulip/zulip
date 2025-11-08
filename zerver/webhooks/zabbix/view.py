@@ -1,12 +1,14 @@
-from typing import Any, Dict
-
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
-from zerver.decorator import REQ, has_request_variables, webhook_view
-from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
-from zerver.lib.response import json_error, json_success
+from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -28,40 +30,40 @@ ZABBIX_MESSAGE_TEMPLATE = """
 
 
 @webhook_view("Zabbix")
-@has_request_variables
+@typed_endpoint
 def api_zabbix_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    *,
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-
     try:
         body = get_body_for_http_request(payload)
-        subject = get_subject_for_http_request(payload)
-    except KeyError:
+        topic_name = get_topic_for_http_request(payload)
+    except ValidationError:
         message = MISCONFIGURED_PAYLOAD_ERROR_MESSAGE.format(
             bot_name=user_profile.full_name,
             support_email=FromAddress.SUPPORT,
         ).strip()
         send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
 
-        return json_error(_("Invalid payload"))
+        raise JsonableError(_("Invalid payload"))
 
-    check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
-
-
-def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
-    return ZABBIX_TOPIC_TEMPLATE.format(hostname=payload["hostname"])
+    check_send_webhook_message(request, user_profile, topic_name, body)
+    return json_success(request)
 
 
-def get_body_for_http_request(payload: Dict[str, Any]) -> str:
-    hostname = payload["hostname"]
-    severity = payload["severity"]
-    status = payload["status"]
-    item = payload["item"]
-    trigger = payload["trigger"]
-    link = payload["link"]
+def get_topic_for_http_request(payload: WildValue) -> str:
+    return ZABBIX_TOPIC_TEMPLATE.format(hostname=payload["hostname"].tame(check_string))
+
+
+def get_body_for_http_request(payload: WildValue) -> str:
+    hostname = payload["hostname"].tame(check_string)
+    severity = payload["severity"].tame(check_string)
+    status = payload["status"].tame(check_string)
+    item = payload["item"].tame(check_string)
+    trigger = payload["trigger"].tame(check_string)
+    link = payload["link"].tame(check_string)
 
     data = {
         "hostname": hostname,

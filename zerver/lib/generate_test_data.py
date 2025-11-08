@@ -1,46 +1,60 @@
 import itertools
 import os
 import random
-from typing import Any, Dict, List
+from typing import Any
 
 import orjson
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 
 
-def load_config() -> Dict[str, Any]:
+def load_config() -> dict[str, Any]:
     with open("zerver/tests/fixtures/config.generate_data.json", "rb") as infile:
         config = orjson.loads(infile.read())
 
     return config
 
 
-def generate_topics(num_topics: int) -> List[str]:
+def generate_topics(num_topics: int) -> list[str]:
     config = load_config()["gen_fodder"]
 
-    topics = []
     # Make single word topics account for 30% of total topics.
     # Single word topics are most common, thus
     # it is important we test on it.
     num_single_word_topics = num_topics // 3
-    for _ in itertools.repeat(None, num_single_word_topics):
-        topics.append(random.choice(config["nouns"]))
+    topic_names = random.choices(config["nouns"], k=num_single_word_topics)
 
     sentence = ["adjectives", "nouns", "connectors", "verbs", "adverbs"]
     for pos in sentence:
         # Add an empty string so that we can generate variable length topics.
         config[pos].append("")
 
-    for _ in itertools.repeat(None, num_topics - num_single_word_topics):
-        generated_topic = [random.choice(config[pos]) for pos in sentence]
-        topic = " ".join(filter(None, generated_topic))
-        topics.append(topic)
+    topic_names.extend(
+        " ".join(word for pos in sentence if (word := random.choice(config[pos])) != "")
+        for _ in range(num_topics - num_single_word_topics)
+    )
 
-    return topics
+    # Mark a small subset of topics as resolved in some streams, and
+    # many topics in a few streams. Note that these don't have the
+    # "Marked as resolved" messages, so don't match the normal user
+    # experience perfectly.
+    if random.random() < 0.15:
+        resolved_topic_probability = 0.5
+    else:
+        resolved_topic_probability = 0.05
+
+    return [
+        (
+            RESOLVED_TOPIC_PREFIX + topic_name
+            if random.random() < resolved_topic_probability
+            else topic_name
+        )
+        for topic_name in topic_names
+    ]
 
 
-def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
-
+def load_generators(config: dict[str, Any]) -> dict[str, Any]:
     results = {}
     cfg = config["gen_fodder"]
 
@@ -63,12 +77,11 @@ def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
     return results
 
 
-def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[str]:
-
+def parse_file(config: dict[str, Any], gens: dict[str, Any], corpus_file: str) -> list[str]:
     # First, load the entire file into a dictionary,
     # then apply our custom filters to it as needed.
 
-    paragraphs: List[str] = []
+    paragraphs: list[str] = []
 
     with open(corpus_file) as infile:
         # OUR DATA: we need to separate the person talking and what they say
@@ -78,8 +91,7 @@ def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -
     return paragraphs
 
 
-def get_flair_gen(length: int) -> List[str]:
-
+def get_flair_gen(length: int) -> list[str]:
     # Grab the percentages from the config file
     # create a list that we can consume that will guarantee the distribution
     result = []
@@ -93,8 +105,7 @@ def get_flair_gen(length: int) -> List[str]:
     return result
 
 
-def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
-
+def add_flair(paragraphs: list[str], gens: dict[str, Any]) -> list[str]:
     # roll the dice and see what kind of flair we should add, if any
     results = []
 
@@ -141,7 +152,6 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
 
 
 def add_md(mode: str, text: str) -> str:
-
     # mode means: bold, italic, etc.
     # to add a list at the end of a paragraph, * item one\n * item two
 
@@ -151,13 +161,12 @@ def add_md(mode: str, text: str) -> str:
     start = random.randrange(len(vals))
     end = random.randrange(len(vals) - start) + start
     vals[start] = mode + vals[start]
-    vals[end] = vals[end] + mode
+    vals[end] += mode
 
     return " ".join(vals).strip()
 
 
 def add_emoji(text: str, emoji: str) -> str:
-
     vals = text.split()
     start = random.randrange(len(vals))
 
@@ -166,7 +175,6 @@ def add_emoji(text: str, emoji: str) -> str:
 
 
 def add_link(text: str, link: str) -> str:
-
     vals = text.split()
     start = random.randrange(len(vals))
 
@@ -175,8 +183,7 @@ def add_link(text: str, link: str) -> str:
     return " ".join(vals)
 
 
-def remove_line_breaks(fh: Any) -> List[str]:
-
+def remove_line_breaks(fh: Any) -> list[str]:
     # We're going to remove line breaks from paragraphs
     results = []  # save the dialogs as tuples with (author, dialog)
 
@@ -197,14 +204,12 @@ def remove_line_breaks(fh: Any) -> List[str]:
     return results
 
 
-def write_file(paragraphs: List[str], filename: str) -> None:
-
+def write_file(paragraphs: list[str], filename: str) -> None:
     with open(filename, "wb") as outfile:
         outfile.write(orjson.dumps(paragraphs))
 
 
 def create_test_data() -> None:
-
     gens = load_generators(config)  # returns a dictionary of generators
 
     paragraphs = parse_file(config, gens, config["corpus"]["filename"])

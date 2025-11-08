@@ -1,0 +1,52 @@
+{{#each scheduled_messages_data}}
+    <div class="scheduled-message-row overlay-message-row" data-scheduled-message-id="{{scheduled_message_id}}">
+        <div class="scheduled-message-info-box overlay-message-info-box" tabindex="0">
+            {{#if is_stream}}
+            <div class="message_header message_header_stream restore-overlay-message overlay-message-header">
+                <div class="message-header-contents" style="background: {{recipient_bar_color}};">
+                    <div class="message_label_clickable stream_label">
+                        <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
+                            {{> stream_privacy .}}
+                        </span>
+                        {{stream_name}}
+                    </div>
+                    <span class="stream_topic_separator"><i class="zulip-icon zulip-icon-chevron-right"></i></span>
+                    <span class="stream_topic">
+                        <span class="message_label_clickable narrows_by_topic">
+                            <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</span>
+                        </span>
+                    </span>
+                    <span class="recipient_bar_controls"></span>
+                    {{> scheduled_message_stream_pm_common .}}
+                </div>
+            </div>
+            {{else}}
+            <div class="message_header message_header_private_message restore-overlay-message overlay-message-header">
+                <div class="message-header-contents">
+                    <div class="message_label_clickable stream_label">
+                        <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
+                        {{#if is_dm_with_self}}
+                        <span class="private_message_header_name">{{t "You" }}</span>
+                        {{else}}
+                        <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
+                        {{/if}}
+                    </div>
+                    {{> scheduled_message_stream_pm_common .}}
+                </div>
+            </div>
+            {{/if}}
+            <div class="message_row{{#unless is_stream}} private-message{{/unless}}" role="listitem">
+                <div class="messagebox">
+                    <div class="messagebox-content">
+                        <div class="message_top_line">
+                            <div class="overlay_message_controls">
+                                {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-scheduled-message-tooltip-template" aria-label=(t "Delete") }}
+                            </div>
+                        </div>
+                        <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown rendered_content}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/each}}

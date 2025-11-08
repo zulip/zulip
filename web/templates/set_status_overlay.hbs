@@ -1,0 +1,25 @@
+<div class="user-status-content-wrapper">
+    <div class="user-status-emoji-picker" data-tippy-content="{{t 'Select emoji' }}" aria-label="{{t 'Select emoji' }}" id="selected_emoji">
+        <div class="status-emoji-wrapper" tabindex="0">
+            {{> status_emoji_selector .}}
+        </div>
+    </div>
+    <input type="text" class="user-status modal_text_input" id="user-status-input" placeholder="{{t 'Your status' }}" maxlength="60"/>
+    {{> ./components/icon_button id="clear_status_message_button" squared=true intent="neutral" icon="close" }}
+</div>
+<ul class="user-status-options modal-options-list">
+    {{#each default_status_messages_and_emoji_info}}
+        <li class="user-status-option">
+            <a class="modal-option-content trigger-click-on-enter user-status-value" tabindex="0">
+                {{#if emoji.emoji_alt_code}}
+                    <div class="emoji_alt_code">&nbsp;:{{emoji.emoji_name}}:</div>
+                {{else if emoji.url}}
+                    <img src="{{emoji.url}}" class="emoji status-emoji" />
+                {{else}}
+                    <div class="emoji status-emoji emoji-{{emoji.emoji_code}}"></div>
+                {{/if}}
+                <span class="status-text">{{status_text}}</span>
+            </a>
+        </li>
+    {{/each}}
+</ul>

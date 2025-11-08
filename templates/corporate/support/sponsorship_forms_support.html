@@ -1,0 +1,34 @@
+<p class="support-section-header">💸 Discounts and sponsorship:</p>
+<form method="POST" class="support-form">
+    <b>Sponsorship pending</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <select name="sponsorship_pending">
+        <option value="true" {% if sponsorship_data.sponsorship_pending %}selected{% endif %}>Yes</option>
+        <option value="false" {% if not sponsorship_data.sponsorship_pending %}selected{% endif %}>No</option>
+    </select>
+    <button type="submit" class="support-submit-button">Update</button>
+</form>
+
+{% if sponsorship_data.sponsorship_pending %}
+<form method="POST" class="support-form">
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="hidden" name="approve_sponsorship" value="true" />
+    <button class="approve-sponsorship-button">
+        Approve full sponsorship
+    </button>
+</form>
+{% endif %}
+
+{% with %}
+    {% set PLAN_TYPES = PLAN_TYPES %}
+    {% include 'corporate/support/sponsorship_discount_forms.html' %}
+{% endwith %}
+
+{% if sponsorship_data.sponsorship_pending %}
+    {% with %}
+        {% set latest_sponsorship_request = sponsorship_data.latest_sponsorship_request %}
+        {% include 'corporate/support/sponsorship_request_details.html' %}
+    {% endwith %}
+{% endif %}

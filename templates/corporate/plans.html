@@ -1,0 +1,226 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "plans-page" %}
+
+{% set PAGE_TITLE = "Plans and pricing | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Sign up for a managed cloud solution, or self-host our 100\x25 open-source software. Get started for free." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block content %}
+
+{% if not is_self_hosted_realm %}
+{% include 'zerver/landing_nav.html' %}
+{% endif %}
+
+<div class="portico-pricing plans {% if is_self_hosted_realm %} showing-self-hosted {% else %} showing-cloud {% endif %}">
+    <div class="body-bg">
+        <div class="body-bg__layer"></div>
+    </div>
+    <div class="main">
+        {% include "corporate/pricing_model.html" %}
+    </div>
+
+    <!-- This is the subsection that displays with cloud plans. -->
+
+    <div class="additional-pricing-information cloud-additional-pricing">
+        <div id="cloud-sponsorships" class="discounts-section">
+            <header>
+                <h2>Sponsorship and discounts</h2>
+                <p>
+                    We sponsor over 1500 organizations.
+                </p>
+            </header>
+            <div class="text-content">
+                <div class="discounted-community-plan">
+                    <h3>Free Standard plan <a href="/help/zulip-cloud-billing#free-and-discounted-zulip-cloud-standard">eligibility</a>
+                    </h3>
+                    <ul>
+                        <li>
+                            <span><a href="/for/open-source/">Open-source projects</a></span>
+                        </li>
+                        <li>
+                            <span><a href="/for/research/">Research</a> in an academic setting</span>
+                        </li>
+                        <li>
+                            <span>Academic conferences and other non-profit <a href="/for/events/">events</a></span>
+                        </li>
+                        <li>
+                            <span>Most small non-profit organizations</span>
+                        </li>
+                        <li>
+                            <span>Most <a href="/for/communities/">communities</a> when the Free plan is not an option</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="discounted-business-plan">
+                    <h3>Special <a href="/help/zulip-cloud-billing#free-and-discounted-zulip-cloud-standard">discounted pricing</a></h3>
+                    <ul>
+                        <li>
+                            <span><a href="/for/education/#feature-pricing">Education</a></span>
+                        </li>
+                        <li>
+                            <span>Organizations based in the developing world</span>
+                        </li>
+                        <li>
+                            <span>Most large non-profit organizations</span>
+                        </li>
+                        <li>
+                            <span>Many organizations with special circumstances that make regular pricing unaffordable</span>
+                        </li>
+                    </ul>
+                    <a href="{{ sponsorship_url }}" class="button sponsorship-button">Apply here</a>
+                    <p class="contact-note">
+                        Wondering if your organization will qualify, but not
+                        ready to request sponsorship yet? E-mail us at <a
+                        href="mailto:sales@zulip.com">sales@zulip.com</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <header>
+                <h2>Other questions?</h2>
+                <p>
+                    See our <a href="/help/zulip-cloud-billing">billing help page</a> for
+                    additional details.
+                </p>
+            </header>
+            <div class="text-content">
+                <ul>
+                    <li>
+                        <span><a href="/help/trying-out-zulip">How can I try out Zulip for free?</a></span>
+                    </li>
+                    <li>
+                        <span><a href="/help/zulip-cloud-or-self-hosting">How do I choose between Zulip Cloud and self-hosting?</a></span>
+                    </li>
+                    <li>
+                        <span><a href="/help/migrating-from-other-chat-tools">Can I import data from other chat tools?</a></span>
+                    </li>
+                    <li>
+                        <span><a href="/help/zulip-cloud-billing#temporary-users-and-guests">Are there discounts for guest users?</a></span>
+                    </li>
+                    <li>
+                        <span><a
+                          href="/help/zulip-cloud-billing#how-does-having-10000-messages-of-search-history-on-zulip-cloud-free-work">How does limited search history on the Free plan work?</a></span>
+                    </li>
+                </ul>
+                <p>
+                    To discuss <b>enterprise pricing and services</b>, or for
+                    any other questions, contact
+                    <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- This is the subsection that displays with self-hosted plans. -->
+
+    <div class="additional-pricing-information self-hosted-additional-pricing">
+        <div id="self-hosted-sponsorships" class="discounts-section">
+            <header>
+                <h2>Sponsorship and discounts</h2>
+                <p>
+                    Contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>
+                    with any questions.
+                </p>
+            </header>
+            <div class="text-content">
+                <div class="discounted-community-plan">
+                    <h3>Community plan <a href="/help/self-hosted-billing#free-community-plan">eligibility</a></h3>
+                    <ul>
+                        <li>
+                            <span><a href="/for/open-source/">Open-source projects</a></span>
+                        </li>
+                        <li>
+                            <span><a href="/for/research/">Research</a> in an academic setting</span>
+                        </li>
+                        <li>
+                            <span>Academic conferences and other non-profit <a href="/for/events/">events</a></span>
+                        </li>
+                        <li>
+                            <span>Many <a href="/for/education/">education</a> and non-profit organizations</span>
+                        </li>
+                        <li>
+                            <span><a href="/for/communities/">Communities</a>
+                                and personal organizations (clubs, groups of
+                                friends, volunteer groups, etc.)</span>
+                        </li>
+                    </ul>
+                    <div class="discounted-business-plan">
+                        <h3>Special <a href="/help/self-hosted-billing#paid-plan-discounts">discounted pricing</a></h3>
+                        <ul>
+                            <li>
+                                <span>Special <a href="/help/self-hosted-billing#education-pricing">education</a> and <a href="/help/self-hosted-billing#non-profit-pricing">non-profit</a> pricing</span>
+                            </li>
+                            <li>
+                                <span>Organizations based in the developing world</span>
+                            </li>
+                            <li>
+                                <span>Organizations where many users are not paid staff</span>
+                            </li>
+                            <li>
+                                <span>Many organizations with special circumstances that make regular pricing unaffordable</span>
+                            </li>
+                        </ul>
+                        {% if is_self_hosted_realm %}
+                        <a href="{{ sponsorship_url }}" class="button sponsorship-button">Apply here</a>
+                        {% else %}
+                        <a href="/help/self-hosted-billing#free-community-plan" class="button sponsorship-button">
+                            Log in to apply
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <header>
+                <h2>Other questions?</h2>
+                <p>
+                    See our <a href="/help/self-hosted-billing">billing help page</a> for
+                    additional details.
+                </p>
+            </header>
+            <div class="text-content">
+                <ul>
+                    <li>
+                        <span><a href="/help/trying-out-zulip">How can I try out Zulip for free?</a></span>
+                    </li>
+                    <li>
+                        <span><a href="/help/zulip-cloud-or-self-hosting">How do I choose between Zulip Cloud and self-hosting?</a></span>
+                    </li>
+                    <li>
+                        <span><a href="/help/self-hosted-billing#paid-plan-details-and-upgrades">How
+                        do I upgrade to a paid plan?</a></span>
+                    </li>
+                    <li>
+                        <span><a
+                        href="/help/self-hosted-billing#free-community-plan">How do I apply for the Community plan?</a></span>
+                    </li>
+                    <li>
+                        <span><a href="/help/migrating-from-other-chat-tools">Can I import data from other chat tools?</a></span>
+                    </li>
+                </ul>
+                <p>
+                    Contact <a href="mailto:sales@zulip.com">sales@zulip.com</a>
+                    with further questions or to discuss Enterprise pricing.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="feature-comparison-table">
+        {% include "corporate/comparison_table_integrated.html" %}
+    </div>
+
+</div>
+
+{% if not is_self_hosted_realm %}
+{% include 'zerver/footer.html' %}
+{% endif %}
+{% endblock %}

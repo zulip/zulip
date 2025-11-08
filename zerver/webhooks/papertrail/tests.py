@@ -1,15 +1,17 @@
 from urllib.parse import urlencode
 
+from typing_extensions import override
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
 class PapertrailHookTests(WebhookTestCase):
-    STREAM_NAME = "papertrail"
+    CHANNEL_NAME = "papertrail"
     URL_TEMPLATE = "/api/v1/external/papertrail?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = "papertrail"
+    WEBHOOK_DIR_NAME = "papertrail"
 
     def test_short_message(self) -> None:
-        expected_topic = "logs"
+        expected_topic_name = "logs"
         expected_message = """
 [Search for "Important stuff"](https://papertrailapp.com/searches/42) found **2** matches:
 
@@ -25,7 +27,7 @@ A short event
 
         self.check_webhook(
             "short_post",
-            expected_topic,
+            expected_topic_name,
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
@@ -67,8 +69,9 @@ message body 4
                 "incorrect_post", "", "", content_type="application/x-www-form-urlencoded"
             )
 
-        self.assertIn("events key is missing from payload", e.exception.args[0])
+        self.assertIn("Events key is missing from payload", e.exception.args[0])
 
+    @override
     def get_body(self, fixture_name: str) -> str:
         # Papertrail webhook sends a POST request with payload parameter
         # containing the JSON body. Documented here:

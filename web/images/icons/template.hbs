@@ -1,0 +1,36 @@
+/* Custom Zulip icons generated with webfont-loader */
+
+@font-face {
+    font-family: '{{fontName}}';
+    src: {{{src}}};
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+i{{baseSelector}} {
+    font-family: '{{fontName}}' !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    font-variant: normal !important;
+    text-transform: none;
+    font-size: inherit;
+    line-height: 100%;
+
+    text-decoration: inherit;
+    display: inline-block;
+    speak: none;
+}
+
+{{baseSelector}}::before {
+    font-family: '{{fontName}}' !important;
+    font-style: normal;
+    font-weight: normal !important;
+    vertical-align: top;
+}
+
+{{#each codepoints}}
+{{../baseSelector}}.{{../classPrefix}}{{@key}}::before {
+    content: "\\{{this}}";
+}
+{{/each}}

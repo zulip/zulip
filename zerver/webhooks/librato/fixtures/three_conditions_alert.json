@@ -1,7 +1,7 @@
 {
   "alert": {
     "id": 6294535,
-    "name": "ToHighTemeprature",
+    "name": "TooHighTemperature",
     "runbook_url": "http://www.use.water.pl",
     "version": 2,
     "description": "Measurement of temperature in your computer"

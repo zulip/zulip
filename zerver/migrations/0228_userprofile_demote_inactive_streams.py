@@ -5,7 +5,6 @@ DEMOTE_STREAMS_AUTOMATIC = 1
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0227_inline_url_embed_preview_default_off"),
     ]

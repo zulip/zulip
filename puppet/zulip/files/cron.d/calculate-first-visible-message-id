@@ -1,5 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-USER=zulip
-
-0 7 * * * zulip /home/zulip/deployments/current/manage.py calculate_first_visible_message_id --lookback-hours 30

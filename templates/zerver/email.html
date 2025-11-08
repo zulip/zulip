@@ -2,8 +2,9 @@
 <h4>Envelope-From: {{ envelope_from }}</h4>
 {% endif %}
 <h4>From: {{ from_email }}</h4>
+<h4>Date: {{ date }}</h4>
 {% if reply_to %}
-<h4>Reply To:
+<h4>Reply to:
     {% for email in reply_to %}
     {{ email }}&nbsp;
     {% endfor %}
@@ -23,4 +24,4 @@
 <div class="email-text" style="display: none;">
     <pre>{{ body }}</pre>
 </div>
-<hr>
+<hr />

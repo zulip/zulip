@@ -3,11 +3,10 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from zerver.lib.upload import upload_backend
-from zerver.lib.utils import make_safe_digest
+from zerver.lib.upload import ensure_avatar_image
 from zerver.models import UserProfile
 
 
@@ -20,18 +19,17 @@ from zerver.models import UserProfile
 def patched_user_avatar_path(user_profile: UserProfile) -> str:
     email = user_profile.email
     user_key = email.lower() + settings.AVATAR_SALT
-    return make_safe_digest(user_key, hashlib.sha1)
+    return hashlib.sha1(user_key.encode()).hexdigest()
 
 
 @patch("zerver.lib.upload.user_avatar_path", patched_user_avatar_path)
-def verify_medium_avatar_image(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def verify_medium_avatar_image(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     user_profile_model = apps.get_model("zerver", "UserProfile")
     for user_profile in user_profile_model.objects.filter(avatar_source="U"):
-        upload_backend.ensure_medium_avatar_image(user_profile)
+        ensure_avatar_image(user_profile, medium=True)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0031_remove_system_avatar_source"),
     ]

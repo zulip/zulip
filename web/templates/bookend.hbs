@@ -1,0 +1,32 @@
+{{! Client-side Handlebars template for rendering the trailing bookend. }}
+<div class="{{#if is_trailing_bookend}}trailing_bookend {{/if}}bookend">
+    {{#if is_spectator}}
+        <span class="recent-topics-link bookend-label">
+            <a href="#recent">{{t "Browse recent conversations" }}</a>
+        </span>
+    {{else}}
+        <span class="stream-status bookend-label">
+            {{#if deactivated}}
+                {{t "This channel has been archived." }}
+            {{else if subscribed }}
+                {{#tr}}
+                    You subscribed to <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
+                    {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                    {{#*inline "channel-settings-link"}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/personal">{{t 'Manage channel settings'}}</a>{{/inline}}
+                {{/tr}}
+            {{else if just_unsubscribed }}
+                {{#tr}}
+                    You unsubscribed from <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
+                    {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                    {{#*inline "channel-settings-link"}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/general">{{t 'View in channel settings'}}</a>{{/inline}}
+                {{/tr}}
+            {{else}}
+                {{#tr}}
+                    You are not subscribed to <z-stream-name></z-stream-name>. <subscribe-button></subscribe-button>
+                    {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                    {{#*inline "subscribe-button"}} <a class="stream_sub_unsub_button">{{t 'Subscribe'}}</a>{{/inline}}
+                {{/tr}}
+            {{/if}}
+        </span>
+    {{/if}}
+</div>

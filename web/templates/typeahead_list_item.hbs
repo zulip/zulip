@@ -1,0 +1,56 @@
+{{#if is_emoji}}
+    {{#if has_image}}
+        <img class="emoji" src="{{ img_src }}" />
+    {{else}}
+        <span class='emoji emoji-{{ emoji_code }}'></span>
+    {{/if}}
+{{else if is_person}}
+    {{#if user_circle_class}}
+    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
+    {{/if}}
+    {{#if has_image}}
+    <img class="typeahead-image" src="{{ img_src }}" />
+    {{else}}
+    <i class='typeahead-image zulip-icon zulip-icon-user-group no-presence-circle'></i>
+    {{/if}}
+{{else if is_user_group}}
+    <i class="typeahead-image zulip-icon zulip-icon-user-group no-presence-circle" aria-hidden="true"></i>
+{{/if}}
+{{#if is_stream_topic}}
+<div class="typeahead-text-container">
+    <span role="button" class="zulip-icon zulip-icon-corner-down-right stream-to-topic-arrow"></span>
+    <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}">
+        {{~ topic_display_name ~}}
+    </strong>
+</div>
+{{else}}
+{{!-- Separate container to ensure overflowing text remains in this container. --}}
+<div class="typeahead-text-container{{#if has_secondary_html}} has_secondary_html{{/if}}">
+    <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}{{#if is_default_language}} default-language-display{{/if}}">
+        {{~#if stream~}}
+            {{~> inline_decorated_channel_name stream=stream ~}}
+            {{~else~}}
+            {{~ primary ~}}
+        {{~/if~}}
+    </strong>
+    {{~#if is_bot}}
+        <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+    {{/if}}
+    {{~#if should_add_guest_user_indicator}}
+        <i>({{t 'guest'}})</i>
+    {{~/if}}
+    {{~#if has_status}}
+    {{> status_emoji status_emoji_info}}
+    {{~/if}}
+    {{~#if has_pronouns}}
+        <span class="pronouns">{{pronouns}}{{#if (or has_secondary_html has_secondary)}},{{/if}}</span>
+    {{~/if}}
+    {{~#if has_secondary_html}}
+    <span class="autocomplete_secondary rendered_markdown single-line-rendered-markdown">{{rendered_markdown secondary_html}}</span>
+    {{~else if has_secondary}}
+    <span class="autocomplete_secondary">
+        {{~ secondary ~}}
+    </span>
+    {{~/if}}
+</div>
+{{/if}}

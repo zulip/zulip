@@ -1,0 +1,27 @@
+<div id="lightbox_overlay" class="overlay" data-overlay="lightbox" data-noclose="false">
+    <div class="media-info-wrapper">
+        <div class="media-description">
+            <div class="title"></div>
+            <div class="user"></div>
+        </div>
+        <div class="media-actions">
+            <a class="button lightbox-zoom-reset disabled">{{t "Reset zoom" }}</a>
+            <a class="button open" rel="noopener noreferrer" target="_blank">{{t "Open" }}</a>
+            <a class="button download" download>{{t "Download" }}</a>
+        </div>
+        <div class="exit" aria-label="{{t 'Close' }}">
+            <span aria-hidden="true" class="zulip-icon zulip-icon-close"></span>
+        </div>
+    </div>
+
+    <div class="image-preview no-select">
+        <div class="zoom-element no-select"></div>
+    </div>
+    <div class="video-player"></div>
+    <div class="player-container"></div>
+    <div class="center">
+        <div class="arrow no-select" data-direction="prev"><i class="zulip-icon zulip-icon-chevron-left"></i></div>
+        <div class="image-list"></div>
+        <div class="arrow no-select" data-direction="next"><i class="zulip-icon zulip-icon-chevron-right"></i></div>
+    </div>
+</div>

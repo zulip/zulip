@@ -1,0 +1,29 @@
+[program:zulip_deliver_scheduled_emails]
+command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_emails --skip-checks
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=350                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                ; signal used to kill process (default TERM)
+topwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/events_deliver_scheduled_emails.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/
+
+[program:zulip_deliver_scheduled_messages]
+command=nice -n15 /home/zulip/deployments/current/manage.py deliver_scheduled_messages --skip-checks
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=350                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                ; signal used to kill process (default TERM)
+topwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/events_deliver_scheduled_messages.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/

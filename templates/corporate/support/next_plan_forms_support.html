@@ -1,0 +1,24 @@
+<p class="support-section-header">⏱️ Schedule plan:</p>
+<form method="POST" class="support-form">
+    <b>Configure fixed price plan:</b><br />
+    {% if not plan_data.is_current_plan_billable %}
+    <i>Enter Invoice ID only if the customer chose to pay by invoice.</i><br />
+    {% endif %}
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="number" name="fixed_price" placeholder="Annual amount in dollars" required />
+    {% if not plan_data.is_current_plan_billable %}
+    <input type="text" name="sent_invoice_id" placeholder="Sent invoice ID" />
+    {% endif %}
+    <button type="submit" class="support-submit-button">Schedule</button>
+</form>
+{% if not plan_data.current_plan and remote_support_view %}
+<form method="POST" class="support-form">
+    <b>Configure complimentary access plan:</b><br />
+    <i>Once created, the end date for the complimentary access plan can be extended.</i><br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="date" name="complimentary_access_plan" required />
+    <button type="submit" class="support-submit-button">Create</button>
+</form>
+{% endif %}

@@ -4,9 +4,8 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ("zerver", "0124_stream_enable_notifications"),
+        ("zerver", "0001_initial"),
         ("confirmation", "0004_remove_confirmationmanager"),
     ]
 

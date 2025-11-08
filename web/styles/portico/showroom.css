@@ -1,0 +1,143 @@
+:root.dark-theme {
+    color-scheme: dark;
+}
+
+body {
+    --base-font-size-px: 16px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: var(--base-font-size-px);
+    /* The line-height used in most of the UI should be at least
+       its legacy value, but should expand with larger base
+       line-height values. */
+    line-height: max(
+        var(--legacy-body-line-height-unitless),
+        var(--base-line-height-unitless)
+    );
+    font-family: "Source Sans 3 VF", sans-serif;
+    font-weight: unset; /* override value in portico.css */
+    color: var(--color-text-default);
+    background-color: var(--color-background);
+}
+
+.showroom-wrapper {
+    display: flex;
+    flex-flow: column;
+    gap: 20px;
+    padding: 40px 20px;
+}
+
+.showroom-controls-section {
+    display: grid;
+    grid-template-columns: [control-name-start] max-content [control-name-end control-input-start] 1fr [control-input-end];
+    gap: 10px;
+    margin-top: 50px;
+    width: min(100%, 500px);
+}
+
+.showroom-controls {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: control-name-start / control-input-end;
+    grid-auto-rows: 1fr;
+    gap: 10px;
+    background-color: var(--color-background);
+    border: solid 1px;
+    padding: 10px;
+    width: 100%;
+}
+
+.showroom-control {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: control-name-start / control-input-end;
+    gap: 10px;
+}
+
+.showroom-control-element {
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.showroom-control-label {
+    cursor: pointer;
+    grid-column: control-name-start / control-name-end;
+    align-self: center;
+}
+
+.showroom-control-setting {
+    grid-column: control-input-start / control-input-end;
+}
+
+.showroom-control-setting-multiple {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.showroom-controls-label {
+    grid-column: control-name-start / control-input-end;
+    margin-top: 10px;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.showroom-button-grid {
+    display: grid;
+    grid-template-areas: "showroom-component-button-intent-label showroom-component-action-button-group showroom-component-icon-button-group";
+    grid-template-columns: repeat(3, max-content);
+    gap: 15px 30px;
+}
+
+.showroom-component-button-intent-group {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    place-items: center start;
+}
+
+.showroom-component-button-intent-label {
+    grid-area: showroom-component-button-intent-label;
+}
+
+.showroom-component-action-button-group,
+.showroom-component-action-button-label {
+    grid-area: showroom-component-action-button-group;
+}
+
+.showroom-component-icon-button-group,
+.showroom-component-icon-button-label {
+    grid-area: showroom-component-icon-button-group;
+}
+
+.showroom-component-action-button-group,
+.showroom-component-icon-button-group {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 15px;
+}
+
+.showroom-component-button-intent-label,
+.showroom-component-action-button-label,
+.showroom-component-icon-button-label {
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+#showroom_component_banner_select_intent {
+    text-transform: capitalize;
+}
+
+#showroom_component_banner_default_wrapper {
+    width: min(100%, 800px);
+    margin: 0 auto;
+}
+
+.showroom-filter-input-container {
+    width: clamp(200px, 100%, 400px);
+}

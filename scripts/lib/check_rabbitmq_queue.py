@@ -2,28 +2,38 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List
+from typing import Any
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+sys.path.append(ZULIP_PATH)
+from scripts.lib.zulip_tools import atomic_nagios_write, get_config, get_config_file
+
 normal_queues = [
     "deferred_work",
+    "deferred_email_senders",
     "digest_emails",
     "email_mirror",
+    "email_senders",
     "embed_links",
     "embedded_bots",
-    "error_reports",
-    "invites",
-    "email_senders",
     "missedmessage_emails",
     "missedmessage_mobile_notifications",
     "outgoing_webhooks",
+    "thumbnail",
     "user_activity",
     "user_activity_interval",
-    "user_presence",
 ]
+
+mobile_notification_shards = int(
+    get_config(get_config_file(), "application_server", "mobile_notification_shards", "1")
+)
+user_activity_shards = int(
+    get_config(get_config_file(), "application_server", "user_activity_shards", "1")
+)
 
 OK = 0
 WARNING = 1
@@ -37,23 +47,29 @@ states = {
     3: "UNKNOWN",
 }
 
-MAX_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
+MAX_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     lambda: 30,
+    deferred_work=600,
     digest_emails=1200,
     missedmessage_mobile_notifications=120,
     embed_links=60,
+    email_senders=90,
+    deferred_email_senders=3600,
 )
-CRITICAL_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
+CRITICAL_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     lambda: 60,
+    deferred_work=900,
     missedmessage_mobile_notifications=180,
     digest_emails=1800,
     embed_links=90,
+    email_senders=300,
+    deferred_email_senders=4500,
 )
 
 
 def analyze_queue_stats(
-    queue_name: str, stats: Dict[str, Any], queue_count_rabbitmqctl: int
-) -> Dict[str, Any]:
+    queue_name: str, stats: dict[str, Any], queue_count_rabbitmqctl: int
+) -> dict[str, Any]:
     now = int(time.time())
     if stats == {}:
         return dict(status=UNKNOWN, name=queue_name, message="invalid or no stats data")
@@ -109,8 +125,8 @@ WARN_COUNT_THRESHOLD_DEFAULT = 10
 CRITICAL_COUNT_THRESHOLD_DEFAULT = 50
 
 
-def check_other_queues(queue_counts_dict: Dict[str, int]) -> List[Dict[str, Any]]:
-    """ Do a simple queue size check for queues whose workers don't publish stats files."""
+def check_other_queues(queue_counts_dict: dict[str, int]) -> list[dict[str, Any]]:
+    """Do a simple queue size check for queues whose workers don't publish stats files."""
 
     results = []
     for queue, count in queue_counts_dict.items():
@@ -129,12 +145,12 @@ def check_other_queues(queue_counts_dict: Dict[str, int]) -> List[Dict[str, Any]
 
 def check_rabbitmq_queues() -> None:
     pattern = re.compile(r"(\w+)\t(\d+)\t(\d+)")
-    if "USER" in os.environ and not os.environ["USER"] in ["root", "rabbitmq"]:
+    if "USER" in os.environ and os.environ["USER"] not in ["root", "rabbitmq"]:
         print("This script must be run as the root or rabbitmq user")
 
     list_queues_output = subprocess.check_output(
         ["/usr/sbin/rabbitmqctl", "list_queues", "name", "messages", "consumers"],
-        universal_newlines=True,
+        text=True,
     )
     queue_counts_rabbitmqctl = {}
     queues_with_consumers = []
@@ -151,10 +167,23 @@ def check_rabbitmq_queues() -> None:
 
     queue_stats_dir = subprocess.check_output(
         [os.path.join(ZULIP_PATH, "scripts/get-django-setting"), "QUEUE_STATS_DIR"],
-        universal_newlines=True,
+        text=True,
     ).strip()
-    queue_stats: Dict[str, Dict[str, Any]] = {}
-    queues_to_check = set(normal_queues).intersection(set(queues_with_consumers))
+    queue_stats: dict[str, dict[str, Any]] = {}
+
+    check_queues = normal_queues
+    if mobile_notification_shards > 1:
+        # For sharded queue workers, where there's a separate queue
+        # for each shard, we need to make sure none of those are
+        # backlogged.
+        check_queues += [
+            f"missedmessage_mobile_notifications_shard{d}"
+            for d in range(1, mobile_notification_shards + 1)
+        ]
+    if user_activity_shards > 1:
+        check_queues += [f"user_activity_shard{d}" for d in range(1, user_activity_shards + 1)]
+
+    queues_to_check = set(check_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:
         fn = queue + ".stats"
         file_path = os.path.join(queue_stats_dir, fn)
@@ -176,8 +205,6 @@ def check_rabbitmq_queues() -> None:
 
     status = max(result["status"] for result in results)
 
-    now = int(time.time())
-
     if status > 0:
         queue_error_template = "queue {} problem: {}:{}"
         error_message = "; ".join(
@@ -185,6 +212,12 @@ def check_rabbitmq_queues() -> None:
             for result in results
             if result["status"] > 0
         )
-        print(f"{now}|{status}|{states[status]}|{error_message}")
+        sys.exit(
+            atomic_nagios_write(
+                "check-rabbitmq-results",
+                "critical" if status == CRITICAL else "warning",
+                error_message,
+            )
+        )
     else:
-        print(f"{now}|{status}|{states[status]}|queues normal")
+        atomic_nagios_write("check-rabbitmq-results", "ok", "queues normal")

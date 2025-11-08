@@ -1,0 +1,28 @@
+<div {{#if process}}data-process="{{process}}"{{/if}} class="{{#if custom_classes}}{{custom_classes}} {{/if}}banner banner-{{intent}}">
+    <span class="banner-content">
+        <span class="banner-label">
+            {{#if label}}
+                {{label}}
+            {{else}}
+                {{> @partial-block .}}
+            {{/if}}
+        </span>
+        {{#if buttons}}
+            <span class="banner-action-buttons">
+                {{!-- squash whitespace so :empty selector works when no buttons --}}
+                {{~!-- squash whitespace --~}}
+                {{#each buttons}}
+                    {{#if this.intent}}
+                        {{> action_button .}}
+                    {{else}}
+                        {{> action_button . intent=../intent}}
+                    {{/if}}
+                {{/each}}
+                {{~!-- squash whitespace --~}}
+            </span>
+        {{/if}}
+    </span>
+    {{#if close_button}}
+        {{> icon_button custom_classes="banner-close-action banner-close-button" icon="close" intent=intent}}
+    {{/if}}
+</div>

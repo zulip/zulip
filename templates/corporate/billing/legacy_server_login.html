@@ -1,0 +1,56 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "billing_auth" %}
+
+{% set PAGE_TITLE = "Authenticate server for Zulip plan management" %}
+
+{% block portico_content %}
+
+<div id="server-login-page" class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>Authenticate server<br/>for Zulip plan management</h1>
+        </div>
+        <div class="white-box">
+            <div id="server-login-page-details">
+                {% if error_message %}
+                <div id="server-login-error" class="alert alert-danger">{{ error_message }}</div>
+                {% endif %}
+                <div id="server-login-input-section">
+                    <form id="server-login-form" method="post" action="/serverlogin/">
+                        {{ csrf_input }}
+                        {% if next_page %}
+                        <input type="hidden" name="next_page" value="{{ next_page }}" />
+                        {% endif %}
+                        <div id="server-login-form-title" class="input-box server-login-form">
+                            <div class="not-editable-realm-field">
+                                To access plan management for a Zulip
+                                server, first enter <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#plan-management-for-an-entire-zulip-server">your server's credentials</a>.
+                            </div>
+                        </div>
+                        <div class="input-box server-login-form-field">
+                            <label for="zulip-org-id" class="inline-block label-title">
+                                zulip_org_id
+                            </label>
+                            <input id="zulip-org-id" name="zulip_org_id" class="required" type="text"/>
+                            <div class="alert alert-danger server-login-form-field-error zulip_org_id-error"></div>
+                        </div>
+                        <div class="input-box server-login-form-field">
+                            <label for="password" class="inline-block label-title">zulip_org_key</label>
+                            <input id="password" name="zulip_org_key" class="required" type="password"/>
+                            <div class="alert alert-danger server-login-form-field-error zulip_org_key-error"></div>
+                        </div>
+                        <div id="server-login-page-button-container">
+                            <button type="submit" id="server-login-button" class="stripe-button-el invoice-button">
+                                <span class="server-login-button-text">Continue</span>
+                                <img class="loader remote-billing-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

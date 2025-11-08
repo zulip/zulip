@@ -1,0 +1,18 @@
+{{! This controls whether the swatch next to streams in the stream edit page has a lock icon. }}
+{{#if is_archived}}
+<div class="large-icon" {{#if title_icon_color}}style="color: {{title_icon_color}}{{/if}}">
+    <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
+</div>
+{{else if invite_only}}
+<div class="large-icon" {{#if title_icon_color}}style="color: {{title_icon_color}}"{{/if}}>
+    <i class="zulip-icon zulip-icon-lock" aria-hidden="true"></i>
+</div>
+{{else if is_web_public}}
+<div class="large-icon" {{#if title_icon_color}}style="color: {{title_icon_color}}"{{/if}}>
+    <i class="zulip-icon zulip-icon-globe" aria-hidden="true"></i>
+</div>
+{{else}}
+<div class="large-icon" {{#if title_icon_color}}style="color: {{title_icon_color}}"{{/if}}>
+    <i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i>
+</div>
+{{/if}}

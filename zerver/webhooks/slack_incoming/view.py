@@ -1,103 +1,103 @@
 # Webhooks for external integrations.
 import re
-from typing import Any, Dict, Optional
+from collections.abc import Callable
+from functools import wraps
+from typing import Concatenate
 
-import orjson
-from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.utils.translation import gettext as _
+from typing_extensions import ParamSpec
 
+from zerver.data_import.slack_message_conversion import (
+    convert_slack_formatting,
+    render_attachment,
+    render_block,
+    replace_links,
+)
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import InvalidJSONError
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.validator import check_string, to_wild_value
+from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
 from zerver.models import UserProfile
+
+ParamT = ParamSpec("ParamT")
+
+
+def slack_error_handler(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
+    """
+    A decorator that catches JsonableError exceptions and returns a
+    Slack-compatible error response in the format:
+    {ok: false, error: "error message"}.
+    """
+
+    @wraps(view_func)
+    def wrapped_view(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
+        try:
+            return view_func(request, *args, **kwargs)
+        except JsonableError as error:
+            return JsonResponse({"ok": False, "error": error.msg}, status=error.http_status_code)
+
+    return wrapped_view
 
 
 @webhook_view("SlackIncoming")
-@has_request_variables
+@typed_endpoint
+@slack_error_handler
 def api_slack_incoming_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
-    payload: Optional[Dict[str, Any]] = REQ("payload", converter=orjson.loads, default=None),
+    *,
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
-
     # Slack accepts webhook payloads as payload="encoded json" as
     # application/x-www-form-urlencoded, as well as in the body as
-    # application/json. We use has_request_variables to try to get
-    # the form encoded version, and parse the body out ourselves if
-    # # we were given JSON.
-    if payload is None:
+    # application/json.
+    if request.content_type == "application/json":
         try:
-            payload = orjson.loads(request.body)
-        except orjson.JSONDecodeError:  # nocoverage
-            raise InvalidJSONError(_("Malformed JSON"))
+            val = request.body.decode(request.encoding or "utf-8")
+        except UnicodeDecodeError:  # nocoverage
+            raise JsonableError(_("Malformed payload"))
+    else:
+        req_var = "payload"
+        if req_var in request.POST:
+            val = request.POST[req_var]
+        elif req_var in request.GET:  # nocoverage
+            val = request.GET[req_var]
+        else:
+            raise RequestVariableMissingError(req_var)
+
+    payload = to_wild_value("payload", val)
 
     if user_specified_topic is None and "channel" in payload:
-        user_specified_topic = re.sub("^[@#]", "", payload["channel"])
+        channel = payload["channel"].tame(check_string)
+        user_specified_topic = re.sub(r"^[@#]", "", channel)
 
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"
 
-    body = ""
+    pieces: list[str] = []
+    if payload.get("blocks"):
+        pieces += map(render_block, payload["blocks"])
 
-    if "blocks" in payload:
-        for block in payload["blocks"]:
-            body = add_block(block, body)
+    if payload.get("attachments"):
+        pieces += map(render_attachment, payload["attachments"])
 
-    if "attachments" in payload:
-        for attachment in payload["attachments"]:
-            body = add_attachment(attachment, body)
+    body = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
-    if body == "" and "text" in payload:
-        body += payload["text"]
-        if "icon_emoji" in payload and payload["icon_emoji"] is not None:
-            body = "{} {}".format(payload["icon_emoji"], body)
+    if body == "" and payload.get("text"):
+        if payload.get("icon_emoji"):
+            body = payload["icon_emoji"].tame(check_string) + " "
+        body += payload["text"].tame(check_string)
+        body = body.strip()
 
     if body != "":
-        body = replace_formatting(replace_links(body).strip())
+        body = convert_slack_formatting(replace_links(body).strip())
         check_send_webhook_message(request, user_profile, user_specified_topic, body)
-    return json_success()
-
-
-def add_block(block: Dict[str, Any], body: str) -> str:
-    block_type = block.get("type", None)
-    if block_type == "section":
-        if "text" in block:
-            text = block["text"]
-            while type(text) == dict:  # handle stuff like block["text"]["text"]
-                text = text["text"]
-            body += f"\n\n{text}"
-
-        if "accessory" in block:
-            accessory = block["accessory"]
-            accessory_type = accessory["type"]
-            if accessory_type == "image":
-                # This should become ![text](url) once proper Markdown images are supported
-                body += "\n[{alt_text}]({image_url})".format(**accessory)
-
-    return body
-
-
-def add_attachment(attachment: Dict[str, Any], body: str) -> str:
-    attachment_body = ""
-    if "title" in attachment and "title_link" in attachment:
-        attachment_body += "[{title}]({title_link})\n".format(**attachment)
-    if "text" in attachment:
-        attachment_body += attachment["text"]
-
-    return body + attachment_body
-
-
-def replace_links(text: str) -> str:
-    return re.sub(r"<(\w+?:\/\/.*?)\|(.*?)>", r"[\2](\1)", text)
-
-
-def replace_formatting(text: str) -> str:
-    # Slack uses *text* for bold, whereas Zulip interprets that as italics
-    text = re.sub(r"([^\w])\*(?!\s+)([^\*^\n]+)(?<!\s)\*([^\w])", r"\1**\2**\3", text)
-
-    # Slack uses _text_ for emphasis, whereas Zulip interprets that as nothing
-    text = re.sub(r"([^\w])[_](?!\s+)([^\_\^\n]+)(?<!\s)[_]([^\w])", r"\1**\2**\3", text)
-    return text
+    return json_success(request, data={"ok": True})

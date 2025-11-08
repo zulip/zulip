@@ -1,0 +1,243 @@
+#lightbox_overlay {
+    background-color: hsl(227deg 40% 16%);
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+
+    .image-preview {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center center;
+
+        & img {
+            cursor: move;
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .zoom-element {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .video-player {
+        flex: 1;
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        overflow: hidden;
+
+        & video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    }
+
+    .exit {
+        flex-shrink: 0;
+
+        color: hsl(0deg 0% 100% / 80%);
+        font-size: 14px;
+        line-height: 31px;
+
+        opacity: 0;
+        pointer-events: none;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+    &.show .exit {
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .media-info-wrapper {
+        display: flex;
+        justify-content: end;
+        align-items: start;
+        gap: 20px;
+        padding: 20px;
+
+        background-color: transparent;
+    }
+
+    .media-actions {
+        display: flex;
+        flex-shrink: 0;
+        gap: 10px;
+
+        .button {
+            font-size: 0.9rem;
+            min-width: inherit;
+            padding: 4px 10px;
+            border: 1px solid hsl(0deg 0% 100% / 60%);
+            background-color: transparent;
+            color: hsl(0deg 0% 100%);
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+
+            &:hover {
+                background-color: hsl(0deg 0% 100%);
+                border-color: hsl(0deg 0% 100%);
+                color: hsl(227deg 40% 16%);
+            }
+        }
+
+        .disabled {
+            opacity: 0.7;
+            cursor: default;
+
+            &:hover {
+                background-color: transparent;
+                color: hsl(0deg 0% 100%);
+                border: 1px solid hsl(0deg 0% 100% / 60%);
+            }
+        }
+    }
+
+    .media-description {
+        container: media-description / inline-size;
+
+        flex: 1;
+        /* setting min-width to an absolute value will make
+           sure the text gets truncated in case of overflow */
+        min-width: 0;
+
+        font-size: 1.1rem;
+        color: hsl(0deg 0% 100%);
+
+        .title {
+            vertical-align: top;
+            font-weight: 400;
+            line-height: normal;
+
+            /* Required for text-overflow */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user {
+            font-weight: 300;
+            line-height: normal;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: pre;
+
+            &::before {
+                margin-right: 5px;
+                content: "\2014";
+            }
+        }
+    }
+
+    .player-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        & iframe {
+            aspect-ratio: 16/9;
+            /* for screen_width<=lg_min aspect-ratio will be
+               maintained given portrait mode is used */
+            /* in landscape max-height will prevent overflow,
+               however user will benefit more from using
+               youtube fullscreen at that point */
+            width: 100%;
+            /* maintains the aspect ratio for screen_width>=lg_min. */
+            max-width: $lg_min;
+            /* height(media_info_container) + height(center) < 200px */
+            max-height: calc(100dvh - 200px);
+        }
+    }
+
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2px;
+        padding: 12px 20px;
+
+        .arrow {
+            color: hsl(0deg 0% 100%);
+            /* The thumbnails do not scale, so we express these
+               dimensions as pixels, too. */
+            font-size: 35px;
+            line-height: 25.6px;
+
+            cursor: pointer;
+
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .image-list {
+            position: relative;
+            display: inline-block;
+            font-size: 0;
+
+            max-width: 40vw;
+            overflow: hidden;
+            white-space: nowrap;
+
+            .image {
+                display: inline-block;
+                vertical-align: top;
+                width: 50px;
+                height: 50px;
+                margin: 0 2px;
+
+                background-color: hsl(0deg 0% 94% / 20%);
+                opacity: 0.5;
+
+                background-size: cover;
+                background-position: center;
+                cursor: pointer;
+
+                &.selected {
+                    opacity: 1;
+                }
+            }
+
+            .lightbox_video video {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    }
+}
+
+/* hide media-description if it has width less than 100px  */
+@container media-description (max-width: 100px) {
+    .media-description {
+        .title {
+            display: none;
+        }
+
+        .user {
+            display: none;
+        }
+    }
+}

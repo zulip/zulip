@@ -1,0 +1,59 @@
+// Automatically upgrade packages from these (origin:archive) pairs
+//
+// Note that in Ubuntu security updates may pull in new dependencies
+// from non-security sources (e.g. chromium). By allowing the release
+// pocket these get automatically pulled in.
+Unattended-Upgrade::Allowed-Origins {
+    "${distro_id}:${distro_codename}";
+    "${distro_id}:${distro_codename}-security";
+    "${distro_id}:${distro_codename}-updates";
+    // Extended Security Maintenance; doesn't necessarily exist for
+    // every release and this system may not have it installed, but if
+    // available, the policy for updates is such that unattended-upgrades
+    // should also install from here by default.
+    "${distro_id}ESMApps:${distro_codename}-apps-security";
+    "${distro_id}ESM:${distro_codename}-infra-security";
+};
+
+// Python regular expressions, matching packages to exclude from upgrading
+Unattended-Upgrade::Package-Blacklist {
+    "libc\d+";
+    "memcached$";
+    "nginx-full$";
+    "postgresql-\d+$";
+    "postgresql-\d+-pgdg-pgroonga$";
+    "rabbitmq-server$";
+    "erlang-base$";
+    "redis-server$";
+    "supervisor$";
+};
+
+// This option controls whether the development release of Ubuntu will be
+// upgraded automatically. Valid values are "true", "false", and "auto".
+Unattended-Upgrade::DevRelease "false";
+
+// This option allows you to control if on a unclean dpkg exit
+// unattended-upgrades will automatically run
+//   dpkg --force-confold --configure -a
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+
+// Split the upgrade into the smallest possible chunks so that
+// they can be interrupted with SIGTERM. This makes the upgrade
+// a bit slower but it has the benefit that shutdown while a upgrade
+// is running is possible (with a small delay)
+Unattended-Upgrade::MinimalSteps "true";
+
+// Remove unused automatically installed kernel-related packages
+// (kernel images, kernel headers and kernel version locked tools).
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+
+// Do automatic removal of newly unused dependencies after the upgrade
+Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+
+// Do automatic removal of unused packages after the upgrade
+// (equivalent to apt-get autoremove)
+//Unattended-Upgrade::Remove-Unused-Dependencies "false";
+
+// Automatically reboot *WITHOUT CONFIRMATION*
+//  if the file /var/run/reboot-required is found after the upgrade 
+Unattended-Upgrade::Automatic-Reboot "false";

@@ -1,0 +1,35 @@
+/**
+ * @flow strict
+ */
+
+"use strict";
+
+declare export function encodeHashComponent(str: string): string;
+
+declare export function decodeHashComponent(str: string): string;
+
+declare export function stream_id_to_slug(
+    stream_id: number,
+    maybe_get_stream_name: (id: number) => ?string,
+): string;
+
+declare export function encode_stream_id(
+    stream_id: number,
+    maybe_get_stream_name: (id: number) => ?string,
+): string;
+
+declare export function by_stream_url(
+    stream_id: number,
+    maybe_get_stream_name: (id: number) => ?string,
+): string;
+
+declare export function by_stream_topic_url(
+    stream_id: number,
+    topic: string,
+    maybe_get_stream_name: (id: number) => ?string,
+): string;
+
+declare export function by_channel_topic_list_url(
+    stream_id: number,
+    maybe_get_stream_name: (id: number) => ?string,
+): string;

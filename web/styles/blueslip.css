@@ -1,0 +1,154 @@
+.blueslip-display {
+    display: none;
+
+    &.show {
+        display: block;
+    }
+}
+
+.blueslip-animations {
+    &.show {
+        animation-name: fadeIn;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+
+    &.fade-out {
+        animation-name: fadeOut;
+        animation-duration: 0.3s;
+        animation-fill-mode: forwards;
+    }
+}
+
+.blueslip-error-container {
+    /* We define this variable here since this is shared
+       with portico. */
+    --blueslip-overlay-translate-y-distance: 100px;
+    position: fixed;
+    /* Offset to account for the top padding + 5px from the top. */
+    top: calc(5px + (-1 * var(--blueslip-overlay-translate-y-distance)));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: min(calc(100% - 20px), 1100px);
+    z-index: 230;
+    /* Subtract 5px to account for the bottom margin and another
+       5px to account for the top. */
+    max-height: calc(100vh - 10px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Set top padding to account for the translate-y motion of the
+       animation to prevent the vertical scroll bar from appearing. */
+    padding-top: var(--blueslip-overlay-translate-y-distance);
+    display: flex;
+    /* Using column-reverse flex direction enables a stack-like
+       behavior where the most recent error is always on top. */
+    flex-direction: column-reverse;
+    gap: 5px;
+}
+
+.stacktrace {
+    @extend .blueslip-display, .blueslip-animations;
+
+    box-sizing: border-box;
+    width: 100%;
+    pointer-events: auto;
+    font-size: 1rem;
+    color: hsl(0deg 80% 40%);
+
+    padding: 1rem 0;
+
+    background-color: hsl(0deg 100% 98%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 80% 40%);
+    box-shadow: 0 0 2px hsl(0deg 80% 40%);
+
+    .stacktrace-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .message {
+            flex: 1 1 auto;
+        }
+
+        .warning-symbol,
+        .exit {
+            flex: 0 0 auto;
+            font-size: 1.3rem;
+            padding: 0 1rem;
+        }
+
+        .exit::after {
+            cursor: pointer;
+            font-size: 2.3rem;
+            content: "\d7";
+            line-height: 0.5;
+        }
+    }
+
+    .stacktrace-more-info {
+        font-size: 0.85rem;
+        white-space: pre;
+        font-family: "Source Code Pro", monospace;
+        margin-left: 3.3rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background-color: hsl(0deg 7% 98%);
+    }
+
+    .stacktrace-content {
+        font-family: "Source Code Pro", monospace;
+        font-size: 0.85rem;
+
+        margin-bottom: 0.5rem;
+
+        .stackframe {
+            overflow-wrap: break-word;
+            padding-left: calc(3.3rem - 14px);
+            padding-right: 1rem;
+        }
+    }
+
+    .expand {
+        cursor: pointer;
+        color: hsl(0deg 32% 83%);
+
+        &:hover {
+            color: hsl(0deg 0% 20%);
+        }
+    }
+
+    .subtle {
+        color: hsl(0deg 7% 45%);
+    }
+
+    .code-context {
+        color: hsl(0deg 7% 15%);
+        background-color: hsl(0deg 7% 98%);
+        box-shadow:
+            inset 0 11px 10px -10px hsl(0deg 7% 70%),
+            inset 0 -11px 10px -10px hsl(0deg 7% 70%);
+
+        margin-top: 1em;
+        margin-bottom: 1em;
+
+        .code-context-content {
+            padding: 1rem 0;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .line-number {
+            width: 3rem;
+            display: inline-block;
+            text-align: right;
+            color: hsl(0deg 7% 35%);
+        }
+
+        .focus-line {
+            background-color: hsl(0deg 7% 90%);
+            width: 100%;
+        }
+    }
+}

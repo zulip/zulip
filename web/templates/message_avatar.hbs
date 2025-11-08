@@ -1,0 +1,11 @@
+<div class="u-{{msg/sender_id}} message-avatar sender_info_hover view_user_card_tooltip no-select" aria-hidden="true" data-is-bot="{{sender_is_bot}}">
+    <div class="inline-profile-picture-wrapper">
+        <div class="inline_profile_picture {{#if sender_is_guest}} guest-avatar{{/if}} {{#if sender_is_deactivated}} deactivated {{/if}}">
+            <img loading="lazy" src="{{small_avatar_url}}" alt="" class="no-drag"/>
+            {{#if sender_is_deactivated}}
+                <i class="fa fa-ban deactivated-user-icon"></i>
+            {{/if}}
+        </div>
+    </div>
+</div>
+{{~! remove whitespace ~}}

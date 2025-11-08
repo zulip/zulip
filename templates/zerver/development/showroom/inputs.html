@@ -1,0 +1,48 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "showroom" %}
+
+{% block title %}
+<title>{{ doc_root_title }} | Zulip Dev</title>
+{% endblock %}
+
+{% block content %}
+<div class="portico-container" data-platform="{{ platform }}">
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+        <div class="app portico-page">
+            <div class="app-main portico-page-container">
+                <div class="showroom-wrapper">
+                    <div class="showroom-filter-input-container"></div>
+                    <section class="showroom-controls-section">
+                        <div class="showroom-controls-label">Theme Settings</div>
+                        <div class="showroom-controls">
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Dark Theme</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" data-theme="dark" id="showroom_enable_dark_theme_inputs" class="tab-option" name="showroom-dark-theme-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="showroom_enable_dark_theme_inputs" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" data-theme="light" id="showroom_disable_dark_theme_inputs" class="tab-option" name="showroom-dark-theme-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="showroom_disable_dark_theme_inputs" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Select Background</span>
+                                <select class="showroom-control-element showroom-control-setting select_background">
+                                    {% for background in background_colors %}
+                                        <option value="{{ background.css_var }}" {% if background.css_var == "--color-background" %}selected{% endif %}>{{ background.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

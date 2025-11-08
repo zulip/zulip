@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
 from typing import Any
 
+from typing_extensions import override
+
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.users import get_api_key
 
 
 class Command(ZulipBaseCommand):
@@ -11,6 +12,7 @@ class Command(ZulipBaseCommand):
 
     fmt = "%-30s %-16s  %-32s"
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "emails",
@@ -20,6 +22,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
         print(self.fmt % ("email", "password", "API key"))
@@ -28,4 +31,4 @@ class Command(ZulipBaseCommand):
                 print(f"ERROR: {email} does not look like an email address")
                 continue
             user = self.get_user(email, realm)
-            print(self.fmt % (email, initial_password(email), get_api_key(user)))
+            print(self.fmt % (email, initial_password(email), user.api_key))

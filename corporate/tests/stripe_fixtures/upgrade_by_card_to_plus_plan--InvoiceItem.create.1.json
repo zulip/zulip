@@ -1,0 +1,32 @@
+{
+  "amount": 120000,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": "Zulip Cloud Plus",
+  "discountable": false,
+  "discounts": [],
+  "id": "upgrade_by_card_to_plus_plan--Event.list.2.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 120000,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1357095845,
+    "start": 1325473445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "12000"
+  },
+  "proration": false,
+  "quantity": 10,
+  "tax_rates": [],
+  "test_clock": null
+}

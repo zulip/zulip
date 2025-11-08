@@ -1,20 +1,28 @@
+# Zulip Semaphore integration
+
 Get Zulip notifications for your Semaphore builds!
 
-1. {!create-stream.md!}
+{start_tabs}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
-1. In Semaphore 2.0, under **Configuration** select **Notifications**. Click on
-   **Create New Notification**. Add the the URL constructed above to the Webhook
-   **Endpoint** field.
+1. {!generate-webhook-url-basic.md!}
 
-    If you are using Semaphore Classic, in your Semaphore project, go to
-   **Project settings**, and select the **Notifications** tab. Click on
-   **Webhooks**, and click **+ Add Webhook**.
+1. In the **Configuration** section of the sidebar in Semaphore, select
+   **Notifications**. Click on **Create New Notification**.
 
-1. Set **URL** to the URL constructed above, and click
-   **Save Settings**.
+1. Add a name for the notification, such as `Zulip`, and configure any
+   rules you'd like for the notifications. Add the URL generated above
+   to the Webhook **Endpoint** field, and click **Save Changes**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/semaphore/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

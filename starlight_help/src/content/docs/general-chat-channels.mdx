@@ -1,0 +1,46 @@
+---
+title: “General chat” channels
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewGeneralAdvanced from "../include/_SelectChannelViewGeneralAdvanced.mdx";
+
+Zulip's [topics](/help/introduction-to-topics) help you keep conversations
+organized, but you may not need topics in some channels (e.g., a social channel,
+or one with a narrow purpose).
+
+If you have permission to administer a channel, you can configure it to only
+have the special “*general chat*” topic. The name of this topic is shown in
+italics, and is translated into [your language](/help/change-your-language).
+
+Users won't need to enter a topic when sending a message to a “*general chat*”
+channel.
+
+## Configure a channel to have only the “*general chat*” topic
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select a channel.
+
+      <SelectChannelViewGeneralAdvanced />
+
+      1. Under **Messaging permissions**, set **Allow posting to the *general chat*
+         topic?** to **Only “general chat” topic allowed**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Introduction to topics](/help/introduction-to-topics)
+* [“*General chat*” topic](/help/general-chat-topic)
+* [Require topics in channel messages](/help/require-topics)

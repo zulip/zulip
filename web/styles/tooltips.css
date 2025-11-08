@@ -1,0 +1,119 @@
+[data-tippy-root] {
+    /* Since tooltip elements are sometimes inside elements
+     * which have different font-family, we force font-family
+     * for tooltips here.
+     */
+    font-family: "Source Sans 3 VF", sans-serif !important;
+    overflow-wrap: anywhere;
+    /* Contains stylistic variant of upper-case character "I" in Source Sans 3 */
+    font-feature-settings: "ss01" on;
+
+    /* Affects all tippy tooltips not using any theme. */
+    .tippy-box:not([data-theme]) {
+        background: var(--color-background-tippy-box);
+        border-radius: 5px;
+        /* 14px at 14px/1em */
+        font-size: var(--base-font-size-px);
+        /* 25px at 14px/1em */
+        min-height: 1.7857em;
+        box-sizing: border-box;
+
+        .tippy-content {
+            box-sizing: inherit;
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            /* 14px at 14px/1em */
+            font-size: var(--base-font-size-px);
+            /* 20px at 14px/1em */
+            line-height: 1.4286em;
+            /* Don't inherit font-weight when
+               a Tippy attaches to a parent */
+            font-weight: normal;
+            color: hsl(0deg 0% 100%);
+        }
+
+        .tippy-arrow::before {
+            /* This affects the arrow for tooltips and doesn't have any impact on arrows for popovers.
+             * The transform property scales down the size of the arrow, giving it a thinner appearance.
+             * https://atomiks.github.io/tippyjs/v6/themes/#changing-the-arrow-size
+             */
+            transform: scale(0.75);
+        }
+
+        .tooltip-inner-content {
+            /* 17px at 14px/1em */
+            line-height: 1.2143em;
+        }
+
+        &[data-placement^="top"] > .tippy-arrow::before {
+            border-top-color: var(--color-background-tippy-box);
+        }
+
+        &[data-placement^="bottom"] > .tippy-arrow::before {
+            border-bottom-color: var(--color-background-tippy-box);
+        }
+
+        &[data-placement^="left"] > .tippy-arrow::before {
+            border-left-color: var(--color-background-tippy-box);
+        }
+
+        &[data-placement^="right"] > .tippy-arrow::before {
+            border-right-color: var(--color-background-tippy-box);
+        }
+    }
+
+    .tippy-arrow::before {
+        /* `.tippy-arrow:before` element sometimes
+         * inherits the height of the parent, we
+         * don't want any height here since we
+         * want it to remain an triangle.
+         * The bug was only found in Firefox.
+         */
+        height: 0 !important;
+    }
+    /* If the text in the tooltips stretches to multiple lines,
+     * we want the lines to be left-indented and not right-indented
+     * by default.
+     */
+    text-align: left;
+
+    .tooltip-hotkey-hints {
+        box-sizing: inherit;
+        display: flex;
+        align-self: flex-start;
+        margin: 0 -5px 0 10px;
+        gap: 4px;
+    }
+
+    & span.tooltip-hotkey-hint {
+        border: 1px solid hsl(225deg 100% 84%);
+        border-radius: 3px;
+        color: hsl(225deg 100% 84%);
+        padding: 0 5px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .channel-privacy-type-icon {
+        width: 9px;
+        padding-left: 2px;
+        top: 0.5px;
+    }
+
+    /* If the reference of the tooltip is went offscreen while scrolling,
+       the tooltip will be visible until the scrolling stops. Popper adds
+       `data-reference-hidden` attribute to those tooltips whole reference is
+       hidden. Since tooltips have `absolute` position, they can occupy scroll
+       space offscreen and cause document to have the wrong scroll height.
+       Setting `display: none` makes sure it doesn't occupy any offscreen space.
+
+       NOTE: This data attribute has changed each time in the past 3 releases and
+       if we upgrade tippy from v6, we should check if this attribute is still valid.
+
+       See https://github.com/atomiks/tippyjs/issues/555 for some discussion on this.
+    */
+    [data-reference-hidden]:not(.show-when-reference-hidden) {
+        display: none;
+    }
+}

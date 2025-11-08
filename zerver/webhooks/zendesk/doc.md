@@ -1,56 +1,48 @@
-1.  {!create-stream.md!}
+# Zulip Zendesk integration
 
-1.  Next, on your {{ settings_html|safe }}, create a bot.
+Get notifications about Zendesk tickets in Zulip!
 
-1.  Construct a webhook URL like the following:
+{start_tabs}
 
-    `{{ api_url }}/v1/external/zendesk?ticket_title={% raw %}{{ ticket.title }}&ticket_id={{ ticket.id }}{% endraw %}`
+1. {!create-an-incoming-webhook.md!}
 
-1.  {!append-stream-name.md!}
+1. {!generate-webhook-url-basic.md!}
 
-1.  Next, in Zendesk, open your **Admin** view via gear in the bottom-left
-    corner. In the **Admin** view, click on **Extensions**, then click
-    **add target**.
+1. Append `{%raw%}&ticket_title={{ ticket.title }}&ticket_id={{ ticket.id }}{%endraw%}`
+   to the URL generated above.
 
-    ![](/static/images/integrations/zendesk/001.png)
-    ![](/static/images/integrations/zendesk/002.png)
+1. In Zendesk, click the **gear** (<i class="fa fa-cog"></i>) icon in the
+    bottom-left corner. Click on **Extensions**, and then click **add
+    target**.
 
-1.  From there, click **URL target**. Fill in the form like this:
+1. Click the **URL target**, and fill in the form with the following:
 
     * **Title**: Zulip
-    * **URL**: the URL we created above
+    * **URL**: the URL generated and updated above
     * **Method**: POST
     * **Attribute Name**: message
-    * **Username**: *your bot's user name, e.g.* `zendesk-bot@yourdomain.com`
-    * **Password**: *your bot's API key*
+    * **Username**: your bot's user name, e.g., `zendesk-bot@yourdomain.com`
+    * **Password**: your bot's API key
 
-    ![](/static/images/integrations/zendesk/003.png)
+1. Select **Test Target**, and click **Submit**. A test message should
+   appear Zulip. Save the target by selecting **Create target**, and
+   clicking **Submit**.
 
-1.  Now, select **Test Target** and click **Submit**. A test message should
-    appear in the `zendesk` stream. If the message was received, save the
-    target by selecting **Create target** and clicking **Submit**.
+1. Add a new trigger, for every action you'd like to be notified about.
+   To add a trigger, select **Triggers** in the left menu, and click
+   **add trigger**.
 
-1.  From here, add a new trigger. You'll do this for every action you want
-    to create a Zulip notification for. Triggers are added by selecting
-    **Triggers** in the left menu and then clicking **add trigger** in the
-    top right.
+1. Give the trigger a descriptive title (e.g., "Announce ticket update").
+   Under **Meet all of the following conditions**, select the conditions
+   for the trigger. In the **Perform these actions** section, select
+   **Notification: Notify target**, and select the target created above
+   (e.g., "Zulip").
 
-    ![](/static/images/integrations/zendesk/004.png)
-    ![](/static/images/integrations/zendesk/005.png)
+1. Enter the message body into the **Message** field. You can use both
+   Zulip Markdown and Zendesk placeholders. Here's an example message
+   body template that you can optionally use:
 
-1.  Let's say you want a notification each time a ticket is updated. Put
-    in a descriptive title like "Announce ticket update". Under **Meet all of
-    the following conditions** select **Ticket: is...** and then select
-    **Updated**. In the **Perform these actions** section, select
-    **Notification: Notify target**, then select **Zulip**.
-
-1.  Next we need need to enter the message body into Message. You can use
-    Zulip Markdown and the Zendesk placeholders when creating your message.
-
-    You can copy this example template:
-
-        {% raw %}
-        Ticket [#{{ ticket.id }}: {{ ticket.title }}]({{ ticket.link }}), was updated by {{ current_user.name }}
+        {% raw %}Ticket [#{{ ticket.id }}: {{ ticket.title }}]({{ ticket.link }}), was updated by {{ current_user.name }}
         * Status: {{ ticket.status }}
         * Priority: {{ ticket.priority }}
         * Type: {{ ticket.ticket_type }}
@@ -59,13 +51,16 @@
         * Description:
         ``` quote
         {{ ticket.description }}
-        ```
-        {% endraw %}
+        ```{% endraw %}
 
-    ![](/static/images/integrations/zendesk/006.png)
+1.  Click **Submit**.
 
-1.  Finally, click **Submit**.
+{end_tabs}
 
 {!congrats.md!}
 
-![](/static/images/integrations/zendesk/007.png)
+![](/static/images/integrations/zendesk/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

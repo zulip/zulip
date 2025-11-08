@@ -1,0 +1,147 @@
+<div class="popover-menu" id="personal-menu-dropdown" data-simplebar data-simplebar-tab-index="-1">
+    <nav class="personal-menu-nav">
+        <header class="personal-menu-header">
+            <div class="avatar">
+                <img class="avatar-image{{#if user_is_guest}} guest-avatar{{/if}}" src="{{user_avatar}}"/>
+
+                {{#if is_active }}
+                <span class="status-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle hidden-for-spectators" data-tippy-placement="bottom" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                {{/if}}
+
+            </div>
+            <div class="text-area">
+                <p class="full-name">{{user_full_name}}</p>
+                <p class="user-type">{{user_type}}</p>
+            </div>
+        </header>
+        <section class="dropdown-menu-list-section personal-menu-actions" data-user-id="{{user_id}}">
+            <ul role="menu" class="popover-menu-list">
+                {{#if status_content_available}}
+                <li role="none" class="text-item popover-menu-list-item">
+                    <span class="personal-menu-status-wrapper">
+                        {{#if status_emoji_info}}
+                            {{#if status_emoji_info.emoji_alt_code}}
+                            <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
+                            {{else if status_emoji_info.url}}
+                            <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                            {{else}}
+                            <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></span>
+                            {{/if}}
+                        {{/if}}
+                        <span class="status_text personal-menu-status-text">
+                            {{#if show_placeholder_for_status_text}}
+                                <i class="personal-menu-no-status-text">{{t "No status text"}}</i>
+                            {{else}}
+                                {{status_text}}
+                            {{/if}}
+                        </span>
+                    </span>
+                    <a role="menuitem" tabindex="0" class="personal-menu-clear-status popover-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
+                        <i class="personal-menu-clear-status-icon popover-menu-icon zulip-icon zulip-icon-x-circle" aria-hidden="true"></i>
+                    </a>
+                </li>
+                {{!-- Group 1 --}}
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" tabindex="0" class="update_status_text popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Edit status' }}</span>
+                    </a>
+                </li>
+                {{else}}
+                <li role="none" class="link-item hidden-for-spectators popover-menu-list-item">
+                    <a role="menuitem" tabindex="0" class="update_status_text popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Set status' }}</span>
+                    </a>
+                </li>
+                {{/if}}
+                {{#if invisible_mode}}
+                <li role="none" class="link-item hidden-for-spectators popover-menu-list-item">
+                    <a role="menuitem" tabindex="0" class="invisible_mode_turn_off popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-play-circle" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Turn off invisible mode' }}</span>
+                    </a>
+                </li>
+                {{else}}
+                <li role="none" class="link-item hidden-for-spectators popover-menu-list-item">
+                    <a role="menuitem" tabindex="0" class="invisible_mode_turn_on popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-stop-circle" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Go invisible' }}</span>
+                    </a>
+                </li>
+                {{/if}}
+                {{!-- Group 2 --}}
+                <li role="separator" class="popover-menu-separator"></li>
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" href="#user/{{user_id}}" tabindex="0" class="view_full_user_profile popover-menu-link navigate-link-on-enter">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-account" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'View your profile' }}</span>
+                    </a>
+                </li>
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" tabindex="0" class="narrow-self-direct-message popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-users" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'View messages with yourself' }}</span>
+                    </a>
+                </li>
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" tabindex="0" class="narrow-messages-sent popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-message-square" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'View messages sent' }}</span>
+                    </a>
+                </li>
+                {{!-- Group 3 --}}
+                <li role="separator" class="popover-menu-separator"></li>
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" href="#settings/profile" class="open-profile-settings popover-menu-link">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-tool" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Settings' }}</span>
+                    </a>
+                </li>
+                <li role="none" class="popover-menu-list-item">
+                    <div role="group" class="tab-picker popover-menu-tab-group" aria-label="{{t 'App theme' }}">
+                        <input type="radio" id="select-automatic-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.automatic.code}}" {{#if (eq user_color_scheme color_scheme_values.automatic.code)}}checked{{/if}} />
+                        <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-automatic-theme" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
+                            <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+                        </label>
+                        <input type="radio" id="select-light-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.light.code}}" {{#if (eq user_color_scheme color_scheme_values.light.code)}}checked{{/if}} />
+                        <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-light-theme" aria-label="{{t 'Select light theme' }}" data-tippy-content="{{t 'Light theme' }}" tabindex="0">
+                            <i class="zulip-icon zulip-icon-sun" aria-hidden="true"></i>
+                        </label>
+                        <input type="radio" id="select-dark-theme" class="tab-option" name="theme-select" data-theme-code="{{color_scheme_values.dark.code}}" {{#if (eq user_color_scheme color_scheme_values.dark.code)}}checked{{/if}} />
+                        <label role="menuitemradio" class="tab-option-content tippy-zulip-delayed-tooltip" for="select-dark-theme" aria-label="{{t 'Select dark theme' }}" data-tippy-content="{{t 'Dark theme' }}" tabindex="0">
+                            <i class="zulip-icon zulip-icon-moon" aria-hidden="true"></i>
+                        </label>
+                        <span class="slider"></span>
+                    </div>
+                </li>
+                <li role="none" class="popover-menu-list-item">
+                    <div class="info-density-controls">
+                        {{> ../../settings/info_density_control_button_group
+                          property="web_font_size_px"
+                          default_icon_class="zulip-icon-type-big"
+                          property_value=web_font_size_px
+                          for_settings_ui=false
+                          prefix="personal_menu_"
+                          }}
+                        {{> ../../settings/info_density_control_button_group
+                          property="web_line_height_percent"
+                          default_icon_class="zulip-icon-line-height-big"
+                          property_value=web_line_height_percent
+                          for_settings_ui=false
+                          prefix="personal_menu_"
+                          }}
+                    </div>
+                </li>
+                {{!-- Group 4 --}}
+                <li role="separator" class="popover-menu-separator"></li>
+                <li role="none" class="link-item popover-menu-list-item">
+                    <a role="menuitem" class="logout_button hidden-for-spectators popover-menu-link" tabindex="0">
+                        <i class="popover-menu-icon zulip-icon zulip-icon-log-out" aria-hidden="true"></i>
+                        <span class="popover-menu-label">{{t 'Log out' }}</span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+    </nav>
+</div>

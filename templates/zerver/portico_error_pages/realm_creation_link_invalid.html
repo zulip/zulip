@@ -1,0 +1,19 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Organization creation link expired or invalid") }} | Zulip</title>
+{% endblock %}
+
+{% block error_page_content %}
+<img class="hourglass-img" src="{{ static('images/errors/timeout_hourglass.png') }}" alt=""/>
+<div class="errorbox">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _("Organization creation link expired or invalid") }}</h1>
+        <p>
+            {% trans %}
+            Unfortunately, this is not a valid link for creating an organization. Please <a href="/new/">obtain a new link</a> and try again.
+            {% endtrans %}
+        </p>
+    </div>
+</div>
+{% endblock %}

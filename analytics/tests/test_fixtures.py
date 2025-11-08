@@ -22,7 +22,7 @@ class TestFixtures(ZulipTestCase):
             frequency=CountStat.HOUR,
         )
         # test we get an array of the right length with frequency=CountStat.HOUR
-        self.assertEqual(len(data), 24)
+        self.assert_length(data, 24)
         # test that growth doesn't affect the first data point
         self.assertEqual(data[0], 2000)
         # test that the last data point is growth times what it otherwise would be

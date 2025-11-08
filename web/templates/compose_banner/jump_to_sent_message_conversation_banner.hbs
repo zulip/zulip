@@ -1,0 +1,9 @@
+{{#> compose_banner . }}
+    <p class="banner_message">
+        {{#tr}}
+        Viewing the conversation where you sent your message. To go back, use the <z-highlight>back</z-highlight>
+        button in your browser or desktop app.
+        {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+        {{/tr}}
+    </p>
+{{/compose_banner}}

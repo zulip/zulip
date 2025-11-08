@@ -6,8 +6,10 @@ import sys
 import time
 import types
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 # check for the venv
-from lib import sanity_check
+from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
@@ -20,7 +22,7 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     failed = False
     i = 0
 
-    def on_timer(signum: int, frame: types.FrameType) -> None:
+    def on_timer(signum: int, frame: types.FrameType | None) -> None:
         nonlocal failed, i
         sys.stdout.write(".")
         sys.stdout.flush()
@@ -56,14 +58,14 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
 
 
 if __name__ == "__main__":
-    print("\nStarting Development Server")
-    args = [f"{TOOLS_DIR}/run-dev.py"]
+    print("\nStarting development server")
+    args = [f"{TOOLS_DIR}/run-dev"]
     run_dev = subprocess.Popen(
         args,
         bufsize=1,  # line buffered
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        universal_newlines=True,
+        text=True,
     )
     failed = check_worker_launch(run_dev)
 
@@ -85,7 +87,7 @@ if __name__ == "__main__":
     time.sleep(1.3)
 
     print("Attempting to modify a file")
-    os.utime("zerver/lib/actions.py")
+    os.utime("zerver/models/__init__.py")
     failed = check_worker_launch(run_dev)
 
     run_dev.send_signal(signal.SIGINT)

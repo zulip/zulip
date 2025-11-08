@@ -1,0 +1,34 @@
+server {
+    # If coming from localhost, we do allow access to internal
+    # APIs over HTTP.
+    listen 127.0.0.1:80;
+    listen [::1]:80;
+
+    location /api/internal/ {
+        include /etc/nginx/zulip-include/api_headers;
+        include uwsgi_params;
+    }
+}
+
+include /etc/nginx/zulip-include/trusted-proto;
+include /etc/nginx/zulip-include/s3-cache;
+include /etc/nginx/zulip-include/upstreams;
+include /etc/zulip/nginx_sharding_map.conf;
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    # This server is behind an ALB, which does not check the
+    # certificate validity:
+    # https://kevin.burke.dev/kevin/aws-alb-validation-tls-reply/
+    #
+    # Snakeoil verts are good for 10 years after initial creation, but
+    # the ALBs don't even check expiration. ¯\_(ツ)_/¯
+    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+
+    server_name zulipstaging.com;
+
+    include /etc/nginx/zulip-include/app;
+}

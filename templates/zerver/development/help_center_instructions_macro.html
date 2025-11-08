@@ -1,0 +1,19 @@
+<ul>
+    <li>
+        To run just the help center dev server without
+        running the rest of the Zulip app, use
+        <code>./tools/run-dev --only-help-center</code>.
+    </li>
+    <li>
+        To run the help center dev server alongside the
+        Zulip app, use
+        <code>./tools/run-dev --help-center-dev-server</code> (requires more resources).
+    </li>
+    <li>
+        To test help center search, run <code>./tools/build-help-center</code> followed by
+        <code>./tools/run-dev --help-center-static-build</code>. Hot reloads won't
+        work: rerun <code>./tools/build-help-center</code>
+        and reload your browser to see updates. Search will not
+        work with other methods of running the help center.
+    </li>
+</ul>

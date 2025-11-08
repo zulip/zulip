@@ -1,0 +1,35 @@
+{
+    "action": "create",
+    "createdAt": "2023-04-11T19:26:16.461Z",
+    "data": {
+        "id": "521660ac-782f-4dd9-8928-95dbc9cb4c9b",
+        "createdAt": "2023-04-11T19:26:16.461Z",
+        "updatedAt": "2023-04-11T19:26:16.461Z",
+        "name": "This is just a sample project to test the working.",
+        "description": "",
+        "slugId": "3d89ec1c20d3",
+        "color": "#bec2c8",
+        "state": "backlog",
+        "creatorId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "leadId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "sortOrder": 2014.64,
+        "issueCountHistory": [],
+        "completedIssueCountHistory": [],
+        "scopeHistory": [],
+        "completedScopeHistory": [],
+        "inProgressScopeHistory": [],
+        "slackNewIssue": true,
+        "slackIssueComments": true,
+        "slackIssueStatuses": true,
+        "teamIds": [
+            "9e383f51-2629-4f19-97ff-451cc2f0a0ad"
+        ],
+        "memberIds": [
+            "674c90c8-35ea-454d-8ca4-5548258fd795"
+        ]
+    },
+    "url": "https://linear.app/webhooks/project/this-is-just-a-sample-project-to-test-the-working-3d89ec1c20d3",
+    "type": "Project",
+    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
+    "webhookTimestamp": 1681241176588
+}

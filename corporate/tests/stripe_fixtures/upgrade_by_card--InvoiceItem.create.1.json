@@ -1,23 +1,32 @@
 {
-  "amount": -48000,
+  "amount": 48000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED0001",
+  "customer": "cus_NORMALIZED",
   "date": 1000000000,
-  "description": "Payment (Card ending in 4242)",
+  "description": "Zulip Cloud Standard",
   "discountable": false,
-  "id": "ii_NORMALIZED00000000000002",
-  "invoice": null,
+  "discounts": [],
+  "id": "upgrade_by_card--Event.list.3.json",
+  "invoice": "in_NORMALIZED",
   "livemode": false,
   "metadata": {},
+  "net_amount": 48000,
   "object": "invoiceitem",
+  "parent": null,
   "period": {
-    "end": 1000000000,
-    "start": 1000000000
+    "end": 1357095845,
+    "start": 1325473445
   },
-  "plan": null,
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "8000"
+  },
   "proration": false,
-  "quantity": 1,
-  "subscription": null,
+  "quantity": 6,
   "tax_rates": [],
-  "unit_amount": -48000
+  "test_clock": null
 }

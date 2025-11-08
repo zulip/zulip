@@ -1,0 +1,32 @@
+{
+  "amount": -24000,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": "$20.00/month new customer discount",
+  "discountable": false,
+  "discounts": [],
+  "id": "schedule_server_upgrade_to_fixed_price_business_plan--Event.list.2.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": -24000,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1357095845,
+    "start": 1325473445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "-24000"
+  },
+  "proration": false,
+  "quantity": 1,
+  "tax_rates": [],
+  "test_clock": null
+}

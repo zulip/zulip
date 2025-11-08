@@ -1,137 +1,236 @@
 # Internationalization for developers
 
-Zulip, like many popular applications, is designed with
-internationalization (i18n) in mind, which means users can fully use
-the Zulip UI in their preferred language.
+Zulip is designed with internationalization (i18n) in mind, which lets users
+view the Zulip UI in their preferred language. As a developer, it's your
+responsibility to make sure that:
 
-This article aims to teach Zulip contributors enough about
-internationalization and Zulip's tools for it so that they can make
-correct decisions about how to tag strings for translation.  A few
-principles are important in how we think about internationalization:
+- UIs you implement look good when translated into languages other than English.
+- Any strings your code changes touch are correctly marked for translation.
 
-* Our goal is for **all end-user facing strings** in Zulip to be
-  tagged for translation in both [HTML templates](#html-templates) and
-  code, and our linters attempt to enforce this.  There are some
-  exceptions: we don't tag strings in Zulip's landing pages
-  (e.g. /features) and other documentation (e.g. /help) for
-  translation at this time (though we do aim for those pages to be
-  usable with tools like Google Translate).
-* Translating all the strings in Zulip for a language and maintaining
-  that translation is a lot of work, and that work scales with the
-  number of strings tagged for translation in Zulip.  For this reason,
-  we put significant effort into only tagging for translation content
-  that will actually be displayed to users, and minimizing unnecessary
-  user-facing strings in the product.
-* In order for a translated user experience to be good, every UI
-  element needs to be built in a way that supports i18n.
-* This is more about string consistency in general, but we have a
-  "Sentence case" [capitalization
-  policy](../translating/translating.html#capitalization) that we enforce using linters
-  that check all strings tagged for translation in Zulip.
+This pages gives concrete guidance on how to accomplish these goals, as well as
+providing additional context for those who are curious.
 
-This article aims to provide a brief introduction.  We recommend the
-[EdX i18n guide][edx-i18n] as a great resource for learning more about
-internationalization in general; we agree with essentially all of
-their style guidelines.
+## How internationalization impacts Zulip's UI
 
-[edx-i18n]: https://edx.readthedocs.io/projects/edx-developer-guide/en/latest/internationalization/i18n.html
+Always be mindful that **text width is not a constant**. The width of the string
+needed to express something varies dramatically between languages. This means
+you can't just hardcode a button or widget to look great for English and expect
+it to work in all languages.
 
-## Key details about human language
+You can test your work by changing the lengths of strings to be 50% longer and
+50% shorter than in English. For strings that are already in the Zulip UI,
+Russian is a good test case for translations that are generally longer than
+English. Japanese translations are generally shorter.
 
-There are a few critical details about human language that are important
-to understand when implementing an internationalized application:
+## What should be marked for translation
 
-* **Punctuation** varies between languages (e.g. Japanese doesn't use
-  `.`s at the end of sentences).  This means that you should always
+Our goal is for **all user-facing strings** in Zulip to be tagged for
+translation in both [HTML templates][html-templates] and code, and our linters
+attempt to enforce this. This applies to every bit of language a user might see,
+including things like error strings, dates, and email content.
+
+The exceptions to the "tag everything users sees" rule are:
+
+- Landing pages (e.g., <https://zulip.com/features/>)
+- [Help center pages](../documentation/helpcenter.md)
+- [Zulip updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements)
+
+We do aim for those pages to be usable with tools like Google Translate.
+
+Note that the "user-facing" part is also important. To make good use of our
+community translators' valuable time, we only tag content that will actually be
+displayed to users.
+
+## How to mark a string for translation
+
+When tagging strings for translation, variation between languages means that you
+have to be careful in exactly what you tag, and how you split things up:
+
+- **Punctuation** varies between languages (e.g., Japanese doesn't use
+  `.`s at the end of sentences). This means that you should always
   include end-of-sentence symbols like `.` and `?` inside the
   to-be-translated strings, so that translators can correctly
   translate the content.
-* **Word order** varies between languages (e.g. some languages put
-  subjects before verbs, others the other way around).  This means
-  that **concatenating translateable strings** produces broken results
-  (more details with examples are below).
-* The **width of the string needed to express something** varies
-  dramatically between languages; this means you can't just hardcode a
-  button or widget to look great for English and expect it to work in
-  all languages.  German is a good test case, as it has a lot of long
-  words, as is Japanese (as character-based languages use a lot less
-  width).
-* This is more about how i18n tooling works, but in code, the
-  translation function must be passed the string to translate, not a
-  variable containing the target string.  Otherwise, the parsers that
+- **Word order** varies between languages (e.g., some languages put subjects
+  before verbs, others the other way around). This means that **concatenating
+  translatable strings** produces broken results. If a sentence contains a
+  variable, never tag the part before the variable separately from the part
+  after the variable.
+- **Strings with numerals** (e.g., "5 bananas") work quite differently between
+  languages, so double-check your work when tagging strings with numerals for
+  translation. See the [plurals](#plurals-and-lists) section below for details.
+
+Note also that we have a "sentence case" [capitalization
+policy](translating.md#capitalization) that we enforce using linters that check
+all strings tagged for translation in Zulip.
+
+## Translation syntax in Zulip
+
+A few general notes:
+
+- Translation functions must be passed the string to translate, not a
+  variable containing the target string. Otherwise, the parsers that
   extract the strings in a project to send to translators will not
   find your string.
 
-There's a lot of other interesting differences that are important for
-i18n (e.g. Zulip has a "Full Name" field rather than "First Name" and
-"Last Name" because different cultures order the surnames and given
-names differently), but the above issues are likely to be relevant to
-most people working on Zulip.
+- Zulip makes use of the [Jinja2][] templating system for the server
+  and [Handlebars][] for the web app. Our [HTML templates][html-templates]
+  documentation includes useful information on the syntax and
+  behavior of these systems.
 
-## Translation process
+### Web application translations
 
-The end-to-end tooling process for translations in Zulip is as follows.
+We use the [FormatJS][] library for translations in the Zulip web app,
+both in [Handlebars][] templates and JavaScript.
 
-1. The strings are marked for translation (see sections for
-   [backend](#backend-translations) and
-   [frontend](#frontend-translations) translations for details on
-   this).
+FormatJS uses the standard [ICU MessageFormat][], which includes
+useful features such as [plural translations](#plurals-and-lists).
 
-2. Translation [resource][] files are created using the `./manage.py
-   makemessages` command. This command will create, for each language,
-   a resource file called `translations.json` for the frontend strings
-   and `django.po` for the backend strings.
+To mark a string translatable in JavaScript files, pass it to the
+`intl.formatMessage` function, which we alias to `$t` in `intl.js`:
 
-   The `makemessages` command is idempotent in that:
+```js
+$t({defaultMessage: "English text"})
+```
 
-   - It will only delete singular keys in the resource file when they
-     are no longer used in Zulip code.
-   - It will only delete plural keys (see below for the documentation
-     on plural translations) when the corresponding singular key is
-     absent.
-   - It will not override the value of a singular key if that value
-     contains a translated text.
+The string to be translated must be a constant literal string, but
+variables can be interpolated by enclosing them in braces (like
+`{variable}`) and passing a context object:
 
-3. Those resource files are uploaded to Transifex by a maintainer using the
-   `./tools/i18n/push-translations` command (which invokes a Transifex
-   API tool, `tx push`, internally).
+```js
+$t({defaultMessage: "English text with a {variable}"}, {variable: "Variable value"})
+```
 
-4. Translators translate the strings in the Transifex UI.  (In theory,
-   it's possible to translate locally and then do `tx push`, but
-   because our workflow is to sync translation data from Transifex to
-   Zulip, making changes to translations in Zulip risks having the
-   changes blown away by a data sync, so that's only a viable model
-   for a language that has no translations yet).
+`$t` does not escape any variables, so if your translated string is
+eventually going to be used as HTML, use `$t_html` instead.
 
-5. The translations are downloaded back into the codebase by a
-   maintainer, using `tools/i18n/sync-translations` (which invokes the
-   Transifex API tool, `tx pull`, internally).
+```js
+html_content = $t_html({defaultMessage: "HTML with a {variable}"}, {variable: "Variable value"});
+$("#foo").html(html_content);
+```
 
-If you're interested, you may also want to check out the [translators'
-workflow](../translating/translating.html#translators-workflow), just so you have a
-sense of how everything fits together.
+The only HTML tags allowed directly in translated strings are the
+simple HTML tags enumerated in `default_html_elements`
+(`web/src/i18n.ts`) with no attributes. This helps to avoid
+exposing HTML details to translators. If you need to include more
+complex markup such as a link, you can define a custom HTML tag
+locally to the translation, or use a Handlebars template:
 
-## Translation resource files
+```js
+$t_html(
+    {defaultMessage: "<b>HTML</b> linking to the <z-link>login page</z-link>"},
+    {"z-link": (content_html) => `<a href="/login/">${content_html.join("")}</a>`},
+)
+```
 
-All the translation magic happens through resource files, which hold
-the translated text. Backend resource files are located at
-`locale/<lang_code>/LC_MESSAGES/django.po`, while frontend
-resource files are located at
-`locale/<lang_code>/translations.json` (and mobile at
-`mobile.json`).
+#### Plurals and lists
 
-These files are uploaded to [Transifex][], where they can be translated.
+Plurals are a complex detail of human language. In English, there are
+only two variants for how a word like "banana" might be spelled
+depending on the number of objects being discussed: "1 banana" and "2
+bananas". But languages vary greatly in how plurals work. For example,
+in Russian, the form a noun takes
+[depends](https://en.wikipedia.org/wiki/Russian_declension#Declension_of_cardinal_numerals)
+in part on the last digit of its quantity.
 
-## HTML Templates
+To solve this problem, Zulip expresses plural strings using the
+standard [ICU MessageFormat][] syntax, which defines how the string
+varies depending on whether there's one item or many in English:
 
-Zulip makes use of the [Jinja2][] templating system for the backend
-and [Handlebars][] for the frontend. Our [HTML templates][html-templates]
-documentation includes useful information on the syntax and
-behavior of these systems.
+```js
+"{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}"
+```
 
-## Backend translations
+Translators are then able to write a translation using this same
+syntax, potentially using a different set of cases, like this Russian
+translation, which varies the string based on whether there was 1,
+few, or many items:
 
-### Jinja2 templates
+```js
+"{N, plural, one {Готово! {N} сообщение помечено как прочитанное.} few {Готово! {N} сообщений помечены как прочитанные.} many {Готово! {N} сообщений помечены как прочитанные.} other {Готово! {N} сообщений помечены как прочитанные.}}"
+```
+
+You don't need to understand how to write Russian plurals. As a
+developer, you just need to write the correct ICU plurals for English,
+which will always just have singular and plural variants, and
+translators can take care of the rest.
+
+Nonetheless, even the English format takes some concentration to
+read. So when designing UI, we generally try to avoid unnecessarily
+writing strings that require plurals in favor of other ways to present
+information, like displaying an icon with a number next to it.
+
+Languages differ greatly in how to construct a list of the form "foo,
+bar, and baz". Some languages don't use commas! The web application
+has a handy `util.format_array_as_list` function for correctly doing
+this using the `Intl` module; use `git grep` to find examples.
+
+#### Handlebars templates
+
+For translations in Handlebars templates we also use FormatJS, through two
+Handlebars [helpers][] that Zulip registers. The syntax for simple strings is:
+
+```html+handlebars
+{{t 'English text' }}
+
+{{t 'Block of English text with a {variable}.' }}
+```
+
+If you are passing a translated string to a Handlebars partial, you can use:
+
+```html+handlebars
+{{> template_name
+    variable_name=(t 'English text')
+    }}
+```
+
+The syntax for HTML strings is:
+
+<!-- The html+handlebars lexer fails to lex the single braces. -->
+
+```text
+{{#tr}}
+    <p>Block of English text.</p>
+{{/tr}}
+
+{{#tr}}
+    <p>Block of English text with a {variable}.</p>
+{{/tr}}
+```
+
+Just like in JavaScript code, variables are enclosed in _single_
+braces (rather than the usual Handlebars double braces). Unlike in
+JavaScript code, variables are automatically escaped by our Handlebars
+helper.
+
+Handlebars expressions like `{{variable}}` or blocks like
+`{{#if}}...{{/if}}` aren't permitted inside a `{{#tr}}...{{/tr}}`
+translated block, because they don't work properly with translation.
+The Handlebars expression would be evaluated before the string is
+processed by FormatJS, so that the string to be translated wouldn't be
+constant. We have a linter to enforce that translated blocks don't
+contain Handlebars.
+
+Restrictions on including HTML tags in translated strings are the same
+as in JavaScript. You can insert more complex markup using a local
+custom HTML tag like this:
+
+```html+handlebars
+{{#tr}}
+    <b>HTML</b> linking to the <z-link>login page</z-link>
+    {{#*inline "z-link"}}<a href="/login/">{{> @partial-block}}</a>{{/inline}}
+{{/tr}}
+```
+
+### Server translations
+
+Strings in the server primarily comprise two areas:
+
+- Error strings and other values returned by the API.
+- Strings in portico pages, such as the login flow, that are not
+  rendered using JavaScript or Handlebars.
+
+#### Jinja2 templates
 
 All user-facing text in the Zulip UI should be generated by an Jinja2 HTML
 template so that it can be translated.
@@ -139,54 +238,54 @@ template so that it can be translated.
 To mark a string for translation in a Jinja2 template, you
 can use the `_()` function in the templates like this:
 
-```
+```jinja
 {{ _("English text") }}
 ```
 
-If a piece of text contains both a literal string component and variables,
-you can use a block translation, which makes use of placeholders to
-help translators to translate an entire sentence.  To translate a
-block, Jinja2 uses the [trans][] tag.  So rather than writing
-something ugly and confusing for translators like this:
+If a piece of text contains both a literal string component and variables, use a
+block translation. This puts in placeholders for variables, to allow translators
+to translate an entire sentence.
 
+To tag a block for translation, Jinja2 uses the [trans][trans] tag, like this:
+
+```jinja
+{% trans %}This string will have {{ value }} inside.{% endtrans %}
 ```
+
+Never break up a sentence like this, as it will make it impossible to translate
+correctly:
+
+```jinja
 # Don't do this!
 {{ _("This string will have") }} {{ value }} {{ _("inside") }}
 ```
 
-You can instead use:
-
-```
-{% trans %}This string will have {{ value }} inside.{% endtrans %}
-```
-
-### Python
+#### Python
 
 A string in Python can be marked for translation using the `_()` function,
 which can be imported as follows:
 
-```
-from django.utils.translation import ugettext as _
+```python
+from django.utils.translation import gettext as _
 ```
 
-Zulip expects all the error messages to be translatable as well.  To
-ensure this, the error message passed to `json_error` and
-`JsonableError` should always be a literal string enclosed by `_()`
-function, e.g.:
+Zulip expects all the error messages to be translatable as well. To
+ensure this, the error message passed to `JsonableError`
+should always be a literal string enclosed by `_()`
+function, for example:
 
-```
-json_error(_('English Text'))
-JsonableError(_('English Text'))
+```python
+JsonableError(_('English text'))
 ```
 
 If you're declaring a user-facing string at top level or in a class, you need to
-use `ugettext_lazy` instead, to ensure that the translation happens at
-request-processing time when Django knows what language to use, e.g.:
+use `gettext_lazy` instead, to ensure that the translation happens at
+request-processing time when Django knows what language to use, for example:
 
 ```python
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
-AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
+AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
   ...
@@ -200,150 +299,66 @@ class Realm(models.Model):
     ...
     ...
 
-    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy('stream events')
+    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy("channel events")
 ```
 
-To ensure we always internationalize our JSON errors messages, the
+To ensure we always internationalize our JSON error messages, the
 Zulip linter (`tools/lint`) attempts to verify correct usage.
 
-## Frontend translations
+## Translation process
 
-We use the [i18next][] library for frontend translations when dealing
-with [Handlebars][] templates or JavaScript.
+The end-to-end tooling process for translations in Zulip is as follows.
 
-To mark a string translatable in JavaScript files, pass it to the
-`i18n.t` function.
+1. The strings are marked for translation (see sections for
+   [server](#server-translations) and
+   [web app](#web-application-translations) translations for details on
+   this).
 
-```
-i18n.t('English Text', context);
-```
+2. Translation resource files are created using the
+   `./manage.py makemessages` command. This command will create, for
+   each language, a resource file called `translations.json` for the
+   web app strings and `django.po` for the server strings.
 
-Variables in a translated frontend string are enclosed in
-double-underscores, like `__variable__`:
+   The `makemessages` command is idempotent in that:
 
-```
-i18n.t('English text with a __variable__', {'variable': 'Variable value'});
-```
+   - It will only delete singular keys in the resource file when they
+     are no longer used in Zulip code.
+   - It will only delete plural keys (see above for the documentation
+     on plural translations) when the corresponding singular key is
+     absent.
+   - It will not override the value of a singular key if that value
+     contains a translated text.
 
-`i18next` also supports plural translations. To support plurals make
-sure your resource file contains the related keys:
+3. Those resource files, when committed, are automatically scanned by
+   Weblate.
 
-```
-{
-    "en": {
-        "translation": {
-            "key": "item",
-            "key_plural": "items",
-            "keyWithCount": "__count__ item",
-            "keyWithCount_plural": "__count__ items"
-        }
-    }
-}
-```
+4. Translators translate the strings in the Weblate UI.
 
-With this resource you can show plurals like this:
+5. Weblate makes the translations into a Git commit, which then can be
+   merged into the codebase by a maintainer.
 
-```
-i18n.t('key', {count: 0}); // output: 'items'
-i18n.t('key', {count: 1}); // output: 'item'
-i18n.t('key', {count: 5}); // output: 'items'
-i18n.t('key', {count: 100}); // output: 'items'
-i18n.t('keyWithCount', {count: 0}); // output: '0 items'
-i18n.t('keyWithCount', {count: 1}); // output: '1 item'
-i18n.t('keyWithCount', {count: 5}); // output: '5 items'
-i18n.t('keyWithCount', {count: 100}); // output: '100 items'
-```
+If you're interested, you may also want to check out the [translators'
+workflow](translating.md#translators-workflow), just so you have a
+sense of how everything fits together.
 
-For further reading on plurals, read the [official] documentation.
+## Translation resource files
 
-By default, all text is escaped by i18next. To unescape a text you can use
-double-underscores followed by a dash and space `__- ` like this:
+All the translation magic happens through resource files, which hold
+the translated text. Server resource files are located at
+`locale/<lang_code>/LC_MESSAGES/django.po`, while web app resource
+files are located at `locale/<lang_code>/translations.json`.
 
-```
-i18n.t('English text with a __- variable__', {'variable': 'Variable value'});
-```
+## Additional resources
 
-For more information, you can read the official [unescape] documentation.
+We recommend the [EdX i18n guide][edx-i18n] as a great resource for learning
+more about internationalization in general; we agree with essentially all of
+their style guidelines.
 
-### Handlebars templates
-
-For translations in Handlebars templates we also use `i18n.t`, through two
-Handlebars [helpers][] that Zulip registers.  The syntax for simple strings is:
-
-```
-{{t 'English Text' }}
-```
-
-If you are passing a translated string to a Handlebars Partial, you can use:
-
-```
-{{> template_name
-    variable_name=(t 'English Text')
-    }}
-```
-
-The syntax for block strings or strings containing variables is:
-
-```
-{{#tr context}}
-    Block of English text.
-{{/tr}}
-
-var context = {'variable': 'variable value'};
-{{#tr context}}
-    Block of English text with a __variable__.
-{{/tr}}
-```
-
-Just like in JavaScript code, variables are enclosed in double
-underscores `__`.
-
-Handlebars expressions like `{{variable}}` or blocks like
-`{{#if}}...{{/if}}` aren't permitted inside a `{{#tr}}...{{/tr}}`
-translated block, because they don't work properly with translation.
-The Handlebars expression would be evaluated before the string is
-processed by `i18n.t`, so that the string to be translated wouldn't be
-constant.  We have a linter to enforce that translated blocks don't
-contain handlebars.
-
-The rules for plurals are same as for JavaScript files. You just have
-to declare the appropriate keys in the resource file and then include
-the `count` in the context.
-
-## Transifex config
-
-The config file that maps the resources from Zulip to Transifex is
-located at `.tx/config`.
-
-## Transifex CLI setup
-
-In order to be able to run `tx pull` (and `tx push` as well, if you're a
-maintainer), you have to specify your Transifex credentials in a config
-file, located at `~/.transifexrc`.
-
-You can find details on how to set it up [here][transifexrc], but it should
-look similar to this (with your credentials):
-
-```
-[https://www.transifex.com]
-username = user
-token =
-password = p@ssw0rd
-hostname = https://www.transifex.com
-```
-
-This basically identifies you as a Transifex user, so you can access your
-organizations from the command line.
-
-
-[Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: https://handlebarsjs.com/
-[trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[i18next]: https://www.i18next.com
-[official]: https://www.i18next.com/plurals.html
-[unescape]: https://www.i18next.com/interpolation.html#unescape
+[edx-i18n]: https://docs.openedx.org/en/latest/developers/references/developer_guide/internationalization/i18n.html
+[jinja2]: http://jinja.pocoo.org/
+[handlebars]: https://handlebarsjs.com/
+[trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
+[formatjs]: https://formatjs.github.io/
+[icu messageformat]: https://formatjs.github.io/docs/core-concepts/icu-syntax#plural-format
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
-[resource]: https://www.i18next.com/add-or-load-translations.html
-[Transifex]: https://transifex.com
-[transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
-[html-templates]: ../subsystems/html-css.html#html-templates
+[html-templates]: ../subsystems/html-css.md#html-templates

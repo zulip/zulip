@@ -1,0 +1,19 @@
+{% macro email_tag(email, text) -%}
+    <a href="mailto:{{ email }}">{{ text | default(email) }}</a>
+{%- endmacro %}
+
+{% macro referrer_email_tag(referrer_email, referrer_name) -%}
+    <a href="mailto:{{ referrer_email }}">{{ referrer_name }} ({{ referrer_email }})</a>
+{%- endmacro %}
+
+{% macro link_tag(url, text) -%}
+    <a href="{{ url }}">{{ text | default(url) }}</a>
+{%- endmacro %}
+
+{% macro contact_us_self_hosted(email) -%}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at <a href="mailto:{{ email }}">{{ email }}</a>.{% endtrans %}
+{%- endmacro %}
+
+{% macro contact_us_zulip_cloud(email) -%}
+    {% trans %}Do you have questions or feedback to share? <a href="mailto:{{ email }}">Contact us</a> — we'd love to help!{% endtrans %}
+{%- endmacro %}

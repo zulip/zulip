@@ -1,0 +1,33 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Website attributions | Zulip" %}
+{% set PAGE_DESCRIPTION = "Attributions for the Zulip website." %}
+{% set allow_search_engine_indexing = False %} <!-- Page is not indexed by search engines. -->
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page">
+    <div class="hero empty-hero"></div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                <h1>Website attributions</h1>
+                <ul>
+                    <li>
+                        <b>On <a href="/for/business/">/for/business/</a> page:</b>
+                        <img alt="" src="{{ static('images/landing-page/companies/software-engineer.svg') }}" />
+                        <p>"<a href="https://iconscout.com/illustration/software-engineer-2043023">Software engineer Illustration</a>" By <a href="https://iconscout.com/contributors/delesign/illustrations">Delesign Graphic</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

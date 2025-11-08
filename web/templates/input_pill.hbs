@@ -1,0 +1,51 @@
+<div class='pill {{#if deactivated}} deactivated-pill {{/if~}}'
+  {{~#if user_id}}data-user-id="{{user_id}}"{{/if~}}
+  {{~#if group_id}}data-user-group-id="{{group_id}}"{{/if~}}
+  {{~#if stream_id}}data-stream-id="{{stream_id}}"{{/if~}}
+  {{~#if data_syntax}}data-syntax="{{data_syntax}}"{{/if}} tabindex=0>
+    {{#if has_image}}
+    <img class="pill-image" src="{{img_src}}" />
+    <div class="pill-image-border"></div>
+    {{#if deactivated}}
+        <span class="fa fa-ban slashed-circle-icon"></span>
+    {{/if}}
+    {{/if}}
+    <span class="pill-label">
+        <span class="pill-value">
+            {{#if has_stream}}
+                {{~#if stream.invite_only ~}}
+                <i class="zulip-icon zulip-icon-lock channel-privacy-type-icon" aria-hidden="true"></i>
+                {{~ else if stream.is_web_public ~}}
+                <i class="zulip-icon zulip-icon-globe channel-privacy-type-icon" aria-hidden="true"></i>
+                {{~ else ~}}
+                <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>
+                {{~/if~}}
+            {{/if}}
+            {{#if is_empty_string_topic}}
+            {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
+            {{else}}
+            {{ display_value }}
+            {{/if}}
+        </span>
+        {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
+        {{~#if has_status~}}
+            {{~> status_emoji status_emoji_info~}}
+        {{~/if~}}
+        {{~#if is_bot~}}
+            <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+        {{~/if~}}
+        {{~#if show_group_members_count~}}
+        &nbsp;<span class="group-members-count">({{group_members_count}})</span>
+        {{~/if~}}
+    </span>
+    {{#if show_expand_button}}
+    <div class="expand">
+        <a role="button" class="zulip-icon zulip-icon-expand-both-diagonals pill-expand-button"></a>
+    </div>
+    {{/if}}
+    {{#unless disabled}}
+    <div class="exit">
+        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>
+    </div>
+    {{/unless}}
+</div>

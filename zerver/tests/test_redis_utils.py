@@ -1,5 +1,8 @@
 from unittest import mock
 
+from redis import StrictRedis
+from typing_extensions import override
+
 from zerver.lib.redis_utils import (
     MAX_KEY_LENGTH,
     ZulipRedisKeyOfWrongFormatError,
@@ -14,8 +17,10 @@ from zerver.lib.test_classes import ZulipTestCase
 class RedisUtilsTest(ZulipTestCase):
     key_format = "test_redis_utils_{token}"
     expiration_seconds = 60
+    redis_client: "StrictRedis[bytes]"
 
     @classmethod
+    @override
     def setUpClass(cls) -> None:
         cls.redis_client = get_redis_client()
         return super().setUpClass()

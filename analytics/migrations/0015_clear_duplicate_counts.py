@@ -1,10 +1,10 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Count, Sum
 
 
-def clear_duplicate_counts(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def clear_duplicate_counts(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """This is a preparatory migration for our Analytics tables.
 
     The backstory is that Django's unique_together indexes do not properly
@@ -55,11 +55,12 @@ def clear_duplicate_counts(apps: StateApps, schema_editor: DatabaseSchemaEditor)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0014_remove_fillstate_last_modified"),
     ]
 
     operations = [
-        migrations.RunPython(clear_duplicate_counts, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            clear_duplicate_counts, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

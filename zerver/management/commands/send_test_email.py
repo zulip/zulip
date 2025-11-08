@@ -1,20 +1,28 @@
+import io
+import smtplib
+from contextlib import redirect_stderr
 from typing import Any
 
 from django.conf import settings
 from django.core.mail import mail_admins, mail_managers, send_mail
 from django.core.management import CommandError
 from django.core.management.commands import sendtestemail
+from typing_extensions import override
 
-from zerver.lib.send_email import FromAddress
+from zerver.lib.send_email import FromAddress, log_email_config_errors
 
 
 class Command(sendtestemail.Command):
+    @override
     def handle(self, *args: Any, **kwargs: str) -> None:
         if settings.WARN_NO_EMAIL:
             raise CommandError(
                 "Outgoing email not yet configured, see\n  "
                 "https://zulip.readthedocs.io/en/latest/production/email.html"
             )
+
+        log_email_config_errors()
+
         if len(kwargs["email"]) == 0:
             raise CommandError(
                 "Usage: /home/zulip/deployments/current/manage.py "
@@ -37,12 +45,22 @@ class Command(sendtestemail.Command):
             "the Zulip server with /home/zulip/deployments/current/scripts/restart-server "
             "after changing the settings in /etc/zulip before your changes will take effect."
         )
-        sender = FromAddress.SUPPORT
-        print(f"  * {sender}")
-        send_mail("Zulip email test", message, sender, kwargs["email"])
-        noreply_sender = FromAddress.tokenized_no_reply_address()
-        print(f"  * {noreply_sender}")
-        send_mail("Zulip noreply email test", message, noreply_sender, kwargs["email"])
+        with redirect_stderr(io.StringIO()) as f:
+            smtplib.SMTP.debuglevel = 1
+            try:
+                sender = FromAddress.SUPPORT
+                print(f"  * {sender}")
+                send_mail("Zulip email test", message, sender, kwargs["email"])
+
+                noreply_sender = FromAddress.tokenized_no_reply_address()
+                print(f"  * {noreply_sender}")
+                send_mail("Zulip noreply email test", message, noreply_sender, kwargs["email"])
+            except smtplib.SMTPException as e:
+                print(f"Failed to send mails: {e}")
+                print()
+                print("Full SMTP log follows:")
+                print(f.getvalue())
+                raise CommandError("Email sending failed!")
         print()
         print("Successfully sent 2 emails to {}!".format(", ".join(kwargs["email"])))
 

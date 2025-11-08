@@ -1,118 +1,107 @@
-test1:
-  responses:
-    "200":
-      content:
-        application/json:
-          schema:
-            type: object
-            additionalProperties: false
-            properties:
-              top_array:
-                type: array
-                items:
-                  oneOf:
-                    - type: object
-                      properties:
-                        obj:
-                          oneOf:
-                            - type: array
-                              items:
+openapi: 3.0.1
+info:
+  title: Test API
+  version: 1.0.0
+servers:
+  - url: "http://localhost:9991/api/v1"
+paths:
+  /test1:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  top_array:
+                    type: array
+                    items:
+                      oneOf:
+                        - type: object
+                          properties:
+                            obj:
+                              oneOf:
+                                - type: array
+                                  items:
+                                    type: string
+                                - type: object
+                                  properties:
+                                    str3:
+                                      type: string
+                        - type: array
+                          items:
+                            type: object
+                            properties:
+                              str1:
                                 type: string
-                            - type: object
-                              properties:
-                                str3:
-                                  type: string
-                    - type: array
-                      items:
-                        type: object
-                        properties:
-                          str1:
-                            type: string
-                          str2:
-                            type: string
-          example:
-            {
-              "top_array":
-                [
-                  {"obj": {"str3": "test"}},
-                  [{"str1": "success", "str2": "success"}],
-                ],
-            }
-test2:
-  responses:
-    "200":
-      content:
-        application/json:
-          schema:
-            type: object
-            additionalProperties: false
-            properties:
-              top_array:
-                type: array
-                items:
-                  oneOf:
-                    - type: object
-                      properties:
-                        obj:
-                          oneOf:
-                            - type: array
-                              items:
+                              str2:
                                 type: string
-                            - type: object
-                              additionalProperties: false
-                              properties:
-                                str3:
-                                  type: string
-                    - type: array
-                      items:
-                        type: object
-                        properties:
-                          str1:
-                            type: string
-                          str2:
-                            type: string
-          example:
-            {
-              "top_array":
-                [
-                  {"obj": {"str3": "test", "str4": "extraneous"}},
-                  [{"str1": "success", "str2": "success"}],
-                ],
-            }
-test3:
-  responses:
-    "200":
-      content:
-        application/json:
-          schema:
-            type: object
-            additionalProperties: false
-            properties:
-              top_array:
-                type: array
-                items:
-                  oneOf:
-                    - type: object
-                      properties:
-                        obj:
-                          oneOf:
-                            - type: array
-                              items:
+  /test2:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  top_array:
+                    type: array
+                    items:
+                      oneOf:
+                        - type: object
+                          properties:
+                            obj:
+                              oneOf:
+                                - type: array
+                                  items:
+                                    type: string
+                                - type: object
+                                  additionalProperties: false
+                                  properties:
+                                    str3:
+                                      type: string
+                        - type: array
+                          items:
+                            type: object
+                            properties:
+                              str1:
                                 type: string
-                            - type: object
-                    - type: array
-                      items:
-                        type: object
-                        properties:
-                          str1:
-                            type: string
-                          str2:
-                            type: string
-          example:
-            {
-              "top_array":
-                [
-                  {"obj": {"str3": "test"}},
-                  [{"str1": "success", "str2": "success"}],
-                ],
-            }
+                              str2:
+                                type: string
+  /test3:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  top_array:
+                    type: array
+                    items:
+                      oneOf:
+                        - type: object
+                          properties:
+                            obj:
+                              oneOf:
+                                - type: array
+                                  items:
+                                    type: string
+                                - type: object
+                        - type: array
+                          items:
+                            type: object
+                            properties:
+                              str1:
+                                type: string
+                              str2:
+                                type: string

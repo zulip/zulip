@@ -9,7 +9,7 @@ chown=zulip:zulip
 logfile=/var/log/supervisor/supervisord.log ; (main log file;default $CWD/supervisord.log)
 pidfile=/var/run/supervisord.pid ; (supervisord pidfile;default supervisord.pid)
 childlogdir=/var/log/supervisor            ; ('AUTO' child log dir, default $TEMP)
-minfds=40000 ; file descriptor limit for children
+minfds=<%= @file_descriptor_limit %> ; file descriptor limit for children
 
 ; the below section must remain in the config file for RPC
 ; (supervisorctl/web interface) to work, additional interfaces may be

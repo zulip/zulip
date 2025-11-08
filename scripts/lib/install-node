@@ -1,69 +1,41 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -euo pipefail
 
-ZULIP_PATH="$(dirname "$0")/../.."
-ZULIP_SRV="/srv"
-YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
-node_version=14.16.0
-yarn_version=1.22.10
-nvm_version=0.37.2
+version=24.11.0
+arch="$(uname -m)"
 
-# This is a fix for the fact that nvm uses $HOME to determine which
-# user account's home directory to ~/.config to.  Ideally, we'd have a
-# more systematic fix, like using `sudo -H` everywhere.
-export HOME=/root
+case $arch in
+    x86_64)
+        tarball="node-v$version-linux-x64.tar.xz"
+        sha256=46da9a098973ab7ba4fca76945581ecb2eaf468de347173897044382f10e0a0a
+        ;;
 
-current_node_version="none"
-if node_wrapper_path="$(command -v node)"; then
-    current_node_version="$(node --version)"
+    aarch64)
+        tarball="node-v$version-linux-arm64.tar.xz"
+        sha256=33a6673b2c7bffeae9deec7f9f8b31aad9119b08f13d49b2ca3ee3bebfe8260f
+        ;;
+esac
+
+check_version() {
+    out="$(node --version)" && [ "$out" = "v$version" ] \
+        && [ /usr/local/bin/pnpm -ef /srv/zulip-node/lib/node_modules/corepack/dist/pnpm.js ]
+}
+
+if ! check_version 2>/dev/null; then
+    set -x
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl -fLO --retry 3 "https://nodejs.org/dist/v$version/$tarball"
+    sha256sum -c <<<"$sha256 $tarball"
+    rm -rf /srv/zulip-node
+    mkdir -p /srv/zulip-node
+    tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-node
+    ln -sf /srv/zulip-node/bin/{corepack,node,npm,npx} /usr/local/bin
+    COREPACK_DEFAULT_TO_LATEST=0 /usr/local/bin/corepack enable
+
+    # Clean up after previous versions of this script
+    rm -rf /srv/zulip-yarn /usr/bin/yarn /usr/local/nvm
+
+    check_version
 fi
-
-current_yarn_version="none"
-if [ -e "$YARN_PACKAGE_JSON" ]; then
-    current_yarn_version=$(jq -r '.version' "$YARN_PACKAGE_JSON")
-fi
-
-if [ "$current_yarn_version" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ] && [ -L "$node_wrapper_path" ]; then
-    echo "Node version $node_version and yarn version $yarn_version are already installed."
-    exit 0
-fi
-
-if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path" ]; then
-    export NVM_DIR=/usr/local/nvm
-    # shellcheck source=/dev/null
-    if ! [ -e "$NVM_DIR/nvm.sh" ] || {
-        . "$NVM_DIR/nvm.sh"
-        [ "$(nvm --version)" != "$nvm_version" ]
-    }; then
-        mkdir -p "$NVM_DIR"
-        wget_opts=(-nv)
-        if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
-            wget_opts+=(--ca-certificate "${CUSTOM_CA_CERTIFICATES}")
-        fi
-        wget "${wget_opts[@]}" -O- "https://raw.githubusercontent.com/nvm-sh/nvm/v$nvm_version/install.sh" | bash
-        # shellcheck source=/dev/null
-        . "$NVM_DIR/nvm.sh"
-    fi
-
-    nvm install "$node_version" && nvm alias default "$node_version"
-    NODE_BIN="$(nvm which default)"
-
-    # Fix messed-up uid=500 and group write bits produced by nvm
-    n=${NODE_BIN%/bin/node}
-    chown -R root:root "$n"
-    chmod -R go-w "$n"
-
-    # Install node symlink to /usr/local/bin
-    ln -nsf "$NODE_BIN" /usr/local/bin/node
-    ln -nsf "$(dirname "$NODE_BIN")/npm" /usr/local/bin/npm
-    ln -nsf "$(dirname "$NODE_BIN")/npx" /usr/local/bin/npx
-fi
-
-# Work around the fact that apparently sudo doesn't clear the HOME
-# environment variable in some cases; we don't want root
-# accessing/storing yarn configuration in the non-root user's home
-# directory.
-export HOME=/root
-
-# Install yarn if not installed
-bash "$ZULIP_PATH/scripts/lib/third/install-yarn.sh" "$ZULIP_SRV" --version "$yarn_version"

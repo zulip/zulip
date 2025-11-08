@@ -1,11 +1,12 @@
 import sys
 from argparse import ArgumentParser
-from typing import Any, Dict, List
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from typing_extensions import override
 
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, abort_unless_locked
 from zerver.lib.soft_deactivation import (
     do_auto_soft_deactivate_users,
     do_soft_activate_users,
@@ -15,9 +16,9 @@ from zerver.lib.soft_deactivation import (
 from zerver.models import Realm, UserProfile
 
 
-def get_users_from_emails(emails: List[str], filter_kwargs: Dict[str, Realm]) -> List[UserProfile]:
+def get_users_from_emails(emails: list[str], filter_kwargs: dict[str, Realm]) -> list[UserProfile]:
     # Bug: Ideally, this would be case-insensitive like our other email queries.
-    users = UserProfile.objects.filter(delivery_email__in=emails, **filter_kwargs)
+    users = list(UserProfile.objects.filter(delivery_email__in=emails, **filter_kwargs))
 
     if len(users) != len(emails):
         user_emails_found = {user.delivery_email for user in users}
@@ -33,6 +34,7 @@ def get_users_from_emails(emails: List[str], filter_kwargs: Dict[str, Realm]) ->
 class Command(ZulipBaseCommand):
     help = """Soft activate/deactivate users. Users are recognised by their emails here."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser)
         parser.add_argument(
@@ -54,6 +56,8 @@ class Command(ZulipBaseCommand):
             help="A list of user emails to soft activate/deactivate.",
         )
 
+    @override
+    @abort_unless_locked
     def handle(self, *args: Any, **options: Any) -> None:
         if settings.STAGING:
             print("This is a Staging server. Suppressing management command.")
@@ -64,7 +68,7 @@ class Command(ZulipBaseCommand):
         activate = options["activate"]
         deactivate = options["deactivate"]
 
-        filter_kwargs: Dict[str, Realm] = {}
+        filter_kwargs: dict[str, Realm] = {}
         if realm is not None:
             filter_kwargs = dict(realm=realm)
 
@@ -76,7 +80,7 @@ class Command(ZulipBaseCommand):
 
             users_to_activate = get_users_from_emails(user_emails, filter_kwargs)
             users_activated = do_soft_activate_users(users_to_activate)
-            logger.info("Soft Reactivated %d user(s)", len(users_activated))
+            logger.info("Soft reactivated %d user(s)", len(users_activated))
 
         elif deactivate:
             if user_emails:

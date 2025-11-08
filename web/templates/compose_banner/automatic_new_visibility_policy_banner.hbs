@@ -1,0 +1,27 @@
+{{#> compose_banner . }}
+    <p class="banner_message">
+        {{#if followed}}
+            {{#tr}}
+                Now following <z-link></z-link>.
+                {{#*inline "z-link"~}}
+                    <a class="above_compose_banner_action_link white-space-preserve-wrap" href="{{narrow_url}}" data-message-id="{{link_msg_id}}">
+                        {{~!-- squash whitespace --~}}
+                        #{{channel_name}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</span>
+                        {{~!-- squash whitespace --~}}
+                    </a>
+                {{~/inline}}
+            {{/tr}}
+        {{else}}
+            {{#tr}}
+                Unmuted <z-link></z-link>.
+                {{#*inline "z-link"~}}
+                    <a class="above_compose_banner_action_link white-space-preserve-wrap" href="{{narrow_url}}" data-message-id="{{link_msg_id}}">
+                        {{~!-- squash whitespace --~}}
+                        #{{channel_name}} &gt; <span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</span>
+                        {{~!-- squash whitespace --~}}
+                    </a>
+                {{~/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+{{/compose_banner}}

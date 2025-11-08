@@ -1,23 +1,32 @@
 {
-  "amount": 184000,
+  "amount": 136000,
   "currency": "usd",
-  "customer": "cus_NORMALIZED0001",
+  "customer": "cus_NORMALIZED",
   "date": 1000000000,
-  "description": "Zulip Standard",
+  "description": "Additional license (Jan 2, 2012 - Jan 2, 2013)",
   "discountable": false,
-  "id": "ii_NORMALIZED00000000000001",
-  "invoice": null,
+  "discounts": [],
+  "id": "upgrade_by_card_with_outdated_seat_count--Event.list.4.json",
+  "invoice": "in_NORMALIZED",
   "livemode": false,
   "metadata": {},
+  "net_amount": 136000,
   "object": "invoiceitem",
+  "parent": null,
   "period": {
-    "end": 1000000000,
-    "start": 1000000000
+    "end": 1357095845,
+    "start": 1325473445
   },
-  "plan": null,
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "8000"
+  },
   "proration": false,
-  "quantity": 23,
-  "subscription": null,
+  "quantity": 17,
   "tax_rates": [],
-  "unit_amount": 8000
+  "test_clock": null
 }

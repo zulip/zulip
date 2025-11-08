@@ -1,3 +1,5 @@
+# noqa: N999
+
 import argparse
 import os
 import subprocess
@@ -6,18 +8,21 @@ from typing import Any
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import CommandError, CommandParser
+from typing_extensions import override
 
-from zerver.forms import check_subdomain_available
-from zerver.lib.import_realm import do_import_realm, do_import_system_bots
+from zerver.forms import OverridableValidationError, check_subdomain_available
+from zerver.lib.import_realm import do_import_realm
+from zerver.lib.management import ZulipBaseCommand
 
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Import extracted Zulip database dump directories into a fresh Zulip instance.
 
 This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files."""
 
+    @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--destroy-rebuild-database",
@@ -53,9 +58,10 @@ import a database dump from one or more JSON files."""
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:
-        call_command("flush", verbosity=0, interactive=False)
+        call_command("flush", verbosity=0, skip_checks=True, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         num_processes = int(options["processes"])
         if num_processes < 1:
@@ -77,8 +83,13 @@ import a database dump from one or more JSON files."""
 
         try:
             check_subdomain_available(subdomain, allow_reserved_subdomain)
-        except ValidationError:
-            raise CommandError("Subdomain reserved: pass --allow-reserved-subdomain to use.")
+        except OverridableValidationError as e:
+            raise CommandError(
+                e.messages[0]
+                + "\nPass --allow-reserved-subdomain to override subdomain restrictions."
+            )
+        except ValidationError as e:
+            raise CommandError(e.messages[0])
 
         paths = []
         for path in options["export_paths"]:
@@ -93,6 +104,4 @@ import a database dump from one or more JSON files."""
 
         for path in paths:
             print(f"Processing dump: {path} ...")
-            realm = do_import_realm(path, subdomain, num_processes)
-            print("Checking the system bots.")
-            do_import_system_bots(realm)
+            do_import_realm(path, subdomain, num_processes)

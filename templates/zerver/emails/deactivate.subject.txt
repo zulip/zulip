@@ -1,0 +1,1 @@
+{% trans %}Notification of account deactivation on {{ realm_name }}{% endtrans %}

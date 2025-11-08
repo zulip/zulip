@@ -1,0 +1,40 @@
+---
+title: Invite users to join
+---
+
+import {Tabs} from "@astrojs/starlight/components";
+
+import ZulipTip from "../../components/ZulipTip.astro";
+import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
+
+<ZulipTip>
+  Before inviting users, you may want to [delete any test messages][delete-message]
+  or [topics](/help/delete-a-topic).
+</ZulipTip>
+
+[delete-message]: /help/delete-a-message#delete-a-message-completely
+
+## How to invite users to join
+
+<Tabs>
+  <HowToInviteUsersToJoinNoImport />
+
+  <HowToInviteUsersToJoinImport />
+</Tabs>
+
+To get everyone off to a good start, you may wish to share the guide
+to [Getting started with Zulip](/help/getting-started-with-zulip).
+
+<ZulipTip>
+  You can link to your Zulip organization with a [nice badge](/help/linking-to-zulip).
+</ZulipTip>
+
+## Related articles
+
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Invite new users](/help/invite-new-users)
+* [Restrict account creation](/help/restrict-account-creation)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
+* [Customize settings for new users](/help/customize-settings-for-new-users)
+* [Getting started with Zulip](/help/getting-started-with-zulip)

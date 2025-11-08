@@ -2,12 +2,12 @@
 
 import django.db.models.deletion
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def set_initial_value_for_signup_notifications_stream(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     realm_model = apps.get_model("zerver", "Realm")
     realms = realm_model.objects.exclude(notifications_stream__isnull=True)
@@ -17,7 +17,6 @@ def set_initial_value_for_signup_notifications_stream(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0120_botuserconfigdata"),
     ]

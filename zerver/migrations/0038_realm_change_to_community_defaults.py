@@ -4,7 +4,6 @@ COMMUNITY = 2
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0037_disallow_null_string_id"),
     ]

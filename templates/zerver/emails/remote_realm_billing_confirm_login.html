@@ -1,0 +1,19 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_url }}/registration_confirmation.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+<p>
+    {% trans %}
+    Click the button below to confirm your email and log in to Zulip plan management for <b>{{ remote_realm_host }}</b>.
+    {% endtrans %}
+</p>
+<p>
+    <a class="button" href="{{ confirmation_url }}">{{ _("Confirm and log in") }}</a>
+</p>
+<p>
+    {% trans billing_contact_email=macros.email_tag(billing_contact_email) %}Questions? <a href="{{ billing_help_link }}">Learn more</a> or contact {{ billing_contact_email }}.{% endtrans %}
+</p>
+{% endblock %}

@@ -3,11 +3,11 @@
 import json
 
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def update_realmauditlog_values(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """
     This migration fixes two issues with the RealmAuditLog format for certain event types:
     * The notifications_stream and signup_notifications_stream fields had the
@@ -31,10 +31,14 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
       }
     """
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
-    # Constants from models.py
+    # Constants from models/realm_audit_logs.py
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
     USER_DEFAULT_REGISTER_STREAM_CHANGED = 130
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
+    # Note that this was renamed to USER_SETTING_CHANGED sometime
+    # after this migration; we preserve the original name here to
+    # highlight that as of this migration, only notification settings
+    # had RealmAuditLog entries for changes.
     USER_NOTIFICATION_SETTINGS_CHANGED = 132
     REALM_PROPERTY_CHANGED = 207
     SUBSCRIPTION_PROPERTY_CHANGED = 304
@@ -107,7 +111,6 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEd
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0297_draft"),
     ]

@@ -1,0 +1,8 @@
+<i class="buddy-list-section-toggle zulip-icon zulip-icon-heading-triangle-right {{#if is_collapsed}}rotate-icon-right{{else}}rotate-icon-down{{/if}}" aria-hidden="true"></i>
+<h5 id="{{id}}" class="buddy-list-heading no-style hidden-for-spectators">
+    <span class="buddy-list-heading-text">{{header_text}}</span>
+    {{!-- Hide the count until we have fetched data to display the correct count --}}
+    <span class="buddy-list-heading-user-count-with-parens hide">
+        (<span class="buddy-list-heading-user-count"></span>)
+    </span>
+</h5>

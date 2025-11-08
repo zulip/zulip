@@ -1,0 +1,71 @@
+<div {{#if for_realm_settings}}class="privacy_settings settings-subsection-parent" {{else}} id="privacy_settings_box"
+  {{/if}}>
+    <div class="subsection-header inline-block">
+        {{#if for_realm_settings}}
+        <h3 class="inline-block">{{t "Privacy settings"}}</h3>
+        {{> settings_save_discard_widget section_name="privacy-setting" show_only_indicator=false }}
+        {{else}}
+        <h3 class="inline-block">{{t "Privacy"}}</h3>
+        {{> settings_save_discard_widget section_name="privacy-setting" show_only_indicator=(not for_realm_settings) }}
+        {{/if}}
+    </div>
+
+    {{> settings_checkbox
+      setting_name="send_private_typing_notifications"
+      is_checked=settings_object.send_private_typing_notifications
+      label=settings_label.send_private_typing_notifications
+      prefix=prefix
+      }}
+    {{> settings_checkbox
+      setting_name="send_stream_typing_notifications"
+      is_checked=settings_object.send_stream_typing_notifications
+      label=settings_label.send_stream_typing_notifications
+      prefix=prefix
+      }}
+    {{> settings_checkbox
+      setting_name="send_read_receipts"
+      is_checked=settings_object.send_read_receipts
+      label=settings_label.send_read_receipts
+      prefix=prefix
+      help_link="/help/read-receipts"
+      help_icon_tooltip_text=read_receipts_help_icon_tooltip_text
+      hide_tooltip=hide_read_receipts_tooltip
+      }}
+    {{> settings_checkbox
+      setting_name="presence_enabled"
+      is_checked=settings_object.presence_enabled
+      label=settings_label.presence_enabled
+      label_parens_text=settings_label.presence_enabled_parens_text
+      help_link="/help/status-and-availability"
+      prefix=prefix
+      }}
+    {{#unless for_realm_settings}}
+    {{> settings_checkbox
+      setting_name="allow_private_data_export"
+      is_checked=settings_object.allow_private_data_export
+      label=settings_label.allow_private_data_export
+      help_link="/help/export-your-organization#export-your-organization"
+      }}
+    {{/unless}}
+
+    <div class="input-group">
+        <label for="{{prefix}}email_address_visibility" class="settings-field-label">
+            {{#if for_realm_settings}}
+            {{t "Who can access user's email address"}}
+            {{else}}
+            {{t "Who can access your email address"}}
+            {{/if}}
+            {{> ../help_link_widget link="/help/configure-email-visibility" }}
+        </label>
+        <div id="user_email_address_dropdown_container"
+          class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
+            <select name="email_address_visibility"
+              class="email_address_visibility prop-element settings_select bootstrap-focus-style"
+              data-setting-widget-type="number"
+              id="{{prefix}}email_address_visibility"
+              {{#unless user_has_email_set}}disabled="disabled"{{/unless}}>
+                {{> dropdown_options_widget option_values=email_address_visibility_values}}
+            </select>
+        </div>
+    </div>
+</div>

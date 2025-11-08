@@ -1,0 +1,30 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Plan management not available") }} | Zulip</title>
+{% endblock %}
+
+{% block error_page_content %}
+<img src="{{ static('images/errors/400art.svg') }}" alt=""/>
+<div class="errorbox">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _("Plan management not available") }}</h1>
+        <p>
+            {% trans %} Plan management is not available for this
+            organization, because your Zulip server is already on a
+            {{ server_plan_name }} plan, which covers all
+            organizations on this server. See the <b>Server-level billing</b> tab of the
+            <a href="https://zulip.com/help/self-hosted-billing#log-in-to-billing-management">log
+            in instructions</a> to administer the plan for your
+            Zulip server.
+            {% endtrans %}
+        </p>
+        <p>
+            {% trans %} To move the plan from the server to this
+            organization, or for other questions, <a href="mailto:{{
+            support_email }}">contact support</a>.
+            {% endtrans %}
+        </p>
+    </div>
+</div>
+{% endblock %}

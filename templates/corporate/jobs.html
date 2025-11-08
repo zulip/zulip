@@ -1,19 +1,20 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-{% block title %}
-<title>Zulip jobs</title>
-{% endblock %}
+{% set PAGE_TITLE = "Jobs | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "We're hiring! Learn about our openings and how to
+  apply." %}
 
 {% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {% endblock %}
 
 {% block portico_content %}
 
 {% include 'zerver/landing_nav.html' %}
 
-<div class="portico-landing jobs why-page no-slide">
+<div class="portico-landing jobs why-page">
     <div class="hero bg-pycon drone">
         <div class="bg-dimmer"></div>
         <div class="content">
@@ -22,236 +23,325 @@
         </div>
     </div>
 
-    <div class="open-positions-top">
-        <div class="main">
-            <div class="padded-content markdown">
-                <h1>Open positions</h1>
-                <p>
-                    <ul>
-                        <li><a href="#mobile">Senior Mobile Engineer</a></li>
-                        <li><a href="#fullstack">Senior Full Stack Engineer</a></li>
-                    </ul>
-                </p>
-            </div>
-        </div>
-    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                <div class="open-positions">
+                    <h1 id="open-positions">Open positions</h1>
+                    <p>
 
-    <div class="how-we-work">
-        <div class="main">
-            <div class="padded-content markdown">
-                <h1>How we work</h1>
-                <p>
-                    <strong>Open source.</strong>  The Zulip software is 100% free and
-                    open source.  We're <a href="/team/">an open-source project</a> first,
-                    and we’re building a sustainable business as a means to support the
-                    project's growth and long-term future. We provide the same open-source
-                    code to our largest customers as to anyone with <code>git clone</code>.
-                    We get paid by enterprises for support, and by smaller companies using
-                    our rapidly-growing hosted service.
-                </p>
-                <p>
-                    <strong>Open project.</strong> The Zulip project is one where people
-                    really do show up through the Internet and start making real changes.
-                    That doesn’t happen by accident; it takes work and thoughtfulness.  Most
-                    of us work remotely, and we discuss our code and our plans in public, in
-                    writing, primarily asynchronously, using Zulip and GitHub.
-                </p>
-                <p>
-                    <strong>Inclusive community.</strong> The Zulip community is made up of a
-                    mixture of volunteers and professionals from all walks of life. Diversity is
-                    one of our strengths, and we strive to be a community that welcomes and
-                    supports people of all backgrounds and identities from anywhere in the world.
-                </p>
-                <p>
-                    <strong>Maintainable software.</strong>  Great
-                    software over time depends on a team’s shared
-                    understanding of a system and how to change it, as
-                    much as on the code itself. Beyond writing our
-                    code so it works today, we put equal effort into
-                    writing code, tests, comments, commit history,
-                    and <a href="https://zulip.readthedocs.io/en/latest/">documentation</a>
-                    clearly, to share with each other and future
-                    contributors our understanding of how and why it
-                    works, so we can build on it tomorrow.
-                </p>
+                        To apply for an open position, please send your <b>resume</b>
+                        and a brief <b>cover letter</b> (which can be in the
+                        body of your email) to the email provided in the
+                        description for the opening. Your cover letter should
+                        explain what makes you excited about working at Zulip in
+                        the role you're applying for. Applications without a
+                        cover letter will not be considered.
+                    </p>
+                    <p>
+                        We are not actively recruiting for any engineering roles
+                        at this time. However, if you are an experienced
+                        engineer, and you believe that your background would be
+                        a great fit for Zulip, please email us at <a
+                        href="mailto:jobs+engineer@zulip.com">jobs+engineer@zulip.com</a>
+                        with your resume and cover letter.
+                    </p>
+                    <p>
+                        All openings are remote, or partially in-person in our San Francisco, CA office.
+                    </p>
+                    <hr/>
+                    <h2 id="gtm">Go-to-market leader (full-time)</h2>
+                    <p>
+                        <a href="/">Zulip</a> is an open-source team chat
+                        application designed for seamless remote and hybrid
+                        work. With conversations organized by topic, Zulip is
+                        <a href="/why-zulip">ideal</a> for both live and
+                        asynchronous communication. Zulip’s 100% open-source
+                        software is available as a
+                        <a href="/plans/#cloud">cloud service</a> or a
+                        <a href="/self-hosting">self-hosted solution</a>, and is
+                        used by thousands of organizations around the world.
+                    </p>
+                    <p>
+                        We’re increasing our focus on go-to-market initiatives,
+                        and are looking for a go-to-market leader with hands-on
+                        B2B startup experience to take our business to the next
+                        level. You'll be working closely with the COO (who's
+                        currently driving go-to-market efforts) and the CEO to
+                        develop new and existing markets for our product.
+                    </p>
+                    <h3>You'll build on the strength of an amazing product to
+                        develop an amazing business:
+                    </h3>
+                    <ul>
+                        <li>Own and drive the company’s GTM strategies.</li>
+                        <li>
+                            Develop market hypotheses, and run experiments to
+                            figure out where to go deeper. You'll be responsible
+                            for both vision and hands-on execution (with
+                            appropriate support from the rest of the team).
+                        </li>
+                        <li>
+                            Build out processes and teams to scale what's
+                            working.
+                        </li>
+                        <li>
+                            Work closely with the other leaders to align product
+                            and GTM strategy.
+                        </li>
+                        <li>
+                            Drive a substantial increase in revenue by the end
+                            of 2025.
+                        </li>
+                    </ul>
+                    <h3>Essential qualifications:</h3>
+                    <ul>
+                        <li>
+                            A start-up mentality. You will do whatever is needed
+                            to make things happen. If you don't know how, you'll
+                            figure it out.
+                        </li>
+                        <li>
+                            A deep understanding of B2B sales, demand
+                            generation, and revenue growth strategies, with
+                            extensive hands-on experience.
+                        </li>
+                        <li>
+                            Excellent writing skills. We expect all our
+                            published content to clearly and concisely get the
+                            message across.
+                        </li>
+                        <li>
+                            Experience in a similar role (e.g., business
+                            founder, Head of Growth, Sales & Growth Lead, etc.).
+                        </li>
+                    </ul>
+                    <h3>Bonus qualifications:</h3>
+                    <ul>
+                        <li>Experience setting up partnerships.</li>
+                        <li>
+                            Experience selling open-source or
+                            self-hosted/on-premise software.
+                        </li>
+                    </ul>
+                    <h3>You’ll love this job if:</h3>
+                    <ul>
+                        <li>
+                            You want a high degree of freedom and
+                            responsibility. You love to experiment, and to be
+                            the one writing your own playbooks.
+                        </li>
+                        <li>
+                            You’re excited to grow an independent business built
+                            on shared <a href="/values/">values</a>: building
+                            software that will always be there for our users,
+                            keeping Zulip 100% open-source, investing in
+                            community and mentorship, and supporting other
+                            worthy organizations.
+                        </li>
+                        <li>
+                            You’re energized by the idea of working on a complex
+                            product with heterogeneous use cases and buyer
+                            personas, in a market dominated by giant
+                            corporations.
+                        </li>
+                    </ul>
+                    <p>
+                        Email us at
+                        <a href="mailto:jobs+gtm@zulip.com"
+                          >jobs+gtm@zulip.com</a
+                        >
+                        with your resume and cover letter to apply, or learn
+                        more about
+                        <a href="/jobs/#how-we-work">how we work</a>.
+                    </p>
+                    <hr />
+                    <h2 id="designer">
+                        Senior Product Designer (full-time or part-time)
+                    </h2>
+                    <p>
+                        <a href="/">Zulip</a> is an open-source team chat
+                        application designed for seamless remote and hybrid
+                        work. With conversations organized by topic, Zulip is <a
+                        href="/why-zulip">ideal</a> for both live and
+                        asynchronous communication. Zulip’s 100% open-source
+                        software is available as a <a href="/plans/#cloud">cloud
+                        service</a> or a
+                        <a href="/self-hosting">self-hosted solution</a>, and is
+                        used by thousands of organizations around the world.
+                    </p>
+                    <p>
+                        We are looking for an experienced product designer with a
+                        strong background in visual design to make our web application,
+                        mobile application, and marketing pages shine.
+                    </p>
+                    <p>
+                        You will work closely with Zulip's leadership team.
+                    </p>
+
+                    <h3>What you’ll do:</h3>
+                    <ul>
+                        <li>
+                            Improve and maintain a web app design system in
+                            Figma. You'll be developing design patterns,
+                            guidelines, and reusable components to help create a
+                            consistent and maintainable application.
+                        </li>
+                        <li>
+                            Break down design changes into manageable pieces that
+                            can be incrementally integrated into an actively
+                            evolving product.
+                        </li>
+                        <li>
+                            Actively participate in design discussions. Review
+                            design implementations and tune designs in response
+                            to feedback.
+                        </li>
+                        <li>
+                            Help design new product features, working in a
+                            dynamic collaboration with product, engineering, and
+                            users.
+                        </li>
+                        <li>
+                            Design new marketing pages and redesign old ones.
+                            Strengthen our brand's look and feel to make it
+                            instantly recognizable across apps, landing pages,
+                            social accounts, and ads.
+                        </li>
+                        <li>
+                            Create and prepare icons for web and mobile apps.
+                        </li>
+                    </ul>
+                    <h3>Essential qualifications:</h3>
+                    <ul>
+                        <li>
+                            Your portfolio showcases a track record of designing
+                            high-quality web applications. You've had a leading
+                            role in designing a complex application.
+                        </li>
+                        <li>
+                            You have a strong understanding of mobile and web UI
+                            guidelines, standards, approaches, and patterns.
+                            Working within those structures, you can think
+                            creatively to develop elegant solutions to complex
+                            problems.
+                        </li>
+                        <li>
+                            You communicate with clarity and precision, and are
+                            comfortable in a distributed work environment. You
+                            thrive in an inclusive culture where ideas are
+                            debated openly and everyone is treated with respect.
+                        </li>
+                        <li>Expert knowledge of Figma.</li>
+                    </ul>
+                    <h3>Extra credit for any of the following:</h3>
+                    <ul>
+                        <li>
+                            Familiarity with HTML, CSS, and JavaScript.
+                        </li>
+                        <li>
+                            Your portfolio includes mobile applications (iOS or
+                            Android).
+                        </li>
+                        <li>
+                            You've worked on a chat app in the past.
+                        </li>
+                        <li>
+                            You are deeply familiar with a team chat app as an
+                            advanced user or administrator. Better yet, you are an
+                            experienced user of Zulip.
+                        </li>
+                        <li>
+                            You've created an icon set.
+                        </li>
+                    </ul>
+                    <p>
+                        Email us at <a
+                        href="mailto:jobs+designer@zulip.com">jobs+designer@zulip.com</a>
+                        with your resume and cover letter to apply, or learn
+                        more about
+                        <a href="/jobs/#how-we-work">how we work</a>.
+                    </p>
+                </div>
+                <div class="how-we-work">
+                    <h1 id="how-we-work">
+                        How we work
+                    </h1>
+                    <p>
+                        <strong>Open source.</strong> The Zulip software is 100%
+                        free and open source.  We're <a href="/team/">an
+                        open-source project</a> first, and we’re building an
+                        independent <a href="/values">sustainable business</a>
+                        as a means to support the project's growth and long-term
+                        future. We provide the same open-source code to our
+                        largest customers as to anyone with <code>git clone</code>.
+                    </p>
+                    <p>
+                        <strong>Open project.</strong> The Zulip project is one where people
+                        really do show up through the Internet and start making real changes.
+                        That doesn’t happen by accident; it takes work and thoughtfulness.  Most
+                        of us work remotely, and we discuss our code and our plans in public, in
+                        writing, primarily asynchronously, using Zulip and GitHub.
+                    </p>
+                    <p>
+                        <strong>Inclusive community.</strong> The Zulip community is made up of a
+                        mixture of volunteers and professionals from all walks of life. Diversity is
+                        one of our strengths, and we strive to be a community that welcomes and
+                        supports people of all backgrounds and identities from anywhere in the world.
+                    </p>
+                    <p>
+                        <strong>Globally distributed.</strong> Our company is
+                        headquartered in San Francisco, CA, but like our
+                        community, our ~15 person team works from around the
+                        world. We communicate primarily async, in the <a
+                        href="/development-community">Zulip development
+                        community</a> and <a href="https://github.com/zulip">on
+                        GitHub</a>. Our roles are open to all applicants without
+                        regard for location.
+                    </p>
+                    <p>
+                        <strong>Maintainable software.</strong> Great
+                        software over time depends on a team’s shared
+                        understanding of a system and how to change it, as
+                        much as on the code itself. Beyond writing our
+                        code so it works today, we put equal effort into
+                        writing code, tests, comments, commit history,
+                        and <a href="https://zulip.readthedocs.io/en/latest/">documentation</a>
+                        clearly, to share with each other and future
+                        contributors our understanding of how and why it
+                        works, so we can build on it tomorrow.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="what-were-building">
         <div class="main">
-            <div class="padded-content markdown">
-                <h1>What we're building</h1>
-                <p>
-                    People working together need to communicate with their teammates, and they
-                    also need to tune out the conversation to get work done. Teams tired of
-                    wasting time in meetings move discussion to email; tired of waiting all
-                    day for email replies, move to a team chat like Slack or IRC; and then
-                    team chat becomes an always-on meeting, leaving people constantly
-                    distracted, missing out on important conversations, or both.
-                </p>
-                <p>
-                    Zulip is reinventing chat so teams can accomplish more together. We've
-                    created a place where a conversation can shift seamlessly from the
-                    immediacy of chat to the reply-whenever efficiency of email, and back;
-                    where you can participate in the conversations that matter to you and
-                    efficiently tune out the rest, no matter whether you're there in real
-                    time, coming online after a morning hard at work, or returning from a
-                    vacation away from it.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="open-positions">
-        <div class="main">
-            <div class="padded-content markdown">
-                <h1>Open positions</h1>
-
-                <h2 id="mobile">Senior Mobile Engineer</h2>
-                <p>
-                    Our mobile app is a critical part of the Zulip experience. We’re looking
-                    for an engineer to join our small, growing, core team and help define the
-                    future of team chat on mobile.
-                </p>
-
-                <h3>We'd especially like to get to know you if:</h3>
-                <ul>
-                    <li>
-                        <strong>You love giving a code review, and love receiving one.</strong>
-                        We’re an open-source project welcoming contributions from people with
-                        a wide range of experience.
-                    </li>
-                    <li>
-                        <strong>You communicate with clarity and precision.</strong>
-                        You’ll be doing this a lot in code, comments, code reviews, and chat
-                        conversations. We care about this almost as much as your technical
-                        skills.
-                    </li>
-                    <li>
-                        <strong>You can empathize with the many different types of users</strong>
-                        who rely on Zulip, and see the product from their perspective — and do
-                        the same thing for the project's contributors.
-                    </li>
-                </ul>
-
-                <h3>You will:</h3>
-                <ul>
-                    <li>
-                        Design new features and subsystems, write design proposals for
-                        discussion, and build them.
-                    </li>
-                    <li>
-                        Diagnose and fix bugs small and large and across several layers of our
-                        stack, and resolve questions about the frameworks and libraries we
-                        rely on by diving into their source when the documentation doesn't
-                        suffice.
-                    </li>
-                    <li>Share your expertise (both newly-acquired and longstanding) with the
-                        rest of the team, through short- and long-form written communication.</li>
-                    <li>Write primarily JavaScript using React Native, with some Java, Swift,
-                        and backend Python, and learn whichever of those are new to you.</li>
-                    <li>Work from our office in San Francisco, or from anywhere in the United
-                        States.</li>
-                </ul>
-
-                <h3>Extra credit for any of the following:</h3>
-                <ul>
-                    <li>You have 5+ years of software engineering experience in a variety of
-                        settings: backend services, or build systems, or desktop GUI software —
-                        you name it.
-                    </li>
-                    <li>You have experience designing systems for other people to build
-                        different pieces of, coaching people in writing high-quality code, or
-                        other aspects of technical leadership.
-                    </li>
-                    <li>You have spent time maintaining and debugging long-running systems.</li>
-                    <li>You have the UI design skills to spot where a UI can be improved;
-                        better yet, to design a better one.
-                    </li>
-                    <li>You have experience with iOS or Android development.</li>
-                    <li>You have experience with React.</li>
-                    <li>You have contributed to open-source projects; better yet, maintained a
-                        project and helped many people contribute to it.
-                    </li>
-                </ul>
-
-                <br>
-                <hr>
-
-                <h2 id="fullstack">Senior Full Stack Engineer</h2>
-                <p>
-                    We’re looking for an engineer to join our small
-                    core team and help define the future of team chat.
-                </p>
-
-                <h3>We'd especially like to get to know you if:</h3>
-                <ul>
-                    <li>
-                        <strong>You love giving a code review, and love receiving one.</strong>
-                        We’re an open-source project welcoming contributions from people with
-                        a wide range of experience.
-                    </li>
-                    <li>
-                        <strong>You communicate with clarity and precision.</strong>
-                        You’ll be doing this a lot in code, comments, code reviews, and chat
-                        conversations. We care about this almost as much as your technical
-                        skills.
-                    </li>
-                    <li>
-                        <strong>You can empathize with the many different types of users</strong>
-                        who rely on Zulip, and see the product from their perspective — and do
-                        the same thing for the project's contributors.
-                    </li>
-                </ul>
-
-                <h3>You will:</h3>
-                <ul>
-                    <li>Design new features and subsystems, write design proposals for
-                        discussion, and build them.
-                    </li>
-                    <li>Diagnose and fix bugs small and large and across several layers of our
-                        stack, including spelunking in third-party dependencies to find the
-                        best possible solution.
-                    </li>
-                    <li>Share your expertise (both newly-acquired and longstanding) with the
-                        rest of the team, through short- and long-form written communication.
-                    </li>
-                    <li>Write primarily Python, JavaScript, HTML, and CSS.</li>
-                    <li>Work from our office in San Francisco, or from anywhere in the world.</li>
-                </ul>
-
-                <h3>Extra credit for any of the following:</h3>
-                <ul>
-                    <li>You have 5+ years of software engineering experience in a variety of
-                        settings: backend services, or build systems, or desktop GUI software
-                        — you name it.
-                    </li>
-                    <li>You have experience designing systems for other people to build
-                        different pieces of, coaching people in writing high-quality code, or
-                        other aspects of technical leadership.
-                    </li>
-                    <li>You have spent time maintaining and debugging long-running, highly
-                        scalable server systems.
-                    </li>
-                    <li>You have the UI design skills to spot where a UI can be improved;
-                        better yet, to design a better one.
-                    </li>
-                    <li>You have experience doing large codebase migrations in webapps in a way
-                        that minimizes regressions.
-                    </li>
-                    <li>You have contributed to open-source projects; better yet, maintained a
-                        project and helped many people contribute to it.
-                    </li>
-                </ul>
-
-                <br>
-                <hr>
-
-                <h2>How to apply for a job</h2>
-                <p>
-                    You can email us at <a href="mailto:jobs@zulip.com">jobs@zulip.com</a> with your resume.
-                </p>
+            <div class="padded-content">
+                <div class="inner-content markdown">
+                    <h1 id="what-were-building">
+                        What we're building
+                    </h1>
+                    <p>
+                        People working together need to communicate with their teammates, and they
+                        also need to tune out the conversation to get work done. Teams tired of
+                        wasting time in meetings move discussion to email; tired of waiting all
+                        day for email replies, move to a team chat like Slack or
+                        Microsoft Teams; and then
+                        team chat becomes an always-on meeting, leaving people constantly
+                        distracted, missing out on important conversations, or both.
+                    </p>
+                    <p>
+                        Zulip is reinventing chat so teams can accomplish more together. We've
+                        created a place where a conversation can shift seamlessly from the
+                        immediacy of chat to the reply-whenever efficiency of email, and back;
+                        where you can participate in the conversations that matter to you and
+                        efficiently tune out the rest, no matter whether you're there in real
+                        time, coming online after a morning hard at work, or returning from a
+                        vacation away from it.
+                    </p>
+                </div>
             </div>
         </div>
     </div>

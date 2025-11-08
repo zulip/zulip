@@ -1,11 +1,15 @@
+# https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
-from typing import List
+from collections.abc import MutableSequence, Sequence
+from email.message import Message
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
+from django.core.mail.message import EmailMessage
 from django.template import loader
+from typing_extensions import override
 
 
 def get_forward_address() -> str:
@@ -31,9 +35,10 @@ def set_forward_address(forward_address: str) -> None:
 
 class EmailLogBackEnd(EmailBackend):
     @staticmethod
-    def log_email(email: EmailMultiAlternatives) -> None:
+    def log_email(email: EmailMessage) -> None:
         """Used in development to record sent emails in a nice HTML log"""
-        html_message = "Missing HTML message"
+        html_message: bytes | EmailMessage | Message | str = "Missing HTML message"
+        assert isinstance(email, EmailMultiAlternatives)
         if len(email.alternatives) > 0:
             html_message = email.alternatives[0][0]
 
@@ -44,6 +49,7 @@ class EmailLogBackEnd(EmailBackend):
             "reply_to": email.reply_to,
             "recipients": email.to,
             "body": email.body,
+            "date": email.extra_headers.get("Date", "?"),
             "html_message": html_message,
         }
 
@@ -61,27 +67,41 @@ class EmailLogBackEnd(EmailBackend):
             f.write(new_email + previous_emails)
 
     @staticmethod
-    def prepare_email_messages_for_forwarding(email_messages: List[EmailMultiAlternatives]) -> None:
-        localhost_email_images_base_uri = settings.ROOT_DOMAIN_URI + "/static/images/emails"
-        czo_email_images_base_uri = "https://chat.zulip.org/static/images/emails"
+    def prepare_email_messages_for_forwarding(email_messages: Sequence[EmailMessage]) -> None:
+        localhost_email_images_base_url = settings.ROOT_DOMAIN_URI + "/static/images/emails"
+        czo_email_images_base_url = "https://chat.zulip.org/static/images/emails"
 
         for email_message in email_messages:
-            html_alternative = list(email_message.alternatives[0])
+            assert isinstance(email_message, EmailMultiAlternatives)
+            assert isinstance(email_message.alternatives[0][0], str)
             # Here, we replace the email addresses used in development
             # with chat.zulip.org, so that web email providers like Gmail
             # will be able to fetch the illustrations used in the emails.
-            html_alternative[0] = html_alternative[0].replace(
-                localhost_email_images_base_uri, czo_email_images_base_uri
+            html_alternative = (
+                email_message.alternatives[0][0].replace(
+                    localhost_email_images_base_url, czo_email_images_base_url
+                ),
+                email_message.alternatives[0][1],
             )
-            email_message.alternatives[0] = tuple(html_alternative)
+            assert isinstance(email_message.alternatives, MutableSequence)
+            email_message.alternatives[0] = html_alternative
 
             email_message.to = [get_forward_address()]
 
-    def send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
+    # This wrapper function exists to allow tests easily to mock the
+    # step of trying to send the emails. Previously, we had mocked
+    # Django's connection.send_messages(), which caused unexplained
+    # test failures when running test-backend at very high
+    # concurrency.
+    def _do_send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
+        return super().send_messages(email_messages)  # nocoverage
+
+    @override
+    def send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
         num_sent = len(email_messages)
         if get_forward_address():
             self.prepare_email_messages_for_forwarding(email_messages)
-            num_sent = super().send_messages(email_messages)
+            num_sent = self._do_send_messages(email_messages)
 
         if settings.DEVELOPMENT_LOG_EMAILS:
             for email in email_messages:

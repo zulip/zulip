@@ -12,6 +12,6 @@ upstream camo {
     server 127.0.0.1:9292;
 }
 
-upstream thumbor {
-    server localhost:9995;
+upstream tusd {
+    server 127.0.0.1:9900;
 }

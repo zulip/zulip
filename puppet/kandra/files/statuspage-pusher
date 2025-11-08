@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+import configparser
+import http.client
+import json
+import logging
+import time
+from urllib.parse import urlencode
+
+
+def fetch_metric(metric_id: str, query: str) -> float:
+    logging.info("Fetching %s", metric_id)
+    params = urlencode({"query": query})
+    conn = http.client.HTTPConnection("localhost:9090")
+    conn.request("GET", "/api/v1/query?" + params)
+    response = conn.getresponse()
+    if response.status != 200:
+        raise Exception(
+            f"Failed to request {metric_id} from Prometheus: {response.status} {response.reason}"
+        )
+    raw_bytes = response.read()
+    conn.close()
+    data = json.loads(raw_bytes)
+    if data["status"] != "success":
+        raise Exception(f"Failed to request {metric_id}: {raw_bytes.decode()}")
+    return float(data["data"]["result"][0]["value"][1])
+
+
+def push_metric(metric_id: str, metric_value: float, page_id: str, oauth_token: str) -> None:
+    conn = http.client.HTTPSConnection("api.statuspage.io")
+    params = json.dumps({"data": {"timestamp": time.time(), "value": metric_value}})
+    headers = {"Content-Type": "application/json", "Authorization": "OAuth " + oauth_token}
+    conn.request(
+        "POST", "/v1/pages/" + page_id + "/metrics/" + metric_id + "/data.json", params, headers
+    )
+    response = conn.getresponse()
+    if not (response.status >= 200 and response.status < 300):
+        raise Exception(
+            f"Failed to push {metric_id} to statuspage.io: {response.status} {response.reason}"
+        )
+    logging.info("Wrote %s: %s", metric_id, response.read().decode())
+    conn.close()
+
+
+def update_metric(metric_id: str, query: str, page_id: str, oauth_token: str) -> None:
+    metric_value = fetch_metric(metric_id, query)
+    push_metric(metric_id, metric_value, page_id, oauth_token)
+
+
+def main() -> None:
+    logging.basicConfig(format="%(asctime)s statuspage-pusher: %(message)s", level=logging.INFO)
+
+    secrets_file = configparser.RawConfigParser()
+    secrets_file.read("/etc/zulip/zulip-secrets.conf")
+
+    oauth_token = secrets_file.get("secrets", "statuspage_token")
+    if oauth_token is None:
+        raise RuntimeError("statuspage_token secret is required")
+
+    config_file = configparser.RawConfigParser()
+    config_file.read("/etc/zulip/zulip.conf")
+    page_id = config_file.get("statuspage", "page_id")
+    if page_id is None:
+        raise RuntimeError("statuspage.page_id in zulip.conf is required")
+
+    metrics_file = configparser.RawConfigParser()
+    metrics_file.read("/etc/zulip/statuspage.conf")
+    metrics = metrics_file["metrics"]
+
+    while True:
+        for metric_id, query in metrics.items():
+            try:
+                update_metric(metric_id, query, page_id, oauth_token)
+            except Exception as e:
+                logging.exception(e)
+        time.sleep(30)
+
+
+if __name__ == "__main__":
+    main()

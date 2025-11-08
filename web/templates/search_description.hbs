@@ -1,0 +1,73 @@
+{{~#each parts ~}}
+
+    {{#if (eq this.type "plain_text")~}}
+        {{~this.content~}}
+    {{else if (eq this.type "channel_topic")}}
+        {{~#if is_empty_string_topic~}}
+        messages in #{{this.channel}} > <span class="empty-topic-display">{{this.topic_display_name}}</span>
+        {{~else~}}
+        messages in #{{this.channel}} > {{this.topic_display_name}}
+        {{~/if~}}
+    {{else if (eq this.type "channel")}}
+        {{~!-- squash whitespace --~}}
+        {{this.prefix_for_operator}}{{this.operand}}
+        {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "invalid_has")}}
+        {{~!-- squash whitespace --~}}
+        invalid {{this.operand}} operand for has operator
+        {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "prefix_for_operator")}}
+        {{~#if is_empty_string_topic~}}
+        {{this.prefix_for_operator}} <span class="empty-topic-display">{{this.operand}}</span>
+        {{~ else ~}}
+        {{this.prefix_for_operator}} {{this.operand}}{{#if (or (eq this.operand "link") (eq this.operand "image") (eq this.operand "attachment") (eq this.operand "reaction"))}}s{{/if}}
+        {{~/if~}}
+    {{else if (eq this.type "user_pill")}}
+        {{~!-- squash whitespace --~}}
+        {{this.operator}}
+        {{~#each this.users}}
+            {{#if this.valid_user}}
+                {{> user_pill .}}
+            {{else}}
+                {{this.operand}}
+            {{/if}}
+        {{~/each~}}
+        {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "is_operator")}}
+        {{#if (eq this.operand "mentioned")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}messages that mention you
+            {{~!-- squash whitespace --~}}
+        {{else if (or (eq this.operand "starred") (eq this.operand "alerted") (eq this.operand "unread"))}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}{{this.operand}} messages
+            {{~!-- squash whitespace --~}}
+        {{else if (or (eq this.operand "dm") (eq this.operand "private"))}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}direct messages
+            {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "resolved")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}resolved topics
+            {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "followed")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}followed topics
+            {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "muted")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}muted messages
+            {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "unresolved")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}unresolved topics
+            {{~!-- squash whitespace --~}}
+        {{else}}
+            {{~!-- squash whitespace --~}}
+            invalid {{this.operand}} operand for is operator
+            {{~!-- squash whitespace --~}}
+        {{~/if~}}
+    {{~/if~}}
+    {{~#if (not @last)~}}, {{/if~}}
+
+{{~/each~}}

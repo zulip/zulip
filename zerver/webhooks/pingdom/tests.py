@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class PingdomHookTests(WebhookTestCase):
-    STREAM_NAME = "pingdom"
+    CHANNEL_NAME = "pingdom"
     URL_TEMPLATE = "/api/v1/external/pingdom?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = "pingdom"
+    WEBHOOK_DIR_NAME = "pingdom"
 
     def test_pingdom_from_up_to_down_http_check_message(self) -> None:
         """

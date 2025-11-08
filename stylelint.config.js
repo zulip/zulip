@@ -1,22 +1,27 @@
-"use strict";
+// @ts-check
 
-module.exports = {
-    extends: ["stylelint-config-standard", "stylelint-config-prettier"],
+/** @type {import("stylelint").Config} */
+export default {
+    extends: ["stylelint-config-standard"],
+    plugins: ["stylelint-high-performance-animation"],
     rules: {
         // Add some exceptions for recommended rules
         "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
+        "font-family-no-missing-generic-family-keyword": [
+            true,
+            {ignoreFontFamilies: ["FontAwesome"]},
+        ],
 
         // Disable recommended rules we don't comply with yet
-        "font-family-no-missing-generic-family-keyword": null,
+        "media-query-no-invalid": null,
         "no-descending-specificity": null,
 
         // Disable standard rules we don't comply with yet
         "comment-empty-line-before": null,
         "declaration-empty-line-before": null,
-
-        // Additional stylistic rules
-        "font-family-name-quotes": "always-where-recommended",
-        "function-url-quotes": "never",
+        "keyframes-name-pattern": null,
+        "selector-class-pattern": null,
+        "selector-id-pattern": null,
 
         // Limit language features
         "color-no-hex": true,
@@ -26,22 +31,20 @@ module.exports = {
             "/^(border(-top|-right|-bottom|-left)?|outline)(-width)?$/": [
                 /\b(thin|medium|thick)\b/,
             ],
+            // no quotation marks around grid-area; use
+            // `grid-area: my_area`, not `grid-area: "my_area"`
+            "grid-area": [/".*"/],
         },
         "function-disallowed-list": [
-            // We use hsl(a) instead of rgb(a)
+            // We use hsl instead of rgb
             "rgb",
-            "rgba",
         ],
+        "plugin/no-low-performance-animation-properties": [true, {ignore: "paint-properties"}],
 
         // Zulip CSS should have no dependencies on external resources
         "function-url-no-scheme-relative": true,
-        "function-url-scheme-allowed-list": [],
-
-        // We use autoprefixer to generate vendor prefixes
-        "at-rule-no-vendor-prefix": true,
-        "media-feature-name-no-vendor-prefix": true,
-        "property-no-vendor-prefix": true,
-        "selector-no-vendor-prefix": true,
-        "value-no-vendor-prefix": true,
+        "function-url-scheme-allowed-list": [
+            "data", // Allow data URLs
+        ],
     },
 };

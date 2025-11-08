@@ -1,0 +1,34 @@
+{{#with linkifier}}
+<tr class="linkifier_row{{#if (and ../can_modify ../can_drag)}} movable-row{{/if}}" data-linkifier-id="{{id}}">
+    <td>
+        {{#if (and ../can_modify ../can_drag)}}
+            <span class="move-handle">
+                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+            </span>
+        {{/if}}
+        <span class="linkifier_pattern">{{pattern}}</span>
+    </td>
+    <td>
+        <span class="linkifier_url_template">{{url_template}}</span>
+    </td>
+    {{#if ../can_modify}}
+    <td class="no-select actions">
+        {{> ../components/icon_button
+          icon="edit"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip edit"
+          data-tippy-content=(t "Edit")
+          aria-label=(t "Edit")
+          }}
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip delete"
+          data-tippy-content=(t "Delete")
+          aria-label=(t "Delete")
+          }}
+    </td>
+    {{/if}}
+</tr>
+{{/with}}

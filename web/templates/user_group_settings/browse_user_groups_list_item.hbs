@@ -1,0 +1,87 @@
+<div class="group-row {{#if deactivated}}deactivated-group{{/if}}" data-group-id="{{id}}" data-group-name="{{name}}">
+    {{#if is_member}}
+        <div class="check checked join_leave_button {{#unless can_leave}}disabled{{/unless}} {{#unless is_direct_member}}not-direct-member{{/unless}}">
+            <div class="tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_leave}}{{#if is_direct_member}}leave-{{id}}-group-tooltip-template{{else}}cannot-leave-{{id}}-because-of-subgroup-tooltip-template{{/if}}{{else}}cannot-leave-{{id}}-group-tooltip-template{{/if}}">
+                <template id="leave-{{id}}-group-tooltip-template">
+                    <span>
+                        {{#tr}}
+                            Leave group {name}
+                        {{/tr}}
+                    </span>
+                </template>
+
+                <template id="cannot-leave-{{id}}-because-of-subgroup-tooltip-template">
+                    <span>
+                        {{#tr}}
+                            You are a member of this group because you are a member of a subgroup (<z-highlight>{associated_subgroup_names}</z-highlight>).
+                            {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+                        {{/tr}}
+                    </span>
+                </template>
+
+                <template id="cannot-leave-{{id}}-group-tooltip-template">
+                    {{#if deactivated}}
+                        <span>
+                            {{#tr}}
+                                You cannot leave a deactivated user group.
+                            {{/tr}}
+                        </span>
+                    {{else}}
+                        <span>
+                            {{#tr}}
+                                You do not have permission to leave this group.
+                            {{/tr}}
+                        </span>
+                    {{/if}}
+                </template>
+
+                <i class="zulip-icon zulip-icon-subscriber-check sub-unsub-icon"></i>
+            </div>
+            <div class='join_leave_status'></div>
+        </div>
+    {{else}}
+        <div class="check join_leave_button {{#unless can_join}}disabled{{/unless}}">
+            <div class="tippy-zulip-tooltip" data-tooltip-template-id="{{#if can_join}}join-{{id}}-group-tooltip-template{{else}}cannot-join-{{id}}-group-tooltip-template{{/if}}">
+                <template id="join-{{id}}-group-tooltip-template">
+                    <span>
+                        {{#tr}}
+                            Join group {name}
+                        {{/tr}}
+                    </span>
+                </template>
+
+                <template id="cannot-join-{{id}}-group-tooltip-template">
+                    {{#if deactivated}}
+                        <span>
+                            {{#tr}}
+                                You cannot join a deactivated user group.
+                            {{/tr}}
+                        </span>
+                    {{else}}
+                        <span>
+                            {{#tr}}
+                                You do not have permission to join this group.
+                            {{/tr}}
+                        </span>
+                    {{/if}}
+                </template>
+
+                <i class="zulip-icon zulip-icon-subscriber-plus sub-unsub-icon"></i>
+            </div>
+            <div class='join_leave_status'></div>
+        </div>
+    {{/if}}
+    <div class="group-info-box">
+        <div class="top-bar">
+            <div class="group-name-wrapper">
+                <div class="group-name">{{name}}</div>
+                {{#if deactivated}}
+                    <i class="fa fa-ban deactivated-user-icon"></i>
+                {{/if}}
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <div class="description rendered_markdown" data-no-description="{{t 'No description.'}}">{{description}}</div>
+        </div>
+    </div>
+</div>

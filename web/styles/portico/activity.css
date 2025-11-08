@@ -1,0 +1,544 @@
+.activity-page {
+    margin: 10px;
+}
+
+.activity-head {
+    background-color: hsl(208deg 100% 97%);
+    position: sticky;
+    top: 0;
+
+    & th {
+        border-bottom: 1px solid hsl(0deg 0% 87%);
+    }
+}
+
+.activity-foot {
+    background-color: hsl(208deg 100% 97%);
+    font-weight: 700;
+    position: sticky;
+    bottom: 0;
+}
+
+.table-striped {
+    & tr.recently_active {
+        & td {
+            background-color: hsl(120deg 97% 83%);
+        }
+
+        &:nth-child(odd) td {
+            background-color: hsl(120deg 70% 76%);
+        }
+    }
+}
+
+.summary-table,
+.analytics-table {
+    border: 1px solid hsl(0deg 0% 87%);
+    border-collapse: separate;
+    border-left: 0;
+    border-radius: 4px;
+    border-spacing: 0;
+    margin: 0 10px;
+
+    & th,
+    td {
+        border-left: 1px solid hsl(0deg 0% 87%);
+        text-align: left;
+
+        &.number {
+            text-align: right;
+        }
+    }
+
+    th {
+        vertical-align: bottom;
+        padding: 8px;
+    }
+
+    td {
+        border-top: 1px solid hsl(0deg 0% 87%);
+        white-space: nowrap;
+        padding: 2px 8px;
+        max-width: 320px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    tbody > tr:nth-child(odd) > td {
+        background-color: hsl(0deg 0% 98%);
+    }
+
+    tbody tr:first-child td {
+        border-top: 0;
+    }
+
+    thead tr:first-child > th:first-child {
+        border-top-left-radius: 4px;
+    }
+
+    thead tr:first-child > th:last-child {
+        border-top-right-radius: 4px;
+    }
+
+    tbody tr:last-child > td:first-child {
+        border-bottom-left-radius: 4px;
+    }
+
+    tbody tr:last-child > td:last-child {
+        border-bottom-right-radius: 4px;
+    }
+
+    thead tr:first-child th {
+        border-top: 0;
+    }
+}
+
+tr.admin td:first-child {
+    font-weight: bold;
+    color: hsl(240deg 100% 50%);
+    font-size: 110%;
+}
+
+.good {
+    font-weight: bold;
+    color: hsl(120deg 100% 33%);
+}
+
+.bad {
+    font-weight: bold;
+    color: hsl(0deg 100% 39%);
+}
+
+.support-query-result,
+.remote-support-query-result {
+    background-color: hsl(60deg 12% 94%);
+    padding: 10px;
+    border-radius: 7px;
+    box-shadow: 0 10px 7px -6px hsl(0deg 2% 45%);
+    margin-bottom: 10px;
+
+    & select {
+        height: 30px;
+        width: 220px;
+        padding: 0 6px;
+        font-size: 14px;
+        color: hsl(0deg 0% 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        cursor: pointer;
+        background-color: hsl(0deg 0% 100%);
+        vertical-align: text-bottom;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+        &:focus {
+            outline: 1px dotted hsl(0deg 0% 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
+        }
+    }
+
+    & input {
+        width: 206px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        color: hsl(0deg 0% 33%);
+        vertical-align: text-bottom;
+        transition:
+            border-color linear 0.2s,
+            box-shadow linear 0.2s;
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.494deg 80% 62% / 60%);
+        }
+    }
+
+    .cloud-label,
+    .deactivated-label,
+    .remote-label {
+        padding: 2px 8px;
+        font-size: 0.9em;
+        font-weight: bold;
+        color: hsl(0deg 0% 100%);
+        text-shadow: 0 -1px 0 hsl(0deg 0% 0% / 25%);
+        border-radius: 3px;
+    }
+
+    .cloud-label {
+        background-color: hsl(280deg 100% 40%);
+    }
+
+    .deactivated-label {
+        background-color: hsl(2deg 64% 53%);
+    }
+
+    .remote-label {
+        background-color: hsl(186deg 76% 36%);
+    }
+
+    .current-audit-log {
+        color: hsl(123deg 46% 34%);
+    }
+
+    .current-plan-data-missing,
+    .stale-audit-log {
+        color: hsl(2deg 64% 53%);
+    }
+}
+
+.reactivate-remote-server-button,
+.deactivate-remote-server-button,
+.delete-next-fixed-price-plan-button,
+.approve-sponsorship-button,
+.support-search-button,
+.support-submit-button,
+.delete-user-button,
+.scrub-realm-button {
+    padding: 6px 12px;
+    display: inline-block;
+    margin-bottom: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.4286;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: text-bottom;
+    cursor: pointer;
+    user-select: none;
+    background-image: none;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:focus {
+        outline: 5px auto -webkit-focus-ring-color;
+        outline-offset: -2px;
+    }
+
+    &:active {
+        background-image: none;
+        outline: 0;
+    }
+
+    &[disabled] {
+        pointer-events: none;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+}
+
+.support-search-form {
+    margin: 10px;
+}
+
+.support-search-button {
+    vertical-align: middle;
+    margin: 10px;
+}
+
+.approve-sponsorship-button {
+    vertical-align: middle;
+    color: hsl(123deg 46% 34%);
+    background-color: hsl(114deg 25% 85%);
+    border: 1px solid hsl(123deg 46% 34%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(123deg 50% 30%);
+        background-color: hsl(114deg 28% 82%);
+        border: 1px solid hsl(123deg 50% 30%);
+    }
+}
+
+.support-search-button,
+.support-submit-button {
+    color: hsl(0deg 0% 20%);
+    background-color: hsl(0deg 0% 100%);
+    border: 1px solid hsl(0deg 0% 83%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(0deg 0% 20%);
+        background-color: hsl(0deg 0% 92%);
+        border: 1px solid hsl(0deg 0% 68%);
+    }
+}
+
+.deactivate-remote-server-button,
+.delete-next-fixed-price-plan-button,
+.delete-user-button,
+.scrub-realm-button {
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(2deg 64% 58%);
+    border: 1px solid hsl(2deg 64% 53%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(2deg 65% 50%);
+        border: 1px solid hsl(2deg 65% 41%);
+    }
+}
+
+.reactivate-remote-server-button {
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(35deg 70% 56%);
+    border: 1px solid hsl(35deg 70% 50%);
+    border-radius: 2px;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(35deg 82% 40%);
+        border: 1px solid hsl(35deg 82% 30%);
+    }
+}
+
+.reactivate-remote-server-button,
+.deactivate-remote-server-button {
+    font-size: 15px;
+    line-height: 1.8;
+    max-width: 550px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.remote-support-query-result.remote-server-deactivated {
+    background-color: hsl(2deg 64% 58%);
+
+    .remote-server-section {
+        background-color: hsl(22deg 100% 92%);
+    }
+
+    .remote-realms-section {
+        background-color: hsl(23deg 100% 95%);
+    }
+}
+
+.delete-next-fixed-price-plan-form,
+.delete-user-form {
+    margin: 8px 0;
+}
+
+.installation-activity-header {
+    text-align: center;
+}
+
+.support-section-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 20px;
+    margin: 0 0 8px;
+}
+
+.support-realm-icon {
+    max-width: 25px;
+    position: relative;
+    vertical-align: middle;
+    top: -2px;
+}
+
+.reactivate-remote-server-form,
+.deactivate-remote-server-form,
+.realm-support-information,
+.remote-server-information,
+.remote-realm-information,
+.remote-sponsorship-details,
+.support-form,
+.next-plan-information,
+.current-plan-information {
+    margin-bottom: 10px;
+}
+
+.scrub-realm-form {
+    padding-bottom: 10px;
+}
+
+.search-query.input-xxlarge {
+    width: 530px;
+    padding: 4px 14px;
+    margin-bottom: 0;
+    border-radius: 8px;
+    border: 1px solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border-color linear 0.2s,
+        box-shadow linear 0.2s;
+    color: hsl(0deg 0% 33%);
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.494deg 80% 62% / 60%);
+    }
+}
+
+@media (width <= 767px) {
+    .search-query.input-xxlarge {
+        width: 100%;
+    }
+}
+
+.remote-support-query-result {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(100px, auto);
+    grid-template-areas: "server realms";
+}
+
+.remote-server-section {
+    grid-area: server;
+}
+
+.remote-realms-section {
+    grid-area: realms;
+}
+
+.user-support-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(100px, auto);
+    grid-template-areas: "realm user";
+}
+
+.user-information-section {
+    grid-area: user;
+}
+
+.user-realm-information-section {
+    grid-area: realm;
+}
+
+.confirmation-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(100px, auto);
+    grid-template-areas: "confirmation-realm confirmation";
+}
+
+.confirmation-information-section {
+    grid-area: confirmation;
+}
+
+.confirmation-realm-section {
+    grid-area: confirmation-realm;
+}
+
+.confirmation-information-section,
+.confirmation-realm-section,
+.user-information-section,
+.user-realm-information-section,
+.remote-realms-section,
+.remote-server-section {
+    border: 2px solid hsl(330deg 3% 40%);
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.confirmation-realm-section,
+.user-realm-information-section,
+.remote-server-section {
+    background-color: hsl(60deg 11% 86%);
+}
+
+.confirmation-information-section,
+.user-information-section,
+.remote-realms-section {
+    background-color: hsl(60deg 12% 90%);
+}
+
+.remote-realm-container {
+    padding-bottom: 25px;
+}
+
+.activity-header-information,
+.push-notification-status,
+.realm-management-actions,
+.next-plan-container,
+.current-plan-container,
+.support-sponsorship-container {
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.activity-header-information {
+    border: 2px solid hsl(330deg 3% 40%);
+    background-color: hsl(60deg 12% 90%);
+    width: fit-content;
+}
+
+.activity-header-entry {
+    margin: 0;
+    padding: 2px 0;
+}
+
+.push-notification-status,
+.realm-management-actions {
+    border: 2px solid hsl(186deg 76% 36%);
+    background-color: hsl(188deg 35% 87%);
+}
+
+.next-plan-container,
+.current-plan-container,
+.support-sponsorship-container {
+    border: 2px solid hsl(33deg 99% 60%);
+}
+
+.support-sponsorship-container {
+    background-color: hsl(30deg 100% 96%);
+}
+
+.next-plan-container {
+    background-color: hsl(31deg 100% 91%);
+}
+
+.current-plan-container {
+    background-color: hsl(31deg 100% 83%);
+}
+
+.discounted-price-form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+
+    .support-submit-button {
+        margin-top: 5px;
+    }
+}
+
+.container {
+    width: 940px;
+    margin-right: auto;
+    margin-left: auto;
+
+    @media (width <= 767px) {
+        width: auto;
+    }
+
+    @media (767px < width <= 979px) {
+        width: 724px;
+    }
+
+    @media (width >= 1180px) {
+        width: 1170px;
+    }
+}

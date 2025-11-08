@@ -1,0 +1,15 @@
+MAILTO=zulip
+PATH=/usr/local/bin:/usr/bin:/bin
+SHELL=/bin/bash
+USER=<%= @user %>
+RUNNING_UNDER_CRON=1
+<% if @proxy != '' -%>
+HTTP_proxy="<%= @proxy %>"
+HTTPS_proxy="<%= @proxy %>"
+<% end -%>
+<% if @dsn != '' -%>
+SENTRY_DSN=<%= @dsn %>
+<% end -%>
+
+<%= @minute %> <%= @hour %> * * <%= @dow %>    <%= @user %>    <%= @run %>
+

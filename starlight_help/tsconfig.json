@@ -1,0 +1,35 @@
+{
+    "extends": "astro/tsconfigs/strict",
+    "compilerOptions": {
+        /* Type Checking */
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strict": true,
+
+        /* Modules */
+        "module": "preserve",
+
+        /* Emit */
+        "noEmit": true,
+
+        /* Interop Constraints */
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+
+        /* Language and Environment */
+        "target": "esnext",
+
+        /* Projects */
+        "composite": true,
+
+        "types": ["unplugin-icons/types/astro"],
+    },
+    "include": [".astro/types.d.ts", "**/*", "src/.remarkrc.js"],
+    "exclude": ["dist"],
+}

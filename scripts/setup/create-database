@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+set -x
+
+# What user should we use for connecting to the database
+POSTGRES_USER="${POSTGRES_USER:-postgres}"
+
+# What database name and username to use when connecting to the database
+DATABASE_NAME=$(crudini --get /etc/zulip/zulip.conf postgresql database_name 2>/dev/null || echo zulip)
+DATABASE_USER=$(crudini --get /etc/zulip/zulip.conf postgresql database_user 2>/dev/null || echo zulip)
+
+if [ "$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc \"SELECT 1 FROM pg_database WHERE datname='$DATABASE_NAME';\"")" = "1" ]; then
+    records="$(su "$POSTGRES_USER" -c "cd / && psql -v ON_ERROR_STOP=1 -Atc 'SELECT COUNT(*) FROM $DATABASE_NAME.zerver_message;' $DATABASE_USER" || echo 0)"
+    if [ "$records" -gt 200 ]; then
+        set +x
+        echo "WARNING: This will delete your Zulip database which currently contains $records messages."
+        read -p "Do you want to proceed? [y/N] " -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+        set -x
+    fi
+fi
+
+# Shut down all services to ensure a quiescent state.
+if [ -e "/home/zulip/deployments" ]; then
+    su zulip -c "/home/zulip/deployments/current/scripts/stop-server"
+fi
+
+# Drop any open connections to any old database.
+# Send the script via stdin in case the postgres user lacks permission to read it.
+su -s /usr/bin/env - -- "$POSTGRES_USER" \
+    bash -s - zulip zulip_base <"$(dirname "$0")/terminate-psql-sessions"
+
+(
+    cd / # Make sure the current working directory is readable by postgres
+    su "$POSTGRES_USER" -c "psql -v ON_ERROR_STOP=1 -v dbname=$DATABASE_NAME -v dbuser=$DATABASE_USER -e"
+) <"$(dirname "$0")/create-db.sql"
+
+# Set a postgres password if the postgres username is not "zulip".
+# When the username is zulip, we rely on running as the zulip system
+# user for authentication via postgres' peer authentication.
+if [ "$DATABASE_USER" != "zulip" ]; then
+    PASSWORD=$(crudini --get /etc/zulip/zulip-secrets.conf secrets postgres_password)
+    su "$POSTGRES_USER" -c "psql -v ON_ERROR_STOP=1  -e postgres" <<EOF
+ALTER ROLE $DATABASE_USER PASSWORD '$PASSWORD';
+EOF
+fi
+
+# Clear memcached to avoid contamination from previous database state
+if [ -e "/home/zulip/deployments" ]; then
+    /home/zulip/deployments/current/scripts/setup/flush-memcached
+fi
+
+echo "Database created"

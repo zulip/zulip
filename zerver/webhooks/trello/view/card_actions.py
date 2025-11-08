@@ -1,6 +1,7 @@
-from typing import Any, Mapping, Optional, Tuple
+from collections.abc import Mapping
 
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 
 SUPPORTED_CARD_ACTIONS = [
     "updateCard",
@@ -51,7 +52,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     SET_DESC: "set description for {card_url_template} to:\n~~~ quote\n{desc}\n~~~\n",
     CHANGE_DESC: (
         "changed description for {card_url_template} from\n"
-        + "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
+        "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
     ),
     REMOVE_DESC: "removed description from {card_url_template}.",
     ARCHIVE: "archived {card_url_template}.",
@@ -74,39 +75,44 @@ def prettify_date(date_string: str) -> str:
     return date_string.replace("T", " ").replace(".000", "").replace("Z", " UTC")
 
 
-def process_card_action(payload: Mapping[str, Any], action_type: str) -> Optional[Tuple[str, str]]:
+def process_card_action(payload: WildValue, action_type: str) -> tuple[str, str] | None:
     proper_action = get_proper_action(payload, action_type)
     if proper_action is not None:
-        return get_subject(payload), get_body(payload, proper_action)
+        return get_topic(payload), get_body(payload, proper_action)
     return None
 
 
-def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[str]:
+def get_proper_action(payload: WildValue, action_type: str) -> str | None:
     if action_type == "updateCard":
         data = get_action_data(payload)
         old_data = data["old"]
         card_data = data["card"]
         if data.get("listBefore"):
             return CHANGE_LIST
-        if old_data.get("name"):
+        if old_data.get("name").tame(check_none_or(check_string)):
             return CHANGE_NAME
-        if old_data.get("desc") == "":
+        if old_data.get("desc").tame(check_none_or(check_string)) == "":
             return SET_DESC
-        if old_data.get("desc"):
-            if card_data.get("desc") == "":
+        if old_data.get("desc").tame(check_none_or(check_string)):
+            if card_data.get("desc").tame(check_none_or(check_string)) == "":
                 return REMOVE_DESC
             else:
                 return CHANGE_DESC
-        if old_data.get("due", False) is None:
+        if old_data.get("due", "").tame(check_none_or(check_string)) is None:
             return SET_DUE_DATE
-        if old_data.get("due"):
-            if card_data.get("due", False) is None:
+        if old_data.get("due").tame(check_none_or(check_string)):
+            if card_data.get("due", "").tame(check_none_or(check_string)) is None:
                 return REMOVE_DUE_DATE
             else:
                 return CHANGE_DUE_DATE
-        if old_data.get("closed") is False and card_data.get("closed"):
+        if old_data.get("closed").tame(check_none_or(check_bool)) is False and card_data.get(
+            "closed", False
+        ).tame(check_bool):
             return ARCHIVE
-        if old_data.get("closed") and card_data.get("closed") is False:
+        if (
+            old_data.get("closed").tame(check_none_or(check_bool))
+            and card_data.get("closed").tame(check_none_or(check_bool)) is False
+        ):
             return REOPEN
         # We don't support events for when a card is moved up or down
         # within a single list (pos), or when the cover changes (cover).
@@ -118,125 +124,124 @@ def get_proper_action(payload: Mapping[str, Any], action_type: str) -> Optional[
             "pos",
         ]
         for field in ignored_fields:
-            if old_data.get(field):
+            if field in old_data:
                 return None
-        raise UnsupportedWebhookEventType(action_type)
+        raise UnsupportedWebhookEventTypeError(action_type)
 
     return action_type
 
 
-def get_subject(payload: Mapping[str, Any]) -> str:
-    return get_action_data(payload)["board"].get("name")
+def get_topic(payload: WildValue) -> str:
+    return get_action_data(payload)["board"]["name"].tame(check_string)
 
 
-def get_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_body(payload: WildValue, action_type: str) -> str:
     message_body = ACTIONS_TO_FILL_BODY_MAPPER[action_type](payload, action_type)
-    creator = payload["action"]["memberCreator"].get("fullName")
+    creator = payload["action"]["memberCreator"].get("fullName").tame(check_none_or(check_string))
     return f"{creator} {message_body}"
 
 
-def get_added_checklist_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_added_checklist_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "checklist_name": get_action_data(payload)["checklist"].get("name"),
+        "checklist_name": get_action_data(payload)["checklist"]["name"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_update_check_item_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_update_check_item_body(payload: WildValue, action_type: str) -> str:
     action = get_action_data(payload)
-    state = action["checkItem"]["state"]
+    state = action["checkItem"]["state"].tame(check_string)
     data = {
         "action": "checked" if state == "complete" else "unchecked",
-        "checklist_name": action["checklist"].get("name"),
-        "item_name": action["checkItem"].get("name"),
+        "checklist_name": action["checklist"]["name"].tame(check_string),
+        "item_name": action["checkItem"]["name"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_added_attachment_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_added_attachment_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "attachment_url": get_action_data(payload)["attachment"].get("url"),
-        "attachment_name": get_action_data(payload)["attachment"].get("name"),
+        "attachment_url": get_action_data(payload)["attachment"]["url"].tame(check_string),
+        "attachment_name": get_action_data(payload)["attachment"]["name"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_updated_card_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_updated_card_body(payload: WildValue, action_type: str) -> str:
     data = {
         "card_name": get_card_name(payload),
-        "old_list": get_action_data(payload)["listBefore"].get("name"),
-        "new_list": get_action_data(payload)["listAfter"].get("name"),
+        "old_list": get_action_data(payload)["listBefore"]["name"].tame(check_string),
+        "new_list": get_action_data(payload)["listAfter"]["name"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_renamed_card_body(payload: Mapping[str, Any], action_type: str) -> str:
-
+def get_renamed_card_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "old_name": get_action_data(payload)["old"].get("name"),
-        "new_name": get_action_data(payload)["old"].get("name"),
+        "old_name": get_action_data(payload)["old"]["name"].tame(check_string),
+        "new_name": get_action_data(payload)["old"]["name"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_added_label_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_added_label_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "color": get_action_data(payload).get("value"),
-        "text": get_action_data(payload).get("text"),
+        "color": get_action_data(payload)["value"].tame(check_string),
+        "text": get_action_data(payload)["text"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_managed_member_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_managed_member_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "member_name": payload["action"]["member"].get("fullName"),
+        "member_name": payload["action"]["member"]["fullName"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_comment_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_comment_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "text": get_action_data(payload)["text"],
+        "text": get_action_data(payload)["text"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_managed_due_date_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_managed_due_date_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "due_date": prettify_date(get_action_data(payload)["card"].get("due")),
+        "due_date": prettify_date(get_action_data(payload)["card"]["due"].tame(check_string)),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_changed_due_date_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_changed_due_date_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "due_date": prettify_date(get_action_data(payload)["card"].get("due")),
-        "old_due_date": prettify_date(get_action_data(payload)["old"].get("due")),
+        "due_date": prettify_date(get_action_data(payload)["card"]["due"].tame(check_string)),
+        "old_due_date": prettify_date(get_action_data(payload)["old"]["due"].tame(check_string)),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_managed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_managed_desc_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "desc": get_action_data(payload)["card"]["desc"],
+        "desc": get_action_data(payload)["card"]["desc"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_changed_desc_body(payload: Mapping[str, Any], action_type: str) -> str:
+def get_changed_desc_body(payload: WildValue, action_type: str) -> str:
     data = {
-        "desc": get_action_data(payload)["card"]["desc"],
-        "old_desc": get_action_data(payload)["old"]["desc"],
+        "desc": get_action_data(payload)["card"]["desc"].tame(check_string),
+        "old_desc": get_action_data(payload)["old"]["desc"].tame(check_string),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 
-def get_body_by_action_type_without_data(payload: Mapping[str, Any], action_type: str) -> str:
+def get_body_by_action_type_without_data(payload: WildValue, action_type: str) -> str:
     return fill_appropriate_message_content(payload, action_type)
 
 
 def fill_appropriate_message_content(
-    payload: Mapping[str, Any], action_type: str, data: Mapping[str, Any] = {}
+    payload: WildValue, action_type: str, data: Mapping[str, str] = {}
 ) -> str:
     data = dict(data)
     if "card_url_template" not in data:
@@ -245,26 +250,28 @@ def fill_appropriate_message_content(
     return message_body.format(**data)
 
 
-def get_filled_card_url_template(payload: Mapping[str, Any]) -> str:
+def get_filled_card_url_template(payload: WildValue) -> str:
     return TRELLO_CARD_URL_TEMPLATE.format(
         card_name=get_card_name(payload), card_url=get_card_url(payload)
     )
 
 
-def get_card_url(payload: Mapping[str, Any]) -> str:
-    return "https://trello.com/c/{}".format(get_action_data(payload)["card"].get("shortLink"))
+def get_card_url(payload: WildValue) -> str:
+    return "https://trello.com/c/{}".format(
+        get_action_data(payload)["card"]["shortLink"].tame(check_string)
+    )
 
 
 def get_message_body(action_type: str) -> str:
     return ACTIONS_TO_MESSAGE_MAPPER[action_type]
 
 
-def get_card_name(payload: Mapping[str, Any]) -> str:
-    return get_action_data(payload)["card"].get("name")
+def get_card_name(payload: WildValue) -> str:
+    return get_action_data(payload)["card"]["name"].tame(check_string)
 
 
-def get_action_data(payload: Mapping[str, Any]) -> Mapping[str, Any]:
-    return payload["action"].get("data")
+def get_action_data(payload: WildValue) -> WildValue:
+    return payload["action"]["data"]
 
 
 ACTIONS_TO_FILL_BODY_MAPPER = {

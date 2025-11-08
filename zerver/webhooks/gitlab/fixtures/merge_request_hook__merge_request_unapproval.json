@@ -1,0 +1,142 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": {
+    "id": 26939734,
+    "name": "Sumit Bhanushali",
+    "username": "gunner.sumit",
+    "avatar_url": "https://secure.gravatar.com/avatar/62375142d03eb8b07a511a443f8d2af36497e8f36f24b71b6ffabecadda41598?s=80&d=identicon",
+    "email": "[REDACTED]"
+  },
+  "project": {
+    "id": 68500871,
+    "name": "my-awesome-project",
+    "description": null,
+    "web_url": "https://gitlab.com/sumitb16/my-awesome-project",
+    "avatar_url": null,
+    "git_ssh_url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+    "git_http_url": "https://gitlab.com/sumitb16/my-awesome-project.git",
+    "namespace": "sumitb16",
+    "visibility_level": 0,
+    "path_with_namespace": "sumitb16/my-awesome-project",
+    "default_branch": "main",
+    "ci_config_path": "",
+    "homepage": "https://gitlab.com/sumitb16/my-awesome-project",
+    "url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+    "ssh_url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+    "http_url": "https://gitlab.com/sumitb16/my-awesome-project.git"
+  },
+  "object_attributes": {
+    "assignee_id": null,
+    "author_id": 26939388,
+    "created_at": "2025-03-30 07:38:58 UTC",
+    "description": "",
+    "draft": false,
+    "head_pipeline_id": null,
+    "id": 373098278,
+    "iid": 1,
+    "last_edited_at": null,
+    "last_edited_by_id": null,
+    "merge_commit_sha": null,
+    "merge_error": null,
+    "merge_params": {
+      "force_remove_source_branch": "1"
+    },
+    "merge_status": "can_be_merged",
+    "merge_user_id": null,
+    "merge_when_pipeline_succeeds": false,
+    "milestone_id": null,
+    "source_branch": "t3",
+    "source_project_id": 68500871,
+    "state_id": 1,
+    "target_branch": "main",
+    "target_project_id": 68500871,
+    "time_estimate": 0,
+    "title": "Update the README",
+    "updated_at": "2025-03-30 08:22:36 UTC",
+    "updated_by_id": 26939388,
+    "prepared_at": "2025-03-30 07:38:59 UTC",
+    "assignee_ids": [],
+    "blocking_discussions_resolved": true,
+    "detailed_merge_status": "not_approved",
+    "first_contribution": false,
+    "human_time_change": null,
+    "human_time_estimate": null,
+    "human_total_time_spent": null,
+    "labels": [],
+    "last_commit": {
+      "id": "f61e5631699e3b869180fea166fd0968ec2c3992",
+      "message": "Update file README.md",
+      "title": "Update file README.md",
+      "timestamp": "2025-03-30T07:38:04+00:00",
+      "url": "https://gitlab.com/sumitb16/my-awesome-project/-/commit/f61e5631699e3b869180fea166fd0968ec2c3992",
+      "author": {
+        "name": "Sumit Bhanushali",
+        "email": "[REDACTED]"
+      }
+    },
+    "reviewer_ids": [
+      26939388
+    ],
+    "source": {
+      "id": 68500871,
+      "name": "my-awesome-project",
+      "description": null,
+      "web_url": "https://gitlab.com/sumitb16/my-awesome-project",
+      "avatar_url": null,
+      "git_ssh_url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+      "git_http_url": "https://gitlab.com/sumitb16/my-awesome-project.git",
+      "namespace": "sumitb16",
+      "visibility_level": 0,
+      "path_with_namespace": "sumitb16/my-awesome-project",
+      "default_branch": "main",
+      "ci_config_path": "",
+      "homepage": "https://gitlab.com/sumitb16/my-awesome-project",
+      "url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+      "ssh_url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+      "http_url": "https://gitlab.com/sumitb16/my-awesome-project.git"
+    },
+    "state": "opened",
+    "target": {
+      "id": 68500871,
+      "name": "my-awesome-project",
+      "description": null,
+      "web_url": "https://gitlab.com/sumitb16/my-awesome-project",
+      "avatar_url": null,
+      "git_ssh_url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+      "git_http_url": "https://gitlab.com/sumitb16/my-awesome-project.git",
+      "namespace": "sumitb16",
+      "visibility_level": 0,
+      "path_with_namespace": "sumitb16/my-awesome-project",
+      "default_branch": "main",
+      "ci_config_path": "",
+      "homepage": "https://gitlab.com/sumitb16/my-awesome-project",
+      "url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+      "ssh_url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+      "http_url": "https://gitlab.com/sumitb16/my-awesome-project.git"
+    },
+    "time_change": 0,
+    "total_time_spent": 0,
+    "url": "https://gitlab.com/sumitb16/my-awesome-project/merge_requests/1",
+    "work_in_progress": false,
+    "approval_rules": [],
+    "action": "unapproval"
+  },
+  "labels": [],
+  "changes": {},
+  "repository": {
+    "name": "my-awesome-project",
+    "url": "git@gitlab.com:sumitb16/my-awesome-project.git",
+    "description": null,
+    "homepage": "https://gitlab.com/sumitb16/my-awesome-project"
+  },
+  "reviewers": [
+    {
+      "id": 26939388,
+      "name": "Sumit Bhanushali",
+      "username": "logancodes16",
+      "avatar_url": "https://secure.gravatar.com/avatar/83f4e0baf47f363b6064bf8376d12baabf2ab6b38c1f41a6b1fa41b6d038f254?s=80&d=identicon",
+      "email": "[REDACTED]"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+<div class="right-sidebar" id="right-sidebar" role="navigation">
+    <div class="right-sidebar-items">
+        <div id="user-list">
+            <div id="userlist-header">
+                {{#> input_wrapper input_type="filter-input" id="userlist-header-search" icon="search" input_button_icon="close"}}
+                    <input type="text" class="input-element user-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter users' }}" />
+                {{/input_wrapper}}
+                <span id="buddy-list-menu-icon" class="user-list-sidebar-menu-icon">
+                    <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
+                </span>
+            </div>
+            <div id="buddy_list_wrapper" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1">
+                <div id="buddy-list-participants-container" class="buddy-list-section-container">
+                    <div class="buddy-list-subsection-header"></div>
+                    <ul id="buddy-list-participants" class="buddy-list-section"></ul>
+                </div>
+                <div id="buddy-list-users-matching-view-container" class="buddy-list-section-container">
+                    <div class="buddy-list-subsection-header"></div>
+                    <ul id="buddy-list-users-matching-view" class="buddy-list-section"></ul>
+                    <div class="buddy-list-user-link view-all-subscribers-link"></div>
+                </div>
+                <div id="buddy-list-other-users-container" class="buddy-list-section-container">
+                    <div class="buddy-list-subsection-header"></div>
+                    <ul id="buddy-list-other-users" class="buddy-list-section"></ul>
+                    <div class="buddy-list-user-link view-all-users-link"></div>
+                </div>
+                <div id="buddy_list_wrapper_padding"></div>
+                <div class="invite-user-shortcut">
+                    <a class="invite-user-link right-sidebar-wrappable-text-container" role="button">
+                        <span class="right-sidebar-wrappable-text-inner">
+                            {{t 'Invite to organization' }}
+                        </span>
+                    </a>
+                </div>
+            </div>
+            <div id="buddy-list-loading-subscribers"></div>
+        </div>
+    </div>
+</div>

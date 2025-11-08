@@ -1,0 +1,29 @@
+# See https://goteleport.com/docs/config-reference/ and
+# https://goteleport.com/docs/admin-guide/#configuration
+teleport:
+  ca_pin: "sha256:062db37249ea74c450579da8f02043b317cb8a174d653bb5090a89752d68efe7"
+
+auth_service:
+  enabled: "yes"
+  listen_addr: 0.0.0.0:3025
+  cluster_name: teleport.zulipchat.net
+  authentication:
+    type: local
+    second_factor: on
+    signature_algorithm_suite: balanced-v1
+    u2f:
+      app_id: https://teleport.zulipchat.net
+    webauthn:
+      rp_id: teleport.zulipchat.net
+
+proxy_service:
+  enabled: "yes"
+  listen_addr: 0.0.0.0:3023
+  web_listen_addr: 0.0.0.0:443
+  public_addr: teleport.zulipchat.net:443
+  acme:
+    enabled: "yes"
+    email: zulip-ops@zulip.com
+
+ssh_service:
+  enabled: no

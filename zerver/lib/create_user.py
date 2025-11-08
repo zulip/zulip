@@ -1,70 +1,98 @@
-from typing import Optional
+import re
+from datetime import datetime
+from email.headerregistry import Address
 
-import orjson
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.hotspots import copy_hotspots
+from zerver.lib.i18n import get_default_language_for_new_user
+from zerver.lib.onboarding_steps import copy_onboarding_steps
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
-from zerver.lib.utils import generate_api_key
 from zerver.models import (
-    PreregistrationUser,
     Realm,
+    RealmUserDefault,
     Recipient,
     Stream,
     Subscription,
+    UserBaseSettings,
     UserProfile,
-    get_fake_email_domain,
 )
+from zerver.models.realms import get_fake_email_domain
 
 
-def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
+def copy_default_settings(
+    settings_source: UserProfile | RealmUserDefault, target_profile: UserProfile
+) -> None:
     # Important note: Code run from here to configure the user's
-    # settings should not call send_event, as that would cause clients
+    # settings should not send events, as that would cause clients
     # to throw an exception (we haven't sent the realm_user/add event
     # yet, so that event will include the updated details of target_profile).
     #
     # Note that this function will do at least one save() on target_profile.
-    for settings_name in UserProfile.property_types:
-        value = getattr(source_profile, settings_name)
+    for settings_name in UserBaseSettings.property_types:
+        if settings_name in ["default_language", "enable_login_emails"] and isinstance(
+            settings_source, RealmUserDefault
+        ):
+            continue
+
+        if settings_name == "email_address_visibility":
+            # For email_address_visibility, the value selected in registration form
+            # is preferred over the realm-level default value and value of source
+            # profile.
+            continue
+        value = getattr(settings_source, settings_name)
         setattr(target_profile, settings_name, value)
 
-    for settings_name in UserProfile.notification_setting_types:
-        value = getattr(source_profile, settings_name)
-        setattr(target_profile, settings_name, value)
+    if isinstance(settings_source, RealmUserDefault):
+        target_profile.save()
+        return
 
-    setattr(target_profile, "full_name", source_profile.full_name)
-    setattr(target_profile, "enter_sends", source_profile.enter_sends)
+    target_profile.full_name = settings_source.full_name
+    target_profile.timezone = canonicalize_timezone(settings_source.timezone)
     target_profile.save()
 
-    if source_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
-        from zerver.lib.actions import do_change_avatar_fields
+    if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:
+        from zerver.actions.user_settings import do_change_avatar_fields
 
+        copy_avatar(settings_source, target_profile)
         do_change_avatar_fields(
             target_profile,
             UserProfile.AVATAR_FROM_USER,
             skip_notify=True,
             acting_user=target_profile,
         )
-        copy_avatar(source_profile, target_profile)
 
-    copy_hotspots(source_profile, target_profile)
+    copy_onboarding_steps(settings_source, target_profile)
+
+
+def get_dummy_email_address_for_display_regex(realm: Realm) -> str:
+    """
+    Returns a regex that matches the format of dummy email addresses we
+    generate for the .email of users with limit email_address_visibility.
+
+    The reason we need a regex is that we want something that we can use both
+    for generating the dummy email addresses and recognizing them together with extraction
+    of the user ID.
+    """
+
+    # We can't directly have (\d+) in the username passed to Address, because it gets
+    # mutated by the underlying logic for escaping special characters.
+    # So we use a trick by using $ as a placeholder which will be preserved, and then
+    # replace it with (\d+) to obtain our intended regex.
+    address_template = Address(username="user$", domain=get_fake_email_domain(realm.host)).addr_spec
+    regex = re.escape(address_template).replace(r"\$", r"(\d+)", 1)
+    return regex
 
 
 def get_display_email_address(user_profile: UserProfile) -> str:
     if not user_profile.email_address_is_realm_public():
-        return f"user{user_profile.id}@{get_fake_email_domain(user_profile.realm)}"
+        # The format of the dummy email address created here needs to stay consistent
+        # with get_dummy_email_address_for_display_regex.
+        return Address(
+            username=f"user{user_profile.id}", domain=get_fake_email_domain(user_profile.realm.host)
+        ).addr_spec
     return user_profile.delivery_email
-
-
-def get_role_for_new_user(invited_as: int, realm_creation: bool = False) -> int:
-    if realm_creation or invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]:
-        return UserProfile.ROLE_REALM_OWNER
-    elif invited_as == PreregistrationUser.INVITE_AS["REALM_ADMIN"]:
-        return UserProfile.ROLE_REALM_ADMINISTRATOR
-    elif invited_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
-        return UserProfile.ROLE_GUEST
-    return UserProfile.ROLE_MEMBER
 
 
 # create_user_profile is based on Django's User.objects.create_user,
@@ -77,19 +105,25 @@ def get_role_for_new_user(invited_as: int, realm_creation: bool = False) -> int:
 def create_user_profile(
     realm: Realm,
     email: str,
-    password: Optional[str],
+    password: str | None,
     active: bool,
-    bot_type: Optional[int],
+    bot_type: int | None,
     full_name: str,
-    bot_owner: Optional[UserProfile],
+    bot_owner: UserProfile | None,
     is_mirror_dummy: bool,
-    tos_version: Optional[str],
-    timezone: Optional[str],
-    tutorial_status: str = UserProfile.TUTORIAL_WAITING,
-    enter_sends: bool = False,
-    force_id: Optional[int] = None,
+    tos_version: str | None,
+    timezone: str,
+    default_language: str,
+    force_id: int | None = None,
+    force_date_joined: datetime | None = None,
+    *,
+    email_address_visibility: int,
 ) -> UserProfile:
-    now = timezone_now()
+    if force_date_joined is None:
+        date_joined = timezone_now()
+    else:
+        date_joined = force_date_joined
+
     email = UserManager.normalize_email(email)
 
     extra_kwargs = {}
@@ -100,8 +134,8 @@ def create_user_profile(
         is_staff=False,
         is_active=active,
         full_name=full_name,
-        last_login=now,
-        date_joined=now,
+        last_login=date_joined,
+        date_joined=date_joined,
         realm=realm,
         is_bot=bool(bot_type),
         bot_type=bot_type,
@@ -109,12 +143,9 @@ def create_user_profile(
         is_mirror_dummy=is_mirror_dummy,
         tos_version=tos_version,
         timezone=timezone,
-        tutorial_status=tutorial_status,
-        enter_sends=enter_sends,
-        onboarding_steps=orjson.dumps([]).decode(),
-        default_language=realm.default_language,
-        twenty_four_hour_time=realm.default_twenty_four_hour_time,
+        default_language=default_language,
         delivery_email=email,
+        email_address_visibility=email_address_visibility,
         **extra_kwargs,
     )
     if bot_type or not active:
@@ -123,29 +154,50 @@ def create_user_profile(
         # If emails are visible to everyone, we can set this here and save a DB query
         user_profile.email = get_display_email_address(user_profile)
     user_profile.set_password(password)
-    user_profile.api_key = generate_api_key()
     return user_profile
 
 
 def create_user(
     email: str,
-    password: Optional[str],
+    password: str | None,
     realm: Realm,
     full_name: str,
     active: bool = True,
-    role: Optional[int] = None,
-    bot_type: Optional[int] = None,
-    bot_owner: Optional[UserProfile] = None,
-    tos_version: Optional[str] = None,
+    role: int | None = None,
+    bot_type: int | None = None,
+    bot_owner: UserProfile | None = None,
+    tos_version: str | None = None,
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
-    default_sending_stream: Optional[Stream] = None,
-    default_events_register_stream: Optional[Stream] = None,
-    default_all_public_streams: Optional[bool] = None,
-    source_profile: Optional[UserProfile] = None,
-    force_id: Optional[int] = None,
+    default_language: str | None = None,
+    default_sending_stream: Stream | None = None,
+    default_events_register_stream: Stream | None = None,
+    default_all_public_streams: bool | None = None,
+    source_profile: UserProfile | None = None,
+    force_id: int | None = None,
+    force_date_joined: datetime | None = None,
+    create_personal_recipient: bool = True,
+    enable_marketing_emails: bool | None = None,
+    email_address_visibility: int | None = None,
 ) -> UserProfile:
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    if bot_type is None:
+        if email_address_visibility is not None:
+            user_email_address_visibility = email_address_visibility
+        else:
+            user_email_address_visibility = realm_user_default.email_address_visibility
+    else:
+        # There is no privacy motivation for limiting access to bot email addresses,
+        # so we hardcode them to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+        user_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+
+    # Users created via the API or LDAP/SAML syncing code paths will
+    # usually not have a default_language value, and should fall back
+    # to the realm default.
+    if default_language is None:
+        default_language = get_default_language_for_new_user(realm, request=None)
+
     user_profile = create_user_profile(
         realm,
         email,
@@ -157,7 +209,10 @@ def create_user(
         is_mirror_dummy,
         tos_version,
         timezone,
+        default_language,
         force_id=force_id,
+        force_date_joined=force_date_joined,
+        email_address_visibility=user_email_address_visibility,
     )
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
@@ -171,15 +226,22 @@ def create_user(
     # If a source profile was specified, we copy settings from that
     # user.  Note that this is positioned in a way that overrides
     # other arguments passed in, which is correct for most defaults
-    # like timezone where the source profile likely has a better value
+    # like time zone where the source profile likely has a better value
     # than the guess. As we decide on details like avatars and full
     # names for this feature, we may want to move it.
     if source_profile is not None:
-        # copy_user_settings saves the attribute values so a secondary
+        # copy_default_settings saves the attribute values so a secondary
         # save is not required.
-        copy_user_settings(source_profile, user_profile)
+        copy_default_settings(source_profile, user_profile)
+    elif bot_type is None:
+        copy_default_settings(realm_user_default, user_profile)
     else:
+        # This will be executed only for bots.
         user_profile.save()
+
+    if bot_type is None and enable_marketing_emails is not None:
+        user_profile.enable_marketing_emails = enable_marketing_emails
+        user_profile.save(update_fields=["enable_marketing_emails"])
 
     if not user_profile.email_address_is_realm_public():
         # With restricted access to email addresses, we can't generate
@@ -188,9 +250,14 @@ def create_user(
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
 
+    if not create_personal_recipient:
+        return user_profile
+
     recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
     user_profile.recipient = recipient
     user_profile.save(update_fields=["recipient"])
 
-    Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+    Subscription.objects.create(
+        user_profile=user_profile, recipient=recipient, is_user_active=user_profile.is_active
+    )
     return user_profile

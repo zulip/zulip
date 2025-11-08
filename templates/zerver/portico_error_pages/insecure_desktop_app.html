@@ -1,0 +1,35 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Update required") }} | Zulip</title>
+{% endblock %}
+
+{% block error_page_content%}
+<img src="{{ static('images/errors/400art.svg') }}" alt=""/>
+<div class="errorbox config-error">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _('Update required') }}</h1>
+        <p>
+            {% trans %}
+            You are using old version of the Zulip desktop
+            app that is no longer supported.
+            {% endtrans %}
+        </p>
+
+        {% if auto_update_broken %}
+        <p>
+            {% trans %}
+            The auto-update feature in this old version of
+            Zulip desktop app no longer works.
+            {% endtrans %}
+        </p>
+        {% endif %}
+
+        <p>
+            <a href="https://zulip.com/apps/" target="_blank" rel="noopener noreferrer">
+                {{ _("Download the latest release.") }}
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

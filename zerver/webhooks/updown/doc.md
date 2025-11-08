@@ -1,14 +1,25 @@
+# Zulip Updown integration
+
 See Updown reports in Zulip!
 
-1. {!create-stream.md!}
+{start_tabs}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
-1. Go to [your Updown settings page](https://updown.io/settings/edit).
+1. {!generate-webhook-url-basic.md!}
 
-1. Under **Webhooks**, set **Webhook endpoint URLs** to the URL
-   constructed above, and click on **+**.
+1. On [your Updown settings page](https://updown.io/settings/edit), go to **Webhooks**.
+
+1. Add the URL generated above to the list of **Webhook endpoint URLs**.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/updown/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

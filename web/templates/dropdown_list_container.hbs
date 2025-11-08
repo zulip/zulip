@@ -1,0 +1,16 @@
+<div class="dropdown-list-container {{widget_name}}-dropdown-list-container">
+    <div class="dropdown-list-search popover-filter-input-wrapper">
+        <input class="dropdown-list-search-input popover-filter-input filter_text_input{{#if hide_search_box}} hide{{/if}}" type="text" placeholder="{{t 'Filter' }}" autofocus/>
+    </div>
+    <div class="dropdown-list-wrapper" data-simplebar data-simplebar-tab-index="-1">
+        <ul class="dropdown-list"></ul>
+    </div>
+    <div class="no-dropdown-items dropdown-list-item-common-styles">
+        {{t 'No matching results'}}
+    </div>
+    {{#if sticky_bottom_option}}
+    <button class="sticky-bottom-option-button">
+        {{sticky_bottom_option}}
+    </button>
+    {{/if}}
+</div>

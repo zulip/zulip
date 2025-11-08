@@ -1,0 +1,42 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Required metadata missing | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="center-block flex full-page account-creation new-style">
+    <div class="inline-block">
+        <div class="get-started">
+            <h1>Error: Server not uploading basic metadata</h1>
+        </div>
+        <div class="white-box">
+            <p>
+                Managing your Zulip plan requires your server to upload
+                up-to-date
+                <a
+                  href="https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata">basic
+                metadata</a>. This data is not being uploaded successfully.
+            </p>
+            {% if remote_realm_session %}
+            <p>
+                If your Zulip server's administrator is not able to fix this, <a
+                href="mailto:support@zulip.com">contact Zulip support</a>.
+            </p>
+            {% elif supports_remote_realms %}
+            <p>
+                If your Zulip server's administrator is not able to fix this, <a
+                href="mailto:support@zulip.com">contact Zulip support</a>.
+            </p>
+            {% else %}
+            <p>
+                Your Zulip server's administrator can fix this issue by <a
+                href="https://zulip.readthedocs.io/en/stable/production/upgrade.html">upgrading</a>
+                the server to Zulip 8.0+, or <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-usage-statistics">enabling the
+                <code>SUBMIT_USAGE_STATISTICS</code> setting</a>.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,40 +1,46 @@
 #!/usr/bin/env python3
 import argparse
 import logging
+import os
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 # check for the venv
-from lib import sanity_check
-from lib.html_branches import build_id_dict
-from lib.pretty_print import validate_indent_html
-from lib.template_parser import validate
+from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from typing import Dict, Iterable, List
+from collections.abc import Iterable
 
 from zulint import lister
+
+from tools.lib.html_branches import build_id_dict
+from tools.lib.pretty_print import validate_indent_html
+from tools.lib.template_parser import validate
 
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
     "tools/tests/test_template_data",
     # Our parser doesn't handle the way its conditionals are layered
-    "templates/zerver/emails/missed_message.source.html",
+    "templates/zerver/emails/missed_message.html",
     # Previously unchecked and our parser doesn't like its indentation
-    "static/assets/icons/template.hbs",
+    "web/images/icons/template.hbs",
+    # Template checker recommends very hard to read indentation.
+    "web/templates/bookend.hbs",
 ]
 
 
-def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: List[str]) -> None:
+def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: list[str]) -> None:
     by_lang = lister.list_files(
         targets=targets,
-        modified_only=args.modified,
+        modified_only=modified_only,
         ftypes=["hbs", "html"],
         group_by_ftype=True,
         exclude=EXCLUDED_FILES,
     )
 
-    check_handlebar_templates(by_lang["hbs"], fix)
+    check_handlebars_templates(by_lang["hbs"], fix)
     check_html_templates(by_lang["html"], all_dups, fix)
 
 
@@ -44,36 +50,25 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     logging.basicConfig(format="%(levelname)s:%(message)s")
     templates = sorted(fn for fn in templates)
     # Use of lodash templates <%= %>.
-    if "templates/zerver/team.html" in templates:
-        templates.remove("templates/zerver/team.html")
+    if "templates/corporate/team.html" in templates:
+        templates.remove("templates/corporate/team.html")
 
-    def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
+    def check_for_duplicate_ids(templates: list[str]) -> dict[str, list[str]]:
         template_id_dict = build_id_dict(templates)
         # TODO: Clean up these cases of duplicate ids in the code
         IGNORE_IDS = [
-            "api-example-tabs",
             "errors",
-            "error-message-box",
             "email",
-            "messages",
             "registration",
             "pw_strength",
             "id_password",
             "top_navbar",
             "id_email",
             "id_terms",
+            "logout_form",
             "send_confirm",
-            "register",
-            "footer",
             "charged_amount",
             "change-plan-status",
-            # Temporary while we have searchbox forked
-            "search_exit",
-            "search_query",
-            "message_view_header",
-            "search_arrows",
-            "searchbox_form",
-            "searchbox",
         ]
         bad_ids_dict = {
             ids: fns
@@ -89,74 +84,35 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             }
 
             for ids, fns in ignorable_ids_dict.items():
-                logging.warning(
-                    "Duplicate ID(s) detected :Id '" + ids + "' present at following files:"
-                )
+                logging.warning("Duplicate ID(s) detected: ID %r present at following files:", ids)
                 for fn in fns:
                     print(fn)
 
         for ids, fns in bad_ids_dict.items():
-            logging.error("Duplicate ID(s) detected :Id '" + ids + "' present at following files:")
+            logging.error("Duplicate ID(s) detected: ID %r present at following files:", ids)
             for fn in fns:
                 print(fn)
         return bad_ids_dict
 
-    bad_ids_list: List[str] = []
-    archive_templates = [fn for fn in templates if "templates/zerver/archive" in fn]
-    templates = [fn for fn in templates if "templates/zerver/archive" not in fn]
-
-    bad_ids_list += list(check_for_duplicate_ids(archive_templates).keys())
-    bad_ids_list += list(check_for_duplicate_ids(templates).keys())
+    bad_ids_list = list(check_for_duplicate_ids(templates).keys())
 
     if bad_ids_list:
         print("Exiting--please clean up all duplicates before running this again.")
         sys.exit(1)
 
     for fn in templates:
-        # Many of our Django templates have strange indentation.  The
-        # indentation errors are often harmless, even stylistically
-        # harmless, but they tend to be in files that might be old
-        # and might eventually require more scrutiny for things like
-        # localization.  See GitHub #1236.
-        bad_files = [
-            # These use various whitespace-dependent formatting that
-            # prevent cleaning them.
-            "templates/corporate/zephyr-mirror.html",
-        ]
-        validate(fn=fn, check_indent=(fn not in bad_files))
-
-    # Ignore these files since these have not been cleaned yet :/
-    IGNORE_FILES = [
-        # zephyr-mirror.html has some whitespace-dependent formatting
-        # for code blocks that prevent cleaning it.  Might make sense
-        # to convert it to a /help/ Markdown article.
-        "templates/corporate/zephyr-mirror.html",
-    ]
-    # TODO: Clean these files
-    for fn in templates:
-        if fn not in IGNORE_FILES:
-            if not validate_indent_html(fn, fix):
-                sys.exit(1)
+        tokens = validate(fn, template_format="django")
+        if not validate_indent_html(fn, tokens, fix):
+            sys.exit(1)
 
 
-def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
-    # Check all our handlebars templates.
+def check_handlebars_templates(templates: Iterable[str], fix: bool) -> None:
+    # Check all our Handlebars templates.
     templates = [fn for fn in templates if fn.endswith(".hbs")]
 
-    IGNORE_FILES = [
-        # TODO: Add some exclude mechanism for the line-wrapping issue here.
-        "static/templates/recipient_row.hbs",
-    ]
-
     for fn in templates:
-        if fn in IGNORE_FILES:
-            continue
-        validate(fn=fn, check_indent=True)
-
-    for fn in templates:
-        if fn in IGNORE_FILES:
-            continue
-        if not validate_indent_html(fn, fix):
+        tokens = validate(fn, template_format="handlebars")
+        if not validate_indent_html(fn, tokens, fix):
             sys.exit(1)
 
 

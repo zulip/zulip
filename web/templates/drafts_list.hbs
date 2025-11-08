@@ -1,0 +1,18 @@
+<div class="drafts-list overlay-messages-list">
+    <div class="no-drafts no-overlay-messages">
+        {{t 'No drafts.'}}
+    </div>
+
+    <div id="drafts-from-conversation">
+        <h2>{{narrow_drafts_header}}</h2>
+        {{#each narrow_drafts}}
+            {{> draft .}}
+        {{/each}}
+    </div>
+    <div id="other-drafts">
+        <h2 id="other-drafts-header">{{t "Other drafts" }}</h2>
+        {{#each other_drafts}}
+            {{> draft .}}
+        {{/each}}
+    </div>
+</div>

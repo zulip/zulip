@@ -1,14 +1,19 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.management import CommandError, ZulipBaseCommand
+from django.core.management.base import CommandError
+from typing_extensions import override
+
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.rate_limiter import RateLimitedUser
-from zerver.models import UserProfile, get_user_profile_by_api_key
+from zerver.models import UserProfile
+from zerver.models.users import get_user_profile_by_api_key
 
 
 class Command(ZulipBaseCommand):
     help = """Manually block or unblock a user from accessing the API"""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("-e", "--email", help="Email account of user.")
         parser.add_argument("-a", "--api-key", help="API key of user.")
@@ -34,6 +39,7 @@ class Command(ZulipBaseCommand):
         )
         self.add_realm_args(parser)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         if (not options["api_key"] and not options["email"]) or (
             options["api_key"] and options["email"]

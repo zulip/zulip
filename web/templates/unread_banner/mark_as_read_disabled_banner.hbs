@@ -1,0 +1,13 @@
+<div id="mark_as_read_turned_off_banner" class="main-view-banner home-error-bar info">
+    <p id="mark_as_read_turned_off_content" class="banner_content">
+        {{#tr}}
+            Messages will not be automatically marked as read. <z-link>Change setting</z-link>
+            {{#*inline "z-link"}}<a href='/#settings/preferences'>{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </p>
+    <button id="mark_view_read" class="main-view-banner-action-button">
+        {{t 'Mark as read' }}
+    </button>
+    <a role="button" id="mark_as_read_close" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
+</div>
+

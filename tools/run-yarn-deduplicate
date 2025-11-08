@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -eu
-if ! "$(dirname "$0")/../node_modules/.bin/yarn-deduplicate" --fail --list; then
-    echo
-    echo "Duplicates could be shared in yarn.lock. Run:"
-    echo "node_modules/.bin/yarn-deduplicate; yarn"
-    false
-fi

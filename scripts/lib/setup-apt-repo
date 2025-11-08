@@ -1,16 +1,33 @@
 #!/usr/bin/env bash
+#
+# This script handles adding custom apt repositories into
+# /etc/apt/sources.list.d/ files.  It bundles the GPG keys which are
+# used to verify the repositories (via `apt-key`), to explicitly pin
+# the trusted signing keys, as opposed to blindly trusting HTTPS.
+#
+# Each /etc/apt/sources.list.d/foo.list file is created via `--list
+# foo`, where `foo` defaults to `zulip`.  The default `zulip.list` is
+# installed in `scripts/lib/install` / `tools/lib/provision.py`, and
+# other `.list` files may be installed by Puppet.
 set -x
 set -e
 set -u
 set -o pipefail
+shopt -s extglob
 
 verify=false
-args="$(getopt -o '' --long verify -- "$@")"
+args="$(getopt -o '' --long verify,list: -- "$@")"
 eval "set -- $args"
+LIST=zulip
 while true; do
     case "$1" in
         --verify)
             verify=true
+            shift
+            ;;
+        --list)
+            LIST="$2"
+            shift
             shift
             ;;
         --)
@@ -23,12 +40,37 @@ done
 # Ensure the directory for LAST_DEPENDENCIES_HASH exists
 mkdir -p /var/lib/zulip
 
-SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
-STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
+SOURCES_FILE=/etc/apt/sources.list.d/$LIST.list
+PREF_FILE=/etc/apt/preferences.d/$LIST.pref
+STAMP_FILE=/etc/apt/sources.list.d/$LIST.list.apt-update-in-progress
 
-ZULIP_SCRIPTS="$(dirname "$(dirname "$0")")"
-DEPENDENCIES_HASH=$(sha1sum "$ZULIP_SCRIPTS/setup/"*.asc "$0")
-DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state"
+# All paths, for purposes of hashing, should be relative to the deploy
+# root.
+cd "$(dirname "$0")/../.."
+
+LIST_PATH="scripts/setup/apt-repos/$LIST"
+if ! [ -d "$LIST_PATH" ]; then
+    echo "Not a valid value for --list: '$LIST'"
+    echo ""
+    echo "Valid values are:"
+    ls -1 "scripts/setup/apt-repos/"
+    exit 1
+fi
+
+release="$(. /etc/os-release && printf '%s' "$VERSION_CODENAME")"
+
+if [ ! -f "$LIST_PATH/$release.list" ]; then
+    cat <<EOF
+Unsupported release $release for sources.list file $LIST.  To add a
+new release, make a $LIST_PATH/$release.list file based on existing
+.list files in that directory.
+
+EOF
+    exit 1
+fi
+
+DEPENDENCIES_HASH="$(sha256sum "$LIST_PATH"/?(*.asc|"$release.list"|"$LIST.pref"|custom.sh) "scripts/lib/setup-apt-repo")"
+DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
 # Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
 touch "$DEPENDENCIES_HASH_FILE"
 LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
@@ -41,82 +83,32 @@ elif [ "$verify" == true ]; then
     exit 1
 fi
 
-# Ensure that the sources file exists
-touch "$SOURCES_FILE"
+# Hash to check if the configuration is changed by the script later.
+hashes=$(sha256sum "$SOURCES_FILE" "$PREF_FILE" 2>/dev/null || true)
 
-# Hash it to check if the sources file is changed by the script later.
-zulip_source_hash=$(sha1sum "$SOURCES_FILE")
+if [ -e "$LIST_PATH/$LIST.pref" ]; then
+    cp "$LIST_PATH/$LIST.pref" "$PREF_FILE"
+else
+    rm -f "$PREF_FILE"
+fi
 
-pre_setup_deps=(lsb-release apt-transport-https ca-certificates gnupg wget)
+pre_setup_deps=(apt-transport-https ca-certificates gnupg curl)
 if ! apt-get -dy install "${pre_setup_deps[@]}"; then
     apt-get update
 fi
 apt-get -y install "${pre_setup_deps[@]}"
 
-SCRIPTS_PATH="$(cd "$(dirname "$(dirname "$0")")" && pwd)"
+cp "$LIST_PATH/"*.asc /etc/apt/keyrings/
+cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
 
-release=$(lsb_release -sc)
-if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal|groovy)$ ]]; then
-    distribution=ubuntu
-    apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
-    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
-    cat >$SOURCES_FILE <<EOF
-deb http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-
-deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-EOF
-elif [[ "$release" =~ ^(buster)$ ]]; then
-    distribution=debian
-    apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
-    cat >$SOURCES_FILE <<EOF
-deb http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-EOF
-else
-    echo "Unsupported release $release."
-    exit 1
+if [ -e "$LIST_PATH/custom.sh" ]; then
+    export LIST_PATH
+    export STAMP_FILE
+    bash "$LIST_PATH/custom.sh"
 fi
 
-if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
-    remove_pgroonga_apt_tmp_dir() {
-        rm -rf "$pgroonga_apt_tmp_dir"
-    }
-    pgroonga_apt_tmp_dir=$(mktemp --directory)
-    trap remove_pgroonga_apt_tmp_dir EXIT
-    pushd "$pgroonga_apt_tmp_dir"
-    tmp_gpg_home=.gnupg
-    pgroonga_apt_sign_key="$SCRIPTS_PATH"/setup/pgroonga-packages.groonga.org.asc
-    gpg --homedir="$tmp_gpg_home" --import "$pgroonga_apt_sign_key"
-    # Find fingerprint of the first key.
-    pgroonga_apt_sign_key_fingerprint=$(
-        gpg --homedir="$tmp_gpg_home" --with-colons --list-keys \
-            | grep '^fpr:' \
-            | cut --delimiter=: --fields=10 \
-            | head --lines=1
-    )
-    groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
-    groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
-    wget "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"
-    wget "https://packages.groonga.org/$distribution/$groonga_apt_source_deb_sign"
-    gpg \
-        --homedir="$tmp_gpg_home" \
-        --verify \
-        "$groonga_apt_source_deb_sign" \
-        "$groonga_apt_source_deb"
-    # To suppress the following warning by "apt-get install":
-    #   N: Download is performed unsandboxed as root as file
-    #   '.../groonga-apt-source-latest-$release.deb' couldn't be
-    #   accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)
-    chown _apt .
-    apt-get -y install "./$groonga_apt_source_deb"
-    popd
-    touch "$STAMP_FILE"
-fi
-
-if [ "$zulip_source_hash" = "$(sha1sum "$SOURCES_FILE")" ] && ! [ -e "$STAMP_FILE" ]; then
-    echo "zulip.list file did not change; skipping apt-get update"
+if [ "$hashes" = "$(sha256sum "$SOURCES_FILE" "$PREF_FILE" 2>/dev/null || true)" ] && ! [ -e "$STAMP_FILE" ]; then
+    echo "APT configuration did not change; skipping apt-get update"
 else
     # We create this stamp file to ensure `apt-get update` will be run
     # the next time this script is invoked, and each time after, until

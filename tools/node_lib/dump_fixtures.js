@@ -1,5 +1,3 @@
-"use strict";
-
-const events = require("../../frontend_tests/node_tests/lib/events");
+import * as events from "../../web/tests/lib/events.cjs";
 
 console.info(JSON.stringify(events.fixtures, null, 4));

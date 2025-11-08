@@ -1,13 +1,22 @@
 import re
-from typing import Any, Dict
+from typing import Any
 
 from django.http import HttpRequest
 from django.views.debug import SafeExceptionReporterFilter
+from typing_extensions import override
 
 
 class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
-    def get_post_parameters(self, request: HttpRequest) -> Dict[str, Any]:
-        filtered_post = SafeExceptionReporterFilter.get_post_parameters(self, request).copy()
+    # Add _SALT to the standard list
+    hidden_settings = re.compile(
+        r"API|TOKEN|KEY|SECRET|PASS|SIGNATURE|HTTP_COOKIE|_SALT", flags=re.IGNORECASE
+    )
+
+    @override
+    def get_post_parameters(self, request: HttpRequest | None) -> dict[str, Any]:
+        post_data = SafeExceptionReporterFilter.get_post_parameters(self, request)
+        assert isinstance(post_data, dict)
+        filtered_post = post_data.copy()
         filtered_vars = [
             "content",
             "secret",
@@ -28,7 +37,3 @@ class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
             if var in filtered_post:
                 filtered_post[var] = "**********"
         return filtered_post
-
-
-def clean_data_from_query_parameters(val: str) -> str:
-    return re.sub(r"([a-z_-]+=)([^&]+)([&]|$)", r"\1******\3", val)

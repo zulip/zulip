@@ -1,14 +1,15 @@
 import re
-from typing import Any, Callable, Dict, Tuple
+from collections.abc import Callable
+from typing import Any
 
 from django.conf import settings
 from django.utils.text import slugify
 
-from zerver.models import Stream
+from zerver.models import ChannelEmailAddress, Stream, UserProfile
 
 
-def default_option_handler_factory(address_option: str) -> Callable[[Dict[str, Any]], None]:
-    def option_setter(options_dict: Dict[str, Any]) -> None:
+def default_option_handler_factory(address_option: str) -> Callable[[dict[str, Any]], None]:
+    def option_setter(options_dict: dict[str, Any]) -> None:
         options_dict[address_option.replace("-", "_")] = True
 
     return option_setter
@@ -27,12 +28,18 @@ class ZulipEmailForwardError(Exception):
     pass
 
 
+class ZulipEmailForwardUserError(ZulipEmailForwardError):
+    pass
+
+
 def get_email_gateway_message_string_from_address(address: str) -> str:
+    if settings.EMAIL_GATEWAY_PATTERN == "":
+        raise ZulipEmailForwardError("This server is not configured for incoming email.")
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split("%s")]
     if settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
         # Accept mails delivered to any Zulip server
         pattern_parts[-1] = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK
-    match_email_re = re.compile("(.*?)".join(pattern_parts))
+    match_email_re = re.compile(r"(.*?)".join(pattern_parts))
     match = match_email_re.match(address)
 
     if not match:
@@ -42,11 +49,17 @@ def get_email_gateway_message_string_from_address(address: str) -> str:
     return msg_string
 
 
-def encode_email_address(stream: Stream, show_sender: bool = False) -> str:
-    return encode_email_address_helper(stream.name, stream.email_token, show_sender)
+def get_channel_email_token(stream: Stream, *, creator: UserProfile, sender: UserProfile) -> str:
+    channel_email_address, _created = ChannelEmailAddress.objects.get_or_create(
+        realm=stream.realm,
+        channel=stream,
+        creator=creator,
+        sender=sender,
+    )
+    return channel_email_address.email_token
 
 
-def encode_email_address_helper(name: str, email_token: str, show_sender: bool = False) -> str:
+def encode_email_address(name: str, email_token: str, show_sender: bool = False) -> str:
     # Some deployments may not use the email gateway
     if settings.EMAIL_GATEWAY_PATTERN == "":
         return ""
@@ -75,7 +88,7 @@ def encode_email_address_helper(name: str, email_token: str, show_sender: bool =
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
 
-def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
+def decode_email_address(email: str) -> tuple[str, dict[str, bool]]:
     # Perform the reverse of encode_email_address. Returns a tuple of
     # (email_token, options)
     msg_string = get_email_gateway_message_string_from_address(email)
@@ -92,7 +105,7 @@ def decode_email_address(email: str) -> Tuple[str, Dict[str, bool]]:
     msg_string = msg_string.replace(".", "+")
 
     parts = msg_string.split("+")
-    options: Dict[str, bool] = {}
+    options: dict[str, bool] = {}
     for part in parts:
         if part in optional_address_tokens:
             optional_address_tokens[part](options)

@@ -1,0 +1,49 @@
+<% if @loadbalancers.empty? %>
+# "set" is not supported at the server level, so use a map:
+map $remote_addr $trusted_x_forwarded_proto {
+    default $scheme;
+}
+map $http_x_forwarded_for $x_proxy_misconfiguration {
+    default "";
+    "~." "No proxies configured in Zulip, but proxy headers detected from proxy at $remote_addr; see https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
+}
+<% else %>
+# Check if the request's original `REMOTE_ADDR` header was from a
+# trusted host -- that is, the request did bounce through a proxy and
+# we should trust `X-Forwarded-Proto`
+geo $realip_remote_addr $is_x_forwarded_proto_trusted {
+    default 0;
+<% @loadbalancers.each do |host| -%>
+    <%= host %> 1;
+<% end -%>
+}
+
+# Check if the IP address that we resolved the request as coming
+# (after looking at X-Forwarded-For, if any) from is actually the proxy
+# itself.
+geo $remote_addr $is_from_proxy {
+    default 0;
+<% @loadbalancers.each do |host| -%>
+    <%= host %> 1;
+<% end -%>
+}
+
+# We set $trusted_x_forwarded_proto in two steps because `geo` does
+# not support variable interpolation in the value, but does support
+# CIDR notation, which the loadbalancer list may use.
+map "$is_x_forwarded_proto_trusted:$http_x_forwarded_proto" $trusted_x_forwarded_proto {
+    "~^0:" $scheme;
+<%- if @lb_rejects_http_requests -%>
+    "~^1:$" "https";
+<% end -%>
+    "~^1:" $http_x_forwarded_proto;
+}
+
+map "$is_from_proxy:$is_x_forwarded_proto_trusted:$http_x_forwarded_proto" $x_proxy_misconfiguration {
+    "~^0:0:" "Incorrect reverse proxy IPs set in Zulip (try $remote_addr?); see https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
+<%- if not @lb_rejects_http_requests -%>
+    "~^0:1:$" "No X-Forwarded-Proto header sent from trusted proxy $realip_remote_addr; see example configurations in https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
+<% end -%>
+    default "";
+}
+<% end %>

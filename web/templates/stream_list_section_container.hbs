@@ -1,0 +1,21 @@
+<div id="stream-list-{{id}}-container" data-section-id="{{id}}" class="stream-list-section-container">
+    <div class="stream-list-subsection-header zoom-in-hide">
+        <i class="stream-list-section-toggle zulip-icon zulip-icon-heading-triangle-right rotate-icon-down" aria-hidden="true"></i>
+        <h4 class="left-sidebar-title">
+            {{section_title}}
+        </h4>
+        {{#if plus_icon_url}}
+        <a href="{{plus_icon_url}}" class="add-stream-tooltip add-stream-icon-container hidden-for-spectators" data-tippy-content="{{t 'Create a channel' }}">
+            <i class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
+        </a>
+        {{/if}}
+        <div class="markers-and-unreads">
+            <span class="unread_mention_info"></span>
+            <span class="unread_count normal-count"></span>
+            <span class="masked_unread_count">
+                <i class="zulip-icon zulip-icon-masked-unread"></i>
+            </span>
+        </div>
+    </div>
+    <ul id="stream-list-{{id}}" class="stream-list-section"></ul>
+</div>

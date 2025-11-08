@@ -1,20 +1,28 @@
+# Zulip Taiga integration
+
 Receive Zulip notifications for your Taiga projects!
 
-1. {!create-stream.md!}
+{start_tabs}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-an-incoming-webhook.md!}
 
-    Make sure to specify the topic in the URL above. Otherwise, the
-    default topic `General` will be used.
+1. {!generate-webhook-url-basic.md!}
 
 1. Go to your **Projects Dashboard** on Taiga, and select the project you'd like to
-   receive notifications for. Go to **Admin**, and click on  **Integrations**.
-   Click on **Add a new webhook**.
+   receive notifications for.
+
+1. Go to **Admin**, and select  **Integrations**. Click **Add a new webhook**.
 
 1. Set **Name** to a name of your choice, such as `Zulip`. Set **URL** to the
-   URL constructed above, and set **Secret key** to the API key of the bot created
+   URL generated above, and set **Secret key** to the API key of the bot created
    above. Save the form.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/taiga/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

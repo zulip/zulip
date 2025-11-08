@@ -1,7 +1,12 @@
 from unittest import mock
 
+from zerver.lib.compatibility import (
+    find_mobile_os,
+    is_outdated_desktop_app,
+    is_pronouns_field_type_supported,
+    version_lt,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.views.compatibility import find_mobile_os, is_outdated_desktop_app, version_lt
 
 
 class VersionTest(ZulipTestCase):
@@ -24,9 +29,7 @@ class VersionTest(ZulipTestCase):
         15.1.95  <  16.2.96
         16.2.96  =  16.2.96
         20.0.103 >  16.2.96
-    """.strip().split(
-            "\n"
-        )
+    """.strip().split("\n")
     ] + [
         ["", "?", "1"],
         ["", "?", "a"],
@@ -48,7 +51,7 @@ class VersionTest(ZulipTestCase):
                 self.assertIsNone(version_lt(ver1, ver2), msg=msg)
                 self.assertIsNone(version_lt(ver2, ver1), msg=msg)
             else:
-                assert False  # nocoverage
+                raise AssertionError  # nocoverage
 
     mobile_os_data = [
         case.split(None, 1)
@@ -57,9 +60,7 @@ class VersionTest(ZulipTestCase):
       ios     ZulipMobile/1.2.3 (iPhone OS 2.1)
       ios     ZulipMobile/1.2.3 (iOS 6)
       None    ZulipMobile/1.2.3 (Windows 8)
-    """.strip().split(
-            "\n"
-        )
+    """.strip().split("\n")
     ]
 
     def test_find_mobile_os(self) -> None:
@@ -89,9 +90,7 @@ class CompatibilityTest(ZulipTestCase):
       ok  ZulipMobile/1 CFNetwork/974.2.1 Darwin/18.0.0
       ok  ZulipMobile/20.0.103 (Android 6.0.1)
       ok  ZulipMobile/20.0.103 (iOS 12.1)
-    """.strip().split(
-            "\n"
-        )
+    """.strip().split("\n")
         if case
     ]
 
@@ -107,8 +106,10 @@ class CompatibilityTest(ZulipTestCase):
             elif expected == "old":
                 self.assert_json_error(result, "Client is too old")
             else:
-                assert False  # nocoverage
+                raise AssertionError  # nocoverage
 
+    @mock.patch("zerver.lib.compatibility.DESKTOP_MINIMUM_VERSION", "5.0.0")
+    @mock.patch("zerver.lib.compatibility.DESKTOP_WARNING_VERSION", "5.2.0")
     def test_insecure_desktop_app(self) -> None:
         self.assertEqual(is_outdated_desktop_app("ZulipDesktop/0.5.2 (Mac)"), (True, True, True))
         self.assertEqual(
@@ -132,7 +133,7 @@ class CompatibilityTest(ZulipTestCase):
         )
 
         # Verify what happens if DESKTOP_MINIMUM_VERSION < v < DESKTOP_WARNING_VERSION
-        with mock.patch("zerver.views.compatibility.DESKTOP_MINIMUM_VERSION", "4.0.3"):
+        with mock.patch("zerver.lib.compatibility.DESKTOP_MINIMUM_VERSION", "4.0.3"):
             self.assertEqual(
                 is_outdated_desktop_app(
                     "ZulipElectron/4.0.3 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36"
@@ -155,3 +156,26 @@ class CompatibilityTest(ZulipTestCase):
         )
 
         self.assertEqual(is_outdated_desktop_app(""), (False, False, False))
+
+    def test_is_pronouns_field_type_supported(self) -> None:
+        self.assertEqual(
+            is_pronouns_field_type_supported("ZulipMobile/20.0.103 (Android 6.0.1)"), False
+        )
+        self.assertEqual(is_pronouns_field_type_supported("ZulipMobile/20.0.103 (iOS 12.0)"), False)
+
+        self.assertEqual(
+            is_pronouns_field_type_supported("ZulipMobile/27.191 (Android 6.0.1)"), False
+        )
+        self.assertEqual(is_pronouns_field_type_supported("ZulipMobile/27.191 (iOS 12.0)"), False)
+
+        self.assertEqual(
+            is_pronouns_field_type_supported("ZulipMobile/27.192 (Android 6.0.1)"), True
+        )
+        self.assertEqual(is_pronouns_field_type_supported("ZulipMobile/27.192 (iOS 12.0)"), True)
+
+        self.assertEqual(
+            is_pronouns_field_type_supported(
+                "ZulipElectron/5.2.0 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/5.2.0 Chrome/80.0.3987.165 Electron/8.2.5 Safari/537.36"
+            ),
+            True,
+        )

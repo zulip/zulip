@@ -1,0 +1,43 @@
+<h3>{{ data.title }} {% if data.title_link %}{{ data.title_link }}{% endif %}</h3>
+
+{% if data.title == "Remote servers" %}
+{% include "corporate/activity/remote_activity_key.html" %}
+{% endif %}
+
+{% if data.header %}
+<div class="activity-header-information">
+    {% for entry in data.header %}
+    <p class="activity-header-entry"><b>{{ entry.name }}</b>: {{ entry.value }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+{{ data.rows|length}} rows
+<table class="table sortable table-striped table-bordered analytics-table">
+
+    <thead class="activity-head">
+        <tr>
+            {% for col in data.cols %}
+            <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data.rows %}
+        <tr {% if row.row_class %}class="{{ row.row_class }}"{% endif %}>
+            {% for field in row.cells %}
+            <td sortable>{{ field }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% if data.totals %}
+    <tfoot class="activity-foot">
+        <tr>
+            {% for total in data.totals %}
+            <td>{{ total }}</td>
+            {% endfor %}
+        </tr>
+    </tfoot>
+    {% endif %}
+</table>

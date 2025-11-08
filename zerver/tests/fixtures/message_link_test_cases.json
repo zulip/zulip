@@ -1,0 +1,57 @@
+[
+    {
+        "name": "dm_message_link",
+        "message_link": "#narrow/dm/9,15-dm/near/43",
+        "expected_output": true
+    },
+    {
+        "name": "group_message_link",
+        "message_link": "#narrow/dm/9,16,15-group/near/68",
+        "expected_output": true
+    },
+    {
+        "name": "stream_message_link",
+        "message_link": "#narrow/channel/8-design/topic/desktop/near/82",
+        "expected_output": true
+    },
+    {
+        "name": "stream_link",
+        "message_link": "#narrow/channel/8-design",
+        "expected_output": false
+    },
+    {
+        "name": "topic_link",
+        "message_link": "#narrow/channel/8-design/topic/desktop",
+        "expected_output": false
+    },
+    {
+        "name": "dm_link",
+        "message_link": "#narrow/dm/15-John",
+        "expected_output": false
+    },
+    {
+        "name": "search_link",
+        "message_link": "#narrow/search/database",
+        "expected_output": false
+    },
+    {
+        "name": "different_server_message_link",
+        "message_link": "https://fakechat.zulip.org/#narrow/dm/8,1848,2369-group/near/1717378",
+        "expected_output": false
+    },
+    {
+        "name": "drafts_link",
+        "message_link": "#drafts",
+        "expected_output": false
+    },
+    {
+        "name": "empty_link",
+        "message_link": "#",
+        "expected_output": false
+    },
+    {
+        "name": "non_zulip_link",
+        "message_link": "https://www.google.com",
+        "expected_output": false
+    }
+]

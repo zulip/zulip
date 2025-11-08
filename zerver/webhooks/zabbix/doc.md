@@ -1,36 +1,41 @@
+# Zulip Zabbix integration
+
 Receive Zabbix notifications in Zulip!
 
 !!! warn ""
-    **Note:** This guide is for Zabbix 5.2 and above; some older Zabbix versions have a
-    different workflow for creating an outgoing webhook.
 
-1. {!create-stream.md!}
+    **Note:** This guide is for Zabbix 5.4 and above; some older Zabbix
+    versions have a different workflow for creating an outgoing webhook.
 
-1. {!create-bot-construct-url-indented.md!}
+{start_tabs}
 
-1. Go to your Zabbix web interface, and click **Administration**. Click on
-   **General** and then select **Macros** from the dropdown. Click **Add** and set the
-   macro to `{$ZABBIX_URL}`. Set the value as the URL to your Zabbix server like
-   `https://zabbix.example.com` ensuring there no trailing slashes. Click **Update**
+1. {!create-an-incoming-webhook.md!}
 
-1. Go back to your Zabbix web interface, and click **Administration**. Click on
+1. {!generate-webhook-url-basic.md!}
+
+1. Go to **Administration** in your Zabbix web interface. Click on
+   **General**, and select **Macros** from the dropdown. Click **Add**.
+
+1. Set the macro to `{$ZABBIX_URL}`. Set the value as the URL to your
+   Zabbix server, e.g., `https://zabbix.example.com`, and ensure that there
+   are no trailing slashes. Click **Update**.
+
+1. Go back to **Administration** in your Zabbix web interface. Select
    **Media Types**, and click **Create Media Type**.
 
-1. Set **Name** to a name of your choice, such as `Zulip`. Set **Type** to **Webhook**.
-   Add the following **Parameters**:
+1. Set **Name** to a name of your choice, such as `Zulip`. Set **Type** to
+   **Webhook**, and add the following **Parameters**:
 
-    * Add `hostname` as the first parameter with the value `{HOST.NAME}`.
-    * Add `item` as the second parameter with the value `{ITEM.NAME1} is {ITEM.VALUE1}`.
-    * Add `link` as the third parameter with the value `{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}`.
-    * Add `severity` as the fourth parameter with the value `{TRIGGER.SEVERITY}`.
-    * Add `status` as the fifth parameter with the value `{TRIGGER.STATUS}`.
-    * Add `trigger` as the sixth parameter with the value `{TRIGGER.NAME}`.
-    * Add `zulip_endpoint` as the seventh parameter with the value set as the URL
-      constructed earlier.
+    * `hostname`: `{HOST.NAME}`
+    * `item`: `{ITEM.NAME1} is {ITEM.VALUE1}`
+    * `link`: `{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}`
+    * `severity`: `{TRIGGER.SEVERITY}`
+    * `status`: `{TRIGGER.STATUS}`
+    * `trigger`: `{TRIGGER.NAME}`
+    * `zulip_endpoint`: the URL generated above
 
-    Check the **Enabled** option, and click **Update**.
-
-1. Click the **Pencil** to edit the script and replace any existing content with the below script:
+1. Click the **Pencil** to edit the script, and replace any existing content
+   with the script below. Then, check the **Enabled** option.
 
          try {
             Zabbix.Log(4, 'zulip webhook script value='+value);
@@ -41,11 +46,11 @@ Receive Zabbix notifications in Zulip!
                }
             },
             params = JSON.parse(value),
-            req = new CurlHttpRequest(),
+            req = new HttpRequest(),
             payload = {},
             resp;
 
-            req.AddHeader('Content-Type: application/json');
+            req.addHeader('Content-Type: application/json');
 
             payload.hostname = params.hostname;
             payload.severity = params.severity;
@@ -53,11 +58,11 @@ Receive Zabbix notifications in Zulip!
             payload.item = params.item;
             payload.trigger = params.trigger;
             payload.link = params.link;
-            resp = req.Post(params.zulip_endpoint,
+            resp = req.post(params.zulip_endpoint,
                JSON.stringify(payload))
 
-            if (req.Status() != 200) {
-               throw 'Response code: '+req.Status();
+            if (req.getStatus() != 200) {
+               throw 'Response code: '+req.getStatus();
             }
 
             resp = JSON.parse(resp);
@@ -72,44 +77,49 @@ Receive Zabbix notifications in Zulip!
 
          return JSON.stringify(result);
 
-1. Click **Apply**. Click **Message Templates**. Click **Add**. Select **Problem**.
+1. Open **Message Templates** from the top bar. Click **Add** under **Message Type**,
+   and select **Problem**.
 
 1. Set **Subject** to `{TRIGGER.STATUS}-{TRIGGER.SEVERITY}-{TRIGGER.NAME}`.
-   Set **Message** to the following:
+   Set **Message** to the following, and click **Add**:
 
          {
-         "hostname": "{HOST.NAME}",
-         "severity": "{TRIGGER.SEVERITY}",
-         "status": "{TRIGGER.STATUS}",
-         "item": "{ITEM.NAME1} is {ITEM.VALUE1}",
-         "trigger": "{TRIGGER.NAME}",
-         "link": "{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}"
+            "hostname": "{HOST.NAME}",
+            "severity": "{TRIGGER.SEVERITY}",
+            "status": "{TRIGGER.STATUS}",
+            "item": "{ITEM.NAME1} is {ITEM.VALUE1}",
+            "trigger": "{TRIGGER.NAME}",
+            "link": "{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}"
          }
 
-1. Click **Add**. Click **Update**.
+1. Go back to **Administration** in your Zabbix web interface. Click on
+   **Users**, and select the alias of the user you would like to use to
+   set the notification. Select **Media**, and click **Add**.
 
-1. Go back to your Zabbix web interface, and click **Administration**.
-   Click on **Users**, and select the alias of the user you would like
-   to use to set the notification. Click **Media**, and click **Add**.
-
-1. Set **Type** to **Zulip** or whatever you named your media type as.
-   Set **Send To** to `Zulip` or any text. This field needs something in,
-   but isn't used. Tweak the severity and times when active for notifications
-   as appropriate, and check the **Enabled** option. Click **Add**.
-   Click **Update**.
+1. Set **Type** to the name you assigned to the media type above.
+   Set **Send To** to `Zulip` or any text, as this field requires text, but
+   it isn't used. Set the severity and active periods for notifications as
+   suitable, and check the **Enabled** option. Click **Add**, and
+   select **Update**.
 
 1. Go back to your Zabbix web interface, and click **Configuration**.
-   Click **Actions**, and click **Create Action**.
+   Select **Actions**, and choose **Create Action**.
 
 1. Set **Name** to a name of your choice, such as `Zulip`. Under
    **New Conditions**, add the conditions for triggering a notification.
    Check the **Enabled** option, and click **Operations**.
 
-1. Under **Operations** click **Add**, and then set **Operation Type** to
-   `Send Message`. Under **Send to Users**, click **Add**, and select the user
-   you added the alert to and click **Select**. Under **Send only to**,
-   select **Zulip** or the name of your media type. Click **Add**  twice.
+1. Under **Operations**, click **Add**, and then set **Operation Type** to
+   `Send Message`. Under **Send to Users**, choose **Add**, and select the user
+   you added the alert to above, and click **Select**. Under **Send only to**,
+   select **Zulip** or the name of your media type. Click **Add** twice.
+
+{end_tabs}
 
 {!congrats.md!}
 
 ![](/static/images/integrations/zabbix/001.png)
+
+### Related documentation
+
+{!webhooks-url-specification.md!}

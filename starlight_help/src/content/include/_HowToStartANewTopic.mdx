@@ -1,0 +1,49 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ComposeAndSendMessage from "../include/_ComposeAndSendMessage.mdx";
+import MobileChannels from "../include/_MobileChannels.mdx";
+import StartTopicViaLeftSidebar from "../include/_StartTopicViaLeftSidebar.mdx";
+
+import SendIcon from "~icons/zulip-icon/send";
+
+<Tabs>
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <StartTopicViaLeftSidebar />
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via compose box">
+    <FlattenedSteps>
+      1. Click the **Start new conversation** button at the bottom of the app.
+      1. *(optional)* You can change the destination channel for your message using
+         the dropdown in the top left of the compose box. Start typing to filter
+         channels.
+      1. Enter a topic name. Think about finishing the sentence: “Hey, can we chat
+         about… ?”
+
+      <ComposeAndSendMessage />
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use the <kbd>C</kbd> keyboard shortcut to start a new topic in
+      the channel you're viewing.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MobileChannels />
+
+      1. Tap on the desired channel.
+      1. Tap the compose box at the bottom of the app.
+      1. Enter a topic name. Auto-complete will provide suggestions for previously
+         used topics.
+      1. Compose your message, and tap the **send**
+         (<SendIcon />) button in the
+         bottom right corner of the app.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

@@ -16,11 +16,11 @@ from zerver.openapi.openapi import validate_against_openapi_schema
 def test_js_bindings(client: Client) -> None:
     os.environ["ZULIP_USERNAME"] = client.email
     os.environ["ZULIP_API_KEY"] = client.api_key
-    os.environ["ZULIP_REALM"] = client.base_url[:-5]
+    os.environ["ZULIP_REALM"] = client.base_url.removesuffix("/api/")
 
     output = subprocess.check_output(
         args=["node", "--unhandled-rejections=strict", "zerver/openapi/javascript_examples.js"],
-        universal_newlines=True,
+        text=True,
     )
     endpoint_responses = json.loads(output)
 

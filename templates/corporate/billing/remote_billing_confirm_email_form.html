@@ -1,0 +1,52 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "billing_auth" %}
+
+{% block title %}
+{% if remote_server_hostname %}
+<title>Enter log in email | Zulip</title>
+{% else %}
+<title>Enter email | Zulip</title>
+{% endif %}
+{% endblock %}
+
+{% block portico_content %}
+<div class="register-account flex full-page" id="remote-billing-confirm-email">
+    <div class="center-block new-style">
+        <div class="pitch">
+            {% if remote_server_hostname %}
+            <h1>Enter log in email</h1>
+            {% else %}
+            <h1>Enter email</h1>
+            {% endif %}
+        </div>
+        <div class="white-box">
+            <form id="remote-billing-confirm-email-form" method="post" action="{{ action_url }}">
+                {{ csrf_input }}
+                {% if next_page %}
+                <input type="hidden" name="next_page" value="{{ next_page }}" />
+                {% endif %}
+                <div class="input-box server-login-form-field" id="remote-billing-confirm-email-intro">
+                    <div class="not-editable-realm-field">
+                        {% if remote_server_hostname %}
+                            Enter the email address of the person who is logging in to manage plans and billing for this server (yourself or someone else). They will receive an email from Zulip with a log in link.
+                        {% else %}
+                            Enter the email address you want to use for Zulip plan management. You will receive a one-time confirmation email.
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="input-box server-login-form-field">
+                    <label for="email" class="inline-block label-title">Email</label>
+                    <input id="email" name="email" type="email" class="required" {% if email %}value="{{ email }}"{% endif %} />
+                    <div id="server-login-form-email-error" class="alert alert-danger server-login-form-field-error email-error"></div>
+                </div>
+                <div class="upgrade-button-container">
+                    <button type="submit" id="remote-billing-confirm-email-button" class="stripe-button-el invoice-button">
+                        <span class="server-login-button-text">Continue</span>
+                        <img class="loader remote-billing-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

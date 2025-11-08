@@ -1,0 +1,10 @@
+diff --git a/lib/index.d.mts b/lib/index.d.mts
+index a9989abbc716669b86a7f5e5e020869718eff9f0..9d3a5cb15bdd72eb610ed73411435c53831d16fa 100644
+--- a/lib/index.d.mts
++++ b/lib/index.d.mts
+@@ -1,4 +1,4 @@
+-import * as node_modules__eslint_core_dist_cjs_types_d_cts from 'node_modules/@eslint/core/dist/cjs/types.d.cts';
++import * as node_modules__eslint_core_dist_cjs_types_d_cts from '@eslint/core';
+ import * as eslint from 'eslint';
+ 
+ declare const configs: {

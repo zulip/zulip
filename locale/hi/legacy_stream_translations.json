@@ -1,0 +1,12 @@
+{
+  "<strong>{name}</strong> <i>(guest)</i> is not subscribed to this stream. They will not be notified if you mention them.": "<strong>{name}</strong> <i>(guest)</i> ने इस स्ट्रीम की सदस्यता नहीं ली हैं। अगर आप उन्हें उल्लेख करते हैं तो उन्हें सूचित नहीं किया जाएगा।",
+  "All streams": "सभी शाखाये ",
+  "Create new stream": "नई स्ट्रीम बनाएं",
+  "Mute stream": " धारा म्यूट करें",
+  "New stream message": "नया स्ट्रीम संदेश",
+  "Stream": "धारा",
+  "Streams they should join": "धाराएं उन्हें जुड़नी चाहिए",
+  "This stream does not exist or is private.": "यह धारा मौजूद नहीं है या निजी है।",
+  "Unmute stream": "धारा अनम्यूट करें",
+  "You aren't subscribed to this stream and nobody has talked about that yet!": "आपने इस स्ट्रीम की सदस्यता नहीं ली है और किसी ने भी इस बारे में बात नहीं की है!"
+}

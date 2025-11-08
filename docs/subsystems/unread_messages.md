@@ -1,8 +1,8 @@
 # Unread message synchronization
 
-In general displaying unread counts for all streams and topics may require
+In general displaying unread counts for all channels and topics may require
 downloading an unbounded number of messages. Consider a user who has a muted
-stream or topic and has not read the backlog in a month; to have an accurate
+channel or topic and has not read the backlog in a month; to have an accurate
 unread count we would need to load all messages this user has received in the
 past month. This is inefficient for web clients and even more for mobile
 devices.
@@ -12,7 +12,7 @@ state grouped by relevant conversation keys. This data is included in the
 `unread_msgs` key if both `update_message_flags` and `message` are required
 in the register call.
 
-```
+```json
 {
     "count": 4,
     "huddles": [
@@ -48,5 +48,5 @@ in the register call.
 Three event types are required to correctly maintain the `unread_msgs`. New
 messages can be created without the unread flag by the `message` event type.
 The unread flag can be added and removed by the `update_message_flags` event,
-and the subject of unread messages can be updated by the `update_message` event
+and the topic of unread messages can be updated by the `update_message` event
 type.

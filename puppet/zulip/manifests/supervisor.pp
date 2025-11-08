@@ -1,11 +1,11 @@
 class zulip::supervisor {
   $supervisor_service = $zulip::common::supervisor_service
 
-  package { 'supervisor': ensure => 'installed' }
+  package { 'supervisor': ensure => installed }
 
   $system_conf_dir = $zulip::common::supervisor_system_conf_dir
   file { $system_conf_dir:
-    ensure  => 'directory',
+    ensure  => directory,
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
@@ -13,26 +13,13 @@ class zulip::supervisor {
 
   $conf_dir = $zulip::common::supervisor_conf_dir
   file { $conf_dir:
-    ensure  => 'directory',
+    ensure  => directory,
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
     purge   => true,
     recurse => true,
     notify  => Service[$supervisor_service],
-  }
-
-  # These files were moved from /etc/supervisor/conf.d/ into a zulip/
-  # subdirectory in 2020-10 in version 4.0; these lines can be removed
-  # in Zulip version 5.0 and later.
-  file { [
-    "${zulip::common::supervisor_system_conf_dir}/cron.conf",
-    "${zulip::common::supervisor_system_conf_dir}/nginx.conf",
-    "${zulip::common::supervisor_system_conf_dir}/thumbor.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zulip_db.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zulip.conf",
-  ]:
-    ensure => absent,
   }
 
   # In the docker environment, we don't want/need supervisor to be
@@ -63,7 +50,7 @@ class zulip::supervisor {
         Package['supervisor'],
       ],
       hasstatus  => true,
-      status     => 'supervisorctl status',
+      status     => $zulip::common::supervisor_status,
       # Restarting the whole supervisorctl on every update to its
       # configuration files has the unfortunate side-effect of
       # restarting all of the services it controls; this results in an
@@ -80,20 +67,20 @@ class zulip::supervisor {
       #
       # Also, to handle the case that supervisord wasn't running at
       # all, we check if it is not running and if so, start it.
-      #
-      # We use supervisor[d] as the pattern so the bash/grep commands
-      # don't match.
       hasrestart => true,
       # lint:ignore:140chars
-      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
+      restart    => "bash -c 'if pgrep -x supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
       # lint:endignore
     }
     exec { 'supervisor-restart':
       refreshonly => true,
+      provider    => shell,
       command     => $zulip::common::supervisor_reload,
+      require     => Service[$supervisor_service],
     }
   }
 
+  $file_descriptor_limit = zulipconf('application_server', 'service_file_descriptor_limit', 40000)
   file { $zulip::common::supervisor_conf_file:
     ensure  => file,
     require => Package[supervisor],
@@ -102,5 +89,13 @@ class zulip::supervisor {
     mode    => '0644',
     content => template('zulip/supervisor/supervisord.conf.erb'),
     notify  => Exec['supervisor-restart'],
+  }
+
+  file { '/usr/local/bin/secret-env-wrapper':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zulip/secret-env-wrapper',
   }
 }

@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Generic, TypeVar
 
 """
 This module helps you set up a bunch
@@ -10,6 +11,8 @@ you're dealing with a big singleton, but
 for data imports that's usually easy to
 manage.
 """
+
+T = TypeVar("T")
 
 
 def _seq() -> Callable[[], int]:
@@ -30,7 +33,7 @@ def sequencer() -> Callable[[str], int]:
     NEXT_ID = sequencer()
     message_id = NEXT_ID('message')
     """
-    seq_dict: Dict[str, Callable[[], int]] = {}
+    seq_dict: dict[str, Callable[[], int]] = {}
 
     def next_one(name: str) -> int:
         if name not in seq_dict:
@@ -53,34 +56,19 @@ import of the file.
 NEXT_ID = sequencer()
 
 
-def is_int(key: Any) -> bool:
-    try:
-        n = int(key)
-    except ValueError:
-        return False
-
-    return n <= 999999999
-
-
-class IdMapper:
+class IdMapper(Generic[T]):
     def __init__(self) -> None:
-        self.map: Dict[Any, int] = {}
+        self.map: dict[T, int] = {}
         self.cnt = 0
 
-    def has(self, their_id: Any) -> bool:
+    def has(self, their_id: T) -> bool:
         return their_id in self.map
 
-    def get(self, their_id: Any) -> int:
+    def get(self, their_id: T) -> int:
         if their_id in self.map:
             return self.map[their_id]
 
-        if is_int(their_id):
-            our_id = int(their_id)
-            if self.cnt > 0:
-                raise Exception("mixed key styles")
-        else:
-            self.cnt += 1
-            our_id = self.cnt
-
+        self.cnt += 1
+        our_id = self.cnt
         self.map[their_id] = our_id
         return our_id

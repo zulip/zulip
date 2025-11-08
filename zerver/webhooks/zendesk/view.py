@@ -2,8 +2,8 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -15,19 +15,20 @@ def truncate(string: str, length: int) -> str:
 
 
 @authenticated_rest_api_view(webhook_client_name="Zendesk")
-@has_request_variables
+@typed_endpoint
 def api_zendesk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    ticket_title: str = REQ(),
-    ticket_id: str = REQ(),
-    message: str = REQ(),
+    *,
+    ticket_title: str,
+    ticket_id: str,
+    message: str,
 ) -> HttpResponse:
     """
     Zendesk uses triggers with message templates. This webhook uses the
-    ticket_id and ticket_title to create a subject. And passes with zendesk
+    ticket_id and ticket_title to create a topic. And passes with zendesk
     user's configured message to zulip.
     """
-    subject = truncate(f"#{ticket_id}: {ticket_title}", 60)
-    check_send_webhook_message(request, user_profile, subject, message)
-    return json_success()
+    topic_name = truncate(f"#{ticket_id}: {ticket_title}", 60)
+    check_send_webhook_message(request, user_profile, topic_name, message)
+    return json_success(request)

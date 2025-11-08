@@ -1,27 +1,27 @@
-from typing import Optional
-
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import has_request_variables, webhook_view
-from zerver.lib.request import REQ, RequestVariableMissingError
+from zerver.decorator import webhook_view
+from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
 @webhook_view("Dropbox", notify_bot_owner_on_invalid_json=False)
-@has_request_variables
+@typed_endpoint
 def api_dropbox_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    challenge: Optional[str] = REQ(default=None),
+    *,
+    challenge: str | None = None,
 ) -> HttpResponse:
     if request.method == "POST":
-        topic = "Dropbox"
+        topic_name = "Dropbox"
         check_send_webhook_message(
-            request, user_profile, topic, "File has been updated on Dropbox!"
+            request, user_profile, topic_name, "File has been updated on Dropbox!"
         )
-        return json_success()
+        return json_success(request)
     else:
         if challenge is None:
             raise RequestVariableMissingError("challenge")

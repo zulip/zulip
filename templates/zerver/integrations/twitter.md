@@ -2,14 +2,9 @@ Fetch tweets from Twitter in Zulip! This is great for seeing and
 discussing who is talking about you, friends, competitors, or
 important topics in real time.
 
-1.  {!create-stream.md!}
+1.  {!create-channel.md!}
 
-1.  Next, on your {{ settings_html|safe }},
-    [create a bot](/help/add-a-bot-or-integration) for
-    {{ integration_display_name }}. Make sure that you select
-    **Incoming webhook** as the **Bot type**:
-
-    ![Bot types](/static/images/integrations/bot_types.png)
+1.  {!create-an-incoming-webhook.md!}
 
     The API keys for "Incoming webhook" bots are limited to only
     sending messages via webhooks. Thus, this bot type lessens

@@ -1,9 +1,10 @@
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
+from pydantic.alias_generators import to_snake
 
-from zerver.decorator import REQ, has_request_variables, webhook_view
+from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -17,39 +18,40 @@ APPVEYOR_MESSAGE_TEMPLATE = """
 
 
 @webhook_view("Appveyor")
-@has_request_variables
+@typed_endpoint
 def api_appveyor_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    *,
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
+    body = get_body(payload)
+    topic_name = get_topic_name(payload)
 
-    body = get_body_for_http_request(payload)
-    subject = get_subject_for_http_request(payload)
-
-    check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
+    check_send_webhook_message(request, user_profile, topic_name, body)
+    return json_success(request)
 
 
-def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
+def get_topic_name(payload: WildValue) -> str:
     event_data = payload["eventData"]
-    return APPVEYOR_TOPIC_TEMPLATE.format(project_name=event_data["projectName"])
+    return APPVEYOR_TOPIC_TEMPLATE.format(project_name=event_data["projectName"].tame(check_string))
 
 
-def get_body_for_http_request(payload: Dict[str, Any]) -> str:
+def get_body(payload: WildValue) -> str:
     event_data = payload["eventData"]
+    fields = [
+        "projectName",
+        "buildVersion",
+        "status",
+        "buildUrl",
+        "commitUrl",
+        "committerName",
+        "commitDate",
+        "commitMessage",
+        "commitId",
+        "started",
+        "finished",
+    ]
+    data = {to_snake(field): event_data[field].tame(check_string) for field in fields}
 
-    data = {
-        "project_name": event_data["projectName"],
-        "build_version": event_data["buildVersion"],
-        "status": event_data["status"],
-        "build_url": event_data["buildUrl"],
-        "commit_url": event_data["commitUrl"],
-        "committer_name": event_data["committerName"],
-        "commit_date": event_data["commitDate"],
-        "commit_message": event_data["commitMessage"],
-        "commit_id": event_data["commitId"],
-        "started": event_data["started"],
-        "finished": event_data["finished"],
-    }
     return APPVEYOR_MESSAGE_TEMPLATE.format(**data)
