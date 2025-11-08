@@ -75,6 +75,7 @@ class OAuthVideoCallProvider(ABC):
     token_url: str = NotImplemented
     auto_refresh_url: str = NotImplemented
     create_meeting_url: str = NotImplemented
+    token_key_name: str = NotImplemented
 
     @abstractmethod
     def get_token(self, user: UserProfile) -> object | None:
@@ -191,6 +192,7 @@ class OAuthVideoCallProvider(ABC):
 class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
     provider_name = "Zoom"
     authorization_scope = None
+    token_key_name = "zoom"
 
     def __init__(self) -> None:
         self.client_id = settings.VIDEO_ZOOM_CLIENT_ID
@@ -202,7 +204,7 @@ class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
 
     @override
     def get_token(self, user: UserProfile) -> object | None:
-        return user.zoom_token
+        return user.third_party_api_state.get(self.token_key_name)
 
     @override
     def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
