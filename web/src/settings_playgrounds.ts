@@ -9,7 +9,7 @@ import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as realm_playground from "./realm_playground.ts";
 import type {RealmPlayground} from "./realm_playground.ts";
@@ -17,6 +17,7 @@ import * as scroll_util from "./scroll_util.ts";
 import {current_user, realm} from "./state_data.ts";
 import {render_typeahead_item} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 let pygments_typeahead: Typeahead<string>;
 
@@ -158,6 +159,10 @@ function build_page(): void {
         });
 
     const $search_pygments_box = $<HTMLInputElement>("input#playground_pygments_language");
+    const $alias_suggestion_banner = $(
+        '<div class="playground-alias-suggestion-banner alert" style="display: none; margin-top: 8px; margin-bottom: 0;"></div>',
+    );
+    $search_pygments_box.closest(".input-group").after($alias_suggestion_banner);
     let language_labels = new Map<string, string>();
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
@@ -180,6 +185,90 @@ function build_page(): void {
         sorter(items: string[], query: string): string[] {
             return bootstrap_typeahead.defaultSorter(items, query);
         },
+        updater(item: string): string {
+            // Hide suggestion when user selects from typeahead
+            $alias_suggestion_banner.hide();
+            return item;
+        },
+    });
+
+    function check_and_show_alias_suggestion(): void {
+        const current_value = $search_pygments_box.val()?.toString().trim() ?? "";
+        const alias_match = realm_playground.find_language_alias_match(current_value);
+
+        if (alias_match === null) {
+            $alias_suggestion_banner.hide();
+            return;
+        }
+
+        // Don't show suggestion if typeahead is currently shown (user might be selecting)
+        if (pygments_typeahead.shown) {
+            return;
+        }
+
+        // Don't show if the current value already matches the full option key
+        if (current_value.toLowerCase() === alias_match.full_option_key.toLowerCase()) {
+            $alias_suggestion_banner.hide();
+            return;
+        }
+
+        const aliases_string = util.format_array_as_list_with_conjunction(
+            alias_match.aliases,
+            "narrow",
+        );
+        const message = $t_html(
+            {
+                defaultMessage:
+                    "By the way, you can have this playground apply to {aliases}. Would you like to use <strong>{pretty_name}</strong> instead?",
+            },
+            {
+                aliases: aliases_string,
+                pretty_name: alias_match.pretty_name,
+            },
+        );
+
+        const $button = $(
+            '<button type="button" class="button small" style="margin-left: 8px;">' +
+                $t({defaultMessage: "Use {pretty_name}"}, {pretty_name: alias_match.pretty_name}) +
+                "</button>",
+        );
+
+        $button.on("click", () => {
+            $search_pygments_box.val(alias_match.full_option_key);
+            $search_pygments_box.trigger("input");
+            $alias_suggestion_banner.hide();
+            // Trigger typeahead to show the selected option
+            pygments_typeahead.lookup(false);
+        });
+
+        $alias_suggestion_banner
+            .html(message)
+            .append($button)
+            .removeClass("alert-error alert-success")
+            .addClass("alert-info")
+            .show();
+    }
+
+    $search_pygments_box.on("input", () => {
+        // Debounce to avoid checking on every keystroke while typing
+        setTimeout(() => {
+            // Hide suggestion if typeahead is currently shown
+            if (pygments_typeahead.shown) {
+                $alias_suggestion_banner.hide();
+            } else {
+                check_and_show_alias_suggestion();
+            }
+        }, 300);
+    });
+
+    $search_pygments_box.on("blur", () => {
+        // Hide suggestion immediately on blur if typeahead is shown
+        if (pygments_typeahead.shown) {
+            $alias_suggestion_banner.hide();
+        } else {
+            // Check one more time on blur if typeahead is not shown
+            setTimeout(check_and_show_alias_suggestion, 100);
+        }
     });
 
     $search_pygments_box.on("click", (e) => {

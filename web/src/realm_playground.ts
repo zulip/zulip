@@ -92,6 +92,45 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
     return language_labels;
 }
 
+// Check if a query string matches a language alias that has multiple aliases available.
+// Returns information about the language if the query is an alias of a language
+// with multiple aliases and the query is not the full pretty_name option.
+export function find_language_alias_match(query: string): {
+    pretty_name: string;
+    aliases: string[];
+    full_option_key: string;
+} | null {
+    const normalized_query = query.trim().toLowerCase();
+    if (normalized_query === "") {
+        return null;
+    }
+
+    // Check if the query matches any alias in the pygments data
+    for (const [pretty_name, aliases] of map_pygments_pretty_name_to_aliases) {
+        // Only suggest if there are multiple aliases
+        if (aliases.length <= 1) {
+            continue;
+        }
+
+        // Check if query matches any alias (case-insensitive)
+        const matching_alias = aliases.find(
+            (alias) => alias.toLowerCase() === normalized_query,
+        );
+
+        if (matching_alias !== undefined) {
+            // Return the match - we'll check in the UI if the current value
+            // already matches the full option key before showing the suggestion
+            return {
+                pretty_name,
+                aliases,
+                full_option_key: pretty_name,
+            };
+        }
+    }
+
+    return null;
+}
+
 export function initialize({
     playground_data,
     pygments_comparator_func,
