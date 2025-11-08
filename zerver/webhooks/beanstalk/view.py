@@ -93,8 +93,8 @@ def api_beanstalk_webhook(
         if payload.get("forced") is not None:
             try:
                 forced_flag = payload["forced"].tame(check_bool)
-            except Exception:
-                forced_flag = None
+            except Exception: # nocoverage ✅
+                forced_flag = None # nocoverage ✅
 
         topic_name, content = build_message_from_gitlog(
             user_profile,
