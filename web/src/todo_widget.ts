@@ -415,6 +415,34 @@ export function activate({
             throttled_update_add_task_button();
         });
 
+        $elem.find("input.add-task").on("keydown", (e) => {
+            e.stopPropagation();
+
+            if (e.key === "Enter") {
+                // Only trigger the add task functionality if the button is enabled (task name is filled and not duplicate)
+                const $add_task_button = $elem.find("button.add-task");
+                if (!$add_task_button.prop("disabled")) {
+                    $elem.find(".widget-error").text("");
+                    const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+                    const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+
+                    $elem.find("input.add-task").val("").trigger("focus");
+                    $elem.find("input.add-desc").val("");
+
+                    // This case should not generally occur.
+                    const task_exists = task_data.name_in_use(task);
+                    if (task_exists) {
+                        $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+                        return;
+                    }
+
+                    const data = task_data.handle.new_task.outbound(task, desc);
+                    callback(data);
+                }
+                return;
+            }
+        });
+
         $elem.find("input.todo-task-list-title").on("keyup", (e) => {
             e.stopPropagation();
             update_edit_controls();
