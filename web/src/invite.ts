@@ -682,7 +682,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 reset_invite_modal_banners();
             },
         });
-        const $container = $("#invite_users_option_tabs_container");
+        const $invite_users_modal_header = $("#invite-user-modal .modal__header");
+        const $invite_users_options_tabs_container = $(document.createElement("div"));
+        $invite_users_options_tabs_container.attr("id", "invite_users_option_tabs_container");
+        $invite_users_modal_header.append($invite_users_options_tabs_container);
+        const $container = $invite_users_options_tabs_container;
         if (!settings_data.user_can_invite_users_by_email()) {
             toggler.disable_tab("invite-email-tab");
             toggler.goto("invite-link-tab");
