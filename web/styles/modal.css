@@ -257,7 +257,8 @@
     color: hsl(0deg 0% 100%) !important;
 }
 
-#user-profile-modal {
+#user-profile-modal,
+#invite-user-modal {
     .modal__header {
         grid-template:
             ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
@@ -265,7 +266,14 @@
             ". modal-tab-switcher   modal-tab-switcher ." minmax(0, auto)
             / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
     }
+}
 
+#invite-user-modal #invite_users_option_tabs_container {
+    grid-area: modal-tab-switcher;
+    padding-bottom: 0.5em; /* 8px at 16px/1em */
+}
+
+#user-profile-modal {
     .modal__container {
         height: var(--user-profile-modal-height);
     }
@@ -1002,10 +1010,6 @@
             }
         }
     }
-}
-
-#invite_users_option_tabs_container {
-    margin-bottom: 20px;
 }
 
 .dialog-widget-footer-minor-text {
