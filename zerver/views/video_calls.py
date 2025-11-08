@@ -106,6 +106,11 @@ class OAuthVideoCallProvider(ABC):
     def create_meeting_url(self) -> str:
         pass
 
+    @property
+    @abstractmethod
+    def token_key_name(self) -> str:
+        pass
+
     @abstractmethod
     def get_token(self, user: UserProfile) -> object | None:
         pass
@@ -224,6 +229,7 @@ class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
     token_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
     auto_refresh_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
     create_meeting_url = urljoin(settings.VIDEO_ZOOM_API_URL, "/v2/users/me/meetings")
+    token_key_name = "zoom_token"
 
     @property
     @override
@@ -237,7 +243,7 @@ class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
 
     @override
     def get_token(self, user: UserProfile) -> object | None:
-        return user.zoom_token
+        return user.third_party_api_tokens.get(self.token_key_name)
 
     @override
     def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
