@@ -118,6 +118,7 @@ class NarrowParameter(BaseModel):
             "id",
             "sender",
             "group-pm-with",
+            "dm-with",
             "dm-including",
             "with",
         ]
@@ -291,8 +292,10 @@ class NarrowBuilder:
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
-            "dm-including": self.by_dm_including,
-            # "group-pm-with:" was deprecated by the addition of "dm-including:"
+            "dm-with": self.by_dm_with,
+            # "dm-including:" is a legacy alias for "dm-with:"
+            "dm-including": self.by_dm_with,
+            # "group-pm-with:" was deprecated by the addition of "dm-with:"
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
             # for documented search operators with dashes, also implicitly supported
@@ -623,7 +626,7 @@ class NarrowBuilder:
 
         return set(self_recipient_ids) & set(narrow_recipient_ids)
 
-    def by_dm_including(
+    def by_dm_with(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
@@ -642,7 +645,7 @@ class NarrowBuilder:
         except UserProfile.DoesNotExist:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
-        # "dm-including" when combined with the user's own ID/email as the operand
+        # "dm-with" when combined with the user's own ID/email as the operand
         # should return all group and 1:1 direct messages (including direct messages
         # with self), so the simplest query to get these messages is the same as "is:dm".
         if narrow_user_profile.id == self.user_profile.id:

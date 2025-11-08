@@ -504,14 +504,14 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user in narrow/search
-    current_filter = set_filter([["dm-including", "Yo"]]);
+    current_filter = set_filter([["dm-with", "Yo"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This user does not exist!"),
     );
 
-    current_filter = set_filter([["dm-including", "alice@example.com"]]);
+    current_filter = set_filter([["dm-with", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -523,7 +523,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // direct messages with a bot are possible even though
     // the organization has disabled sending direct messages
-    current_filter = set_filter([["dm-including", "bot@example.com"]]);
+    current_filter = set_filter([["dm-with", "bot@example.com"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -533,14 +533,14 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     // sending direct messages enabled
     override(realm, "realm_direct_message_permission_group", everyone.id);
     override(realm, "realm_direct_message_permission_group", everyone.id);
-    current_filter = set_filter([["dm-including", "alice@example.com"]]);
+    current_filter = set_filter([["dm-with", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You have no direct messages including Alice Smith yet."),
     );
 
-    current_filter = set_filter([["dm-including", me.email]]);
+    current_filter = set_filter([["dm-with", me.email]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),

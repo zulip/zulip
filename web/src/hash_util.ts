@@ -31,6 +31,7 @@ export function get_reload_hash(): string {
 export function encode_operand(operator: string, operand: string): string {
     if (
         operator === "group-pm-with" ||
+        operator === "dm-with" ||
         operator === "dm-including" ||
         operator === "dm" ||
         operator === "sender" ||
@@ -61,6 +62,7 @@ export function encode_stream_id(stream_id: number): string {
 export function decode_operand(operator: string, operand: string): string {
     if (
         operator === "group-pm-with" ||
+        operator === "dm-with" ||
         operator === "dm-including" ||
         operator === "dm" ||
         operator === "sender" ||
