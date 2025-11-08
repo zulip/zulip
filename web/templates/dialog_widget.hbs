@@ -19,6 +19,9 @@
                     </div>
                     {{/if}}
                 </div>
+                {{#if has_tab_switcher}}
+                <div class="modal__tab-switcher-container"></div>
+                {{/if}}
                 {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
             </header>
             {{#unless is_compact}}
