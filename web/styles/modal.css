@@ -633,7 +633,8 @@
     }
 
     .read_receipts_list {
-        margin-left: 0;
+        /* Override legacy bootstrap ul margins. */
+        margin: 0;
 
         & li {
             .read_receipts_user_avatar {
