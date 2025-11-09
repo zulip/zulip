@@ -113,6 +113,49 @@ function hide_loading_indicator(): void {
     );
 }
 
+function replace_broken_images_in_history(): void {
+    const $overlay = $("#message-history-overlay .overlay-messages-list");
+    const placeholderSrc = "static/images/errors/image-not-exist.png";
+    $overlay.find("img.image-loading-placeholder, img[src*='loader']").each(function () {
+        const $spinnerImg = $(this);
+        $spinnerImg.attr("src", placeholderSrc);
+        $spinnerImg.removeClass("image-loading-placeholder");
+        $spinnerImg.addClass("broken-image");
+    });
+
+    $overlay.find("img").each(function () {
+        const $img = $(this);
+        if ($img.attr("src") === placeholderSrc) {
+            return;
+        }
+        $img.on("error", () => {
+            if ($img.attr("src") === placeholderSrc) {
+                return;
+            }
+            $img.attr("src", placeholderSrc);
+            $img.addClass("broken-image");
+        });
+        setTimeout(() => {
+            const imgEl = $img[0]!;
+            if (imgEl?.naturalWidth === 0) {
+                $img.trigger("error");
+            }
+        }, 100);
+    });
+
+    $overlay.find(".message-media-preview-image").each(function () {
+        const $preview = $(this);
+        const $img = $preview.find("img");
+        setTimeout(() => {
+            if ($img.length === 1 && $img.attr("src")?.includes("loader")) {
+                $img.attr("src", placeholderSrc);
+                $img.removeClass("image-loading-placeholder");
+                $img.addClass("broken-image");
+            }
+        }, 300);
+    });
+}
+
 export function fetch_and_render_message_history(message: Message): void {
     assert(message_lists.current !== undefined);
     const message_container = message_lists.current.view.message_containers.get(message.id);
@@ -297,6 +340,9 @@ export function fetch_and_render_message_history(message: Message): void {
                 .each(function () {
                     rendered_markdown.update_elements($(this));
                 });
+
+            replace_broken_images_in_history();
+
             const first_element_id = content_edit_history[0]!.timestamp;
             messages_overlay_ui.set_initial_element(
                 String(first_element_id),
