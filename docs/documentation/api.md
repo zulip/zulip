@@ -453,16 +453,15 @@ To start with a clear example, let's imagine that we are writing the
 documentation for the REST API endpoint for uploading a file,
 [POST /api/v1/user_uploads](https://zulip.com/api/upload-file).
 
-There are no parameters for this endpoint, and only one return value
-specific to this endpoint, `uri`, which is the URL of the uploaded file.
-If we comment out that return value and example from the existing API
-documentation in `zerver/openapi/zulip.yaml`, for example:
+There are no query parameters for this endpoint; the request is multipart/form-data with a single form field, `filename`. On success, the canonical response field is `url`, while `uri` is a legacy alias (deprecated). The response also includes `filename`.
+
+If we comment out the `uri` property in the schema but leave it in the example in `zerver/openapi/zulip.yaml`, for example:
 
 ```yaml
-  /user_uploads:
+    /user_uploads:
     post:
       operationId: upload-file
-...
+      #...
       responses:
         "200":
           description: Success.
@@ -475,16 +474,23 @@ documentation in `zerver/openapi/zulip.yaml`, for example:
                     properties:
                       result: {}
                       msg: {}
-                      # uri:
+                      # url:
                       #   type: string
                       #   description: |
-                      #     The URI of the uploaded file.
+                      #     The URL of the uploaded file.
+                      filename:
+                        type: string
+                        description: |
+                          The stored name of the uploaded file.
                     example:
                       {
                         "msg": "",
                         "result": "success",
-                        # "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
+                        "url": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
+                        "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
+                        "filename": "zulip.txt"
                       }
+
 ```
 
 We will now get an error when we run the API documentation test suite
