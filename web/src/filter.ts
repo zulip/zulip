@@ -405,13 +405,13 @@ export class Filter {
         return updated_terms;
     }
 
-    /* We use a variant of URI encoding which looks reasonably
+    /* We use a variant of URL encoding which looks reasonably
        nice and still handles unambiguously cases such as
        spaces in operands.
 
        This is just for the search bar, not for saving the
        narrow in the URL fragment.  There we do use full
-       URI encoding to avoid problematic characters. */
+       URL encoding to avoid problematic characters. */
     static encodeOperand(operand: string, operator: string): string {
         if (USER_OPERATORS.has(operator)) {
             return operand.replaceAll(/[\s"%]/g, (c) => encodeURIComponent(c));

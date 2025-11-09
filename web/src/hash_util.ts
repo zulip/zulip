@@ -53,7 +53,7 @@ export function encode_operand(operator: string, operand: string): string {
 
 export function encode_stream_id(stream_id: number): string {
     // stream_data postfixes the stream name, but it does not do the
-    // URI encoding piece
+    // URL encoding piece
     const slug = stream_data.id_to_slug(stream_id);
 
     return internal_url.encodeHashComponent(slug);
