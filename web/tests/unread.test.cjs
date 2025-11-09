@@ -739,7 +739,7 @@ test("topics with unread mentions", () => {
     assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set(["topic with mention"]));
     unread.mark_as_read(message_with_mention.id);
     assert.equal(unread.get_topics_with_unread_mentions(999).size, 0);
-    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set([]));
+    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set());
 });
 
 test("starring", () => {

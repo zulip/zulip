@@ -115,7 +115,7 @@ const $fred_stub = $.create("fred stub");
 const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
 function add_sub_and_set_as_current_narrow(sub) {
     stream_data.add_sub_for_tests(sub);
-    const filter_terms = [{operator: "stream", operand: sub.stream_id}];
+    const filter_terms = [{operator: "stream", operand: String(sub.stream_id)}];
     message_lists.set_current(make_message_list(filter_terms));
 }
 
@@ -274,8 +274,7 @@ test("direct_message_update_dom_counts", () => {
     $li.set_find_results(".unread_count", $count);
     $count.set_parents_result("li", $li);
 
-    const counts = new Map();
-    counts.set(pm_key, 5);
+    const counts = new Map([[pm_key, 5]]);
     $li.addClass("user_sidebar_entry");
 
     activity_ui.update_dom_with_unread_counts({pm_count: counts});

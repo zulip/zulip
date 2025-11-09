@@ -3,6 +3,7 @@ import os
 import random
 import secrets
 import uuid
+from collections import defaultdict
 from typing import Any
 
 import bson
@@ -288,21 +289,18 @@ def build_custom_emoji(
     emoji_records: list[ZerverFieldsT] = []
 
     # Map emoji file_id to emoji file data
-    emoji_file_data = {}
+    emoji_file_data = defaultdict(list)
+    object_id_to_filename = {}
     for emoji_file in custom_emoji_data["file"]:
-        emoji_file_data[str(emoji_file["_id"])] = {"filename": emoji_file["filename"], "chunks": []}
+        if isinstance(emoji_file["_id"], bson.objectid.ObjectId):  # nocoverage
+            object_id_to_filename[str(emoji_file["_id"])] = emoji_file["filename"]
     for emoji_chunk in custom_emoji_data["chunk"]:
-        emoji_file_data[emoji_chunk["files_id"]]["chunks"].append(emoji_chunk["data"])
+        file_id = str(emoji_chunk["files_id"])
+        emoji_file_data[object_id_to_filename.get(file_id, file_id)].append(emoji_chunk["data"])
 
-    # Build custom emoji
     for rc_emoji in custom_emoji_data["emoji"]:
-        # Subject to change with changes in database
-        emoji_file_id = f"{rc_emoji['name']}.{rc_emoji['extension']}"
-
-        emoji_file_info = emoji_file_data[emoji_file_id]
-
-        emoji_filename = emoji_file_info["filename"]
-        emoji_data = b"".join(emoji_file_info["chunks"])
+        emoji_filename = f"{rc_emoji['name']}.{rc_emoji['extension']}"
+        emoji_data = b"".join(emoji_file_data[emoji_filename])
 
         target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm_id,
@@ -319,8 +317,8 @@ def build_custom_emoji(
 
         for alias in emoji_aliases:
             emoji_record = dict(
-                path=target_path,
-                s3_path=target_path,
+                path=target_sub_path,
+                s3_path=target_sub_path,
                 file_name=emoji_filename,
                 realm_id=realm_id,
                 name=alias,
@@ -386,7 +384,6 @@ def process_message_attachment(
     realm_id: int,
     message_id: int,
     user_id: int,
-    user_handler: UserHandler,
     zerver_attachment: list[ZerverFieldsT],
     uploads_list: list[ZerverFieldsT],
     upload_id_to_upload_data_map: dict[str, dict[str, Any]],
@@ -449,7 +446,6 @@ def process_message_attachment(
         content_type=upload["type"],
         user_profile_id=user_id,
         last_modified=fileinfo["created"],
-        user_profile_email=user_handler.get_user(user_id=user_id)["email"],
         s3_path=s3_path,
         size=fileinfo["size"],
     )
@@ -539,7 +535,6 @@ def process_raw_message_batch(
                 realm_id=realm_id,
                 message_id=message_id,
                 user_id=sender_user_id,
-                user_handler=user_handler,
                 uploads_list=uploads_list,
                 zerver_attachment=zerver_attachment,
                 upload_id_to_upload_data_map=upload_id_to_upload_data_map,

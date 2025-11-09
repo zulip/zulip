@@ -53,7 +53,6 @@ from zerver.lib.export import (
     Record,
     do_export_realm,
     do_export_user,
-    export_usermessages_batch,
     get_consented_user_ids,
 )
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
@@ -416,7 +415,7 @@ class RealmImportExportTest(ExportFile):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
-                threads=0,
+                processes=1,
                 export_type=export_type,
                 exportable_user_ids=exportable_user_ids,
             )
@@ -426,13 +425,6 @@ class RealmImportExportTest(ExportFile):
             # will cause a conflict - so rotate it.
             realm.uuid = uuid.uuid4()
             realm.save()
-
-            export_usermessages_batch(
-                input_path=os.path.join(output_dir, "messages-000001.json.partial"),
-                output_path=os.path.join(output_dir, "messages-000001.json"),
-                export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
-                consented_user_ids=exportable_user_ids,
-            )
 
     def export_realm_and_create_auditlog(
         self,

@@ -1,3 +1,4 @@
+import base64
 import uuid
 from datetime import timedelta
 
@@ -232,7 +233,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         payload: dict[str, str | int] = {
             "token_kind": token_kind,
             "push_account_id": 2408,
-            "push_public_key": "push-public-key",
+            "push_key": "MY+paNlyduYJRQFNZva8w7Gv3PkBua9kIj581F9Vr301",
             "bouncer_public_key": public_key_str,
             "encrypted_push_registration": encrypted_push_registration,
         }
@@ -308,6 +309,34 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         result = self.client_post("/json/mobile_push/register", payload)
         self.assert_json_error(result, "Server is not configured to use push notification service.")
+
+    @activate_push_notification_service()
+    def test_invalid_push_key_error(self) -> None:
+        self.login("hamlet")
+        payload = self.get_register_push_device_payload()
+
+        # Invalid Base64 alphabet in `push_key`
+        invalid_push_key_payload = {**payload, "push_key": "@abcdefg"}
+        result = self.client_post("/json/mobile_push/register", invalid_push_key_payload)
+        self.assert_json_error(result, "Invalid `push_key`")
+
+        # Value (which is base64 encoded to get `push_key`) is not 33 bytes in size
+        invalid_push_key_payload = {**payload, "push_key": "abcd"}
+        result = self.client_post("/json/mobile_push/register", invalid_push_key_payload)
+        self.assert_json_error(result, "Invalid `push_key`")
+
+        # Verify error when prefix (1st byte) is not 0x31
+        push_key = payload["push_key"]
+        assert type(push_key) is str  # for mypy
+        valid_push_key_bytes = base64.b64decode(push_key)
+        self.assertEqual(valid_push_key_bytes[0], 0x31)
+        self.assert_length(valid_push_key_bytes, 33)
+        # Note: Prefix changed to 0x32
+        invalid_push_key_bytes = bytes([0x32]) + valid_push_key_bytes[1:]
+        invalid_push_key = base64.b64encode(invalid_push_key_bytes).decode("utf-8")
+        invalid_push_key_payload = {**payload, "push_key": invalid_push_key}
+        result = self.client_post("/json/mobile_push/register", invalid_push_key_payload)
+        self.assert_json_error(result, "Invalid `push_key`")
 
     @activate_push_notification_service()
     @override_settings(ZILENCER_ENABLED=False)

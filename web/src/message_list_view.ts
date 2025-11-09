@@ -22,6 +22,7 @@ import * as message_edit from "./message_edit.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -777,6 +778,7 @@ export class MessageListView {
         for (const message of messages) {
             const message_reactions = reactions.get_message_reactions(message);
             message.message_reactions = message_reactions;
+            message.reminders = message_reminder.get_reminders(message.id);
 
             // These will be used to build the message container
             let include_recipient = false;
@@ -1077,6 +1079,7 @@ export class MessageListView {
     _get_message_template(message_container: MessageContainer): string {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
+        message_container.msg.reminders = message_reminder.get_reminders(message_container.msg.id);
         const msg_to_render = {
             ...message_container,
             message_list_id: this.list.id,

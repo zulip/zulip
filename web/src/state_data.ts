@@ -22,7 +22,29 @@ export type GroupPermissionSetting = z.output<typeof group_permission_setting_sc
 
 export const narrow_term_schema = z.object({
     negated: z.optional(z.boolean()),
-    operator: z.string(),
+    operator: z.enum([
+        "", // Used for search suggestions.
+        "channel",
+        "channels",
+        "dm",
+        "dm-including",
+        "from",
+        "group-pm-with",
+        "has",
+        "id",
+        "in",
+        "is",
+        "near",
+        "pm",
+        "pm-including",
+        "pm-with",
+        "search",
+        "sender",
+        "stream",
+        "streams",
+        "topic",
+        "with",
+    ]),
     operand: z.string(),
 });
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
@@ -421,6 +443,7 @@ export const realm_schema = z.object({
     realm_message_content_delete_limit_seconds: z.nullable(z.number()),
     realm_message_edit_history_visibility_policy: z.enum(["all", "moves", "none"]),
     realm_message_retention_days: z.number(),
+    realm_moderation_request_channel_id: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.nullable(z.number()),
     realm_move_messages_within_stream_limit_seconds: z.nullable(z.number()),
     realm_name_changes_disabled: z.boolean(),

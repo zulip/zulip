@@ -154,15 +154,15 @@ Here are a few common macros used to document Zulip's integrations:
   ```
 
   For an example rendering, see
-  [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
+  [Zulip's Beanstalk integration](https://zulip.com/integrations/beanstalk).
 
-[github-integration]: https://zulip.com/integrations/doc/github
-[zendesk]: https://zulip.com/integrations/doc/zendesk
-[matrix]: https://zulip.com/integrations/doc/matrix#configure-the-bridge
-[codebase]: https://zulip.com/integrations/doc/codebase
-[beanstalk]: https://zulip.com/integrations/doc/beanstalk
-[front]: https://zulip.com/integrations/doc/front
-[gitlab]: https://zulip.com/integrations/doc/gitlab
+[github-integration]: https://zulip.com/integrations/github
+[zendesk]: https://zulip.com/integrations/zendesk
+[matrix]: https://zulip.com/integrations/matrix#configure-the-bridge
+[codebase]: https://zulip.com/integrations/codebase
+[beanstalk]: https://zulip.com/integrations/beanstalk
+[front]: https://zulip.com/integrations/front
+[gitlab]: https://zulip.com/integrations/gitlab
 [integrations-file]: https://github.com/zulip/zulip/blob/main/zerver/lib/integrations.py
 
 ## Writing guidelines
@@ -170,7 +170,7 @@ Here are a few common macros used to document Zulip's integrations:
 For the vast majority of integrations, you should just copy the docs for a
 similar integration and edit it. [Basecamp][basecamp] is a good one to copy.
 
-[basecamp]: https://zulip.com/integrations/doc/basecamp
+[basecamp]: https://zulip.com/integrations/basecamp
 
 ### General writing guidelines
 

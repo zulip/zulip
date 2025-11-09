@@ -28,7 +28,7 @@ from firebase_admin import initialize_app as firebase_initialize_app
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 from nacl.encoding import Base64Encoder
-from nacl.public import PublicKey, SealedBox
+from nacl.secret import SecretBox
 from pydantic import TypeAdapter
 from typing_extensions import TypedDict, override
 
@@ -1032,16 +1032,29 @@ def get_message_payload(
             data["channel_id"] = channel_id
 
         data["topic"] = get_topic_display_name(message.topic_name(), user_profile.default_language)
-    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        data["recipient_type"] = "private" if for_legacy_clients else "direct"
-        # For group DMs, we need to fetch the users for the pm_users field.
-        # Note that this doesn't do a separate database query, because both
-        # functions use the get_display_recipient_by_id cache.
-        recipients = get_display_recipient(message.recipient)
-        if len(recipients) > 2:
-            data["pm_users"] = direct_message_group_users(message.recipient.id)
-    else:  # Recipient.PERSONAL
-        data["recipient_type"] = "private" if for_legacy_clients else "direct"
+    else:
+        assert message.recipient.type in [Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP]
+        if for_legacy_clients:
+            data["recipient_type"] = "private"
+            if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+                # For group DMs, we need to fetch the users for the pm_users field.
+                # Note that this doesn't do a separate database query, because both
+                # functions use the get_display_recipient_by_id cache.
+                recipients = get_display_recipient(message.recipient)
+                if len(recipients) > 2:
+                    data["pm_users"] = direct_message_group_users(message.recipient.id)
+        else:
+            data["recipient_type"] = "direct"
+            # For 1:1 and group DMs, we need to fetch the users for the `recipient_user_ids`
+            # field. Note that this doesn't do a separate database query, because it uses
+            # the `get_display_recipient_by_id` cache.
+            display_recipients = get_display_recipient(message.recipient)
+            recipient_user_ids = {
+                display_recipient["id"] for display_recipient in display_recipients
+            }
+            if len(recipient_user_ids) == 1:  # Recipient.PERSONAL
+                recipient_user_ids.add(message.sender_id)
+            data["recipient_user_ids"] = sorted(recipient_user_ids)
 
     return data
 
@@ -1370,14 +1383,15 @@ def send_push_notifications_legacy(
     # While sending push notifications for new messages to older clients
     # (which don't support E2EE), if `require_e2ee_push_notifications`
     # realm setting is set to `true`, we redact the content.
-    if gcm_payload.get("event") != "remove" and user_profile.realm.require_e2ee_push_notifications:
+    if user_profile.realm.require_e2ee_push_notifications:
         # Make deep copies so redaction doesn't affect the original dicts
-        apns_payload = copy.deepcopy(apns_payload)
-        gcm_payload = copy.deepcopy(gcm_payload)
-
         placeholder_content = _("New message")
-        apns_payload["alert"]["body"] = placeholder_content
-        gcm_payload["content"] = placeholder_content
+        if gcm_payload and gcm_payload.get("event") != "remove":
+            gcm_payload = copy.deepcopy(gcm_payload)
+            gcm_payload["content"] = placeholder_content
+        if apns_payload and apns_payload["custom"]["zulip"].get("event") != "remove":
+            apns_payload = copy.deepcopy(apns_payload)
+            apns_payload["alert"]["body"] = placeholder_content
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(
@@ -1433,6 +1447,9 @@ APNsPriority: TypeAlias = Literal[10, 5, 1]
 
 @dataclass
 class PushRequestBasePayload:
+    # FCM expects in this type must always be strings. Non-string
+    # fields must be converted into strings in the FCM code path
+    # within send_e2ee_push_notifications.
     push_account_id: int
     encrypted_data: str
 
@@ -1464,10 +1481,30 @@ class APNsPushRequest:
     payload: APNsPayload
 
 
-def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], public_key_str: str) -> str:
-    public_key = PublicKey(public_key_str.encode("utf-8"), Base64Encoder)
-    sealed_box = SealedBox(public_key)
-    encrypted_data_bytes = sealed_box.encrypt(orjson.dumps(payload_data_to_encrypt), Base64Encoder)
+@dataclass
+class PushKey:
+    algorithm_type_byte: bytes
+    secret_bytes: bytes
+
+
+def parse_push_key(push_key_bytes: bytes) -> PushKey:
+    push_key = PushKey(
+        algorithm_type_byte=push_key_bytes[:1],
+        secret_bytes=push_key_bytes[1:],
+    )
+    return push_key
+
+
+def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], push_key_bytes: bytes) -> str:
+    push_key = parse_push_key(push_key_bytes)
+    # The `algorithm_type_byte` will play a role in future
+    # when we'll potentially revise the cryptosystem we use.
+    assert push_key.algorithm_type_byte == bytes([0x31])
+
+    secret_box = SecretBox(push_key.secret_bytes)
+    encrypted_data_bytes = secret_box.encrypt(
+        orjson.dumps(payload_data_to_encrypt), encoder=Base64Encoder
+    )
     encrypted_data = encrypted_data_bytes.decode("utf-8")
     return encrypted_data
 
@@ -1492,7 +1529,7 @@ def send_push_notifications(
     push_requests: list[FCMPushRequest | APNsPushRequest] = []
     for push_device in push_devices:
         assert push_device.bouncer_device_id is not None  # for mypy
-        encrypted_data = get_encrypted_data(payload_data_to_encrypt, push_device.push_public_key)
+        encrypted_data = get_encrypted_data(payload_data_to_encrypt, bytes(push_device.push_key))
         if push_device.token_kind == PushDevice.TokenKind.APNS:
             apns_http_headers = APNsHTTPHeaders(
                 apns_priority=apns_priority,

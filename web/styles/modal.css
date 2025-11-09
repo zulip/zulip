@@ -490,6 +490,11 @@
     }
 }
 
+.modal__container .modal_text_input:read-only {
+    background-color: var(--background-color-readonly-modal-input);
+    opacity: var(--opacity-readonly-modal-input);
+}
+
 #add-realm-domain-widget {
     .modal_text_input {
         width: 14.7143em; /* 206px at 14px em */

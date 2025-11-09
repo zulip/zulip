@@ -18,7 +18,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils.translation import get_language
+from django.utils.translation import get_language, gettext_lazy
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
@@ -31,7 +31,11 @@ from confirmation.models import (
     get_object_from_key,
     render_confirmation_key_error,
 )
-from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_realm import (
+    DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM,
+    do_create_realm,
+    get_email_address_visibility_default,
+)
 from zerver.actions.create_user import do_activate_mirror_dummy_user, do_create_user
 from zerver.actions.default_streams import lookup_default_stream_groups
 from zerver.actions.user_settings import (
@@ -271,6 +275,9 @@ def registration_helper(
     source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
     start_slack_import: Json[bool] = False,
     timezone: Annotated[str, timezone_or_empty_validator()] = "",
+    email_address_visibility: Annotated[
+        Json[int], check_int_in_validator(RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_TYPES)
+    ] = DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM,
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -326,6 +333,10 @@ def registration_helper(
             assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
             assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
             assert prereg_realm.created_realm is None
+
+            prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
+            prereg_realm.save(update_fields=["data_import_metadata"])
+
             queue_json_publish_rollback_unsafe(
                 "deferred_work",
                 {
@@ -354,10 +365,23 @@ def registration_helper(
                     reverse("realm_import_post_process", kwargs={"confirmation_key": key})
                 )
 
+            # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
+            # select box in the slack import page.
+            email_address_visibility_options = []
+
+            for id, name in RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items():
+                if id == RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+                    name = gettext_lazy("Everyone")
+                email_address_visibility_options.append((id, name))
+
             assert is_realm_import_enabled()
             context: dict[str, Any] = {
                 "key": key,
                 "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
+                "email_address_visibility_options": email_address_visibility_options,
+                "email_address_visibility_default": get_email_address_visibility_default(
+                    prereg_realm.org_type
+                ),
             }
 
             saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
@@ -369,11 +393,11 @@ def registration_helper(
                     # Verify slack token access.
                     from zerver.data_import.slack import (
                         SLACK_IMPORT_TOKEN_SCOPES,
-                        check_token_access,
+                        check_slack_token_access,
                     )
 
                     try:
-                        check_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
+                        check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
                     except Exception as e:
                         context["slack_access_token_validation_error"] = str(e)
                         return TemplateResponse(
@@ -1057,7 +1081,14 @@ def realm_import_status(
         # process support writing updates to this for a better progress indicator.
         if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
             return json_success(
-                request, {"status": _("Converting Slack data… This may take a while.")}
+                request,
+                {
+                    "status": _(
+                        "Converting Slack data… This may take a while. If you "
+                        "close this tab, you can return here from the “Complete registration” "
+                        "link in your email."
+                    )
+                },
             )
         elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
             # Redirect user the file upload page if we have an error message to display.

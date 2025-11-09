@@ -409,6 +409,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__moderation_request_channel_id: {
+        type: "realm",
+        op: "update",
+        property: "moderation_request_channel_id",
+        value: 43,
+    },
+
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -1241,6 +1248,13 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_inbox_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_inbox_show_channel_folders",
+        value: false,
     },
 
     user_settings__web_left_sidebar_show_channel_folders: {

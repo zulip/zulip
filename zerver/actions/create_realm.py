@@ -39,6 +39,8 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zproject.backends import all_default_backend_names
 
+DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+
 
 def do_change_realm_subdomain(
     realm: Realm,
@@ -142,6 +144,25 @@ def setup_realm_internal_bots(realm: Realm) -> None:
         bot.save()
 
 
+def get_email_address_visibility_default(org_type: int | None = None) -> int:
+    # For the majority of organization types, the default email address visibility
+    # setting for new users should initially be admins only.
+    realm_default_email_address_visibility = DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM
+    if org_type in (
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+        Realm.ORG_TYPES["education"]["id"],
+    ):
+        # Email address of users should be initially visible to moderators and admins.
+        realm_default_email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+        )
+    elif org_type == Realm.ORG_TYPES["business"]["id"]:
+        # Email address of users can be visible to all users for business organizations.
+        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+
+    return realm_default_email_address_visibility
+
+
 def do_create_realm(
     string_id: str,
     name: str,
@@ -239,25 +260,9 @@ def do_create_realm(
             },
         )
 
-        # For the majority of organization types, the default email address visibility
-        # setting for new users should initially be admins only.
-        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        if realm.org_type in (
-            Realm.ORG_TYPES["education_nonprofit"]["id"],
-            Realm.ORG_TYPES["education"]["id"],
-        ):
-            # Email address of users should be initially visible to moderators and admins.
-            realm_default_email_address_visibility = (
-                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS
-            )
-        if realm.org_type == Realm.ORG_TYPES["business"]["id"]:
-            # Email address of users can be visible to all users for business organizations.
-            realm_default_email_address_visibility = (
-                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-            )
-
         RealmUserDefault.objects.create(
-            realm=realm, email_address_visibility=realm_default_email_address_visibility
+            realm=realm,
+            email_address_visibility=get_email_address_visibility_default(realm.org_type),
         )
 
         create_system_user_groups_for_realm(realm)

@@ -111,10 +111,7 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
     }
 }
 
-export function update_private_stream_privacy_option_state(
-    $container: JQuery,
-    is_default_stream = false,
-): void {
+export function update_private_stream_privacy_option_state($container: JQuery): void {
     // Disable both "Private, shared history" and "Private, protected history" options.
     const $private_stream_elem = $container.find(
         `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
@@ -124,6 +121,11 @@ export function update_private_stream_privacy_option_state(
             settings_config.stream_privacy_policy_values.private_with_public_history.code,
         )}']`,
     );
+
+    // If the default stream option is checked, the private stream options are disabled.
+    const is_default_stream = util.the(
+        $container.find<HTMLInputElement>(".default-stream input"),
+    ).checked;
 
     const disable_private_stream_options =
         is_default_stream || !settings_data.user_can_create_private_streams();
@@ -291,7 +293,7 @@ export function enable_or_disable_generate_email_button(sub: StreamSubscription)
     }
 }
 
-export function update_default_stream_and_stream_privacy_state($container: JQuery): void {
+export function update_default_stream_option_state($container: JQuery): void {
     const $default_stream = $container.find(".default-stream");
     const is_stream_creation = $container.attr("id") === "stream-creation";
 
@@ -312,10 +314,6 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
         "control-label-disabled default_stream_private_tooltip",
         is_invite_only,
     );
-
-    // If the default stream option is checked, the private stream options are disabled.
-    const is_default_stream = util.the($default_stream.find("input")).checked;
-    update_private_stream_privacy_option_state($container, is_default_stream);
 }
 
 export function update_can_subscribe_group_label($container: JQuery): void {
@@ -350,9 +348,6 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     const $permission_pill_container_elements =
         $advanced_configurations_container.find(".pill-container");
-    $permission_pill_container_elements
-        .find(".input")
-        .prop("contenteditable", sub.can_change_stream_permissions_requiring_metadata_access);
 
     $stream_settings
         .find(".channel-folder-widget-container button")
@@ -360,23 +355,14 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         $general_settings_container.find(".default-stream").addClass("control-label-disabled");
-        $permission_pill_container_elements
-            .closest(".input-group")
-            .addClass("group_setting_disabled");
-        settings_components.disable_opening_typeahead_on_clicking_label(
-            $advanced_configurations_container,
-        );
+        settings_components.disable_group_permission_setting($permission_pill_container_elements);
         return;
     }
 
-    $permission_pill_container_elements
-        .closest(".input-group")
-        .removeClass("group_setting_disabled");
-    settings_components.enable_opening_typeahead_on_clicking_label(
-        $advanced_configurations_container,
-    );
+    settings_components.enable_group_permission_setting($permission_pill_container_elements);
 
-    update_default_stream_and_stream_privacy_state($("#stream_settings"));
+    update_default_stream_option_state($("#stream_settings"));
+    update_private_stream_privacy_option_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -398,9 +384,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
         for (const setting_name of settings_config.stream_group_permission_settings_requiring_content_access) {
             const $setting_element = $advanced_configurations_container.find("#id_" + setting_name);
-            $setting_element.find(".input").prop("contenteditable", false);
-            $setting_element.closest(".input-group").addClass("group_setting_disabled");
-            settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
+            settings_components.disable_group_permission_setting($setting_element);
         }
     }
     settings_banner.set_up_upgrade_banners();

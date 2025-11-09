@@ -6,6 +6,7 @@
   "created": 1000000000,
   "customer": "cus_NORMALIZED",
   "description": null,
+  "excluded_payment_method_types": null,
   "flow_directions": null,
   "id": "attach_discount_to_realm--SetupIntent.create.2.json",
   "last_setup_error": null,

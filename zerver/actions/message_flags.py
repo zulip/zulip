@@ -220,27 +220,46 @@ def do_update_mobile_push_notification(
 
 
 def do_clear_mobile_push_notifications_for_ids(
-    user_profile_ids: list[int], message_ids: list[int]
+    user_profile_ids: list[int] | None, message_ids: list[int]
 ) -> None:
     if len(message_ids) == 0:
         return
 
-    # This function supports clearing notifications for several users
-    # only for the message-edit use case where we'll have a single message_id.
-    assert len(user_profile_ids) == 1 or len(message_ids) == 1
+    if user_profile_ids is not None:
+        # This block gets executed in the following cases:
+        # * Message(s) marked as read by a user
+        # * A message edited to remove mention(s)
+        if len(user_profile_ids) == 0:
+            return
+
+        # This supports clearing notifications for several users only for
+        # the message-edit use case where we'll have a single message_id.
+        assert len(user_profile_ids) == 1 or len(message_ids) == 1
+
+        notifications_to_update = (
+            UserMessage.objects.filter(
+                message_id__in=message_ids,
+                user_profile_id__in=user_profile_ids,
+            )
+            .extra(  # noqa: S610
+                where=[UserMessage.where_active_push_notification()],
+            )
+            .values_list("user_profile_id", "message_id")
+        )
+    else:
+        # This block handles clearing notifications when message(s) get deleted.
+        notifications_to_update = (
+            # Uses index: zerver_usermessage_message_active_mobile_push_notification_idx
+            UserMessage.objects.filter(
+                message_id__in=message_ids,
+            )
+            .extra(  # noqa: S610
+                where=[UserMessage.where_active_push_notification()],
+            )
+            .values_list("user_profile_id", "message_id")
+        )
 
     messages_by_user = defaultdict(list)
-    notifications_to_update = (
-        UserMessage.objects.filter(
-            message_id__in=message_ids,
-            user_profile_id__in=user_profile_ids,
-        )
-        .extra(  # noqa: S610
-            where=[UserMessage.where_active_push_notification()],
-        )
-        .values_list("user_profile_id", "message_id")
-    )
-
     for user_id, message_id in notifications_to_update:
         messages_by_user[user_id].append(message_id)
 

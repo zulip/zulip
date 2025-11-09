@@ -82,6 +82,22 @@
                         <label for="uploaded-file-info">{{ _("Uploaded export file") }}</label>
                         <div class="not-editable-realm-field" id="slack-import-uploaded-file-name">{{ uploaded_import_file_name }}</div>
                     </div>
+                    <div class="input-group input-box" id="email-address-visibility-select-wrapper">
+                        <label for="email-address-visibility-select">
+                            {{ _("Who will be allowed to see other users' email addresses?") }}
+                            <br />
+                            <span id="email-address-visibility-help-text">
+                                {% trans %}
+                                Users can <a href="https://zulip.com/help/configure-email-visibility" target="_blank">change</a> their email visibility configuration when they log in.
+                                {% endtrans %}
+                            </span>
+                        </label>
+                        <select id="email-address-visibility-select" name="email_address_visibility" class="required">
+                            {% for value, label in email_address_visibility_options %}
+                            <option value="{{ value }}" {% if value == email_address_visibility_default %}selected{% endif %}>{{ _(label) }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="input-box">
                         <button type="submit" class="register-button"{% if invalid_file_error_message %} disabled{% endif %}>
                             {{ _("Start import") }}

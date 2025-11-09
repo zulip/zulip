@@ -168,7 +168,7 @@
     This is the header, aka the navbar.
     */
     --header-height: 2.5em; /* 40px at 16px em */
-
+    --header-line-height: 40px;
     /*
     At 600px, the header starts taking up more than 5%
     of the screen. We make it shorter to leave more space
@@ -427,6 +427,7 @@
     --opacity-left-sidebar-muted-mentions: 0.3;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
+    --opacity-readonly-modal-input: 0.7;
 
     /*
     Message box elements and values.
@@ -626,6 +627,9 @@
     /* Dropdown menu width. This is a legacy value that comes from bootstrap.
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
+    /* User profile modal */
+    --user-profile-modal-body-height: 60vh;
+    --user-profile-modal-body-margin-bottom: 20px;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
@@ -839,6 +843,10 @@
     --background-color-modal-selectable-icon-hover: light-dark(
         hsl(240deg 100% 50% / 7%),
         hsl(240deg 100% 75% / 20%)
+    );
+    --background-color-readonly-modal-input: light-dark(
+        hsl(240deg 7% 93%),
+        hsl(240deg 7% 17%)
     );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
@@ -1472,6 +1480,22 @@
         hsl(0deg 0% 87%),
         hsl(0deg 0% 100% / 20%)
     );
+    --color-border-user-profile-list-container: light-dark(
+        hsl(0deg 0% 0% / 35%),
+        hsl(0deg 0% 100% / 30%)
+    );
+    --background-color-user-profile-list-container: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 17%)
+    );
+    --color-user-profile-list-item-hover: light-dark(
+        hsl(0deg 0% 97%),
+        hsl(0deg 0% 21%)
+    );
+    --color-outline-user-profile-list-item: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
 
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
@@ -2017,7 +2041,7 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --width-inbox-search: 29.0625em; /* 465px / 16px em */
+    --width-inbox-search: calc(27.4375em); /* 439px / 16px em */
     --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: light-dark(
         hsl(147deg 57% 25%),

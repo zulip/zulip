@@ -139,6 +139,10 @@ export let emoji_collection: Emoji[] = [];
 let completing: string | null;
 let token: string;
 
+export let private_message_recipient_typeahead: Typeahead<
+    UserGroupPillData | user_pill.UserPillData
+>;
+
 export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
         token = val;
@@ -1253,8 +1257,7 @@ export function content_typeahead_selected(
             const sub = stream_data.get_sub_by_name(item.name);
             const is_empty_topic_only_channel =
                 sub && stream_data.is_empty_topic_only_channel(sub.stream_id);
-            const is_greater_than_key_pressed =
-                event && event.type === "keydown" && event.key === ">";
+            const is_greater_than_key_pressed = event?.type === "keydown" && event.key === ">";
 
             // For empty topic only channel, skip showing topic typeahead and
             // insert direct channel link.
@@ -1578,7 +1581,7 @@ export function initialize({
         $element: $("#private_message_recipient"),
         type: "contenteditable",
     };
-    new Typeahead(private_message_typeahead_input, {
+    private_message_recipient_typeahead = new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,

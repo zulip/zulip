@@ -109,9 +109,9 @@ people.add_cross_realm_user(welcome_bot);
 const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const everyone = make_user_group({
     name: "role:everyone",
@@ -125,7 +125,7 @@ const admin = make_user_group({
     id: 3,
     members: new Set([32]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const moderators = make_user_group({
     name: "role:moderators",

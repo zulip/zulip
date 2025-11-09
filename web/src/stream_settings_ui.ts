@@ -1261,13 +1261,11 @@ export function initialize(): void {
     $("#channels_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#channels_overlay_container .two-pane-settings-header").removeClass("slide-left");
-        resize.resize_settings_overlay_subheader_for_narrow_screens(
-            $("#channels_overlay_container"),
-        );
+        resize.resize_settings_overlay_subheader($("#channels_overlay_container"));
     });
 
     $("#channels_overlay_container").on("click", "#preview-stream-button", () => {
         const stream_id = Number.parseInt($(".stream_settings_header").attr("data-stream-id")!, 10);
-        window.location.href = hash_util.by_stream_url(stream_id);
+        window.location.href = hash_util.channel_url_by_user_setting(stream_id);
     });
 }

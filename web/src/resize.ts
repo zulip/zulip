@@ -7,7 +7,6 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
-import {user_settings} from "./user_settings.ts";
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
@@ -86,10 +85,6 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
 
 function height_of($element: JQuery): number {
     return $element.get(0)!.getBoundingClientRect().height;
-}
-
-function width_of($element: JQuery): number {
-    return $element.get(0)!.getBoundingClientRect().width;
 }
 
 export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
@@ -221,25 +216,20 @@ function resize_navbar_alerts(): void {
     }
 }
 
-// On narrow screens, the `right` panel is absolutely positioned, so its
-// height doesn't change the height of `left` and vice versa. Here we
-// first let subheaders on both sides attain their natural height as
+// We need to make the height of subheaders on both sides same. This is not
+// easy to achieve using only CSS because we cannot set a fixed height — the
+// right subheader contains the stream name, which can sometimes be long
+// enough to wrap the text into multiple lines. Text wrapping may also be
+// required for smaller window sizes.
+//
+// Here we first let subheaders on both sides attain their natural height as
 // per the content and then make both of them equal by setting the
 // height of subheader which is smaller to the height of subheader that
 // has larger height.
 // This feels a bit hacky and a cleaner solution would be nice to find.
-export function resize_settings_overlay_subheader_for_narrow_screens($container: JQuery): void {
-    const breakpoint_em =
-        (media_breakpoints_num.settings_overlay_sidebar_collapse_breakpoint / 14) *
-        user_settings.web_font_size_px;
-
-    const $left_subheader = $container.find(".two-pane-settings-subheader .left");
-    const $right_subheader = $container.find(".two-pane-settings-subheader .right");
-    if (width_of($container.find(".two-pane-settings-overlay")) > breakpoint_em) {
-        $left_subheader.css("height", "");
-        $right_subheader.css("height", "");
-        return;
-    }
+export function resize_settings_overlay_subheader($container: JQuery): void {
+    const $left_subheader = $container.find(".left .two-pane-settings-subheader");
+    const $right_subheader = $container.find(".right .two-pane-settings-subheader");
 
     $left_subheader.css("height", "");
     $right_subheader.css("height", "");
@@ -247,10 +237,12 @@ export function resize_settings_overlay_subheader_for_narrow_screens($container:
     const left_subheader_height = height_of($left_subheader);
     const right_subheader_height = height_of($right_subheader);
 
+    // Since height_of returns height including border width, we will
+    // subtract 1px, which is the bottom border width.
     if (left_subheader_height < right_subheader_height) {
-        $left_subheader.css("height", right_subheader_height);
+        $left_subheader.css("height", right_subheader_height - 1);
     } else {
-        $right_subheader.css("height", left_subheader_height);
+        $right_subheader.css("height", left_subheader_height - 1);
     }
 }
 
@@ -259,7 +251,7 @@ export function resize_settings_overlay($container: JQuery): void {
         return;
     }
 
-    resize_settings_overlay_subheader_for_narrow_screens($container);
+    resize_settings_overlay_subheader($container);
 
     $container
         .find(".two-pane-settings-left-simplebar-container")

@@ -64,6 +64,14 @@
       prefix=prefix}}
 
     {{> settings_checkbox
+      setting_name="web_inbox_show_channel_folders"
+      is_checked=settings_object.web_inbox_show_channel_folders
+      label=settings_label.web_inbox_show_channel_folders
+      render_only=settings_render_only.web_inbox_show_channel_folders
+      help_link="/help/channel-folders"
+      prefix=prefix}}
+
+    {{> settings_checkbox
       setting_name="hide_ai_features"
       is_checked=settings_object.hide_ai_features
       label=settings_label.hide_ai_features

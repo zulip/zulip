@@ -13,7 +13,7 @@ integration.
 The first step in creating an incoming webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
-* Use [Zulip's JSON integration](/integrations/doc/json),
+* Use [Zulip's JSON integration](/integrations/json),
 <https://webhook.site/>, or a similar tool to capture webhook
 payload(s) from the service you are integrating. Examining this data
 allows you to do two things:
@@ -289,7 +289,7 @@ from zerver.lib.webhooks.common import PresetUrlOption, WebhookUrlOption
 Currently configured preset URL options:
 
 - **`BRANCHES`**: This preset is intended to be used for [version control
-  integrations](/integrations/version-control), and adds UI for the user to
+  integrations](/integrations/category/version-control), and adds UI for the user to
   configure which branches of a project's repository will trigger Zulip
   notification messages. When the user specifies which branches to receive
   notifications from, the `branches` parameter will be added to the [generated
@@ -298,14 +298,14 @@ Currently configured preset URL options:
   `&branches=main%2Cdev` would be appended to the generated integration URL.
 
 - **`IGNORE_PRIVATE_REPOSITORIES`**: This preset is intended to be used for
-  [version control integrations](/integrations/version-control), and adds UI
+  [version control integrations](/integrations/category/version-control), and adds UI
   for the user exclude private repositories from triggering Zulip
   notification messages. When the user selects this option, the
   `ignore_private_repositories` boolean parameter will be added to the
   [generated integration URL](/help/generate-integration-url).
 
 - **`MAPPING`**: This preset is intended to be used for [chat-app
-  integrations](/integrations/communication) (like Slack), and adds a
+  integrations](/integrations/category/communication) (like Slack), and adds a
   special option, **Matching Zulip channel**, to the UI for where to send
   Zulip notification messages. This special option maps the notification
   messages to Zulip channels that match the messages' original channel

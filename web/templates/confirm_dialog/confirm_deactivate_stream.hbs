@@ -8,6 +8,9 @@
     {{#if is_announcement_stream}}
     <li>{{#tr}}Disable announcements that are currently sent to this channel:{{/tr}}
         <ul>
+            {{#if is_moderation_request_channel}}
+                <li>{{#tr}}Moderation requests{{/tr}}</li>
+            {{/if}}
             {{#if is_new_stream_announcements_stream}}
                 <li>{{#tr}}New channel announcements{{/tr}}</li>
             {{/if}}

@@ -765,17 +765,6 @@ li,
     outline: 1px solid var(--color-copy-button-square-bg-active);
 }
 
-#copy_generated_link_container {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-}
-
-#copy_generated_invite_link {
-    position: relative;
-    right: -30px;
-}
-
 /* Classes for hiding and showing controls */
 
 .notdisplayed {
@@ -1049,6 +1038,12 @@ div.focused-message-list.is-conversation-view .recipient_row {
     border-width: 1px;
     border-style: solid;
     background-clip: padding-box;
+}
+
+.topic_edit_save,
+.topic_edit_cancel {
+    /* Adjust top and bottom padding to fit into the recipient row. */
+    padding: 0.125em 0.625em; /* 2px 10px at 16px/em */
 }
 
 .information-settings .user-profile-picture,
@@ -1328,13 +1323,44 @@ div.topic_edit_spinner .loading_indicator_spinner {
     vertical-align: middle;
 }
 
-#multiuse_invite_link {
-    width: 100%;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: bottom;
+.invite-user-modal-banners {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &:has(.banner) {
+        /* Only apply bottom margin if there is a banner present. */
+        margin-bottom: 10px;
+    }
+
+    .banner-wrapper:empty {
+        /* Avoid unnecessary spacing between empty banner
+           wrappers due to the flex gap property. */
+        display: none;
+    }
+}
+
+.copy-invite-link-banner {
+    .banner-content {
+        white-space: nowrap;
+    }
+
+    .banner-label {
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+@container banner (width >= 25em) {
+    #copy_generated_invite_link .action-button-label {
+        display: none;
+    }
+}
+
+.invite-tips-list {
+    /* Override default bottom margin of ul tags in bootstrap. */
+    margin-bottom: 0;
 }
 
 #invite-user-form .loading_indicator_spinner {

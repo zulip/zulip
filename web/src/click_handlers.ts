@@ -30,7 +30,6 @@ import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
-import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
@@ -421,24 +420,6 @@ export function initialize(): void {
         return nearest.id;
     }
 
-    $("#message_feed_container").on(
-        "click",
-        ".narrows_by_recipient",
-        function (this: HTMLElement, e) {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) {
-                return;
-            }
-            e.preventDefault();
-            if (document.getSelection()?.type === "Range") {
-                return;
-            }
-            const row_id = get_row_id_for_narrowing(this);
-            // TODO: Navigate user according to `web_channel_default_view` setting.
-            // Also, update the tooltip hotkey in recipient bar.
-            message_view.narrow_by_recipient(row_id, {trigger: "message header"});
-        },
-    );
-
     $("#message_feed_container").on("click", ".narrows_by_topic", function (this: HTMLElement, e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
@@ -683,7 +664,7 @@ export function initialize(): void {
             const $elem = $(this);
             const user_ids_string = $elem.attr("data-user-ids-string");
             // Don't show tooltip for group direct messages.
-            if (!user_ids_string || user_ids_string.split(",").length !== 1) {
+            if (user_ids_string?.split(",").length !== 1) {
                 return;
             }
             const title_data = recent_view_ui.get_pm_tooltip_data(user_ids_string);
@@ -911,12 +892,6 @@ export function initialize(): void {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", function (this: HTMLElement) {
         this.blur();
-    });
-
-    $("body").on("click", ".language_selection_widget button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        settings_preferences.launch_default_language_setting_modal();
     });
 
     $("body").on("click", "#header-container .brand", (e) => {

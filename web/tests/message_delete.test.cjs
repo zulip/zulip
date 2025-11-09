@@ -51,7 +51,7 @@ const admins_group = {
     id: 1,
     members: new Set([admin.user_id]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 };
 
 const moderators_group = {
@@ -73,9 +73,9 @@ const everyone_group = {
 const nobody_group = {
     name: "Nobody",
     id: 4,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 };
 user_groups.initialize({
     realm_user_groups: [admins_group, moderators_group, everyone_group, nobody_group],

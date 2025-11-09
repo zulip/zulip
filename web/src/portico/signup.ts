@@ -392,6 +392,15 @@ $(() => {
         altcha.addEventListener("statechange", ((ev: AltchaStateChangeEvent) => {
             if (ev.detail.state === "verified") {
                 $submit.prop("disabled", false);
+                // Hide checkbox on successful verification.
+                altcha.querySelector(".altcha")!.classList.add("altcha-checkbox-hidden");
+                altcha.style.opacity = "1";
+                // Animate hiding the altcha after a delay.
+                setTimeout(() => {
+                    altcha.style.transition = "opacity 1s ease-in-out";
+                    altcha.style.opacity = "0";
+                    altcha.style.pointerEvents = "none";
+                }, 1000);
             }
         }) as EventListener);
     }
@@ -456,7 +465,7 @@ $(() => {
         uppy.on("upload-success", (file, _response) => {
             assert(file !== undefined);
             $("#slack-import-start-upload-wrapper").removeClass("hidden");
-            $("#slack-import-uploaded-file-name").text(file.name!);
+            $("#slack-import-uploaded-file-name").text(file.name);
             $("#slack-import-file-upload-error").text("");
             $("#realm-creation-form-slack-import .register-button").prop("disabled", false);
         });

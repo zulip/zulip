@@ -1581,3 +1581,73 @@ button#register_auth_button_gitlab {
 .self-hosting-login-help-text {
     margin-top: 10px;
 }
+
+#email-address-visibility-select {
+    margin-top: 100px;
+    padding-right: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#email-address-visibility-select-wrapper label {
+    text-align: left;
+}
+
+#email-address-visibility-help-text {
+    font-weight: normal;
+}
+
+.altcha .altcha-main {
+    /* Use `inline` instead of `flex` to get
+       desired effect of loading indicator and
+       status text next to each other.
+    */
+    display: inline;
+}
+
+.altcha .altcha-main .altcha-label {
+    /* Style similar to `registration-form-hint` */
+    font-weight: 300;
+    font-size: 0.8em;
+    color: inherit;
+    text-align: center;
+    padding-left: 5px;
+    display: inline;
+}
+
+.altcha .altcha-checkbox {
+    /* Loading indicator is displayed
+       using these properties. */
+    display: inline;
+    margin-right: 5px;
+}
+
+.altcha {
+    width: 100%;
+    margin: auto;
+    border: none !important;
+    /* Negate the space applied by altcha-widget to
+       avoid too much empty space below submit button.
+    */
+    margin-bottom: -48px;
+}
+
+.altcha.altcha-checkbox-hidden {
+    /* We only want to show the loading
+       indicator and not the checkbox. */
+    .altcha-checkbox {
+        display: none;
+    }
+
+    .altcha-main .altcha-label {
+        padding-left: 0;
+    }
+}
+
+#new-realm-creation .new-organization-button {
+    margin-bottom: 0;
+}
+
+#new-realm-creation #altcha-submit-button-container {
+    margin-bottom: 30px;
+}

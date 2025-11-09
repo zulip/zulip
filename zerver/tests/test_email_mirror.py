@@ -54,7 +54,7 @@ from zerver.models import Attachment, Recipient, Stream, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 
 logger_name = "zerver.lib.email_mirror"
@@ -384,6 +384,36 @@ class TestStreamEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.topic_name(), "Email with no subject")
 
+    def test_receive_stream_email_messages_subject_channel_no_topics(
+        self,
+    ) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream.topics_policy = StreamTopicsPolicyEnum.empty_topic_only.value
+        stream.save()
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+
+        incoming_valid_message["Subject"] = "Test subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.topic_name(), "")
+        self.assertEqual(
+            message.content, "**Subject:** Test subject\n\nTestStreamEmailMessages body"
+        )
+
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -481,7 +511,7 @@ class TestStreamEmailMessages(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(self.example_email("hamlet"), msgtext),
+            "**From:** {}\n\n{}".format(self.example_email("hamlet"), msgtext),
         )
         self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
@@ -513,7 +543,7 @@ and other things
             )
             process_message(incoming_valid_message)
             message = most_recent_message(user_profile)
-            expected = "From: {}\n{}".format(self.example_email("hamlet"), expected_body)
+            expected = "**From:** {}\n\n{}".format(self.example_email("hamlet"), expected_body)
             self.assertEqual(message.content, expected.strip())
             self.assert_message_stream_name(message, stream.name)
             self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
@@ -554,7 +584,7 @@ and other things
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(
+            "**From:** {}\n\n{}".format(
                 "Test Useróąę <hamlet_ę@zulip.com>", "TestStreamEmailMessages body"
             ),
         )
