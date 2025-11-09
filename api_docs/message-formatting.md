@@ -222,6 +222,10 @@ backlogged, an individual message containing multiple image previews
 may be re-rendered multiple times as each image finishes thumbnailing
 and triggers a message update.
 
+Clients displaying message-edit history should rewrite image-loading
+placeholder images in edit history to the generic deleted-file image
+(`/static/images/errors/file-not-exist.png`).
+
 ### Transcoded images
 
 Image elements whose formats are not widely supported by web browsers
