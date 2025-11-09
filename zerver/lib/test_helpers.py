@@ -1,3 +1,24 @@
+"""
+Testing requests in backend tests (Issue #1211)
+
+Historically, some tests used to create manual `Request` classes to simulate POST requests.
+These classes have been replaced with helpers and with `django.test.RequestFactory`.
+
+Today, the correct way to create a request in tests is by using RequestFactory:
+
+    from django.test import RequestFactory
+
+    rf = RequestFactory()
+    request = rf.post("/some/url/", {"foo": "bar"})
+    request.META["REMOTE_ADDR"] = "127.0.0.1"
+
+    # Use the request object in your test:
+    # response = my_view(request)
+
+This practice avoids code duplication and keeps tests compatible with the Django framework.
+Issue #1211 specifically addressed this migration.
+"""
+
 import collections
 import itertools
 import os
@@ -795,23 +816,32 @@ def ratelimit_rule(
     with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield
 
+
+from typing import Any
+
+from django.http import HttpRequest
+
+from zerver.models import UserProfile
+
+
 def make_mock_request(
     method: str = "GET",
     path: str = "/",
-    user=None,
-    data=None,
-    headers=None,
-    files=None,
+    user: UserProfile | None = None,
+    data: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
+    files: dict[str, Any] | None = None,
 ) -> HttpRequest:
     """
-    Cria um HttpRequest consistente para testes.
-    - Normaliza GET/POST/PUT/PATCH.
-    - Converte headers simples -> META (HTTP_*).
-    - Injeta user e realm quando disponível.
-    - Suporta FILES.
+    Creates a consistent HttpRequest object for tests.
+    - Normalizes GET/POST/PUT/PATCH.
+    - Converts simple headers -> META (HTTP_*).
+    - Injects user and realm when available.
+    - Supports FILES.
     """
     rf = RequestFactory()
     m = (method or "GET").upper()
+
     if m == "POST":
         req = rf.post(path, data=data or {})
     elif m == "PUT":
@@ -821,7 +851,7 @@ def make_mock_request(
     else:
         req = rf.get(path, data=data or {})
 
-    # headers -> META
+    # Convert headers to META
     for k, v in (headers or {}).items():
         meta_key = k if k.startswith("HTTP_") else f"HTTP_{k.replace('-', '_').upper()}"
         req.META[meta_key] = v
@@ -831,9 +861,9 @@ def make_mock_request(
 
     if user is not None:
         req.user = user
-        req.realm = getattr(user, "realm", None)
+        req.realm = getattr(user, "realm", None)  # type: ignore[attr-defined]  # HttpRequest doesn't define 'realm', used only in tests
     else:
-        req.realm = None
+        req.realm = None  # type: ignore[attr-defined]  # Allows injecting realm dynamically for test contexts
 
     return req
 

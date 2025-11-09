@@ -116,3 +116,19 @@ class TestOutgoingHttp(ZulipTestCase):
         self.assertEqual(session.adapters["http://"].max_retries.total, 5)
         assert isinstance(session.adapters["https://"], HTTPAdapter)
         self.assertEqual(session.adapters["https://"].max_retries.total, 5)
+
+
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import HostRequestMock
+
+
+class RequestMockTest(ZulipTestCase):
+    def test_requestmock_basic_usage(self) -> None:
+        # cria o mock de request
+        request = HostRequestMock()
+        request.META["REMOTE_ADDR"] = "127.0.0.1"
+
+        # validações
+        self.assertIsNotNone(request)
+        self.assertIn("REMOTE_ADDR", request.META)
+        self.assertEqual(request.META["REMOTE_ADDR"], "127.0.0.1")
