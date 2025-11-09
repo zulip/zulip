@@ -458,10 +458,12 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         ## the login button.
         "display_name": "SAML",
         ##
-        ## Path to a square image file containing a logo to appear at
+        ## URL of a square image file containing a logo to appear at
         ## the left end of the login/register buttons for this IDP.
-        ## The default of None results in a text-only button.
-        # "display_icon": "/path/to/icon.png",
+        ## This can be a relative path, on the same host, most likely
+        ## under /static/ (stored in ~zulip/prod-static/). The default
+        ## of None results in a text-only button.
+        # "display_icon": "https://example.com/path/to/icon.png",
         ##
         ## If you want this IdP to only be enabled for authentication
         ## to certain subdomains, uncomment and edit the setting below.

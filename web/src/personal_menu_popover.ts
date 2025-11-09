@@ -116,8 +116,7 @@ export function initialize(): void {
                     $(this),
                     changed_property,
                 );
-                const data: Record<string, number> = {};
-                data[changed_property] = new_setting_value;
+                const data = {[changed_property]: new_setting_value};
                 information_density.enable_or_disable_control_buttons($popper);
 
                 if (changed_property === "web_font_size_px") {

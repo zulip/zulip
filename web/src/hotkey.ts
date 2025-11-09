@@ -1199,7 +1199,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "toggle_topic_visibility_policy":
             if (recent_view_ui.is_in_focus()) {
                 const recent_msg = recent_view_ui.get_focused_row_message();
-                if (recent_msg !== undefined && recent_msg.type === "stream") {
+                if (recent_msg?.type === "stream") {
                     user_topics_ui.toggle_topic_visibility_policy(recent_msg);
                     return true;
                 }
@@ -1217,13 +1217,13 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "list_of_channel_topics":
             if (recent_view_ui.is_in_focus()) {
                 const msg = recent_view_ui.get_focused_row_message();
-                if (msg !== undefined && msg.type === "stream") {
+                if (msg?.type === "stream") {
                     list_of_channel_topics_channel_id = msg.stream_id;
                 }
             }
             if (inbox_ui.is_in_focus()) {
                 const msg = inbox_ui.get_focused_row_message();
-                if (msg !== undefined && msg.msg_type === "stream") {
+                if (msg?.msg_type === "stream") {
                     list_of_channel_topics_channel_id = msg.stream_id;
                 }
             }
@@ -1473,30 +1473,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             // The following code is essentially equivalent to
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
             // but we use `message_view.show` to pass in the `trigger` parameter
-            switch (msg.type) {
-                case "private":
-                    message_view.show(
-                        [
-                            {operator: "dm", operand: msg.reply_to},
-                            {operator: "near", operand: String(msg.id)},
-                        ],
-                        {trigger: "hotkey"},
-                    );
-                    return true;
-                case "stream":
-                    message_view.show(
-                        [
-                            {
-                                operator: "channel",
-                                operand: msg.stream_id.toString(),
-                            },
-                            {operator: "topic", operand: msg.topic},
-                            {operator: "near", operand: String(msg.id)},
-                        ],
-                        {trigger: "hotkey"},
-                    );
-                    return true;
-            }
+            message_view.narrow_to_message_near(msg, "hotkey");
+            return true;
         }
     }
 

@@ -2,8 +2,11 @@
 title: Invite users to join
 ---
 
+import {Tabs} from "@astrojs/starlight/components";
+
 import ZulipTip from "../../components/ZulipTip.astro";
-import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
 
 <ZulipTip>
   Before inviting users, you may want to [delete any test messages][delete-message]
@@ -14,7 +17,11 @@ import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
 
 ## How to invite users to join
 
-<HowToInviteUsersToJoin />
+<Tabs>
+  <HowToInviteUsersToJoinNoImport />
+
+  <HowToInviteUsersToJoinImport />
+</Tabs>
 
 To get everyone off to a good start, you may wish to share the guide
 to [Getting started with Zulip](/help/getting-started-with-zulip).

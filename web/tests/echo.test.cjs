@@ -208,19 +208,20 @@ run_test("process_from_server for messages to add to narrow", ({override}) => {
 run_test("build_display_recipient", ({override}) => {
     override(current_user, "user_id", 123);
 
-    const params = {};
-    params.realm_users = [
-        {
-            user_id: 123,
-            full_name: "Iago",
-            email: "iago@zulip.com",
-        },
-        {
-            email: "cordelia@zulip.com",
-            full_name: "Cordelia",
-            user_id: 21,
-        },
-    ];
+    const params = {
+        realm_users: [
+            {
+                user_id: 123,
+                full_name: "Iago",
+                email: "iago@zulip.com",
+            },
+            {
+                email: "cordelia@zulip.com",
+                full_name: "Cordelia",
+                user_id: 21,
+            },
+        ],
+    };
     const user_group_params = {
         realm_user_groups: [
             make_user_group({
@@ -351,19 +352,20 @@ run_test("insert_local_message direct message", ({override}) => {
 
     override(current_user, "user_id", 123);
 
-    const params = {};
-    params.realm_users = [
-        {
-            user_id: 123,
-            full_name: "Iago",
-            email: "iago@zulip.com",
-        },
-        {
-            email: "cordelia@zulip.com",
-            full_name: "Cordelia",
-            user_id: 21,
-        },
-    ];
+    const params = {
+        realm_users: [
+            {
+                user_id: 123,
+                full_name: "Iago",
+                email: "iago@zulip.com",
+            },
+            {
+                email: "cordelia@zulip.com",
+                full_name: "Cordelia",
+                user_id: 21,
+            },
+        ],
+    };
     const user_group_params = {
         realm_user_groups: [
             make_user_group({

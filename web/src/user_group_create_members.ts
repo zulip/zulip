@@ -157,6 +157,7 @@ export function build_widgets(): void {
                     user_id: member.user_id,
                     full_name: member.full_name,
                     is_current_user: member.user_id === current_user_id,
+                    is_bot: member.is_bot,
                     img_src: people.small_avatar_url_for_person(member),
                     soft_removed: user_group_create_members_data.user_id_in_soft_remove_list(
                         member.user_id,

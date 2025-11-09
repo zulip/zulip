@@ -100,7 +100,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
+        minmax(var(--message-box-sender-line-height), auto) repeat(4, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
@@ -109,7 +109,16 @@
         "edited message   controls . time"
         ".      message   .        . .   "
         ".      more      .        . .   "
-        ".      reactions .        . .   ";
+        ".      reactions .        . .   "
+        ".      reminders .        . .   ";
+
+    &:has(.message-reminders) {
+        .message_reactions {
+            margin-bottom: calc(
+                var(--message-box-markdown-aligned-vertical-space) / 2
+            );
+        }
+    }
 
     &.content_edit_mode {
         cursor: default;
@@ -121,6 +130,12 @@
                 var(--message-box-timestamp-column-width),
                 max-content
             );
+
+        /* Hide reactions, scheduled reminders in edit mode. */
+        .message_reactions,
+        .message-reminders {
+            display: none;
+        }
     }
 
     .message_edit_notice {
@@ -203,6 +218,16 @@
         gap: 4px;
     }
 
+    .message-reminders {
+        grid-area: reminders;
+        font-style: italic;
+        color: hsl(0deg 0% 53%);
+
+        .message-reminder {
+            margin-bottom: 0.1875em; /* 3px at 16px/1em */
+        }
+    }
+
     .message_edit {
         grid-area: message;
         /* Align self to start, rather than baseline, so the baseline
@@ -274,7 +299,8 @@
             "avatar sender    controls . time"
             "avatar message   .        . .   "
             ".      more      .        . .   "
-            ".      reactions .        . .   ";
+            ".      reactions .        . .   "
+            ".      reminders .        . .   ";
 
         .message_edit {
             /* No top margin when there's a sender row */
@@ -287,12 +313,13 @@
                 "avatar sender    controls . time"
                 "avatar sender    .        . .   "
                 ".      more      .        . .   "
-                ".      reactions .        . .   ";
+                ".      reactions .        . .   "
+                ".      reminders .        . .   ";
             grid-template-rows:
                 var(--message-box-vertical-margin) var(
                     --message-box-avatar-height
                 )
-                minmax(0, auto) repeat(3, auto);
+                minmax(0, auto) repeat(4, auto);
             /* We align items to the baseline on me messages,
                and unset the align-content property. */
             align-items: baseline;

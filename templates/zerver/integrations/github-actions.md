@@ -5,7 +5,7 @@ It's easy to send Zulip messages from GitHub Actions! This is useful:
 
 Instructions are available [here](https://github.com/zulip/github-actions-zulip#readme).
 
-See also the [GitHub integration](/integrations/doc/github).
+See also the [GitHub integration](/integrations/github).
 
 {!congrats.md!}
 

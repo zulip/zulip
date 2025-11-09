@@ -85,7 +85,7 @@ every message is important.
 the Immersive & Geospatial division, joined End Point the day before the move to
 Zulip. Zulip has always been a core tool for his work at End  Point, and he has
 built his workflows on Zulip’s [integrations](/integrations/). “With the
-[Jenkins CI integration](/integrations/doc/jenkins), I can see when a job has
+[Jenkins CI integration](/integrations/jenkins), I can see when a job has
 finished building and is ready to deploy,” Alejandro says. “I use this 100s of
 times per week.”
 

@@ -537,12 +537,12 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(records_json[1]["name"], "check")
         self.assertEqual(records_json[1]["file_name"], "tick.png")
         self.assertEqual(records_json[1]["realm_id"], 3)
-        self.assertTrue(os.path.isfile(records_json[0]["path"]))
+        self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[0]["path"])))
 
         self.assertEqual(records_json[2]["name"], "zulip")
         self.assertEqual(records_json[2]["file_name"], "zulip.png")
         self.assertEqual(records_json[2]["realm_id"], 3)
-        self.assertTrue(os.path.isfile(records_json[2]["path"]))
+        self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[2]["path"])))
 
     def test_map_receiver_id_to_recipient_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -876,7 +876,6 @@ class RocketChatImporter(ZulipTestCase):
             realm_id=3,
             message_id=1,
             user_id=3,
-            user_handler=user_handler,
             zerver_attachment=zerver_attachments,
             uploads_list=uploads_list,
             upload_id_to_upload_data_map=upload_id_to_upload_data_map,
@@ -893,7 +892,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_email"], "harrypotter@email.com")
+        self.assertEqual(uploads_list[0]["user_profile_id"], 3)
 
         attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
         self.assertTrue(os.path.exists(attachment_out_path))

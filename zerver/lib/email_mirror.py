@@ -40,7 +40,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
-from zerver.models.streams import get_stream_by_id_in_realm
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active
 
@@ -149,6 +149,7 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
 
 def construct_zulip_body(
     message: EmailMessage,
+    subject: str,
     realm: Realm,
     *,
     sender: UserProfile,
@@ -156,6 +157,7 @@ def construct_zulip_body(
     include_quotes: bool = False,
     include_footer: bool = False,
     prefer_text: bool = True,
+    subject_in_body: bool = False,
 ) -> str:
     body = extract_body(message, include_quotes, prefer_text)
     # Remove null characters, since Zulip will reject
@@ -171,7 +173,11 @@ def construct_zulip_body(
     preamble = ""
     if show_sender:
         from_address = str(message.get("From", ""))
-        preamble = f"From: {from_address}\n"
+        preamble = f"**From:** {from_address}\n"
+    if subject_in_body:
+        preamble += f"**Subject:** {subject}\n"
+    if preamble != "":
+        preamble += "\n"
 
     postamble = extract_and_upload_attachments(message, realm, sender)
     if postamble != "":
@@ -432,17 +438,6 @@ def check_access_for_channel_email_address(channel_email_address: ChannelEmailAd
 def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
 
-    subject = strip_from_subject(subject_header)
-    # We don't want to reject email messages with disallowed characters in the Subject,
-    # so we just remove them to make it a valid Zulip topic name.
-    subject = "".join([char for char in subject if is_character_printable(char)])
-
-    # If the subject gets stripped to the empty string, we need to set some
-    # default value for the message topic. We can't use the usual
-    # "(no topic)" as that value is not permitted if the realm enforces
-    # that all messages must have a topic.
-    subject = subject or _("Email with no subject")
-
     channel_email_address, options = decode_stream_email_address(to)
     channel = channel_email_address.channel
     sender = channel_email_address.sender
@@ -457,8 +452,20 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
-    body = construct_zulip_body(message, realm, sender=sender, **options)
-    send_zulip(sender, channel, subject, body)
+    subject = strip_from_subject(subject_header)
+    # We don't want to reject email messages with disallowed characters in the Subject,
+    # so we just remove them to make it a valid Zulip topic name.
+    subject = "".join([char for char in subject if is_character_printable(char)])
+    if channel.topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value:
+        options["subject_in_body"] = True
+        topic = ""
+    elif subject == "":
+        topic = _("Email with no subject")
+    else:
+        topic = subject
+
+    body = construct_zulip_body(message, subject, realm, sender=sender, **options)
+    send_zulip(sender, channel, topic, body)
     logger.info(
         "Successfully processed email to %s (%s)",
         channel.name,
@@ -488,7 +495,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         logger.warning("Sending user is not active. Ignoring this message notification email.")
         return
 
-    body = construct_zulip_body(message, user_profile.realm, sender=user_profile)
+    body = construct_zulip_body(message, topic_name, user_profile.realm, sender=user_profile)
 
     assert recipient is not None
     if recipient.type == Recipient.STREAM:

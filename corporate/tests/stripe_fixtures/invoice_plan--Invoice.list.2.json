@@ -37,7 +37,7 @@
       "default_payment_method": null,
       "default_source": null,
       "default_tax_rates": [],
-      "description": null,
+      "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
       "discounts": [],
       "due_date": null,
       "effective_at": 1000000000,
@@ -95,46 +95,6 @@
             "taxes": []
           },
           {
-            "amount": 56000,
-            "currency": "usd",
-            "description": "Zulip Cloud Standard - renewal",
-            "discount_amounts": [],
-            "discountable": false,
-            "discounts": [],
-            "id": "invoice_plan--Invoice.finalize_invoice.2.json",
-            "invoice": "invoice_plan--Invoice.create.2.json",
-            "livemode": false,
-            "metadata": {},
-            "object": "line_item",
-            "parent": {
-              "invoice_item_details": {
-                "invoice_item": "ii_NORMALIZED",
-                "proration": false,
-                "proration_details": {
-                  "credited_items": null
-                },
-                "subscription": null
-              },
-              "subscription_item_details": null,
-              "type": "invoice_item_details"
-            },
-            "period": {
-              "end": 1388631845,
-              "start": 1357095845
-            },
-            "pretax_credit_amounts": [],
-            "pricing": {
-              "price_details": {
-                "price": "price_NORMALIZED",
-                "product": "prod_NORMALIZED"
-              },
-              "type": "price_details",
-              "unit_amount_decimal": "8000"
-            },
-            "quantity": 7,
-            "taxes": []
-          },
-          {
             "amount": 17442,
             "currency": "usd",
             "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
@@ -172,6 +132,46 @@
               "unit_amount_decimal": "5814"
             },
             "quantity": 3,
+            "taxes": []
+          },
+          {
+            "amount": 56000,
+            "currency": "usd",
+            "description": "Zulip Cloud Standard - renewal",
+            "discount_amounts": [],
+            "discountable": false,
+            "discounts": [],
+            "id": "invoice_plan--Invoice.finalize_invoice.2.json",
+            "invoice": "invoice_plan--Invoice.create.2.json",
+            "livemode": false,
+            "metadata": {},
+            "object": "line_item",
+            "parent": {
+              "invoice_item_details": {
+                "invoice_item": "ii_NORMALIZED",
+                "proration": false,
+                "proration_details": {
+                  "credited_items": null
+                },
+                "subscription": null
+              },
+              "subscription_item_details": null,
+              "type": "invoice_item_details"
+            },
+            "period": {
+              "end": 1388631845,
+              "start": 1357095845
+            },
+            "pretax_credit_amounts": [],
+            "pricing": {
+              "price_details": {
+                "price": "price_NORMALIZED",
+                "product": "prod_NORMALIZED"
+              },
+              "type": "price_details",
+              "unit_amount_decimal": "8000"
+            },
+            "quantity": 7,
             "taxes": []
           }
         ],
@@ -263,7 +263,7 @@
       "default_payment_method": null,
       "default_source": null,
       "default_tax_rates": [],
-      "description": null,
+      "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
       "discounts": [],
       "due_date": null,
       "effective_at": 1000000000,

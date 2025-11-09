@@ -6302,18 +6302,6 @@ class InvoiceTest(StripeTestCase):
         for key, value in line_item_params.items():
             self.assertEqual(item0.get(key), value)
         line_item_params = {
-            "amount": 8000 * (self.seat_count + 1),
-            "description": "Zulip Cloud Standard - renewal",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=366)),
-                "end": datetime_to_timestamp(self.now + timedelta(days=2 * 365 + 1)),
-            },
-            "quantity": self.seat_count + 1,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item1.get(key), value)
-        line_item_params = {
             "amount": 3 * int(8000 * (366 - 100) / 366 + 0.5),
             "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
             "discountable": False,
@@ -6324,7 +6312,132 @@ class InvoiceTest(StripeTestCase):
             "quantity": 3,
         }
         for key, value in line_item_params.items():
+            self.assertEqual(item1.get(key), value)
+        line_item_params = {
+            "amount": 8000 * (self.seat_count + 1),
+            "description": "Zulip Cloud Standard - renewal",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=366)),
+                "end": datetime_to_timestamp(self.now + timedelta(days=2 * 365 + 1)),
+            },
+            "quantity": self.seat_count + 1,
+        }
+        for key, value in line_item_params.items():
             self.assertEqual(item2.get(key), value)
+
+    @mock_stripe()
+    def test_invoice_plan_bundle_additional_licenses(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with time_machine.travel(self.now, tick=False):
+            self.add_card_and_upgrade(user)
+        realm = get_realm("zulip")
+        billing_session = RealmBillingSession(user=user, realm=realm)
+        # Increase by 300 additional licenses in the first month of the
+        # annual plan.
+        updated_seat_count = self.seat_count
+        for i in range(50):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=10, seconds=i)
+                )
+        for i in range(100):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=15, seconds=i)
+                )
+        for i in range(100):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=20, seconds=i)
+                )
+        # Remove 20 active licenses to confirm we're still handling these ledger entries
+        # correctly when bundling.
+        for i in range(20):
+            updated_seat_count -= 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=22, seconds=i)
+                )
+        for i in range(70):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=25, seconds=i)
+                )
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        billing_session.invoice_plan(plan, self.next_month)
+        stripe_customer_id = plan.customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        self.assertIsNotNone(invoice0.status_transitions.finalized_at)
+        [item0, item1, item2, item3] = iter(invoice0.lines.data)
+        # We have to adjust the start datetime for the 20 license ledger
+        # entries (by 20 seconds) that were for licenses that were already
+        # paid for in the billing period.
+        line_item_params = {
+            "amount": 50 * int(8000 * (366 - 25) / 366 + 0.5),
+            "description": "Additional license (Jan 27, 2012 - Jan 2, 2013)",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=25, seconds=20)),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+            "quantity": 50,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item0.get(key), value)
+        line_item_params = {
+            "amount": 100 * int(8000 * (366 - 20) / 366 + 0.5),
+            "description": "Additional license (Jan 22, 2012 - Jan 2, 2013)",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=20)),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+            "quantity": 100,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item1.get(key), value)
+        line_item_params = {
+            "amount": 100 * int(8000 * (366 - 15) / 366 + 0.5),
+            "description": "Additional license (Jan 17, 2012 - Jan 2, 2013)",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=15)),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+            "quantity": 100,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item2.get(key), value)
+        line_item_params = {
+            "amount": 50 * int(8000 * (366 - 10) / 366 + 0.5),
+            "description": "Additional license (Jan 12, 2012 - Jan 2, 2013)",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=10)),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+            "quantity": 50,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item3.get(key), value)
 
     @mock_stripe()
     def test_fixed_price_plans(self, *mocks: Mock) -> None:

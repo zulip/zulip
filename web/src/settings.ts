@@ -18,7 +18,6 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
-import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -132,7 +131,6 @@ export function build_page(): void {
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_can_change_email: settings_data.user_can_change_email(),
         user_role_text: people.get_user_type(current_user.user_id),
-        default_language_name: settings_preferences.user_default_language_name,
         default_language: user_settings.default_language,
         realm_push_notifications_enabled: realm.realm_push_notifications_enabled,
         settings_object: user_settings,

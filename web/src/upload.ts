@@ -1,4 +1,4 @@
-import type {Meta} from "@uppy/core";
+import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
 import {getSafeFileId} from "@uppy/utils";
@@ -351,6 +351,12 @@ const zulip_upload_response_schema = z.object({
     filename: z.string(),
 });
 
+// Wrapped to work around https://github.com/transloadit/uppy/issues/6033
+const get_safe_file_id: <M extends Meta>(
+    file: UppyFile<M, TusBody>,
+    instance_id: string,
+) => string = getSafeFileId;
+
 export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
     const uppy = new Uppy<ZulipMeta, TusBody>({
         debug: false,
@@ -372,7 +378,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             pluralize: (_n) => 0,
         },
         onBeforeFileAdded(file, files) {
-            const file_id = getSafeFileId(file, uppy.getID());
+            const file_id = get_safe_file_id(file, uppy.getID());
 
             if (files[file_id]) {
                 // We have a duplicate file upload on our hands.
@@ -532,7 +538,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             }
         }
 
-        const filtered_filename = file.name!.replaceAll("[", "").replaceAll("]", "");
+        const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
         const syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
@@ -601,13 +607,13 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
-        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
     uppy.on("restriction-failed", (file) => {
         assert(file !== undefined);
-        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 

@@ -21,7 +21,7 @@ import * as util from "./util.ts";
 
 export type SearchUserPill = {
     type: "search_user";
-    operator: string;
+    operator: NarrowTerm["operator"];
     negated: boolean;
     users: {
         full_name: string;
@@ -34,14 +34,7 @@ export type SearchUserPill = {
     }[];
 };
 
-type SearchPill =
-    | {
-          type: "generic_operator";
-          operator: string;
-          operand: string;
-          negated: boolean | undefined;
-      }
-    | SearchUserPill;
+type SearchPill = ({type: "generic_operator"} & NarrowTerm) | SearchUserPill;
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
@@ -56,9 +49,7 @@ export function create_item_from_search_string(search_string: string): SearchPil
     }
     return {
         type: "generic_operator",
-        operator: search_term.operator,
-        operand: search_term.operand,
-        negated: search_term.negated,
+        ...search_term,
     };
 }
 
@@ -270,7 +261,11 @@ function is_sent_by_me_pill(pill: SearchUserPill): boolean {
     );
 }
 
-function search_user_pill_data(users: User[], operator: string, negated: boolean): SearchUserPill {
+function search_user_pill_data(
+    users: User[],
+    operator: NarrowTerm["operator"],
+    negated: boolean,
+): SearchUserPill {
     return {
         type: "search_user",
         operator,
@@ -290,7 +285,7 @@ function search_user_pill_data(users: User[], operator: string, negated: boolean
 function append_user_pill(
     users: User[],
     pill_widget: SearchPillWidget,
-    operator: string,
+    operator: NarrowTerm["operator"],
     negated: boolean,
 ): void {
     const pill_data = search_user_pill_data(users, operator, negated);

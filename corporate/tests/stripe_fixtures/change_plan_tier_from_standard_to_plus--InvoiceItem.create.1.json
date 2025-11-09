@@ -10,6 +10,7 @@
   "invoice": "in_NORMALIZED",
   "livemode": false,
   "metadata": {},
+  "net_amount": 12000,
   "object": "invoiceitem",
   "parent": null,
   "period": {

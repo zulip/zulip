@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -162,7 +162,7 @@
       "id": "invoice_for_additional_license--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 0,
+      "pending_webhooks": 2,
       "request": {
         "id": "invoice_for_additional_license--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -170,7 +170,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -339,7 +339,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {

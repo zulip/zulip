@@ -489,26 +489,6 @@ input.settings_text_input {
     line-height: 38px;
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip {
-    width: fit-content;
-
-    &::before {
-        content: "\f135";
-        margin-right: 6px;
-    }
-}
-
-.upgrade-tip:hover {
-    color: hsl(0deg 0% 20%);
-    border: 1px solid hsl(49deg 20% 60%);
-    box-shadow: 0 0 4px hsl(199deg 79% 56% / 20%);
-
-    text-decoration: none;
-}
-
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip,
 .invite-stream-notice {
     position: relative;
@@ -530,8 +510,6 @@ input.settings_text_input {
     }
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip {
     margin: 10px 0;
 }
@@ -1480,6 +1458,55 @@ input.invalid-input {
                 color: var(--color-info-denisty-button-icon);
                 opacity: 0.7;
             }
+        }
+    }
+}
+
+#uppy-editor {
+    .modal__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .loading-placeholder {
+        position: absolute;
+        top: calc(50% - 1.3572em);
+        left: calc(50% - 1.3572em);
+    }
+
+    .modal__content {
+        padding: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    #dialog_error {
+        margin: 0 1.5em 1.5em;
+    }
+
+    .image-cropper-container {
+        height: 550px;
+    }
+
+    .uppy-Root {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .uppy-ImageCropper-controls {
+        /* This is needed to override the top padding set for narrow
+        screens by cropperJS. */
+        padding-top: 0;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
         }
     }
 }

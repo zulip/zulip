@@ -1,16 +1,16 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
           "account_country": "US",
           "account_name": "NORMALIZED",
           "account_tax_ids": null,
-          "amount_due": 40000,
+          "amount_due": 10000,
           "amount_overpaid": 0,
-          "amount_paid": 40000,
+          "amount_paid": 10000,
           "amount_remaining": 0,
           "amount_shipping": 0,
           "application": null,
@@ -59,9 +59,9 @@
           "lines": {
             "data": [
               {
-                "amount": 40000,
+                "amount": 10000,
                 "currency": "usd",
-                "description": "Zulip Cloud Standard",
+                "description": "Zulip Basic - renewal",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -83,8 +83,8 @@
                   "type": "invoice_item_details"
                 },
                 "period": {
-                  "end": 1357095845,
-                  "start": 1325473445
+                  "end": 1333335845,
+                  "start": 1330657445
                 },
                 "pretax_credit_amounts": [],
                 "pricing": {
@@ -93,9 +93,9 @@
                     "product": "prod_NORMALIZED"
                   },
                   "type": "price_details",
-                  "unit_amount_decimal": "8000"
+                  "unit_amount_decimal": "10000"
                 },
-                "quantity": 5,
+                "quantity": 1,
                 "taxes": []
               }
             ],
@@ -105,15 +105,7 @@
             "url": "/v1/invoices/upgrade_by_invoice--Event.list.1.json/lines"
           },
           "livemode": false,
-          "metadata": {
-            "billing_schedule": "1",
-            "current_plan_id": "None",
-            "license_management": "automatic",
-            "licenses": "5",
-            "on_free_trial": "False",
-            "plan_tier": "1",
-            "user_id": "10"
-          },
+          "metadata": {},
           "next_payment_attempt": null,
           "number": "NORMALIZED",
           "object": "invoice",
@@ -140,7 +132,7 @@
           "shipping_cost": null,
           "shipping_details": null,
           "starting_balance": 0,
-          "statement_descriptor": "Zulip Cloud Standard",
+          "statement_descriptor": "Zulip Basic",
           "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,
@@ -148,12 +140,12 @@
             "paid_at": 1000000000,
             "voided_at": null
           },
-          "subtotal": 40000,
-          "subtotal_excluding_tax": 40000,
+          "subtotal": 10000,
+          "subtotal_excluding_tax": 10000,
           "test_clock": null,
-          "total": 40000,
+          "total": 10000,
           "total_discount_amounts": [],
-          "total_excluding_tax": 40000,
+          "total_excluding_tax": 10000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
           "webhooks_delivered_at": 1000000000
@@ -164,8 +156,8 @@
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": "upgrade_by_invoice--Event.list.1.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+        "id": null,
+        "idempotency_key": null
       },
       "type": "invoice.payment_succeeded"
     }

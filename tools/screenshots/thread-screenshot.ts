@@ -6,7 +6,7 @@ import path from "node:path";
 import {parseArgs} from "node:util";
 
 import "css.escape";
-import puppeteer from "puppeteer";
+import * as puppeteer from "puppeteer";
 import * as z from "zod/mini";
 
 const usage =

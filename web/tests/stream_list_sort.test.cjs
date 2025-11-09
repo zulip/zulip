@@ -40,7 +40,7 @@ const frontend_folder = {
     date_created: 1596710000,
     id: 1,
     is_archived: false,
-    order: 2,
+    order: 3,
 };
 const backend_folder = {
     name: "Backend",
@@ -49,6 +49,16 @@ const backend_folder = {
     creator_id: null,
     date_created: 1596720000,
     id: 2,
+    is_archived: false,
+    order: 2,
+};
+const expect_demoted_folder = {
+    name: "Empty",
+    description: "This folder has no active or unmuted channels",
+    rendered_description: "<p>This folder has no active or unmuted channels</p>",
+    creator_id: null,
+    date_created: 1596720000,
+    id: 3,
     is_archived: false,
     order: 1,
 };
@@ -123,9 +133,27 @@ const archived = make_stream({
     pin_to_top: true,
     is_archived: true,
 });
+const muted = make_stream({
+    subscribed: true,
+    name: "muted",
+    stream_id: 10,
+    pin_to_top: false,
+    is_recently_active: true,
+    is_muted: true,
+    folder_id: expect_demoted_folder.id,
+});
+const inactive = make_stream({
+    subscribed: true,
+    name: "inactive",
+    stream_id: 11,
+    pin_to_top: false,
+    is_recently_active: false,
+    is_muted: false,
+    folder_id: expect_demoted_folder.id,
+});
 
 channel_folders.initialize({
-    channel_folders: [frontend_folder, backend_folder],
+    channel_folders: [frontend_folder, backend_folder, expect_demoted_folder],
 });
 
 function add_all_subs() {
@@ -138,6 +166,8 @@ function add_all_subs() {
     stream_data.add_sub_for_tests(muted_active);
     stream_data.add_sub_for_tests(muted_pinned);
     stream_data.add_sub_for_tests(archived);
+    stream_data.add_sub_for_tests(muted);
+    stream_data.add_sub_for_tests(inactive);
 }
 
 function sort_groups(query) {
@@ -193,8 +223,8 @@ test("basics", ({override}) => {
         fast_tortoise.stream_id,
         stream_hyphen_underscore_slash_colon.stream_id,
     ]);
-    assert.deepEqual(normal.muted_streams, [muted_active.stream_id]);
-    assert.deepEqual(normal.inactive_streams, [pneumonia.stream_id]);
+    assert.deepEqual(normal.muted_streams, [muted.stream_id, muted_active.stream_id]);
+    assert.deepEqual(normal.inactive_streams, [inactive.stream_id, pneumonia.stream_id]);
 
     assert.deepEqual(stream_list_sort.get_stream_ids(), [
         scalene.stream_id,
@@ -202,7 +232,9 @@ test("basics", ({override}) => {
         clarinet.stream_id,
         fast_tortoise.stream_id,
         stream_hyphen_underscore_slash_colon.stream_id,
+        muted.stream_id,
         muted_active.stream_id,
+        inactive.stream_id,
         pneumonia.stream_id,
     ]);
 
@@ -286,15 +318,17 @@ test("basics", ({override}) => {
 
     override(user_settings, "web_left_sidebar_show_channel_folders", true);
     sorted_sections = sort_groups("").sections;
-    assert.deepEqual(sorted_sections.length, 4);
+    assert.deepEqual(sorted_sections.length, 5);
     assert.deepEqual(sorted_sections[0].id, "pinned-streams");
     assert.deepEqual(sorted_sections[0].section_title, "translated: PINNED CHANNELS");
-    assert.deepEqual(sorted_sections[1].id, "2");
+    assert.deepEqual(sorted_sections[1].id, backend_folder.id.toString());
     assert.deepEqual(sorted_sections[1].section_title, "BACKEND");
-    assert.deepEqual(sorted_sections[2].id, "1");
+    assert.deepEqual(sorted_sections[2].id, frontend_folder.id.toString());
     assert.deepEqual(sorted_sections[2].section_title, "FRONTEND");
     assert.deepEqual(sorted_sections[3].id, "normal-streams");
     assert.deepEqual(sorted_sections[3].section_title, "translated: OTHER");
+    assert.deepEqual(sorted_sections[4].id, expect_demoted_folder.id.toString());
+    assert.deepEqual(sorted_sections[4].section_title, "EMPTY");
 
     // If both `pin_to_top` is true and folder_id is set, as in
     // the channel `scalene`, then the channel ends up in the pinned
@@ -311,14 +345,20 @@ test("basics", ({override}) => {
     assert.deepEqual(sorted_sections[3].streams, [clarinet.stream_id]);
     assert.deepEqual(sorted_sections[3].muted_streams, []);
     assert.deepEqual(sorted_sections[3].inactive_streams, []);
+    assert.deepEqual(sorted_sections[4].streams, []);
+    assert.deepEqual(sorted_sections[4].muted_streams, [muted.stream_id]);
+    assert.deepEqual(sorted_sections[4].inactive_streams, [inactive.stream_id]);
 
     // The first and last sections are invariant. The intermediate sections
     // are arranged by the `order` field in the channel folder object.
     assert.deepEqual(stream_list_sort.section_ids(), [
         "pinned-streams",
-        "2",
-        "1",
+        backend_folder.id.toString(), // order 2
+        frontend_folder.id.toString(), // order 3
         "normal-streams",
+        // This folder is at the bottom because no active + unmuted streams,
+        // despite being order 1.
+        expect_demoted_folder.id.toString(),
     ]);
 });
 
@@ -369,7 +409,7 @@ test("left_sidebar_search", ({override}) => {
 
     function setup_search_around_stream(stream) {
         message_lists.set_current(
-            make_message_list([{operator: "stream", operand: stream.stream_id}]),
+            make_message_list([{operator: "stream", operand: stream.stream_id.toString()}]),
         );
         const history = stream_topic_history.find_or_create(stream.stream_id);
         history.add_or_update("an important topic", 1);

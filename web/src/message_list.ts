@@ -452,6 +452,14 @@ export class MessageList {
         // If user narrows to a stream, don't update
         // trailing bookend if user is subscribed.
         const sub = stream_data.get_sub_by_id(stream_id);
+
+        if (sub && !stream_data.can_toggle_subscription(sub)) {
+            // If the user is not subscribed and cannot subscribe
+            // (e.g., they don't have content access to the channel),
+            // then we don't show a trailing bookend.
+            return;
+        }
+
         if (
             sub &&
             sub.subscribed &&

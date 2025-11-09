@@ -2,6 +2,7 @@ import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import * as internal_url from "../shared/src/internal_url.ts";
 import * as typeahead from "../shared/src/typeahead.ts";
 
 import * as blueslip from "./blueslip.ts";
@@ -50,6 +51,30 @@ let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
 let valid_user_ids: Set<number>;
+let fetch_users_storage: {
+    pending_user_ids: Set<number>;
+    in_transit_user_ids: Set<number>;
+    // Will be resolved when fetch for `pending_user_ids` is complete.
+    promise_for_pending: Promise<void> | undefined;
+    promise_resolver_for_pending: (() => void) | undefined;
+    // Contains sets of `pending_user_ids` that have been requested via
+    // `start_fetch_for_requested_users`.
+    promise_for_requested: Map<
+        Set<number>,
+        {
+            promise: Promise<void>;
+            resolver: () => void;
+        }
+    >;
+    // Contains sets of user ids that are currently being fetched.
+    promise_for_in_transit: Map<
+        Set<number>,
+        {
+            promise: Promise<void>;
+            resolver: () => void;
+        }
+    >;
+};
 
 export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
@@ -81,6 +106,15 @@ export function init(): void {
     duplicate_full_name_data = new FoldDict();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
+
+    fetch_users_storage = {
+        pending_user_ids: new Set(),
+        in_transit_user_ids: new Set(),
+        promise_for_pending: undefined,
+        promise_resolver_for_pending: undefined,
+        promise_for_requested: new Map(),
+        promise_for_in_transit: new Map(),
+    };
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -650,7 +684,7 @@ export function pm_perma_link(message: Message): string | undefined {
 }
 
 export function get_slug_from_full_name(full_name: string): string {
-    return full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
+    return internal_url.encodeHashComponent(full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-"));
 }
 
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
@@ -1951,6 +1985,175 @@ export function populate_valid_user_ids(params: StateData["user_groups"]): void 
     }
 }
 
+function get_combined_promise_for_user_ids(user_ids: Set<number>): {
+    promise_for_all_requested_users: Promise<unknown>;
+    user_ids_pending_fetch: Set<number>;
+} {
+    // Remove users which are already fetched.
+    // Since start_fetch_for_requested_users is called after a `setTimeout`,
+    // it is possible that some users have already been fetched.
+    for (const user_id of user_ids) {
+        if (people_by_user_id_dict.has(user_id)) {
+            /* istanbul ignore next */
+            user_ids.delete(user_id);
+        }
+    }
+
+    const promises: Promise<void>[] = [];
+    let user_ids_pending_fetch = new Set<number>(user_ids);
+    // Check if we have an ongoing fetch that includes some of the
+    // users needed by this request.
+    for (const [user_ids_set, promise_data] of fetch_users_storage.promise_for_in_transit) {
+        if (user_ids_set.intersection(user_ids_pending_fetch).size > 0) {
+            user_ids_pending_fetch = user_ids_pending_fetch.difference(user_ids_set);
+            promises.push(promise_data.promise);
+        }
+    }
+
+    if (user_ids_pending_fetch.size > 0) {
+        // Store a promise to be resolved when user_ids_pending_fetch is fetched.
+        // This avoids future requests for subset of `user_ids_pending_fetch` to wait
+        // for the completion of `user_ids_to_fetch`.
+        let resolver_for_promise_for_pending_fetch: () => void = () => {
+            // This will reassigned instantly below but Typescript thinks
+            // this function is unassigned.
+        };
+        const promise_for_pending_fetch = new Promise<void>((resolve) => {
+            resolver_for_promise_for_pending_fetch = resolve;
+        });
+        promises.push(promise_for_pending_fetch);
+
+        fetch_users_storage.promise_for_in_transit.set(user_ids_pending_fetch, {
+            promise: promise_for_pending_fetch,
+            resolver: resolver_for_promise_for_pending_fetch,
+        });
+    }
+
+    return {
+        promise_for_all_requested_users: Promise.all(promises),
+        user_ids_pending_fetch,
+    };
+}
+
+function start_fetch_for_requested_users(): void {
+    const user_ids_to_fetch = fetch_users_storage.pending_user_ids;
+    fetch_users_storage.pending_user_ids = new Set();
+    fetch_users_storage.in_transit_user_ids =
+        fetch_users_storage.in_transit_user_ids.union(user_ids_to_fetch);
+
+    const {promise_for_all_requested_users, user_ids_pending_fetch} =
+        get_combined_promise_for_user_ids(user_ids_to_fetch);
+
+    // This promise will be resolved when all users are fetched.
+    fetch_users_storage.promise_for_requested.set(user_ids_to_fetch, {
+        promise: fetch_users_storage.promise_for_pending!,
+        resolver: fetch_users_storage.promise_resolver_for_pending!,
+    });
+
+    fetch_users_storage.promise_for_pending = undefined;
+    fetch_users_storage.promise_resolver_for_pending = undefined;
+
+    const fetch_request_with_retry = (num_attempts = 1): void => {
+        void fetch_users(user_ids_pending_fetch).then(
+            async (fetched_users) => {
+                for (const user of fetched_users) {
+                    if (user.is_active) {
+                        add_active_user(user);
+                    } else {
+                        non_active_user_dict.set(user.user_id, user);
+                        _add_user(user);
+                    }
+                }
+
+                // Resolve promises waiting on this fetch after updating the data locally.
+                fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
+                // Clean up in transit promise for this fetch.
+                fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
+                // Remove fetched users from in transit user ids.
+                fetch_users_storage.in_transit_user_ids =
+                    fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
+
+                await promise_for_all_requested_users;
+                // Resolve promises waiting on the complete fetch.
+                fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
+                fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
+            },
+            (error: unknown) => {
+                // Retry on error.
+                num_attempts += 1;
+                const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+
+                // Since users are in `valid_user_ids`, we expect
+                // the fetch to eventually succeed, so we log a warning
+                // and retry after a delay.
+                blueslip.warn(
+                    `Fetch for users failed, retrying after ${Math.round(retry_delay_secs)} seconds. ` +
+                        String(error),
+                );
+                setTimeout(() => {
+                    fetch_request_with_retry(num_attempts);
+                }, retry_delay_secs * 1000);
+            },
+        );
+    };
+
+    fetch_request_with_retry();
+}
+
+export async function fetch_users_from_ids_internal(user_ids: number[]): Promise<unknown> {
+    // NOTE: NEVER USE THIS FUNCTION DIRECTLY.
+    // Call get_or_fetch_users_from_ids instead.
+    const unknown_user_ids = new Set(
+        user_ids.filter((user_id) => !people_by_user_id_dict.has(user_id)),
+    );
+
+    // We already have data for all requested users.
+    if (unknown_user_ids.size === 0) {
+        return undefined;
+    }
+
+    // If the fetches in progress contain all of the unknown user IDs,
+    // return a promise that resolves when that fetch completes.
+    if (
+        unknown_user_ids.intersection(fetch_users_storage.in_transit_user_ids).size ===
+        unknown_user_ids.size
+    ) {
+        // Await for all the fetches in progress for the unknown user IDs.
+        const {promise_for_all_requested_users, user_ids_pending_fetch} =
+            get_combined_promise_for_user_ids(unknown_user_ids);
+        assert(user_ids_pending_fetch.size === 0);
+        return promise_for_all_requested_users;
+    }
+
+    // Add users to be fetched in the next fetch attempt.
+    fetch_users_storage.pending_user_ids =
+        fetch_users_storage.pending_user_ids.union(unknown_user_ids);
+
+    // Return promise for pending fetch if it exists.
+    if (fetch_users_storage.promise_for_pending !== undefined) {
+        return fetch_users_storage.promise_for_pending;
+    }
+
+    // Create promise for a next fetch attempt.
+    const promise = new Promise<void>((resolve) => {
+        fetch_users_storage.promise_resolver_for_pending = resolve;
+    });
+    fetch_users_storage.promise_for_pending = promise;
+    // To club multiple fetch requests together,
+    // we queue the fetch after current call stack.
+    setTimeout(() => {
+        if (fetch_users_storage.pending_user_ids.size > 0) {
+            start_fetch_for_requested_users();
+        }
+    }, 0);
+    return promise;
+}
+
+export async function get_or_fetch_users_from_ids(user_ids: number[]): Promise<User[]> {
+    await fetch_users_from_ids_internal(user_ids);
+    return get_users_from_ids(user_ids);
+}
+
 export function fetch_users_from_server(opts: FetchUserDataParams): void {
     const params = {
         user_ids: opts.user_ids,
@@ -1973,6 +2176,19 @@ export function fetch_users_from_server(opts: FetchUserDataParams): void {
             }
         },
     });
+}
+export function get_users_that_match_role_ids(
+    user_ids: Set<number>,
+    role_ids: Set<number>,
+): User[] {
+    const users = new Array<User>();
+    for (const user_id of user_ids) {
+        const person = get_by_user_id(user_id);
+        if (person && role_ids.has(person.role)) {
+            users.push(person);
+        }
+    }
+    return users;
 }
 
 export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResponse["members"]> {
@@ -2006,7 +2222,6 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
                         error_message = error.data.msg;
                     }
                 }
-                blueslip.error(error_message);
                 reject(new Error(error_message));
             },
         });
@@ -2043,14 +2258,5 @@ export async function initialize(
     // Fetch all the missing users. This code path is temporary: We
     // plan to move to a model where the web app expects to have an
     // incomplete users dataset in large organizations.
-    await fetch_users(user_ids_to_fetch).then((users) => {
-        for (const user of users) {
-            if (user.is_active) {
-                add_active_user(user);
-            } else {
-                non_active_user_dict.set(user.user_id, user);
-                _add_user(user);
-            }
-        }
-    });
+    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
 }

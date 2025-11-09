@@ -123,9 +123,9 @@ function get_user_group_for_target(target: HTMLElement): UserGroup | undefined {
     return group;
 }
 
-export function get_edit_container(group: UserGroup): JQuery {
+export function get_edit_container(group_id: number): JQuery {
     return $(
-        `#groups_overlay .user_group_settings_wrapper[data-group-id='${CSS.escape(group.id.toString())}']`,
+        `#groups_overlay .user_group_settings_wrapper[data-group-id='${CSS.escape(group_id.toString())}']`,
     );
 }
 
@@ -199,17 +199,13 @@ function update_group_permission_settings_elements(group: UserGroup): void {
     // We are concerned with the General tab for changing group permissions.
     const $group_permission_settings = $("#group_permission_settings");
 
-    const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");
     const $permission_input_groups = $group_permission_settings.find(".input-group");
 
     if (settings_data.can_manage_user_group(group.id)) {
-        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
-        $permission_input_groups.removeClass("group_setting_disabled");
-
+        settings_components.enable_group_permission_setting($permission_input_groups);
         $permission_input_groups.each(function (this: tippy.ReferenceElement) {
             $(this)[0]?._tippy?.destroy();
         });
-        settings_components.enable_opening_typeahead_on_clicking_label($group_permission_settings);
     } else {
         $permission_input_groups.each(function () {
             settings_components.initialize_disable_button_hint_popover(
@@ -222,7 +218,7 @@ function update_group_permission_settings_elements(group: UserGroup): void {
 }
 
 function show_membership_settings(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
 
     const $member_container = $edit_container.find(".edit_members_for_user_group");
     user_group_edit_members.enable_member_management({
@@ -275,7 +271,7 @@ function update_deactivate_and_reactivate_buttons(group: UserGroup): void {
 }
 
 function update_general_panel_ui(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
 
     if (settings_data.can_manage_user_group(group.id)) {
         $edit_container.find(".group-header .button-group").show();
@@ -288,7 +284,7 @@ function update_general_panel_ui(group: UserGroup): void {
 }
 
 function update_members_panel_ui(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     const $member_container = $edit_container.find(".edit_members_for_user_group");
 
     user_group_edit_members.rerender_members_list({
@@ -561,7 +557,7 @@ export function handle_member_edit_event(group_id: number, user_ids: number[]): 
 }
 
 export function update_group_details(group: UserGroup): void {
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
     $edit_container.find(".group-description").text(group.description);
 }
@@ -616,7 +612,7 @@ function get_membership_status_context(group: UserGroup): {
 function update_membership_status_text(group: UserGroup): void {
     const args = get_membership_status_context(group);
     const rendered_membership_status = render_user_group_membership_status(args);
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     $edit_container.find(".membership-status").html(rendered_membership_status);
 }
 
@@ -778,6 +774,22 @@ export function add_assigned_permission_to_permissions_panel(
     }
 }
 
+function hide_group_permissions_section_if_needed($section: JQuery): void {
+    // Hide the "Organization permissions", "Channel permissions" or
+    // "User group permissions", if there are no assigned permissions
+    // for that section.
+    if ($section.find(".input-group").length === 0) {
+        $section.addClass("hide");
+    }
+
+    // Show the text mentioning group has no permissions if required.
+    if ($section.closest(".group-assigned-permissions").find(".input-group").length === 0) {
+        $section
+            .closest(".group-assigned-permissions")
+            .find(".no-permissions-for-group-text")
+            .removeClass("hide");
+    }
+}
 function remove_setting_checkbox_from_permissions_panel($setting_elem: JQuery): void {
     if ($setting_elem.length === 0) {
         return;
@@ -790,20 +802,7 @@ function remove_setting_checkbox_from_permissions_panel($setting_elem: JQuery): 
         $subsection.addClass("hide");
     }
 
-    // Hide the "Organization permissions", "Channel permissions" or
-    // "User group permissions", if there are no assigned permissions
-    // for that section.
-    if ($subsection.closest(".group-permissions-section").find(".input-group").length === 0) {
-        $subsection.closest(".group-permissions-section").addClass("hide");
-    }
-
-    // Show the text mentioning group has no permissions if required.
-    if ($subsection.closest(".group-assigned-permissions").find(".input-group").length === 0) {
-        $subsection
-            .closest(".group-assigned-permissions")
-            .find(".no-permissions-for-group-text")
-            .removeClass("hide");
-    }
+    hide_group_permissions_section_if_needed($subsection.closest(".group-permissions-section"));
 }
 
 export function update_realm_setting_in_permissions_panel(
@@ -858,6 +857,26 @@ export function update_realm_setting_in_permissions_panel(
         subsection_settings,
         new_setting_checkbox_html,
     );
+}
+
+export function update_group_permissions_panel_on_losing_stream_access(stream_id: number): void {
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    const $edit_container = get_edit_container(active_group_id);
+    const $stream_subsection_elem = $edit_container.find(
+        `.channel-group-permissions .settings-subsection-parent[data-stream-id="${CSS.escape(stream_id.toString())}"]`,
+    );
+    if ($stream_subsection_elem.length > 0) {
+        const $stream_permissions_section = $stream_subsection_elem.closest(
+            ".group-permissions-section",
+        );
+        $stream_subsection_elem.remove();
+
+        hide_group_permissions_section_if_needed($stream_permissions_section);
+    }
 }
 
 export function update_stream_setting_in_permissions_panel(
@@ -1089,7 +1108,7 @@ export function show_settings_for(group: UserGroup): void {
     update_toggler_for_group_setting(group);
 
     toggler.get().prependTo("#user_group_settings .tab-container");
-    const $edit_container = get_edit_container(group);
+    const $edit_container = get_edit_container(group.id);
     $(".nothing-selected").hide();
 
     $edit_container.show();
@@ -2198,7 +2217,7 @@ export function initialize(): void {
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#groups_overlay_container .two-pane-settings-header").removeClass("slide-left");
-        resize.resize_settings_overlay_subheader_for_narrow_screens($("#groups_overlay_container"));
+        resize.resize_settings_overlay_subheader($("#groups_overlay_container"));
     });
 
     $("#groups_overlay_container").on(

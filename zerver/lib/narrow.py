@@ -799,7 +799,7 @@ def ok_to_include_history(
                     include_history = can_access_stream_history_by_id(user_profile, operand)
             elif (
                 term.operator in channels_operators
-                and term.operand == "public"
+                and term.operand in ["public", "web-public"]
                 and not term.negated
                 and user_profile.can_access_public_streams()
             ):

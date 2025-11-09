@@ -4,6 +4,7 @@
 # This module is closely integrated with zerver/lib/event_schema.py
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
+import base64
 import copy
 import time
 from collections.abc import Callable, Iterator
@@ -3636,6 +3637,17 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_remove("events[0]", events[0])
         check_realm_user_update("events[1]", events[1], "is_active")
 
+        # Send peer_remove events for archived streams.
+        do_reactivate_user(user_profile, acting_user=None)
+        stream = self.make_stream("Stream to be archived")
+        self.subscribe(user_profile, "Stream to be archived")
+        do_deactivate_stream(stream, acting_user=None)
+        with self.verify_action(num_events=2) as events:
+            do_deactivate_user(user_profile, acting_user=None)
+        self.assertIn(stream.id, events[0]["stream_ids"])
+        check_subscription_peer_remove("events[0]", events[0])
+        check_realm_user_update("events[1]", events[1], "is_active")
+
         do_reactivate_user(user_profile, acting_user=None)
 
         # Test that guest users receive 'user_group/remove_members'
@@ -4255,7 +4267,7 @@ class NormalActionsTest(BaseAction):
             user=hamlet,
             token_kind=PushDevice.TokenKind.FCM,
             push_account_id=2408,
-            push_public_key="dummy-push-public-key",
+            push_key=base64.b64decode("MbZ1JWx6YMHw1cZEgCPRQAgolV3lBRefP5qp/GNisiP+"),
         )
 
         queue_item: RegisterPushDeviceToBouncerQueueItem = {
