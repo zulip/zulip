@@ -488,7 +488,9 @@ export function get_conversation_participants_callback(): () => Set<number> {
 export function get_filtered_and_sorted_user_ids(user_filter_text: string): number[] {
     let user_ids;
     const conversation_participants = get_conversation_participants_callback()();
+
     user_ids = get_filtered_user_id_list(user_filter_text, conversation_participants);
+    user_ids = user_ids.filter((user_id) => !people.get_by_user_id(user_id).is_inaccessible_user);
     user_ids = maybe_shrink_list(user_ids, user_filter_text, conversation_participants);
     return sort_users(user_ids, conversation_participants);
 }

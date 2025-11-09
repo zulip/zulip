@@ -1218,7 +1218,7 @@ export function get_bot_ids(): number[] {
 export let get_active_human_count = (): number => {
     let count = 0;
     for (const person of active_user_dict.values()) {
-        if (!person.is_bot) {
+        if (!person.is_bot && !person.is_inaccessible_user) {
             count += 1;
         }
     }
@@ -1669,6 +1669,7 @@ export function remove_inaccessible_user(user_id: number): void {
     // Create unknown user object for the inaccessible user.
     const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
+    unknown_user.is_inaccessible_user = true;
     _add_user(unknown_user);
 }
 
@@ -1734,6 +1735,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
 export function add_inaccessible_user(user_id: number): User {
     const email = "user" + user_id + "@" + realm.realm_bot_domain;
     const unknown_user = make_user(user_id, email, INACCESSIBLE_USER_NAME);
+    unknown_user.is_inaccessible_user = true;
     _add_user(unknown_user);
     return unknown_user;
 }

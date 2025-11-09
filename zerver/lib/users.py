@@ -583,6 +583,7 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[dict[str, Any] | None]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    is_inaccessible_user: bool
 
 
 def format_user_row(
@@ -627,6 +628,7 @@ def format_user_row(
         if acting_user is None
         else row["date_joined"].isoformat(timespec="minutes"),
         delivery_email=delivery_email,
+        is_inaccessible_user=False,
     )
 
     if acting_user is None:
@@ -1029,6 +1031,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        is_inaccessible_user=True,
     )
     return user_dict
 
