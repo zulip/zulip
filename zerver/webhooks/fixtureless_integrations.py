@@ -168,22 +168,6 @@ PUPPET = ScreenshotContent(
     content=f"""Puppet production run for web-server-01 completed at {DATETIME_GLOBAL}. [GitHub Gist]() | [Report URL]()""",
 )
 
-REDMINE = ScreenshotContent(
-    topic=TASK_TITLE,
-    content=f"""{BO_NAME} **created** issue [{TICKET_NUMBER} {TASK_TITLE}]():
-
-~~~quote
-
-{TASK_DESCRIPTION}...
-
-~~~
-
-* **Assignee**: {KEVIN_NAME}
-* **Status**: New
-* **Target version**: {VERSION_NUMBER[1:]}
-* **Estimated hours**: 40""",
-)
-
 RSS = MASTODON
 
 SVN = ScreenshotContent(
