@@ -6,6 +6,37 @@
     --color-exit-button-border: hsl(300deg 2% 11% / 30%);
     --color-exit-button-background: hsl(226deg 1% 42% / 20%);
     --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
+
+    /* Since modals are also present in portico and billing pages, we define
+       the modal related variables directly here in the modal.css — which is
+       a part of the common.ts bundle shared between portico and main app. */
+    --color-background-modal-overlay: color-mix(
+        in oklch,
+        hsl(0deg 0% 0%) 25%,
+        transparent
+    );
+    --color-modal-heading-text: light-dark(
+        hsl(0deg 0% 15%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
+    );
+    --color-modal-subtitle-text: color-mix(
+        in oklch,
+        var(--color-modal-heading-text) 75%,
+        transparent
+    );
+    --color-background-modal: light-dark(hsl(0deg 0% 93%), hsl(0deg 0% 14%));
+    --color-background-modal-bar: light-dark(
+        hsl(0deg 0% 96%),
+        hsl(0deg 0% 20%)
+    );
+    --color-border-modal: light-dark(
+        hsl(0deg 0% 55%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
+    );
+    --color-border-modal-bar: light-dark(
+        hsl(0deg 0% 76%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 12%, transparent)
+    );
 }
 
 .modal__overlay {
