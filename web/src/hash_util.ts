@@ -1,10 +1,9 @@
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import * as internal_url from "../shared/src/internal_url.ts";
-
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
