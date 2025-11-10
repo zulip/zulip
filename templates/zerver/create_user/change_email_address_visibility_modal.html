@@ -7,7 +7,9 @@
                         {{ _('Configure email address privacy') }}
                     </h1>
                 </div>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>

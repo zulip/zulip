@@ -1,7 +1,3 @@
-:root {
-    --color-background-modal: hsl(0deg 0% 98%);
-}
-
 .billing-upgrade-page {
     font-family: "Source Sans 3 VF", sans-serif;
     background-color: hsl(0deg 0% 98%);
