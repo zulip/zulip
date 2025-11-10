@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
@@ -50,6 +49,7 @@ import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
+import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
