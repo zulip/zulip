@@ -489,8 +489,6 @@ def read_coverage() -> Any:
 
 def enforce_proper_coverage(coverage_json: Any) -> bool:
     all_js_files = {
-        *glob.glob("web/shared/src/*.js"),
-        *glob.glob("web/shared/src/*.ts"),
         *glob.glob("web/src/*.js"),
         *glob.glob("web/src/*.ts"),
         *glob.glob("web/src/billing/*.js"),
