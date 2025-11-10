@@ -82,7 +82,6 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "openshift",
     "perforce",
     "puppet",
-    "redmine",
     "rss",
     "svn",
     "trac",
@@ -556,6 +555,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("pivotal", ["project-management"], display_name="Pivotal Tracker"),
     WebhookIntegration("radarr", ["entertainment"]),
     WebhookIntegration("raygun", ["monitoring"]),
+    WebhookIntegration("redmine", ["project-management"], display_name="Redmine"),
     WebhookIntegration("reviewboard", ["version-control"], display_name="Review Board"),
     WebhookIntegration(
         "rhodecode",
@@ -613,7 +613,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "notion": Integration("notion", ["productivity"]),
     "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
     "puppet": Integration("puppet", ["deployment"]),
-    "redmine": Integration("redmine", ["project-management"]),
     "zoom": Integration("zoom", ["video-calling", "communication"]),
 }
 
@@ -845,6 +844,9 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "pivotal": [WebhookScreenshotConfig("v5_type_changed.json")],
     "radarr": [WebhookScreenshotConfig("radarr_movie_grabbed.json")],
     "raygun": [WebhookScreenshotConfig("new_error.json")],
+    "redmine": [
+        WebhookScreenshotConfig("issue_opened.json", channel="redmine", bot_name="Redmine Bot")
+    ],
     "reviewboard": [WebhookScreenshotConfig("review_request_published.json")],
     "rhodecode": [WebhookScreenshotConfig("push.json", channel="commits")],
     "rundeck": [WebhookScreenshotConfig("start.json")],
