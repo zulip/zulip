@@ -1,12 +1,5 @@
 import $ from "jquery";
 
-import {PollData} from "../shared/src/poll_data.ts";
-import type {
-    InboundData,
-    NewOptionOutboundData,
-    QuestionOutboundData,
-    VoteOutboundData,
-} from "../shared/src/poll_data.ts";
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
@@ -17,6 +10,13 @@ import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
+import type {
+    InboundData,
+    NewOptionOutboundData,
+    QuestionOutboundData,
+    VoteOutboundData,
+} from "./poll_data.ts";
+import {PollData} from "./poll_data.ts";
 
 export type Event = {sender_id: number; data: InboundData};
 

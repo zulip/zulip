@@ -44,7 +44,6 @@ def make_set(files: list[str]) -> set[str]:
 # We do not yet require 100% line coverage for these files:
 EXEMPT_FILES = make_set(
     [
-        "web/shared/src/poll_data.ts",
         "web/src/about_zulip.ts",
         "web/src/add_group_members_pill.ts",
         "web/src/add_stream_options_popover.ts",
@@ -187,6 +186,7 @@ EXEMPT_FILES = make_set(
         "web/src/playground_links_popover.ts",
         "web/src/pm_list.ts",
         "web/src/pm_list_dom.ts",
+        "web/src/poll_data.ts",
         "web/src/poll_widget.ts",
         "web/src/popover_menus.ts",
         "web/src/popover_menus_data.ts",
