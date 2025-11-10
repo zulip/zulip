@@ -467,8 +467,8 @@ export function initialize(): void {
     message_list_tooltip(".message_expander, .message_condenser", {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
-            const is_disabed = $(instance.reference).attr("data-enable-tooltip") === "false";
-            if (is_disabed) {
+            const is_disabled = $(instance.reference).attr("data-enable-tooltip") === "false";
+            if (is_disabled) {
                 return false;
             }
             return undefined;

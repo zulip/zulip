@@ -24,10 +24,10 @@ if TYPE_CHECKING:
 class DeleteMessageTest(ZulipTestCase):
     def test_do_delete_messages_with_empty_list(self) -> None:
         realm = get_realm("zulip")
-        inital_count = Message.objects.count()
+        initial_count = Message.objects.count()
         do_delete_messages(realm, [], acting_user=None)
         final_count = Message.objects.count()
-        self.assertEqual(inital_count, final_count)
+        self.assertEqual(initial_count, final_count)
 
     def test_do_delete_private_messages_with_acting_user(self) -> None:
         realm = get_realm("zulip")

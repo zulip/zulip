@@ -446,7 +446,7 @@ class DocPageTest(ZulipTestCase):
             response,
         )
 
-        # Mis-matched category should also return back to all.
+        # Mismatched category should also return back to all.
         result = self.client_get(
             "/integrations/asana?category=communication",
         )

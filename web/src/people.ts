@@ -1606,7 +1606,7 @@ export function _add_user(person: User): void {
     people_by_name_dict.set(person.full_name, person);
 }
 
-export function add_active_user(person: User, source = "inital_fetch"): void {
+export function add_active_user(person: User, source = "initial_fetch"): void {
     // To maintain the valid_user_ids data structure, we must add new
     // users to that set when we learn about them.
     if (source === "server_events") {

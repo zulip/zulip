@@ -1455,7 +1455,7 @@ input.invalid-input {
             .zulip-icon {
                 display: flex;
                 align-items: center;
-                color: var(--color-info-denisty-button-icon);
+                color: var(--color-info-density-button-icon);
                 opacity: 0.7;
             }
         }

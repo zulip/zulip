@@ -2341,10 +2341,10 @@ class NormalActionsTest(BaseAction):
         do_deactivate_user_group(api_design, acting_user=None)
 
         with self.verify_action(num_events=0, state_change_expected=False):
-            do_update_user_group_name(api_design, "api-deisgn-team", acting_user=None)
+            do_update_user_group_name(api_design, "api-design-team", acting_user=None)
 
         with self.verify_action(include_deactivated_groups=True) as events:
-            do_update_user_group_name(api_design, "api-deisgn", acting_user=None)
+            do_update_user_group_name(api_design, "api-design", acting_user=None)
         check_user_group_update("events[0]", events[0], {"name"})
 
     def do_test_user_group_events_on_stream_metadata_access_change(

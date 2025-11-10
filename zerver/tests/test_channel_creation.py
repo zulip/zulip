@@ -557,21 +557,21 @@ class TestCreateStreams(ZulipTestCase):
             "testing_channel_group_permission6",
         )
 
-    def test_group_based_permisions_for_creating_private_streams(self) -> None:
+    def test_group_based_permissions_for_creating_private_streams(self) -> None:
         self._test_group_based_settings_for_creating_channels(
             "can_create_private_channel_group",
             invite_only=True,
             is_web_public=False,
         )
 
-    def test_group_based_permisions_for_creating_public_streams(self) -> None:
+    def test_group_based_permissions_for_creating_public_streams(self) -> None:
         self._test_group_based_settings_for_creating_channels(
             "can_create_public_channel_group",
             invite_only=False,
             is_web_public=False,
         )
 
-    def test_group_based_permisions_for_creating_web_public_streams(self) -> None:
+    def test_group_based_permissions_for_creating_web_public_streams(self) -> None:
         self._test_group_based_settings_for_creating_channels(
             "can_create_web_public_channel_group",
             invite_only=False,

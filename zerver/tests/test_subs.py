@@ -3436,7 +3436,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assertEqual(msg.content, expected_msg)
 
-    def test_sucessful_subscription_notifies_in_empty_topic_only_stream(self) -> None:
+    def test_successful_subscription_notifies_in_empty_topic_only_stream(self) -> None:
         invitee = self.example_user("iago")
         invitee_full_name = "Iago"
 
