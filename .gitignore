@@ -89,3 +89,6 @@ core
 ## Miscellaneous
 # (Ideally this section is empty.)
 .transifexrc
+
+# Log files
+logs/

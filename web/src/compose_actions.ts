@@ -1,6 +1,6 @@
 /* Module primarily for opening/closing the compose box. */
 
-import autosize from "autosize";
+import autosize from "./autosize_replacement";
 import $ from "jquery";
 import _ from "lodash";
 

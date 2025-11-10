@@ -1,7 +1,7 @@
 /* Compose box module responsible for manipulating the compose box
    textarea correctly. */
 
-import autosize from "autosize";
+import autosize from "./autosize_replacement";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";

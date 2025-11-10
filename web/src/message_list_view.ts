@@ -1,4 +1,4 @@
-import autosize from "autosize";
+import autosize from "./autosize_replacement";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
