@@ -2,8 +2,6 @@ import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import {FoldDict} from "./fold_dict.ts";
@@ -19,6 +17,7 @@ import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, StateData, profile_datum_schema} from "./state_data.ts";
 import {current_user, realm, user_schema} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
+import * as typeahead from "./typeahead.ts";
 import {is_user_in_setting_group} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";

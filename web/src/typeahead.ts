@@ -28,8 +28,6 @@ export const popular_emojis = [
     "1f419", // octopus
 ];
 
-const unicode_marks = /\p{M}/gu;
-
 export type Emoji =
     | {
           emoji_name: string;
@@ -58,7 +56,8 @@ export type BaseEmoji = {emoji_name: string} & (
 );
 
 export function remove_diacritics(s: string): string {
-    return s.normalize("NFKD").replace(unicode_marks, "");
+    const unicode_marks = /\p{M}/gu;
+    return s.normalize("NFKD").replaceAll(unicode_marks, "");
 }
 
 export function last_prefix_match(prefix: string, words: string[]): number | null {
@@ -198,7 +197,7 @@ function clean_query(query: string): string {
     // direct message section, the space at the end was
     // a `no break-space (U+00A0)` instead of `space (U+0020)`,
     // which lead to no matches in those cases.
-    query = query.replace(/\u00A0/g, " ");
+    query = query.replaceAll("\u00A0", " ");
 
     return query;
 }
@@ -217,7 +216,7 @@ export const parse_unicode_emoji_code = (code: string): string =>
 
 export function get_emoji_matcher(query: string): (emoji: EmojiSuggestion) => boolean {
     // replace spaces with underscores for emoji matching
-    query = query.replace(/ /g, "_");
+    query = query.replaceAll(" ", "_");
     query = clean_query_lowercase(query);
 
     return function (emoji) {
@@ -381,7 +380,7 @@ export function triage<T>(
 
 export function sort_emojis<T extends BaseEmoji>(objs: T[], query: string): T[] {
     // replace spaces with underscores for emoji matching
-    query = query.replace(/ /g, "_");
+    query = query.replaceAll(" ", "_");
     query = query.toLowerCase();
 
     function decent_match(name: string): boolean {

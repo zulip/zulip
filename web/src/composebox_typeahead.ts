@@ -2,8 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-import type {Emoji, EmojiSuggestion} from "../shared/src/typeahead.ts";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
@@ -34,6 +32,8 @@ import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import type * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as topic_link_util from "./topic_link_util.ts";
+import type {Emoji, EmojiSuggestion} from "./typeahead.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import type {UserOrMentionPillData} from "./typeahead_helper.ts";
 import type {UserGroupPillData} from "./user_group_pill.ts";
