@@ -479,9 +479,9 @@ def integrations_doc(
         return TemplateResponse(request, "404.html", status=404)
 
     return_category_slug = request.GET.get("category", "all")
-    categorie_slugs = [category[0] for category in get_categories_for_integration(integration)]
+    category_slugs = [category[0] for category in get_categories_for_integration(integration)]
     # If we have an invalid slug, back to list points to the root integrations page.
-    if return_category_slug != "all" and return_category_slug not in categorie_slugs:
+    if return_category_slug != "all" and return_category_slug not in category_slugs:
         return_category_slug = "all"
 
     return TemplateResponse(

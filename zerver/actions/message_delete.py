@@ -99,7 +99,7 @@ def _process_grouped_messages_deletion(
 def do_delete_messages(
     realm: Realm, messages: Iterable[Message], *, acting_user: UserProfile | None
 ) -> None:
-    """1:1 Direct messages must be grouped to a single convesration by
+    """1:1 Direct messages must be grouped to a single conversation by
     the caller, since this logic does not know how to handle multiple
     senders sharing a single Recipient object.
 

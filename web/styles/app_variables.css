@@ -3021,7 +3021,7 @@
         hsl(0deg 0% 0% / 20%),
         hsl(0deg 0% 90% / 20%)
     );
-    --color-info-denisty-button-icon: light-dark(
+    --color-info-density-button-icon: light-dark(
         hsl(229deg 9% 36%),
         hsl(0deg 0% 100% / 80%)
     );

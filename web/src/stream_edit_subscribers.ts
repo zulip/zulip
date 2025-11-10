@@ -475,7 +475,7 @@ function remove_subscriber({
             stream_data.has_content_access_via_group_permissions(sub)
         ) {
             // We do not show any confirmation modal if user is unsubscribing
-            // themseleves and also has the permission to subscribe to the
+            // themselves and also has the permission to subscribe to the
             // stream again.
             remove_user_from_private_stream();
             return;
