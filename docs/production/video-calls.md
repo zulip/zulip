@@ -96,6 +96,19 @@ type of Zoom application for your Zulip server.
      to `https://zulip.example.com/calls/zoom/complete` (replacing
      `zulip.example.com` by your main Zulip hostname).
 
+<!--
+If we ever need to increase scopes in the future, we should also include the scopes
+required to retrieve a user's details via this
+endpoint: https://developers.zoom.us/docs/api/users/#tag/users/get/users/{userId}
+
+This will help us implement a deauthorization workflow for Zoom app integrations,
+where we delete the user's zoom_token from the database upon receiving a request
+from Zoom’s deauthorization webhook, based on the user's zoom_id, which is part
+of the deauthorization request payload.
+
+Details: https://chat.zulip.org/#narrow/channel/49-development-help/topic/What's.20the.20use.20of.20.60.2Fcalls.2Fzoom.2Fdeauthorize.60.20endpoint/with/2296326
+ -->
+
 1. In the **Scopes** tab, add the `meeting:write:meeting` scope.
 
 1. Switch to the **Production** tab and complete the information needed
