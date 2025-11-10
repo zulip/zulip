@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
@@ -31,6 +30,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
+import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as stream_data from "./stream_data.ts";

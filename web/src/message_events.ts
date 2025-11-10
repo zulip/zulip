@@ -3,8 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
-
 import * as activity from "./activity.ts";
 import * as alert_words from "./alert_words.ts";
 import * as channel from "./channel.ts";
@@ -41,6 +39,7 @@ import * as pm_list from "./pm_list.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
