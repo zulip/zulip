@@ -39,6 +39,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
+import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -90,8 +91,8 @@ let bot_owner_dropdown_widget: DropdownWidget | undefined;
 let original_values: (Record<string, unknown> & {user_id?: string | undefined}) | undefined;
 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
-const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-const EMBEDDED_BOT_TYPE = "4";
+const OUTGOING_WEBHOOK_BOT_TYPE = 3;
+const EMBEDDED_BOT_TYPE = 4;
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
@@ -120,6 +121,45 @@ export function get_user_id_if_user_profile_modal_open(): number | undefined {
     return undefined;
 }
 
+export function can_create_new_bots(): boolean {
+    return settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_create_bots_group,
+        "can_create_bots_group",
+        "realm",
+    );
+}
+
+export function can_create_incoming_webhooks(): boolean {
+    // User who have the permission to create any bot can also
+    // create incoming webhooks.
+    return (
+        can_create_new_bots() ||
+        settings_data.user_has_permission_for_group_setting(
+            realm.realm_can_create_write_only_bots_group,
+            "can_create_write_only_bots_group",
+            "realm",
+        )
+    );
+}
+
+export function get_allowed_bot_types(): bot_data.BotType[] {
+    const allowed_bot_types: bot_data.BotType[] = [];
+    const bot_types = settings_config.bot_type_values;
+    if (can_create_new_bots()) {
+        allowed_bot_types.push(
+            bot_types.default_bot,
+            bot_types.incoming_webhook_bot,
+            bot_types.outgoing_webhook_bot,
+        );
+        if (page_params.embedded_bots_enabled) {
+            allowed_bot_types.push(bot_types.embedded_bot);
+        }
+    } else if (can_create_incoming_webhooks()) {
+        allowed_bot_types.push(bot_types.incoming_webhook_bot);
+    }
+    return allowed_bot_types;
+}
+
 export function update_user_profile_streams_list_for_users(user_ids: number[]): void {
     const user_id = get_user_id_if_user_profile_modal_open();
     if (user_id && user_ids.includes(user_id) && user_streams_list_widget !== undefined) {
@@ -143,6 +183,7 @@ export function update_profile_modal_ui(
     new_data: {
         user_id?: number;
         bot_owner_id?: number;
+        bot_type?: number;
         avatar_url?: string | null;
         delivery_email?: string | null;
         role?: number;
@@ -163,6 +204,10 @@ export function update_profile_modal_ui(
     if (new_data.bot_owner_id !== undefined) {
         const $bot_owner_field = $(".bot_owner_user_field");
         $bot_owner_field.attr("data-field-id", new_data.bot_owner_id);
+    }
+    if (new_data.bot_type !== undefined) {
+        const $bot_type = $("#edit_bot_type");
+        $bot_type.val(new_data.bot_type);
     }
     if (new_data.avatar_url !== undefined) {
         $("#avatar").css(
@@ -794,23 +839,8 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
-    const html_body = render_edit_bot_form({
-        user_id,
-        is_active,
-        email: bot.email,
-        full_name: bot.full_name,
-        user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
-        bot_avatar_url: bot.avatar_url,
-        is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
-        max_bot_name_length: people.MAX_USER_NAME_LENGTH,
-    });
-    $container.append($(html_body));
     let avatar_widget: UploadWidget;
-
-    assert(bot.bot_type !== undefined && bot.bot_type !== null);
-
-    const bot_type = bot.bot_type.toString();
+    let bot_type = bot.bot_type;
     const services = bot_data.get_services(bot.user_id);
     let service:
         | {
@@ -825,12 +855,47 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     if (services?.[0] !== undefined) {
         service = services[0];
     }
-    edit_bot_post_render();
-    original_values = get_current_values($("#bot-edit-form"));
-    $("#bot-edit-form").on("input", "input, select, button", (e) => {
-        e.preventDefault();
-        toggle_submit_button($("#bot-edit-form"));
-    });
+
+    const allowed_bot_types = get_allowed_bot_types();
+
+    render_bot_edit_form_based_on_bot_type();
+
+    // This function needs to support being called multiple times,
+    // since it is called both initially and when the bot type is changed.
+    function render_bot_edit_form_based_on_bot_type(): void {
+        assert(bot !== undefined);
+        const html_body = render_edit_bot_form({
+            user_id,
+            is_active,
+            email: bot.email,
+            full_name: bot.full_name,
+            bot_types: allowed_bot_types,
+            bot_type,
+            user_role_values: settings_config.user_role_values,
+            disable_role_dropdown:
+                !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
+            bot_avatar_url: bot.avatar_url,
+            is_incoming_webhook_bot: bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+            max_bot_name_length: people.MAX_USER_NAME_LENGTH,
+        });
+        $("#bot-edit-form").remove();
+        $container.append($(html_body));
+
+        assert(bot_type !== undefined && bot_type !== null);
+        $("#edit_bot_type").val(bot_type);
+
+        edit_bot_post_render();
+        original_values = get_current_values($("#bot-edit-form"));
+        $("#bot-edit-form").on("input", "input, select, button", (e) => {
+            e.preventDefault();
+            toggle_submit_button($("#bot-edit-form"));
+        });
+
+        $("#edit_bot_type").on("change", () => {
+            bot_type = Number($("#edit_bot_type").val());
+            render_bot_edit_form_based_on_bot_type();
+        });
+    }
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#bot-role-select").val()!.trim(),
@@ -843,6 +908,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         assert(csrf_token !== undefined);
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val()!);
+        formData.append("bot_type", bot_type.toString());
         formData.append("role", JSON.stringify(role));
         const new_bot_owner_id = bot_owner_dropdown_widget!.value();
         if (new_bot_owner_id) {
@@ -856,12 +922,19 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             ).val()!;
             formData.append("service_payload_url", JSON.stringify(service_payload_url));
             formData.append("service_interface", service_interface);
-        } else if (bot_type === EMBEDDED_BOT_TYPE && service !== undefined) {
+        } else if (bot_type === EMBEDDED_BOT_TYPE) {
+            const service_name = $<HTMLSelectOneElement>(
+                "select:not([multiple])#select_service_name",
+            ).val()!;
+            formData.append("embedded_bot_service_name", JSON.stringify(service_name));
+
             const config_data: Record<string, string> = {};
             $<HTMLInputElement>("#config_edit_inputbox input").each(function () {
                 config_data[$(this).attr("name")!] = $(this).val()!;
             });
-            formData.append("config_data", JSON.stringify(config_data));
+            if (Object.keys(config_data).length > 0) {
+                formData.append("config_data", JSON.stringify(config_data));
+            }
         }
 
         const files = util.the(
@@ -964,6 +1037,11 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            service ??= {
+                base_url: "",
+                interface: 1,
+                token: "",
+            };
             $("#service_data").append(
                 $(
                     render_settings_edit_outgoing_webhook_service({
@@ -979,6 +1057,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 $(
                     render_settings_edit_embedded_bot_service({
                         service,
+                        realm_embedded_bots: realm.realm_embedded_bots,
                     }),
                 ),
             );
