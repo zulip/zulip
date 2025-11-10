@@ -4,7 +4,6 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as typeahead from "../shared/src/typeahead.ts";
 import render_emoji_popover from "../templates/popovers/emoji/emoji_popover.hbs";
 import render_emoji_popover_emoji_map from "../templates/popovers/emoji/emoji_popover_emoji_map.hbs";
 import render_emoji_popover_search_results from "../templates/popovers/emoji/emoji_popover_search_results.hbs";
@@ -25,6 +24,7 @@ import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as spectators from "./spectators.ts";
+import * as typeahead from "./typeahead.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status_ui from "./user_status_ui.ts";
