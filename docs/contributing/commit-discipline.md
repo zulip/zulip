@@ -307,10 +307,9 @@ guidance on continuing work someone else has started.
 You can also add other notes, such as `Reported-by:`, `Debugged-by:`, or
 `Suggested-by:`, but we don't typically do so.
 
-**Never @-mention a contributor in a commit message**, as GitHub will turn this into
-a notification for the person every time a version of the commit is rebased and
-pushed somewhere. If you want to send someone a notification about a change,
-@-mention them in the PR thread.
+@-mentions don't belong in commit messages (and won't notify the user you
+mentioned). If you want to send someone a notification about a change, @-mention
+them in the PR thread.
 
 #### Formatting guidelines
 
