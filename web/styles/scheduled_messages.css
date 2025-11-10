@@ -26,4 +26,10 @@
     width: 100%;
     min-width: 10em;
     padding: 3px;
+
+    background-color: var(--background-color-textarea);
+
+    font-size: inherit;
+    line-height: inherit;
+    font-family: "Source Sans 3 VF", sans-serif;
 }
