@@ -38,12 +38,31 @@ def send_message_report(
 
     # Build reported message header
     if is_1_to_1_message(reported_message):
-        report_header = _(
-            "{reporting_user_mention} reported a direct message sent by {reported_user_mention}."
-        ).format(
-            reporting_user_mention=reporting_user_mention,
-            reported_user_mention=reported_user_mention,
-        )
+        if reported_user != reporting_user:
+            report_header = _(
+                "{reporting_user_mention} reported a direct message sent by {reported_user_mention}."
+            ).format(
+                reporting_user_mention=reporting_user_mention,
+                reported_user_mention=reported_user_mention,
+            )
+        else:
+            # Clearly mention the direct message recipient if someone is
+            # reporting their own message in a 1-on-1 direct message.
+            if reported_message.recipient.type_id != reporting_user.id:
+                recipient_user = next(
+                    silent_mention_syntax_for_user(user)
+                    for user in get_display_recipient(reported_message.recipient)
+                    if user["id"] != reporting_user.id
+                )
+            else:
+                recipient_user = reporting_user_mention
+            report_header = _(
+                "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_user}."
+            ).format(
+                reporting_user_mention=reporting_user_mention,
+                reported_user_mention=reported_user_mention,
+                recipient_user=recipient_user,
+            )
     elif reported_message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         recipient_list = sorted(
             [
