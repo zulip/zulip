@@ -11,7 +11,10 @@ const hashReplacements = new Map([
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str: string): string {
-    return encodeURIComponent(str).replace(/[%().]/g, (matched) => hashReplacements.get(matched)!);
+    return encodeURIComponent(str).replaceAll(
+        /[%().]/g,
+        (matched) => hashReplacements.get(matched)!,
+    );
 }
 
 export function decodeHashComponent(str: string): string {
@@ -20,7 +23,7 @@ export function decodeHashComponent(str: string): string {
     // of such characters when encoding. This can also,
     // fail independent of our fault.
     // Here we let the calling code handle the exception.
-    return decodeURIComponent(str.replace(/\./g, "%"));
+    return decodeURIComponent(str.replaceAll(".", "%"));
 }
 
 export function stream_id_to_slug(
@@ -31,10 +34,7 @@ export function stream_id_to_slug(
 
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
-
-    // TODO: Convert this to replaceAll once mobile no longer supports
-    // browsers that don't have it.
-    name = name.replace(/ /g, "-");
+    name = name.replaceAll(" ", "-");
 
     return `${stream_id}-${name}`;
 }

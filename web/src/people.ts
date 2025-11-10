@@ -2,13 +2,13 @@ import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import * as internal_url from "../shared/src/internal_url.ts";
 import * as typeahead from "../shared/src/typeahead.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {$t} from "./i18n.ts";
+import * as internal_url from "./internal_url.ts";
 import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store.ts";
 import * as message_user_ids from "./message_user_ids.ts";
 import * as muted_users from "./muted_users.ts";
