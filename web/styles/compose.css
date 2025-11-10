@@ -1078,6 +1078,10 @@ textarea.new_message_textarea {
     scrollbar-color: hsl(0deg 0% 50%) transparent;
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: inherit;
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
         outline: 0;
     }
