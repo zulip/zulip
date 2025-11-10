@@ -14,7 +14,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");
 
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");

@@ -1,7 +1,6 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_search_description from "../templates/search_description.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -15,6 +14,7 @@ import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
 import {current_user, narrow_term_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
