@@ -83,7 +83,6 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "openshift",
     "perforce",
     "puppet",
-    "redmine",
     "rss",
     "svn",
     "trac",
@@ -861,6 +860,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "raygun", ["monitoring"], [WebhookScreenshotConfig("new_error.json")]
     ),
     IncomingWebhookIntegration(
+        "redmine", ["project-management"], [WebhookScreenshotConfig("issue_opened.json")]
+    ),
+    IncomingWebhookIntegration(
         "reviewboard",
         ["productivity"],
         [WebhookScreenshotConfig("review_request_published.json")],
@@ -1032,7 +1034,6 @@ STANDALONE_REPO_INTEGRATIONS: list[Integration] = [
     ),
     Integration("hubot", ["meta-integration", "bots"]),
     Integration("puppet", ["deployment"]),
-    Integration("redmine", ["project-management"]),
 ]
 
 ZULIP_SEND_INTEGRATIONS: list[Integration] = [
