@@ -853,33 +853,6 @@
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)
     );
-    --color-background-modal-overlay: color-mix(
-        in oklch,
-        hsl(0deg 0% 0%) 25%,
-        transparent
-    );
-    --color-modal-heading-text: light-dark(
-        hsl(0deg 0% 15%),
-        color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
-    );
-    --color-modal-subtitle-text: color-mix(
-        in oklch,
-        var(--color-modal-heading-text) 75%,
-        transparent
-    );
-    --color-background-modal: light-dark(hsl(0deg 0% 93%), hsl(0deg 0% 14%));
-    --color-background-modal-bar: light-dark(
-        hsl(0deg 0% 96%),
-        hsl(0deg 0% 20%)
-    );
-    --color-border-modal: light-dark(
-        hsl(0deg 0% 55%),
-        color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
-    );
-    --color-border-modal-bar: light-dark(
-        hsl(0deg 0% 76%),
-        color-mix(in oklch, hsl(0deg 0% 100%) 12%, transparent)
-    );
     --color-modal-selectable-icon: light-dark(
         hsl(240deg 30% 40%),
         hsl(240deg 35% 68%)
