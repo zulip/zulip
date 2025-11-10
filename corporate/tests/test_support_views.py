@@ -21,11 +21,24 @@ from corporate.models.plans import CustomerPlan, CustomerPlanOffer, get_current_
 from corporate.models.sponsorships import SponsoredPlanTypes, ZulipSponsorshipRequest
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
-from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
+from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
+    do_change_realm_permission_group_setting,
+    do_send_realm_reactivation_email,
+)
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-from zerver.models import MultiuseInvite, PreregistrationUser, Realm, UserMessage, UserProfile
+from zerver.lib.users import GroupPermissionUpdates
+from zerver.models import (
+    MultiuseInvite,
+    NamedUserGroup,
+    PreregistrationUser,
+    Realm,
+    UserMessage,
+    UserProfile,
+)
+from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import OrgTypeEnum, get_org_type_display_name, get_realm
 from zilencer.lib.remote_counts import MissingDataError
@@ -2025,11 +2038,34 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(result["Location"], "/login/")
 
         self.login("iago")
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            direct_members=[hamlet], direct_subgroups=[]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", setting_group, acting_user=None
+        )
 
+        result = self.client_post(
+            "/activity/support",
+            {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
+        )
+        self.assert_not_in_success_response([f"{hamlet_email} in zulip deleted"], result)
+        self.assert_in_success_response(["Cannot deactivate last user with permission."], result)
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", admins_group, acting_user=None
+        )
+
+        group_setting_updates = GroupPermissionUpdates(
+            realm_settings_to_update=[], stream_settings_to_update=[], group_settings_to_update=[]
+        )
         with mock.patch("corporate.views.support.do_delete_user_preserving_messages") as m:
             result = self.client_post(
                 "/activity/support",
                 {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
             )
-            m.assert_called_once_with(hamlet)
+            m.assert_called_once_with(hamlet, group_setting_updates)
             self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)

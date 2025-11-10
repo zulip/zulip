@@ -18,7 +18,12 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
+from zerver.actions.streams import do_change_stream_group_based_setting
+from zerver.actions.user_groups import do_change_user_group_permission_setting
 from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
@@ -35,7 +40,7 @@ from zerver.lib.avatar import avatar_url, get_avatar_field, get_gravatar_url
 from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import CannotDeactivateLastUserWithPermissionError, JsonableError
 from zerver.lib.send_email import clear_scheduled_emails, queue_scheduled_emails, send_future_email
 from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -46,6 +51,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -61,6 +67,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
     Message,
+    NamedUserGroup,
     OnboardingStep,
     PreregistrationUser,
     RealmAuditLog,
@@ -2284,6 +2291,160 @@ class ActivateTest(ZulipTestCase):
             ],
         )
 
+    def test_updating_group_permissions_when_deactivating(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        realm = hamlet.realm
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        bot = do_create_user(
+            email="normal-bot@zulip.com",
+            password="",
+            realm=realm,
+            full_name="",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=hamlet,
+            acting_user=None,
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet, othello, bot], [moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "create_multiuse_invite_group",
+            setting_group,
+            acting_user=iago,
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_create_public_channel_group", setting_group, acting_user=iago
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([bot], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_create_private_channel_group", setting_group, acting_user=iago
+        )
+
+        self.subscribe(hamlet, "test_stream")
+        stream = self.subscribe(iago, "test_stream")
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[hamlet.id, bot.id, othello.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_remove_subscribers_group", setting_group_member_dict, acting_user=iago
+        )
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[hamlet.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", setting_group_member_dict, acting_user=iago
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet], [moderators_group]
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_join_group", setting_group, acting_user=iago
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_add_members_group", setting_group, acting_user=iago
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([bot], [])
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_remove_members_group", setting_group, acting_user=iago
+        )
+
+        self.login("iago")
+        result = self.client_delete(f"/json/users/{hamlet.id}")
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.can_create_public_channel_group_id, nobody_group.id)
+        self.assertEqual(realm.can_create_private_channel_group_id, nobody_group.id)
+
+        self.assertCountEqual(
+            list(realm.create_multiuse_invite_group.direct_members.all()), [othello]
+        )
+        self.assertCountEqual(
+            list(realm.create_multiuse_invite_group.direct_subgroups.all()), [moderators_group]
+        )
+
+        stream = get_stream("test_stream", realm)
+        self.assertEqual(stream.can_administer_channel_group_id, nobody_group.id)
+
+        self.assertCountEqual(
+            list(stream.can_remove_subscribers_group.direct_members.all()), [othello]
+        )
+        self.assertCountEqual(list(stream.can_remove_subscribers_group.direct_subgroups.all()), [])
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        self.assertEqual(hamletcharacters_group.can_add_members_group_id, nobody_group.id)
+        self.assertEqual(hamletcharacters_group.can_join_group_id, moderators_group.id)
+        self.assertEqual(hamletcharacters_group.can_remove_members_group_id, nobody_group.id)
+
+        do_reactivate_user(hamlet, acting_user=None)
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", setting_group, acting_user=iago
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", setting_group, acting_user=iago
+        )
+
+        result = self.client_delete(f"/json/users/{hamlet.id}")
+        self.assert_json_error(result, "Cannot deactivate last user with permission.")
+
+        data = orjson.loads(result.content)
+        self.assert_length(data["objections"], 1)
+        self.assertEqual(data["objections"][0]["type"], "realm")
+        self.assertCountEqual(
+            data["objections"][0]["settings"],
+            ["can_access_all_users_group", "can_manage_all_groups"],
+        )
+
+        # Check that if a bot owned by the user being deactivated is the only member
+        # of an anonymous group for a setting which cannot be set to "role:nobody"
+        # group, then we do not allow deactivating the user.
+        do_reactivate_user(bot, acting_user=None)
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([bot], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", setting_group, acting_user=iago
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([bot], [])
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", setting_group, acting_user=iago
+        )
+
+        result = self.client_delete(f"/json/users/{hamlet.id}")
+        self.assert_json_error(result, "Cannot deactivate last user with permission.")
+
+        data = orjson.loads(result.content)
+        self.assert_length(data["objections"], 1)
+        self.assertEqual(data["objections"][0]["type"], "realm")
+        self.assertCountEqual(
+            data["objections"][0]["settings"],
+            ["can_access_all_users_group", "can_manage_all_groups"],
+        )
+
 
 class RecipientInfoTest(ZulipTestCase):
     def test_stream_recipient_info(self) -> None:
@@ -3365,6 +3526,27 @@ class DeleteUserTest(ZulipTestCase):
             realm_id=realm.id, sender_id=hamlet_user_id
         ).count()
         self.assertGreater(original_messages_from_hamlet_count, 0)
+
+        # Check user cannot be deleted if they are the last user in an anonymous group
+        # for a setting that cannot be set to "role:nobody" group.
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            direct_members=[hamlet], direct_subgroups=[]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", setting_group, acting_user=None
+        )
+        hamlet.refresh_from_db()
+
+        with self.assertRaises(CannotDeactivateLastUserWithPermissionError):
+            do_delete_user_preserving_messages(hamlet)
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", admins_group.usergroup_ptr, acting_user=None
+        )
+        hamlet.refresh_from_db()
 
         do_delete_user_preserving_messages(hamlet)
 
