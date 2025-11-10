@@ -124,10 +124,7 @@ const config = (
                 // Transpile .js and .ts files with Babel
                 {
                     test: /\.[cm]?[jt]s$/,
-                    include: [
-                        path.resolve(import.meta.dirname, "shared/src"),
-                        path.resolve(import.meta.dirname, "src"),
-                    ],
+                    include: [path.resolve(import.meta.dirname, "src")],
                     loader: "babel-loader",
                 },
                 // regular css files
