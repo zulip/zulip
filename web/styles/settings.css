@@ -1770,10 +1770,10 @@ label.preferences-radio-choice-label {
 .settings-textarea,
 .modal-textarea {
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--background-color-textarea);
     border-radius: 4px;
     vertical-align: middle;
-    border: var(--input-border-width) solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--border-color-textarea);
     padding: var(--input-vertical-padding) var(--input-horizontal-padding);
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
@@ -1781,8 +1781,12 @@ label.preferences-radio-choice-label {
         border-color linear 0.2s,
         box-shadow linear 0.2s;
 
+    font-size: 1em;
+    line-height: inherit;
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
-        border-color: hsl(206.5deg 80% 62% / 80%);
+        border-color: var(--focus-border-color-textarea);
         outline: 0;
 
         box-shadow:
@@ -1792,8 +1796,16 @@ label.preferences-radio-choice-label {
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
     }
+}
+
+.settings-textarea:disabled {
+    background-color: var(--background-color-disabled-textarea);
+    opacity: 0.5;
+}
+
+.modal-textarea:disabled {
+    background-color: var(--background-color-readonly-modal-input);
 }
 
 @media (width < $lg_min) {

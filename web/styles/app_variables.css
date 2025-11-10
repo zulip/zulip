@@ -865,6 +865,22 @@
         hsl(240deg 7% 93%),
         hsl(240deg 7% 17%)
     );
+    --background-color-textarea: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --background-color-disabled-textarea: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --border-color-textarea: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 60%)
+    );
+    --focus-border-color-textarea: light-dark(
+        hsl(206.5deg 80% 62% / 80%),
+        hsl(0deg 0% 0% / 90%)
+    );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
