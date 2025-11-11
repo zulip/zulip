@@ -46,7 +46,7 @@ if FULL_STACK_ZULIP_TEST:
 else:
     # Backend tests don't use tornado
     USING_TORNADO = False
-    CAMO_URI = "https://external-content.zulipcdn.net/external_content/"
+    CAMO_URL = "https://external-content.zulipcdn.net/external_content/"
     CAMO_KEY = "dummy"
 
 if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
