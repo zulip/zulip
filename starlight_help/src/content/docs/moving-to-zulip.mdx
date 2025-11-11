@@ -7,7 +7,8 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-import CommunicationPolicies from "../include/_CommunicationPolicies.mdx";
+import CommunicationPoliciesIntro from "../include/_CommunicationPoliciesIntro.mdx";
+import CommunicationPoliciesList from "../include/_CommunicationPoliciesList.mdx";
 import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
 import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
 import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
@@ -108,7 +109,9 @@ Zulip.
 
 ## Review and update communication policies
 
-<CommunicationPolicies />
+<CommunicationPoliciesIntro />
+
+<CommunicationPoliciesList />
 
 ## Prepare users for the transition
 
