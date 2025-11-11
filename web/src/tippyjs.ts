@@ -92,6 +92,8 @@ tippy.default.setDefaultProps({
     content: get_tooltip_content,
 });
 
+export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
+
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
     appendTo: () => document.body,
@@ -643,8 +645,12 @@ export function initialize(): void {
             separately handle emoji instance.
         */
 
+        onShow(instance) {
+            typeahead_status_emoji_tooltip = instance;
+        },
         onHidden(instance) {
             instance.destroy();
+            typeahead_status_emoji_tooltip = undefined;
         },
     });
 
