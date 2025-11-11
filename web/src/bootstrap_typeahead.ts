@@ -469,6 +469,10 @@ export class Typeahead<ItemType extends string | object> {
                         void instance.popperInstance?.update();
                     });
                 },
+                onHidden: (instance) => {
+                    this.clear_typeahead_tooltip?.();
+                    instance.destroy();
+                },
             });
         }
 
@@ -571,6 +575,9 @@ export class Typeahead<ItemType extends string | object> {
         // footer might change depending on whether next character is
         // `_` (silent mention) or not.
         const footer_text_html = this.footer_html();
+        // We want to clear tooltip instance on each re render since
+        // emoji may have shifted its position.
+        this.clear_typeahead_tooltip?.();
 
         if (footer_text_html) {
             this.$footer.find("span#typeahead-footer-text").html(footer_text_html);
