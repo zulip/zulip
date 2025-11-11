@@ -102,7 +102,6 @@
     }
 
     textarea:focus,
-    textarea.new_message_textarea:focus,
     #compose_recipient_box:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }

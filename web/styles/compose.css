@@ -1081,11 +1081,6 @@ textarea.new_message_textarea {
     &:focus {
         outline: 0;
     }
-
-    &:read-only,
-    &:disabled {
-        background-color: hsl(0deg 0% 93%);
-    }
 }
 
 #message-content-container,
