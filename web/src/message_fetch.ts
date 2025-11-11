@@ -7,6 +7,7 @@ import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
+import * as emoji_frequency from "./emoji_frequency.ts";
 import {Filter} from "./filter.ts";
 import * as message_feed_loading from "./message_feed_loading.ts";
 import * as message_feed_top_notices from "./message_feed_top_notices.ts";
@@ -686,6 +687,7 @@ export function initialize(finished_initial_fetch: () => void): void {
 
         if (data.found_oldest) {
             initial_backfill_for_all_messages_done = true;
+            emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 
@@ -699,11 +701,13 @@ export function initialize(finished_initial_fetch: () => void): void {
             latest_message.timestamp < fetch_target_day_timestamp
         ) {
             initial_backfill_for_all_messages_done = true;
+             emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 
         if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
             initial_backfill_for_all_messages_done = true;
+             emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 

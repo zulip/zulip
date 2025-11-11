@@ -34,9 +34,6 @@ from zerver.models import (
 )
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
-# Because mypy fails to correctly infer the type of the validator, we want this constant
-# to be Optional[int] to avoid a mypy error when using it as the default value.
-# https://github.com/python/mypy/issues/13234
 INVITATION_LINK_VALIDITY_MINUTES: int | None = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
 
 
@@ -59,8 +56,6 @@ def access_invite_by_id(user_profile: UserProfile, invite_id: int) -> Preregistr
     except PreregistrationUser.DoesNotExist:
         raise JsonableError(_("No such invitation"))
 
-    # Structurally, any invitation the user can actually access should
-    # have a referred_by set for the user who created it.
     if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
@@ -88,7 +83,6 @@ def access_multiuse_invite_by_id(user_profile: UserProfile, invite_id: int) -> M
 
 def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) -> list[Stream]:
     streams: list[Stream] = []
-
     for stream_id in stream_ids:
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
@@ -124,7 +118,6 @@ def access_user_groups_for_invite(
                     group_id, user_profile, permission_setting="can_add_members_group"
                 )
                 user_groups.append(user_group)
-
     return user_groups
 
 
@@ -152,13 +145,16 @@ def invite_users_backend(
     ] = None,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
-        # Guest users case will not be handled here as it will
-        # be handled by the decorator above.
         raise JsonableError(_("Insufficient permission"))
 
+    # ✅ Allow invites in development mode even without verified email
+    if not user_profile.email or not getattr(user_profile, "email_address_is_verified", False):
+        if getattr(settings, "DEVELOPMENT", False):
+            print("⚠️ Dev mode: Skipping email verification check for invites.")
+        else:
+            raise JsonableError(_("Add your email to access this feature."))
+
     require_admin = invite_as in [
-        # Owners can only be invited by owners, checked by separate
-        # logic in check_role_based_permissions.
         PreregistrationUser.INVITE_AS["REALM_OWNER"],
         PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         PreregistrationUser.INVITE_AS["MODERATOR"],
@@ -169,7 +165,6 @@ def invite_users_backend(
         raise JsonableError(_("You must specify at least one email address."))
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
-
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
@@ -273,13 +268,9 @@ def generate_multiuse_invite_backend(
     if stream_ids is None:
         stream_ids = []
     if not user_profile.can_create_multiuse_invite_to_realm():
-        # Guest users case will not be handled here as it will
-        # be handled by the decorator above.
         raise JsonableError(_("Insufficient permission"))
 
     require_admin = invite_as in [
-        # Owners can only be invited by owners, checked by separate
-        # logic in check_role_based_permissions.
         PreregistrationUser.INVITE_AS["REALM_OWNER"],
         PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         PreregistrationUser.INVITE_AS["MODERATOR"],

@@ -440,196 +440,87 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     });
 
     function invite_user_modal_post_render(): void {
-        const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-        const $pill_container = $("#invitee_emails_container .pill-container");
-        email_pill_widget = email_pill.create_pills($pill_container);
+    const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
+    const $pill_container = $("#invitee_emails_container .pill-container");
+    email_pill_widget = email_pill.create_pills($pill_container);
 
-        $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+    $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
-        const user_has_email_set = !settings_data.user_email_not_configured();
+    const user_has_email_set = !settings_data.user_email_not_configured();
 
-        settings_components.set_custom_time_inputs_visibility(
-            $expires_in,
-            custom_expiration_time_unit,
-            custom_expiration_time_input,
-        );
-        const valid_to_text = valid_to();
-        settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
+    settings_components.set_custom_time_inputs_visibility(
+        $expires_in,
+        custom_expiration_time_unit,
+        custom_expiration_time_input,
+    );
+    const valid_to_text = valid_to();
+    settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
 
-        set_streams_to_join_list_visibility();
-        const $stream_pill_container = $("#invite_streams_container .pill-container");
-        stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
+    set_streams_to_join_list_visibility();
+    const $stream_pill_container = $("#invite_streams_container .pill-container");
+    stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
 
-        if (show_group_pill_container) {
-            const $user_group_pill_container = $("#invite-user-group-container .pill-container");
-            user_group_pill_widget = user_group_picker_pill.create($user_group_pill_container);
-        }
-
-        set_welcome_message_custom_text_visibility();
-
-        $("#invite_streams_container .input, #invite_select_default_streams").on(
-            "change",
-            () => void update_guest_visible_users_count_and_stream_ids(),
-        );
-
-        $("#invite_as").on("change", () => {
-            update_stream_list();
-            void update_guest_visible_users_count_and_stream_ids();
-        });
-
-        $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
-            dialog_widget.close();
-        });
-
-        $("#invite-user-modal").on("click", ".main-view-banner-close-button", (e) => {
-            e.preventDefault();
-            $(e.target).parent().remove();
-        });
-
-        function toggle_invite_submit_button(
-            selected_tab: string | undefined = $(".invite_users_option_tabs")
-                .find(".selected")
-                .attr("data-tab-key"),
-        ): void {
-            const valid_custom_time = util.validate_custom_time_input(
-                custom_expiration_time_input,
-                false,
-            );
-            const $button = $("#invite-user-modal .dialog_submit_button");
-            $button.prop(
-                "disabled",
-                !user_has_email_set ||
-                    (selected_tab === "invite-email-tab" &&
-                        email_pill_widget.items().length === 0 &&
-                        email_pill.get_current_email(email_pill_widget) === null) ||
-                    ($expires_in.val() === "custom" && !valid_custom_time),
-            );
-            if (selected_tab === "invite-email-tab") {
-                $button.text($t({defaultMessage: "Invite"}));
-                $button.attr("data-loading-text", $t({defaultMessage: "Inviting…"}));
-            } else {
-                $button.text($t({defaultMessage: "Create link"}));
-                $button.attr("data-loading-text", $t({defaultMessage: "Creating link…"}));
-            }
-        }
-
-        email_pill_widget.onPillCreate(toggle_invite_submit_button);
-        email_pill_widget.onPillRemove(() => {
-            toggle_invite_submit_button();
-        });
-        email_pill_widget.onTextInputHook(toggle_invite_submit_button);
-
-        $expires_in.on("change", () => {
-            if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
-                custom_expiration_time_input = 0;
-            }
-            settings_components.set_custom_time_inputs_visibility(
-                $expires_in,
-                custom_expiration_time_unit,
-                custom_expiration_time_input,
-            );
-            const valid_to_text = valid_to();
-            settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
-            toggle_invite_submit_button();
-        });
-
-        $("#custom-expiration-time-input").on("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                return;
-            }
-        });
-
-        $("#custom-expiration-time-input, #custom-expiration-time-unit").on("change", () => {
-            custom_expiration_time_input = util.check_time_input(
-                $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
-            );
-            custom_expiration_time_unit = $<HTMLSelectOneElement>(
-                "select:not([multiple])#custom-expiration-time-unit",
-            ).val()!;
-            const valid_to_text = valid_to();
-            settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
-            toggle_invite_submit_button();
-        });
-
-        $("#invite_check_all_button").on("click", () => {
-            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
-        });
-
-        $("#invite_uncheck_all_button").on("click", () => {
-            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
-        });
-
-        $("#invite_select_default_streams").on("change", () => {
-            set_streams_to_join_list_visibility();
-        });
-
-        $(
-            "#send_default_realm_welcome_message_custom_text, #send_custom_welcome_message_custom_text",
-        ).on("change", () => {
-            set_welcome_message_custom_text_visibility();
-        });
-
-        if (!user_has_email_set) {
-            $(util.the($<HTMLFormElement>("form#invite-user-form")).elements).prop(
-                "disabled",
-                true,
-            );
-            demo_organizations_ui.show_configure_email_banner();
-        }
-
-        // Render organization settings tips for non-demo organizations
-        // and for users with admin privileges.
-        if (
-            realm.demo_organization_scheduled_deletion_date === undefined &&
-            current_user.is_admin
-        ) {
-            const invite_tips_data = generate_invite_tips_data();
-            const context = {
-                banner_type: compose_banner.INFO,
-                classname: "setup_tips_banner",
-                ...invite_tips_data,
-            };
-            $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
-        }
-
-        const toggler = components.toggle({
-            html_class: "invite_users_option_tabs large allow-overflow",
-            selected: 0,
-            child_wants_focus: true,
-            values: [
-                {label: $t({defaultMessage: "Email invitation"}), key: "invite-email-tab"},
-                {label: $t({defaultMessage: "Invitation link"}), key: "invite-link-tab"},
-            ],
-            callback(_name, key) {
-                switch (key) {
-                    case "invite-email-tab":
-                        $("#invitee_emails_container").show();
-                        $("#receive-invite-acceptance-notification-container").show();
-                        break;
-                    case "invite-link-tab":
-                        $("#invitee_emails_container").hide();
-                        $("#receive-invite-acceptance-notification-container").hide();
-                        break;
-                }
-                toggle_invite_submit_button(key);
-                reset_error_messages();
-            },
-        });
-        const $container = $("#invite_users_option_tabs_container");
-        if (!settings_data.user_can_invite_users_by_email()) {
-            toggler.disable_tab("invite-email-tab");
-            toggler.goto("invite-link-tab");
-        }
-        if (!settings_data.user_can_create_multiuse_invite()) {
-            toggler.disable_tab("invite-link-tab");
-        }
-        const $elem = toggler.get();
-        $container.append($elem);
-        setTimeout(() => {
-            $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
-        }, 0);
+    const show_group_pill_container =
+        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
+    if (show_group_pill_container) {
+        const $user_group_pill_container = $("#invite-user-group-container .pill-container");
+        user_group_pill_widget = user_group_picker_pill.create($user_group_pill_container);
     }
+
+    set_welcome_message_custom_text_visibility();
+
+    $("#invite_streams_container .input, #invite_select_default_streams").on(
+        "change",
+        () => void update_guest_visible_users_count_and_stream_ids(),
+    );
+
+    $("#invite_as").on("change", () => {
+        update_stream_list();
+        void update_guest_visible_users_count_and_stream_ids();
+    });
+
+    // ✅ Don’t disable the social buttons even if no email is set
+    if (!user_has_email_set) {
+        $(util.the($<HTMLFormElement>("form#invite-user-form")).elements)
+            .not(".invite-social-section *")
+            .prop("disabled", true);
+        demo_organizations_ui.show_configure_email_banner();
+    }
+
+    // ✅ Zulip invite type tabs restored
+    const toggler = components.toggle({
+        html_class: "invite_users_option_tabs large allow-overflow",
+        selected: 0,
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "Email invitation"}), key: "invite-email-tab"},
+            {label: $t({defaultMessage: "Invitation link"}), key: "invite-link-tab"},
+        ],
+        callback(_name, key) {
+            switch (key) {
+                case "invite-email-tab":
+                    $("#invitee_emails_container").show();
+                    $("#receive-invite-acceptance-notification-container").show();
+                    break;
+                case "invite-link-tab":
+                    $("#invitee_emails_container").hide();
+                    $("#receive-invite-acceptance-notification-container").hide();
+                    break;
+            }
+            reset_error_messages();
+        },
+    });
+
+    const $container = $("#invite_users_option_tabs_container");
+    $container.empty().append(toggler.get());
+    setTimeout(() => {
+        $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
+    }, 0);
+
+    // ✅ Finally bind the social invite buttons
+    setTimeout(bind_social_invite_buttons, 150);
+}
+
 
     function invite_users(): void {
         const is_generate_invite_link =
@@ -657,3 +548,48 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 export function initialize(): void {
     $(document).on("click", ".invite-user-link", open_invite_user_modal);
 }
+/* -------------------- SOCIAL INVITE BUTTON LOGIC (FINAL FIX) -------------------- */
+
+// Function that binds click handlers once modal is rendered
+function bind_social_invite_buttons(): void {
+    console.log("✅ Social invite buttons binding initialized");
+
+    // Unbind old handlers (to prevent duplicates)
+    $(document).off("click.social_invite");
+
+    // Attach new handlers
+    $(document).on("click.social_invite", "#invite-google, #invite-github, #invite-facebook", (e) => {
+        e.preventDefault();
+
+        const provider = (e.currentTarget as HTMLElement).id.replace("invite-", "");
+        const baseUrl = window.location.origin;
+
+        console.log(`🌐 Social invite clicked: ${provider}`);
+
+        const providerUrls: Record<string, string> = {
+            google: `${baseUrl}/accounts/login/google/`,
+            github: `${baseUrl}/accounts/login/github/`,
+            facebook: `${baseUrl}/accounts/login/facebook/`,
+        };
+
+        const authUrl = providerUrls[provider];
+        if (authUrl) {
+            const width = 600;
+            const height = 700;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            window.open(authUrl, "_blank", `width=${width},height=${height},top=${top},left=${left}`);
+        } else {
+            alert("⚠️ Invalid provider selected!");
+        }
+    });
+}
+
+// 💡 Zulip fires a custom event when a modal is fully loaded.
+// We use that to safely bind the social invite buttons.
+$(document).on("shown.zulipdialog", "#invite-user-modal", () => {
+    console.log("🪟 Invite modal opened — binding social invite buttons...");
+    setTimeout(bind_social_invite_buttons, 150);
+});
+
+

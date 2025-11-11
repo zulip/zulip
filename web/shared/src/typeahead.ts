@@ -27,7 +27,7 @@ export const popular_emojis = [
     "1f6e0", // working_on_it
     "1f419", // octopus
 ];
-
+export let frequently_used_emojis: string[] = [...popular_emojis];
 const unicode_marks = /\p{M}/gu;
 
 export type Emoji =
@@ -378,6 +378,13 @@ export function triage<T>(
     };
 }
 
+
+
+
+export function set_frequently_used_emojis(frequently_used: string[]): void {
+    frequently_used_emojis = frequently_used;
+}
+
 export function sort_emojis<T extends BaseEmoji>(objs: T[], query: string): T[] {
     // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
@@ -388,7 +395,7 @@ export function sort_emojis<T extends BaseEmoji>(objs: T[], query: string): T[] 
         return pieces.some((piece) => piece.startsWith(query));
     }
 
-    const popular_set = new Set(popular_emojis);
+    const popular_set = new Set(frequently_used_emojis);
 
     function is_popular(obj: BaseEmoji): boolean {
         return (

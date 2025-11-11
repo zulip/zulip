@@ -2384,3 +2384,237 @@ label.preferences-radio-choice-label {
         }
     }
 }
+/* --- Deactivate buttons responsive alignment --- */
+#account-settings .deactivate-buttons-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5em;               /* equal space between buttons */
+    flex-wrap: wrap;          /* allows wrapping on smaller screens */
+    margin-top: 10px;
+}
+
+/* Style both buttons consistently */
+#account-settings .deactivate-buttons-group button {
+    min-width: 150px;         /* consistent width */
+    max-width: 170px;         /* prevents overly wide button text */
+    text-align: center;       /* centers text within */
+    padding: 6px 12px;        /* gives equal spacing */
+    font-size: 0.9rem;        /* slightly smaller for balance */
+}
+
+/* Remove old margin-left */
+#account-settings .deactivate_realm_button {
+    margin-left: 0;
+}
+
+/* Responsive stacking on smaller screens */
+@media (max-width: 768px) {
+    #account-settings .deactivate-buttons-group {
+        flex-direction: column;   /* stack vertically */
+        align-items: flex-start;
+        gap: 0.5em;
+    }
+
+    #account-settings .deactivate-buttons-group button {
+        width: 100%;
+        max-width: 260px;
+    }
+}
+#account-settings .deactivate_realm_button {
+    padding: 5px 10px; /* slightly tighter for longer text */
+}
+/* === Social Invite Buttons === */
+.invite-social-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.social-invite-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80%;
+    max-width: 280px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #fff;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.social-btn i {
+    margin-right: 8px;
+}
+
+/* Platform Colors */
+.social-btn.google {
+    background-color: #db4437;
+}
+.social-btn.github {
+    background-color: #333;
+}
+.social-btn.facebook {
+    background-color: #3b5998;
+}
+
+/* Hover */
+.social-btn:hover {
+    opacity: 0.85;
+}
+
+/* Mobile Friendly */
+@media (max-width: 768px) {
+    .social-btn {
+        width: 90%;
+        max-width: none;
+    }
+}
+/* Make the social invite buttons always clickable and visually active */
+.invite-social-section {
+    margin-top: 1rem;
+
+    .social-invite-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+
+    .social-btn {
+        width: 100%;
+        font-weight: 500;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 12px;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.2s ease-in-out;
+        pointer-events: auto !important; /* 🔥 ensures it's clickable even if parent is disabled */
+        opacity: 1 !important; /* 🔥 remove faded look */
+    }
+
+    .social-btn.google {
+        background-color: #db4437;
+    }
+
+    .social-btn.google:hover {
+        background-color: #c23321;
+    }
+
+    .social-btn.github {
+        background-color: #333;
+    }
+
+    .social-btn.github:hover {
+        background-color: #24292e;
+    }
+
+    .social-btn.facebook {
+        background-color: #1877f2;
+    }
+
+    .social-btn.facebook:hover {
+        background-color: #0e5adf;
+    }
+
+    i {
+        margin-right: 6px;
+    }
+}
+/* =======================
+   Invite using social accounts (center aligned)
+   ======================= */
+
+.invite-social-section {
+    margin: 1.2rem auto;
+    text-align: center;
+    pointer-events: auto !important;
+
+    h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 0.8rem;
+    }
+
+    .social-invite-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+    }
+
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60%;
+        max-width: 280px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.25s ease-in-out;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+
+        i {
+            margin-right: 8px;
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+    }
+
+    .social-btn.google {
+        background-color: #db4437;
+
+        &:hover {
+            background-color: #c23321;
+        }
+    }
+
+    .social-btn.github {
+        background-color: #333;
+
+        &:hover {
+            background-color: #24292e;
+        }
+    }
+
+    .social-btn.facebook {
+        background-color: #1877f2;
+
+        &:hover {
+            background-color: #0e5adf;
+        }
+    }
+}
+/* Fix: Expand textarea width to match panel container */
+.settings-section textarea,
+.organization-settings textarea,
+#organization-settings textarea,
+.modal-body textarea {
+    width: 50%;
+    max-width: 100%;
+    box-sizing: border-box;
+    resize: both;
+}
+

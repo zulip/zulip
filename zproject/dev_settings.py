@@ -231,3 +231,13 @@ OUTPUT_COST_PER_GIGATOKEN = 590
 INPUT_COST_PER_GIGATOKEN = 790
 MAX_PER_USER_MONTHLY_AI_COST = 1
 MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
+
+# Disable rate limits for local development
+RATE_LIMITING = False
+# --- Google OAuth configuration ---
+from zproject.config import get_secret
+
+SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key")
+SOCIAL_AUTH_GOOGLE_SECRET = get_secret("social_auth_google_secret")
+SOCIAL_AUTH_GITHUB_KEY = get_secret("social_auth_github_key")
+SOCIAL_AUTH_GITHUB_SECRET = get_secret("social_auth_github_secret")

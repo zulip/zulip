@@ -77,7 +77,8 @@ type ValidOrInvalidUser =
     | {valid_user: true; user_pill_context: UserPillItem}
     | {valid_user: false; operand: string};
 
-const channels_operands = new Set(["public", "web-public"]);
+const channels_operands = new Set(["public", "web-public", "all", "subscribed"]);
+
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -110,7 +111,7 @@ function message_matches_search_term(message: Message, operator: string, operand
                 case "reaction":
                     return message_parser.message_has_reaction(message);
                 default:
-                    return false; // has:something_else returns false
+                    return false;
             }
 
         case "is":
@@ -135,7 +136,7 @@ function message_matches_search_term(message: Message, operator: string, operand
                 case "muted":
                     return !message_in_home(message);
                 default:
-                    return false; // is:whatever returns false
+                    return false;
             }
 
         case "in":
@@ -145,11 +146,10 @@ function message_matches_search_term(message: Message, operator: string, operand
                 case "all":
                     return true;
                 default:
-                    return false; // in:whatever returns false
+                    return false;
             }
 
         case "near":
-            // this is all handled server side
             return true;
 
         case "id":
@@ -159,20 +159,26 @@ function message_matches_search_term(message: Message, operator: string, operand
             if (message.type !== "stream") {
                 return false;
             }
-
             return message.stream_id.toString() === operand;
         }
 
+        /* ✅ Updated channels logic */
         case "channels": {
             if (message.type !== "stream") {
                 return false;
             }
+
             const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
+
             switch (operand) {
                 case "public":
                     return ["public", "web-public"].includes(stream_privacy_policy);
                 case "web-public":
                     return stream_privacy_policy === "web-public";
+                case "subscribed":
+                    return stream_data.is_user_subscribed(message.stream_id);
+                case "all":
+                    return true;
                 default:
                     return false;
             }
@@ -182,7 +188,6 @@ function message_matches_search_term(message: Message, operator: string, operand
             if (message.type !== "stream") {
                 return false;
             }
-
             operand = operand.toLowerCase();
             return message.topic.toLowerCase() === operand;
 
@@ -190,7 +195,6 @@ function message_matches_search_term(message: Message, operator: string, operand
             return people.id_matches_email_operand(message.sender_id, operand);
 
         case "dm": {
-            // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
             }
@@ -202,7 +206,6 @@ function message_matches_search_term(message: Message, operator: string, operand
             if (!user_ids) {
                 return false;
             }
-
             return _.isEqual(operand_ids, user_ids);
         }
 
@@ -219,8 +222,9 @@ function message_matches_search_term(message: Message, operator: string, operand
         }
     }
 
-    return true; // unknown operators return true (effectively ignored)
+    return true;
 }
+
 
 // For when we don't need to do highlighting
 export function create_user_pill_context(user: User): UserPillItem {
@@ -833,19 +837,26 @@ export class Filter {
         return [...parts, ...more_parts];
     }
 
-    static describe_channels_operator(negated: boolean, operand: string): string {
-        const possible_prefix = negated ? "exclude " : "";
-        assert(channels_operands.has(operand));
-        if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
-            return possible_prefix + "all public channels that you can view";
-        }
-        switch (operand) {
-            case "web-public":
-                return possible_prefix + "all web-public channels";
-            default:
-                return possible_prefix + "all public channels";
-        }
+   static describe_channels_operator(negated: boolean, operand: string): string {
+    const prefix = negated ? "exclude " : "";
+    assert(channels_operands.has(operand));
+
+    if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
+        return prefix + "all public channels that you can view";
     }
+
+    switch (operand) {
+        case "web-public":
+            return prefix + "all web-public channels";
+        case "subscribed":
+            return prefix + "channels you are subscribed to";
+        case "all":
+            return prefix + "all channels (including unsubscribed)";
+        default:
+            return prefix + "all public channels";
+    }
+}
+
 
     static search_description_as_html(
         terms: NarrowTerm[],

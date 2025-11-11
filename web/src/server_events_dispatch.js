@@ -19,6 +19,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
+import * as emoji_frequency from "./emoji_frequency.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
@@ -176,6 +177,7 @@ export function dispatch_normal_event(event) {
             unread_ops.process_read_messages_event(msg_ids);
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
+            emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
             message_events.remove_messages(msg_ids);
 
             if (event.message_type === "stream") {
@@ -254,9 +256,11 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     reactions.add_reaction(event);
+                    emoji_frequency.update_emoji_frequency_on_add_reaction_event(event);
                     break;
                 case "remove":
                     reactions.remove_reaction(event);
+                    emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
                     break;
                 default:
                     blueslip.error("Unexpected event type reaction/" + event.op);

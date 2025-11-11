@@ -8,7 +8,9 @@ const {zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const emoji = zrequire("emoji");
+const emoji_frequency = zrequire("emoji_frequency");
 const emoji_picker = zrequire("emoji_picker");
+const typeahead = zrequire("../shared/src/typeahead");
 
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
@@ -19,6 +21,7 @@ run_test("initialize", () => {
         realm_emoji: {},
         emoji_codes,
     });
+    typeahead.set_frequently_used_emojis(typeahead.popular_emojis);
     emoji_picker.initialize();
 
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, "name");
@@ -47,9 +50,10 @@ run_test("initialize", () => {
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 195);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 223);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 168);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
+    
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 385);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 262);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 135);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 269);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);
@@ -61,6 +65,37 @@ run_test("initialize", () => {
         emoji.emojis_by_name.size,
         total_emoji_in_categories - popular_emoji_count + zulip_emoji_count,
     );
+
+        const make_emoji = (emoji_code, score) => ({
+        emoji_code,
+        score,
+    });
+
+    const popular_emojis = typeahead.popular_emojis.map((emoji_code) => make_emoji(emoji_code, 10));
+    const non_popular_emoji_codes = [
+        "1f3df", // stadium
+        "1f4b0", // moneybag
+        "1f3e3", // japanese post office
+        "1f43c", // panda face
+        "1f648", // see no evil
+        "1f600", // grinning face
+        "1f680", // rocket
+    ];
+    const non_popular_emojis = [];
+    for (const [i, non_popular_emoji_code] of non_popular_emoji_codes.entries()) {
+        non_popular_emojis.push(make_emoji(non_popular_emoji_code, i));
+    }
+    for (const emoji of [...popular_emojis, ...non_popular_emojis]) {
+        emoji_frequency.reaction_data.set(emoji.emoji_code, emoji);
+    }
+    emoji_frequency.update_frequently_used_emojis_list();
+    non_popular_emoji_codes.reverse();
+
+    assert.equal(typeahead.frequently_used_emojis.length, 12);
+    assert.deepEqual(typeahead.frequently_used_emojis, [
+        ...typeahead.popular_emojis,
+        ...non_popular_emoji_codes.slice(0, 6),
+    ]);
 });
 
 run_test("is_emoji_present_in_text", () => {
