@@ -86,9 +86,11 @@
             {{!-- We define the recipient-row-topic-menu class in a wrapper span
             since the icon button component already has a tippy tooltip attached
             to it and attaching the topic actions menu popover to it causes buggy behavior. --}}
-            <span class="recipient-row-topic-menu recipient-bar-control" aria-haspopup="true">
-                {{> components/icon_button icon="more-vertical" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "Topic actions") aria-label=(t "Topic actions") }}
-            </span>
+            {{#unless hide_topic_menu}}
+                <span class="recipient-row-topic-menu recipient-bar-control" aria-haspopup="true">
+                    {{> components/icon_button icon="more-vertical" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "Topic actions") aria-label=(t "Topic actions") }}
+                </span>
+            {{/unless}}
         </span>
         <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date_html}}}</span>
     </div>
