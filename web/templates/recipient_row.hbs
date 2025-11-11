@@ -65,7 +65,7 @@
             {{/if}}
 
             {{! visibility policy menu }}
-            {{#if (and is_subscribed (not is_archived))}}
+            {{#if (and (not hide_topic_visibility_policy_menu) is_subscribed (not is_archived))}}
             {{!-- We define the change_visibility_policy class in a wrapper span
             since the icon button component already has a tippy tooltip attached
             to it and Tippy does not support multiple tooltips on a single element. --}}
