@@ -70,6 +70,23 @@ export function add_channel_folder(): void {
     });
 }
 
+function remove_channel_from_folder(
+    stream_id: number,
+    on_success: () => void,
+    on_error: (xhr: JQuery.jqXHR) => void,
+): void {
+    const url = "/json/streams/" + stream_id.toString();
+    const data = {
+        folder_id: JSON.stringify(null),
+    };
+    void channel.patch({
+        url,
+        data,
+        success: on_success,
+        error: on_error,
+    });
+}
+
 function archive_folder(folder_id: number): void {
     const stream_ids = channel_folders.get_stream_ids_in_folder(folder_id);
     let successful_requests = 0;
@@ -96,38 +113,29 @@ function archive_folder(folder_id: number): void {
         return;
     }
 
-    function remove_channel_from_folder(stream_id: number): void {
-        const url = "/json/streams/" + stream_id.toString();
-        const data = {
-            folder_id: JSON.stringify(null),
-        };
-        void channel.patch({
-            url,
-            data,
-            success() {
-                successful_requests = successful_requests + 1;
+    function on_success(): void {
+        successful_requests = successful_requests + 1;
 
-                if (successful_requests === stream_ids.length) {
-                    // Make request to archive folder only after all channels
-                    // are removed from the folder.
-                    make_archive_folder_request();
-                }
-            },
-            error(xhr) {
-                ui_report.error(
-                    $t_html({
-                        defaultMessage: "Failed removing one or more channels from the folder",
-                    }),
-                    xhr,
-                    $("#dialog_error"),
-                );
-                dialog_widget.hide_dialog_spinner();
-            },
-        });
+        if (successful_requests === stream_ids.length) {
+            // Make request to archive folder only after all channels
+            // are removed from the folder.
+            make_archive_folder_request();
+        }
+    }
+
+    function on_error(xhr: JQuery.jqXHR): void {
+        ui_report.error(
+            $t_html({
+                defaultMessage: "Failed removing one or more channels from the folder",
+            }),
+            xhr,
+            $("#dialog_error"),
+        );
+        dialog_widget.hide_dialog_spinner();
     }
 
     for (const stream_id of stream_ids) {
-        remove_channel_from_folder(stream_id);
+        remove_channel_from_folder(stream_id, on_success, on_error);
     }
 }
 
