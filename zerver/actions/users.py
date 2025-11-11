@@ -859,6 +859,12 @@ def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
         # A ConfigError just means that there are no config entries for user_profile.
         except ConfigError:
             return []
+    elif user_profile.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        try:
+            return [{"integration_name": get_bot_config(user_profile).get("integration_id", "")}]
+        # A ConfigError just means that there are no config entries for user_profile.
+        except ConfigError:
+            return []
     else:
         return []
 
@@ -875,13 +881,14 @@ def get_service_dicts_for_bots(
         bot_dict["id"] for bot_dict in bot_dicts if bot_dict["bot_type"] == UserProfile.EMBEDDED_BOT
     ]
     embedded_bot_configs = get_bot_configs(embedded_bot_ids)
-
+    bot_configs = get_bot_configs(bot_profile_ids)
     service_dicts_by_uid: dict[int, list[dict[str, Any]]] = {}
     for bot_dict in bot_dicts:
         bot_profile_id = bot_dict["id"]
         bot_type = bot_dict["bot_type"]
         services = bot_services_by_uid[bot_profile_id]
         service_dicts: list[dict[str, Any]] = []
+        bot_config = bot_configs.get(bot_profile_id, {})
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             service_dicts = [
                 {
@@ -897,6 +904,12 @@ def get_service_dicts_for_bots(
                 {
                     "config_data": bot_config,
                     "service_name": services[0].name,
+                }
+            ]
+        elif bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+            service_dicts = [
+                {
+                    "integration_name": (bot_config.get("integration_id") if bot_config else ""),
                 }
             ]
         service_dicts_by_uid[bot_profile_id] = service_dicts

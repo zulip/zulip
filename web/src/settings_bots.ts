@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
@@ -14,6 +15,8 @@ import * as components from "./components.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {Option} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as integration_url_modal from "./integration_url_modal.ts";
 import * as list_widget from "./list_widget.ts";
@@ -27,8 +30,10 @@ import * as ui_report from "./ui_report.ts";
 import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
+import * as util from "./util.ts";
 
-const INCOMING_WEBHOOK_BOT_TYPE = 2;
+const INCOMING_WEBHOOK_BOT_TYPE = "2";
+const INCOMING_WEBHOOK_BOT_TYPE_INT = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 const EMBEDDED_BOT_TYPE = "4";
@@ -82,7 +87,7 @@ export function render_bots(): void {
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,
-            is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+            is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
             zuliprc: "zuliprc", // Most browsers do not allow filename starting with `.`
         });
         user_owns_an_active_outgoing_webhook_bot =
@@ -120,7 +125,7 @@ export function generate_zuliprc_content(bot: {
     let token;
     // For outgoing webhooks, include the token in the zuliprc.
     // It's needed for authenticating to the Botserver.
-    if (bot.bot_type === 3) {
+    if (bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
         const services = bot_data.get_services(bot.user_id);
         assert(services !== undefined);
         const service = services[0];
@@ -237,6 +242,10 @@ export function get_allowed_bot_types(): BotType[] {
 }
 
 export function add_a_new_bot(): void {
+    const default_integration_option = {
+        name: $t_html({defaultMessage: "Select an integration"}),
+        unique_id: "",
+    };
     const html_body = render_add_new_bot_form({
         bot_types: get_allowed_bot_types(),
         realm_embedded_bots: realm.realm_embedded_bots,
@@ -244,6 +253,7 @@ export function add_a_new_bot(): void {
     });
 
     let create_avatar_widget: UploadWidget;
+    let integration_input_dropdown_widget: dropdown_widget.DropdownWidget;
 
     function create_a_new_bot(): void {
         const bot_type = $<HTMLSelectOneElement>("select:not([multiple])#create_bot_type").val()!;
@@ -265,21 +275,30 @@ export function add_a_new_bot(): void {
         formData.append("full_name", full_name);
         formData.append("short_name", short_name);
 
-        // If the selected bot_type is Outgoing webhook
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-            formData.append("payload_url", JSON.stringify(payload_url));
-            formData.append("interface_type", interface_type);
-        } else if (bot_type === EMBEDDED_BOT_TYPE) {
-            formData.append("service_name", service_name);
-            const config_data: Record<string, string> = {};
-            $<HTMLInputElement>(
-                `#config_inputbox [name*='${CSS.escape(service_name)}'] input`,
-            ).each(function () {
-                const key = $(this).attr("name")!;
-                const value = $(this).val()!;
-                config_data[key] = value;
-            });
-            formData.append("config_data", JSON.stringify(config_data));
+        switch (bot_type) {
+            case OUTGOING_WEBHOOK_BOT_TYPE: {
+                formData.append("payload_url", JSON.stringify(payload_url));
+                formData.append("interface_type", interface_type);
+                break;
+            }
+            case EMBEDDED_BOT_TYPE: {
+                formData.append("service_name", service_name);
+                const config_data: Record<string, string> = {};
+                $<HTMLInputElement>(
+                    `#config_inputbox [name*='${CSS.escape(service_name)}'] input`,
+                ).each(function () {
+                    const key = $(this).attr("name")!;
+                    const value = $(this).val()!;
+                    config_data[key] = value;
+                });
+                formData.append("config_data", JSON.stringify(config_data));
+                break;
+            }
+            case INCOMING_WEBHOOK_BOT_TYPE: {
+                const integration_name = integration_input_dropdown_widget.value()!.toString();
+                formData.append("service_name", integration_name);
+                break;
+            }
         }
         const files = $<HTMLInputElement>("input#bot_avatar_file_input")[0]!.files;
         assert(files !== null);
@@ -305,7 +324,7 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
-        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE_INT);
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
@@ -317,23 +336,64 @@ export function add_a_new_bot(): void {
 
         create_avatar_widget = avatar.build_bot_create_widget();
 
+        function get_options_for_integration_input_dropdown(): Option[] {
+            const options = [
+                default_integration_option,
+                ...realm.realm_incoming_webhook_bots
+                    .toSorted((a, b) => util.strcmp(a.display_name, b.display_name))
+                    .map((bot) => ({
+                        name: bot.display_name,
+                        unique_id: bot.name,
+                    })),
+            ];
+            return options;
+        }
+
+        integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "integration-name",
+            get_options: get_options_for_integration_input_dropdown,
+            $events_container: $("#create_bot_form"),
+            default_id: default_integration_option.unique_id,
+            unique_id_type: "string",
+            item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
+                integration_input_dropdown_widget.render();
+                dropdown.hide();
+                event.preventDefault();
+                event.stopPropagation();
+            },
+        });
+        integration_input_dropdown_widget.setup();
+
         $("#create_bot_type").on("change", () => {
             const bot_type = $("#create_bot_type").val();
             // For "generic bot" or "incoming webhook" both these fields need not be displayed.
             $("#service_name_list").hide();
             $("#select_service_name").removeClass("required");
+            $("#integration_name_list").hide();
+            $("#integration_name_list").removeClass("required");
             $("#config_inputbox").hide();
 
             $("#payload_url_inputbox").hide();
             $("#create_payload_url").removeClass("required");
-            if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                $("#payload_url_inputbox").show();
-                $("#create_payload_url").addClass("required");
-            } else if (bot_type === EMBEDDED_BOT_TYPE) {
-                $("#service_name_list").show();
-                $("#select_service_name").addClass("required");
-                $("#select_service_name").trigger("change");
-                $("#config_inputbox").show();
+            switch (bot_type) {
+                case INCOMING_WEBHOOK_BOT_TYPE: {
+                    $("#integration_name_list").show();
+                    $("#integration_name_list").addClass("required");
+                    integration_input_dropdown_widget.setup();
+                    break;
+                }
+                case OUTGOING_WEBHOOK_BOT_TYPE: {
+                    $("#payload_url_inputbox").show();
+                    $("#create_payload_url").addClass("required");
+                    break;
+                }
+                case EMBEDDED_BOT_TYPE: {
+                    $("#service_name_list").show();
+                    $("#select_service_name").addClass("required");
+                    $("#select_service_name").trigger("change");
+                    $("#config_inputbox").show();
+                    break;
+                }
             }
         });
 
@@ -347,6 +407,18 @@ export function add_a_new_bot(): void {
     }
 
     function validate_input(): boolean {
+        const bot_type = $("#create_bot_type").val()!;
+        if (bot_type === INCOMING_WEBHOOK_BOT_TYPE) {
+            const integration_name = integration_input_dropdown_widget.value()!.toString();
+            if (!integration_name || integration_name === default_integration_option.unique_id) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Please select an integration"}),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
+        }
         const bot_short_name = $<HTMLInputElement>("input#create_bot_short_name").val()!;
 
         if (is_local_part(bot_short_name)) {
@@ -503,7 +575,9 @@ export function set_up(): void {
         e.preventDefault();
         e.stopPropagation();
         const api_key = $(this).attr("data-api-key")!;
-        integration_url_modal.show_generate_integration_url_modal(api_key);
+        const $bot_info = $(this).closest(".bot-information-box").find(".bot-card-info");
+        const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+        integration_url_modal.show_generate_integration_url_modal(api_key, bot_id);
     });
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {
