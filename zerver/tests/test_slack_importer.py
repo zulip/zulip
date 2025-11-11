@@ -771,6 +771,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]["email"], "jon@gmail.com")
         self.assertEqual(zerver_userprofile[0]["full_name"], "John Doe")
         self.assertEqual(zerver_userprofile[0]["is_imported_stub"], True)
+        self.assertEqual(zerver_userprofile[0]["short_name"], "john")
+        self.assertEqual(zerver_userprofile[0]["last_login"], None)
 
         self.assertEqual(
             zerver_userprofile[1]["id"], test_slack_user_id_to_zulip_user_id["U0CBK5KAT"]
