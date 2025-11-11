@@ -116,7 +116,21 @@ export function allow_sorting_deactivated_users_list_by_email(): boolean {
 
 export function update_view_on_deactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
+    // If the row isn't present in the DOM (for example the action
+    // originated from another browser/window), ensure that we still
+    // mark the lists to be redrawn so the change becomes visible
+    // when the relevant tab is shown.
     if ($row.length === 0) {
+        if (!is_bot) {
+            should_redraw_active_users_list = true;
+            should_redraw_deactivated_users_list = true;
+            if (active_users_role_dropdown) {
+                active_users_role_dropdown.render(active_section.filters.role_code);
+            }
+            if (deactivated_users_role_dropdown) {
+                deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+            }
+        }
         return;
     }
 
@@ -154,7 +168,20 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
 
 export function update_view_on_reactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
+    // Same logic as in update_view_on_deactivate: if the row is
+    // missing from the current DOM, mark the lists to be redrawn
+    // so the UI updates when the user navigates to the Users tab.
     if ($row.length === 0) {
+        if (!is_bot) {
+            should_redraw_active_users_list = true;
+            should_redraw_deactivated_users_list = true;
+            if (active_users_role_dropdown) {
+                active_users_role_dropdown.render(active_section.filters.role_code);
+            }
+            if (deactivated_users_role_dropdown) {
+                deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+            }
+        }
         return;
     }
 
