@@ -72,8 +72,7 @@
 {{/if}}
 
 <div class="message_length_controller"></div>
-
-{{#if (and (not is_hidden) msg.message_reactions)}}
+{{#if (and (not hide_message_reactions) (not is_hidden) msg.message_reactions)}}
     {{> message_reactions . }}
 {{/if}}
 
