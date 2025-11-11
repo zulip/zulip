@@ -769,10 +769,8 @@ ul.popover-group-menu-member-list {
 }
 
 #giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 5px is the extra gutter space
-     * + 1px for outline.
-     * between gif columns. */
-    width: 306px;
+    width: auto;
+    max-width: 97vw;
     border: 0;
     padding: 0;
 

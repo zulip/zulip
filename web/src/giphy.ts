@@ -63,6 +63,16 @@ async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => vo
 
     giphy_fetch ??= new GiphyFetch(realm.giphy_api_key);
 
+    const GRID_COLUMNS = 2;
+    const GRID_GUTTER = 6;
+    const MAX_GIF_WIDTH = 300;
+
+    function computeGridWidth(): number {
+        const desired = GRID_COLUMNS * MAX_GIF_WIDTH + (GRID_COLUMNS - 1) * GRID_GUTTER;
+        const viewportCap = Math.floor(window.innerWidth * 0.97);
+        return Math.min(desired, viewportCap);
+    }
+
     async function fetchGifs(offset: number): Promise<GifsResult> {
         assert(giphy_fetch !== undefined);
         const config = {
@@ -83,10 +93,10 @@ async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => vo
         // for detailed documentation.
         renderGrid(
             {
-                width: 300,
+                width: computeGridWidth(),
                 fetchGifs,
-                columns: 3,
-                gutter: 6,
+                columns: GRID_COLUMNS,
+                gutter: GRID_GUTTER,
                 noLink: true,
                 // Hide the creator attribution that appears over a
                 // GIF; nice in principle but too distracting.
@@ -116,6 +126,9 @@ async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => vo
     // content appearing while the user is typing.
     const resizeRender = _.throttle(render, 300);
     window.addEventListener("resize", resizeRender, false);
+    const $container = $(targetEl).closest("#giphy_grid_in_popover");
+    const containerWidth = computeGridWidth() + 6;
+    $container.css("width", `${containerWidth}px`);
     const remove = render();
     return {
         remove() {
