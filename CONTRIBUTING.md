@@ -483,10 +483,12 @@ labels.
   changed.
 
 - **Can I come up with my own feature idea and work on it?** We welcome
-  suggestions of features or other improvements that you feel would be valuable. If you
-  have a new feature you'd like to add, you can start a conversation [in our
-  development community](https://zulip.com/development-community/#where-do-i-send-my-message)
-  explaining the feature idea and the problem that you're hoping to solve.
+  suggestions for ways to make Zulip better based on your experience using the
+  product. Please follow the guides on how to [report bugs][reporting-bugs] or
+  [suggest features][suggesting-features]. However, please _do not_ suggest
+  features just because you're looking for something to work on. It wastes
+  maintainer time, and distracts the community from work that will truly help
+  Zulip's users.
 - **I'm waiting for the next round of review on my PR. Can I pick up
   another issue in the meantime?** Someone's first Zulip PR often
   requires quite a bit of iteration, so please [make sure your pull
@@ -522,6 +524,8 @@ labels.
      process to be merged.
 
 [reviewable-pull-requests]: https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html
+[suggesting-features]: https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html
+[reporting-bugs]: https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html
 
 ## Outreach programs
 
