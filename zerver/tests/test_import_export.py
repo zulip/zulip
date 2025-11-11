@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
 from django.forms.models import model_to_dict
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -112,7 +113,10 @@ from zerver.models.messages import ImageAttachment
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_direct_message_group_hash
+from zerver.models.recipients import (
+    get_direct_message_group_hash,
+    get_or_create_direct_message_group,
+)
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import ExternalAuthID, get_system_bot, get_user_by_delivery_email
 
@@ -1014,6 +1018,12 @@ class RealmImportExportTest(ExportFile):
         do_deactivate_user(deactivated_non_consented_user, acting_user=None)
 
         self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
+
+        # Remove the recipient of the welcome bot to test exporting bots without personal recipients.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        welcome_bot.recipient = None
+        welcome_bot.save(update_fields=["recipient"])
 
         self.export_realm_and_create_auditlog(
             realm,
@@ -2989,6 +2999,55 @@ class SingleUserExportTest(ExportFile):
                 (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
                 (hi_myself_message_id, "hi myself", cordelia.full_name),
                 (bye_stream_message_id, "bye stream", "Denmark"),
+            ],
+        )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_1_to_1_message_data_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        bot = self.create_test_bot("test-bot", hamlet)
+
+        get_or_create_direct_message_group([hamlet.id, cordelia.id])
+        get_or_create_direct_message_group([hamlet.id, bot.id])
+        get_or_create_direct_message_group([hamlet.id])
+
+        hi_hamlet_message_id = self.send_personal_message(othello, hamlet, "hi hamlet")
+        hi_cordelia_message_id = self.send_personal_message(hamlet, cordelia, "hi cordelia")
+        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
+        test_bot_message_id = self.send_personal_message(hamlet, bot, "test bot message")
+        self.send_personal_message(othello, cordelia, "an irrelevant message")
+        bye_peeps_message_id = self.send_group_direct_message(
+            othello, [cordelia, hamlet], "bye peeps"
+        )
+        self_message_id = self.send_personal_message(hamlet, hamlet, "hi myself")
+
+        output_dir = make_export_output_dir()
+        hamlet = self.example_user("hamlet")
+
+        with self.assertLogs(level="INFO"):
+            do_export_user(hamlet, output_dir)
+
+        messages = read_json("messages-000001.json")
+
+        excerpt = [
+            (rec["id"], rec["content"], rec["recipient_name"])
+            for rec in messages["zerver_message"][-6:]
+        ]
+        self.assertEqual(
+            excerpt,
+            [
+                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
+                (hi_cordelia_message_id, "hi cordelia", cordelia.full_name),
+                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
+                (test_bot_message_id, "test bot message", bot.full_name),
+                (
+                    bye_peeps_message_id,
+                    "bye peeps",
+                    f"{cordelia.full_name}, {hamlet.full_name}, {othello.full_name}",
+                ),
+                (self_message_id, "hi myself", hamlet.full_name),
             ],
         )
 
