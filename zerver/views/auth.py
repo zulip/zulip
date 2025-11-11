@@ -511,8 +511,8 @@ def create_response_for_otp_flow(
     # Check if the mobile URL is overridden in settings, if so, replace it
     # This block should only apply to the mobile flow, so we if add others, this
     # needs to be conditional.
-    if realm_url in settings.REALM_MOBILE_REMAP_URIS:
-        realm_url = settings.REALM_MOBILE_REMAP_URIS[realm_url]
+    if realm_url in settings.REALM_MOBILE_REMAP_URLS:
+        realm_url = settings.REALM_MOBILE_REMAP_URLS[realm_url]
 
     params = {
         encrypted_key_field_name: otp_encrypt_api_key(key, otp),

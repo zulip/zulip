@@ -575,7 +575,7 @@ class PreviewTestCase(ZulipTestCase):
         msg = self._send_message_with_test_org_url(sender=self.example_user("prospero"))
         self.assertIn(embedded_link, msg.rendered_content)
 
-    @override_settings(CAMO_URI="")
+    @override_settings(CAMO_URL="")
     def test_inline_url_embed_preview(self) -> None:
         with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;http://ia.media-imdb.com/images/rock.jpg&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         without_preview = '<p><a href="http://test.org/">http://test.org/</a></p>'
@@ -602,7 +602,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(msg.rendered_content, with_preview)
 
     @responses.activate
-    @override_settings(CAMO_URI="")
+    @override_settings(CAMO_URL="")
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_css_escaping_image(self) -> None:
         user = self.example_user("hamlet")
@@ -641,7 +641,7 @@ class PreviewTestCase(ZulipTestCase):
             msg.rendered_content,
         )
 
-    @override_settings(CAMO_URI="")
+    @override_settings(CAMO_URL="")
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_inline_relative_url_embed_preview(self) -> None:
         # Relative URLs should not be sent for URL preview.
@@ -653,7 +653,7 @@ class PreviewTestCase(ZulipTestCase):
             )
             patched.assert_not_called()
 
-    @override_settings(CAMO_URI="")
+    @override_settings(CAMO_URL="")
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
         with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;http://test.org/images/rock.jpg&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the Open Graph image is a relative URL.
@@ -845,7 +845,7 @@ class PreviewTestCase(ZulipTestCase):
         )
 
     @responses.activate
-    @override_settings(CAMO_URI="")
+    @override_settings(CAMO_URL="")
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_no_content_type_header(self) -> None:
         user = self.example_user("hamlet")

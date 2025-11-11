@@ -176,7 +176,7 @@ from django_auth_ldap.config import GroupOfNamesType, LDAPGroupQuery, LDAPSearch
 
 ## The LDAP server to connect to.  Setting this enables Zulip
 ## automatically fetching each new user's name from LDAP.
-# AUTH_LDAP_SERVER_URI = "ldaps://ldap.example.com"
+# AUTH_LDAP_SERVER_URL = "ldaps://ldap.example.com"
 
 ## The DN of the user to bind as (i.e., authenticate as) in order to
 ## query LDAP.  If unset, Zulip does an anonymous bind.
@@ -854,12 +854,12 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 ## To override the default avatar image if ENABLE_GRAVATAR is False, place your
 ## custom default avatar image at /home/zulip/local-static/default-avatar.png
 ## and uncomment the following line.
-# DEFAULT_AVATAR_URI = "/local-static/default-avatar.png"
+# DEFAULT_AVATAR_URL = "/local-static/default-avatar.png"
 
-## The default CAMO_URI of "/external_content/" is served by the camo
-## setup in the default Zulip nginx configuration.  Setting CAMO_URI
+## The default CAMO_URL of "/external_content/" is served by the camo
+## setup in the default Zulip nginx configuration.  Setting CAMO_URL
 ## to "" will disable the Camo integration.
-CAMO_URI = "/external_content/"
+CAMO_URL = "/external_content/"
 
 ## Controls various features explaining Zulip to new users. Disabling
 ## this is only recommended for installations that are using a limited

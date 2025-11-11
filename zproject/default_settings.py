@@ -46,7 +46,8 @@ EMAIL_HOST: str | None = None
 # we leave up to Django's defaults.
 
 # LDAP auth
-AUTH_LDAP_SERVER_URI = ""
+AUTH_LDAP_SERVER_URI: str | None = None
+AUTH_LDAP_SERVER_URL: str | None = None
 AUTH_LDAP_BIND_DN = ""
 AUTH_LDAP_USER_SEARCH: Optional["LDAPSearch"] = None
 LDAP_APPEND_DOMAIN: str | None = None
@@ -152,7 +153,9 @@ SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 # File uploads and avatars
 # TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
 DEFAULT_AVATAR_URI: str | None = None
+DEFAULT_AVATAR_URL: str | None = None
 DEFAULT_LOGO_URI: str | None = None
+DEFAULT_LOGO_URL: str | None = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
 S3_EXPORT_BUCKET = ""
@@ -196,6 +199,7 @@ BOT_CONFIG_SIZE_LIMIT = 10000
 
 # External service configuration
 CAMO_URI = ""
+CAMO_URL = ""
 KATEX_SERVER = get_config("application_server", "katex_server", True)
 KATEX_SERVER_PORT = get_config("application_server", "katex_server_port", "9700")
 MEMCACHED_LOCATION = "127.0.0.1:11211"
@@ -207,6 +211,8 @@ RABBITMQ_USERNAME = "zulip"
 RABBITMQ_USE_TLS = False
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
+REDIS_PASSWORD: str | None = None
+REDIS_PASSWORD_FILE: str | None = None
 REMOTE_POSTGRES_HOST = ""
 REMOTE_POSTGRES_PORT = ""
 REMOTE_POSTGRES_SSLMODE = ""
@@ -437,11 +443,19 @@ DEMO_ORG_DEADLINE_DAYS = 30
 # The values will also be added to ALLOWED_HOSTS.
 REALM_HOSTS: dict[str, str] = {}
 
-# Map used to rewrite the URIs for certain realms during mobile
-# authentication.  This, combined with adding the relevant hosts to
-# ALLOWED_HOSTS, can be used for environments where security policies
-# mean that a different hostname must be used for mobile access.
+# Map used to rewrite the URLs for certain realms during mobile authentication.
+# This, combined with adding the relevant hosts to ALLOWED_HOSTS, can be used
+# for environments where security policies mean that a different hostname
+# must be used for mobile access.
+#
+# Historically this setting was named REALM_MOBILE_REMAP_URIS; the new
+# preferred name REALM_MOBILE_REMAP_URLS is provided for consistency with
+# other settings and terminology changes.
+#
+# Both names are currently supported for backwards-compatibility; the server
+# will prefer REALM_MOBILE_REMAP_URLS if both are defined.
 REALM_MOBILE_REMAP_URIS: dict[str, str] = {}
+REALM_MOBILE_REMAP_URLS: dict[str, str] = {}
 
 # Whether the server is using the PGroonga full-text search
 # backend.  Plan is to turn this on for everyone after further
