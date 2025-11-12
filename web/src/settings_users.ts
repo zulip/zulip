@@ -375,7 +375,7 @@ function initialize_user_sections(active_user_ids: number[], deactivated_user_id
     deactivated_users_role_dropdown.setup();
 }
 
-function get_bot_status(): {unique_id: number; name: string}[] {
+function get_bot_status_options(): {unique_id: number; name: string}[] {
     return [
         {unique_id: 0, name: $t({defaultMessage: "Active"})},
         {unique_id: 1, name: $t({defaultMessage: "Deactivated"})},
@@ -389,7 +389,7 @@ function create_status_filter_dropdown(
     new dropdown_widget.DropdownWidget({
         widget_name: section.dropdown_widget_name,
         unique_id_type: "number",
-        get_options: get_bot_status,
+        get_options: get_bot_status_options,
         $events_container,
         item_click_callback: status_selected_handler,
         default_id: section.filters.status_code,
