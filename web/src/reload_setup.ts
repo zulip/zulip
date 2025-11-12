@@ -27,14 +27,23 @@ const legacy_reload_vars_schema = z.intersection(
         z.object({
             msg: z.optional(z.undefined()),
         }),
-        z.object({
-            msg: z.string(),
-            recipient: z.string(),
-            message_type: z.enum(["private", "stream"]),
-            stream_id: z.optional(z.string()),
-            topic: z.optional(z.string()),
-            draft_id: z.optional(z.string()),
-        }),
+        z.intersection(
+            z.object({
+                msg: z.string(),
+                draft_id: z.optional(z.string()),
+            }),
+            z.discriminatedUnion("msg_type", [
+                z.object({
+                    msg_type: z.literal("private"),
+                    recipient: z.string(),
+                }),
+                z.object({
+                    msg_type: z.literal("stream"),
+                    stream_id: z.optional(z.string()),
+                    topic: z.string(),
+                }),
+            ]),
+        ),
     ]),
 );
 
@@ -137,20 +146,17 @@ function load_from_legacy_data(fragment: unknown): void {
         const send_now = vars.send_after_reload === "1";
 
         try {
-            const private_message_recipient_ids = vars.recipient
-                ? people.emails_string_to_user_ids(vars.recipient)
-                : [];
-
-            let message_type: "private" | "stream";
-            if (vars.message_type === "private") {
-                message_type = "private";
-            } else {
-                message_type = "stream";
-            }
+            const private_message_recipient_ids =
+                vars.msg_type === "private" ? people.emails_string_to_user_ids(vars.recipient) : [];
+            const stream_id =
+                vars.msg_type === "stream" && vars.stream_id
+                    ? Number.parseInt(vars.stream_id, 10)
+                    : undefined;
+            const topic = vars.msg_type === "stream" ? vars.topic : "";
             compose_actions.start({
-                message_type,
-                stream_id: vars.stream_id ? Number.parseInt(vars.stream_id, 10) : undefined,
-                topic: vars.topic ?? "",
+                message_type: vars.msg_type,
+                stream_id,
+                topic,
                 private_message_recipient_ids,
                 content: vars.msg ?? "",
                 draft_id: vars.draft_id ?? "",
