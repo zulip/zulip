@@ -2254,8 +2254,14 @@ export async function initialize(
         user_ids_to_fetch.delete(person.user_id);
     }
 
-    // Fetch all the missing users. This code path is temporary: We
-    // plan to move to a model where the web app expects to have an
-    // incomplete users dataset in large organizations.
-    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
+    // This check is a hack to avoid us from showing inaccessible users
+    // as `Unknown users` to the guest user.
+    // TODO: Find a way to identify inaccessible users and remove them
+    // from this fetch.
+    if (settings_data.user_can_access_all_other_users()) {
+        // Fetch all the missing users. This code path is temporary: We
+        // plan to move to a model where the web app expects to have an
+        // incomplete users dataset in large organizations.
+        await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
+    }
 }
