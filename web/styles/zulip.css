@@ -229,6 +229,16 @@ p.n-margin {
     }
 }
 
+.all-messages-search-caution {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.all-messages-search-caution a {
+    text-decoration: none;
+}
+
 .messages-logo-svg {
     width: 1.7188em; /* 27.5px at 16px/1em */
 }
