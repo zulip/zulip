@@ -847,8 +847,7 @@ def gather_subscriptions_helper(
     def get_stream_id(sub_dict: RawSubscriptionDict) -> int:
         return recip_id_to_stream_id[sub_dict["recipient_id"]]
 
-    traffic_stream_ids = {get_stream_id(sub_dict) for sub_dict in sub_dicts}
-    recent_traffic = get_streams_traffic(realm=realm, stream_ids=traffic_stream_ids)
+    recent_traffic = get_streams_traffic(realm=realm)
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
