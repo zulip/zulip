@@ -1421,6 +1421,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
+.search-all-channels-button {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+}
+
+.empty_feed_notice.hidden {
+    display: none;
+}
+
 .message-fade,
 .user_sidebar_entry.user-fade {
     opacity: 0.4;
