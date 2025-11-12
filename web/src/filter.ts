@@ -16,8 +16,14 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
-import {current_user, narrow_term_schema} from "./state_data.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import {
+    current_user,
+    narrow_canonical_operator_schema,
+    narrow_canonical_term_schema,
+    narrow_operator_schema,
+    narrow_term_schema,
+} from "./state_data.ts";
+import type {NarrowCanonicalOperator, NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
@@ -262,9 +268,7 @@ export class Filter {
         this.narrow_requires_hash_change = false;
     }
 
-    static canonicalize_operator(operator: string): string {
-        operator = operator.toLowerCase();
-
+    static canonicalize_operator(operator: NarrowTerm["operator"]): NarrowCanonicalOperator {
         if (operator === "pm-with") {
             // "pm-with:" was renamed to "dm:"
             return "dm";
@@ -290,22 +294,23 @@ export class Filter {
         if (util.is_channels_synonym(operator)) {
             return "channels";
         }
-        return operator;
+
+        return narrow_canonical_operator_schema.parse(operator);
     }
 
     static canonicalize_term({
         negated = false,
         operator,
         operand,
-    }: {
-        negated?: boolean | undefined;
-        operator: string;
-        operand: string;
-    }): NarrowTerm {
+    }: NarrowTerm): NarrowCanonicalTerm {
         // Make negated explicitly default to false for both clarity and
         // simplifying deepEqual checks in the tests.
-        operator = Filter.canonicalize_operator(operator);
-        const narrow_term = narrow_term_schema.parse({negated, operator, operand});
+        const canonical_operator = Filter.canonicalize_operator(operator);
+        const narrow_term = narrow_canonical_term_schema.parse({
+            negated,
+            operator: canonical_operator,
+            operand,
+        });
 
         switch (narrow_term.operator) {
             case "is":
@@ -463,7 +468,7 @@ export class Filter {
             } else {
                 // Looks like an operator.
                 negated = false;
-                operator = parts.shift();
+                operator = parts.shift()?.toLowerCase();
                 // `split` returns a non-empty array
                 assert(operator !== undefined);
                 if (operator.startsWith("-")) {
@@ -488,26 +493,26 @@ export class Filter {
                     operand = people.my_current_email();
                 }
 
-                // We use Filter.operator_to_prefix() to check if the
-                // operator is known.  If it is not known, then we treat
+                // Check if the operator is known, if not then we treat
                 // it as a search for the given string (which may contain
                 // a `:`), not as a search operator.
-                if (Filter.operator_to_prefix(operator, negated) === "") {
+                const parsed_operator = narrow_operator_schema.safeParse(operator);
+                if (operator !== "" && parsed_operator.success) {
+                    // If any search query was present and it is followed by some other filters
+                    // then we must add that search filter in its current position in the
+                    // terms list. This is done so that the last active filter is correctly
+                    // detected by the `get_search_result` function (in search_suggestions.ts).
+                    maybe_add_search_terms();
+                    term = narrow_term_schema.parse({
+                        negated,
+                        operator: Filter.canonicalize_operator(parsed_operator.data),
+                        operand,
+                    });
+                    terms.push(term);
+                } else {
                     // Put it as a search term, to not have duplicate operators
                     search_term.push(token);
-                    continue;
                 }
-                // If any search query was present and it is followed by some other filters
-                // then we must add that search filter in its current position in the
-                // terms list. This is done so that the last active filter is correctly
-                // detected by the `get_search_result` function (in search_suggestions.ts).
-                maybe_add_search_terms();
-                term = narrow_term_schema.parse({
-                    negated,
-                    operator: Filter.canonicalize_operator(operator),
-                    operand,
-                });
-                terms.push(term);
             }
         }
 
@@ -652,7 +657,7 @@ export class Filter {
         return term_types.toSorted(compare);
     }
 
-    static operator_to_prefix(operator: string, negated?: boolean): string {
+    static operator_to_prefix(operator: NarrowTerm["operator"], negated?: boolean): string {
         operator = Filter.canonicalize_operator(operator);
 
         if (operator === "search") {

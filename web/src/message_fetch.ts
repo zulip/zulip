@@ -23,6 +23,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
@@ -285,7 +286,10 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
             negated?: boolean | undefined;
         } = raw_term;
 
-        const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
+        const parsed_narrow_operator = narrow_operator_schema.parse(
+            raw_term.operator.toLowerCase(),
+        );
+        const canonical_operator = Filter.canonicalize_operator(parsed_narrow_operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
             const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);

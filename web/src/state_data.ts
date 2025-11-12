@@ -20,31 +20,54 @@ const group_permission_setting_schema = z.object({
 });
 export type GroupPermissionSetting = z.output<typeof group_permission_setting_schema>;
 
-export const narrow_term_schema = z.object({
+export const narrow_canonical_operator_schema = z.enum([
+    "", // Used for search suggestions.
+    "channel",
+    "channels",
+    "dm",
+    "dm-including",
+    "has",
+    "id",
+    "in",
+    "is",
+    "near",
+    "search",
+    "sender",
+    "topic",
+    "with",
+]);
+export type NarrowCanonicalOperator = z.output<typeof narrow_canonical_operator_schema>;
+
+const narrow_legacy_operator_schema = z.enum([
+    "pm-with",
+    "group-pm-with",
+    "from",
+    "stream",
+    "streams",
+    "subject",
+]);
+
+export const narrow_operator_schema = z.union([
+    narrow_canonical_operator_schema,
+    narrow_legacy_operator_schema,
+]);
+export type NarrowOperator = z.output<typeof narrow_operator_schema>;
+
+export const narrow_canonical_term_schema = z.object({
     negated: z.optional(z.boolean()),
-    operator: z.enum([
-        "", // Used for search suggestions.
-        "channel",
-        "channels",
-        "dm",
-        "dm-including",
-        "from",
-        "group-pm-with",
-        "has",
-        "id",
-        "in",
-        "is",
-        "near",
-        "pm-with",
-        "search",
-        "sender",
-        "stream",
-        "streams",
-        "topic",
-        "with",
-    ]),
+    operator: narrow_canonical_operator_schema,
     operand: z.string(),
 });
+export type NarrowCanonicalTerm = z.output<typeof narrow_canonical_term_schema>;
+
+export const narrow_term_schema = z.union([
+    narrow_canonical_term_schema,
+    z.object({
+        negated: z.optional(z.boolean()),
+        operator: narrow_legacy_operator_schema,
+        operand: z.string(),
+    }),
+]);
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
 
 export const custom_profile_field_schema = z.object({
