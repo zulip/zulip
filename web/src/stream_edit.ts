@@ -372,6 +372,7 @@ export function show_settings_for(node: HTMLElement): void {
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
+    $("#subscription_overlay .stream_email_address_error").hide();
     $("#id_topics_policy").val(sub.topics_policy);
 
     $edit_container.addClass("show");
@@ -893,9 +894,7 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
-            if (sub && $subsection.hasClass("stream-permissions")) {
-                stream_ui_updates.update_default_stream_option_state($("#stream_settings"));
-                stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
+            if (sub && $subsection.attr("id") === "channel-subscription-permissions") {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
@@ -958,9 +957,7 @@ export function initialize(): void {
 
             const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
-            if ($subsection.hasClass("stream-permissions")) {
-                stream_ui_updates.update_default_stream_option_state($("#stream_settings"));
-                stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
+            if ($subsection.attr("id") === "channel-subscription-permissions") {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }

@@ -23,9 +23,8 @@
                           placeholder="{{t 'Channel description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
                     </section>
                     <section id="make-invite-only">
-                        <div class="stream-types">
-                            {{> stream_permissions .
-                              is_stream_edit=false
+                        <div class="new-stream-configuration">
+                            {{> new_stream_configuration .
                               prefix="id_new_"
                               channel_folder_widget_name="new_channel_folder_id"}}
                         </div>

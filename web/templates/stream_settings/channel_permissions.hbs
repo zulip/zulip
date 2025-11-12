@@ -6,6 +6,11 @@
         {{/if}}
     </div>
 
+    {{#if is_stream_edit}}
+        <div class="stream-permissions-warning-banner"></div>
+        {{> channel_type .}}
+    {{/if}}
+
     {{> ../settings/group_setting_value_pill_input
       setting_name="can_subscribe_group"
       label=group_setting_labels.can_subscribe_group

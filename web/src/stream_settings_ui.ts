@@ -250,6 +250,7 @@ export function update_is_default_stream(): void {
         const sub = sub_store.get(active_stream_id);
         assert(sub !== undefined);
         stream_ui_updates.update_setting_element(sub, "is_default_stream");
+        stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
     }
 }
 

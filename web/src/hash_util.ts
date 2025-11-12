@@ -313,7 +313,12 @@ export function validate_channels_settings_hash(hash: string): string {
         }
 
         let right_side_tab = hash_components[3];
-        const valid_right_side_tab_values = new Set(["general", "personal", "subscribers"]);
+        const valid_right_side_tab_values = new Set([
+            "general",
+            "personal",
+            "subscribers",
+            "permissions",
+        ]);
         if (right_side_tab === undefined || !valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
