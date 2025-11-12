@@ -75,35 +75,30 @@
                   rendered_description=rendered_description
                   }}
             </div>
-            {{> stream_permissions .
-              stream_privacy_policy_values=../stream_privacy_policy_values
-              stream_privacy_policy=../stream_privacy_policy
-              stream_topics_policy_values=../stream_topics_policy_values
-              empty_string_topic_display_name=../empty_string_topic_display_name
-              check_default_stream=../check_default_stream
-              zulip_plan_is_not_limited=../zulip_plan_is_not_limited
-              upgrade_text_for_wide_organization_logo=../upgrade_text_for_wide_organization_logo
-              is_business_type_org=../is_business_type_org
-              has_billing_access=../has_billing_access
-              org_level_message_retention_setting=../org_level_message_retention_setting
-              is_stream_edit=true
-              prefix="id_"
-              group_setting_labels=../group_setting_labels
-              channel_folder_widget_name="folder_id"
-              is_admin=../is_admin
-              }}
             {{/with}}
-            <div class="stream_details_box">
-                <div class="stream_details_box_header">
+            <div class="stream_details_box settings-subsection-parent">
+                <div class="stream_details_box_header subsection-header">
                     <h3 class="stream_setting_subsection_title">
                         {{t "Channel details" }}
                     </h3>
                     <div class="stream_email_address_error alert-notification"></div>
+                    {{> ../settings/settings_save_discard_widget section_name="channel-details"}}
                 </div>
                 {{#with sub}}
                 <div class="creator_details stream_details_subsection">
                     {{> ../creator_details .}}
                 </div>
+
+                <div class="default-stream">
+                    {{> ../settings/settings_checkbox
+                      prefix="id_"
+                      setting_name="is_default_stream"
+                      is_checked=../check_default_stream
+                      label=(t "Default channel for new users")
+                      help_link="/help/set-default-channels-for-new-users"
+                      }}
+                </div>
+
                 <div class="stream_details_subsection">
                     {{t "Channel ID"}}<br/>
                     {{stream_id}}
@@ -128,6 +123,11 @@
                     </span>
                 </div>
             </div>
+
+            {{> channel_folder .
+              is_stream_edit=true
+              channel_folder_widget_name="folder_id"
+              }}
         </div>
 
         <div id="personal-stream-settings" class="stream_section" data-stream-section="personal">
@@ -193,6 +193,17 @@
                 {{> stream_members .}}
             </div>
             {{/with}}
+        </div>
+
+        <div class="stream_section channel-permissions" data-stream-section="permissions">
+            <div class="stream-settings-tip-container">
+                {{> stream_settings_tip
+                  can_change_stream_permissions_requiring_metadata_access=sub.can_change_stream_permissions_requiring_metadata_access }}
+            </div>
+            {{> channel_permissions .
+              prefix="id_"
+              is_stream_edit=true
+              }}
         </div>
     </div>
 </div>

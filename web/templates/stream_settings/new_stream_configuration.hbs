@@ -1,0 +1,35 @@
+{{> channel_type .}}
+
+{{#if ask_to_announce_stream}}
+    <div id="announce-new-stream">
+        {{>announce_stream_checkbox . }}
+    </div>
+{{/if}}
+
+<div class="default-stream">
+    {{> ../settings/settings_checkbox
+      prefix=prefix
+      setting_name="is_default_stream"
+      is_checked=check_default_stream
+      label=(t "Default channel for new users")
+      help_link="/help/set-default-channels-for-new-users"
+      }}
+</div>
+
+{{> channel_folder .
+  is_stream_edit=false
+  }}
+
+<div class="advanced-configurations-container">
+    <div class="advance-config-title-container">
+        <div class="advance-config-toggle-area">
+            <i class="fa fa-sm fa-caret-right toggle-advanced-configurations-icon" aria-hidden="true"></i>
+            <h3 class="stream_setting_subsection_title"><span>{{t 'Advanced configuration' }}</span></h3>
+        </div>
+    </div>
+    <div class="advanced-configurations-collapase-view hide">
+        {{> channel_permissions .
+          is_stream_edit=false
+          }}
+    </div>
+</div>

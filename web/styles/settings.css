@@ -652,6 +652,10 @@ input[type="checkbox"] {
     }
 }
 
+.channel-permissions .admin-permissions-tip {
+    margin-bottom: 1em;
+}
+
 .organization-settings-parent {
     padding-top: 5px;
 }

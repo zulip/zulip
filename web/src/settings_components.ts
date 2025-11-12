@@ -1496,7 +1496,7 @@ function should_disable_save_button_for_stream_settings(stream_id: number): bool
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const $save_button = $subsection_elem.find(".save-button");
 
-    if ($subsection_elem.closest(".advanced-configurations-container").length > 0) {
+    if ($subsection_elem.closest(".channel-permissions").length > 0) {
         const $settings_container = $subsection_elem.closest(".subscription_settings");
         const stream_id_string = $settings_container.attr("data-stream-id");
         assert(stream_id_string !== undefined);
@@ -1539,7 +1539,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         return;
     }
 
-    const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
+    const group_settings = [...$subsection_elem.find(".pill-container.prop-element")].map((elem) =>
         extract_property_name($(elem)),
     );
     if (
