@@ -59,6 +59,7 @@ export function encode_stream_id(stream_id: number): string {
 }
 
 export function decode_operand(operator: string, operand: string): string {
+    operator = operator.toLowerCase();
     if (
         operator === "group-pm-with" ||
         operator === "dm-including" ||
