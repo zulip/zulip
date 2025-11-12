@@ -349,7 +349,7 @@ def bulk_add_members_to_user_groups(
 
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
-    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id for stream in streams})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     for user_group in user_groups:
@@ -493,7 +493,7 @@ def add_subgroups_to_user_group(
 
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
-    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id for stream in streams})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
