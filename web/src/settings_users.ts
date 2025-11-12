@@ -236,6 +236,7 @@ function add_value_to_filters(
         assert(typeof value === "number");
         section.filters.status_code = value;
     } else {
+        assert(key === "text_search");
         assert(typeof value === "string");
         section.filters.text_search = value;
     }
