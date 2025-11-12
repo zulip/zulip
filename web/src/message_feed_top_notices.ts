@@ -43,6 +43,21 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         return;
     }
 
+    const observer = new MutationObserver(() => {
+        const emptyNotice = document.querySelector(".empty_feed_notice");
+        const topNotice = document.querySelector<HTMLElement>(".all-messages-search-caution");
+
+        if (emptyNotice?.querySelector(".search-all-channels-button") && topNotice) {
+            topNotice.style.display = "none";
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+
     if (msg_list.data.fetch_status.has_found_oldest()) {
         const filter = narrow_state.filter();
         // Potentially display the notice that lets users know
