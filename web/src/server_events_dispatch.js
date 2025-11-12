@@ -74,7 +74,6 @@ import * as settings_profile_fields from "./settings_profile_fields.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_streams from "./settings_streams.ts";
-import * as settings_users from "./settings_users.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
@@ -495,23 +494,23 @@ export function dispatch_normal_event(event) {
                 case "add":
                     bot_data.add(event.bot);
                     if (event.bot.owner_id === current_user.user_id) {
-                        settings_users.redraw_your_bots_list();
-                        settings_users.toggle_bot_config_download_container();
+                        settings_bots.redraw_your_bots_list();
+                        settings_bots.toggle_bot_config_download_container();
                     }
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
-                    settings_users.redraw_your_bots_list();
-                    settings_users.toggle_bot_config_download_container();
+                    settings_bots.redraw_your_bots_list();
+                    settings_bots.toggle_bot_config_download_container();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
                     if ("owner_id" in event.bot) {
-                        settings_users.redraw_your_bots_list();
-                        settings_users.toggle_bot_config_download_container();
+                        settings_bots.redraw_your_bots_list();
+                        settings_bots.toggle_bot_config_download_container();
                     }
                     if ("is_active" in event.bot) {
-                        settings_users.toggle_bot_config_download_container();
+                        settings_bots.toggle_bot_config_download_container();
                     }
                     break;
                 default:
@@ -614,7 +613,7 @@ export function dispatch_normal_event(event) {
                     people.add_active_user(event.person, "server_events");
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
-                        settings_users.redraw_all_bots_list();
+                        settings_bots.redraw_all_bots_list();
                     }
 
                     if (should_redraw) {
@@ -633,7 +632,7 @@ export function dispatch_normal_event(event) {
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
                     if (people.is_valid_bot_user(event.person.user_id)) {
-                        settings_users.update_bot_data(event.person.user_id);
+                        settings_bots.update_bot_data(event.person.user_id);
                     }
                     break;
                 case "remove": {
