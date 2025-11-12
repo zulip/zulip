@@ -119,11 +119,14 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
             return search_user_pill_data_from_term(term);
         }
-        const search_pill: SearchPill = {
-            type: "generic_operator",
+        const narrow_term: NarrowTerm = {
             operator: term.operator,
             operand: term.operand,
             negated: term.negated,
+        };
+        const search_pill: SearchPill = {
+            type: "generic_operator",
+            ...narrow_term,
         };
 
         if (search_pill.operator === "topic" && search_pill.operand === "") {

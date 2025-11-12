@@ -239,7 +239,11 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
         }
 
         const operand = decode_operand(operator, raw_operand);
-        terms.push({negated, operator, operand});
+        terms.push({
+            negated,
+            operator: operator.toLowerCase(),
+            operand,
+        });
     }
     return z.array(narrow_term_schema).parse(terms);
 }
