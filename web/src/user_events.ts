@@ -17,6 +17,7 @@ import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
+import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
@@ -226,7 +227,7 @@ export const update_person = function update(event: UserUpdate): void {
         buddy_list.insert_or_move([event.user_id]);
         settings_account.maybe_update_deactivate_account_button();
         if (is_bot_user) {
-            settings_users.update_bot_data(event.user_id);
+            settings_bots.update_bot_data(event.user_id);
         } else if (!event.is_active) {
             // A human user deactivated, update 'Export permissions' table.
             settings_exports.remove_export_consent_data_and_redraw(event.user_id);

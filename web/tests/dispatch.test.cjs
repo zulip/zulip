@@ -81,7 +81,6 @@ const settings_realm_user_settings_defaults = mock_esm(
 );
 const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
-const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
 const stream_list = mock_esm("../src/stream_list");
@@ -838,8 +837,8 @@ run_test("realm_bot add", ({override}) => {
     const bot_stub = make_stub();
     override(current_user, "user_id", test_user.user_id);
     override(bot_data, "add", bot_stub.f);
-    override(settings_users, "redraw_your_bots_list", noop);
-    override(settings_users, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "redraw_your_bots_list", noop);
+    override(settings_bots, "toggle_bot_config_download_container", noop);
 
     dispatch(event);
 
@@ -852,8 +851,8 @@ run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
     override(bot_data, "del", bot_stub.f);
-    override(settings_users, "redraw_your_bots_list", noop);
-    override(settings_users, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "redraw_your_bots_list", noop);
+    override(settings_bots, "toggle_bot_config_download_container", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -877,13 +876,13 @@ run_test("realm_bot update", ({override}) => {
     override(bot_data, "update", bot_stub.f);
     let toggle_download_container_stub = make_stub();
     override(
-        settings_users,
+        settings_bots,
         "toggle_bot_config_download_container",
         toggle_download_container_stub.f,
     );
 
     event = event_fixtures.realm_bot__update_owner;
-    override(settings_users, "redraw_your_bots_list", noop);
+    override(settings_bots, "redraw_your_bots_list", noop);
     dispatch(event);
     assert.equal(toggle_download_container_stub.num_calls, 1);
     assert.equal(bot_stub.num_calls, 1);
@@ -893,7 +892,7 @@ run_test("realm_bot update", ({override}) => {
 
     toggle_download_container_stub = make_stub();
     override(
-        settings_users,
+        settings_bots,
         "toggle_bot_config_download_container",
         toggle_download_container_stub.f,
     );
@@ -1022,13 +1021,13 @@ run_test("realm_user", ({override}) => {
     // Test bot related functions are being called.
     const add_bot_stub = make_stub();
     event = event_fixtures.realm_user__add_bot;
-    override(settings_users, "redraw_all_bots_list", add_bot_stub.f);
+    override(settings_bots, "redraw_all_bots_list", add_bot_stub.f);
     dispatch({...event});
     assert.equal(add_bot_stub.num_calls, 1);
 
     const update_bot_stub = make_stub();
     event = event_fixtures.realm_user__update;
-    override(settings_users, "update_bot_data", update_bot_stub.f);
+    override(settings_bots, "update_bot_data", update_bot_stub.f);
     dispatch(event);
     assert.equal(update_bot_stub.num_calls, 1);
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");

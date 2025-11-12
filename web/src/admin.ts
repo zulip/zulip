@@ -281,8 +281,8 @@ export function build_page(): void {
             settings_users.deactivated_user_list_dropdown_widget_name,
         giphy_help_link,
         ...get_realm_level_notification_settings(),
-        all_bots_list_dropdown_widget_name: settings_users.all_bots_list_dropdown_widget_name,
-        your_bots_list_dropdown_widget_name: settings_users.your_bots_list_dropdown_widget_name,
+        all_bots_list_dropdown_widget_name: settings_bots.all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name: settings_bots.your_bots_list_dropdown_widget_name,
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
         is_plan_self_hosted:
