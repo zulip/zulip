@@ -482,9 +482,6 @@ export function hide_user_profile(): void {
 }
 
 function on_user_profile_hide(): void {
-    user_streams_list_widget = undefined;
-    user_groups_list_widget = undefined;
-    user_profile_subscribe_widget = undefined;
     const base = get_current_hash_category();
     // After closing the user profile, if the hash consists of `#user`
     // it means that it acts as an overlay rather than a modal (when
@@ -602,6 +599,11 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
 }
 
 export function show_user_profile(user: User, default_tab_key = "profile-tab"): void {
+    // Reset these widgets so that they are created again for the opened modal.
+    user_streams_list_widget = undefined;
+    user_groups_list_widget = undefined;
+    user_profile_subscribe_widget = undefined;
+
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
         .flatMap((f) => get_custom_profile_field_data(user, f, field_types) ?? [])
