@@ -237,7 +237,7 @@ export default defineConfig(
         },
     },
     {
-        ignores: ["web/shared/**", "web/src/**"],
+        ignores: ["web/src/**"],
         languageOptions: {
             globals: globals.node,
         },
@@ -266,7 +266,7 @@ export default defineConfig(
         },
     },
     {
-        files: ["web/shared/**", "web/src/**"],
+        files: ["web/src/**"],
         settings: {
             "import/resolver": {
                 webpack: {
@@ -299,27 +299,6 @@ export default defineConfig(
                 ...globals.browser,
             },
             sourceType: "script",
-        },
-    },
-    {
-        files: ["web/shared/**"],
-        languageOptions: {
-            globals: globals["shared-node-browser"],
-        },
-        rules: {
-            "import/no-restricted-paths": [
-                "error",
-                {
-                    zones: [
-                        {
-                            target: "./web/shared",
-                            from: ".",
-                            except: ["./node_modules", "./web/shared"],
-                        },
-                    ],
-                },
-            ],
-            "unicorn/prefer-string-replace-all": "off",
         },
     },
     astroConfigs.recommended,
