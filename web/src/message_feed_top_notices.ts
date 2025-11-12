@@ -2,7 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as hash_util from "./hash_util.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import * as narrow_banner from "./narrow_banner.ts";
@@ -31,9 +30,10 @@ function show_end_of_results_notice(): void {
     // Note that element we adjust is not visible to spectators.
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
-    const terms = narrow_filter.terms();
-    const update_hash = hash_util.search_public_streams_notice_url(terms);
-    $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
+    $(".all-messages-search-caution a.search-shared-history").attr(
+        "href",
+        "help/search-for-messages#search-shared-history",
+    );
 }
 
 export function update_top_of_narrow_notices(msg_list: MessageList): void {
