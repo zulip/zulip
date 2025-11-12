@@ -35,8 +35,6 @@ export const narrow_term_schema = z.object({
         "in",
         "is",
         "near",
-        "pm",
-        "pm-including",
         "pm-with",
         "search",
         "sender",

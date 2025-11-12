@@ -548,10 +548,8 @@ export class Filter {
             case "sender":
             case "from":
             case "dm":
-            case "pm":
             case "pm-with":
             case "dm-including":
-            case "pm-including":
                 if (term.operand === "me") {
                     return true;
                 }
