@@ -17,19 +17,21 @@
                 {{/if}}
             </div>
             <div class="popover-menu-user-type">
-                {{#if is_bot}}
-                    {{#if is_system_bot}}
-                        <div>{{t "System bot" }}</div>
+                {{#unless is_unknown_user}}
+                    {{#if is_bot}}
+                        {{#if is_system_bot}}
+                            <div>{{t "System bot" }}</div>
+                        {{else}}
+                            <div>{{t "Bot" }}
+                                {{~#unless (eq user_type "Member")}}
+                                    <span class="lowercase">({{user_type}})</span>
+                                {{/unless~}}
+                            </div>
+                        {{/if}}
                     {{else}}
-                        <div>{{t "Bot" }}
-                            {{~#unless (eq user_type "Member")}}
-                                <span class="lowercase">({{user_type}})</span>
-                            {{/unless~}}
-                        </div>
+                        <div>{{ user_type }}</div>
                     {{/if}}
-                {{else}}
-                    <div>{{ user_type }}</div>
-                {{/if}}
+                {{/unless}}
             </div>
         </div>
     </div>
@@ -143,16 +145,18 @@
             {{/if}}
         {{/if}}
         {{> ./user_card_popover_custom_fields profile_fields=display_profile_fields}}
-        <li role="none" class="popover-menu-list-item link-item hidden-for-spectators">
-            <a role="menuitem" class="popover-menu-link view_full_user_profile" tabindex="0">
-                <i class="popover-menu-icon zulip-icon zulip-icon-account" aria-hidden="true"></i>
-                {{#if is_me}}
-                    <span class="popover-menu-label">{{t "View your profile" }}</span>
-                {{else}}
-                    <span class="popover-menu-label">{{t "View profile" }}</span>
-                {{/if}}
-            </a>
-        </li>
+        {{#unless is_unknown_user}}
+            <li role="none" class="popover-menu-list-item link-item hidden-for-spectators">
+                <a role="menuitem" class="popover-menu-link view_full_user_profile" tabindex="0">
+                    <i class="popover-menu-icon zulip-icon zulip-icon-account" aria-hidden="true"></i>
+                    {{#if is_me}}
+                        <span class="popover-menu-label">{{t "View your profile" }}</span>
+                    {{else}}
+                        <span class="popover-menu-label">{{t "View profile" }}</span>
+                    {{/if}}
+                </a>
+            </li>
+        {{/unless}}
         {{#if can_send_private_message}}
             <li role="none" class="popover-menu-list-item link-item hidden-for-spectators">
                 <a role="menuitem" class="popover-menu-link {{ private_message_class }}" tabindex="0">

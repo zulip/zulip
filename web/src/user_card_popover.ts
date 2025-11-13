@@ -233,6 +233,7 @@ type UserCardPopoverData = {
     can_mute: boolean;
     can_unmute: boolean;
     can_manage_user: boolean;
+    is_unknown_user: boolean;
     is_system_bot?: boolean;
     bot_owner?: User;
 };
@@ -320,6 +321,7 @@ function get_user_card_popover_data(
     const muting_allowed = !is_me;
     const can_mute = muting_allowed && !is_muted;
     const can_unmute = muting_allowed && is_muted;
+    const is_unknown_user = Boolean(user.is_unknown_user);
     const can_manage_user = current_user.is_admin && !is_me && !is_system_bot;
 
     let date_joined;
@@ -379,6 +381,7 @@ function get_user_card_popover_data(
         can_mute,
         can_unmute,
         can_manage_user,
+        is_unknown_user,
     };
 
     if (user.is_bot) {
@@ -797,11 +800,19 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .view_full_user_profile", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
+        const user = people.get_by_user_id(user_id);
+
+        // Prevent viewing profile for unknown users
+        if (user.is_unknown_user) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+
         const current_hash = window.location.hash;
         // If any overlay is already open, we want the user profile to behave
         // as a modal rather than an overlay.
         if (is_overlay_hash(current_hash)) {
-            const user = people.get_by_user_id(user_id);
             user_profile.show_user_profile(user);
         } else {
             browser_history.go_to_location(`user/${user_id}`);

@@ -1032,6 +1032,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        is_unknown_user=True,
         is_imported_stub=False,
     )
     return user_dict
@@ -1081,6 +1082,7 @@ def get_user_dicts_in_realm(
         if user_dict["id"] in accessible_user_ids or user_dict["is_bot"]:
             accessible_user_dicts.append(user_dict)
         else:
+            print(get_data_for_inaccessible_user(realm, user_dict["id"]), "testing what is going on with you")
             inaccessible_user_dicts.append(get_data_for_inaccessible_user(realm, user_dict["id"]))
 
     return (accessible_user_dicts, inaccessible_user_dicts)
