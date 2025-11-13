@@ -362,6 +362,11 @@ select.settings_select {
     }
 }
 
+#admin-bot-list .user-status-settings {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .config-download-text {
     margin-top: 10px;
 }

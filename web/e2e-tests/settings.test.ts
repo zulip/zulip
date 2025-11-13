@@ -142,7 +142,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     const outgoing_webhook_zuliprc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
-    const zuliprc_url_selector = `.hidden-zuliprc-download`;
+    const zuliprc_url_selector = `.micromodal .hidden-zuliprc-download`;
     const download_zuliprc_selector = `.download-bot-zuliprc`;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
@@ -182,7 +182,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     const user_id = await common.get_user_id_from_name(page, "Bot 2");
     await open_manage_bot_tab(page, user_id!);
 
-    const zuliprc_url_selector = `.hidden-zuliprc-download`;
+    const zuliprc_url_selector = `.micromodal .hidden-zuliprc-download`;
     const download_zuliprc_selector = `.download-bot-zuliprc`;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
