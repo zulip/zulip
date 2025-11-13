@@ -205,7 +205,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     start(opts);
 
     assert.ok($("#compose").hasClass("compose-box-open"));
-    assert_visible("#compose_recipient_box");
+    assert_visible("#compose-channel-recipient");
     assert_hidden("#compose-direct-recipient");
 
     assert.equal(compose_state.stream_name(), "");
