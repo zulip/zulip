@@ -67,7 +67,7 @@ templating systems.
 
 - `node_modules/` Third-party JavaScript installed via pnpm.
 
-- `web/shared/icons/` Icons placed in this directory are compiled
+- `web/icons/` Icons placed in this directory are compiled
   into an icon font.
 
 ---

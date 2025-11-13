@@ -94,13 +94,10 @@ export default defineConfig({
                     // a single set of icons. We should start using that loader
                     // if they add support for multiple paths in the future.
                     async "zulip-icon"(iconName) {
-                        const sharedIconsPath = `../web/shared/icons/${iconName}.svg`;
-                        const webOnlyIconsPath = `../web/images/icons/${iconName}.svg`;
+                        const iconsPath = `../web/icons/${iconName}.svg`;
 
-                        if (fs.existsSync(sharedIconsPath)) {
-                            return await fs.promises.readFile(sharedIconsPath, "utf8");
-                        } else if (fs.existsSync(webOnlyIconsPath)) {
-                            return await fs.promises.readFile(webOnlyIconsPath, "utf8");
+                        if (fs.existsSync(iconsPath)) {
+                            return await fs.promises.readFile(iconsPath, "utf8");
                         }
                         throw new Error("Zulip icon not found.");
                     },
