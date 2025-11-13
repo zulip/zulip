@@ -149,18 +149,65 @@ run_test("paste_handler_converter", () => {
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 6,
-            val: () => "e.g. `",
+            val() {
+                return "e.g. `";
+            },
+            0: {
+                selectionStart: 6,
+                value: "e.g. `",
+            },
+            length: 1,
         }),
         "single line",
     );
 
-    // Yes code formatting if the given text area has a backtick but not at the cursor position
+    // No code formatting if the given text area has a opening backtick before the cursor position
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 0,
+            val() {
+                return "e.g. ` ";
+            },
+            0: {
+                selectionStart: 7,
+                value: "e.g. ` ",
+            },
+            length: 1,
+        }),
+        "single line",
+    );
+
+    // Yes code formatting if the given text area does not have a backtick at the cursor position.
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "";
+            },
+            0: {
+                selectionStart: 0,
+                value: "",
+            },
+            length: 1,
+        }),
+        "`single line`",
+    );
+
+    // Yes code formatting if the given text area closes the code block before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "` e.g. ` ";
+            },
+            0: {
+                selectionStart: 9,
+                value: "` e.g. ` ",
+            },
+            length: 1,
         }),
         "`single line`",
     );
