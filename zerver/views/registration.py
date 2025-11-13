@@ -911,7 +911,7 @@ def registration_helper(
         # Add context for realm creation part of the form.
         context.update(get_realm_create_form_context())
 
-    return TemplateResponse(request, "zerver/register.html", context=context)
+    return TemplateResponse(request, "zerver/create_user/register.html", context=context)
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -1412,7 +1412,7 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
     )
     return TemplateResponse(
         request,
-        "zerver/create_realm.html",
+        "zerver/create_realm/create_realm.html",
         context=context,
     )
 
@@ -1583,7 +1583,7 @@ def create_demo_organization(
     )
     return TemplateResponse(
         request,
-        "zerver/create_demo_realm.html",
+        "zerver/create_realm/create_demo_realm.html",
         context=context,
     )
 
@@ -1727,7 +1727,7 @@ def accounts_home(
         multiuse_object_key=multiuse_object_key,
         from_multiuse_invite=from_multiuse_invite,
     )
-    return render(request, "zerver/accounts_home.html", context=context)
+    return render(request, "zerver/create_user/accounts_home.html", context=context)
 
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
