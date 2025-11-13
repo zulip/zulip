@@ -8,7 +8,7 @@ well as for compact buttons and other small interactive elements.
 - Modern Zulip icons are implemented using a class-based combination
   like `<i class="zulip-icon zulip-icon-smile"></i>`, which is rendered
   using generated CSS that maps that class name (`zulip-icon-smile`)
-  to the SVG file located at `web/shared/icons/smile.svg`.
+  to the SVG file located at `web/icons/smile.svg`.
 
 - Older icons use [Font Awesome 4.7](https://fontawesome.com/),
   declared in our HTML via `<i class="fa fa-paperclip"></i>`. We are
@@ -36,7 +36,7 @@ case, you should:
 
 1. Prototype using a [Lucide icon](https://lucide.dev/icons/), which is the
    preferred source for icons in Zulip. New SVG files must be placed in the
-   `web/shared/icons/` directory to be used (don't forget to `git add` new
+   `web/icons/` directory to be used (don't forget to `git add` new
    icons along with your other changes).
 
 1. **When your feature is nearing completion**, post in the [appropriate
@@ -98,7 +98,7 @@ all stroke components are converted to paths:
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | ![Ballooned-out icon shapes](../images/icon-prep-stroke-to-path-initial.png) | ![Expected icon shapes without stroke](../images/icon-prep-stroke-to-path-completed.png) |
 
-At this point, you can save your file in the `web/shared/icons/` directory and
+At this point, you can save your file in the `web/icons/` directory and
 close Inkscape before [cleaning up the SVG file](#cleaning-up-the-svg-code).
 
 ### Correcting icons with an `evenodd` fill rule
@@ -130,7 +130,7 @@ code), you'll need to bring it into Inkscape to rework its paths.
 1. Finally, again with `Ctrl + A` to ensure the flattened paths are selected, return to
    the Path menu and choose Combine. That joins all paths into a single, complex path.
 
-At this point, you can save your file in the `web/shared/icons/` directory and
+At this point, you can save your file in the `web/icons/` directory and
 close Inkscape before [cleaning up the SVG file](#cleaning-up-the-svg-code).
 
 ### Cleaning up the SVG code

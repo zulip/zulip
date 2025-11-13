@@ -63,7 +63,7 @@
         &.change_visibility_policy
             .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
             /* Show vertical ellipsis when user hovers over visibility indicator icon. */
-            background-image: url("../shared/icons/more-vertical.svg");
+            background-image: url("../icons/more-vertical.svg");
             background-repeat: no-repeat;
             background-position: left bottom;
             background-size: contain;
