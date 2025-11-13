@@ -364,8 +364,9 @@ html {
     }
 }
 
-.register-account {
-    .terms-of-service .input-group,
+.register-account #registration {
+    .terms-of-service,
+    .input-group .marketing-emails,
     .default-stream-groups .input-group,
     .default-stream-groups p {
         width: 330px;
