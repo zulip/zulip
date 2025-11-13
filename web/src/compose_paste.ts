@@ -208,9 +208,8 @@ export function is_single_image(paste_html: string): boolean {
     return (
         is_from_excel(html_fragment) ||
         is_from_libreoffice_calc(html_fragment) ||
-        (html_fragment.childNodes.length === 1 &&
-            html_fragment.firstElementChild !== null &&
-            html_fragment.firstElementChild.nodeName === "IMG")
+        (html_fragment.querySelectorAll("img").length === 1 &&
+            count_valid_text_nodes_upto([...html_fragment.childNodes], 1) === 0)
     );
 }
 
