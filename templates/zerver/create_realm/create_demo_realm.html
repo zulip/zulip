@@ -14,10 +14,10 @@
         <form class="white-box" id="create_demo_realm" action="{{ current_url() }}" method="post">
             {{ csrf_input }}
             <input type='hidden' name='timezone' id='demo-creator-timezone'/>
-            {% include 'zerver/realm_creation_base_form_fields.html' %}
-            {% include 'zerver/found_zulip_form_field.html' %}
+            {% include 'zerver/create_realm/realm_creation_base_form_fields.html' %}
+            {% include 'zerver/create_realm/found_zulip_form_field.html' %}
             {% if terms_of_service %}
-            {% include 'zerver/terms_of_service_form_field.html' %}
+            {% include 'zerver/create_user/terms_of_service_form_field.html' %}
             {% endif %}
             <div class="input-box" id="demo-submit-button-container">
                 <button type="submit" class="new-organization-button register-button">{{ _("Try Zulip") }}</button>

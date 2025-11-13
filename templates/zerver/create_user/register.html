@@ -40,10 +40,10 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 </legend>
                 {% with %}
                     {% set user_registration_form = "true" %}
-                    {% include 'zerver/realm_creation_base_form_fields.html' %}
-                    {% include 'zerver/realm_creation_subdomain_form_field.html' %}
+                    {% include 'zerver/create_realm/realm_creation_base_form_fields.html' %}
+                    {% include 'zerver/create_realm/realm_creation_subdomain_form_field.html' %}
                     {% if is_realm_import_enabled %}
-                    {% include 'zerver/realm_creation_import_form_field.html' %}
+                    {% include 'zerver/create_realm/realm_creation_import_form_field.html' %}
                     {% endif %}
                 {% endwith %}
                 {% if not form.realm_subdomain.errors %}
@@ -87,7 +87,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
                     <div id="id_email">{{ email }}</div>
                     {% if not creating_new_realm %}
-                    {% include 'zerver/new_user_email_address_visibility.html' %}
+                    {% include 'zerver/create_user/new_user_email_address_visibility.html' %}
                     {% endif %}
                 </div>
 
@@ -201,12 +201,12 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {% endif %}
 
             {% if creating_new_realm %}
-            {% include 'zerver/found_zulip_form_field.html' %}
+            {% include 'zerver/create_realm/found_zulip_form_field.html' %}
             {% endif %}
 
             <div class="input-group">
                 {% if terms_of_service %}
-                {% include 'zerver/terms_of_service_form_field.html' %}
+                {% include 'zerver/create_user/terms_of_service_form_field.html' %}
                 {% endif %}
                 {% if corporate_enabled %}
                 <div class="input-group marketing-emails">
@@ -232,7 +232,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 </div>
 
 {% if not creating_new_realm %}
-{% include 'zerver/change_email_address_visibility_modal.html' %}
+{% include 'zerver/create_user/change_email_address_visibility_modal.html' %}
 {% endif %}
 
 {% endblock %}
