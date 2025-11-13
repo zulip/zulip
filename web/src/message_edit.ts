@@ -363,6 +363,15 @@ export function show_topic_edit_spinner($row: JQuery): void {
     $(".topic_edit_spinner").show();
 }
 
+export function hide_topic_edit_spinner($row: JQuery): void {
+    const $spinner = $row.find(".topic_edit_spinner");
+    loading.destroy_indicator($spinner);
+    $spinner.css({height: ""});
+    $(".topic_edit_save").show();
+    $(".topic_edit_cancel").show();
+    $(".topic_edit_spinner").hide();
+}
+
 export function end_if_focused_on_inline_topic_edit(): void {
     const $focused_elem = $(".topic_edit").find(":focus");
     if ($focused_elem.length === 1) {
@@ -504,8 +513,12 @@ function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: numb
         // When the topic is mandatory in a realm and the new topic is considered empty,
         // we disable the save button and show a tooltip with an error message.
         $topic_edit_save_button.prop("disabled", true);
+        $topic_edit_save_button.addClass("topic-required");
         return;
     }
+
+    $topic_edit_save_button.removeClass("topic-required");
+
     // If we reach here, it means the save button was disabled previously
     // and the user has started typing in the input field, probably to fix
     // the error. So, we re-enable the save button.
@@ -1242,7 +1255,10 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
                 );
                 return;
             }
-            loading.destroy_indicator($spinner);
+            hide_topic_edit_spinner($row);
+            const message = channel.xhr_error_message($t({defaultMessage: "Failed"}), xhr);
+            $row.find(".topic_edit_save").prop("disabled", true);
+            $row.find(".topic-edit-save-wrapper").attr("data-tippy-content", message);
         },
     });
 }
