@@ -59,7 +59,6 @@ export function encode_stream_id(stream_id: number): string {
 }
 
 export function decode_operand(operator: string, operand: string): string {
-    operator = operator.toLowerCase();
     if (
         operator === "group-pm-with" ||
         operator === "dm-including" ||
@@ -241,7 +240,7 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
         const operand = decode_operand(operator, raw_operand);
         terms.push({
             negated,
-            operator: operator.toLowerCase(),
+            operator,
             operand,
         });
     }
