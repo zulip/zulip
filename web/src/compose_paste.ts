@@ -45,8 +45,13 @@ function image_to_zulip_markdown(
     return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
-// Returns 2 or more if there are multiple valid text nodes in the tree.
-function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
+// Returns the count of valid text nodes in the tree.
+// We return the count as soon as we find at least `cutoff` valid nodes
+// to avoid walking the whole tree.
+function count_valid_text_nodes_upto(child_nodes: ChildNode[], cutoff: number): number {
+    if (cutoff <= 0) {
+        return 0;
+    }
     let textful_nodes = 0;
 
     for (const child of child_nodes) {
@@ -58,14 +63,14 @@ function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
 
         if (child.nodeValue && child.nodeType === Node.TEXT_NODE) {
             textful_nodes += 1;
-            if (textful_nodes >= 2) {
+            if (textful_nodes >= cutoff) {
                 return textful_nodes;
             }
         }
 
-        textful_nodes += check_multiple_text_nodes([...child.childNodes]);
+        textful_nodes += count_valid_text_nodes_upto([...child.childNodes], cutoff - textful_nodes);
 
-        if (textful_nodes >= 2) {
+        if (textful_nodes >= cutoff) {
             return textful_nodes;
         }
     }
@@ -86,7 +91,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
     let textful_nodes = 0;
-    textful_nodes = check_multiple_text_nodes([...html_fragment.childNodes]);
+    textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
     if (textful_nodes >= 2) {
         return false;
     }
