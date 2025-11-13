@@ -3,7 +3,7 @@ import secrets
 from collections.abc import Callable, Mapping
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Concatenate, TypeAlias, cast
-from urllib.parse import urlencode, urljoin, urlsplit
+from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict
 
 import jwt
 import orjson
