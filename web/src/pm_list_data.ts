@@ -20,7 +20,7 @@ export function get_active_user_ids_string(): string | undefined {
         return undefined;
     }
 
-    const emails = filter.operands("dm")[0];
+    const emails = filter.terms_with_operator("dm")[0]?.operand;
 
     if (!emails) {
         return undefined;
