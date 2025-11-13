@@ -82,8 +82,8 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
 const NO_SEARCH_RESULTS_TITLE = $t({defaultMessage: "No search results."});
 
 function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
-    const search_query = current_filter.operands("search")[0];
-    const query_words = search_query!.split(" ");
+    const search_query = current_filter.terms_with_operator("search")[0]!.operand;
+    const query_words = search_query.split(" ");
 
     const search_string_result: SearchData = {
         query_words: [],
@@ -163,8 +163,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
     if (num_terms !== 1) {
         // For invalid-multi-operator narrows, we display an invalid narrow message
-        const streams = current_filter.operands("channel");
-        const topics = current_filter.operands("topic");
+        const streams = current_filter.terms_with_operator("channel");
+        const topics = current_filter.terms_with_operator("topic");
 
         // No message can have multiple streams
         if (streams.length > 1) {
@@ -187,7 +187,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         // No message can have multiple senders
-        if (current_filter.operands("sender").length > 1) {
+        if (current_filter.terms_with_operator("sender").length > 1) {
             return {
                 title: NO_SEARCH_RESULTS_TITLE,
                 html: $t_html({
@@ -198,7 +198,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         }
 
         // For empty search queries, we display excluded stop words
-        if (current_filter.operands("search").length > 0) {
+        if (current_filter.terms_with_operator("search").length > 0) {
             return empty_search_query_banner(current_filter);
         }
 
@@ -214,7 +214,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
         if (streams.length === 1) {
             const stream_sub = stream_data.get_sub_by_id_string(
-                util.the(current_filter.operands("channel")),
+                util.the(current_filter.terms_with_operator("channel")).operand,
             );
             if (!stream_sub) {
                 return {
@@ -233,7 +233,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
         if (
             _.isEqual(current_terms_types, ["sender", "has-reaction"]) &&
-            current_filter.operands("sender")[0] === people.my_current_email()
+            current_filter.terms_with_operator("sender")[0]!.operand === people.my_current_email()
         ) {
             return {
                 title: $t({defaultMessage: "None of your messages have emoji reactions yet."}),

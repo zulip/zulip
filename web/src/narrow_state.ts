@@ -147,11 +147,14 @@ export let stream_id = (
     if (current_filter === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("channel");
-    if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
-        const id = Number.parseInt(stream_operands[0], 10);
-        if (!Number.isNaN(id)) {
-            return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
+    const channel_terms = current_filter.terms_with_operator("channel");
+    if (channel_terms.length === 1) {
+        const channel_operand = channel_terms[0]?.operand;
+        if (channel_operand !== undefined) {
+            const id = Number.parseInt(channel_operand, 10);
+            if (!Number.isNaN(id)) {
+                return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
+            }
         }
     }
     return undefined;
@@ -183,9 +186,9 @@ export function topic(current_filter: Filter | undefined = filter()): string | u
     if (current_filter === undefined) {
         return undefined;
     }
-    const operands = current_filter.operands("topic");
-    if (operands.length === 1) {
-        return operands[0];
+    const terms = current_filter.terms_with_operator("topic");
+    if (terms.length === 1) {
+        return terms[0]!.operand;
     }
     return undefined;
 }
@@ -195,8 +198,8 @@ export function pm_ids_string(current_filter: Filter | undefined = filter()): st
         return undefined;
     }
 
-    const operands = current_filter.operands("dm");
-    if (operands.length !== 1) {
+    const terms = current_filter.terms_with_operator("dm");
+    if (terms.length !== 1) {
         return undefined;
     }
 
@@ -204,7 +207,7 @@ export function pm_ids_string(current_filter: Filter | undefined = filter()): st
     // this will return "4,5,99". Will return undefined when the value of the
     // operand string does not translate to a comma-separated list of valid
     // user emails.
-    const emails_string = util.the(operands);
+    const emails_string = util.the(terms).operand;
     return people.reply_to_to_user_ids_string(emails_string);
 }
 
@@ -364,8 +367,8 @@ export function narrowed_by_topic_reply(current_filter: Filter | undefined = fil
     const terms = current_filter.terms().filter((term) => term.operator !== "with");
     return (
         terms.length === 2 &&
-        current_filter.operands("channel").length === 1 &&
-        current_filter.operands("topic").length === 1
+        current_filter.terms_with_operator("channel").length === 1 &&
+        current_filter.terms_with_operator("topic").length === 1
     );
 }
 
@@ -381,7 +384,7 @@ export function narrowed_by_stream_reply(current_filter: Filter | undefined = fi
         return false;
     }
     const terms = current_filter.terms();
-    return terms.length === 1 && current_filter.operands("channel").length === 1;
+    return terms.length === 1 && current_filter.terms_with_operator("channel").length === 1;
 }
 
 export function narrowed_to_stream_id(stream_id_to_check: number, filter?: Filter): boolean {

@@ -1022,10 +1022,8 @@ export class Filter {
         return safe_to_return;
     }
 
-    operands(operator: string): string[] {
-        return this._terms
-            .filter((term) => !term.negated && term.operator === operator)
-            .map((term) => term.operand);
+    terms_with_operator(operator: NarrowCanonicalOperator): NarrowTerm[] {
+        return this._terms.filter((term) => !term.negated && term.operator === operator);
     }
 
     has_negated_operand(operator: string, operand: string): boolean {
@@ -1240,7 +1238,7 @@ export class Filter {
         }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_email()
         ) {
             return true;
         }
@@ -1260,12 +1258,14 @@ export class Filter {
         // this comes first because it has 3 term_types but is not a "complex filter"
         if (
             _.isEqual(term_types, ["sender", "search", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_email()
         ) {
             return "/#narrow/has/reaction/sender/me";
         }
         if (_.isEqual(term_types, ["channel", "topic", "search"])) {
-            const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+            const sub = stream_data.get_sub_by_id_string(
+                this.terms_with_operator("channel")[0]!.operand,
+            );
             // if channel does not exist, redirect to home view
             if (!sub) {
                 return "#";
@@ -1273,7 +1273,7 @@ export class Filter {
 
             return `/${internal_url.by_stream_topic_url(
                 sub.stream_id,
-                this.operands("topic")[0]!,
+                this.terms_with_operator("topic")[0]!.operand,
                 sub_store.maybe_get_stream_name,
             )}`;
         }
@@ -1286,7 +1286,9 @@ export class Filter {
         if (term_types[1] === "search") {
             switch (term_types[0]) {
                 case "channel": {
-                    const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+                    const sub = stream_data.get_sub_by_id_string(
+                        this.terms_with_operator("channel")[0]!.operand,
+                    );
                     // if channel does not exist, redirect to home view
                     if (!sub) {
                         return "#";
@@ -1307,7 +1309,14 @@ export class Filter {
                 case "channels-web-public":
                     return "/#narrow/channels/web-public";
                 case "dm":
-                    return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
+                    return (
+                        "/#narrow/dm/" +
+                        people.emails_to_slug(
+                            this.terms_with_operator("dm")
+                                .map((term) => term.operand)
+                                .join(","),
+                        )
+                    );
                 case "is-resolved":
                     return "/#narrow/topics/is/resolved";
                 case "is-followed":
@@ -1315,7 +1324,10 @@ export class Filter {
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
-                    return "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]!);
+                    return (
+                        "/#narrow/sender/" +
+                        people.emails_to_slug(this.terms_with_operator("sender")[0]!.operand)
+                    );
             }
         }
 
@@ -1336,7 +1348,7 @@ export class Filter {
 
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_email()
         ) {
             zulip_icon = "smile";
             return {...context, zulip_icon};
@@ -1348,7 +1360,9 @@ export class Filter {
                 icon = "home";
                 break;
             case "channel": {
-                const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+                const sub = stream_data.get_sub_by_id_string(
+                    this.terms_with_operator("channel")[0]!.operand,
+                );
                 if (!sub) {
                     icon = "question-circle-o";
                     break;
@@ -1405,7 +1419,9 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["channel", "topic"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["channel"]))
         ) {
-            const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+            const sub = stream_data.get_sub_by_id_string(
+                this.terms_with_operator("channel")[0]!.operand,
+            );
             if (!sub) {
                 return $t({defaultMessage: "Unknown channel"});
             }
@@ -1416,7 +1432,7 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["dm", "with"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["dm"]))
         ) {
-            const emails = this.operands("dm")[0]!.split(",");
+            const emails = this.terms_with_operator("dm")[0]!.operand.split(",");
             if (emails.length === 1) {
                 const user = people.get_by_email(emails[0]!);
                 if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
@@ -1444,7 +1460,7 @@ export class Filter {
             return util.format_array_as_list(names, "long", "conjunction");
         }
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
-            const email = this.operands("sender")[0]!;
+            const email = this.terms_with_operator("sender")[0]!.operand;
             const user = people.get_by_email(email);
             if (user === undefined) {
                 return $t({defaultMessage: "Messages sent by unknown user"});
@@ -1501,7 +1517,7 @@ export class Filter {
         }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_email()
         ) {
             return $t({defaultMessage: "Reactions"});
         }
@@ -1534,7 +1550,7 @@ export class Filter {
         }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_email()
         ) {
             return {
                 description: $t({
@@ -1555,7 +1571,7 @@ export class Filter {
 
     contains_only_private_messages(): boolean {
         return (
-            (this.has_operator("is") && this.operands("is")[0] === "dm") ||
+            (this.has_operator("is") && this.terms_with_operator("is")[0]!.operand === "dm") ||
             this.has_operator("dm") ||
             this.has_operator("dm-including")
         );
@@ -1826,7 +1842,7 @@ export class Filter {
         }
 
         if (!message) {
-            const message_id = Number.parseInt(this.operands("with")[0]!, 10);
+            const message_id = Number.parseInt(this.terms_with_operator("with")[0]!.operand, 10);
             message = message_store.get(message_id);
         }
 
