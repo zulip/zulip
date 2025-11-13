@@ -1224,7 +1224,7 @@ textarea.new_message_textarea {
 }
 
 .compose-box-open {
-    #compose_controls {
+    #closed-compose-controls {
         display: none;
     }
 
