@@ -307,6 +307,9 @@
         border-radius: 4px;
         border: none;
         outline: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        overflow-wrap: normal;
         font-variant: all-small-caps;
 
         &:hover {
