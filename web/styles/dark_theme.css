@@ -98,8 +98,7 @@
         }
     }
 
-    textarea.schedule-reminder-note:focus,
-    #compose_recipient_box:focus {
+    textarea.schedule-reminder-note:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
