@@ -578,7 +578,6 @@ function hashchanged(
         browser_history.state.changing_hash = false;
         return undefined;
     }
-
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
     sidebar_ui.hide_all();
