@@ -313,7 +313,7 @@ export function try_rendering_locally_for_same_narrow(
         target_id = opts.then_select_id;
         target_scroll_offset = opts.then_select_offset;
     } else if (filter.has_operator("near")) {
-        target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+        target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
     } else if (filter.equals(current_filter)) {
         // The caller doesn't want to force rerender and the filter is the same.
         // Also, we don't have a specific message id we want to select, so we
@@ -485,10 +485,10 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         // These two narrowing operators specify what message should be
         // selected and should be the center of the narrow.
         if (filter.has_operator("near")) {
-            id_info.target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
         }
         if (filter.has_operator("id")) {
-            id_info.target_id = Number.parseInt(filter.operands("id")[0]!, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
         }
 
         if (
@@ -502,7 +502,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             // from server first and then try to select `then_select_id` message.
             // There is no risk of this hack causing any issues since the `id_info`
             // will be reset after we fetch the `with` operator message.
-            id_info.target_id = Number.parseInt(filter.operands("with")[0]!, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("with")[0]!.operand, 10);
         }
 
         // Narrow with near / id operator. There are two possibilities:
@@ -524,9 +524,9 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 // the stream/topic pair that was requested to some other
                 // location, then we should retarget this narrow operation
                 // to where the message is located now.
-                const narrow_topic = filter.operands("topic")[0]!;
+                const narrow_topic = filter.terms_with_operator("topic")[0]!.operand;
                 const narrow_stream_data = stream_data.get_sub_by_id_string(
-                    filter.operands("channel")[0]!,
+                    filter.terms_with_operator("channel")[0]!.operand,
                 );
                 if (!narrow_stream_data) {
                     // The stream id is invalid or incorrect in the URL.

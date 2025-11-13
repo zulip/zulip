@@ -35,7 +35,9 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("channel")) {
-        const sub = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        const sub = stream_data.get_sub_by_id_string(
+            filter.terms_with_operator("channel")[0]!.operand,
+        );
         if (!sub) {
             // The stream is not set because it does not currently
             // exist, or it is a private stream and the user is not
@@ -43,14 +45,14 @@ export function compute_narrow_title(filter?: Filter): string {
             return filter_title;
         }
         if (filter.has_operator("topic")) {
-            const topic_name = filter.operands("topic")[0];
+            const topic_name = filter.terms_with_operator("topic")[0]!.operand;
             return "#" + filter_title + " > " + topic_name;
         }
         return "#" + filter_title;
     }
 
     if (filter.has_operator("dm")) {
-        const emails = filter.operands("dm")[0]!;
+        const emails = filter.terms_with_operator("dm")[0]!.operand;
         const user_ids = people.emails_strings_to_user_ids_string(emails);
 
         if (user_ids !== undefined) {
