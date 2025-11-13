@@ -352,7 +352,7 @@ def maybe_send_to_registration(
         "desktop_flow_otp": desktop_flow_otp,
     }
     context.update(extra_context)
-    return render(request, "zerver/accounts_home.html", context=context)
+    return render(request, "zerver/create_user/accounts_home.html", context=context)
 
 
 def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> HttpResponse:

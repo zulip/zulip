@@ -25,7 +25,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
                     <label for="id_email">{{ _("Email") }}</label>
                     <div class="controls fakecontrol">{{ email }}</div>
                     {% if first_time_login %}
-                    {% include 'zerver/new_user_email_address_visibility.html' %}
+                    {% include 'zerver/create_user/new_user_email_address_visibility.html' %}
                     {% endif %}
                 </div>
 
@@ -38,7 +38,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
                 {% endif %}
 
                 {% if terms_of_service %}
-                {% include 'zerver/terms_of_service_form_field.html' %}
+                {% include 'zerver/create_user/terms_of_service_form_field.html' %}
                 {% if first_time_terms_of_service_message_template %}
                 <div class="input-group">
                     <label for="id_enable_marketing_emails_first_login" class="inline-block checkbox marketing_emails_checkbox">
@@ -60,7 +60,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
 </div>
 
 {% if first_time_login %}
-{% include 'zerver/change_email_address_visibility_modal.html' %}
+{% include 'zerver/create_user/change_email_address_visibility_modal.html' %}
 {% endif %}
 
 {% endblock %}

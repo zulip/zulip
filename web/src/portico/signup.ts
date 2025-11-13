@@ -282,7 +282,7 @@ $(() => {
         let selected_option_text;
 
         // These strings should be consistent with those defined for the same element in
-        // 'templates/zerver/register.html'.
+        // 'templates/zerver/create_user/new_user_email_address_visibility.html'.
         switch (selected_val) {
             case settings_config.email_address_visibility_values.admins_only.code: {
                 selected_option_text = $t({
