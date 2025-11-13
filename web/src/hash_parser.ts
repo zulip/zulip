@@ -1,3 +1,5 @@
+import type {NarrowTerm} from "./state_data";
+
 export function get_hash_category(hash?: string): string {
     // given "#channels/subscribed", returns "channels"
     return hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
@@ -117,7 +119,10 @@ export function is_in_specified_hash_category(hash_categories: string[]): boolea
     return hash_categories.includes(main_hash);
 }
 
-export function is_an_allowed_web_public_narrow(operator: string, operand: string): boolean {
+export function is_an_allowed_web_public_narrow(
+    operator: NarrowTerm["operator"],
+    operand: NarrowTerm["operand"],
+): boolean {
     if (operator === "is" && operand === "resolved") {
         return true;
     }
