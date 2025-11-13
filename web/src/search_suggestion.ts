@@ -522,7 +522,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
-                channel_id = filter.operands("channel")[0];
+                channel_id = filter.terms_with_operator("channel")[0]!.operand;
             } else {
                 channel_id = narrow_state.stream_id()?.toString();
                 if (channel_id) {
