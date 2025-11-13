@@ -199,14 +199,14 @@ function update_recipient_label(stream_id?: number): void {
 export function update_compose_for_message_type(opts: ComposeTriggeredOptions): void {
     if (opts.message_type === "stream") {
         $("#compose-direct-recipient").hide();
-        $("#compose_recipient_box").show();
+        $("#compose-channel-recipient").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
         $("#compose-direct-recipient").show();
-        $("#compose_recipient_box").hide();
+        $("#compose-channel-recipient").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
@@ -402,7 +402,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $input.removeClass("empty-topic-display empty-topic-only");
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
-    $("#compose_recipient_box").removeClass("disabled");
+    $("#compose-channel-recipient").removeClass("disabled");
 
     if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
@@ -418,7 +418,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         compose_state.topic("");
         $input.prop("disabled", true);
         $input.addClass("empty-topic-only");
-        $("#compose_recipient_box").addClass("disabled");
+        $("#compose-channel-recipient").addClass("disabled");
         $("textarea#compose-textarea").trigger("focus");
         has_topic_focus = false;
     }

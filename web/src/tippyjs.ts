@@ -991,7 +991,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#compose_recipient_box, #move-topic-new-topic-input-wrapper",
+        target: "#compose-channel-recipient, #move-topic-new-topic-input-wrapper",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             const $elem = $(instance.reference);

@@ -626,7 +626,7 @@ export function initialize(): void {
         }, 150),
     );
 
-    $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
+    $("#compose-channel-recipient").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
         // This should work similar to just manually deleting the
         // topic

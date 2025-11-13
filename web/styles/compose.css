@@ -1082,11 +1082,11 @@ textarea.new_message_textarea {
 }
 
 #message-content-container,
-#compose_recipient_box {
+#compose-channel-recipient {
     color: var(--color-text-default);
 }
 
-#compose_recipient_box {
+#compose-channel-recipient {
     display: grid;
     /* When displaying #topic-not-mandatory-placeholder,
        we let it occupy the entire topic box. Otherwise,
@@ -1243,7 +1243,7 @@ textarea.new_message_textarea {
 #compose.compose-box-open {
     .low-attention-recipient-row:not(.recently-focused, :focus-within) {
         #compose_select_recipient_widget,
-        #compose_recipient_box,
+        #compose-channel-recipient,
         #compose-direct-recipient .pill-container {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
@@ -1298,7 +1298,7 @@ textarea.new_message_textarea {
     }
 
     #compose_select_recipient_widget,
-    #compose_recipient_box,
+    #compose-channel-recipient,
     #compose-direct-recipient .pill-container {
         background-color: transparent;
         border-color: transparent;
