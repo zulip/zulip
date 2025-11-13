@@ -9,11 +9,13 @@ import render_settings_user_list_row from "../templates/settings/settings_user_l
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
 import type {Bot} from "./bot_data.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as integration_url_modal from "./integration_url_modal.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
@@ -31,6 +33,7 @@ import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
 
+const GENERIC_BOT_TYPE = 1;
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -61,6 +64,8 @@ type BotInfo = {
     cannot_deactivate: boolean;
     cannot_edit: boolean;
     display_email: string;
+    show_download_zuliprc_button: boolean;
+    show_generate_integration_url_button: boolean;
 } & (
     | {
           bot_owner_id: number;
@@ -407,6 +412,9 @@ function bot_info(bot_user_id: number): BotInfo {
             : {
                   bot_owner_id: null,
               }),
+        show_download_zuliprc_button: is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE,
+        show_generate_integration_url_button:
+            can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
     };
 }
 
@@ -704,4 +712,20 @@ export function set_up_bots(): void {
         $("#hidden-botserverrc-download")[0]?.click();
     });
     toggle_bot_config_download_container();
+
+    $("#admin-bot-list").on("click", ".download-bot-zuliprc-button", (e) => {
+        const $row = $(e.target).closest(".user_row");
+        const $zuliprc_link = $row.find(".hidden-zuliprc-download");
+        const bot_id = Number.parseInt($zuliprc_link.attr("data-user-id")!, 10);
+        $zuliprc_link.attr("href", bot_helper.generate_zuliprc_url(bot_id));
+        $zuliprc_link[0]?.click();
+    });
+
+    $("#admin-bot-list").on("click", ".generate-integration-url-button", (e) => {
+        const $row = $(e.target).closest(".user_row");
+        const bot_id = Number.parseInt($row.attr("data-user-id")!, 10);
+        const current_bot_data = bot_data.get(bot_id);
+        assert(current_bot_data !== undefined);
+        integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
+    });
 }
