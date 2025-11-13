@@ -913,13 +913,24 @@ export function initialize(): void {
         target: ".topic-edit-save-wrapper",
         onShow(instance) {
             const $elem = $(instance.reference);
-            if ($($elem).find(".topic_edit_save").prop("disabled")) {
+            const $save_button = $elem.find(".topic_edit_save");
+            if (!$save_button.prop("disabled")) {
+                return false;
+            }
+
+            if ($save_button.hasClass("topic-required")) {
                 const error_message =
                     compose_validate.get_topics_required_error_tooltip_message_html();
                 instance.setContent(ui_util.parse_html(error_message));
                 return undefined;
             }
-            return false;
+
+            const content = $elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
         },
         appendTo: () => document.body,
         onHidden(instance) {
