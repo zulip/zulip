@@ -20,6 +20,14 @@ import type {UserGroup} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
+export function build_reload_url(): string {
+    let hash = window.location.hash;
+    if (hash.startsWith("#")) {
+        hash = hash.slice(1);
+    }
+    return "+oldhash=" + encodeURIComponent(hash);
+}
+
 export function get_reload_hash(): string {
     let hash = window.location.hash;
     if (hash.startsWith("#")) {
