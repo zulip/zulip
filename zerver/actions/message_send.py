@@ -2060,12 +2060,14 @@ def internal_send_private_message(
     content: str,
     *,
     disable_external_notifications: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> int | None:
     message = internal_prep_private_message(
         sender,
         recipient_user,
         content,
         disable_external_notifications=disable_external_notifications,
+        acting_user=acting_user,
     )
     if message is None:
         return None
