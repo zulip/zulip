@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import render_more_topics from "../templates/more_topics.hbs";
 import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
+import render_topic_list_new_topic from "../templates/topic_list_new_topic.hbs";
 
 import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
@@ -13,6 +14,7 @@ import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -105,6 +107,9 @@ type ListInfoNodeOptions =
       }
     | {
           type: "spinner";
+      }
+    | {
+          type: "new_topic";
       };
 
 export type ListInfoNode = vdom.Node<ListInfoNodeOptions>;
@@ -162,6 +167,21 @@ export function spinner_li(): ListInfoNode {
     return {
         key,
         type: "spinner",
+        render,
+        eq,
+    };
+}
+
+export function new_topic(stream_id: number): ListInfoNode {
+    const render = (): string => render_topic_list_new_topic({stream_id});
+
+    const eq = (other: ListInfoNode): boolean => other.type === "new_topic";
+
+    const key = "more";
+
+    return {
+        key,
+        type: "new_topic",
         render,
         eq,
     };
@@ -289,6 +309,8 @@ export class TopicListWidget {
         const attrs: [string, string][] = [["class", topic_list_classes.join(" ")]];
 
         const nodes = list_info.items.map((conversation) => formatter(conversation));
+        const stream = stream_data.get_sub_by_id(this.my_stream_id);
+        assert(stream);
 
         if (spinner) {
             nodes.push(spinner_li());
@@ -300,6 +322,8 @@ export class TopicListWidget {
                     list_info.more_topics_unread_count_muted,
                 ),
             );
+        } else if (is_zoomed && stream_data.can_post_messages_in_stream(stream)) {
+            nodes.push(new_topic(this.my_stream_id));
         }
 
         const dom = vdom.ul({
