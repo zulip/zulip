@@ -1788,7 +1788,6 @@ def do_convert_directory(
     )
 
     uploads_folder = os.path.join(output_dir, "uploads")
-    os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
     uploads_records = process_uploads(uploads_list, uploads_folder, processes)
     attachment = {"zerver_attachment": zerver_attachment}
 
