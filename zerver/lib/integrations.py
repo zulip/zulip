@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 from zerver.webhooks import fixtureless_integrations
 
@@ -470,6 +470,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
     WebhookIntegration("crashlytics", ["monitoring"]),
+    WebhookIntegration(
+        "dbt",
+        ["deployment"],
+        display_name="DBT",
+        url_options=[
+            WebhookUrlOption(name="access_url", label="DBT Access URL", validator=check_string)
+        ],
+    ),
     WebhookIntegration("dialogflow", ["customer-support"]),
     WebhookIntegration("delighted", ["customer-support", "marketing"]),
     WebhookIntegration("dropbox", ["productivity"]),
@@ -783,6 +791,7 @@ WEBHOOK_SCREENSHOT_CONFIG: dict[str, list[WebhookScreenshotConfig]] = {
     "clubhouse": [WebhookScreenshotConfig("story_create.json")],
     "codeship": [WebhookScreenshotConfig("error_build.json")],
     "crashlytics": [WebhookScreenshotConfig("issue_message.json")],
+    "dbt": [WebhookScreenshotConfig("job_run_completed_errored.json")],
     "delighted": [WebhookScreenshotConfig("survey_response_updated_promoter.json")],
     "dialogflow": [
         WebhookScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})
