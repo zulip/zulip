@@ -1072,17 +1072,18 @@ def send_user_subscribed_and_new_channel_notifications(
                     )
 
                 assert new_channel_message is not None
-                notifications.append(
-                    internal_prep_stream_message(
-                        sender=sender,
-                        stream=stream,
-                        topic_name=channel_events_topic_name(stream),
-                        content=new_channel_message.format(
-                            user_name=silent_mention_syntax_for_user(user_profile),
-                        )
-                        + f"\n```` quote\n{stream_description}\n````",
-                    ),
-                )
+                if user_profile.realm.send_channel_events_messages:
+                    notifications.append(
+                        internal_prep_stream_message(
+                            sender=sender,
+                            stream=stream,
+                            topic_name=channel_events_topic_name(stream),
+                            content=new_channel_message.format(
+                                user_name=silent_mention_syntax_for_user(user_profile),
+                            )
+                            + f"\n```` quote\n{stream_description}\n````",
+                        ),
+                    )
 
     if len(notifications) > 0:
         do_send_messages(notifications, mark_as_read=[user_profile.id])

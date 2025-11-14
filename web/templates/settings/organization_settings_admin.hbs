@@ -38,6 +38,13 @@
                   value_type="number"
                   custom_classes="decorated-stream-name-dropdown-widget"}}
 
+                {{> settings_checkbox
+                  setting_name="realm_send_channel_events_messages"
+                  prefix="id_"
+                  is_checked=realm_send_channel_events_messages
+                  label=admin_settings_label.realm_send_channel_events_messages
+                  help_link="/help/configure-automated-notices#notices-about-channels"}}
+
                 {{#if settings_send_digest_emails }}
                 {{> settings_checkbox
                   setting_name="realm_digest_emails_enabled"

@@ -69,6 +69,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
+    channel_events_topic_name,
     ensure_stream,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
@@ -2171,3 +2172,32 @@ def internal_send_group_direct_message(
 
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
+
+
+def maybe_send_channel_events_notice(
+    sender: UserProfile,
+    stream: Stream,
+    content: str,
+    *,
+    email_gateway: bool = False,
+    message_type: int = Message.MessageType.NORMAL,
+    limit_unread_user_ids: set[int] | None = None,
+    mark_as_read_for_acting_user: bool = False,
+    archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
+) -> int | None:
+    if not stream.realm.send_channel_events_messages:
+        return None
+
+    return internal_send_stream_message(
+        sender,
+        stream,
+        channel_events_topic_name(stream),
+        content,
+        email_gateway=email_gateway,
+        message_type=message_type,
+        limit_unread_user_ids=limit_unread_user_ids,
+        mark_as_read_for_acting_user=mark_as_read_for_acting_user,
+        archived_channel_notice=archived_channel_notice,
+        acting_user=acting_user,
+    )
