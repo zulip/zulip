@@ -518,7 +518,7 @@ def do_create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str = UserProfile.AVATAR_FROM_DEFAULT,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
     default_events_register_stream: Stream | None = None,
@@ -537,6 +537,20 @@ def do_create_user(
 ) -> UserProfile:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
+
+    # ---- DO NOT APPLY REALM DEFAULT AVATARS TO BOTS ----
+    # Bots use gravatar unless given an uploaded avatar.
+    if bot_type is not None and avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
+        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    if bot_type is None and bot_owner is None and avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
+       if realm.default_newUser_avatar == "gravatar":
+          avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+       elif realm.default_newUser_avatar in ("jdenticon", "colorful_silhouette"):
+          avatar_source = UserProfile.AVATAR_FROM_DEFAULT
+       else:
+          avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+
+
 
     user_profile = create_user(
         email=email,

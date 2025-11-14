@@ -13,6 +13,11 @@ from zerver.lib.upload import get_avatar_url
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
 from zerver.models.users import is_cross_realm_bot_email
+from django.urls import reverse
+import hashlib
+import subprocess
+import hashlib
+import os
 
 STATIC_AVATARS_DIR = "images/static_avatars/"
 
@@ -22,6 +27,25 @@ DEFAULT_AVATAR_FILE = "images/default-avatar.png"
 def avatar_url(
     user_profile: UserProfile, medium: bool = False, client_gravatar: bool = False
 ) -> str | None:
+    # Fast-path: when the cached Realm object is available on the
+    # UserProfile (the common case), use it to resolve realm-level
+    # default avatar choices without hitting the database. This keeps
+    # avatar URL generation O(1) in hot code paths.
+    if user_profile.avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
+        realm = getattr(user_profile, "realm", None)
+        if realm is not None:
+            default_choice = getattr(realm, "default_newUser_avatar", None)
+            if default_choice == "jdenticon":
+                seed = hashlib.sha1((user_profile.delivery_email or str(user_profile.id)).encode()).hexdigest()
+                size = 128 if medium else 80
+                return reverse("jdenticon_svg", args=[seed, size])
+            elif default_choice == "colorful_silhouette":
+                seed = hashlib.sha1((user_profile.delivery_email or str(user_profile.id)).encode()).hexdigest()
+                size = 128 if medium else 80
+                return reverse("silhouette_svg", args=[seed, size])
+            # If the realm default is gravatar or unknown, fall through and
+            # let the existing logic handle gravatar/default-avatar cases.
+
     return get_avatar_field(
         user_id=user_profile.id,
         realm_id=user_profile.realm_id,
@@ -62,6 +86,18 @@ def get_static_avatar_url(email: str, medium: bool) -> str:
 
     return staticfiles_storage.url(avatar_file_name)
 
+NODE = "node"
+SCRIPT_PATH = os.path.join("tools", "jdenticon_generate.js")
+def generate_jdenticon_svg(seed: str, size:int) -> str:
+    result = subprocess.run(
+        [NODE, SCRIPT_PATH, seed, str(size)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+        text=True,
+    )
+    return result.stdout
+
 
 def get_avatar_field(
     user_id: int,
@@ -88,6 +124,18 @@ def get_avatar_field(
             gravatars, this will be set to True, and we'll avoid
             computing them on the server (mostly to save bandwidth).
     """
+    
+
+    if avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
+        if realm_id is None:
+            return staticfiles_storage.url("images/default-avatar.png")
+        # We avoid any Realm DB lookups here. The higher-level `avatar_url`
+        # function handles realm-based defaults using the cached
+        # `UserProfile.realm` when available. When this lower-level API is
+        # invoked without a UserProfile, fall back to gravatar/default.
+        # Fall through to gravatar handling below.
+
+
 
     # System bots have hardcoded avatars
     if is_cross_realm_bot_email(email):
@@ -120,6 +168,7 @@ def get_avatar_field(
         realm_id=realm_id,
         medium=medium,
     )
+
 
 
 def get_gravatar_url(email: str, avatar_version: int, realm_id: int, medium: bool = False) -> str:

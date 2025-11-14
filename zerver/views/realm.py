@@ -121,6 +121,7 @@ def update_realm(
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
     default_code_block_language: str | None = None,
     default_language: str | None = None,
+    default_newUser_avatar: str | None = None,
     description: Annotated[
         str | None, StringConstraints(max_length=Realm.MAX_REALM_DESCRIPTION_LENGTH)
     ] = None,

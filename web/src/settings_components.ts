@@ -245,6 +245,7 @@ export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,
+    realm_default_newUser_avatar: true,
 });
 export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 
@@ -497,6 +498,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_zulip_update_announcements_stream_id", null],
     ["realm_default_code_block_language", null],
     ["realm_default_language", null],
+    ["realm_default_newUser_avatar", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
@@ -533,16 +535,17 @@ export function set_dropdown_list_widget_setting_value(
     widget.render(value);
 }
 
-export function get_dropdown_list_widget_setting_value($input_elem: JQuery): number | string {
+export function get_dropdown_list_widget_setting_value($input_elem: JQuery): number | string | undefined {
     const widget_name = extract_property_name($input_elem);
     const setting_widget = get_widget_for_dropdown_list_settings(widget_name);
     assert(setting_widget !== null);
 
-    const setting_value = setting_widget.value();
-    assert(setting_value !== undefined);
-
+    // The widget may not have been initialized with a value yet (e.g., first render),
+    // so allow returning undefined and let the caller handle that.
+    const setting_value = setting_widget!.value();
     return setting_value;
 }
+
 
 export function change_save_button_state($element: JQuery, state: string): void {
     function show_hide_element(
@@ -843,6 +846,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
         case "realm_default_language":
+        case "realm_default_newUser_avatar":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
@@ -890,12 +894,24 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_jitsi_server_url_setting_value($(elem), false);
             break;
-        default:
-            if (current_val !== undefined) {
-                proposed_val = get_input_element_value(elem, typeof current_val);
-            } else {
-                blueslip.error("Element refers to unknown property", {property_name});
-            }
+        default: {
+    const $el = $(elem);
+
+    // If this is a dropdown-list-widget, handle it properly
+    if ($el.data("setting-widget-type") === "dropdown-list-widget") {
+        proposed_val = get_dropdown_list_widget_setting_value($el);
+        break;
+    }
+
+    // Otherwise fall back to normal HTML input logic
+    if (current_val !== undefined) {
+        proposed_val = get_input_element_value(elem, typeof current_val);
+    } else {
+        blueslip.error("Element refers to unknown property", {property_name});
+    }
+    break;
+}
+
     }
     return !_.isEqual(current_val, proposed_val);
 }

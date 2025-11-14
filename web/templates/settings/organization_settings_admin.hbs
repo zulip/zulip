@@ -69,6 +69,19 @@
                 <h3>{{t "Onboarding" }}</h3>
                 {{> settings_save_discard_widget section_name="onboarding" }}
             </div>
+
+            <div class="input-group" id="realm_default_newUser_avatar_widget_container">
+              <label for="realm_default_newUser_avatar_widget" class="settings-field-label">
+                {{t "Default avatar for new users" }}
+              </label>
+            <span class="prop-element hide" id="id_realm_default_newUser_avatar" data-setting-widget-type="dropdown-list-widget" data-setting-value-type="string"></span>
+            <div class="dropdown_widget_with_label_wrapper">
+                {{> ../dropdown_widget
+                  widget_name="realm_default_newUser_avatar"
+                  }}
+            </div>
+           </div>
+
             <div class="inline-block organization-settings-parent">
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"

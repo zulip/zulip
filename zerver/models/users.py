@@ -668,11 +668,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # https://docs.djangoproject.com/en/5.0/ref/models/fields/#django.db.models.Field.null.
     timezone = models.CharField(max_length=40, default="")
 
+    AVATAR_FROM_DEFAULT = "D"
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_USER = "U"
     AVATAR_SOURCES = (
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
         (AVATAR_FROM_USER, "Uploaded by user"),
+        (AVATAR_FROM_DEFAULT, "Default by Organisation Admin")
     )
     avatar_source = models.CharField(
         default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1

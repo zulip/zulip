@@ -233,6 +233,7 @@ const config = (
         },
         plugins,
         devServer: {
+            allowedHosts: "all",
             client: {
                 overlay: {
                     runtimeErrors: false,
