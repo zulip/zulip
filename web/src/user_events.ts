@@ -9,6 +9,7 @@ import * as z from "zod/mini";
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -225,6 +226,9 @@ export const update_person = function update(event: UserUpdate): void {
             settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
         }
         buddy_list.insert_or_move([event.user_id]);
+        // Update UI elements to reflect the user's deactivated/reactivated status
+        pm_list.update_private_messages();
+        compose_pm_pill.update_user_pill_active_status(user, event.is_active);
         settings_account.maybe_update_deactivate_account_button();
         if (is_bot_user) {
             settings_bots.update_bot_data(event.user_id);
