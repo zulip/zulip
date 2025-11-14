@@ -1215,13 +1215,6 @@ for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
         raise AssertionError("zulip_groups can't be listed in extra_attrs in the IdP config.")
 
 
-def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:
-    for key in keys:
-        if key not in d:
-            d[key] = {}
-        d = d[key]
-
-
 for dict_for_subdomain in SOCIAL_AUTH_SYNC_ATTRS_DICT.values():
     for attrs_map in dict_for_subdomain.values():
         if "zulip_groups" in attrs_map.values():
