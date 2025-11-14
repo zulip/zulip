@@ -775,7 +775,6 @@ input.settings_text_input {
             background-color: var(
                 --color-background-table-header-sortable-hover
             );
-            transition: background-color 100ms ease-in-out;
         }
     }
 
