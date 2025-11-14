@@ -158,6 +158,7 @@ def f():
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
+        output_html: `<div class="time-example-output-align"><time datetime="2023-05-28T08:00:00Z"><span class="timestamp-content-wrapper"><i class="zulip-icon zulip-icon-clock markdown-timestamp-icon"></i>Sun, May 28, 2023, 1:30 PM</span></time></div>`,
     },
     {
         markdown: `/poll ${$t({defaultMessage: "What did you drink this morning?"})}

@@ -1018,3 +1018,10 @@
         padding-left: 0.3em;
     }
 }
+
+.time-example-output-align {
+    display: flex;
+    align-items: center;
+    padding-top: var(--message-box-link-focus-ring-block-padding);
+    padding-bottom: var(--message-box-link-focus-ring-block-padding);
+}
