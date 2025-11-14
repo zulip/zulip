@@ -229,13 +229,19 @@ p.n-margin {
     }
 }
 
-.all-messages-search-caution {
+.all-messages-search-caution,
+.combined-feed-notice {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    &.hidden {
+        display: none;
+    }
 }
 
-.all-messages-search-caution a {
+.all-messages-search-caution a,
+.combined-feed-notice a {
     text-decoration: none;
 }
 

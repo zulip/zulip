@@ -29,4 +29,19 @@
         </button>
     </div>
 </div>
+<div class="combined-feed-notice hidden-for-spectators" hidden>
+    <p>
+        {{#tr}}
+            End of messages in your
+            <z-link>combined feed</z-link>.
+            {{#*inline "z-link"}}<a href="/help/combined-feed"
+              target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </p>
+    <a class="combined-feed-public-channels" href="#narrow/channels/public">
+        <button class="action-button action-button-quiet-neutral" type="button">
+            {{t 'View all public channels'}}
+        </button>
+    </a>
+</div>
 <div class="empty_feed_notice_main"></div>
