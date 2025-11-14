@@ -245,6 +245,7 @@ class HomeTest(ZulipTestCase):
         "server_needs_upgrade",
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
+        "server_report_message_types",
         "server_supported_permission_settings",
         "server_thumbnail_formats",
         "server_timestamp",
