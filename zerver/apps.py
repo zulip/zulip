@@ -9,7 +9,7 @@ from django.core.checks import register
 from django.db.models.signals import post_migrate
 from typing_extensions import override
 
-from zerver.checks import check_external_host_setting, check_required_settings
+from zerver.checks import check_auth_settings, check_external_host_setting, check_required_settings
 
 
 def flush_cache(sender: AppConfig | None, **kwargs: Any) -> None:
@@ -24,6 +24,7 @@ class ZerverConfig(AppConfig):
     def ready(self) -> None:
         register(check_required_settings)
         register(check_external_host_setting)
+        register(check_auth_settings)
 
         if settings.SENTRY_DSN:  # nocoverage
             from zproject.config import get_config
