@@ -57,3 +57,25 @@ class TestChecks(ZulipTestCase):
 
         finally:
             os.environ["ZULIP_TEST_SUITE"] = "true"
+
+    def test_checks_external_host_value(self) -> None:
+        self.assert_check_with_error(None, EXTERNAL_HOST="testserver.local")
+        self.assert_check_with_error(None, EXTERNAL_HOST="testserver.local:443")
+        self.assert_check_with_error(None, EXTERNAL_HOST="testserver.local:https")
+
+        self.assert_check_with_error(
+            re.compile(r"EXTERNAL_HOST \(\S+\) is too long"),
+            EXTERNAL_HOST=("a234567890." * 25 + "local"),
+        )
+
+        self.assert_check_with_error(
+            re.compile(
+                r"\(zulip\.E002\) EXTERNAL_HOST \(\S+\) contains non-ASCII characters\n.*xn--wgv71a119e\.example\.com"
+            ),
+            EXTERNAL_HOST="日本語.example.com",
+        )
+
+        self.assert_check_with_error(
+            "EXTERNAL_HOST (-bogus-.example.com) does not validate as a hostname",
+            EXTERNAL_HOST="-bogus-.example.com:443",
+        )
