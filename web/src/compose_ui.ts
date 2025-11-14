@@ -214,7 +214,8 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         if (
             opts.trigger === "clear topic button" ||
             opts.trigger === "compose_hotkey" ||
-            opts.trigger === "inbox_nofocus"
+            opts.trigger === "inbox_nofocus" ||
+            opts.trigger === "zoomed new topic"
         ) {
             return "input#stream_message_recipient_topic";
         }

@@ -28,6 +28,7 @@ import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import type {StreamListSection} from "./stream_list_sort.ts";
@@ -1356,18 +1357,30 @@ export function set_event_handlers({
         on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
 
-    $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const stream_id = Number.parseInt(this.getAttribute("data-stream-id")!, 10);
-        compose_actions.start({
-            message_type: "stream",
-            stream_id,
-            topic: "",
-            trigger: "clear topic button",
-            keep_composebox_empty: true,
-        });
-    });
+    $("#stream_filters").on(
+        "click",
+        ".channel-new-topic-button, .zoomed-new-topic",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const stream_id = Number.parseInt(this.getAttribute("data-stream-id")!, 10);
+            let trigger = "clear topic button";
+            let topic = "";
+
+            if ($(e.target).closest(".zoomed-new-topic").length > 0) {
+                trigger = "zoomed new topic";
+                topic = $("#topic_filter_query").text().trim().slice(0, realm.max_topic_length);
+            }
+
+            compose_actions.start({
+                message_type: "stream",
+                stream_id,
+                topic,
+                trigger,
+                keep_composebox_empty: true,
+            });
+        },
+    );
 
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
