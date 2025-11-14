@@ -1,4 +1,5 @@
 import os
+import re
 from contextlib import ExitStack
 from typing import Any
 
@@ -10,10 +11,12 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class TestChecks(ZulipTestCase):
-    def assert_check_with_error(self, message: str | None, **kwargs: Any) -> None:
+    def assert_check_with_error(self, test: re.Pattern[str] | str | None, **kwargs: Any) -> None:
         with open(os.devnull, "w") as DEVNULL, override_settings(**kwargs), ExitStack() as stack:
-            if message is not None:
-                stack.enter_context(self.assertRaisesMessage(SystemCheckError, message))
+            if isinstance(test, str):
+                stack.enter_context(self.assertRaisesMessage(SystemCheckError, test))
+            elif isinstance(test, re.Pattern):
+                stack.enter_context(self.assertRaisesRegex(SystemCheckError, test))
             call_command("check", stdout=DEVNULL)
 
     def test_checks_required_setting(self) -> None:
@@ -32,7 +35,25 @@ class TestChecks(ZulipTestCase):
             ZULIP_ADMINISTRATOR=None,
         )
 
-        self.assert_check_with_error(
-            None,
-            ZULIP_ADMINISTRATOR="other-admin-email@example.com",
-        )
+    def test_checks_external_host_domain(self) -> None:
+        message_re = r"\(zulip\.E002\) EXTERNAL_HOST \(\S+\) does not contain a domain part"
+        try:
+            # We default to skippping this check in CI, because
+            # "testserver" is part of so many tests.  We temporarily
+            # strip out the environment variable we use to detect
+            # that, so we can trigger the check.
+            del os.environ["ZULIP_TEST_SUITE"]
+
+            self.assert_check_with_error(None, EXTERNAL_HOST="server-1.local")
+
+            self.assert_check_with_error(
+                re.compile(rf"{message_re}\s*HINT: Add .local to the end"), EXTERNAL_HOST="server-1"
+            )
+
+            self.assert_check_with_error(
+                re.compile(rf"{message_re}\s*HINT: Add .localdomain to the end"),
+                EXTERNAL_HOST="localhost",
+            )
+
+        finally:
+            os.environ["ZULIP_TEST_SUITE"] = "true"
