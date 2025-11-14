@@ -680,6 +680,10 @@ def get_uploads(upload_dir: str, upload_file_request: UploadFileRequest) -> None
         stream=True,
         **kwargs,
     )
+    if response.status_code != requests.codes.ok:
+        logging.info("HTTP error: %s, Response: %s", response.status_code, response.text)
+        raise Exception("Failed downloading file.")
+
     os.makedirs(os.path.dirname(upload_path), exist_ok=True)
     with open(upload_path, "wb") as upload_file:
         shutil.copyfileobj(response.raw, upload_file)

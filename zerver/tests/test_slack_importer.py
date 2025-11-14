@@ -28,6 +28,7 @@ from zerver.data_import.import_util import (
     build_subscription,
     build_usermessages,
     build_zerver_realm,
+    process_uploads,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
@@ -2641,3 +2642,25 @@ by Pieter
                     "cancel_import": "true",
                 },
             )
+
+    @responses.activate
+    def test_process_uploads_with_bad_requests(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/DEF.png?token=xoxe-AAA-BBB-CCC-DDD"
+
+        error_message = "The requested file could not be found."
+        responses.add(responses.GET, request_url, status=404, json=error_message)
+        upload_file_request_list = [
+            UploadFileRequest(
+                output_file_path="text.txt",
+                request_url=request_url,
+                params=None,
+                headers=None,
+                kwargs={},
+            )
+        ]
+        with self.assertLogs(level="INFO") as logs:
+            process_uploads(upload_file_request_list, "", 1)
+        self.assertIn(
+            'INFO:root:HTTP error: 404, Response: "The requested file could not be found."',
+            logs.output,
+        )
