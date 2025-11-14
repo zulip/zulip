@@ -318,6 +318,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/features/", ["Organized team chat solution"])
         self._test("/jobs/", ["Work with us"])
         self._test("/self-hosting/", ["Self-host Zulip"])
+        self._test("/zulip-cloud/", ["Zulip Cloud"])
         self._test("/security/", ["TLS encryption"])
         self._test("/use-cases/", ["Use cases and customer stories"])
         self._test("/why-zulip/", ["Why Zulip?"])
