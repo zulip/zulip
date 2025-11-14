@@ -1,4 +1,5 @@
 import os
+import re
 from collections.abc import Iterable, Sequence
 from typing import Any
 
@@ -51,14 +52,50 @@ def check_external_host_setting(
     if not hasattr(settings, "EXTERNAL_HOST"):  # nocoverage
         return []
 
-    if "." not in settings.EXTERNAL_HOST and os.environ.get("ZULIP_TEST_SUITE") != "true":
-        suggest = ".localdomain" if settings.EXTERNAL_HOST == "localhost" else ".local"
-        return [
+    errors = []
+    hostname = settings.EXTERNAL_HOST
+    if "." not in hostname and os.environ.get("ZULIP_TEST_SUITE") != "true":
+        suggest = ".localdomain" if hostname == "localhost" else ".local"
+        errors.append(
             checks.Error(
-                f"EXTERNAL_HOST ({settings.EXTERNAL_HOST}) does not contain a domain part",
+                f"EXTERNAL_HOST ({hostname}) does not contain a domain part",
                 obj="settings.EXTERNAL_HOST",
                 hint=f"Add {suggest} to the end",
                 id="zulip.E002",
             )
-        ]
-    return []
+        )
+
+    if ":" in hostname:
+        hostname = hostname.split(":")[0]
+
+    if len(hostname) > 255:
+        errors.append(
+            checks.Error(
+                f"EXTERNAL_HOST ({hostname}) is too long to be a valid hostname",
+                obj="settings.EXTERNAL_HOST",
+                id="zulip.E002",
+            )
+        )
+    domain_part = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+    if not hostname.isascii():
+        suggestion = ".".join(
+            "xn--" + part.encode("punycode").decode() if not part.isascii() else part
+            for part in hostname.split(".")
+        )
+        errors.append(
+            checks.Error(
+                f"EXTERNAL_HOST ({hostname}) contains non-ASCII characters",
+                hint=f"Switch to punycode: {suggestion}",
+                obj="settings.EXTERNAL_HOST",
+                id="zulip.E002",
+            )
+        )
+    elif not all(domain_part.match(x) for x in hostname.split(".")):
+        errors.append(
+            checks.Error(
+                f"EXTERNAL_HOST ({hostname}) does not validate as a hostname",
+                obj="settings.EXTERNAL_HOST",
+                id="zulip.E002",
+            )
+        )
+    return errors
