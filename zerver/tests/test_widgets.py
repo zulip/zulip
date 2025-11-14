@@ -525,6 +525,13 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error('{"type": "strike"}', "key is missing")
         assert_error('{"type": "strike", "key": 999}', 'data["key"] is not a string')
 
+        assert_error('{"type": "reorder"}', "from key is missing from todo data")
+        assert_error('{"type": "reorder", "from":"1"}', 'todo data["from"] is not an integer')
+        assert_error('{"type": "reorder", "from": 1}', "to key is missing from todo data")
+        assert_error(
+            '{"type": "reorder", "from": 1, "to": "2"}', 'todo data["to"] is not an integer'
+        )
+
         def assert_success(data: dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             result = post_submessage(content)
@@ -532,6 +539,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
         assert_success(dict(type="strike", key="5,9"))
+        assert_success({"type": "reorder", "from": 1, "to": 2})
 
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")
