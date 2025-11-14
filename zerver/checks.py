@@ -1,3 +1,4 @@
+import os
 from collections.abc import Sequence
 from typing import Any
 
@@ -34,3 +35,23 @@ def check_required_settings(
             )
         )
     return errors
+
+
+def check_external_host_setting(
+    app_configs: None | list[AppConfig], **kwargs: Any
+) -> Sequence[checks.CheckMessage]:
+    if (
+        hasattr(settings, "EXTERNAL_HOST")
+        and "." not in settings.EXTERNAL_HOST
+        and os.environ.get("ZULIP_TEST_SUITE") != "true"
+    ):
+        suggest = ".localdomain" if settings.EXTERNAL_HOST == "localhost" else ".local"
+        return [
+            checks.Error(
+                f"EXTERNAL_HOST ({settings.EXTERNAL_HOST}) does not contain a domain part",
+                obj="settings.EXTERNAL_HOST",
+                hint=f"Add {suggest} to the end",
+                id="zulip.E002",
+            )
+        ]
+    return []
