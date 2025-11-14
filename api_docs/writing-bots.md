@@ -1,19 +1,16 @@
 # Writing interactive bots
 
-This guide is about writing and testing interactive bots. We assume
-familiarity with our [guide for running bots](running-bots).
+Zulip's API has a powerful framework for interactive bots that react to messages
+in Zulip. This page will guide you through writing your own interactive bot.
 
-On this page you'll find:
-
-* A step-by-step
-  [guide](#installing-a-development-version-of-the-zulip-bots-package)
-  on how to set up a development environment for writing bots with all
-  of our nice tooling to make it easy to write and test your work.
-* A [guide](#writing-a-bot) on writing a bot.
-* A [guide](#adding-a-bot-to-zulip) on adding a bot to Zulip.
-* Common [problems](#common-problems) when developing/running bots and their solutions.
+- [Installing a development version of the Zulip bots package](#installing-a-development-version-of-the-zulip-bots-package)
+- [Bot template](#bot-template)
+- [Testing a bot's output](#testing-a-bots-output)
+- [Troubleshooting](#troubleshooting)
 
 ## Installing a development version of the Zulip bots package
+
+This will provide convenient tooling for developing and testing your bot.
 
 {start_tabs}
 
@@ -51,13 +48,10 @@ On this page you'll find:
 
 {end_tabs}
 
-## Writing a bot
+## Bot template
 
-The tutorial below explains the structure of a bot `<my-bot>.py`,
-which is the only file you need to create for a new bot. You
-can use this as boilerplate code for developing your own bot.
-
-Every bot is built upon this structure:
+The only file required for a new bot is `<my-bot>.py`. It has the following
+structure:
 
 ```python
 class MyBotHandler(object):
@@ -74,65 +68,32 @@ class MyBotHandler(object):
 handler_class = MyBotHandler
 ```
 
-* The class name (in this case *MyBotHandler*) can be defined by you
-  and should match the name of your bot. To register your bot's class,
-  adjust the last line `handler_class = MyBotHandler` to match your
-  class name.
+The class name (in this case *MyBotHandler*) can be defined by you
+and should match the name of your bot. To register your bot's class,
+adjust the last line `handler_class = MyBotHandler` to match your
+class name.
 
-* Every bot needs to implement the functions
-    * `usage(self)`
-    * `handle_message(self, message, bot_handler)`
+Every bot must implement the `usage(self)` and `handle_message(self, message,
+bot_handler)` functions. They are described in detail in the
+[interactive bots API documentation](/api/interactive-bots-api).
 
-* These functions are documented in the [next section](#bot-api).
-
-## Adding a bot to Zulip
-
-Zulip's bot system resides in the [python-zulip-api](
-https://github.com/zulip/python-zulip-api) repository.
-
-The structure of the bots ecosystem looks like the following:
-
-```
-zulip_bots
-└───zulip_bots
-    ├───bots
-    │   ├───bot1
-    │   └───bot2
-    │       │
-    │       ├───bot2.py
-    │       ├───bot2.conf
-    │       ├───doc.md
-    │       ├───requirements.txt
-    │       ├───test_bot2.py
-    │       ├───assets
-    │       │   │
-    │       │   └───pic.png
-    │       ├───fixtures
-    │       │   │
-    │       │   └───test1.json
-    │       └───libraries
-    │           │
-    │           └───lib1.py
-    ├─── lib.py
-    ├─── test_lib.py
-    ├─── run.py
-    └─── provision.py
-```
-
-Each subdirectory in `bots` contains a bot. When writing bots, try to use the structure outlined
-above as an orientation.
+All the files associated with a bot (e.g., tests, documentation, etc.) should be
+placed in the same directory as `<my-bot>.py`.
 
 ## Testing a bot's output
 
-If you just want to see how a bot reacts to a message, but don't want to set it up on a server,
-we have a little tool to help you out: `zulip-bot-shell`
+You can see how a bot reacts to a message without setting it up on a server,
+using the `zulip-bot-shell` tool.
 
-* [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
+{start_tabs}
 
-* Run `zulip-bot-shell` to test one of the bots in
+1. [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
+1.  Run `zulip-bot-shell` to test one of the bots in
   [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
 
-Example invocations are below:
+{end_tabs}
+
+Example invocations:
 
 ```
 > zulip-bot-shell converter
@@ -151,31 +112,18 @@ Response: stream: followup topic: foo_sender@zulip.com
 Note that the `-b` (aka `--bot-config-file`) argument is for an optional third party
 config file (e.g., ~/giphy.conf), which only applies to certain types of bots.
 
-## Common problems
+## Troubleshooting
 
-* I modified my bot's code, yet the changes don't seem to have an effect.
-    * Ensure that you restarted the `zulip-run-bot` script.
+### I modified my bot's code, yet the changes don't seem to have an effect.
 
-* My bot won't start
-    * Ensure that your API config file is correct (download the config file from the server).
-    * Ensure that you bot script is located in `zulip_bots/bots/<my-bot>/`
-    * Are you using your own Zulip development server? Ensure that you run your bot outside
-      the Vagrant environment.
-    * Some bots require Python 3. Try switching to a Python 3 environment before running
-      your bot.
+Ensure that you restarted the `zulip-run-bot` script.
 
-## Future direction
+### My bot won't start.
 
-The long-term plan for this bot system is to allow the same
-`ExternalBotHandler` code to eventually be usable in several contexts:
-
-* Run directly using the Zulip `call_on_each_message` API, which is
-  how the implementation above works.  This is great for quick
-  development with minimal setup.
-* Run in a simple Python web server, processing messages
-  received from Zulip's outgoing webhooks integration.
-* For bots merged into the mainline Zulip codebase, enabled via a
-  button in the Zulip web UI, with no code deployment effort required.
+* Ensure that your API config file is correct (download the config file from the server).
+* Ensure that you bot script is located in `zulip_bots/bots/<my-bot>/`
+* Are you using your own Zulip development server? Ensure that you run your bot outside
+  the Vagrant environment.
 
 ## Related articles
 
