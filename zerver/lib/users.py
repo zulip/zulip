@@ -1082,7 +1082,6 @@ def get_user_dicts_in_realm(
         if user_dict["id"] in accessible_user_ids or user_dict["is_bot"]:
             accessible_user_dicts.append(user_dict)
         else:
-            print(get_data_for_inaccessible_user(realm, user_dict["id"]), "testing what is going on with you")
             inaccessible_user_dicts.append(get_data_for_inaccessible_user(realm, user_dict["id"]))
 
     return (accessible_user_dicts, inaccessible_user_dicts)

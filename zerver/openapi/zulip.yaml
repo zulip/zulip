@@ -28175,6 +28175,7 @@ components:
               nullable: true
             avatar_version: {}
             is_imported_stub: {}
+            is_unknown_user: {}
             profile_data: {}
     UserBase:
       type: object
@@ -28321,6 +28322,16 @@ components:
             user's message history.
 
             **Changes**: New in Zulip 12.0 (feature level 433).
+          example: false
+        is_unknown_user:
+          type: boolean
+          description: |
+            Indicates whether this user is unknown/inaccessible to the requesting user
+            due to limited access permissions. When true, this means the user's full
+            details are not available and only basic information like a generic name
+            and avatar are provided.
+
+            **Changes**: New in Zulip 13.0 (feature level TBD).
           example: false
         profile_data:
           $ref: "#/components/schemas/profile_data"
