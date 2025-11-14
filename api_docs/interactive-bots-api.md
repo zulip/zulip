@@ -1,4 +1,4 @@
-# Interactive bots API
+## Interactive bots API
 
 This section documents functions available to the bot and the structure of the bot's config file.
 
@@ -14,21 +14,21 @@ With this API, you *cannot*
 * intercept direct messages (except for direct messages with the bot as an
 explicit recipient).
 
-### usage
+## usage
 
 *usage(self)*
 
 is called to retrieve information about the bot.
 
-#### Arguments
+### Arguments
 
 * self - the instance the method is called on.
 
-#### Return values
+### Return values
 
 * A string describing the bot's functionality
 
-#### Example implementation
+### Example implementation
 
 ```python
 def usage(self):
@@ -41,13 +41,13 @@ def usage(self):
         '''
 ```
 
-### handle_message
+## handle_message
 
 *handle_message(self, message, bot_handler)*
 
 handles user message.
 
-#### Arguments
+### Arguments
 
 * self - the instance the method is called on.
 
@@ -55,11 +55,11 @@ handles user message.
 
 * bot_handler - used to interact with the server, e.g., to send a message
 
-#### Return values
+### Return values
 
 None.
 
-#### Example implementation
+### Example implementation
 
 ```python
   def handle_message(self, message, bot_handler):
@@ -75,7 +75,7 @@ None.
          content=new_content,
      ))
 ```
-### bot_handler.send_message
+## bot_handler.send_message
 
 *bot_handler.send_message(message)*
 
@@ -83,11 +83,11 @@ will send a message as the bot user.  Generally, this is less
 convenient than *send_reply*, but it offers additional flexibility
 about where the message is sent to.
 
-#### Arguments
+### Arguments
 
 * message - a dictionary describing the message to be sent by the bot
 
-#### Example implementation
+### Example implementation
 
 ```python
 bot_handler.send_message(dict(
@@ -98,30 +98,30 @@ bot_handler.send_message(dict(
 ))
 ```
 
-### bot_handler.send_reply
+## bot_handler.send_reply
 
 *bot_handler.send_reply(message, response)*
 
 will reply to the triggering message to the same place the original
 message was sent to, with the content of the reply being *response*.
 
-#### Arguments
+### Arguments
 
 * message - Dictionary containing information on message to respond to
  (provided by `handle_message`).
 * response - Response message from the bot (string).
 
-### bot_handler.update_message
+## bot_handler.update_message
 
 *bot_handler.update_message(message)*
 
 will edit the content of a previously sent message.
 
-#### Arguments
+### Arguments
 
 * message - dictionary defining what message to edit and the new content
 
-#### Example
+### Example
 
 From `zulip_bots/bots/incrementor/incrementor.py`:
 
@@ -132,7 +132,7 @@ bot_handler.update_message(dict(
 ))
 ```
 
-### bot_handler.storage
+## bot_handler.storage
 
 A common problem when writing an interactive bot is that you want to
 be able to store a bit of persistent state for the bot (e.g., for an
@@ -145,7 +145,7 @@ The interface for doing this is `bot_handler.storage`.
 The data is stored in the Zulip Server's database. Each bot user has
 an independent storage quota available to it.
 
-#### Performance considerations
+### Performance considerations
 
 You can use `bot_handler.storage` in one of two ways:
 
@@ -158,7 +158,7 @@ recommend writing bots with the context manager such that they
 automatically fetch data at the start of `handle_message` and submit the
 state to the server at the end.
 
-#### Context manager use_storage
+### Context manager use_storage
 
 `use_storage(storage: BotStorage, keys: List[str])`
 
@@ -169,11 +169,11 @@ until manually calling flush or getting some values that are not previously
 fetched. After the context manager block is exited, it will automatically
 flush any changes made to the `CachedStorage` object to the server.
 
-##### Arguments
+#### Arguments
 * storage - a BotStorage object, i.e., `bot_handler.storage`
 * keys - a list of keys to fetch
 
-##### Example
+#### Example
 
 ```python
 with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
@@ -182,47 +182,47 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
 # changes are automatically flushed to the server on exiting the block
 ```
 
-#### bot_handler.storage methods
+### bot_handler.storage methods
 
 When using the `use_storage` context manager, the `bot_handler.storage`
 methods on the yielded object will only operate on a cached version of the
 storage.
 
-#### bot_handler.storage.put
+### bot_handler.storage.put
 
 *bot_handler.storage.put(key, value)*
 
 will store the value `value` in the entry `key`.
 
-##### Arguments
+#### Arguments
 
 * key - a UTF-8 string
 * value - a UTF-8 string
 
-##### Example
+#### Example
 
 ```python
 bot_handler.storage.put("foo", "bar")  # set entry "foo" to "bar"
 ```
 
-#### bot_handler.storage.get
+### bot_handler.storage.get
 
 *bot_handler.storage.get(key)*
 
 will retrieve the value for the entry `key`.
 
-###### Arguments
+##### Arguments
 
 * key - a UTF-8 string
 
-##### Example
+#### Example
 
 ```python
 bot_handler.storage.put("foo", "bar")
 print(bot_handler.storage.get("foo"))  # print "bar"
 ```
 
-#### bot_handler.storage.contains
+### bot_handler.storage.contains
 
 *bot_handler.storage.contains(key)*
 
@@ -232,11 +232,11 @@ Note that this will only check the cache, so it would return `False` if no
 previous call to `bot_handler.storage.get()` or `bot_handler.storage.put()`
 was made for `key`, since the bot was restarted.
 
-##### Arguments
+#### Arguments
 
 * key - a UTF-8 string
 
-##### Example
+#### Example
 
 ```python
 bot_handler.storage.contains("foo")  # False
@@ -244,7 +244,7 @@ bot_handler.storage.put("foo", "bar")
 bot_handler.storage.contains("foo")  # True
 ```
 
-#### bot_handler.storage marshaling
+### bot_handler.storage marshaling
 
 By default, `bot_handler.storage` accepts any object for keys and
 values, as long as it is JSON-able. Internally, the object then gets
@@ -253,18 +253,18 @@ by setting the functions `bot_handler.storage.marshal` and
 `bot_handler.storage.demarshal`. These functions parse your data on
 every call to `put` and `get`, respectively.
 
-#### Flushing cached data to the server
+### Flushing cached data to the server
 
 When using the `use_storage` context manager, you can manually flush
 changes made to the cache to the server, using the below methods.
 
-#### cache.flush
+### cache.flush
 
 `cache.flush()`
 
 will flush all changes to the cache to the server.
 
-##### Example
+#### Example
 ```python
 with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
     cache.put("foo", "foo_value")  # update the value of "foo"
@@ -272,17 +272,17 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
     cache.flush()  # manually flush both the changes to the server
 ```
 
-#### cache.flush_one
+### cache.flush_one
 
 `cache.flush_one(key)`
 
 will flush the changes for the specified key to the server.
 
-##### Arguments
+#### Arguments
 
 - key - a UTF-8 string
 
-##### Example
+#### Example
 ```python
 with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
     cache.put("foo", "baz")  # update the value of "foo"
@@ -290,7 +290,7 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
     cache.flush_one("foo")  # flush the changes to "foo" to the server
 ```
 
-### Configuration file
+## Configuration file
 
 ```
  [api]

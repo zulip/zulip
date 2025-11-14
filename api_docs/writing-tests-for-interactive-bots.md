@@ -10,7 +10,7 @@ refactor them.
  mocking strategies, etc. you should check out our [mocking guide](
  https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html#testing-with-mocks).*
 
-### A simple example
+## A simple example
 
  Let's have a look at a simple test suite for the [`helloworld`](
  https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/helloworld)
@@ -42,7 +42,7 @@ we just need to set up a list of tuples with expected results.
 The best way to learn about bot tests is to read all the existing tests in the
 `bots` subdirectories.
 
-### Testing your test
+## Testing your test
 
 Once you have written a test suite, you want to verify that everything works as expected.
 
@@ -52,7 +52,7 @@ Once you have written a test suite, you want to verify that everything works as 
 
 * To run all bot tests: `tools/test-bots`
 
-### Advanced testing
+## Advanced testing
 
 This section shows advanced testing techniques for more complicated bots that have
 configuration files or interact with third-party APIs.
@@ -60,7 +60,7 @@ configuration files or interact with third-party APIs.
  https://github.com/zulip/python-zulip-api/blob/main/zulip_bots/zulip_bots/test_lib.py).*
 
 
-#### Testing bots with config files
+### Testing bots with config files
 
 Some bots, such as [Giphy](
 https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy),
@@ -74,7 +74,7 @@ To test such a bot, you can use the following pattern:
 `mock_config_info()` replaces the actual step of reading configuration from the file
 system and gives your test "dummy data" instead.
 
-#### Testing bots with internet access
+### Testing bots with internet access
 
 Some bots, such as [Giphy](
 https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy),
@@ -110,7 +110,7 @@ https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/g
 tool to capture payloads from the service your bot is interacting
 with.*
 
-#### Examples
+### Examples
 
 Check out our [bots](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots)
 to see examples of bot tests.
