@@ -593,6 +593,7 @@ def format_user_row(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     custom_profile_field_data: dict[str, Any] | None = None,
+    realm: Realm | None = None,
 ) -> APIUserDict:
     """Formats a user row returned by a database fetch using
     .values(*realm_user_dict_fields) into a dictionary representation
@@ -664,6 +665,7 @@ def format_user_row(
             avatar_version=row["avatar_version"],
             medium=False,
             client_gravatar=client_gravatar,
+            realm=realm,
         )
 
     if is_bot:
@@ -1002,6 +1004,7 @@ def get_cross_realm_dicts() -> list[APIUserDict]:
                 client_gravatar=False,
                 user_avatar_url_field_optional=False,
                 custom_profile_field_data=None,
+                realm=user.realm,
             )
         )
 
@@ -1157,6 +1160,7 @@ def get_users_for_api(
             client_gravatar=client_gravatar_for_user,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             custom_profile_field_data=custom_profile_field_data,
+            realm=realm,
         )
 
     if not user_list_incomplete:
