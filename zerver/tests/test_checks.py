@@ -79,3 +79,40 @@ class TestChecks(ZulipTestCase):
             "EXTERNAL_HOST (-bogus-.example.com) does not validate as a hostname",
             EXTERNAL_HOST="-bogus-.example.com:443",
         )
+
+    def test_checks_auth(self) -> None:
+        self.assert_check_with_error(
+            (
+                'SOCIAL_AUTH_SAML_ENABLED_IDPS["idp_name"]["extra_attrs"]: '
+                "(zulip.E003) zulip_groups can't be listed in extra_attrs"
+            ),
+            SOCIAL_AUTH_SAML_ENABLED_IDPS={
+                "idp_name": {
+                    "entity_id": "https://idp.testshib.org/idp/shibboleth",
+                    "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+                    "attr_user_permanent_id": "email",
+                    "attr_first_name": "first_name",
+                    "attr_last_name": "last_name",
+                    "attr_username": "email",
+                    "attr_email": "email",
+                    "extra_attrs": ["title", "mobilePhone", "zulip_role", "zulip_groups"],
+                }
+            },
+        )
+
+        self.assert_check_with_error(
+            (
+                'settings.SOCIAL_AUTH_SYNC_ATTRS_DICT["example_org"]["saml"]["custom__groups"]: '
+                "(zulip.E004) zulip_groups can't be listed as a SAML attribute"
+            ),
+            SOCIAL_AUTH_SYNC_ATTRS_DICT={
+                "example_org": {
+                    "saml": {
+                        "role": "zulip_role",
+                        "custom__groups": "zulip_groups",
+                        "custom__title": "title",
+                        "groups": ["group1", "group2", ("samlgroup3", "zulipgroup3"), "group4"],
+                    }
+                }
+            },
+        )
