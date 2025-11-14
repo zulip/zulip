@@ -56,11 +56,7 @@ export function wrap_code(code: string, lang?: string): string {
     let header = '<div class="codehilite"><pre><span></span><code>';
     // Mimics the backend logic of adding a data-attribute (data-code-language)
     // to know what Pygments language was used to highlight this code block.
-    //
-    // NOTE: Clients like zulip-mobile wouldn't receive the pygments data since that comes from outside
-    // the `/shared` folder. To handle such a case we check if pygments data is empty and fallback to
-    // using the default header if it is.
-    if (lang !== undefined && lang !== "" && Object.keys(pygments_data).length > 0) {
+    if (lang !== undefined && lang !== "") {
         const code_language = pygments_data[lang]?.pretty_name ?? lang;
         header = `<div class="codehilite" data-code-language="${_.escape(
             code_language,
