@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Any
 
 TOPIC_WITH_BRANCH_TEMPLATE = "{repo} / {branch}"
-TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = "{repo} {type} #{number}: {title}"
+TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = "{repo} / {type} #{number} {title}"
 TOPIC_WITH_RELEASE_TEMPLATE = "{repo} / {tag} {title}"
 
 EMPTY_SHA = "0000000000000000000000000000000000000000"
