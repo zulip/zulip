@@ -99,3 +99,33 @@ def check_external_host_setting(
             )
         )
     return errors
+
+
+def check_auth_settings(
+    app_configs: Sequence[AppConfig] | None,
+    databases: Sequence[str] | None,
+    **kwargs: Any,
+) -> Iterable[checks.CheckMessage]:
+    errors = []
+    for idp_name, idp_dict in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+        if "zulip_groups" in idp_dict.get("extra_attrs", []):
+            errors.append(
+                checks.Error(
+                    "zulip_groups can't be listed in extra_attrs",
+                    obj=f'settings.SOCIAL_AUTH_SAML_ENABLED_IDPS["{idp_name}"]["extra_attrs"]',
+                    id="zulip.E003",
+                )
+            )
+
+    for subdomain, config_dict in settings.SOCIAL_AUTH_SYNC_ATTRS_DICT.items():
+        for auth_name, attrs_map in config_dict.items():
+            for attr_key, attr_value in attrs_map.items():
+                if attr_value == "zulip_groups":
+                    errors.append(
+                        checks.Error(
+                            "zulip_groups can't be listed as a SAML attribute",
+                            obj=f'settings.SOCIAL_AUTH_SYNC_ATTRS_DICT["{subdomain}"]["{auth_name}"]["{attr_key}"]',
+                            id="zulip.E004",
+                        )
+                    )
+    return errors
