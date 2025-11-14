@@ -1,4 +1,5 @@
 from urllib.parse import urljoin
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -18,6 +19,9 @@ import hashlib
 import subprocess
 import hashlib
 import os
+
+if TYPE_CHECKING:
+    from zerver.models import Realm
 
 STATIC_AVATARS_DIR = "images/static_avatars/"
 
@@ -54,6 +58,7 @@ def avatar_url(
         avatar_version=user_profile.avatar_version,
         medium=medium,
         client_gravatar=client_gravatar,
+        realm=getattr(user_profile, "realm", None),
     )
 
 
@@ -107,6 +112,7 @@ def get_avatar_field(
     avatar_version: int,
     medium: bool,
     client_gravatar: bool,
+    realm: "Realm | None" = None,
 ) -> str | None:
     """
     Most of the parameters to this function map to fields
@@ -127,13 +133,18 @@ def get_avatar_field(
     
 
     if avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
-        if realm_id is None:
-            return staticfiles_storage.url("images/default-avatar.png")
-        # We avoid any Realm DB lookups here. The higher-level `avatar_url`
-        # function handles realm-based defaults using the cached
-        # `UserProfile.realm` when available. When this lower-level API is
-        # invoked without a UserProfile, fall back to gravatar/default.
-        # Fall through to gravatar handling below.
+        # Check if realm has procedural avatar settings
+        if realm is not None:
+            default_choice = getattr(realm, "default_newUser_avatar", None)
+            if default_choice == "jdenticon":
+                seed = hashlib.sha1((email or str(user_id)).encode()).hexdigest()
+                size = 128 if medium else 80
+                return reverse("jdenticon_svg", args=[seed, size])
+            elif default_choice == "colorful_silhouette":
+                seed = hashlib.sha1((email or str(user_id)).encode()).hexdigest()
+                size = 128 if medium else 80
+                return reverse("silhouette_svg", args=[seed, size])
+        # Fall through to gravatar for realms without procedural settings
 
 
 

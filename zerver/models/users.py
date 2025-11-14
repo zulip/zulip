@@ -672,12 +672,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_USER = "U"
     AVATAR_SOURCES = (
+        (AVATAR_FROM_DEFAULT, "Default (organization setting)"),
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
         (AVATAR_FROM_USER, "Uploaded by user"),
-        (AVATAR_FROM_DEFAULT, "Default by Organisation Admin")
     )
+    # Default must be AVATAR_FROM_DEFAULT so realm.default_newUser_avatar logic runs for new users.
     avatar_source = models.CharField(
-        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+        default=AVATAR_FROM_DEFAULT, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
     # This is only used for LDAP-provided avatars; it contains the
