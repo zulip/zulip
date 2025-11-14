@@ -233,7 +233,7 @@ fi
 if [ "$EXTERNAL_HOST" = zulip.example.com ] \
     || [ "$ZULIP_ADMINISTRATOR" = zulip-admin@example.com ]; then
     # These example values are specifically checked for and would fail
-    # later; see check_config in zerver/lib/management.py.
+    # later; see zerver/checks.py
     echo 'error: The example hostname and email must be replaced with real values.' >&2
     echo >&2
     usage >&2
