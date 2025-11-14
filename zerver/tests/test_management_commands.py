@@ -19,7 +19,7 @@ from typing_extensions import override
 from confirmation.models import Confirmation, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_user_setting
-from zerver.lib.management import ZulipBaseCommand, check_config
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
 from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
@@ -29,17 +29,7 @@ from zerver.models.streams import get_stream
 from zerver.models.users import get_user_profile_by_email
 
 
-class TestCheckConfig(ZulipTestCase):
-    def test_check_config(self) -> None:
-        check_config()
-        with (
-            self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]),
-            self.assertRaisesRegex(
-                CommandError, "Error: You must set asdf in /etc/zulip/settings.py."
-            ),
-        ):
-            check_config()
-
+class TestWarnNoEmail(ZulipTestCase):
     @override_settings(WARN_NO_EMAIL=True)
     def test_check_send_email(self) -> None:
         with self.assertRaisesRegex(CommandError, "Outgoing email not yet configured, see"):

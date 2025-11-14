@@ -30,19 +30,6 @@ def is_integer_string(val: str) -> bool:
         return False
 
 
-def check_config() -> None:
-    for setting_name, default in settings.REQUIRED_SETTINGS:
-        # if required setting is the same as default OR is not found in settings,
-        # throw error to add/set that setting in config
-        try:
-            if getattr(settings, setting_name) != default:
-                continue
-        except AttributeError:
-            pass
-
-        raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
-
-
 class HandleMethod(Protocol):
     def __call__(self, *args: Any, **kwargs: Any) -> None: ...
 
