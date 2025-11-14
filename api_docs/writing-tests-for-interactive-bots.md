@@ -1,10 +1,10 @@
 # Writing tests for interactive bots
 
-Bots, like most software that you want to work, should have unit tests. In this section,
-we detail our framework for writing unit tests for bots. We require that bots in the main
+This page gives an overview of the unit testing framework for interactive bots.
+Bots in the main
 [`python-zulip-api`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots)
-repository include a reasonable set of unit tests, so that future developers can easily
-refactor them.
+repository are required to include a reasonable set of unit tests, so that
+future developers can easily refactor them.
 
 *Unit tests for bots make heavy use of mocking. If you want to get comfortable with mocking,
  mocking strategies, etc. you should check out our [mocking guide](

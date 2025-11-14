@@ -1,6 +1,7 @@
 ## Interactive bots API
 
-This section documents functions available to the bot and the structure of the bot's config file.
+This page documents functions available to the bot, and the structure of the
+bot's config file.
 
 With this API, you *can*
 
