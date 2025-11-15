@@ -658,6 +658,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
+            WebhookUrlOption.build_preset_config(PresetUrlOption.INCLUDE_REPOSITORY_NAME),
         ],
     ),
     WebhookIntegration(
