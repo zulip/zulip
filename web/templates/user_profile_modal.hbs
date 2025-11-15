@@ -54,6 +54,7 @@
                                         <div class="name">{{t "User ID" }}</div>
                                         <div class="value">{{user_id}}</div>
                                     </div>
+                                    {{#unless is_unknown_user}}
                                     <div id="user-type" class="default-field">
                                         <div class="name">{{t "Role" }}</div>
                                         {{#if is_bot}}
@@ -72,6 +73,7 @@
                                         <div class="name">{{t "Joined" }}</div>
                                         <div class="value">{{date_joined}}</div>
                                     </div>
+                                    {{/unless}}
                                     {{#if user_time}}
                                     <div class="default-field">
                                         <div class="name">{{t "Local time" }}</div>
