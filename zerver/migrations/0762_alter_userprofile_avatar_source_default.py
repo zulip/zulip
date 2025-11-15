@@ -1,9 +1,10 @@
 # Generated manually to restore avatar_source default to 'D'
 from django.db import migrations, models
 
+
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0761_realm_default_newuser_avatar_and_more"),
+        ("zerver", "0761_realm_default_new_user_avatar_and_more"),
     ]
 
     operations = [

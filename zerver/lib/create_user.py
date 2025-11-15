@@ -243,14 +243,13 @@ def create_user(
     # but only if the avatar_source was not explicitly set to a specific value (like AVATAR_FROM_USER).
     # Check the actual user_profile.avatar_source since copy_default_settings may have changed it.
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
-        if realm.default_newUser_avatar in ["jdenticon", "colorful_silhouette"]:
+        if realm.default_new_user_avatar in ["jdenticon", "colorful_silhouette"]:
             user_profile.avatar_source = UserProfile.AVATAR_FROM_DEFAULT
-        elif realm.default_newUser_avatar == "gravatar":
+        elif realm.default_new_user_avatar == "gravatar":
             user_profile.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         else:
             user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
         user_profile.save(update_fields=["avatar_source"])
-
 
     if bot_type is None and enable_marketing_emails is not None:
         user_profile.enable_marketing_emails = enable_marketing_emails

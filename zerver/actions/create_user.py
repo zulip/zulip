@@ -543,14 +543,12 @@ def do_create_user(
     if bot_type is not None and avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
         avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
     if bot_type is None and bot_owner is None and avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
-       if realm.default_newUser_avatar == "gravatar":
-          avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-       elif realm.default_newUser_avatar in ("jdenticon", "colorful_silhouette"):
-          avatar_source = UserProfile.AVATAR_FROM_DEFAULT
-       else:
-          avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-
-
+        if realm.default_new_user_avatar == "gravatar":
+            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+        elif realm.default_new_user_avatar in ("jdenticon", "colorful_silhouette"):
+            avatar_source = UserProfile.AVATAR_FROM_DEFAULT
+        else:
+            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
 
     user_profile = create_user(
         email=email,
