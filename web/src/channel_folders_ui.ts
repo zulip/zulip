@@ -2,17 +2,28 @@ import $ from "jquery";
 import * as z from "zod/mini";
 
 import render_confirm_archive_channel_folder from "../templates/confirm_dialog/confirm_archive_channel_folder.hbs";
+import render_stream_list_item from "../templates/stream_list_item.hbs";
 import render_create_channel_folder_modal from "../templates/stream_settings/create_channel_folder_modal.hbs";
 import render_edit_channel_folder_modal from "../templates/stream_settings/edit_channel_folder_modal.hbs";
 
+import * as banners from "./banners.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
+import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as modals from "./modals.ts";
 import * as people from "./people.ts";
 import {realm} from "./state_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
+
+let channel_folder_stream_list_widget: ListWidgetType<StreamSubscription> | undefined;
+let stream_list_widget_stream_ids: Set<number> | undefined;
 
 export function add_channel_folder(): void {
     const html_body = render_create_channel_folder_modal({
@@ -151,18 +162,134 @@ export function handle_archiving_channel_folder(folder_id: number): void {
     });
 }
 
+function format_channel_item_html(stream: StreamSubscription): string {
+    return render_stream_list_item({
+        name: stream.name,
+        stream_id: stream.stream_id,
+        stream_color: stream.color,
+        invite_only: stream.invite_only,
+        is_web_public: stream.is_web_public,
+        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
+        show_remove_channel_from_folder: true,
+    });
+}
+
+function render_channel_list(streams: StreamSubscription[], folder_id: number): void {
+    const $container = $("#edit_channel_folder .folder-stream-list");
+    $container.empty();
+    stream_list_widget_stream_ids = new Set(channel_folders.get_stream_ids_in_folder(folder_id));
+    channel_folder_stream_list_widget = ListWidget.create($container, streams, {
+        name: `edit-channel-folder-stream-list`,
+        get_item: ListWidget.default_get_item,
+        modifier_html(item) {
+            return format_channel_item_html(item);
+        },
+        filter: {
+            $element: $("#edit_channel_folder .stream-list-container .stream-search"),
+            predicate(item, value) {
+                return item?.name.toLocaleLowerCase().includes(value);
+            },
+        },
+        $simplebar_container: $("#edit_channel_folder .modal__content"),
+    });
+
+    $container.on("click", ".remove-button", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const $remove_button = $(e.currentTarget).closest(".remove-button");
+        buttons.show_button_loading_indicator($remove_button);
+        const stream_id = Number.parseInt(
+            $remove_button.closest(".stream-list-item").attr("data-stream-id")!,
+            10,
+        );
+
+        function on_success(): void {
+            banners.open(
+                {
+                    intent: "success",
+                    label: $t_html({
+                        defaultMessage: "Channel removed!",
+                    }),
+                    buttons: [],
+                    close_button: false,
+                },
+                $("#channel_folder_banner"),
+                1200,
+            );
+        }
+
+        function on_error(xhr: JQuery.jqXHR): void {
+            const error_message = channel.xhr_error_message(
+                $t_html({
+                    defaultMessage: "Failed removing channel from the folder",
+                }),
+                xhr,
+            );
+            banners.open(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $("#channel_folder_banner"),
+                1200,
+            );
+            buttons.hide_button_loading_indicator($remove_button);
+        }
+
+        remove_channel_from_folder(stream_id, on_success, on_error);
+    });
+}
+
+function get_edit_modal_folder_id_if_open(): number | undefined {
+    const $edit_folder_modal = $("#edit_channel_folder");
+
+    if (!modals.any_active() || $edit_folder_modal.length === 0) {
+        return undefined;
+    }
+
+    return Number($edit_folder_modal.find(".stream-list-container").attr("data-folder-id"));
+}
+
+export function update_channel_folder_channels_list(
+    stream_id: number,
+    folder_id: number | null,
+): void {
+    const current_folder_id = get_edit_modal_folder_id_if_open();
+
+    if (!current_folder_id) {
+        return;
+    }
+
+    // We need to update the rendered list when either an item in the current list
+    // had a folder_id changed or an unrelated channel was set to current folder id.
+    const should_update_channel_list =
+        Boolean(stream_list_widget_stream_ids?.has(stream_id)) || folder_id === current_folder_id;
+
+    if (should_update_channel_list && channel_folder_stream_list_widget !== undefined) {
+        const subs = channel_folders.get_sorted_streams_in_folder(current_folder_id);
+        stream_list_widget_stream_ids = new Set(
+            channel_folders.get_stream_ids_in_folder(current_folder_id),
+        );
+        channel_folder_stream_list_widget.replace_list_data(subs);
+    }
+}
+
 export function handle_editing_channel_folder(folder_id: number): void {
     const folder = channel_folders.get_channel_folder_by_id(folder_id);
+    const subs = channel_folders.get_sorted_streams_in_folder(folder_id);
 
     const html_body = render_edit_channel_folder_modal({
         name: folder.name,
         description: folder.description,
+        folder_id,
         max_channel_folder_name_length: realm.max_channel_folder_name_length,
         max_channel_folder_description_length: realm.max_channel_folder_description_length,
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Edit channel folder"}),
+        html_heading: $t_html({defaultMessage: "Manage channel folder"}),
         html_body,
         id: "edit_channel_folder",
         on_click() {
@@ -195,6 +322,12 @@ export function handle_editing_channel_folder(folder_id: number): void {
         },
         loading_spinner: true,
         on_shown: () => $("#edit_channel_folder_name").trigger("focus"),
+        on_hidden() {
+            stream_list_widget_stream_ids = undefined;
+        },
         update_submit_disabled_state_on_change: true,
+        post_render() {
+            render_channel_list(subs, folder_id);
+        },
     });
 }
