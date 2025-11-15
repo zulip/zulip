@@ -831,7 +831,7 @@ input[type="checkbox"] {
         min-width: calc(var(--modal-input-width) - 6px);
     }
 
-    & textarea {
+    .settings_textarea {
         /* Subtract 6px of padding from side */
         width: calc(var(--modal-input-width) - 12px);
     }
@@ -1534,9 +1534,9 @@ label.preferences-radio-choice-label {
 
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
@@ -1565,7 +1565,8 @@ label.preferences-radio-choice-label {
     .custom_user_field {
         padding-bottom: 20px;
 
-        & textarea {
+        .settings_textarea,
+        .modal_textarea {
             height: 80px;
         }
 
@@ -1618,10 +1619,17 @@ label.preferences-radio-choice-label {
         max-width: calc(100% - 6px);
     }
 
-    & textarea {
-        /* Subtract (1px border and 6px padding) on each side */
-        width: calc(var(--modal-input-width) - 14px);
-        max-width: calc(100% - 14px);
+    .modal_textarea {
+        /* Subtract (2 * horizontal padding) + (2 * border width) */
+        box-sizing: content-box;
+        width: calc(
+            var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
+        max-width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
     }
 }
 
@@ -1635,7 +1643,7 @@ label.preferences-radio-choice-label {
 
     & input,
     input[type="url"],
-    & textarea,
+    .modal_textarea,
     & select {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
@@ -1756,21 +1764,26 @@ label.preferences-radio-choice-label {
     margin-bottom: 20px;
 }
 
-.settings_textarea {
+.settings_textarea,
+.modal_textarea {
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--background-color-textarea);
     border-radius: 4px;
     vertical-align: middle;
-    border: 1px solid hsl(0deg 0% 80%);
-    padding: 4px 6px;
+    border: var(--input-border-width) solid var(--border-color-textarea);
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
 
+    font-size: inherit;
+    line-height: inherit;
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
-        border-color: hsl(206.5deg 80% 62% / 80%);
+        border-color: var(--focus-border-color-textarea);
         outline: 0;
 
         box-shadow:
@@ -1780,8 +1793,16 @@ label.preferences-radio-choice-label {
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
     }
+}
+
+.settings_textarea:disabled {
+    background-color: var(--background-color-disabled-textarea);
+    opacity: 0.5;
+}
+
+.modal_textarea:disabled {
+    background-color: var(--background-color-readonly-modal-input);
 }
 
 @media (width < $lg_min) {
@@ -2159,18 +2180,21 @@ label.preferences-radio-choice-label {
 
 .settings_url_input,
 .settings_text_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
     margin-bottom: 10px;
 
-    /* Subtract 2 * 6px (padding) + 2 * 1px (border) */
-    width: calc(var(--modal-input-width) - 14px);
+    /* Subtract (2 * horizontal padding) + (2 * border width) */
+    width: calc(
+        var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -2188,6 +2212,7 @@ label.preferences-radio-choice-label {
     .settings_url_input,
     .settings_text_input,
     .settings_textarea,
+    .modal_textarea,
     .pill-container {
         margin-bottom: 0;
 
