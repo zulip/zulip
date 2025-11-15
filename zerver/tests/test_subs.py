@@ -2260,6 +2260,18 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+        # Test `topics_policy` changed notification is not sent in `channel events`
+        # topic if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("TestStream2")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"topics_policy": allow_empty_topic},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
     def test_can_set_topics_policy_group(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
@@ -3480,6 +3492,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         new_stream_announcements_stream = Stream.objects.get(name="general", realm=realm)
         realm.new_stream_announcements_stream = new_stream_announcements_stream
+        # `send_channel_events_messages` is `False` for new organizations.
+        realm.send_channel_events_messages = True
         realm.save()
 
         invite_streams = ["cross_stream"]
