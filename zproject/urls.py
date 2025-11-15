@@ -1,7 +1,4 @@
 import os
-from django.urls import path
-from zerver.views.jdenticon import jdenticon_svg
-from zerver.views.silhouette import silhouette_svg
 
 from django.conf import settings
 from django.conf.urls import include
@@ -78,6 +75,7 @@ from zerver.views.invite import (
     revoke_multiuse_invite,
     revoke_user_invite,
 )
+from zerver.views.jdenticon import jdenticon_svg
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -188,6 +186,7 @@ from zerver.views.scheduled_messages import (
     update_scheduled_message_backend,
 )
 from zerver.views.sentry import sentry_tunnel
+from zerver.views.silhouette import silhouette_svg
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
     add_default_stream,

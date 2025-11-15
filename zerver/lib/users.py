@@ -657,7 +657,7 @@ def format_user_row(
     # different optimization for organizations with 10,000s of users.
     include_avatar_url = not user_avatar_url_field_optional or not row["long_term_idle"]
     if include_avatar_url:
-        result["avatar_url"] = get_avatar_field(
+        avatar_url_value = get_avatar_field(
             user_id=row["id"],
             realm_id=realm_id,
             email=row["delivery_email"],
@@ -667,6 +667,10 @@ def format_user_row(
             client_gravatar=client_gravatar,
             realm=realm,
         )
+        # If user_avatar_url_field_optional is True and avatar_url is None,
+        # omit the field entirely to save bandwidth (API contract allows this).
+        if not (user_avatar_url_field_optional and avatar_url_value is None):
+            result["avatar_url"] = avatar_url_value
 
     if is_bot:
         result["bot_type"] = row["bot_type"]

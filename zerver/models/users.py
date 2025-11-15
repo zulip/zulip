@@ -676,7 +676,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
         (AVATAR_FROM_USER, "Uploaded by user"),
     )
-    # Default must be AVATAR_FROM_DEFAULT so realm.default_newUser_avatar logic runs for new users.
+    # Default must be AVATAR_FROM_DEFAULT so realm.default_new_user_avatar logic runs for new users.
     avatar_source = models.CharField(
         default=AVATAR_FROM_DEFAULT, choices=AVATAR_SOURCES, max_length=1
     )

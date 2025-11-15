@@ -2053,7 +2053,7 @@ class RealmAPITest(ZulipTestCase):
 
         bool_tests: list[bool] = [False, True]
         test_values: dict[str, Any] = dict(
-            default_newUser_avatar=["gravatar", "jdenticon", "colorful_silhouette"],
+            default_new_user_avatar=["gravatar", "jdenticon", "colorful_silhouette"],
             default_language=["de", "en"],
             default_code_block_language=["javascript", ""],
             welcome_message_custom_text=[

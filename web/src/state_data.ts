@@ -520,7 +520,7 @@ export const realm_schema = z.object({
     zulip_merge_base: z.string(),
     zulip_plan_is_not_limited: z.boolean(),
     zulip_version: z.string(),
-    realm_default_newUser_avatar: z.string(),
+    realm_default_new_user_avatar: z.string(),
 });
 
 export const split_state_data_schema = z.object({

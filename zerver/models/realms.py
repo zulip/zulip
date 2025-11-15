@@ -740,7 +740,7 @@ class Realm(models.Model):
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,
         welcome_message_custom_text=str,
-        default_newUser_avatar=str,
+        default_new_user_avatar=str,
     )
 
     REALM_PERMISSION_GROUP_SETTINGS: dict[str, GroupPermissionSetting] = dict(
@@ -877,14 +877,15 @@ class Realm(models.Model):
         ),
     )
 
-    default_newUser_avatar = models.CharField(
+    default_new_user_avatar = models.CharField(
         max_length=30,
-         choices=[("gravatar", "Gravatar"),
-                  ("jdenticon", "Jdenticon"),
-                  ("colorful_silhouette", "Colorful silhouette"),
-                  ],
-                default="jdenticon",
-           )
+        choices=[
+            ("gravatar", "Gravatar"),
+            ("jdenticon", "Jdenticon"),
+            ("colorful_silhouette", "Colorful silhouette"),
+        ],
+        default="jdenticon",
+    )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
 

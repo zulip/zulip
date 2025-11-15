@@ -946,7 +946,7 @@ export function medium_avatar_url_for_person(person: User): string {
      * medium avatar URL included in person objects. So only have the
      * gravatar and server endpoints here. */
 
-    if (person.avatar_url !== undefined) {
+    if (person.avatar_url !== undefined && person.avatar_url !== null) {
         const url = new URL(person.avatar_url, window.location.origin);
         if (url.origin === "https://secure.gravatar.com") {
             url.search += (url.search ? "&" : "") + "s=500";
