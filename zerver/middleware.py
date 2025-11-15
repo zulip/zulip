@@ -1,5 +1,6 @@
 import cProfile
 import logging
+import os
 import tempfile
 import time
 from collections.abc import Callable, MutableMapping
@@ -41,11 +42,13 @@ from zerver.lib.response import (
     json_response_from_error,
     json_unauthorized,
 )
+from zerver.lib.server_initialization import server_initialized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import INTENTIONALLY_UNDOCUMENTED, ApiParamConfig, typed_endpoint
 from zerver.lib.user_agent import parse_user_agent
 from zerver.models import Realm
 from zerver.models.realms import get_realm
+from zproject.config import get_config
 
 ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
@@ -650,7 +653,7 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
         view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
         args: list[object],
         kwargs: dict[str, Any],
-    ) -> None:
+    ) -> HttpResponse | None:
         proxy_state_header = request.headers.get("X-Proxy-Misconfiguration", "")
         # Our nginx configuration sets this header if:
         #  1. the request came in over HTTP with no proxy headers set
@@ -686,7 +689,21 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
             and not request.is_secure()
             and request.META["REMOTE_ADDR"] not in ("127.0.0.1", "::1")
         ):
-            raise ProxyMisconfigurationError(proxy_state_header)
+            if server_initialized():
+                raise ProxyMisconfigurationError(proxy_state_header)
+
+            context = {
+                "current_proxies": get_config("loadbalancer", "ips"),
+                "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+                "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+                "remote_addr": request.META["REMOTE_ADDR"],
+                "docker_config": settings.RUNNING_IN_DOCKER
+                and os.environ.get("MANUAL_CONFIGURATION") != "True",
+                "all_headers": list(request.headers.items()),
+                "env": os.environ,
+            }
+            return render(request, "zerver/config_error/proxy.html", status=500, context=context)
+        return None
 
 
 def validate_scim_bearer_token(request: HttpRequest) -> bool:
