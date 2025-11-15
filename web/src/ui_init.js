@@ -149,6 +149,8 @@ import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
+import * as tenor from "./tenor.ts";
+import * as tenor_state from "./tenor_state.ts";
 import * as theme from "./theme.ts";
 import * as thumbnail from "./thumbnail.ts";
 import * as timerender from "./timerender.ts";
@@ -210,6 +212,7 @@ function initialize_compose_box() {
                 file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
                 giphy_enabled: giphy_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
+                tenor_enabled: tenor_state.is_tenor_enabled(),
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
@@ -664,6 +667,7 @@ export async function initialize_everything(state_data) {
     gear_menu.initialize();
     navbar_help_menu.initialize();
     giphy.initialize();
+    tenor.initialize();
     presence.initialize(state_data.presence);
     settings_preferences.initialize();
     settings_notifications.initialize();

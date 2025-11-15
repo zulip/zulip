@@ -147,6 +147,9 @@ IGNORED_PHRASES = [
     # Used in GIPHY popover.
     r"GIFs",
     r"GIPHY",
+    # Used for Tenor attributions
+    r"Search Tenor",
+    r"Powered By Tenor",
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",

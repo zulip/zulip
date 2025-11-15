@@ -37,9 +37,9 @@ export function update_giphy_rating(): void {
         realm.realm_giphy_rating === realm.giphy_rating_options.disabled.id ||
         realm.giphy_api_key === ""
     ) {
-        $(".compose_gif_icon").hide();
+        $(".compose_gif_icon_giphy").hide();
     } else {
-        $(".compose_gif_icon").show();
+        $(".compose_gif_icon_giphy").show();
     }
 }
 
@@ -194,7 +194,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
                 );
 
                 $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
-                $popper.on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
+                $popper.on("keydown", ".compose_gif_icon_giphy", ui_util.convert_enter_to_click);
 
                 $popper.on("click", "#giphy_search_clear", (e) => {
                     e.stopPropagation();
@@ -223,9 +223,13 @@ function toggle_giphy_popover(target: HTMLElement): void {
 }
 
 function register_click_handlers(): void {
-    $("body").on("click", ".compose_control_button.compose_gif_icon", function (this: HTMLElement) {
-        toggle_giphy_popover(this);
-    });
+    $("body").on(
+        "click",
+        ".compose_control_button.compose_gif_icon_giphy",
+        function (this: HTMLElement) {
+            toggle_giphy_popover(this);
+        },
+    );
 }
 
 export function initialize(): void {

@@ -87,6 +87,8 @@ class HomeTest(ZulipTestCase):
         "event_queue_longpoll_timeout_seconds",
         "full_name",
         "giphy_api_key",
+        "tenor_api_key",
+        "tenor_client_key",
         "giphy_rating_options",
         "has_zoom_token",
         "is_admin",

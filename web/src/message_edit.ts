@@ -54,6 +54,7 @@ import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
+import * as tenor_state from "./tenor_state.ts";
 import * as timerender from "./timerender.ts";
 import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
@@ -579,6 +580,7 @@ function edit_message($row: JQuery, raw_content: string): void {
             content: raw_content,
             file_upload_enabled,
             giphy_enabled: giphy_state.is_giphy_enabled(),
+            tenor_enabled: tenor_state.is_tenor_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
         }),
