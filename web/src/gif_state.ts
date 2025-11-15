@@ -1,5 +1,9 @@
 import {realm} from "./state_data.ts";
 
+export function is_tenor_enabled(): boolean {
+    return realm.tenor_api_key !== "";
+}
+
 export function is_giphy_enabled(): boolean {
     return (
         realm.giphy_api_key !== "" &&

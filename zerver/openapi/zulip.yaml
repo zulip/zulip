@@ -18295,6 +18295,23 @@ paths:
                           before using this API key.
 
                           **Changes**: Added in Zulip 4.0 (feature level 47).
+                      tenor_api_key:
+                        type: string
+                        description: |
+                          Present if `tenor` is present in `fetch_event_types`.
+
+                          Tenor API keys are meant to be sent to the clients, see the
+                          examples in the [Tenor Endpoints documentation](https://developers.google.com/tenor/guides/endpoints).
+                          Please don't use our API key for an app unrelated to Zulip.
+
+                          Developers of clients are recommended to use their Zulip client string,
+                          like `ZulipFlutter`, as the `client` in the Tenor API to differentiate
+                          across clients as per the [Tenor Endpoints documentation](https://developers.google.com/tenor/guides/endpoints).
+
+                          Developers of clients should also read the
+                          [Tenor API TOS](https://developers.google.com/tenor/guides/api-terms).
+
+                          **Changes**: Added in Zulip 12.0 (feature level ZF-35b8e6).
                       push_devices:
                         type: object
                         description: |

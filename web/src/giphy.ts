@@ -163,7 +163,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_gif_picker_ui()));
+                instance.setContent(ui_util.parse_html(render_gif_picker_ui({is_giphy: true})));
                 $(instance.popper).addClass("giphy-popover");
             },
             onShow(instance) {
