@@ -134,7 +134,7 @@ function archive_folder(folder_id: number): void {
 export function handle_archiving_channel_folder(folder_id: number): void {
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Delete channel folder?"}),
-        html_body: render_confirm_archive_channel_folder(),
+        html_subheader: render_confirm_archive_channel_folder(),
         on_click() {
             archive_folder(folder_id);
         },

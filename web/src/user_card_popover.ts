@@ -56,14 +56,14 @@ export function confirm_mute_user(user_id: number): void {
         muted_users.mute_user(user_id);
     }
 
-    const html_body = render_confirm_mute_user({
+    const html_subheader = render_confirm_mute_user({
         user_name: people.get_full_name(user_id),
     });
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Mute user"}),
         help_link: "/help/mute-a-user",
-        html_body,
+        html_subheader,
         on_click,
     });
 }

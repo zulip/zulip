@@ -2,22 +2,35 @@
     <div class="modal__overlay {{#unless close_on_overlay_click}}ignore-overlay-click{{/unless}}" tabindex="-1">
         <div {{#if id}}id="{{id}}" {{/if}}class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    {{#if heading_html}}
-                        {{{ heading_html }}}
-                    {{else}}
-                        {{ text_heading }}
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        {{#if heading_html}}
+                            {{{ heading_html }}}
+                        {{else}}
+                            {{ text_heading }}
+                        {{/if}}
+                        {{#if link}}
+                        {{> help_link_widget . }}
+                        {{/if}}
+                    </h1>
+                    {{#if (or subheader_html text_subheader)}}
+                    <div class="modal__subheader">
+                        {{#if subheader_html}}
+                            {{{ subheader_html }}}
+                        {{else}}
+                            {{ text_subheader }}
+                        {{/if}}
+                    </div>
                     {{/if}}
-                    {{#if link}}
-                    {{> help_link_widget . }}
-                    {{/if}}
-                </h1>
-                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+                </div>
+                {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
             </header>
+            {{#if body_html}}
             <main class="modal__content" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
                 {{{ body_html }}}
             </main>
+            {{/if}}
             <footer class="modal__footer">
                 {{#if footer_minor_text }}
                 <div class="dialog-widget-footer-minor-text">{{footer_minor_text}}</div>
