@@ -370,40 +370,40 @@ class UserBaseSettings(models.Model):
 
     modern_settings = dict(
         # Add new general settings here.
+        allow_private_data_export=bool,
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
-        web_escape_navigates_to_home_view=bool,
+        hide_ai_features=bool,
         receives_typing_notifications=bool,
-        web_inbox_show_channel_folders=bool,
+        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
-        allow_private_data_export=bool,
-        web_mark_read_on_scroll_policy=int,
-        web_channel_default_view=int,
         user_list_style=int,
         web_animate_image_previews=str,
-        web_stream_unreads_count_display_policy=int,
+        web_channel_default_view=int,
+        web_escape_navigates_to_home_view=bool,
         web_font_size_px=int,
-        web_line_height_percent=int,
-        web_navigate_to_sent_message=bool,
-        web_suggest_update_timezone=bool,
-        hide_ai_features=bool,
-        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
-        web_left_sidebar_unreads_count_summary=bool,
+        web_inbox_show_channel_folders=bool,
         web_left_sidebar_show_channel_folders=bool,
+        web_left_sidebar_unreads_count_summary=bool,
+        web_line_height_percent=int,
+        web_mark_read_on_scroll_policy=int,
+        web_navigate_to_sent_message=bool,
+        web_stream_unreads_count_display_policy=int,
+        web_suggest_update_timezone=bool,
     )
 
     modern_notification_settings = dict(
         # Add new notification settings here.
+        automatically_follow_topics_policy=int,
+        automatically_follow_topics_where_mentioned=bool,
+        automatically_unmute_topics_in_muted_streams_policy=int,
+        enable_followed_topic_audible_notifications=bool,
         enable_followed_topic_desktop_notifications=bool,
         enable_followed_topic_email_notifications=bool,
         enable_followed_topic_push_notifications=bool,
-        enable_followed_topic_audible_notifications=bool,
         enable_followed_topic_wildcard_mentions_notify=bool,
-        automatically_follow_topics_policy=int,
-        automatically_unmute_topics_in_muted_streams_policy=int,
-        automatically_follow_topics_where_mentioned=bool,
     )
 
     notification_setting_types = {
