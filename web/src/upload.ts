@@ -28,6 +28,22 @@ let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy<ZulipMeta, TusBody>;
 const upload_objects_by_message_edit_row = new Map<number, Uppy<ZulipMeta, TusBody>>();
 
+// This list should be kept identical to the one defined as
+// THUMBNAIL_ACCEPT_IMAGE_TYPES in zerver/lib/thumbnail.py
+const SUPPORTED_IMAGE_TYPES = new Set([
+    "image/avif",
+    "image/gif",
+    "image/heic",
+    "image/jpeg",
+    "image/png",
+    "image/tiff",
+    "image/webp",
+]);
+
+function is_supported_image_type(file_type: string): boolean {
+    return SUPPORTED_IMAGE_TYPES.has(file_type);
+}
+
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
 }
@@ -539,7 +555,13 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         }
 
         const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
-        const syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
+        let syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
+
+        // We inspect uploaded images based on their MIME type
+        if (is_supported_image_type(file.type)) {
+            syntax_to_insert = "!" + syntax_to_insert;
+        }
+
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
             // We need to replace the original file name, and not the
