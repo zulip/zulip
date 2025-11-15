@@ -795,6 +795,7 @@ run_test("realm settings", ({override, override_rewire}) => {
     assert_same(realm.realm_can_invite_users_group, 3);
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
     assert_same(realm.realm_can_resolve_topics_group, 1);
+    assert_same(realm.realm_can_unsubscribe_group, 3);
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_topics_policy, "disable_empty_topic");
     assert_same(realm.realm_plan_type, 3);

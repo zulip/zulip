@@ -945,6 +945,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_access_public_streams(self) -> bool:
         return not self.is_guest
 
+    def can_unsubscribe_from_channels(self) -> bool:
+        return self.has_permission("can_unsubscribe_group")
+
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
             return int(self.tos_version.split(".")[0])

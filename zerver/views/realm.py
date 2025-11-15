@@ -118,6 +118,7 @@ def update_realm(
     can_set_delete_message_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_unsubscribe_group: Json[GroupSettingChangeRequest] | None = None,
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
     default_code_block_language: str | None = None,
     default_language: str | None = None,
