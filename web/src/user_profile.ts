@@ -651,6 +651,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         user_is_guest: user.is_guest,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
+        is_unknown_user: Boolean(user.is_unknown_user),
     };
 
     if (user.is_bot) {
