@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 from requests.models import Response
 from typing_extensions import override
 
-from zerver.lib.management import ZulipBaseCommand, check_config
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.remote_server import (
     PushBouncerSession,
     prepare_for_registration_transfer_challenge,
@@ -58,9 +58,6 @@ that registration and saving the updated secret in
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
-        if not settings.DEVELOPMENT:
-            check_config()
-
         if not settings.ZULIP_ORG_ID:
             raise CommandError(
                 "Missing zulip_org_id; run scripts/setup/generate_secrets.py to generate."
