@@ -71,7 +71,6 @@ This page will guide you through the following topics:
 1. [Finding an issue to work on](#finding-an-issue-to-work-on)
 1. [Getting help](#getting-help) as you work on your first pull request
 1. Learning [best practices](#best-practices)
-1. [AI use policy and guidelines](#ai-use-policy-and-guidelines)
 1. [Submitting a pull request](#submitting-a-pull-request)
 1. [Going beyond the first issue](#beyond-the-first-issue)
 
