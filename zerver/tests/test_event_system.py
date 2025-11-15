@@ -1226,6 +1226,7 @@ class FetchQueriesTest(ZulipTestCase):
             default_stream_groups=1,
             drafts=1,
             giphy=0,
+            tenor=0,
             message=1,
             muted_topics=1,
             muted_users=1,

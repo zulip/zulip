@@ -592,6 +592,7 @@ export const realm_schema = z.object({
     server_web_public_streams_enabled: z.boolean(),
     settings_send_digest_emails: z.boolean(),
     stop_words: z.array(z.string()),
+    tenor_api_key: z.string(),
     upgrade_text_for_wide_organization_logo: z.string(),
     zulip_feature_level: z.number(),
     zulip_merge_base: z.string(),
