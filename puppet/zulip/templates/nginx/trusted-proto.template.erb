@@ -3,9 +3,10 @@
 map $remote_addr $trusted_x_forwarded_proto {
     default $scheme;
 }
-map $http_x_forwarded_for $x_proxy_misconfiguration {
+map "$scheme:$http_x_forwarded_for" $x_proxy_misconfiguration {
+    "~^https?:." "No proxies configured in Zulip, but reverse proxy headers were detected from $remote_addr; Zulip must be configured with the IP addresses of reverse proxies to trust.  See https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
+    "~^http:$" "Request came in over HTTP, with no proxy headers; if HTTPS is disabled in Zulip, it must be behind a proxy which does TLS termination.  See https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
     default "";
-    "~." "No proxies configured in Zulip, but proxy headers detected from proxy at $remote_addr; see https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html";
 }
 <% else %>
 # Check if the request's original `REMOTE_ADDR` header was from a
