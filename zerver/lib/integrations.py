@@ -480,7 +480,7 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
 WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("airbrake", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]),
     WebhookIntegration(
-        "airbyte", ["monitoring"], [WebhookScreenshotConfig("airbyte_job_payload_success.json")]
+        "airbyte", ["deployment"], [WebhookScreenshotConfig("airbyte_job_payload_success.json")]
     ),
     WebhookIntegration(
         "alertmanager",
@@ -501,7 +501,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "appfollow",
-        ["customer-support"],
+        ["marketing", "customer-support"],
         [WebhookScreenshotConfig("review.json")],
         display_name="AppFollow",
     ),
@@ -513,7 +513,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "azuredevops",
-        ["version-control"],
+        ["continuous-integration"],
         [WebhookScreenshotConfig("code_push.json")],
         display_name="AzureDevOps",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
@@ -535,7 +535,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "beeminder",
-        ["misc"],
+        ["productivity"],
         # The fixture's goal.losedate needs to be modified dynamically
         # before uncommenting the screenshot config below.
         # [WebhookScreenshotConfig("derail_worried.json")],
@@ -627,7 +627,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration("dropbox", ["productivity"], [WebhookScreenshotConfig("file_updated.json")]),
     WebhookIntegration("errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]),
-    WebhookIntegration("flock", ["customer-support"], [WebhookScreenshotConfig("messages.json")]),
+    WebhookIntegration("flock", ["communication"], [WebhookScreenshotConfig("messages.json")]),
     WebhookIntegration(
         "freshdesk",
         ["customer-support"],
@@ -642,7 +642,9 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         [WebhookScreenshotConfig("freshstatus_incident_open.json")],
     ),
     WebhookIntegration(
-        "front", ["customer-support"], [WebhookScreenshotConfig("inbound_message.json")]
+        "front",
+        ["customer-support", "communication"],
+        [WebhookScreenshotConfig("inbound_message.json")],
     ),
     WebhookIntegration(
         "gitea",
@@ -652,7 +654,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "github",
-        ["version-control"],
+        ["version-control", "continuous-integration", "project-management"],
         [WebhookScreenshotConfig("push__1_commit.json", channel="commits")],
         display_name="GitHub",
         url_options=[
@@ -709,7 +711,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "harbor",
-        ["deployment", "productivity"],
+        ["deployment"],
         [WebhookScreenshotConfig("scanning_completed.json")],
     ),
     WebhookIntegration(
@@ -751,7 +753,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         doc="jira/jira-doc.md",
     ),
     WebhookIntegration(
-        "jotform", ["misc"], [WebhookScreenshotConfig("screenshot_response.multipart")]
+        "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
     ),
     WebhookIntegration(
         "json",
@@ -773,7 +775,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("mention", ["marketing"], [WebhookScreenshotConfig("webfeeds.json")]),
     WebhookIntegration(
         "netlify",
-        ["continuous-integration", "deployment"],
+        ["deployment", "continuous-integration"],
         [WebhookScreenshotConfig("deploy_building.json")],
     ),
     WebhookIntegration(
@@ -802,7 +804,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "opsgenie",
-        ["meta-integration", "monitoring"],
+        ["monitoring"],
         [WebhookScreenshotConfig("addrecipient.json")],
         url_options=[
             WebhookUrlOption(
@@ -841,7 +843,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("raygun", ["monitoring"], [WebhookScreenshotConfig("new_error.json")]),
     WebhookIntegration(
         "reviewboard",
-        ["version-control"],
+        ["productivity"],
         [WebhookScreenshotConfig("review_request_published.json")],
         display_name="Review Board",
     ),
@@ -870,7 +872,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "sonarqube",
-        ["continuous-integration"],
+        ["continuous-integration", "monitoring"],
         [WebhookScreenshotConfig("error.json")],
         display_name="SonarQube",
     ),
@@ -881,7 +883,9 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "splunk", ["monitoring"], [WebhookScreenshotConfig("search_one_result.json")]
     ),
     WebhookIntegration(
-        "statuspage", ["customer-support"], [WebhookScreenshotConfig("incident_created.json")]
+        "statuspage",
+        ["customer-support", "monitoring"],
+        [WebhookScreenshotConfig("incident_created.json")],
     ),
     WebhookIntegration(
         "stripe", ["financial"], [WebhookScreenshotConfig("charge_succeeded__card.json")]
@@ -929,7 +933,11 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         [WebhookScreenshotConfig("uptimerobot_monitor_up.json")],
         display_name="UptimeRobot",
     ),
-    WebhookIntegration("wekan", ["productivity"], [WebhookScreenshotConfig("add_comment.json")]),
+    WebhookIntegration(
+        "wekan",
+        ["productivity", "project-management"],
+        [WebhookScreenshotConfig("add_comment.json")],
+    ),
     WebhookIntegration(
         "wordpress",
         ["marketing"],
@@ -972,7 +980,7 @@ ZAPIER_INTEGRATIONS: list[Integration] = [
     Integration("asana", ["project-management"]),
     # Can be used with RSS integration too
     Integration("mastodon", ["communication"]),
-    Integration("notion", ["productivity"]),
+    Integration("notion", ["productivity", "project-management"]),
 ]
 
 PLUGIN_INTEGRATIONS: list[Integration] = [
@@ -1013,7 +1021,7 @@ OTHER_INTEGRATIONS = [
 ]
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
-    PythonAPIIntegration("codebase", ["version-control"]),
+    PythonAPIIntegration("codebase", ["version-control", "project-management"]),
     PythonAPIIntegration(
         "git", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
     ),
@@ -1061,7 +1069,10 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
 BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
     BotIntegration(
-        "xkcd", ["bots", "misc"], display_name="xkcd", logo="images/integrations/logos/xkcd.png"
+        "xkcd",
+        ["bots", "entertainment"],
+        display_name="xkcd",
+        logo="images/integrations/logos/xkcd.png",
     ),
 ]
 
@@ -1073,14 +1084,14 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "instagram",
-        ["misc"],
+        ["entertainment", "marketing"],
         # _ needed to get around adblock plus
         logo="images/integrations/logos/instagra_m.svg",
     ),
-    HubotIntegration("mailchimp", ["communication", "marketing"]),
+    HubotIntegration("mailchimp", ["marketing", "communication"]),
     HubotIntegration(
         "youtube",
-        ["misc"],
+        ["entertainment", "marketing"],
         display_name="YouTube",
         # _ needed to get around adblock plus
         logo="images/integrations/logos/youtub_e.svg",
