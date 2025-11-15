@@ -84,6 +84,13 @@ def do_set_realm_property(
     if old_value == value:
         return
 
+    if name == "default_new_user_avatar" and value not in [
+        "gravatar",
+        "jdenticon",
+        "colorful_silhouette",
+    ]:
+        raise JsonableError(_("Invalid default avatar type"))
+
     setattr(realm, name, value)
     realm.save(update_fields=[name])
 

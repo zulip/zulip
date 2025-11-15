@@ -668,14 +668,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # https://docs.djangoproject.com/en/5.0/ref/models/fields/#django.db.models.Field.null.
     timezone = models.CharField(max_length=40, default="")
 
+    AVATAR_FROM_DEFAULT = "D"
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_USER = "U"
     AVATAR_SOURCES = (
+        (AVATAR_FROM_DEFAULT, "Default (organization setting)"),
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
         (AVATAR_FROM_USER, "Uploaded by user"),
     )
+    # Default must be AVATAR_FROM_DEFAULT so realm.default_new_user_avatar logic runs for new users.
     avatar_source = models.CharField(
-        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+        default=AVATAR_FROM_DEFAULT, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
     # This is only used for LDAP-provided avatars; it contains the

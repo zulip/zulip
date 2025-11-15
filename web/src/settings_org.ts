@@ -3,6 +3,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+// import * as dropdown_widget from "./dropdown_widget.ts";
+// import * as dropdown_list_widget from "./dropdown_list_widget.ts";
+
 import render_action_button from "../templates/components/action_button.hbs";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
@@ -167,6 +170,19 @@ export function get_organization_settings_options(): OrganizationSettingsOptions
 
 type DefinedOrgTypeValues = typeof settings_config.defined_org_type_values;
 type AllOrgTypeValues = typeof settings_config.all_org_type_values;
+
+// export function set_default_new_user_avatar_dropdown(): void {
+//     const options = [
+//         {name: $t({defaultMessage: "Gravatar"}), unique_id: "gravatar"},
+//         {name: $t({defaultMessage: "Jdenticon"}), unique_id: "jdenticon"},
+//         {name: $t({defaultMessage: "Colorful silhouette"}), unique_id: "colorful_silhouette"},
+//     ];
+
+//     simple_dropdown_properties.create($("#id_realm_default_new_user_avatar"), options, {
+//         default_id: realm.realm_default_new_user_avatar || "gravatar",
+//         include_blank_option: false,
+//     });
+// }
 
 export function get_org_type_dropdown_options(): DefinedOrgTypeValues | AllOrgTypeValues {
     const current_org_type = realm.realm_org_type;
@@ -587,6 +603,13 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             assert(typeof property_value === "string" || typeof property_value === "number");
+            settings_components.set_dropdown_list_widget_setting_value(
+                property_name,
+                property_value,
+            );
+            break;
+        case "realm_default_new_user_avatar":
+            assert(typeof property_value === "string");
             settings_components.set_dropdown_list_widget_setting_value(
                 property_name,
                 property_value,
@@ -1146,7 +1169,7 @@ function set_up_dropdown_widget(
     }
 
     let unique_id_type: dropdown_widget.DataType = "number";
-    if (setting_type === "language") {
+    if (setting_type === "language" || setting_name === "realm_default_new_user_avatar") {
         unique_id_type = "string";
     }
 
@@ -1236,6 +1259,14 @@ export let init_dropdown_widgets = (): void => {
         options.unshift(disabled_option);
         return options;
     };
+
+    const default_avatar_options = (): dropdown_widget.Option[] => [
+        {name: "Gravatar", unique_id: "gravatar"},
+        {name: "Jdenticon", unique_id: "jdenticon"},
+        {name: "Colorful silhouette", unique_id: "colorful_silhouette"},
+    ];
+
+    set_up_dropdown_widget("realm_default_new_user_avatar", default_avatar_options, "setting");
 
     set_up_dropdown_widget(
         "realm_moderation_request_channel_id",

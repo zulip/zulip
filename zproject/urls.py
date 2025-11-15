@@ -75,6 +75,7 @@ from zerver.views.invite import (
     revoke_multiuse_invite,
     revoke_user_invite,
 )
+from zerver.views.jdenticon import jdenticon_svg
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -185,6 +186,7 @@ from zerver.views.scheduled_messages import (
     update_scheduled_message_backend,
 )
 from zerver.views.sentry import sentry_tunnel
+from zerver.views.silhouette import silhouette_svg
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
     add_default_stream,
@@ -599,6 +601,9 @@ v1_api_and_json_patterns = [
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+    # procedural avatars -> zerver.views.jdenticon and zerver.views.silhouette
+    # path("avatar/jdenticon/<str:seed>/<int:size>", jdenticon_svg, name="jdenticon_svg"),
+    # path("avatar/silhouette/<str:seed>/<int:size>", silhouette_svg, name="silhouette_svg"),
 ]
 
 # These views serve pages (HTML). As such, their internationalization
@@ -759,6 +764,11 @@ urls: list[URLPattern | URLResolver] = list(i18n_urls)
 urls += [
     path("api/v1/", include(v1_api_and_json_patterns)),
     path("json/", include(v1_api_and_json_patterns)),
+]
+
+urls += [
+    path("avatar/jdenticon/<str:seed>/<int:size>", jdenticon_svg, name="jdenticon_svg"),
+    path("avatar/silhouette/<str:seed>/<int:size>", silhouette_svg, name="silhouette_svg"),
 ]
 
 # user_uploads -> zerver.views.upload.serve_file_backend
