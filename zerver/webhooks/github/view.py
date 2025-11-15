@@ -62,10 +62,12 @@ class Helper:
         request: HttpRequest,
         payload: WildValue,
         include_title: bool,
+        include_repository_name: bool,
     ) -> None:
         self.request = request
         self.payload = payload
         self.include_title = include_title
+        self.include_repository_name = include_repository_name
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook; ignoring"
@@ -315,6 +317,10 @@ def get_push_commits_body(helper: Helper) -> str:
         commits_data,
         deleted=payload["deleted"].tame(check_bool),
         force_push=payload["forced"].tame(check_bool),
+        repository_name=get_repository_full_name(payload)
+        if helper.include_repository_name
+        else None,
+        repository_url=get_repository_url(payload) if helper.include_repository_name else None,
     )
 
 
@@ -816,6 +822,10 @@ def get_repository_full_name(payload: WildValue) -> str:
     return payload["repository"]["full_name"].tame(check_string)
 
 
+def get_repository_url(payload: WildValue) -> str:
+    return payload["repository"]["html_url"].tame(check_string)
+
+
 def get_organization_name(payload: WildValue) -> str:
     return payload["organization"]["login"].tame(check_string)
 
@@ -1007,6 +1017,7 @@ def api_github_webhook(
     branches: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
     ignore_private_repositories: Json[bool] = False,
+    include_repository_name: Json[bool] = False,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1050,6 +1061,7 @@ def api_github_webhook(
         request=request,
         payload=payload,
         include_title=user_specified_topic is not None,
+        include_repository_name=include_repository_name,
     )
     body = body_function(helper)
 
