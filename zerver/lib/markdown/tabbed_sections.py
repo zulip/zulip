@@ -67,6 +67,7 @@ TAB_SECTION_LABELS = {
     "zoom": "Zoom",
     "jitsi-meet": "Jitsi Meet",
     "bigbluebutton": "BigBlueButton",
+    "nextcloud-talk": "Nextcloud Talk",
     "disable": "Disabled",
     "chrome": "Chrome",
     "firefox": "Firefox",
