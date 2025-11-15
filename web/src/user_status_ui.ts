@@ -1,19 +1,96 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";
+import * as flatpickr from "./flatpickr.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as people from "./people.ts";
+import * as timerender from "./timerender.ts";
 import * as user_status from "./user_status.ts";
-import type {UserStatusEmojiInfo} from "./user_status.ts";
+import type {TimeKey, UserStatusEmojiInfo} from "./user_status.ts";
 
 let selected_emoji_info: Partial<UserStatusEmojiInfo> = {};
-let default_status_messages_and_emoji_info: {status_text: string; emoji: EmojiRenderingDetails}[];
+let default_status_messages_and_emoji_info: {
+    status_text: string;
+    emoji: EmojiRenderingDetails;
+    expiry: TimeKey;
+}[];
+let scheduled_end_time_widget: dropdown_widget.DropdownWidget;
+let scheduled_end_time: number | null;
+
+type ScheduledEndTimeWidgetOption = {
+    name: string;
+    unique_id: TimeKey;
+};
+
+function get_scheduled_end_time_widget_options(): ScheduledEndTimeWidgetOption[] {
+    return [
+        {name: $t({defaultMessage: "Never"}), unique_id: "never"},
+        {name: $t({defaultMessage: "In 30 minutes"}), unique_id: "in_thirty_minutes"},
+        {name: $t({defaultMessage: "In one hour"}), unique_id: "in_one_hour"},
+        {
+            name: $t(
+                {defaultMessage: "Today at {time}"},
+                {
+                    time: timerender.get_localized_date_or_time_for_format(
+                        compute_end_time("today_five_pm")!,
+                        "time",
+                    ),
+                },
+            ),
+            unique_id: "today_five_pm",
+        },
+        {name: $t({defaultMessage: "Tomorrow"}), unique_id: "tomorrow"},
+        {name: $t({defaultMessage: "Custom"}), unique_id: "custom"},
+    ];
+}
+
+const no_scheduled_end_time_set_message = $t({defaultMessage: "Keep status until you remove it."});
+
+function compute_end_time(end_time_string: string, custom_time_selected?: number): number | null {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    const today = new Date(now);
+    const tomorrow = new Date(new Date(now).setDate(now.getDate() + 1));
+
+    switch (end_time_string) {
+        case "never":
+            return null;
+        case "in_thirty_minutes":
+            return now.getTime() + 30 * 60 * 1000;
+        case "in_one_hour":
+            return now.getTime() + 60 * 60 * 1000;
+        case "today_five_pm":
+            return today.setHours(17, 0, 0, 0);
+        case "tomorrow":
+            return tomorrow.setHours(0, 0, 0, 0);
+        case "custom":
+            assert(custom_time_selected !== undefined);
+            return custom_time_selected;
+        default:
+            return null;
+    }
+}
+
+function select_scheduled_end_time(custom_time_selected?: number): void {
+    const current_value = scheduled_end_time_widget.current_value;
+    assert(typeof current_value === "string");
+    scheduled_end_time = compute_end_time(current_value, custom_time_selected);
+    const scheduled_datetime_string = scheduled_end_time
+        ? timerender.get_full_datetime(new Date(scheduled_end_time), "time")
+        : no_scheduled_end_time_set_message;
+
+    $("#scheduled-end-time-description").text(scheduled_datetime_string);
+    $("#scheduled-end-time-description").show();
+}
 
 export function set_selected_emoji_info(emoji_info: Partial<UserStatusEmojiInfo>): void {
     selected_emoji_info = {...emoji_info};
@@ -36,6 +113,12 @@ export function open_user_status_modal(): void {
         selected_emoji_info,
     });
 
+    scheduled_end_time = user_status.get_scheduled_end_time();
+    if (scheduled_end_time) {
+        // Convert `scheduled_end_time` to milliseconds.
+        scheduled_end_time *= 1000;
+    }
+
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Set status"}),
         html_body: rendered_set_status_overlay,
@@ -48,6 +131,25 @@ export function open_user_status_modal(): void {
             input_field().trigger("focus");
         },
     });
+
+    render_scheduled_end_time_widget();
+
+    $("#scheduled-end-time-description").text(no_scheduled_end_time_set_message);
+    if (scheduled_end_time) {
+        const scheduled_datetime_string = timerender.get_full_datetime(
+            new Date(scheduled_end_time),
+            "time",
+        );
+        $("#scheduled_end_time_widget .dropdown_widget_value").text(scheduled_datetime_string);
+        $("#scheduled-end-time-description").hide();
+    }
+}
+
+function get_scheduled_end_time_in_seconds(): number | undefined {
+    if (scheduled_end_time) {
+        return Math.floor(scheduled_end_time / 1000);
+    }
+    return undefined;
 }
 
 export function submit_new_status(): void {
@@ -56,10 +158,13 @@ export function submit_new_status(): void {
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id);
     const new_status_text = input_field().val()?.trim() ?? "";
+    const old_scheduled_end_time = user_status.get_scheduled_end_time();
+    const scheduled_end_time_in_seconds = get_scheduled_end_time_in_seconds();
 
     if (
         old_status_text === new_status_text &&
-        !emoji_status_fields_changed(selected_emoji_info, old_emoji_info)
+        !emoji_status_fields_changed(selected_emoji_info, old_emoji_info) &&
+        old_scheduled_end_time === scheduled_end_time_in_seconds
     ) {
         dialog_widget.close();
         return;
@@ -70,6 +175,7 @@ export function submit_new_status(): void {
         emoji_name: selected_emoji_info.emoji_name ?? "",
         emoji_code: selected_emoji_info.emoji_code ?? "",
         reaction_type: selected_emoji_info.reaction_type ?? "",
+        scheduled_end_time: scheduled_end_time_in_seconds ?? null,
         success() {
             dialog_widget.close();
         },
@@ -82,11 +188,14 @@ export function update_button(): void {
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id);
     const new_status_text = input_field().val()?.trim() ?? "";
+    const old_scheduled_end_time = user_status.get_scheduled_end_time();
     const $button = submit_button();
 
     if (
-        old_status_text === new_status_text &&
-        !emoji_status_fields_changed(selected_emoji_info, old_emoji_info)
+        (!new_status_text && !selected_emoji_info.emoji_name && scheduled_end_time !== undefined) ||
+        (old_status_text === new_status_text &&
+            !emoji_status_fields_changed(selected_emoji_info, old_emoji_info) &&
+            old_scheduled_end_time === get_scheduled_end_time_in_seconds())
     ) {
         $button.prop("disabled", true);
     } else {
@@ -162,6 +271,11 @@ function user_status_post_render(): void {
             )?.emoji ?? {};
         set_selected_emoji_info(emoji_info);
         toggle_clear_status_button();
+        const expires_in = default_status_messages_and_emoji_info.find(
+            (default_status) => default_status.status_text === user_status_value,
+        )!.expiry;
+        scheduled_end_time_widget.render(expires_in);
+        select_scheduled_end_time();
         update_button();
     });
 
@@ -185,35 +299,92 @@ function user_status_post_render(): void {
     });
 }
 
+function render_scheduled_end_time_widget(): void {
+    const tippy_props: Partial<tippy.Props> = {
+        placement: "bottom-start",
+    };
+    const opts: dropdown_widget.DropdownWidgetOptions = {
+        widget_name: "scheduled_end_time",
+        get_options: get_scheduled_end_time_widget_options,
+        item_click_callback: scheduled_end_time_widget_callback,
+        $events_container: $("#set-user-status-modal"),
+        tippy_props,
+        hide_search_box: true,
+        default_id: "never",
+        unique_id_type: "string",
+    };
+    scheduled_end_time_widget = new dropdown_widget.DropdownWidget(opts);
+    scheduled_end_time_widget.setup();
+}
+
+function scheduled_end_time_widget_callback(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (scheduled_end_time_widget.current_value === "custom") {
+        const now = new Date();
+        now.setSeconds(0, 0);
+        const default_timestamp = new Date(now).setHours(now.getHours() + 1);
+
+        flatpickr.show_flatpickr(
+            $("#scheduled_end_time_widget")[0]!,
+            (datetime) => {
+                const custom_time_selected = Date.parse(datetime);
+                scheduled_end_time_widget.render();
+                select_scheduled_end_time(custom_time_selected);
+                update_button();
+            },
+            default_timestamp,
+            {
+                minDate: now,
+            },
+        );
+    } else {
+        scheduled_end_time_widget.render();
+        select_scheduled_end_time();
+        update_button();
+    }
+    dropdown.hide();
+}
+
 export function initialize(): void {
     default_status_messages_and_emoji_info = [
         {
             status_text: $t({defaultMessage: "Busy"}),
             emoji: emoji.get_emoji_details_by_name("working_on_it"),
+            expiry: "in_one_hour",
         },
         {
             status_text: $t({defaultMessage: "In a meeting"}),
             emoji: emoji.get_emoji_details_by_name("calendar"),
+            expiry: "in_one_hour",
         },
         {
             status_text: $t({defaultMessage: "Commuting"}),
             emoji: emoji.get_emoji_details_by_name("bus"),
+            expiry: "in_thirty_minutes",
         },
         {
             status_text: $t({defaultMessage: "Out sick"}),
             emoji: emoji.get_emoji_details_by_name("hurt"),
+            expiry: "tomorrow",
         },
         {
             status_text: $t({defaultMessage: "Vacationing"}),
             emoji: emoji.get_emoji_details_by_name("palm_tree"),
+            expiry: "never",
         },
         {
             status_text: $t({defaultMessage: "Working remotely"}),
             emoji: emoji.get_emoji_details_by_name("house"),
+            expiry: "today_five_pm",
         },
         {
             status_text: $t({defaultMessage: "At the office"}),
             emoji: emoji.get_emoji_details_by_name("office"),
+            expiry: "today_five_pm",
         },
     ];
 }

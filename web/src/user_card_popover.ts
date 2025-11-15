@@ -768,6 +768,7 @@ function register_click_handlers(): void {
             status_text: "",
             emoji_name: "",
             emoji_code: "",
+            scheduled_end_time: null,
             success() {
                 hide_all_user_card_popovers();
             },
