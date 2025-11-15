@@ -258,6 +258,10 @@ Files: web/icons/folder.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder)
 License: ISC License
 
+Files: web/icons/folder-cog.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder-cog)
+License: ISC License
+
 Files: web/icons/follow.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/rss)
 License: ISC License

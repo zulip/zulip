@@ -326,9 +326,9 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
             name: folder.name,
             unique_id: folder.id,
             has_delete_icon: true,
-            has_edit_icon: true,
+            has_manage_folder_icon: true,
             delete_icon_label: $t({defaultMessage: "Delete folder"}),
-            edit_icon_label: $t({defaultMessage: "Edit folder"}),
+            manage_folder_icon_label: $t({defaultMessage: "Manage folder"}),
         }));
 
         const disabled_option = {
@@ -391,7 +391,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
 
             if (
                 $(event.target).closest(
-                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-edit`,
+                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-manage-folder`,
                 ).length > 0
             ) {
                 const folder_id = Number.parseInt(
