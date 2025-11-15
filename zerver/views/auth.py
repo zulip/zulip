@@ -705,12 +705,16 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     return redirect(reverse(remote_user_sso, query=request.GET))
 
 
-@handle_desktop_flow
-def start_social_login(
+def _start_social_auth_flow(
     request: HttpRequest,
     backend: str,
-    extra_arg: str | None = None,
+    extra_arg: str | None,
+    is_signup: bool,
 ) -> HttpResponse:
+    """
+    Helper function to handle the shared logic for starting a social
+    authentication flow (both login and signup).
+    """
     extra_url_params: dict[str, str] = {}
     if backend == "saml":
         if not SAMLAuthBackend.check_config():
@@ -741,8 +745,17 @@ def start_social_login(
         request,
         reverse("social:begin", args=[backend], query=extra_url_params),
         "social",
-        False,
+        is_signup,
     )
+
+
+@handle_desktop_flow
+def start_social_login(
+    request: HttpRequest,
+    backend: str,
+    extra_arg: str | None = None,
+) -> HttpResponse:
+    return _start_social_auth_flow(request, backend, extra_arg, is_signup=False)
 
 
 @handle_desktop_flow
@@ -751,23 +764,9 @@ def start_social_signup(
     backend: str,
     extra_arg: str | None = None,
 ) -> HttpResponse:
-    extra_url_params: dict[str, str] = {}
-    if backend == "saml":
-        if not SAMLAuthBackend.check_config():
-            return config_error(request, "saml")
-
-        if not extra_arg or extra_arg not in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
-            logging.info(
-                "Attempted to initiate SAML authentication with wrong idp argument: %s", extra_arg
-            )
-            return config_error(request, "saml")
-        extra_url_params = {"idp": extra_arg}
-    return oauth_redirect_to_root(
-        request,
-        reverse("social:begin", args=[backend], query=extra_url_params),
-        "social",
-        True,
-    )
+    # This function's logic is now deduplicated with start_social_login
+    # by using the _start_social_auth_flow helper.
+    return _start_social_auth_flow(request, backend, extra_arg, is_signup=True)
 
 
 _subdomain_token_salt = "zerver.views.auth.log_into_subdomain"
