@@ -48,6 +48,7 @@ exports.make_stream = (opts = {}) => {
         /* Most tests want to work with a channel the current user is subscribed to. */
         subscribed: true,
         wildcard_mentions_notify: false,
+        folder_id: null,
     };
 
     return {...default_channel, ...opts};
