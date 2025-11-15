@@ -118,7 +118,7 @@ class NarrowParameter(BaseModel):
             "id",
             "sender",
             "group-pm-with",
-            "dm-with",       # NEW operator
+            "dm-with",  # NEW operator
             "dm-including",  # dm-including is an alias for dm-with for legacy support reasons
             "with",
         ]
@@ -295,8 +295,8 @@ class NarrowBuilder:
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
-            "dm-with": self.by_dm_including,  
-            "dm-including": self.by_dm_including, # legacy alias, canonicalized earlier
+            "dm-with": self.by_dm_including,
+            "dm-including": self.by_dm_including,  # legacy alias, canonicalized earlier
             # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
