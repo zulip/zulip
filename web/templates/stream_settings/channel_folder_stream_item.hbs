@@ -1,0 +1,13 @@
+<li class="stream-list-item" role="presentation" data-stream-id="{{stream_id}}">
+    <a class="folder-channel-row hidden-remove-button-row" href="{{stream_edit_url}}">
+        <span class="folder-stream-list-item">
+            <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}};">
+                {{> ../stream_privacy . }}
+            </span>
+            <span class="folder-stream-name">{{name}}</span>
+        </span>
+        <div class="remove-button-wrapper">
+            {{> ../components/icon_button  icon="close" custom_classes="hidden-remove-button remove-channel-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove channel") data-tippy-content=(t "Remove channel") }}
+        </div>
+    </a>
+</li>
