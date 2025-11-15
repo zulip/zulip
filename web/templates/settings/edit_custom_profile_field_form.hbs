@@ -51,6 +51,15 @@
             </label>
         </div>
     {{/if}}
+    {{#if is_long_text_field}}
+        <div class="input-group">
+            <label class="checkbox" for="id-custom-profile-field-display-on-user-card">
+                <input class="prop-element" data-setting-widget-type="boolean" type="checkbox" id="id-custom-profile-field-display-on-user-card" name="display_on_user_card" {{#if display_on_user_card}} checked="checked" {{/if}}/>
+                <span class="rendered-checkbox"></span>
+                {{t "Display 'Copy' link on user card" }}
+            </label>
+        </div>
+    {{/if}}
     <div class="input-group">
         <label class="checkbox" for="id-custom-profile-field-required">
             <input class="edit-required prop-element" type="checkbox" id="id-custom-profile-field-required" name="required" data-setting-widget-type="boolean" {{#if required}} checked="checked" {{/if}}/>
