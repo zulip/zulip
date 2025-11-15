@@ -125,11 +125,21 @@ function sort_bot_email(a: BotInfo, b: BotInfo): number {
 }
 
 function sort_bot_owner(a: BotInfo, b: BotInfo): number {
-    function owner_name(bot: BotInfo): string {
-        return (bot.bot_owner_full_name || "").toLowerCase();
+    // Always show bots without owner at bottom
+    if (a.no_owner && b.no_owner) {
+        return 0;
+    }
+    if (a.no_owner) {
+        return 1;
+    }
+    if (b.no_owner) {
+        return -1;
     }
 
-    return util.compare_a_b(owner_name(a), owner_name(b));
+    return util.compare_a_b(
+        a.bot_owner_full_name.toLowerCase(),
+        b.bot_owner_full_name.toLocaleLowerCase(),
+    );
 }
 
 export function generate_botserverrc_content(
