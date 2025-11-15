@@ -25,7 +25,7 @@ function hashToColor(seed) {
     let hash = 0;
     for (let i = 0; i < seed.length; i += 1) {
         const char = seed.codePointAt(i);
-        hash = (hash * 31 - hash) + (char ?? 0);
+        hash = hash * 31 - hash + (char ?? 0);
         // Convert to 32bit integer
         hash = Math.imul(hash, 1);
     }
