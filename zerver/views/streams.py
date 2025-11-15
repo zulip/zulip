@@ -1147,7 +1147,7 @@ def get_stream_backend(
 ) -> HttpResponse:
     (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
-    recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
+    recent_traffic = get_streams_traffic(user_profile.realm, {stream.id})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
 
     return json_success(

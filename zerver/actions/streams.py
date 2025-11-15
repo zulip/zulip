@@ -286,7 +286,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
         event_time=timezone_now(),
     )
 
-    recent_traffic = get_streams_traffic({stream.id}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id})
 
     notify_user_ids = list(can_access_stream_metadata_user_ids(stream))
 
@@ -414,7 +414,7 @@ def send_subscription_add_events(
         info_by_user[sub_info.user.id].append(sub_info)
 
     stream_ids = {sub_info.stream.id for sub_info in sub_info_list}
-    recent_traffic = get_streams_traffic(stream_ids=stream_ids, realm=realm)
+    recent_traffic = get_streams_traffic(realm=realm, stream_ids=stream_ids)
 
     # We generally only have a few streams, so we compute subscriber
     # data in its own loop.
@@ -542,7 +542,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     users_with_metadata_access_via_permission_groups: dict[int, set[int]] | None = None,
 ) -> None:
     stream_ids = set(altered_user_dict.keys())
-    recent_traffic = get_streams_traffic(stream_ids, realm)
+    recent_traffic = get_streams_traffic(realm, stream_ids)
 
     streams = [stream_dict[stream_id] for stream_id in stream_ids]
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None
@@ -1360,7 +1360,7 @@ def do_change_stream_permission(
             - user_ids_with_metadata_access_via_permission_groups
         )
 
-        recent_traffic = get_streams_traffic({stream.id}, realm)
+        recent_traffic = get_streams_traffic(realm, {stream.id})
         anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
         send_stream_creation_event(
             realm,
@@ -1853,7 +1853,7 @@ def do_change_stream_group_based_setting(
         )
 
         if len(user_ids_gaining_metadata_access) > 0:
-            recent_traffic = get_streams_traffic({stream.id}, stream.realm)
+            recent_traffic = get_streams_traffic(stream.realm, {stream.id})
             anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
             send_stream_creation_event(
                 stream.realm,

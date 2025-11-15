@@ -1976,7 +1976,7 @@ def do_get_streams(
     )
 
     stream_ids = {stream.id for stream in streams}
-    recent_traffic = get_streams_traffic(stream_ids, user_profile.realm)
+    recent_traffic = get_streams_traffic(user_profile.realm, stream_ids)
 
     if anonymous_group_membership is None:
         anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)

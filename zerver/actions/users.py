@@ -565,7 +565,7 @@ def send_stream_events_for_role_update(
 
     now_accessible_stream_ids = current_accessible_stream_ids - old_accessible_stream_ids
     if now_accessible_stream_ids:
-        recent_traffic = get_streams_traffic(now_accessible_stream_ids, user_profile.realm)
+        recent_traffic = get_streams_traffic(user_profile.realm, now_accessible_stream_ids)
 
         now_accessible_streams = [
             stream

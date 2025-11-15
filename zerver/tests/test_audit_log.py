@@ -388,11 +388,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_get_streams_traffic(self) -> None:
         realm = get_realm("zulip")
-        stream_name = "whatever"
-        stream = self.make_stream(stream_name, realm)
-        stream_ids = {stream.id}
+        stream = self.make_stream("whatever", realm)
+        stream_2 = self.make_stream("whatever_2", realm)
 
-        result = get_streams_traffic(stream_ids, realm)
+        result = get_streams_traffic(realm)
         self.assertEqual(result, {})
 
         StreamCount.objects.create(
@@ -402,9 +401,19 @@ class TestRealmAuditLog(ZulipTestCase):
             end_time=timezone_now(),
             value=999,
         )
+        StreamCount.objects.create(
+            realm=realm,
+            stream=stream_2,
+            property="messages_in_stream:is_bot:day",
+            end_time=timezone_now(),
+            value=23,
+        )
 
-        result = get_streams_traffic(stream_ids, realm)
+        result = get_streams_traffic(realm, {stream.id})
         self.assertEqual(result, {stream.id: 999})
+
+        all_streams_traffic = get_streams_traffic(realm)
+        self.assertEqual(all_streams_traffic, {stream.id: 999, stream_2.id: 23})
 
     def test_subscriptions(self) -> None:
         now = timezone_now()
