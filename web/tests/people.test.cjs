@@ -1159,6 +1159,39 @@ run_test("message_methods", () => {
     assert.equal(people.sender_is_deactivated(message), false);
 });
 
+run_test("avatar behavior with non-gravatar default and fallbacks", () => {
+    initialize();
+
+    // Switch realm default away from gravatar to exercise non-gravatar paths.
+    page_params.realm_default_new_user_avatar = "jdenticon";
+
+    // User with explicit null avatar should fall back to server endpoint,
+    // and should NOT cache a gravatar URL under non-gravatar default.
+    const nina = {
+        email: "nina@example.com",
+        user_id: 707,
+        full_name: "Nina",
+        avatar_url: null,
+    };
+    people.add_active_user(nina);
+
+    assert.equal(people.small_avatar_url_for_person(nina), `/avatar/${nina.user_id}`);
+    assert.equal(nina.avatar_url, null);
+
+    // message-based resolution should also return the server endpoint here.
+    assert.equal(people.small_avatar_url({sender_id: nina.user_id}), `/avatar/${nina.user_id}`);
+
+    // If avatar_url is a defined but falsy string, we should hit the
+    // defensive fallback branches that return the server endpoint.
+    nina.avatar_url = "";
+    assert.equal(people.small_avatar_url_for_person(nina), `/avatar/${nina.user_id}`);
+    assert.equal(people.small_avatar_url({sender_id: nina.user_id}), `/avatar/${nina.user_id}`);
+
+    // Clean up to avoid leaking test-specific page params into others.
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete page_params.realm_default_new_user_avatar;
+});
+
 run_test("extract_people_from_message", () => {
     initialize();
     const message = {
