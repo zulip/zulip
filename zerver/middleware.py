@@ -653,12 +653,13 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
     ) -> None:
         proxy_state_header = request.headers.get("X-Proxy-Misconfiguration", "")
         # Our nginx configuration sets this header if:
-        #  - there is an X-Forwarded-For set but no proxies configured in Zulip
-        #  - proxies are configured but the request did not come from them
-        #  - proxies are configured and the request came through them,
-        #    but there was no X-Forwarded-Proto header
+        #  1. the request came in over HTTP with no proxy headers set
+        #  2. there is an X-Forwarded-For set but no proxies configured in Zulip
+        #  3. proxies are configured but the request did not come from them
+        #  4. proxies are configured and the request came through them,
+        #     but there was no X-Forwarded-Proto header
         #
-        # Note that the first two may be false-positives.  We only
+        # Note that (2) and (3)  may be false-positives.  We only
         # display the error if the request also came in over HTTP (and
         # a trusted proxy didn't say they get it over HTTPS), which
         # should be impossible because Zulip only supports external
