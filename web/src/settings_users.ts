@@ -94,6 +94,16 @@ export function allow_sorting_deactivated_users_list_by_email(): boolean {
 export function update_view_on_deactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
+        if (!is_bot) {
+            should_redraw_active_users_list = true;
+            should_redraw_deactivated_users_list = true;
+            if (active_users_role_dropdown) {
+                active_users_role_dropdown.render(active_section.filters.role_code);
+            }
+            if (deactivated_users_role_dropdown) {
+                deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+            }
+        }
         return;
     }
 
@@ -132,6 +142,16 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
 export function update_view_on_reactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
+        if (!is_bot) {
+            should_redraw_active_users_list = true;
+            should_redraw_deactivated_users_list = true;
+            if (active_users_role_dropdown) {
+                active_users_role_dropdown.render(active_section.filters.role_code);
+            }
+            if (deactivated_users_role_dropdown) {
+                deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+            }
+        }
         return;
     }
 
