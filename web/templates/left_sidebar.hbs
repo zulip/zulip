@@ -28,12 +28,14 @@
                     <span class="unread_count normal-count"></span>
                 </li>
             </ul>
-            <div class="left-sidebar-navigation-menu-icon">
+            {{#unless is_spectator}}
+            <div class="left-sidebar-navigation-menu-icon {{#if should_hide_menu}}hide{{/if}}">
                 <i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Other views'}}"></i>
             </div>
+            {{/unless}}
         </div>
         <ul id="left-sidebar-navigation-list" class="left-sidebar-navigation-list filters">
-            {{> left_sidebar_expanded_view_items_list expanded_views=expanded_views}}
+            {{> left_sidebar_expanded_view_items_list expanded_views=expanded_views show_empty_state=show_empty_state}}
         </ul>
     </div>
 

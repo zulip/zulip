@@ -1,3 +1,7 @@
-{{#each expanded_views}}
-    {{> left_sidebar_expanded_view_item . }}
-{{/each}}
+{{#if show_empty_state}}
+    <li class="left-sidebar-navigation-empty">{{t 'No pinned views currently.'}}</li>
+{{else}}
+    {{#each expanded_views}}
+        {{> left_sidebar_expanded_view_item . }}
+    {{/each}}
+{{/if}}
