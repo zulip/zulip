@@ -435,6 +435,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
+    window.addEventListener = noop;
 
     disable_document_triggers(override);
 
