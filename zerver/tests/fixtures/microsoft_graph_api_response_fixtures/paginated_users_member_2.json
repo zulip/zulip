@@ -1,0 +1,31 @@
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users",
+    "value": [
+        {
+            "businessPhones": [],
+            "displayName": "zoe",
+            "givenName": "zoe",
+            "jobTitle": null,
+            "mail": "zoe@ZulipChat.onmicrosoft.com",
+            "mobilePhone": null,
+            "officeLocation": null,
+            "preferredLanguage": null,
+            "surname": null,
+            "userPrincipalName": "zoe@ZulipChat.onmicrosoft.com",
+            "id": "5dbe468a-1e96-4aaa-856d-cdf825081e11"
+        },
+        {
+            "businessPhones": [],
+            "displayName": "AARON",
+            "givenName": "AARON",
+            "jobTitle": "Business development specialist",
+            "mail": "aaron@ZulipChat.onmicrosoft.com",
+            "mobilePhone": null,
+            "officeLocation": null,
+            "preferredLanguage": null,
+            "surname": null,
+            "userPrincipalName": "aaron@ZulipChat.onmicrosoft.com",
+            "id": "4dbd4c6f-163d-40b7-901b-e86b2f2141ae"
+        }
+    ]
+}
