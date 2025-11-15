@@ -721,6 +721,12 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
 # GIPHY_API_KEY = "<Your API key from GIPHY>"
 
+#################
+## Animated GIF integration powered by Tenor.
+# TENOR_API_KEY = "<Your API key from Tenor>"
+## Used to differentiate between integartions using the same API key.
+# TENOR_CLIENT_KEY = "A client-specified string that represents the integration."
+
 ################
 ## Video call integrations.
 ##
