@@ -948,6 +948,16 @@ function register_click_handlers(): void {
         e.preventDefault();
     });
 
+    $(".pill-container").on("click", ".pill[data-user-id]", function (this: HTMLElement, e) {
+        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
+        const user = people.get_by_user_id(user_id);
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        toggle_user_card_popover_for_message(this, user, user_id, false);
+    });
+
     $("body").on("click", ".sidebar-popover-manage-user", function () {
         hide_all();
         const user_id = elem_to_user_id($(this).parents("ul"));

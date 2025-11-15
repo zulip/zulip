@@ -34,6 +34,10 @@
         background-color: var(--color-background-input-pill);
         cursor: pointer;
 
+        &:hover {
+            background-color: var(--color-background-text-hover-direct-mention);
+        }
+
         /* Not focus-visible, because we want to support mouse+backpace to
            delete pills */
         &:focus {
@@ -162,6 +166,11 @@
                 opacity: 0.5;
             }
         }
+    }
+
+    .custom_user_field & {
+        border: none;
+        background-color: transparent;
     }
 
     .slashed-circle-icon {
