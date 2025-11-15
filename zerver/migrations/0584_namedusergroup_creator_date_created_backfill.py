@@ -3,6 +3,7 @@
 from django.db import migrations
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.db.models import F, OuterRef, Subquery
 
 
 def backfill_creator_id_and_date_created_from_realm_audit_log(
@@ -12,31 +13,27 @@ def backfill_creator_id_and_date_created_from_realm_audit_log(
     RealmAuditLog.USER_GROUP_CREATED = 701
     NamedUserGroup = apps.get_model("zerver", "NamedUserGroup")
 
-    user_group_creator_updates = []
-    for audit_log_entry in RealmAuditLog.objects.select_related("modified_user_group").filter(
-        event_type=RealmAuditLog.USER_GROUP_CREATED,
-        acting_user_id__isnull=False,
-    ):
-        assert audit_log_entry.modified_user_group is not None
-        user_group = audit_log_entry.modified_user_group
-        user_group.creator_id = audit_log_entry.acting_user_id
-        user_group_creator_updates.append(user_group)
-
-    NamedUserGroup.objects.bulk_update(user_group_creator_updates, ["creator_id"], batch_size=1000)
-
-    user_group_date_created_updates = []
-    for audit_log_entry in RealmAuditLog.objects.select_related("modified_user_group").filter(
-        event_type=RealmAuditLog.USER_GROUP_CREATED,
-        event_time__isnull=False,
-    ):
-        assert audit_log_entry.modified_user_group is not None
-        user_group = audit_log_entry.modified_user_group
-        user_group.date_created = audit_log_entry.event_time
-        user_group_date_created_updates.append(user_group)
-
-    NamedUserGroup.objects.bulk_update(
-        user_group_date_created_updates, ["date_created"], batch_size=1000
-    )
+    batch_size = 10000
+    try:
+        for id_start in range(
+            RealmAuditLog.objects.earliest("id").id,
+            RealmAuditLog.objects.latest("id").id + 1,
+            batch_size,
+        ):
+            creation_entry = RealmAuditLog.objects.filter(
+                id__range=(id_start, id_start + batch_size - 1),
+                event_type=RealmAuditLog.USER_GROUP_CREATED,
+                acting_user__isnull=False,
+                modified_user_group=OuterRef("pk"),
+            )
+            NamedUserGroup.objects.annotate(
+                new_creator=Subquery(creation_entry.values("acting_user")),
+                new_date_created=Subquery(creation_entry.values("event_time")),
+            ).filter(date_created=None, new_date_created__isnull=False).update(
+                creator=F("new_creator"), date_created=F("new_date_created")
+            )
+    except RealmAuditLog.DoesNotExist:
+        pass
 
 
 class Migration(migrations.Migration):
