@@ -552,6 +552,21 @@ def update_user(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/{user_id}", "patch", "200")
 
 
+@openapi_test_function("/users/{user_id}/subscriptions:get")
+def get_user_subscriptions(client: Client) -> None:
+    user_id = 7
+    ensure_users([user_id], ["zoe"])
+    # {code_example|start}
+    # Get known subscriptions for a user.
+    result = client.call_endpoint(
+        url=f"/users/{user_id}/subscriptions",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/users/{user_id}/subscriptions", "get", "200")
+
+
 @openapi_test_function("/users/{user_id}/subscriptions/{stream_id}:get")
 def get_subscription_status(client: Client) -> None:
     user_id = 7
@@ -1995,6 +2010,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     update_status(client)
     get_user_status(client)
     get_user_by_email(client)
+    get_user_subscriptions(client)
     get_subscription_status(client)
     get_profile(client)
     update_settings(client)
