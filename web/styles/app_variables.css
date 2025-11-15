@@ -352,6 +352,7 @@
     --topic-actions-popover-min-width: 200px;
     --user-card-popover-min-width: 200px;
     --stream-card-popover-min-width: 16.4285em;
+    --giphy-grid-popover-width: 506px;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
