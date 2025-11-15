@@ -1782,7 +1782,8 @@ def apply_event(
                     )
                     sub[subscriber_key].remove(user_profile.id)
 
-            state["unsubscribed"] += removed_subs
+            # Use list.extend to maintain list type and satisfy type-checkers.
+            state["unsubscribed"].extend(removed_subs)
 
             # Now filter out the removed subscriptions from subscriptions.
             state["subscriptions"] = [s for s in state["subscriptions"] if not was_removed(s)]
@@ -1797,8 +1798,8 @@ def apply_event(
             # already in our count or not. The opposite decision would
             # be defensible, but this is less code.
             if include_subscribers:
-                stream_ids = set(event["stream_ids"])
-                user_ids = set(event["user_ids"])
+                stream_ids = set(event["stream_ids"])  # type: ignore[call-overload]
+                user_ids_set = set(event["user_ids"])  # type: ignore[call-overload]
 
                 for sub_dict in [
                     state["subscriptions"],
@@ -1810,13 +1811,14 @@ def apply_event(
                             subscriber_key = (
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
-                            subscribers = set(sub[subscriber_key]) | user_ids
+                            subscribers = set(sub[subscriber_key])
+                            subscribers.update(user_ids_set)
                             sub[subscriber_key] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             # Note: We don't update subscriber_count here, as with peer_add.
             if include_subscribers:
-                stream_ids = set(event["stream_ids"])
-                user_ids = set(event["user_ids"])
+                stream_ids = set(event["stream_ids"])  # type: ignore[call-overload]
+                user_ids_set = set(event["user_ids"])  # type: ignore[call-overload]
 
                 for sub_dict in [
                     state["subscriptions"],
@@ -1828,7 +1830,8 @@ def apply_event(
                             subscriber_key = (
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
-                            subscribers = set(sub[subscriber_key]) - user_ids
+                            subscribers = set(sub[subscriber_key])
+                            subscribers.difference_update(user_ids_set)
                             sub[subscriber_key] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))

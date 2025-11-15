@@ -22,12 +22,12 @@ MISMATCHES:
 key = avatar_url_medium
 {'ava[13 chars]m': 'https://secure.gravatar.com/avatar/6d8cad[51 chars]n=1'} != {'ava[13 chars]m': '/avatar/jdenticon/690a8d04077aa518ca7d084[42 chars]128'}
 - {'avatar_url_medium': 'https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&s=500&version=1'}
-+ {'avatar_url_medium': '/avatar/jdenticon/690a8d04077aa518ca7d084bea25bee3f452b99942da222469f0de7059ec94a1/128'} : 
++ {'avatar_url_medium': '/avatar/jdenticon/690a8d04077aa518ca7d084bea25bee3f452b99942da222469f0de7059ec94a1/128'}:
 
 key = avatar_url
 {'avatar_url': 'https://secure.gravatar.com/avatar/6d8cad[45 chars]n=1'} != {'avatar_url': '/avatar/jdenticon/690a8d04077aa518ca7d084[41 chars]/80'}
 - {'avatar_url': 'https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1'}
-+ {'avatar_url': '/avatar/jdenticon/690a8d04077aa518ca7d084bea25bee3f452b99942da222469f0de7059ec94a1/80'} : 
++ {'avatar_url': '/avatar/jdenticon/690a8d04077aa518ca7d084bea25bee3f452b99942da222469f0de7059ec94a1/80'}:
 
 key = realm_users
 {'rea[347 chars]icon/ad96897889c010b6bf7f33841e4281730dee63f77[6268 chars] 6}]} != {'rea[347 chars]icon/b54d027418d89692fe092815cbee04ec24ec0f4b3[6019 chars] 6}]}
@@ -274,7 +274,7 @@ key = realm_users
                     'is_owner': False,
                     'role': 400,
                     'timezone': '',
-                    'user_id': 18}]} : 
+                    'user_id': 18}]}:
 
                 NOTE:
 
@@ -282,7 +282,6 @@ key = realm_users
                     we apply events after fetching data.  If you
                     do not know how to debug it, you can ask for
                     help on chat.
-                
 
 ======================================================================
 FAIL: test_change_realm_property (zerver.tests.test_events.RealmPropertyActionTest)
