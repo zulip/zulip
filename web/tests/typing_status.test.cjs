@@ -5,10 +5,16 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_state = mock_esm("../src/compose_state");
+const drafts = mock_esm("../src/drafts");
 const stream_data = mock_esm("../src/stream_data");
+
+set_global("document", {
+    to_$: () => $("document-stub"),
+});
 
 const {set_realm} = zrequire("state_data");
 const typing = zrequire("typing");
@@ -665,4 +671,86 @@ run_test("edit_messages", ({override_rewire}) => {
         stopped: true,
         timer_cleared: true,
     });
+});
+
+run_test("auto_save_drafts", ({override}) => {
+    override(realm, "server_typing_started_wait_period_milliseconds", TYPING_STARTED_WAIT_PERIOD);
+    override(realm, "server_typing_stopped_wait_period_milliseconds", TYPING_STOPPED_WAIT_PERIOD);
+
+    // Track setTimeout calls for auto-save timers only
+    const timers = [];
+    let next_timer_id = 1;
+
+    set_global("setTimeout", (callback, delay) => {
+        const timer_id = next_timer_id;
+        next_timer_id += 1;
+        // Only track auto-save timers (60 seconds)
+        if (delay === 60000) {
+            timers.push({id: timer_id, callback, delay});
+        } else if (delay === 0) {
+            // Immediately execute the callback for the 0ms timer.
+            // We need to add this due to our defer logic
+            callback();
+        }
+        return timer_id;
+    });
+
+    // Track drafts.update_draft calls
+    const draft_updates = [];
+    override(drafts, "update_draft", (opts) => {
+        draft_updates.push({opts});
+        return "draft_id_123";
+    });
+
+    // Mock compose_state for is_valid_conversation check
+    override(compose_state, "has_message_content", () => true);
+    override(compose_state, "get_message_type", () => "private");
+    override(compose_pm_pill, "get_user_ids_string", () => "1,2");
+
+    // Initialize typing module
+    typing.initialize();
+
+    // Get the input handler that was registered on $(document)
+    const compose_input_handler = $("document-stub").get_on_handler("input", "#compose-textarea");
+    assert.ok(compose_input_handler);
+
+    // First input - should save immediately AND start auto-save timer
+    compose_input_handler();
+    assert.equal(draft_updates.length, 1); // Saved immediately
+    assert.deepEqual(draft_updates[0].opts, {no_notify: true});
+    assert.equal(timers.length, 1); // One auto-save timer started
+    const auto_save_timer_1 = timers[0];
+
+    // Second input while timer is running - should NOT save or start new timer
+    compose_input_handler();
+    assert.equal(draft_updates.length, 1); // Still just 1 save
+    assert.equal(timers.length, 1); // Still just one auto-save timer
+
+    // More inputs while timer is running - should NOT save or start new timers
+    compose_input_handler();
+    compose_input_handler();
+    assert.equal(draft_updates.length, 1); // Still just 1 save
+    assert.equal(timers.length, 1); // Still just one auto-save timer
+
+    // When auto-save timer fires, it should save the draft
+    auto_save_timer_1.callback();
+    assert.equal(draft_updates.length, 2); // Now 2 saves total
+    assert.deepEqual(draft_updates[1].opts, {no_notify: true});
+
+    // After timer fires, next input should save immediately AND start a NEW auto-save timer
+    compose_input_handler();
+    assert.equal(draft_updates.length, 3); // Saved immediately (3rd save)
+    assert.deepEqual(draft_updates[2].opts, {no_notify: true});
+    assert.equal(timers.length, 2); // Now we have a second auto-save timer
+    const auto_save_timer_2 = timers[1];
+
+    // Input while second timer is running - should NOT save or start another timer
+    compose_input_handler();
+    assert.equal(draft_updates.length, 3); // Still 3 saves
+    assert.equal(timers.length, 2); // Still just two auto-save timers total
+
+    // When second auto-save timer fires, it should save again
+    auto_save_timer_2.callback();
+    assert.equal(draft_updates.length, 4); // 4th save
+    assert.deepEqual(draft_updates[3].opts, {no_notify: true});
 });

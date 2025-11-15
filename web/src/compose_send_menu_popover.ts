@@ -15,6 +15,7 @@ import * as flatpickr from "./flatpickr.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import * as typing from "./typing.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -266,6 +267,8 @@ export function initialize(): void {
             });
             $popper.one("click", ".compose_new_message", () => {
                 drafts.update_draft();
+                // Cancel auto-save timer since we just saved the draft
+                typing.cancel_auto_save_timer();
                 // If they want to compose a new message instead
                 // of seeing the draft, remember this and don't
                 // restore drafts in this narrow until the user

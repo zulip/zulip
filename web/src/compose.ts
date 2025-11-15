@@ -25,6 +25,7 @@ import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as transmit from "./transmit.ts";
+import * as typing from "./typing.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 import * as zcommand from "./zcommand.ts";
@@ -150,6 +151,8 @@ export function send_message_success(
 
     echo.reify_message_id(sent_message.local_id, data.id);
     drafts.draft_model.deleteDrafts([sent_message.draft_id]);
+    // Cancel auto-save timer since the message was sent successfully
+    typing.cancel_auto_save_timer();
 
     if (sent_message.type === "stream") {
         if (data.automatic_new_visibility_policy) {
@@ -443,6 +446,8 @@ function schedule_message_to_custom_date(): void {
     const success = function (data: unknown): void {
         drafts.draft_model.deleteDrafts([draft_id]);
         clear_compose_box();
+        // Cancel auto-save timer since the scheduled message was created successfully
+        typing.cancel_auto_save_timer();
         const {scheduled_message_id} = z.object({scheduled_message_id: z.number()}).parse(data);
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id,
