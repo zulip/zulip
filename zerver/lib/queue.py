@@ -467,12 +467,19 @@ def queue_event_on_commit(queue_name: str, event: dict[str, Any]) -> None:
 
 
 def retry_event(
-    queue_name: str, event: dict[str, Any], failure_processor: Callable[[dict[str, Any]], None]
+    queue_name: str,
+    event: dict[str, Any],
+    failure_processor: Callable[[dict[str, Any]], None],
+    backoff_delay_seconds: int | None = None,
+    max_request_retries: int = MAX_REQUEST_RETRIES,
 ) -> None:
     if "failed_tries" not in event:
         event["failed_tries"] = 0
     event["failed_tries"] += 1
-    if event["failed_tries"] > MAX_REQUEST_RETRIES:
+    if event["failed_tries"] > max_request_retries:
         failure_processor(event)
     else:
+        if backoff_delay_seconds:
+            # TODO: This is wrong - the process can't sleep for so long.
+            time.sleep(backoff_delay_seconds)
         queue_json_publish_rollback_unsafe(queue_name, event)
