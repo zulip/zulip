@@ -313,7 +313,7 @@ export function try_rendering_locally_for_same_narrow(
         target_id = opts.then_select_id;
         target_scroll_offset = opts.then_select_offset;
     } else if (filter.has_operator("near")) {
-        target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+        target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
     } else if (filter.equals(current_filter)) {
         // The caller doesn't want to force rerender and the filter is the same.
         // Also, we don't have a specific message id we want to select, so we
@@ -485,10 +485,10 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         // These two narrowing operators specify what message should be
         // selected and should be the center of the narrow.
         if (filter.has_operator("near")) {
-            id_info.target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
         }
         if (filter.has_operator("id")) {
-            id_info.target_id = Number.parseInt(filter.operands("id")[0]!, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
         }
 
         // Narrow with near / id operator. There are two possibilities:
@@ -510,9 +510,9 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 // the stream/topic pair that was requested to some other
                 // location, then we should retarget this narrow operation
                 // to where the message is located now.
-                const narrow_topic = filter.operands("topic")[0]!;
+                const narrow_topic = filter.terms_with_operator("topic")[0]!.operand;
                 const narrow_stream_data = stream_data.get_sub_by_id_string(
-                    filter.operands("channel")[0]!,
+                    filter.terms_with_operator("channel")[0]!.operand,
                 );
                 if (!narrow_stream_data) {
                     // The stream id is invalid or incorrect in the URL.
@@ -1345,9 +1345,7 @@ export function narrow_to_next_pm_string(opts = {}): void {
         return;
     }
 
-    // Hopefully someday we can narrow by user_ids_string instead of
-    // mapping back to emails.
-    const direct_message = people.user_ids_string_to_emails_string(next_direct_message);
+    const direct_message = people.user_ids_string_to_ids_array(next_direct_message);
     assert(direct_message !== undefined);
 
     const filter_expr: NarrowTerm[] = [{operator: "dm", operand: direct_message}];
@@ -1405,8 +1403,6 @@ export function narrow_by_recipient(
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
     assert(message !== undefined);
-    const emails = message.reply_to.split(",");
-    const reply_to = people.sort_emails_by_username(emails);
 
     switch (message.type) {
         case "private":
@@ -1420,7 +1416,16 @@ export function narrow_by_recipient(
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            show([{operator: "dm", operand: reply_to.join(",")}], show_opts);
+
+            show(
+                [
+                    {
+                        operator: "dm",
+                        operand: people.user_ids_string_to_ids_array(message.to_user_ids),
+                    },
+                ],
+                show_opts,
+            );
             break;
 
         case "stream":
@@ -1484,7 +1489,10 @@ export function to_compose_target(): void {
             show([{operator: "is", operand: "dm"}], opts);
             return;
         }
-        show([{operator: "dm", operand: util.normalize_recipients(recipient_string)}], opts);
+        show(
+            [{operator: "dm", operand: people.emails_strings_to_user_ids_array(recipient_string)!}],
+            opts,
+        );
     }
 }
 
@@ -1544,7 +1552,10 @@ export function narrow_to_message_near(message: Message, trigger: string): void 
         case "private":
             show(
                 [
-                    {operator: "dm", operand: message.reply_to},
+                    {
+                        operator: "dm",
+                        operand: people.user_ids_string_to_ids_array(message.to_user_ids),
+                    },
                     {operator: "near", operand: String(message.id)},
                 ],
                 {trigger},

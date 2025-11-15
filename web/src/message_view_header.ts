@@ -102,7 +102,9 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     });
 
     if (filter.has_operator("channel")) {
-        const current_stream = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        const current_stream = stream_data.get_sub_by_id_string(
+            filter.terms_with_operator("channel")[0]!.operand,
+        );
         if (!current_stream) {
             return {
                 ...context,

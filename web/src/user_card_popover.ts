@@ -724,12 +724,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "dm",
-                    operand: email,
+                    operand: [user_id],
                 },
             ],
             {trigger: "user sidebar popover"},
@@ -744,12 +743,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "sender",
-                    operand: email,
+                    operand: user_id,
                 },
             ],
             {trigger: "user sidebar popover"},
