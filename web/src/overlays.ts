@@ -182,6 +182,13 @@ export function initialize(): void {
             return;
         }
 
+        // Check if there's an open select dropdown - if so, don't close the overlay
+        // to allow the browser to handle the select dropdown closing naturally
+        const open_select = document.querySelector("select:focus");
+        if (open_select) {
+            return;
+        }
+
         // if the target is not the div.overlay element, search up the node tree
         // until it is found.
         if ($target.is(".exit, .exit-sign, .overlay-content, .exit span")) {
