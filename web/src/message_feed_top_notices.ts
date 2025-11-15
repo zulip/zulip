@@ -43,6 +43,39 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         return;
     }
 
+    const current_hash = window.location.hash;
+    const is_combined_feed =
+        current_hash === "#" ||
+        current_hash === "" ||
+        current_hash === "#recent" ||
+        !current_hash.includes("narrow");
+
+    const observer = new MutationObserver(() => {
+        const emptyNotice = document.querySelector(".empty_feed_notice");
+        const topNotice = document.querySelector<HTMLElement>(".all-messages-search-caution");
+        const combinedNotice = document.querySelector<HTMLElement>(".combined-feed-notice");
+
+        if (combinedNotice) {
+            if (is_combined_feed) {
+                combinedNotice.hidden = false;
+                combinedNotice.style.display = "flex";
+            } else {
+                combinedNotice.hidden = true;
+                combinedNotice.style.display = "none";
+            }
+        }
+
+        if (emptyNotice?.querySelector(".search-all-channels-button") && topNotice) {
+            topNotice.style.display = "none";
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+
     if (msg_list.data.fetch_status.has_found_oldest()) {
         const filter = narrow_state.filter();
         // Potentially display the notice that lets users know
