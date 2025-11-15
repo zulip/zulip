@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from collections.abc import Iterator
 from io import BytesIO
@@ -20,12 +21,14 @@ from zerver.actions.create_realm import do_create_realm, get_email_address_visib
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
+    UploadFileRequest,
     ZerverFieldsT,
     build_defaultstream,
     build_recipient,
     build_subscription,
     build_usermessages,
     build_zerver_realm,
+    process_uploads,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
@@ -1283,15 +1286,16 @@ class SlackImporter(ZulipTestCase):
         zerver_usermessage: list[dict[str, Any]] = []
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
-
+        realm_id = 1
         (
             zerver_message,
             zerver_usermessage,
             attachment,
             uploads,
+            _upload_file_requests,
             reaction,
         ) = channel_message_to_zerver_message(
-            1,
+            realm_id,
             user_data,
             slack_user_id_to_zulip_user_id,
             slack_recipient_name_to_zulip_recipient_id,
@@ -1369,7 +1373,8 @@ class SlackImporter(ZulipTestCase):
 
         # Test uploads
         self.assert_length(uploads, 1)
-        self.assertEqual(uploads[0]["path"], "https://files.slack.com/apple.png")
+        expected_file_name = "apple.png"
+        self.assertRegex(uploads[0]["path"], rf"{realm_id}/.*/.*/{expected_file_name}")
         self.assert_length(attachment, 1)
         self.assertEqual(attachment[0]["file_name"], "apple.png")
         self.assertEqual(attachment[0]["is_realm_public"], True)
@@ -1544,6 +1549,7 @@ class SlackImporter(ZulipTestCase):
             zerver_usermessage,
             attachment,
             uploads,
+            _upload_file_requests,
             _reaction,
         ) = channel_message_to_zerver_message(
             1,
@@ -1765,6 +1771,7 @@ class SlackImporter(ZulipTestCase):
             zerver_usermessage,
             attachment,
             uploads,
+            _upload_file_requests,
             _reaction,
         ) = channel_message_to_zerver_message(
             1,
@@ -1846,13 +1853,28 @@ by Pieter
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
         attachments: list[dict[str, Any]] = []
         uploads: list[dict[str, Any]] = []
+        upload_file_requests: list[UploadFileRequest] = []
 
         zerver_usermessage = [{"id": 3}, {"id": 5}, {"id": 6}, {"id": 9}]
 
         mock_get_messages_iterator.side_effect = fake_get_messages_iter
         mock_message.side_effect = [
-            [zerver_message[:1], zerver_usermessage[:2], attachments, uploads, reactions[:1]],
-            [zerver_message[1:2], zerver_usermessage[2:5], attachments, uploads, reactions[1:1]],
+            [
+                zerver_message[:1],
+                zerver_usermessage[:2],
+                attachments,
+                uploads,
+                upload_file_requests,
+                reactions[:1],
+            ],
+            [
+                zerver_message[1:2],
+                zerver_usermessage[2:5],
+                attachments,
+                uploads,
+                upload_file_requests,
+                reactions[1:1],
+            ],
         ]
 
         with self.assertLogs(level="INFO"):
@@ -1872,6 +1894,7 @@ by Pieter
                 "domain",
                 output_dir=output_dir,
                 convert_slack_threads=False,
+                processes=1,
                 chunk_size=1,
             )
 
@@ -1892,8 +1915,7 @@ by Pieter
 
         self.assertEqual(test_reactions, reactions)
 
-    @mock.patch("zerver.data_import.slack.requests.get")
-    @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
+    @responses.activate
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
@@ -1905,9 +1927,7 @@ by Pieter
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
-        mock_process_uploads: mock.Mock,
         mock_attachment: mock.Mock,
-        mock_requests_get: mock.Mock,
     ) -> None:
         test_slack_dir = os.path.join(
             settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "slack_fixtures"
@@ -1933,17 +1953,35 @@ by Pieter
             {},
             team_info_fixture["team"],
         ]
-        mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
-        mock_requests_get.return_value.headers = {"Content-Type": "image/png"}
+
+        responses.add(
+            responses.GET,
+            re.compile(r"https://.*\.slack-edge\.com/.*"),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            re.compile(r"https://files\.slack\.com/.*"),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
 
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
             do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
 
+        realm_id = 0
+        uploads_folder = os.path.join(output_dir, "uploads", str(realm_id))
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
         self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
+        self.assertTrue(os.path.exists(uploads_folder))
+        self.assertTrue(os.listdir(uploads_folder) != [])
 
         realm_icons_path = os.path.join(output_dir, "realm_icons")
         realm_icon_records_path = os.path.join(realm_icons_path, "records.json")
@@ -2031,7 +2069,7 @@ by Pieter
 
         zerver_attachment: list[dict[str, Any]] = []
         uploads_list: list[dict[str, Any]] = []
-
+        upload_file_requests: list[UploadFileRequest] = []
         info = process_message_files(
             message=message,
             domain_name=domain_name,
@@ -2039,6 +2077,7 @@ by Pieter
             message_id=message_id,
             slack_user_id=slack_user_id,
             users=users,
+            upload_file_requests=upload_file_requests,
             slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
@@ -2101,7 +2140,6 @@ by Pieter
         self.assertEqual(slack_emoji_name_to_codepoint["dog"], "1f436")
 
     @mock.patch("zerver.data_import.slack.requests.get")
-    @mock.patch("zerver.data_import.slack.process_uploads", return_value=[])
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
@@ -2113,7 +2151,6 @@ by Pieter
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
-        mock_process_uploads: mock.Mock,
         mock_attachment: mock.Mock,
         mock_requests_get: mock.Mock,
     ) -> None:
@@ -2723,3 +2760,25 @@ by Pieter
                     "cancel_import": "true",
                 },
             )
+
+    @responses.activate
+    def test_process_uploads_with_bad_requests(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/DEF.png?token=xoxe-AAA-BBB-CCC-DDD"
+
+        error_message = "The requested file could not be found."
+        responses.add(responses.GET, request_url, status=404, json=error_message)
+        upload_file_request_list = [
+            UploadFileRequest(
+                output_file_path="text.txt",
+                request_url=request_url,
+                params=None,
+                headers=None,
+                kwargs={},
+            )
+        ]
+        with self.assertLogs(level="INFO") as logs:
+            process_uploads(upload_file_request_list, "", 1)
+        self.assertIn(
+            'INFO:root:HTTP error: 404, Response: "The requested file could not be found."',
+            logs.output,
+        )
