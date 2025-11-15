@@ -1188,7 +1188,6 @@ run_test("avatar behavior with non-gravatar default and fallbacks", () => {
     assert.equal(people.small_avatar_url({sender_id: nina.user_id}), `/avatar/${nina.user_id}`);
 
     // Clean up to avoid leaking test-specific page params into others.
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete page_params.realm_default_new_user_avatar;
 });
 

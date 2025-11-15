@@ -40,7 +40,7 @@ from zerver.actions.users import (
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
-from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
