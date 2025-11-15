@@ -13,3 +13,7 @@ import "../../styles/blueslip.css";
 import "../../styles/modal.css";
 import "../../styles/progress_bar.css";
 import "../../styles/pygments.css";
+import {page_params as base_page_params} from "../base_page_params.ts";
+import * as emojisets from "../emojisets.ts";
+
+void emojisets.select(base_page_params.realm_default_emojiset);
