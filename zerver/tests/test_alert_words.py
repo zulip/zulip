@@ -70,6 +70,10 @@ class AlertWordTests(ZulipTestCase):
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list) - {"alert"})
         realm_alert_words = alert_words_in_realm(user.realm)
+        total_rows = AlertWord.objects.filter(user_profile=user).count()
+        active_rows = AlertWord.objects.filter(user_profile=user, deactivated=False).count()
+        self.assertEqual(total_rows, 3)
+        self.assertEqual(active_rows, 2)
         self.assert_length(realm_alert_words[user.id], 2)
 
     def test_remove_word(self) -> None:
@@ -161,6 +165,31 @@ class AlertWordTests(ZulipTestCase):
         )
         response_dict = self.assert_json_success(result)
         self.assertEqual(set(response_dict["alert_words"]), {"two", "three"})
+
+        row = AlertWord.objects.get(user_profile=user, word__iexact="one")
+        self.assertTrue(row.deactivated)
+
+    def test_reactivate_word(self) -> None:
+        user = self.get_user()
+
+        do_add_alert_words(user, ["react"])
+        row = AlertWord.objects.get(user_profile=user, word__iexact="react")
+        self.assertFalse(row.deactivated)
+        self.assertEqual(user_alert_words(user), ["react"])
+
+        do_remove_alert_words(user, ["REACT"])
+        row.refresh_from_db()
+        self.assertTrue(row.deactivated)
+        self.assertEqual(user_alert_words(user), [])
+
+        do_add_alert_words(user, ["React"])
+        row.refresh_from_db()
+        self.assertFalse(row.deactivated)
+        self.assertEqual(user_alert_words(user), ["react"])
+        self.assertEqual(
+            AlertWord.objects.filter(user_profile=user, word__iexact="react").count(),
+            1,
+        )
 
     def message_does_alert(self, user: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so our user is notified"""
