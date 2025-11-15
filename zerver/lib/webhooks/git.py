@@ -17,20 +17,14 @@ PUSH_PUSHED_TEXT_WITH_URL = "[{push_type}]({compare_url}) {number_of_commits} {c
 PUSH_PUSHED_TEXT_WITHOUT_URL = "{push_type} {number_of_commits} {commit_or_commits}"
 
 PUSH_COMMITS_BASE = "{user_name} {pushed_text} to branch {branch_name}."
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = (
-    PUSH_COMMITS_BASE
-    + """ {committers_details}.
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = """{base_message} {committers_details}.
 
 {commits_data}
 """
-)
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = (
-    PUSH_COMMITS_BASE
-    + """
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = """{base_message}
 
 {commits_data}
 """
-)
 PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = (
     "{user_name} [deleted]({compare_url}) the branch {branch_name}."
 )
@@ -133,12 +127,17 @@ def get_push_commits_event_message(
         commit_or_commits=COMMIT_OR_COMMITS.format("s" if len(commits_data) > 1 else ""),
     )
 
+    base_message_template = PUSH_COMMITS_BASE
+    base_message = base_message_template.format(
+        user_name=user_name,
+        pushed_text=pushed_text_message,
+        branch_name=branch_name,
+    )
+
     committers_items: list[tuple[str, int]] = get_all_committers(commits_data)
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS.format(
-            user_name=user_name,
-            pushed_text=pushed_text_message,
-            branch_name=branch_name,
+            base_message=base_message,
             commits_data=get_commits_content(commits_data, is_truncated),
         ).rstrip()
     else:
@@ -151,9 +150,7 @@ def get_push_commits_event_message(
             committers_details = "{} and {} ({})".format(committers_details, *committers_items[-1])
 
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS.format(
-            user_name=user_name,
-            pushed_text=pushed_text_message,
-            branch_name=branch_name,
+            base_message=base_message,
             committers_details=PUSH_COMMITS_MESSAGE_EXTENSION.format(committers_details),
             commits_data=get_commits_content(commits_data, is_truncated),
         ).rstrip()
