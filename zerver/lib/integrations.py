@@ -658,6 +658,11 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
+            WebhookUrlOption(
+                name="include_repository_name",
+                label="Include repository name in the notifications",
+                validator=check_bool,
+            ),
         ],
     ),
     WebhookIntegration(

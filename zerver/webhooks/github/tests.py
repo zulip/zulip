@@ -118,6 +118,17 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = f"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 50 commits to branch changes.\n\n{commit_info * COMMITS_LIMIT}[and 30 more commit(s)]"
         self.check_webhook("push__50_commits", TOPIC_BRANCH, expected_message)
 
+    def test_push_1_commit_with_repository_name(self) -> None:
+        self.url = self.build_webhook_url(include_repository_name="true")
+        expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes of [baxterthehacker/public-repo](https://github.com/baxterthehacker/public-repo).\n\n* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
+        self.check_webhook("push__1_commit", TOPIC_BRANCH, expected_message)
+
+    def test_push_multiple_committers_with_repository_name(self) -> None:
+        self.url = self.build_webhook_url(include_repository_name="true")
+        commits_info = "* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 6 commits to branch changes of [baxterthehacker/public-repo](https://github.com/baxterthehacker/public-repo). Commits by Tomasz (3), Ben (2) and baxterthehacker (1).\n\n{commits_info * 5}* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""
+        self.check_webhook("push__multiple_committers", TOPIC_BRANCH, expected_message)
+
     def test_commit_comment_msg(self) -> None:
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b#commitcomment-11056394) on [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b):\n~~~ quote\nThis is a really good change! :+1:\n~~~"
         self.check_webhook("commit_comment", TOPIC_REPO, expected_message)
