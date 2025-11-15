@@ -177,6 +177,8 @@ if len(sys.argv) > 2 and sys.argv[0].endswith("manage.py") and sys.argv[1] == "p
 else:
     IS_WORKER = False
 
+# This should primarily be used to customize error messages
+RUNNING_IN_DOCKER = os.path.exists("/.dockerenv")
 
 # This is overridden in test_settings.py for the test suites
 PUPPETEER_TESTS = False
