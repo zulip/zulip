@@ -29,7 +29,7 @@ type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "opera
 const channel_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
-    {operator: "dm-including"},
+    {operator: "dm-with"},
     {operator: "dm"},
     {operator: "in"},
     {operator: "channels"},
@@ -43,7 +43,7 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
         {operator: "topic"},
     ],
     dm: [
@@ -58,18 +58,18 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
         {operator: "channel"},
         {operator: "is", operand: "resolved"},
     ],
-    "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    "dm-with": [{operator: "channel"}, {operator: "stream"}],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
     ],
     "-is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
     ],
     "is:dm": [
         {operator: "is", operand: "dm"},
@@ -87,7 +87,7 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
         {operator: "is", operand: "followed"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
     ],
     "is:alerted": [{operator: "is", operand: "alerted"}],
     "is:unread": [{operator: "is", operand: "unread"}],
@@ -219,7 +219,7 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
 }
 
 function get_group_suggestions(
-    group_operator: "dm" | "dm-including",
+    group_operator: "dm" | "dm-with",
 ): (last: NarrowTerm, terms: NarrowTerm[]) => Suggestion[] {
     return (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
         // We only suggest groups once a term with a valid user already exists
@@ -805,7 +805,7 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
             "channel",
             "topic",
             "dm",
-            "dm-including",
+            "dm-with",
             "sender",
             "near",
             "from",
@@ -823,12 +823,20 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
             (!incompatible_patterns[choice] ||
                 !match_criteria(terms, incompatible_patterns[choice])),
     );
+    // Suggest "dm-with" when user starts typing "dm-i"
+    if (last_operand.startsWith("dm-i")) {
+        choices.push("dm-with");
+    }
 
     return choices.map((choice) => {
         // Map results for "dm:" operator for users
         // who have "pm-with" in their muscle memory.
         if (choice === "pm-with") {
             choice = "dm";
+        }
+        // Legacy alias: support dm-including by converting to dm-with
+        if (choice === "dm-including") {
+            choice = "dm-with";
         }
         // Map results for "channel:" operator for users
         // who have "stream" in their muscle memory.
@@ -941,7 +949,7 @@ class Attacher {
                 const new_search_string = suggestion.search_string;
                 if (
                     (new_search_string.startsWith("dm:") ||
-                        new_search_string.startsWith("dm-including:")) &&
+                        new_search_string.startsWith("dm-with:")) &&
                     new_search_string.includes(last_base_string)
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];
@@ -999,7 +1007,7 @@ export function get_search_result(
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
+    const person_suggestion_ops = ["sender", "dm", "dm-with", "from", "pm-with"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1064,7 +1072,7 @@ export function get_search_result(
         // name, and if there's already has a DM pill then the
         // searching user probably is looking to make a group DM.
         get_group_suggestions("dm"),
-        get_group_suggestions("dm-including"),
+        get_group_suggestions("dm-with"),
         get_channels_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,
@@ -1072,7 +1080,7 @@ export function get_search_result(
         get_channel_suggestions,
         get_people("dm"),
         get_people("sender"),
-        get_people("dm-including"),
+        get_people("dm-with"),
         get_people("from"),
         get_topic_suggestions,
         get_has_filter_suggestions,
