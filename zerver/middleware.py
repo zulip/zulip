@@ -41,11 +41,13 @@ from zerver.lib.response import (
     json_response_from_error,
     json_unauthorized,
 )
+from zerver.lib.server_initialization import server_initialized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import INTENTIONALLY_UNDOCUMENTED, ApiParamConfig, typed_endpoint
 from zerver.lib.user_agent import parse_user_agent
 from zerver.models import Realm
 from zerver.models.realms import get_realm
+from zproject.config import get_config
 
 ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
@@ -686,7 +688,18 @@ class DetectProxyMisconfiguration(MiddlewareMixin):
             and not request.is_secure()
             and request.META["REMOTE_ADDR"] not in ("127.0.0.1", "::1")
         ):
-            raise ProxyMisconfigurationError(proxy_state_header)
+            if server_initialized():
+                raise ProxyMisconfigurationError(proxy_state_header)
+
+            context = {
+                "current_proxies": get_config("loadbalancer", "ips"),
+                "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+                "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+                "remote_addr": request.META["REMOTE_ADDR"],
+                "running_in_docker": settings.RUNNING_IN_DOCKER,
+                "all_headers": list(request.headers.items()),
+            }
+            return render(request, "zerver/config_error/proxy.html", status=500, context=context)
 
 
 def validate_scim_bearer_token(request: HttpRequest) -> bool:
