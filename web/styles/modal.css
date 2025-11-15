@@ -21,6 +21,15 @@
 #user-profile-modal .group-list-container,
 #user-profile-modal .stream-list-container {
     height: calc(100% - var(--header-line-height));
+}
+
+.modal__overlay .edit-channel-folder-stream-list-container {
+    height: 30vh;
+}
+
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container,
+.modal__overlay .edit-channel-folder-stream-list-container {
     border-radius: 4px;
     background-color: var(--background-color-user-profile-list-container);
     border: 1px solid var(--color-border-user-profile-list-container);
@@ -29,7 +38,8 @@
     -webkit-overflow-scrolling: touch;
 
     .user-profile-group-row,
-    .user-profile-channel-row {
+    .user-profile-channel-row,
+    .folder-channel-row {
         display: flex;
         justify-content: space-between;
         padding: 0.3125em 0.625em;
@@ -40,7 +50,8 @@
         cursor: pointer;
 
         .user-group-list-item,
-        .user-stream-list-item {
+        .user-stream-list-item,
+        .folder-stream-list-item {
             display: flex;
             overflow: hidden;
         }
@@ -64,7 +75,8 @@
         }
 
         .user-group-name,
-        .user-stream-name {
+        .user-stream-name,
+        .folder-stream-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -73,13 +85,15 @@
     }
 
     .subscription-group-list,
-    .subscription-stream-list {
+    .subscription-stream-list,
+    .edit-channel-folder-stream-list {
         /* We set max-height to remaining height of stream-list-container
             so that we don't clip it. Search field height takes up 2em of total. */
         height: calc(100% - 2em);
 
         .user-group-list,
-        .user-stream-list {
+        .user-stream-list,
+        .folder-stream-list {
             list-style: none;
             margin: 0;
         }
