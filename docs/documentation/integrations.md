@@ -29,11 +29,11 @@ Typically, the documentation process involves the following steps:
   See [Markdown macros](#markdown-macros) for further details.
 
 - Make sure you've added your integration to `zerver/lib/integrations.py` in
-  both the `WEBHOOK_INTEGRATIONS` section (or `INTEGRATIONS` if not a
-  webhook), and the `DOC_SCREENSHOT_CONFIG` sections.
+  the `WEBHOOK_INTEGRATIONS` section (or `INTEGRATIONS` if not a
+  webhook).
 
-  These registries configure your integration to appear on the
-  `/integrations` page, and make it possible to automatically generate the
+  This registry configures your integration to appear on the
+  `/integrations` page, and makes it possible to automatically generate the
   screenshot of an example message, which is important for the screenshots
   to be updated as Zulip's design changes.
 
@@ -59,8 +59,8 @@ Typically, the documentation process involves the following steps:
   Then, add your integration's name to `FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS`
   in `zerver/lib/integrations.py`.
 
-  Otherwise, you should have already added your integration to
-  `WEBHOOK_SCREENSHOT_CONFIG`.
+  Otherwise, you should have already added your integration along with its
+  screenshot config to `WEBHOOK_INTEGRATIONS`.
 
   Generate the screenshot using `tools/screenshots/generate-integration-docs-screenshot`,
   where `integrationname` is the name of the integration:

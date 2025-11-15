@@ -33,6 +33,7 @@ from zerver.data_import.import_util import (
     build_recipient,
     build_stream,
     build_subscription,
+    build_user_profile,
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
@@ -357,24 +358,22 @@ def users_to_zerver_userprofile(
         else:
             bot_type = None
 
-        userprofile = UserProfile(
-            full_name=get_user_full_name(user),
-            is_active=not user.get("deleted", False) and not user["is_mirror_dummy"],
-            is_mirror_dummy=user["is_mirror_dummy"],
-            id=user_id,
-            email=email,
-            delivery_email=email,
+        userprofile_dict = build_user_profile(
             avatar_source=avatar_source,
-            is_bot=is_bot,
-            role=role,
-            bot_type=bot_type,
             date_joined=timestamp,
+            delivery_email=email,
+            email=email,
+            full_name=get_user_full_name(user),
+            id=user_id,
+            is_active=not user.get("deleted", False) and not user["is_mirror_dummy"],
+            role=role,
+            is_mirror_dummy=user["is_mirror_dummy"],
+            realm_id=realm_id,
+            short_name=user["name"],
             timezone=timezone,
-            last_login=timestamp,
+            is_bot=is_bot,
+            bot_type=bot_type,
         )
-        userprofile_dict = model_to_dict(userprofile)
-        # Set realm id separately as the corresponding realm is not yet a Realm model instance
-        userprofile_dict["realm"] = realm_id
 
         zerver_userprofile.append(userprofile_dict)
         slack_user_id_to_zulip_user_id[slack_user_id] = user_id

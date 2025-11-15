@@ -19,6 +19,7 @@ import render_user_stream_list_item from "../templates/user_stream_list_item.hbs
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as buttons from "./buttons.ts";
@@ -220,8 +221,7 @@ function render_user_profile_subscribe_widget(): void {
         $events_container: $("#user-profile-modal"),
         unique_id_type: "number",
     };
-    user_profile_subscribe_widget =
-        user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
+    user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
     user_profile_subscribe_widget.setup();
 }
 
@@ -482,9 +482,6 @@ export function hide_user_profile(): void {
 }
 
 function on_user_profile_hide(): void {
-    user_streams_list_widget = undefined;
-    user_groups_list_widget = undefined;
-    user_profile_subscribe_widget = undefined;
     const base = get_current_hash_category();
     // After closing the user profile, if the hash consists of `#user`
     // it means that it acts as an overlay rather than a modal (when
@@ -602,6 +599,11 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
 }
 
 export function show_user_profile(user: User, default_tab_key = "profile-tab"): void {
+    // Reset these widgets so that they are created again for the opened modal.
+    user_streams_list_widget = undefined;
+    user_groups_list_widget = undefined;
+    user_profile_subscribe_widget = undefined;
+
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
         .flatMap((f) => get_custom_profile_field_data(user, f, field_types) ?? [])
@@ -791,19 +793,24 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const owner_id = bot_user.owner_id;
     assert(owner_id !== null);
+    const is_bot_owner_current_user = owner_id === current_user.user_id;
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
     const html_body = render_edit_bot_form({
         user_id,
         is_active,
+        is_bot_owner_current_user,
         email: bot.email,
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
+        bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
+        api_key: bot_user.api_key,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
+        zuliprc: "zuliprc",
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -1506,6 +1513,8 @@ export function initialize(): void {
         }
     });
 
+    bot_helper.initialize_bot_click_handlers();
+
     new ClipboardJS(".copy-link-to-user-profile", {
         text(trigger) {
             const user_id = $(trigger).closest("#user-profile-modal").attr("data-user-id");
@@ -1529,4 +1538,6 @@ export function initialize(): void {
             show_check_icon: true,
         });
     });
+
+    bot_helper.initialize_clipboard_handlers();
 }

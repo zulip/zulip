@@ -119,11 +119,14 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
             return search_user_pill_data_from_term(term);
         }
-        const search_pill: SearchPill = {
-            type: "generic_operator",
+        const narrow_term: NarrowTerm = {
             operator: term.operator,
             operand: term.operand,
             negated: term.negated,
+        };
+        const search_pill: SearchPill = {
+            type: "generic_operator",
+            ...narrow_term,
         };
 
         if (search_pill.operator === "topic" && search_pill.operand === "") {
@@ -386,7 +389,8 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
 
 export function get_current_search_pill_terms(pill_widget: SearchPillWidget): NarrowTerm[] {
     return pill_widget.items().map((item) => ({
-        ...item,
+        operator: item.operator,
         operand: get_search_operand(item, false),
+        negated: item.negated,
     }));
 }

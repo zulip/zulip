@@ -16,7 +16,8 @@ const settings_account = mock_esm("../src/settings_account", {
     update_account_settings_display() {},
     update_role_text() {},
 });
-const settings_users = mock_esm("../src/settings_users", {
+const settings_bots = mock_esm("../src/settings_bots");
+mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
     update_view_on_reactivate() {},
@@ -279,7 +280,7 @@ run_test("updates", ({override}) => {
     assert.ok(people.is_person_active(isaac.user_id));
 
     let bot_data_updated = false;
-    settings_users.update_bot_data = (user_id) => {
+    settings_bots.update_bot_data = (user_id) => {
         assert.equal(user_id, test_bot.user_id);
         bot_data_updated = true;
     };

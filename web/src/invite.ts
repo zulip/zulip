@@ -650,13 +650,12 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 invite_tips_data.realm_has_user_set_icon &&
                 invite_tips_data.realm_has_custom_profile_fields
             );
-            if (!should_show_invite_tips_banner) {
-                return;
+            if (should_show_invite_tips_banner) {
+                banners.open(
+                    invite_tips_banner(),
+                    $("#invite-user-modal .invite-setup-tips-container"),
+                );
             }
-            banners.open(
-                invite_tips_banner(),
-                $("#invite-user-modal .invite-setup-tips-container"),
-            );
         }
 
         const toggler = components.toggle({

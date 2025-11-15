@@ -53,7 +53,7 @@ export function update_lock_icon_in_sidebar(): void {
     $(".org-settings-list .locked").show();
 
     if (settings_bots.can_create_incoming_webhooks()) {
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
     }
 
     if (settings_data.user_can_add_custom_emoji()) {
@@ -154,7 +154,6 @@ export function build_page(): void {
     });
 
     $(".settings-box").html(rendered_settings_tab);
-    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"));
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
 }
 

@@ -550,6 +550,24 @@ exports.fixtures = {
         },
     },
 
+    realm_bot__update_is_active: {
+        type: "realm_bot",
+        op: "update",
+        bot: {
+            user_id: 4321,
+            is_active: false,
+        },
+    },
+
+    realm_bot__update_owner: {
+        type: "realm_bot",
+        op: "update",
+        bot: {
+            user_id: 4321,
+            owner_id: test_user.user_id,
+        },
+    },
+
     realm_domains__add: {
         type: "realm_domains",
         op: "add",

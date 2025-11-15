@@ -590,11 +590,11 @@
     /* Pill dimensions. */
     /* 1.5714em is 22px (border-inclusive) at 14px/1em */
     --height-input-pill: 1.5714em;
-    /* Reduce user pill image lengths by 2px to
-       preserve an apparent border around
-       them, and a square aspect-ratio, even under
-       `box-sizing: border-box` in the area. */
-    --length-search-input-pill-image: calc(var(--height-input-pill) - 2px);
+    /* Reduce user pill height by 2px to preserve an apparent border
+       around them even under `box-sizing: border-box` in the area. */
+    --length-user-pill-height: calc(var(--height-input-pill) - 2px);
+    /* Fills whole pill height. */
+    --length-search-pill-image: var(--length-user-pill-height);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;

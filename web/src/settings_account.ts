@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import timezones from "../generated/timezones.json";
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
@@ -9,19 +10,20 @@ import render_settings_api_key_modal from "../templates/settings/api_key_modal.h
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import {csrf_token} from "./csrf.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import type {CustomProfileFieldData, PillUpdateField} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -41,6 +43,7 @@ let password_quality:
     | ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean)
     | undefined; // Loaded asynchronously
 let user_avatar_widget_created = false;
+let user_timezone_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
 export function update_email(new_email: string): void {
     const $email_input = $("#email_field_container");
@@ -256,6 +259,47 @@ export function update_privacy_settings_box(property: PrivacySettingName): void 
     settings_components.set_input_element_value($input_elem, user_settings[property]);
 }
 
+export function render_user_timezone_dropdown_widget(): void {
+    const timezone_items = timezones.timezones.map((tz: {name: string; utc_offset: string}) => ({
+        name: `${tz.name} (${tz.utc_offset})`,
+        unique_id: tz.name,
+    }));
+
+    const opts: dropdown_widget.DropdownWidgetOptions = {
+        widget_name: "user_timezone",
+        get_options: () => timezone_items,
+        item_click_callback(event, dropdown, widget) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            const selected = widget.value()!;
+
+            widget.render(selected);
+            settings_ui.do_settings_change(
+                channel.patch,
+                "/json/settings",
+                {timezone: selected},
+                $(".timezone-setting-status").expectOne(),
+                {
+                    error_continuation() {
+                        widget.render(user_settings.timezone);
+                    },
+                },
+            );
+        },
+        $events_container: $("#profile-settings"),
+        default_id: user_settings.timezone,
+        unique_id_type: "string",
+        search_placeholder_text: $t({defaultMessage: "Your time zone"}),
+        text_if_current_value_not_in_options: $t({
+            defaultMessage: "Select a time zone",
+        }),
+    };
+
+    user_timezone_dropdown_widget = new dropdown_widget.DropdownWidget(opts);
+    user_timezone_dropdown_widget.setup();
+}
+
 export function set_up(): void {
     // Add custom profile fields elements to user account settings.
     add_custom_profile_fields_to_settings();
@@ -356,8 +400,8 @@ export function set_up(): void {
                 email: current_user.delivery_email,
                 api_key: $("#api_key_value").text(),
             };
-            const data = settings_bots.generate_zuliprc_content(bot_object);
-            $(this).attr("href", settings_bots.encode_zuliprc_as_url(data));
+            const data = bot_helper.generate_zuliprc_content(bot_object);
+            $(this).attr("href", bot_helper.encode_zuliprc_as_url(data));
         });
 
         $("#api_key_modal [data-micromodal-close]").on("click", () => {
@@ -824,21 +868,7 @@ export function set_up(): void {
         user_avatar_widget_created = true;
     }
 
-    $("#user_timezone").val(user_settings.timezone);
-
-    $<HTMLSelectElement>("select#user_timezone").on("change", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const data = {timezone: this.value};
-
-        settings_ui.do_settings_change(
-            channel.patch,
-            "/json/settings",
-            data,
-            $(".timezone-setting-status").expectOne(),
-        );
-    });
+    render_user_timezone_dropdown_widget();
 
     $<HTMLInputElement>("#automatically_offer_update_time_zone").on("change", function (e) {
         e.preventDefault();

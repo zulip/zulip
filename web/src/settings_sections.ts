@@ -34,7 +34,7 @@ export function get_group(section: string): string {
         case "auth-methods":
             return "org_misc";
 
-        case "bot-list-admin":
+        case "bots":
             return "org_bots";
 
         case "users":
@@ -59,7 +59,6 @@ export function initialize(): void {
         assert(settings_notifications.user_settings_panel !== undefined);
         settings_notifications.set_up(settings_notifications.user_settings_panel);
     });
-    load_func_dict.set("your-bots", settings_bots.set_up);
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
     load_func_dict.set("uploaded-files", attachments_ui.set_up_attachments);
     load_func_dict.set("topics", settings_user_topics.set_up);
@@ -67,7 +66,7 @@ export function initialize(): void {
 
     // org
     load_func_dict.set("org_misc", settings_org.set_up);
-    load_func_dict.set("org_bots", settings_users.set_up_bots);
+    load_func_dict.set("org_bots", settings_bots.set_up_bots);
     load_func_dict.set("org_users", settings_users.set_up_humans);
     load_func_dict.set("emoji-settings", settings_emoji.set_up);
     load_func_dict.set("default-channels-list", settings_streams.set_up);

@@ -35,7 +35,7 @@
   "default_payment_method": null,
   "default_source": null,
   "default_tax_rates": [],
-  "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+  "description": null,
   "discounts": [],
   "due_date": null,
   "effective_at": 1000000000,
@@ -55,7 +55,7 @@
       {
         "amount": 7255,
         "currency": "usd",
-        "description": "Additional license (Feb 5, 2013 - Jan 2, 2014)",
+        "description": "Additional Zulip Cloud Standard license",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
@@ -95,7 +95,7 @@
       {
         "amount": 17442,
         "currency": "usd",
-        "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
+        "description": "Additional Zulip Cloud Standard license",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],

@@ -770,6 +770,9 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]["enable_desktop_notifications"], True)
         self.assertEqual(zerver_userprofile[0]["email"], "jon@gmail.com")
         self.assertEqual(zerver_userprofile[0]["full_name"], "John Doe")
+        self.assertEqual(zerver_userprofile[0]["is_imported_stub"], True)
+        self.assertEqual(zerver_userprofile[0]["short_name"], "john")
+        self.assertEqual(zerver_userprofile[0]["last_login"], None)
 
         self.assertEqual(
             zerver_userprofile[1]["id"], test_slack_user_id_to_zulip_user_id["U0CBK5KAT"]
@@ -778,6 +781,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[1]["is_staff"], False)
         self.assertEqual(zerver_userprofile[1]["is_active"], True)
         self.assertEqual(zerver_userprofile[0]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[1]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[2]["id"], test_slack_user_id_to_zulip_user_id["U09TYF5Sk"]
@@ -788,6 +792,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[2]["email"], "bot1@zulipchat.com")
         self.assertEqual(zerver_userprofile[2]["bot_type"], 1)
         self.assertEqual(zerver_userprofile[2]["avatar_source"], "U")
+        self.assertEqual(zerver_userprofile[2]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[3]["id"], test_slack_user_id_to_zulip_user_id["UHSG7OPQN"]
@@ -800,6 +805,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]["full_name"], "Matt Perry")
         self.assertEqual(zerver_userprofile[3]["is_mirror_dummy"], True)
         self.assertEqual(zerver_userprofile[3]["can_forge_sender"], False)
+        self.assertEqual(zerver_userprofile[3]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[4]["id"], test_slack_user_id_to_zulip_user_id["U8VAHEVUY"]
@@ -808,6 +814,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[4]["is_staff"], False)
         self.assertEqual(zerver_userprofile[4]["is_active"], True)
         self.assertEqual(zerver_userprofile[4]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[4]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[5]["id"], test_slack_user_id_to_zulip_user_id["U8X25EBAB"]
@@ -816,6 +823,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[5]["is_staff"], False)
         self.assertEqual(zerver_userprofile[5]["is_active"], True)
         self.assertEqual(zerver_userprofile[5]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[5]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[6]["id"], test_slack_user_id_to_zulip_user_id["U015J7JSE"]
@@ -824,6 +832,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[6]["is_staff"], False)
         self.assertEqual(zerver_userprofile[6]["is_active"], True)
         self.assertEqual(zerver_userprofile[6]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[6]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[7]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC80"]
@@ -832,6 +841,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[7]["is_staff"], False)
         self.assertEqual(zerver_userprofile[7]["is_active"], True)
         self.assertEqual(zerver_userprofile[7]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[7]["is_imported_stub"], True)
 
         # Importer should raise error when user emails are malformed
         bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"
@@ -2248,6 +2258,19 @@ by Pieter
             },
         )
 
+        # Test that clicking on the confirmation link redirects to status page
+        # which helps user resume the import process if they closed the tab.
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+        result = self.client_post(
+            "/new/import/slack/",
+            {
+                "key": confirmation_key,
+                "slack_access_token": access_token,
+            },
+        )
+        self.assert_in_success_response(["Import progress"], result)
+
         # We don't want to test to whole realm import process here but only that
         # realm import calls are made with correct arguments and different cases
         # are handled well.
@@ -2443,6 +2466,111 @@ by Pieter
         # Check that the importing user was made the realm owner
         importing_user.refresh_from_db()
         self.assertEqual(importing_user.role, UserProfile.ROLE_REALM_OWNER)
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_create_new_user_for_importer(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # Choose import from slack
+        email = "ete-slack-import@zulip.com"
+        string_id = "ete-slack-import"
+        result = self.submit_realm_creation_form(
+            email,
+            realm_subdomain=string_id,
+            realm_name="Slack import create new user",
+            import_from="slack",
+        )
+
+        # Redirect to slack data import form
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+
+        confirmation_key = find_key_by_email(email)
+        assert confirmation_key is not None
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        mock_realm = do_create_realm(
+            string_id=prereg_realm.string_id,
+            name=prereg_realm.name,
+        )
+        mock_do_import_realm.return_value = mock_realm
+
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        import_slack_data(event)
+
+        mock_save_attachment_contents.assert_called_once()
+        mock_do_convert_zipfile.assert_called_once_with(
+            mock.ANY, mock.ANY, event["slack_access_token"]
+        )
+        mock_do_import_realm.assert_called_once_with(mock.ANY, prereg_realm.string_id)
+
+        prereg_realm.refresh_from_db()
+        self.assertTrue(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+
+        confirmation_key = find_key_by_email(prereg_realm.email)
+        result = self.client_get(f"/realm/import/post_process/{confirmation_key}")
+        self.assert_in_success_response(["Select your account"], result)
+
+        # Choose to create new account for the importer.
+        result = self.client_post(
+            f"/realm/import/post_process/{confirmation_key}",
+            {
+                "user_id": "",
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        prereg_realm.refresh_from_db()
+        self.assertIsNotNone(prereg_realm.data_import_metadata["user_activation_url"])
+        self.assertEqual(
+            result["Location"], prereg_realm.data_import_metadata["user_activation_url"]
+        )
+
+        # Test that importer can reach the user registration page from realm creation email
+        # confirmation link.
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+        result = self.client_post(
+            "/new/import/slack/",
+            {
+                "key": confirmation_key,
+                "from_confirmation": "1",
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"], prereg_realm.data_import_metadata["user_activation_url"]
+        )
+
+        # Get key from activation url.
+        key = urlsplit(prereg_realm.data_import_metadata["user_activation_url"]).path.split("/")[-1]
+        self.client_post(
+            "/accounts/register/",
+            {
+                "password": "testpassword",
+                "key": key,
+                "terms": True,
+                "full_name": "Realm importer",
+                "email": prereg_realm.email,
+            },
+            subdomain=prereg_realm.string_id,
+        )
+
+        prereg_realm.refresh_from_db()
+        self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
+        self.assertEqual(prereg_realm.created_realm, mock_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+        self.assertIsNone(prereg_realm.data_import_metadata.get("user_activation_url"))
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")

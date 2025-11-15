@@ -127,6 +127,7 @@ js_rules = RuleList(
                 "web/src/message_events_util.ts",
                 "web/src/message_helper.ts",
                 "web/src/server_message.ts",
+                "web/src/state_data.ts",
                 "web/tests/",
             },
             "exclude_pattern": "emails",
@@ -966,42 +967,42 @@ svg_rules = RuleList(
         {
             "pattern": r"fill=(['\"])(.*?)\1",
             "description": "System icons ignore fill values, so do not include the fill property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
             # This file needs the fill property to define the fill as
             # a linear gradient. We cannot define the gradient in CSS
             # in a clean way and thus we have decided to define the
             # gradient in the SVG itself.
-            "exclude": {"web/shared/icons/user-circle-idle.svg"},
+            "exclude": {"web/icons/user-circle-idle.svg"},
         },
         {
             "pattern": "fill:",
             "description": "System icons ignore fill values, so do not include the fill property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": r"fill-rule=(['\"])(.*?)\1",
             "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": "fill-rule:",
             "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": r"stroke=(['\"])(.*?)\1",
             "description": "System icons ignore stroke values, so do not include the stroke property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": "stroke:",
             "description": "System icons ignore stroke values, so do not include the stroke property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": "class=",
             "description": "System icons ignore class values, so do not include the class property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
     ],
 )

@@ -55,7 +55,7 @@
       {
         "amount": 136000,
         "currency": "usd",
-        "description": "Additional license (Jan 2, 2012 - Jan 2, 2013)",
+        "description": "Additional Zulip Cloud Standard license",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
@@ -142,5 +142,5 @@
   "total_excluding_tax": 136000,
   "total_pretax_credit_amounts": [],
   "total_taxes": [],
-  "webhooks_delivered_at": null
+  "webhooks_delivered_at": 1000000000
 }

@@ -360,9 +360,23 @@ def registration_helper(
             )
 
         elif prereg_realm.data_import_metadata.get("import_from") == "slack":
+            if prereg_realm.data_import_metadata.get("user_activation_url"):
+                assert prereg_realm.data_import_metadata["need_select_realm_owner"] is True
+                return HttpResponseRedirect(
+                    prereg_realm.data_import_metadata["user_activation_url"]
+                )
             if prereg_realm.data_import_metadata.get("need_select_realm_owner"):
                 return HttpResponseRedirect(
                     reverse("realm_import_post_process", kwargs={"confirmation_key": key})
+                )
+            if prereg_realm.data_import_metadata.get("is_import_work_queued"):
+                return TemplateResponse(
+                    request,
+                    "zerver/slack_import.html",
+                    {
+                        "poll_for_import_completion": True,
+                        "key": key,
+                    },
                 )
 
             # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
@@ -833,6 +847,26 @@ def registration_helper(
                     enable_marketing_emails=enable_marketing_emails,
                     email_address_visibility=email_address_visibility,
                 )
+
+                # Mark the preregistration object as used if the user was
+                # created as part of realm import process.
+                if prereg_user is not None and prereg_user.is_realm_importer:
+                    prereg_realms_for_user = PreregistrationRealm.objects.filter(
+                        created_realm=realm,
+                    )
+                    assert prereg_realms_for_user.count() == 1
+                    if prereg_realms_for_user[0].data_import_metadata.get(
+                        "need_select_realm_owner"
+                    ) and prereg_realms_for_user[0].data_import_metadata.get("user_activation_url"):
+                        prereg_realm_for_user = prereg_realms_for_user[0]
+                        prereg_realm_for_user.status = confirmation_settings.STATUS_USED
+                        prereg_realm_for_user.data_import_metadata["need_select_realm_owner"] = (
+                            False
+                        )
+                        prereg_realm_for_user.data_import_metadata["user_activation_url"] = None
+                        prereg_realm_for_user.created_user = user_profile
+                        prereg_realm_for_user.save()
+
             except IntegrityError:
                 # Race condition making the user, leading to a
                 # duplicate email address.  Redirect them to the login
@@ -949,6 +983,7 @@ def prepare_activation_url(
     streams: Iterable[Stream] | None = None,
     user_groups: Iterable[NamedUserGroup] | None = None,
     welcome_message_custom_text: str | None = None,
+    is_realm_importer: bool = False,
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
@@ -970,6 +1005,9 @@ def prepare_activation_url(
 
     if welcome_message_custom_text is not None:
         prereg_user.welcome_message_custom_text = welcome_message_custom_text
+
+    if is_realm_importer:
+        prereg_user.is_realm_importer = True
 
     if invited_as is not None or include_realm_default_subscriptions is not None:
         prereg_user.save()
@@ -1213,6 +1251,22 @@ def realm_import_post_process(
             # ID of the imported user account that the importing user has
             # selected to become their account.
             user_id = form.cleaned_data["user_id"]
+
+            if user_id is None:
+                # Redirect user to user registration form to create a new user
+                # with the already verified email address.
+                activation_url = prepare_activation_url(
+                    preregistration_realm.email,
+                    request.session,
+                    include_realm_default_subscriptions=True,
+                    invited_as=UserProfile.ROLE_REALM_OWNER,
+                    realm=realm,
+                    is_realm_importer=True,
+                )
+                preregistration_realm.data_import_metadata["user_activation_url"] = activation_url
+                preregistration_realm.save(update_fields=["data_import_metadata"])
+
+                return HttpResponseRedirect(activation_url)
 
             # Validate that a normal user account that can login was selected.
             importing_user = get_user_profile_by_id_in_realm(user_id, realm)

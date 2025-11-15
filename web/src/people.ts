@@ -2,13 +2,11 @@ import md5 from "blueimp-md5";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import * as internal_url from "../shared/src/internal_url.ts";
-import * as typeahead from "../shared/src/typeahead.ts";
-
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {$t} from "./i18n.ts";
+import * as internal_url from "./internal_url.ts";
 import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./message_store.ts";
 import * as message_user_ids from "./message_user_ids.ts";
 import * as muted_users from "./muted_users.ts";
@@ -19,6 +17,7 @@ import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, StateData, profile_datum_schema} from "./state_data.ts";
 import {current_user, realm, user_schema} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
+import * as typeahead from "./typeahead.ts";
 import {is_user_in_setting_group} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -2255,8 +2254,14 @@ export async function initialize(
         user_ids_to_fetch.delete(person.user_id);
     }
 
-    // Fetch all the missing users. This code path is temporary: We
-    // plan to move to a model where the web app expects to have an
-    // incomplete users dataset in large organizations.
-    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
+    // This check is a hack to avoid us from showing inaccessible users
+    // as `Unknown users` to the guest user.
+    // TODO: Find a way to identify inaccessible users and remove them
+    // from this fetch.
+    if (settings_data.user_can_access_all_other_users()) {
+        // Fetch all the missing users. This code path is temporary: We
+        // plan to move to a model where the web app expects to have an
+        // incomplete users dataset in large organizations.
+        await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
+    }
 }

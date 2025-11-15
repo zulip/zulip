@@ -466,13 +466,30 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         case "dm-including": {
-            const person_in_dms = people.get_by_email(first_operand);
-            if (!person_in_dms) {
+            const people_in_dms = first_operand
+                .split(",")
+                .map((email) => people.get_by_email(email));
+            if (people_in_dms.length === 1 && !people_in_dms[0]) {
                 return {
                     title: $t({defaultMessage: "This user does not exist!"}),
                 };
             }
-            const person_id_string = person_in_dms.user_id.toString();
+            const valid_people_in_dms: people.User[] = [];
+            for (const user of people_in_dms.values()) {
+                if (user === undefined) {
+                    return {
+                        // We intentionally give the same non-specific
+                        // error message as the single user case,
+                        // since we don't display API email addresses
+                        // or user IDs typically in UI errors, and we
+                        // don't have any other handle as to which
+                        // user this was supposed to be.
+                        title: $t({defaultMessage: "This user does not exist!"}),
+                    };
+                }
+                valid_people_in_dms.push(user);
+            }
+            const person_id_string = valid_people_in_dms.map((user) => user.user_id).join(",");
             const direct_message_error_string =
                 compose_validate.check_dm_permissions_and_get_error_string(person_id_string);
             if (direct_message_error_string) {
@@ -489,7 +506,10 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     ),
                 };
             }
-            if (people.is_my_user_id(person_in_dms.user_id)) {
+            if (
+                valid_people_in_dms.length === 1 &&
+                people.is_my_user_id(valid_people_in_dms[0]!.user_id)
+            ) {
                 return {
                     title: $t({
                         defaultMessage: "You don't have any direct message conversations yet.",
@@ -499,9 +519,9 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             return {
                 title: $t(
                     {
-                        defaultMessage: "You have no direct messages including {person} yet.",
+                        defaultMessage: "You have no direct messages including {people} yet.",
                     },
-                    {person: person_in_dms.full_name},
+                    {people: valid_people_in_dms.map((user) => user.full_name).join(", ")},
                 ),
             };
         }

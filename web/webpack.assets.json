@@ -97,6 +97,14 @@
     ],
     "signup": ["./src/bundles/portico.ts", "jquery-validation", "./src/portico/signup.ts"],
     "register": ["./src/bundles/portico.ts", "jquery-validation", "./src/portico/signup.ts"],
+    "slack-import": [
+        "./src/bundles/portico.ts",
+        "jquery-validation",
+        "./src/portico/signup.ts",
+        "@uppy/core/css/style.min.css",
+        "@uppy/dashboard/css/style.min.css",
+        "./src/portico/slack-import.ts"
+    ],
     "redirect-to-post": [
         "./third/bootstrap/css/bootstrap.portico.css",
         "./src/bundles/common.ts",

@@ -207,21 +207,6 @@ input::placeholder {
         }
     }
 
-    &.sea-green {
-        color: hsl(156deg 41% 40%);
-        border-color: hsl(156deg 28% 70%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(156deg 30% 50%);
-        }
-
-        &:active {
-            border-color: hsl(156deg 30% 40%);
-            color: hsl(156deg 44% 43%);
-        }
-    }
-
     &.button-warning {
         color: hsl(35deg 70% 56%);
         border-color: hsl(35deg 98% 84%);
@@ -1116,8 +1101,14 @@ div.overlay .flex.overlay-content > .overlay-container,
         background-color: var(
             --color-background-disabled-dropdown-widget-button
         );
+        /* TODO: Should this be 0.5 to match the spectator block below? */
         opacity: 0.7;
     }
+}
+
+.dropdown-widget-disabled-for-spectators .dropdown-widget-button {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 #edit_bot_owner_widget .dropdown_widget_value {

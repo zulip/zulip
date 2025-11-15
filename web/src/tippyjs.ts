@@ -92,6 +92,8 @@ tippy.default.setDefaultProps({
     content: get_tooltip_content,
 });
 
+export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
+
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
     appendTo: () => document.body,
@@ -628,7 +630,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".status-emoji-name",
+        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
         appendTo: () => document.body,
@@ -643,6 +645,26 @@ export function initialize(): void {
 
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".typeahead-item .status-emoji-name",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for emojis inside typeahead to
+            separately handle emoji instance.
+        */
+
+        onShow(instance) {
+            typeahead_status_emoji_tooltip = instance;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            typeahead_status_emoji_tooltip = undefined;
         },
     });
 

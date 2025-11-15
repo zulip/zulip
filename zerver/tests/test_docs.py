@@ -254,7 +254,7 @@ class DocPageTest(ZulipTestCase):
 
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", ["Normal users"])
-        self._test("/devtools/", ["Useful development URLs"])
+        self._test("/devtools/", ["Development tools"])
         self._test("/emails/", ["Manually generate most emails"])
 
     def test_dev_help_default_page_endpoints(self) -> None:
