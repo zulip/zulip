@@ -2516,3 +2516,12 @@ body:not(.spectator-view) {
         right: -2px;
     }
 }
+
+.above_compose_banner .banner-content-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.above_compose_banner .action-button {
+    margin: 2px 0;
+}
