@@ -1603,6 +1603,7 @@ export function _add_user(person: User): void {
     track_duplicate_full_name(person.full_name, person.user_id);
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
+
 }
 
 export function add_active_user(person: User, source = "initial_fetch"): void {

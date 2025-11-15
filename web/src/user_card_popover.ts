@@ -209,6 +209,7 @@ type UserCardPopoverData = {
     is_bot: boolean;
     is_me: boolean;
     is_sender_popover: boolean;
+    is_imported_and_not_activated: boolean;
     pm_with_url: string;
     user_circle_class: string;
     private_message_class: string;
@@ -355,6 +356,7 @@ function get_user_card_popover_data(
         is_bot: user.is_bot,
         is_me,
         is_sender_popover,
+        is_imported_and_not_activated: user.is_imported_and_not_activated ?? false,
         pm_with_url: hash_util.pm_with_url(user.user_id.toString()),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
