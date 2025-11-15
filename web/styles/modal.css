@@ -18,6 +18,88 @@
     z-index: 105;
 }
 
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container {
+    height: calc(100% - var(--header-line-height));
+}
+
+.modal__overlay .edit-channel-folder-stream-list-container {
+    height: 30vh;
+}
+
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container,
+.modal__overlay .edit-channel-folder-stream-list-container {
+    border-radius: 4px;
+    background-color: var(--background-color-user-profile-list-container);
+    border: 1px solid var(--color-border-user-profile-list-container);
+    padding: 0.25em 0.25em 0;
+    margin-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
+
+    .user-profile-group-row,
+    .user-profile-channel-row,
+    .folder-channel-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3125em 0.625em;
+        align-items: center;
+        text-decoration: none;
+        border-radius: 4px;
+        color: var(--color-dropdown-item);
+        cursor: pointer;
+
+        .user-group-list-item,
+        .user-stream-list-item,
+        .folder-stream-list-item {
+            display: flex;
+            overflow: hidden;
+        }
+
+        .stream-privacy {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
+
+        &:hover {
+            background-color: var(--color-user-profile-list-item-hover);
+        }
+
+        &:focus-visible {
+            outline: 1px solid var(--color-outline-user-profile-list-item);
+            outline-offset: -2px;
+        }
+
+        .user-group-name,
+        .user-stream-name,
+        .folder-stream-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 2px;
+        }
+    }
+
+    .subscription-group-list,
+    .subscription-stream-list,
+    .edit-channel-folder-stream-list {
+        /* We set max-height to remaining height of stream-list-container
+            so that we don't clip it. Search field height takes up 2em of total. */
+        height: calc(100% - 2em);
+
+        .user-group-list,
+        .user-stream-list,
+        .folder-stream-list {
+            list-style: none;
+            margin: 0;
+        }
+    }
+}
+
 .modal__container {
     display: flex;
     flex-direction: column;
@@ -129,6 +211,12 @@
     /* Set a max-width, less the 1.5em of left and right
        padding specified above. */
     max-width: calc(100% - 3em);
+
+    > .simplebar-wrapper {
+        /* Compensate the 3em reduced in modal_content so it positions
+           itself correctly */
+        max-width: calc(100% + 3em);
+    }
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid var(--color-border-modal-footer);
