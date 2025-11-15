@@ -3,7 +3,7 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {RawLocalMessage} from "./echo.ts";
-import type {NewMessage, ProcessedMessage} from "./message_helper.ts";
+import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.ts";
 import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
 import {topic_link_schema} from "./types.ts";
@@ -399,12 +399,29 @@ export function update_status_emoji_info(
     }
 }
 
+function local_message_to_server_message(message: LocalMessage): Message {
+    if (message.type === "private") {
+        const {queue_id, to, local_id, topic, draft_id, ...server_message} = message;
+        return server_message;
+    }
+    const {queue_id, to, local_id, draft_id, ...server_message} = message;
+    return server_message;
+}
+
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
     const message_data = stored_messages.get(old_id);
     if (message_data !== undefined) {
-        message_data.message.id = new_id;
-        message_data.message.locally_echoed = false;
-        stored_messages.set(new_id, {type: "server_message", message: message_data.message});
+        const message = message_data.message;
+        message.id = new_id;
+        message.locally_echoed = false;
+        if (message_data.type === "local_message") {
+            stored_messages.set(new_id, {
+                type: "server_message",
+                message: local_message_to_server_message(message_data.message),
+            });
+        } else {
+            stored_messages.set(new_id, message_data);
+        }
         stored_messages.delete(old_id);
     }
 }
