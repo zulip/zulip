@@ -604,7 +604,6 @@ test("get_items_for_users", ({override}) => {
     override(user_settings, "user_list_style", 2);
 
     const status_emoji_info = {
-        emoji_alt_code: false,
         emoji_name: "car",
         emoji_code: "1f697",
         reaction_type: "unicode_emoji",
