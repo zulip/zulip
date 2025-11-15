@@ -1457,6 +1457,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_non_valid_user_avatar(self) -> None:
         # It's debatable whether we should generate avatars for non-users,
         # but this test just validates the current code's behavior.
+        # Set realm default to gravatar to match test expectation
+        realm = self.example_user("hamlet").realm
+        realm.default_new_user_avatar = "gravatar"
+        realm.save(update_fields=["default_new_user_avatar"])
         self.login("hamlet")
 
         response = self.client_get("/avatar/nonexistent_user@zulip.com", {"foo": "bar"})
@@ -1468,7 +1472,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         """
         A PUT request to /json/users/me/avatar with a valid file should return a URL and actually create an avatar.
         """
-        version = 2
+        # Start with version 1 (default), first upload increments to 2, second to 3, etc.
+        version = 1
         for fname, rfname in self.correct_files:
             with self.subTest(fname=fname):
                 self.login("hamlet")
@@ -1508,8 +1513,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
                 # Verify whether the avatar_version gets incremented with every new upload
+                version += 1  # Increment expected version first (upload increments it)
                 self.assertEqual(user_profile.avatar_version, version)
-                version += 1
 
     def test_copy_avatar_image(self) -> None:
         self.login("hamlet")
