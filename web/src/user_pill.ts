@@ -185,10 +185,16 @@ export function get_display_value_from_item(item: UserPill): string {
     return item.full_name ?? item.email;
 }
 
-export function generate_pill_html(item: UserPill, show_user_status_emoji = false): string {
+export function generate_pill_html(
+    item: UserPill,
+    options: {
+        show_user_status_emoji?: boolean;
+        disabled?: boolean;
+    } = {},
+): string {
     let status_emoji_info;
     let has_status;
-    if (show_user_status_emoji) {
+    if (options.show_user_status_emoji) {
         has_status = item.status_emoji_info !== undefined;
         if (has_status) {
             status_emoji_info = item.status_emoji_info;
@@ -204,12 +210,19 @@ export function generate_pill_html(item: UserPill, show_user_status_emoji = fals
         has_status,
         status_emoji_info,
         is_bot: item.is_bot,
+
+        // This is the new line that passes the 'disabled' flag
+        disabled: options.disabled,
     });
 }
 
 export function create_pills(
     $pill_container: JQuery,
     pill_config?: InputPillConfig,
+    options: {
+        show_user_status_emoji?: boolean;
+        disabled?: boolean;
+    } = {},
 ): input_pill.InputPillContainer<UserPill> {
     const pills = input_pill.create({
         $container: $pill_container,
@@ -217,7 +230,9 @@ export function create_pills(
         create_item_from_text: create_item_from_user_id,
         get_text_from_item: get_unique_full_name_from_item,
         get_display_value_from_item,
-        generate_pill_html,
+
+        // This line is modified to pass the new options
+        generate_pill_html: (item: UserPill) => generate_pill_html(item, options),
     });
     return pills;
 }

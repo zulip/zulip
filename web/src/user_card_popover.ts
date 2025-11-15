@@ -774,6 +774,17 @@ function register_click_handlers(): void {
         });
     });
 
+    $(document).on("click", ".view-only-pill .pill[data-user-id]", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
+        const user = people.get_by_user_id(user_id);
+        if (!user) {
+            return;
+        }
+
+        toggle_user_card_popover_for_message(this, user, user_id, false);
+    });
+
     $("body").on("click", ".sidebar-popover-reactivate-user", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
         hide_all();
