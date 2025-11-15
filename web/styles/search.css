@@ -287,8 +287,30 @@
             }
         }
 
-        &.focused .user-pill-container {
-            flex-flow: row wrap;
+        &.focused {
+            .user-pill-container {
+                flex-flow: row wrap;
+            }
+
+            /* Only add padding when content wraps to multiple lines */
+            .search-input-and-pills {
+                &:has(> :nth-child(1)) {
+                    /* Default: no extra padding for single line */
+                    padding: 0;
+                }
+
+                /* Detect wrapping by checking if container height exceeds single line */
+                &:is(:has(> :nth-child(2))) {
+                    padding: calc(
+                            (
+                                    var(--search-box-height) -
+                                        var(--height-input-pill)
+                                ) /
+                                2
+                        )
+                        0;
+                }
+            }
         }
 
         .user-pill-container {
