@@ -2374,6 +2374,10 @@ class GetOldMessagesTest(ZulipTestCase):
         The client_gravatar flag determines whether we send avatar_url.
         """
         hamlet = self.example_user("hamlet")
+        # Set realm default to gravatar to match test expectation
+        realm = hamlet.realm
+        realm.default_new_user_avatar = "gravatar"
+        realm.save(update_fields=["default_new_user_avatar"])
         self.login_user(hamlet)
 
         do_change_user_setting(

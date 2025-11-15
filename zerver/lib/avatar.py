@@ -127,8 +127,8 @@ def get_avatar_field(
         if not use_gravatar and settings.DEFAULT_AVATAR_URI is not None:
             # Site admin disabled gravatar and set a custom default - respect it
             pass  # fall through to gravatar URL logic which will return DEFAULT_AVATAR_URI
-        elif realm is not None:
-            default_choice = getattr(realm, "default_new_user_avatar", "gravatar")
+        elif realm is not None and hasattr(realm, "default_new_user_avatar"):
+            default_choice = realm.default_new_user_avatar
             if default_choice == "jdenticon":
                 seed = hashlib.sha256((email or str(user_id)).encode()).hexdigest()
                 size = 128 if medium else 80

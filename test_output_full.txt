@@ -1,0 +1,307 @@
+-- Running tests in serial mode.
+Destroying test database for alias 'default'...
+Using existing clone for alias 'default'...
+Running zerver.tests.test_events.RealmPropertyActionTest.test_change_realm_property
+Found 1 test(s).
+
+---States DO NOT MATCH---
+
+EVENTS:
+
+{
+    "type": "realm",
+    "op": "update",
+    "property": "default_new_user_avatar",
+    "value": "jdenticon",
+    "id": 0
+}
+
+MISMATCHES:
+
+
+key = avatar_url_medium
+{'ava[13 chars]m': 'https://secure.gravatar.com/avatar/6d8cad[51 chars]n=1'} != {'ava[13 chars]m': '/avatar/jdenticon/690a8d04077aa518ca7d084[42 chars]128'}
+- {'avatar_url_medium': 'https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&s=500&version=1'}
++ {'avatar_url_medium': '/avatar/jdenticon/690a8d04077aa518ca7d084bea25bee3f452b99942da222469f0de7059ec94a1/128'} : 
+
+key = avatar_url
+{'avatar_url': 'https://secure.gravatar.com/avatar/6d8cad[45 chars]n=1'} != {'avatar_url': '/avatar/jdenticon/690a8d04077aa518ca7d084[41 chars]/80'}
+- {'avatar_url': 'https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1'}
++ {'avatar_url': '/avatar/jdenticon/690a8d04077aa518ca7d084bea25bee3f452b99942da222469f0de7059ec94a1/80'} : 
+
+key = realm_users
+{'rea[347 chars]icon/ad96897889c010b6bf7f33841e4281730dee63f77[6268 chars] 6}]} != {'rea[347 chars]icon/b54d027418d89692fe092815cbee04ec24ec0f4b3[6019 chars] 6}]}
+- {'realm_users': [{'avatar_url': '/avatar/jdenticon/ad96897889c010b6bf7f33841e4281730dee63f77f691fd9919b2353f3c22c88/80',
++ {'realm_users': [{'avatar_url': '/avatar/jdenticon/b54d027418d89692fe092815cbee04ec24ec0f4b34f7491357bf912ad6cd4afb/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user6@zulip.testserver',
+                    'full_name': 'aaron',
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {},
+                    'role': 400,
+                    'timezone': 'America/Los_Angeles',
+                    'user_id': 6},
+-                  {'avatar_url': '/avatar/jdenticon/b422963291061b399b240fcf5008f2f5dabe2cfbca0317155e0ee0542625d2fd/80',
++                  {'avatar_url': '/avatar/jdenticon/6e28c0ab373df502002a6ea5312773ced037a93254afa0bd4290eb9102e72c3b/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user7@zulip.testserver',
+                    'full_name': 'Zoe',
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {},
+                    'role': 400,
+                    'timezone': 'America/New_York',
+                    'user_id': 7},
+-                  {'avatar_url': '/avatar/jdenticon/e63f4316f83ed640b4e82e12c936ae18d58295ca335b34eff3b7bdbd2a1fda56/80',
++                  {'avatar_url': '/avatar/jdenticon/0f9b9a11dd0d905759e2de4d0a712ff9fc4c9a8ad4321c82449015820cd2bbfb/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user8@zulip.testserver',
+                    'full_name': "Cordelia, Lear's daughter",
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {},
+                    'role': 400,
+                    'timezone': 'Etc/UTC',
+                    'user_id': 8},
+-                  {'avatar_url': '/avatar/jdenticon/a9553a44d4a898db99c483c471ce47c87ef631bd1e887d5686951efb4608c5cd/80',
++                  {'avatar_url': '/avatar/jdenticon/508aaabc0c537e849616738b19f990ace750a7de83b654d765ad9d23781c393e/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user9@zulip.testserver',
+                    'full_name': 'Desdemona',
+                    'is_admin': True,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': True,
+                    'profile_data': {},
+                    'role': 100,
+                    'timezone': 'America/St_Johns',
+                    'user_id': 9},
+                   {'avatar_url': '/avatar/jdenticon/690a8d04077aa518ca7d084bea25bee3f452b99942da222469f0de7059ec94a1/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': 'hamlet@zulip.com',
+                    'email': 'user10@zulip.testserver',
+                    'full_name': 'King Hamlet',
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {'1': {'rendered_value': '<p>+0-11-23-456-7890</p>',
+                                           'value': '+0-11-23-456-7890'},
+                                     '2': {'rendered_value': '<p>I am:</p>\n'
+                                                             '<ul>\n'
+                                                             '<li>The prince of '
+                                                             'Denmark</li>\n'
+                                                             '<li>Nephew to the '
+                                                             'usurping '
+                                                             'Claudius</li>\n'
+                                                             '</ul>',
+                                           'value': 'I am:\n'
+                                                    '* The prince of Denmark\n'
+                                                    '* Nephew to the usurping '
+                                                    'Claudius'},
+                                     '3': {'rendered_value': '<p>Dark '
+                                                             'chocolate</p>',
+                                           'value': 'Dark chocolate'},
+                                     '4': {'value': '0'},
+                                     '5': {'value': '1900-01-01'},
+                                     '6': {'value': 'https://blog.zulig.org'},
+                                     '7': {'value': '[11]'},
+                                     '8': {'value': 'zulipbot'},
+                                     '9': {'value': 'he/him'}},
+                    'role': 400,
+                    'timezone': '',
+                    'user_id': 10},
+-                  {'avatar_url': '/avatar/jdenticon/86e22cccbab8b59acd7068d2fdbb7c28c047fc6780cef2d5754520912fb50ec2/80',
++                  {'avatar_url': '/avatar/jdenticon/ac67156e065d00386cfe787e9647849ba435b015ee9dfeb70ae7d080e5bd45ee/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user11@zulip.testserver',
+                    'full_name': 'Iago',
+                    'is_admin': True,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {'1': {'rendered_value': '<p>+1-234-567-8901</p>',
+                                           'value': '+1-234-567-8901'},
+                                     '2': {'rendered_value': '<p>Betrayer of '
+                                                             'Othello.</p>',
+                                           'value': 'Betrayer of Othello.'},
+                                     '3': {'rendered_value': '<p>Apples</p>',
+                                           'value': 'Apples'},
+                                     '4': {'value': '1'},
+                                     '5': {'value': '2000-01-01'},
+                                     '6': {'value': 'https://zulip.readthedocs.io/en/latest/'},
+                                     '7': {'value': '[10]'},
+                                     '8': {'value': 'zulip'},
+                                     '9': {'value': 'he/him'}},
+                    'role': 200,
+                    'timezone': 'America/New_York',
+                    'user_id': 11},
+-                  {'avatar_url': '/avatar/jdenticon/6b122db658f5784d1e2f5dfc25a0f89b70aed64f2d0057bdc998927e1c3f20d0/80',
++                  {'avatar_url': '/avatar/jdenticon/f04bd04fca47f2011b4727ba008d4fe5d2f90c0214320edcc07ea6b446024e86/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user12@zulip.testserver',
+                    'full_name': 'Othello, the Moor of Venice',
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {},
+                    'role': 400,
+                    'timezone': 'America/Los_Angeles',
+                    'user_id': 12},
+-                  {'avatar_url': '/avatar/jdenticon/e2f8b0fefedd26e2d150b639f0ff218a974cdf5cfaebcd1dac3a886451e42f14/80',
++                  {'avatar_url': '/avatar/jdenticon/1dfdb1fc3e747ddee16e145d6594da2b0058ca9517eb24c7782aa2702b44e9a4/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user13@zulip.testserver',
+                    'full_name': 'Polonius',
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': True,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {},
+                    'role': 600,
+                    'timezone': 'Asia/Shanghai',
+                    'user_id': 13},
+-                  {'avatar_url': '/avatar/jdenticon/a4efc96298039c55d8e0fca75c187711d4da7355ef1549a94fe8ef7dfdcc0bbe/80',
++                  {'avatar_url': '/avatar/jdenticon/01541a85847b9a928a6f4505504f77c668ff5a7877c7f46855a8cacc0f973611/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user14@zulip.testserver',
+                    'full_name': 'Prospero from The Tempest',
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {},
+                    'role': 400,
+                    'timezone': '',
+                    'user_id': 14},
+-                  {'avatar_url': '/avatar/jdenticon/132316998423a29995badd3db1fc33993ab7c16d36ec8e0099822fc92efc1d94/80',
++                  {'avatar_url': '/avatar/jdenticon/dd57a9ed2f8ff5cc2f5490129e271610fd23c2f356a99fd0c1c2ed7359509985/80',
+                    'avatar_version': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': None,
+                    'email': 'user15@zulip.testserver',
+                    'full_name': 'शिव',
+                    'is_admin': False,
+                    'is_bot': False,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'profile_data': {},
+                    'role': 300,
+                    'timezone': 'Asia/Kolkata',
+                    'user_id': 15},
+-                  {'avatar_url': '/avatar/jdenticon/c135317bcca6bb5cc2fe6b5dff7a783bc542f4d6fd5de7cdb8f8ee353a99f04f/80',
++                  {'avatar_url': None,
+                    'avatar_version': 1,
+                    'bot_owner_id': 9,
+                    'bot_type': 1,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': 'default-bot@zulip.com',
+                    'email': 'default-bot@zulip.com',
+                    'full_name': 'Zulip Default Bot',
+                    'is_admin': False,
+                    'is_bot': True,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'role': 400,
+                    'timezone': '',
+                    'user_id': 16},
+-                  {'avatar_url': '/avatar/jdenticon/e7ec2ff5e548e045ca074ae7cdba0aaf29d6d8731650c6580d555fba9085e1a0/80',
++                  {'avatar_url': None,
+                    'avatar_version': 1,
+                    'bot_owner_id': 7,
+                    'bot_type': 2,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': 'webhook-bot@zulip.com',
+                    'email': 'webhook-bot@zulip.com',
+                    'full_name': 'Zulip Webhook Bot',
+                    'is_admin': False,
+                    'is_bot': True,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'role': 400,
+                    'timezone': '',
+                    'user_id': 17},
+-                  {'avatar_url': '/avatar/jdenticon/77d6f3fdd149ddd209e80e339b77a038a127aa394ef0debecdddd8c7f7c46fb6/80',
++                  {'avatar_url': None,
+                    'avatar_version': 1,
+                    'bot_owner_id': 6,
+                    'bot_type': 3,
+                    'date_joined': '2025-11-15T17:16+00:00',
+                    'delivery_email': 'outgoing-webhook@zulip.com',
+                    'email': 'outgoing-webhook@zulip.com',
+                    'full_name': 'Outgoing Webhook',
+                    'is_admin': False,
+                    'is_bot': True,
+                    'is_guest': False,
+                    'is_imported_stub': False,
+                    'is_owner': False,
+                    'role': 400,
+                    'timezone': '',
+                    'user_id': 18}]} : 
+
+                NOTE:
+
+                    This is an advanced test that verifies how
+                    we apply events after fetching data.  If you
+                    do not know how to debug it, you can ask for
+                    help on chat.
+                
+
+======================================================================
+FAIL: test_change_realm_property (zerver.tests.test_events.RealmPropertyActionTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/vedvn/zulip/zerver/tests/test_events.py", line 4702, in test_change_realm_property
+    self.do_set_realm_property_test(prop)
+  File "/home/vedvn/zulip/zerver/tests/test_events.py", line 4453, in do_set_realm_property_test
+    with self.verify_action(
+  File "/usr/lib/python3.10/contextlib.py", line 142, in __exit__
+    next(self.gen)
+  File "/home/vedvn/zulip/zerver/tests/test_events.py", line 504, in verify_action
+    self.match_states(hybrid_state, normal_state, events)
+  File "/home/vedvn/zulip/zerver/tests/test_events.py", line 584, in match_states
+    raise AssertionError("Mismatching states")
+AssertionError: Mismatching states
+
+----------------------------------------------------------------------
+Ran 1 test in 11.885s
+
+FAILED (failures=1)
+Destroying test database for alias 'default'...

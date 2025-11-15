@@ -19806,6 +19806,18 @@ paths:
                           that both `null` and an empty string could represent that no default was
                           set for this realm setting. Clients supporting older server versions
                           should treat either value (`null` or `""`) as no default being set.
+                      realm_default_new_user_avatar:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The default avatar type for new users in this organization.
+
+                          - `"gravatar"` - Use Gravatar
+                          - `"jdenticon"` - Use Jdenticon procedural avatars (default)
+                          - `"colorful_silhouette"` - Use colorful silhouette procedural avatars
+
+                          **Changes**: New in Zulip development version.
                       realm_message_content_delete_limit_seconds:
                         type: integer
                         nullable: true

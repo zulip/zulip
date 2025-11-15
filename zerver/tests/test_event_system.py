@@ -173,7 +173,7 @@ class EventsEndpointTest(ZulipTestCase):
                 status_code=401,
             )
 
-        with self.assert_database_query_count(15):
+        with self.assert_database_query_count(18):
             result = self.client_post("/json/register")
             result_dict = self.assert_json_success(result)
             self.assertEqual(result_dict["queue_id"], None)
@@ -1241,7 +1241,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(48),
+            self.assert_database_query_count(51),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)

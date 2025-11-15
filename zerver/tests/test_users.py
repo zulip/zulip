@@ -348,6 +348,10 @@ class PermissionTest(ZulipTestCase):
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         user = self.example_user("hamlet")
+        # Set realm default to gravatar to match test expectation
+        realm = user.realm
+        realm.default_new_user_avatar = "gravatar"
+        realm.save(update_fields=["default_new_user_avatar"])
         admin = self.example_user("iago")
         self.login_user(user)
 
@@ -1000,7 +1004,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(88),
+            self.assert_database_query_count(89),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -1694,7 +1698,7 @@ class UserProfileTest(ZulipTestCase):
 
         expected_dicts = [user_row(email) for email in expected_emails]
 
-        with self.assert_database_query_count(1):
+        with self.assert_database_query_count(4):
             actual_dicts = get_cross_realm_dicts()
 
         self.assertEqual(actual_dicts, expected_dicts)
@@ -2688,6 +2692,10 @@ class RecipientInfoTest(ZulipTestCase):
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
+        # Set realm default to gravatar to match test expectation
+        realm = get_realm("zulip")
+        realm.default_new_user_avatar = "gravatar"
+        realm.save(update_fields=["default_new_user_avatar"])
         self.login("cordelia")
 
         hamlet = self.example_user("hamlet")

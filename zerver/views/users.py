@@ -406,9 +406,25 @@ def avatar_by_email(
             url = avatar_url(avatar_user_profile, medium=medium)
         assert url is not None
     except UserProfile.DoesNotExist:
-        # If there is no such user, treat it as a new gravatar
+        # If there is no such user, use the realm's default avatar type
         avatar_version = 1
-        url = get_gravatar_url(email, avatar_version, realm.id, medium)
+        from zerver.lib.avatar import get_avatar_field
+
+        url = get_avatar_field(
+            user_id=0,  # Dummy ID since user doesn't exist
+            realm_id=realm.id,
+            email=email,
+            avatar_source=UserProfile.AVATAR_FROM_DEFAULT,
+            avatar_version=avatar_version,
+            medium=medium,
+            client_gravatar=False,
+            realm=realm,
+        )
+        if url is None:
+            # Fallback to gravatar if get_avatar_field returns None
+            from zerver.lib.avatar import get_gravatar_url
+
+            url = get_gravatar_url(email, avatar_version, realm.id, medium)
 
     assert url is not None
     if request.META["QUERY_STRING"]:

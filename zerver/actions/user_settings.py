@@ -132,9 +132,9 @@ def do_change_user_delivery_email(
     send_event_on_commit(user_profile.realm, event, delivery_email_visible_user_ids)
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
-        # If the user is using Gravatar to manage their email address,
-        # their Gravatar just changed, and we need to notify other
-        # clients.
+        # If the user is using the realm's default avatar (which may be
+        # Gravatar, Jdenticon, or colorful silhouette), their avatar URL
+        # just changed, and we need to notify other clients.
         notify_avatar_url_change(user_profile)
 
     if user_profile.email_address_is_realm_public():

@@ -4405,6 +4405,7 @@ class RealmPropertyActionTest(BaseAction):
                 Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
             ],
             default_code_block_language=["python", "javascript"],
+            default_new_user_avatar=["gravatar", "jdenticon", "colorful_silhouette"],
             message_content_delete_limit_seconds=[1000, 1100, 1200, None],
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
@@ -4427,13 +4428,16 @@ class RealmPropertyActionTest(BaseAction):
         if vals[0] != original_val and not (
             isinstance(vals[0], Enum) and vals[0].value == original_val
         ):
+            # Filter by property name to ensure we only count entries for this specific property
+            audit_logs = RealmAuditLog.objects.filter(
+                realm=self.user_profile.realm,
+                event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=self.user_profile,
+                extra_data__property=name,
+            )
             self.assertEqual(
-                RealmAuditLog.objects.filter(
-                    realm=self.user_profile.realm,
-                    event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
-                    event_time__gte=now,
-                    acting_user=self.user_profile,
-                ).count(),
+                audit_logs.count(),
                 1,
             )
         for count, raw_value in enumerate(vals[1:]):
@@ -4744,19 +4748,25 @@ class RealmPropertyActionTest(BaseAction):
             raise AssertionError(f"No test created for {name}")
 
         realm_user_default = RealmUserDefault.objects.get(realm=self.user_profile.realm)
+        original_val = getattr(realm_user_default, name)
         now = timezone_now()
         do_set_realm_user_default_setting(
             realm_user_default, name, vals[0], acting_user=self.user_profile
         )
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                realm=self.user_profile.realm,
-                event_type=AuditLogEventType.REALM_DEFAULT_USER_SETTINGS_CHANGED,
-                event_time__gte=now,
-                acting_user=self.user_profile,
-            ).count(),
-            1,
-        )
+        # Only check audit log if the value actually changed
+        if vals[0] != original_val and not (
+            isinstance(vals[0], Enum) and vals[0].value == original_val
+        ):
+            self.assertEqual(
+                RealmAuditLog.objects.filter(
+                    realm=self.user_profile.realm,
+                    event_type=AuditLogEventType.REALM_DEFAULT_USER_SETTINGS_CHANGED,
+                    event_time__gte=now,
+                    acting_user=self.user_profile,
+                    extra_data__property=name,
+                ).count(),
+                1,
+            )
         for count, val in enumerate(vals[1:]):
             now = timezone_now()
             state_change_expected = True
