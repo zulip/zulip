@@ -185,6 +185,7 @@ class MessageDict:
                 skip_copy=True,
                 can_access_sender=can_access_sender,
                 realm_host=realm.host,
+                realm=realm,
                 is_incoming_1_to_1=obj["recipient_id"] == user_recipient_id,
             )
 
@@ -199,6 +200,7 @@ class MessageDict:
         skip_copy: bool = False,
         can_access_sender: bool,
         realm_host: str,
+        realm: Realm | None = None,
         is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
         """
@@ -238,7 +240,7 @@ class MessageDict:
                 username=f"user{sender_id}", domain=get_fake_email_domain(realm_host)
             ).addr_spec
 
-        MessageDict.set_sender_avatar(obj, client_gravatar, can_access_sender)
+        MessageDict.set_sender_avatar(obj, client_gravatar, can_access_sender, realm)
         if apply_markdown:
             obj["content_type"] = "text/html"
             obj["content"] = obj["rendered_content"]
@@ -573,7 +575,10 @@ class MessageDict:
 
     @staticmethod
     def set_sender_avatar(
-        obj: dict[str, Any], client_gravatar: bool, can_access_sender: bool = True
+        obj: dict[str, Any],
+        client_gravatar: bool,
+        can_access_sender: bool = True,
+        realm: Realm | None = None,
     ) -> None:
         if not can_access_sender:
             obj["avatar_url"] = get_avatar_for_inaccessible_user()
@@ -593,4 +598,5 @@ class MessageDict:
             avatar_version=sender_avatar_version,
             medium=False,
             client_gravatar=client_gravatar,
+            realm=realm,
         )

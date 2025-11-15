@@ -32,6 +32,21 @@ import * as util from "./util.ts";
     API documentation) without a ton of copying.
 */
 
+export const realm_default_new_user_avatar_values = {
+    gravatar: {
+        text: $t({defaultMessage: "Gravatar"}),
+        code: "gravatar",
+    },
+    jdenticon: {
+        text: $t({defaultMessage: "Jdenticon"}),
+        code: "jdenticon",
+    },
+    colorful_silhouette: {
+        text: $t({defaultMessage: "Colorful silhouette"}),
+        code: "colorful_silhouette",
+    },
+};
+
 export const demote_inactive_streams_values = {
     automatic: {
         code: 1,

@@ -17,7 +17,7 @@ from zerver.actions.saved_snippets import do_get_saved_snippets
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.channel_folders import (
     get_channel_folders_for_spectators,
@@ -1502,6 +1502,128 @@ def apply_event(
                     event["value"] != MessageEditHistoryVisibilityPolicyEnum.none.name
                 )
 
+            # When the realm default avatar choice changes, we must recompute
+            # avatar URLs for users whose avatars are derived from the realm default.
+            if field == "realm_default_new_user_avatar":
+                # Recompute current user's avatar URLs (always sent with client_gravatar=False).
+                if "avatar_version" in state:
+                    state["avatar_url"] = avatar_url(
+                        user_profile,
+                        medium=False,
+                        client_gravatar=False,
+                    )
+                    state["avatar_url_medium"] = avatar_url(
+                        user_profile,
+                        medium=True,
+                        client_gravatar=False,
+                    )
+
+                # For other users, we need to update avatar URLs for users with default avatars.
+                # We never add missing avatar_url fields.
+                if "raw_users" in state:
+                    # Fetch avatar_source for users to avoid clobbering uploaded avatars.
+                    from zerver.models import UserProfile as UPModel
+
+                    user_ids = [
+                        p["user_id"] for p in state["raw_users"].values() if "avatar_url" in p
+                    ]
+                    if user_ids:
+                        avatar_sources = dict(
+                            UPModel.objects.filter(id__in=user_ids).values_list(
+                                "id", "avatar_source"
+                            )
+                        )
+                        for p in state["raw_users"].values():
+                            if "avatar_url" not in p:
+                                continue
+                            if avatar_sources.get(p["user_id"]) != UserProfile.AVATAR_FROM_DEFAULT:
+                                continue
+                            try:
+                                email = p.get("delivery_email") or p.get("email") or ""
+                                p["avatar_url"] = get_avatar_field(
+                                    user_id=p["user_id"],
+                                    realm_id=user_profile.realm_id,
+                                    email=email,
+                                    avatar_source=UserProfile.AVATAR_FROM_DEFAULT,
+                                    avatar_version=p.get("avatar_version", 1),
+                                    medium=False,
+                                    client_gravatar=False,
+                                    realm=user_profile.realm,
+                                )
+                                if "avatar_url_medium" in p:
+                                    p["avatar_url_medium"] = get_avatar_field(
+                                        user_id=p["user_id"],
+                                        realm_id=user_profile.realm_id,
+                                        email=email,
+                                        avatar_source=UserProfile.AVATAR_FROM_DEFAULT,
+                                        avatar_version=p.get("avatar_version", 1),
+                                        medium=True,
+                                        client_gravatar=False,
+                                        realm=user_profile.realm,
+                                    )
+                            except Exception:  # nocoverage
+                                logging.warning(
+                                    "Failed to recompute avatar for user %s after realm_default_new_user_avatar change",
+                                    p.get("user_id"),
+                                )
+                elif "realm_users" in state:
+                    # When the realm default avatar changes, we need to update all users' avatar URLs
+                    # that are derived from the realm default. We compute the URLs directly to avoid
+                    # expensive refetch queries.
+                    from zerver.models import UserProfile as UPModel
+
+                    user_ids = [p["user_id"] for p in state["realm_users"] if "avatar_url" in p]
+                    if user_ids:
+                        # Fetch avatar_source and email for users to avoid clobbering uploaded avatars.
+                        user_data = {
+                            user_id: (avatar_source, delivery_email, email, avatar_version)
+                            for user_id, avatar_source, delivery_email, email, avatar_version in UPModel.objects.filter(
+                                id__in=user_ids
+                            ).values_list(
+                                "id", "avatar_source", "delivery_email", "email", "avatar_version"
+                            )
+                        }
+                        # user_data maps user_id -> (avatar_source, delivery_email, email, avatar_version)
+                        for p in state["realm_users"]:
+                            if "avatar_url" not in p:
+                                continue
+                            user_id = p["user_id"]
+                            if user_id not in user_data:
+                                continue
+                            avatar_source, delivery_email, email, avatar_version = user_data[
+                                user_id
+                            ]
+                            if avatar_source != UserProfile.AVATAR_FROM_DEFAULT:
+                                continue
+                            try:
+                                email_for_avatar = delivery_email or email or ""
+                                p["avatar_url"] = get_avatar_field(
+                                    user_id=user_id,
+                                    realm_id=user_profile.realm_id,
+                                    email=email_for_avatar,
+                                    avatar_source=UserProfile.AVATAR_FROM_DEFAULT,
+                                    avatar_version=avatar_version,
+                                    medium=False,
+                                    client_gravatar=False,
+                                    realm=user_profile.realm,
+                                )
+                                if "avatar_url_medium" in p:
+                                    p["avatar_url_medium"] = get_avatar_field(
+                                        user_id=user_id,
+                                        realm_id=user_profile.realm_id,
+                                        email=email_for_avatar,
+                                        avatar_source=UserProfile.AVATAR_FROM_DEFAULT,
+                                        avatar_version=avatar_version,
+                                        medium=True,
+                                        client_gravatar=False,
+                                        realm=user_profile.realm,
+                                    )
+                            except Exception:  # nocoverage
+                                logging.warning(
+                                    "Failed to recompute avatar for user %s after realm_default_new_user_avatar change",
+                                    user_id,
+                                )
+
         elif event["op"] == "update_dict":
             system_groups_name_dict: dict[int, str] | None = None
             for key, value in event["data"].items():
@@ -1660,7 +1782,8 @@ def apply_event(
                     )
                     sub[subscriber_key].remove(user_profile.id)
 
-            state["unsubscribed"] += removed_subs
+            # Use list.extend to maintain list type and satisfy type-checkers.
+            state["unsubscribed"].extend(removed_subs)
 
             # Now filter out the removed subscriptions from subscriptions.
             state["subscriptions"] = [s for s in state["subscriptions"] if not was_removed(s)]
@@ -1676,8 +1799,7 @@ def apply_event(
             # be defensible, but this is less code.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
-                user_ids = set(event["user_ids"])
-
+                user_ids_set = set(event["user_ids"])
                 for sub_dict in [
                     state["subscriptions"],
                     state["unsubscribed"],
@@ -1688,13 +1810,14 @@ def apply_event(
                             subscriber_key = (
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
-                            subscribers = set(sub[subscriber_key]) | user_ids
+                            subscribers = set(sub[subscriber_key])
+                            subscribers.update(user_ids_set)
                             sub[subscriber_key] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             # Note: We don't update subscriber_count here, as with peer_add.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
-                user_ids = set(event["user_ids"])
+                user_ids_set = set(event["user_ids"])
 
                 for sub_dict in [
                     state["subscriptions"],
@@ -1706,7 +1829,8 @@ def apply_event(
                             subscriber_key = (
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
-                            subscribers = set(sub[subscriber_key]) - user_ids
+                            subscribers = set(sub[subscriber_key])
+                            subscribers.difference_update(user_ids_set)
                             sub[subscriber_key] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))

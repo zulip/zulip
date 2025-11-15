@@ -5,7 +5,7 @@
 * [Hello world walkthrough](/api/incoming-webhooks-walkthrough)
 * [Non-webhook integrations](/api/non-webhook-integrations)
 
-## Interactive bots
+## Interactive bots (beta)
 
 * [Writing bots](/api/writing-bots)
 * [Interactive bots API](/api/interactive-bots-api)

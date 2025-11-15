@@ -107,6 +107,10 @@ class MessageDictTest(ZulipTestCase):
 
         def test_message_id() -> int:
             hamlet = self.example_user("hamlet")
+            # Set realm default to gravatar to match test expectation
+            realm = hamlet.realm
+            realm.default_new_user_avatar = "gravatar"
+            realm.save(update_fields=["default_new_user_avatar"])
             self.login_user(hamlet)
             msg_id = self.send_stream_message(
                 hamlet,

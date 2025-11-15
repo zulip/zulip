@@ -168,7 +168,7 @@ def create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str = UserProfile.AVATAR_FROM_DEFAULT,
     is_mirror_dummy: bool = False,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
@@ -238,6 +238,18 @@ def create_user(
     else:
         # This will be executed only for bots.
         user_profile.save()
+
+    # Ensure avatar_source matches realm-level default after copying settings,
+    # but only if the avatar_source was not explicitly set to a specific value (like AVATAR_FROM_USER).
+    # Check the actual user_profile.avatar_source since copy_default_settings may have changed it.
+    if user_profile.avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
+        if realm.default_new_user_avatar in ["jdenticon", "colorful_silhouette"]:
+            user_profile.avatar_source = UserProfile.AVATAR_FROM_DEFAULT
+        elif realm.default_new_user_avatar == "gravatar":
+            user_profile.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+        else:
+            user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+        user_profile.save(update_fields=["avatar_source"])
 
     if bot_type is None and enable_marketing_emails is not None:
         user_profile.enable_marketing_emails = enable_marketing_emails

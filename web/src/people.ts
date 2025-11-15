@@ -935,11 +935,30 @@ export function small_avatar_url_for_person(person: User | CurrentUser): string 
         return person.avatar_url;
     }
 
-    if (person.avatar_url === null) {
-        person.avatar_url = gravatar_url_for_email(person.email);
-        return person.avatar_url;
+    // Distinguish between "unknown" (undefined) and "no uploaded avatar" (null).
+    if (person.avatar_url === undefined) {
+        // Always use the server endpoint for avatar resolution to respect
+        // realm-level procedural avatar settings (jdenticon/silhouette).
+        // Don't compute gravatar URLs on the client side.
+        return `/avatar/${person.user_id}`;
     }
 
+    if (person.avatar_url === null) {
+        const use_gravatar =
+            page_params.realm_default_new_user_avatar === undefined ||
+            page_params.realm_default_new_user_avatar === "gravatar";
+
+        if (use_gravatar) {
+            const url = gravatar_url_for_email(person.email);
+            // Match legacy behavior and cache the gravatar URL on the person object.
+            person.avatar_url = url;
+            return url;
+        }
+
+        return `/avatar/${person.user_id}`;
+    }
+
+    // Fallback; in practice we should have returned above.
     return `/avatar/${person.user_id}`;
 }
 
@@ -948,11 +967,22 @@ export function medium_avatar_url_for_person(person: User): string {
      * medium avatar URL included in person objects. So only have the
      * gravatar and server endpoints here. */
 
+    // If we explicitly have no uploaded avatar, decide between gravatar and
+    // server-side procedural avatar behavior based on the realm default.
     if (person.avatar_url === null) {
-        person.avatar_url = gravatar_url_for_email(person.email);
+        const use_gravatar =
+            page_params.realm_default_new_user_avatar === undefined ||
+            page_params.realm_default_new_user_avatar === "gravatar";
+
+        if (use_gravatar) {
+            // Match legacy behavior and cache the gravatar URL on the person object.
+            person.avatar_url = gravatar_url_for_email(person.email);
+        }
+        // Otherwise, leave avatar_url as null so we fall through to the
+        // server endpoint below.
     }
 
-    if (person.avatar_url !== undefined) {
+    if (person.avatar_url !== undefined && person.avatar_url !== null) {
         const url = new URL(person.avatar_url, window.location.origin);
         if (url.origin === "https://secure.gravatar.com") {
             url.search += (url.search ? "&" : "") + "s=500";
@@ -1015,26 +1045,35 @@ export function small_avatar_url(message: Message): string {
         return message.avatar_url;
     }
 
-    if (person && person.avatar_url === undefined) {
-        // If we don't have an avatar_url at all, we use `GET
-        // /avatar/{user_id}` endpoint to obtain avatar url.  This is
-        // required to take advantage of the user_avatar_url_field_optional
-        // optimization, which saves a huge amount of network traffic on
-        // servers with 10,000s of user accounts.
+    if (person) {
+        // If we don't have an avatar_url at all, we use `GET /avatar/{user_id}`
+        // endpoint to obtain avatar url. This is required to take advantage of
+        // the user_avatar_url_field_optional optimization, which saves a huge
+        // amount of network traffic on servers with 10,000s of user accounts.
+        if (person.avatar_url === undefined) {
+            // Always use the server endpoint to respect realm-level procedural avatars.
+            return `/avatar/${person.user_id}`;
+        }
+
+        if (person.avatar_url === null) {
+            const use_gravatar =
+                page_params.realm_default_new_user_avatar === undefined ||
+                page_params.realm_default_new_user_avatar === "gravatar";
+
+            if (use_gravatar) {
+                return gravatar_url_for_email(person.email);
+            }
+            return `/avatar/${person.user_id}`;
+        }
+
+        // If we get here with a person object, we should have handled
+        // avatar_url above; fall back to the server endpoint.
         return `/avatar/${person.user_id}`;
     }
 
-    // For computing the user's email, we first trust the person
-    // object since that is updated via our real-time sync system, but
-    // if unavailable, we use the sender email.
-    let email;
-    if (person) {
-        email = person.email;
-    } else {
-        email = message.sender_email;
-    }
-
-    return gravatar_url_for_email(email);
+    // Fallback only when we have no person object and no sender_id.
+    // This should be rare (e.g., tutorial messages).
+    return gravatar_url_for_email(message.sender_email);
 }
 
 export function is_valid_user_id_for_compose(user_id: number): boolean {
