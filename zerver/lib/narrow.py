@@ -582,7 +582,6 @@ class NarrowBuilder:
             self_recipient_id = self.user_profile.recipient_id
             cond = and_(
                 column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-                column("realm_id", Integer) == self.realm.id,
                 or_(
                     and_(
                         column("sender_id", Integer) == other_participant.id,
@@ -599,7 +598,6 @@ class NarrowBuilder:
         # Direct message with self
         cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-            column("realm_id", Integer) == self.realm.id,
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
         )
@@ -659,7 +657,6 @@ class NarrowBuilder:
         # for direct messages with another person.
         cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-            column("realm_id", Integer) == self.realm.id,
             or_(
                 and_(
                     column("sender_id", Integer) == narrow_user_profile.id,
@@ -696,7 +693,6 @@ class NarrowBuilder:
         recipient_ids = self._get_direct_message_group_recipients(narrow_profile)
         cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
-            column("realm_id", Integer) == self.realm.id,
             column("recipient_id", Integer).in_(recipient_ids),
         )
         return query.where(maybe_negate(cond))
@@ -1005,10 +1001,6 @@ def get_base_query_for_search(
 
     query = (
         select(column("message_id", Integer))
-        # We don't limit by realm_id despite the join to
-        # zerver_messages, since the user_profile_id limit in
-        # usermessage is more selective, and the query planner
-        # can't know about that cross-table correlation.
         .where(column("user_profile_id", Integer) == literal(user_profile.id))
         .select_from(table("zerver_usermessage"))
         .join(
@@ -1016,18 +1008,14 @@ def get_base_query_for_search(
             literal_column("zerver_usermessage.message_id", Integer)
             == literal_column("zerver_message.id", Integer),
         )
-        .join(
-            table("zerver_recipient"),
-            literal_column("zerver_message.recipient_id", Integer)
-            == literal_column("zerver_recipient.id", Integer),
-        )
+        .where(literal_column("zerver_message.realm_id", Integer) == literal(realm_id))
         # Mirror the restrictions in bulk_access_stream_messages_query, in order
         # to prevent leftover UserMessage rows from granting access to messages
         # the user was previously allowed to access but no longer is.
         .where(
             or_(
                 # Include direct messages.
-                literal_column("zerver_recipient.type", Integer) != Recipient.STREAM,
+                not_(literal_column("zerver_message.is_channel_message", Boolean)),
                 # Include messages where the recipient is a public stream and
                 # the user can access public streams, or the user is a non-guest
                 # belonging to a group granting access to the stream.
@@ -1035,7 +1023,7 @@ def get_base_query_for_search(
                 .select_from(table("zerver_stream"))
                 .where(
                     literal_column("zerver_stream.recipient_id", Integer)
-                    == literal_column("zerver_recipient.id", Integer)
+                    == literal_column("zerver_message.recipient_id", Integer)
                 )
                 .where(
                     or_(
@@ -1060,7 +1048,7 @@ def get_base_query_for_search(
                     literal_column("zerver_subscription.user_profile_id", Integer)
                     == user_profile.id,
                     literal_column("zerver_subscription.recipient_id", Integer)
-                    == literal_column("zerver_recipient.id", Integer),
+                    == literal_column("zerver_message.recipient_id", Integer),
                     literal_column("zerver_subscription.active", Boolean),
                 )
                 .exists(),
