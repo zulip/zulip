@@ -85,6 +85,10 @@ class CustomProfileField(models.Model):
     # Whether regular users can edit this field on their own account.
     editable_by_user = models.BooleanField(default=True, db_default=True)
 
+    # Whether this field should be used in @-mention typeahead suggestions.
+    # Only applicable for EXTERNAL_ACCOUNT and SHORT_TEXT field types.
+    use_in_mentions = models.BooleanField(default=False, db_default=False)
+
     SHORT_TEXT = 1
     LONG_TEXT = 2
     SELECT = 3
@@ -174,9 +178,12 @@ class CustomProfileField(models.Model):
             "order": self.order,
             "required": self.required,
             "editable_by_user": self.editable_by_user,
+            "use_in_mentions": self.use_in_mentions,
         }
         if self.display_in_profile_summary:
             data_as_dict["display_in_profile_summary"] = True
+        if self.use_in_mentions:
+            data_as_dict["use_in_mentions"] = True
 
         return data_as_dict
 

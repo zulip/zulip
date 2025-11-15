@@ -28,8 +28,12 @@ def try_add_realm_default_custom_profile_field(
     display_in_profile_summary: bool = False,
     required: bool = False,
     editable_by_user: bool = True,
+    use_in_mentions: bool | None = None,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
+    # Default to True for external account fields
+    if use_in_mentions is None:
+        use_in_mentions = True
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=str(field_data.name),
@@ -39,6 +43,7 @@ def try_add_realm_default_custom_profile_field(
         display_in_profile_summary=display_in_profile_summary,
         required=required,
         editable_by_user=editable_by_user,
+        use_in_mentions=use_in_mentions,
     )
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
@@ -57,7 +62,16 @@ def try_add_realm_custom_profile_field(
     display_in_profile_summary: bool = False,
     required: bool = False,
     editable_by_user: bool = True,
+    use_in_mentions: bool | None = None,
 ) -> CustomProfileField:
+    # Set default based on field type: True for EXTERNAL_ACCOUNT, False for SHORT_TEXT
+    if use_in_mentions is None:
+        if field_type == CustomProfileField.EXTERNAL_ACCOUNT:
+            use_in_mentions = True
+        elif field_type == CustomProfileField.SHORT_TEXT:
+            use_in_mentions = False
+        else:
+            use_in_mentions = False
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=name,
@@ -65,6 +79,7 @@ def try_add_realm_custom_profile_field(
         display_in_profile_summary=display_in_profile_summary,
         required=required,
         editable_by_user=editable_by_user,
+        use_in_mentions=use_in_mentions,
     )
     custom_profile_field.hint = hint
     if custom_profile_field.field_type in (
@@ -115,6 +130,7 @@ def try_update_realm_custom_profile_field(
     display_in_profile_summary: bool | None = None,
     required: bool | None = None,
     editable_by_user: bool | None = None,
+    use_in_mentions: bool | None = None,
 ) -> None:
     if name is not None:
         field.name = name
@@ -126,6 +142,8 @@ def try_update_realm_custom_profile_field(
         field.editable_by_user = editable_by_user
     if display_in_profile_summary is not None:
         field.display_in_profile_summary = display_in_profile_summary
+    if use_in_mentions is not None:
+        field.use_in_mentions = use_in_mentions
 
     if field.field_type in (
         CustomProfileField.SELECT,

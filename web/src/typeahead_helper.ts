@@ -1062,6 +1062,25 @@ export function query_matches_person(
             return true;
         }
 
+        // Check custom profile fields that are enabled for use_in_mentions
+        for (const field of realm.custom_profile_fields) {
+            if (field.use_in_mentions) {
+                if (field.type == 1 || field.type == 7) {
+                    const field_value =
+                        people.get_custom_profile_data(person.user.user_id, field.id)?.value || "";
+                    if (
+                        typeahead.query_matches_string_in_order_assume_canonicalized(
+                            query,
+                            field_value.toLowerCase(),
+                            " ",
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+            }
+        }
+
         if (person.user.delivery_email) {
             return typeahead.query_matches_string_in_order(
                 query,
