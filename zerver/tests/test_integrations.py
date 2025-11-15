@@ -1,8 +1,21 @@
 import os
 
 from zerver.lib.integrations import (
+    BOT_INTEGRATIONS,
+    EMBEDDED_INTEGRATIONS,
+    HUBOT_INTEGRATIONS,
     INTEGRATIONS,
     NO_SCREENSHOT_CONFIG,
+    PLUGIN_INTEGRATIONS,
+    PYTHON_API_INTEGRATIONS,
+    STANDALONE_REPO_INTEGRATIONS,
+    VIDEO_CALL_INTEGRATIONS,
+    WEBHOOK_INTEGRATIONS,
+    ZAPIER_INTEGRATIONS,
+    BotIntegration,
+    HubotIntegration,
+    Integration,
+    PythonAPIIntegration,
     WebhookIntegration,
     WebhookScreenshotConfig,
     get_fixture_path,
@@ -106,3 +119,35 @@ class IntegrationsTestCase(ZulipTestCase):
                     else error_message
                 )
         self.assertEqual(error_message, "", tip)
+
+    def test_sorting(self) -> None:
+        integration_lists: dict[
+            str,
+            list[Integration]
+            | list[WebhookIntegration]
+            | list[BotIntegration]
+            | list[HubotIntegration]
+            | list[PythonAPIIntegration],
+        ] = {
+            "WEBHOOK_INTEGRATIONS": WEBHOOK_INTEGRATIONS,
+            "PYTHON_API_INTEGRATIONS": PYTHON_API_INTEGRATIONS,
+            "BOT_INTEGRATIONS": BOT_INTEGRATIONS,
+            "HUBOT_INTEGRATIONS": HUBOT_INTEGRATIONS,
+            "VIDEO_CALL_INTEGRATIONS": VIDEO_CALL_INTEGRATIONS,
+            "EMBEDDED_INTEGRATIONS": EMBEDDED_INTEGRATIONS,
+            "ZAPIER_INTEGRATIONS": ZAPIER_INTEGRATIONS,
+            "PLUGIN_INTEGRATIONS": PLUGIN_INTEGRATIONS,
+            "STANDALONE_REPO_INTEGRATIONS": STANDALONE_REPO_INTEGRATIONS,
+        }
+
+        errors: list[str] = []
+
+        for list_name, integration_list in integration_lists.items():
+            names = [integration.name for integration in integration_list]
+            errors.extend(
+                f"{list_name} is not sorted: '{names[i]}' > '{names[i + 1]}'"
+                for i in range(len(names) - 1)
+                if names[i] > names[i + 1]
+            )
+
+        assert not errors, "\n".join(errors)
