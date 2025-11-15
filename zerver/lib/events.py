@@ -1798,8 +1798,8 @@ def apply_event(
             # already in our count or not. The opposite decision would
             # be defensible, but this is less code.
             if include_subscribers:
-                stream_ids = set(event["stream_ids"])  
-                user_ids_set = set(event["user_ids"]) 
+                stream_ids = set(event["stream_ids"])
+                user_ids_set = set(event["user_ids"])
                 for sub_dict in [
                     state["subscriptions"],
                     state["unsubscribed"],
@@ -1816,8 +1816,8 @@ def apply_event(
         elif event["op"] == "peer_remove":
             # Note: We don't update subscriber_count here, as with peer_add.
             if include_subscribers:
-                stream_ids = set(event["stream_ids"])  
-                user_ids_set = set(event["user_ids"])  
+                stream_ids = set(event["stream_ids"])
+                user_ids_set = set(event["user_ids"])
 
                 for sub_dict in [
                     state["subscriptions"],
