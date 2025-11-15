@@ -1524,10 +1524,14 @@ def apply_event(
                     # Fetch avatar_source for users to avoid clobbering uploaded avatars.
                     from zerver.models import UserProfile as UPModel
 
-                    user_ids = [p["user_id"] for p in state["raw_users"].values() if "avatar_url" in p]
+                    user_ids = [
+                        p["user_id"] for p in state["raw_users"].values() if "avatar_url" in p
+                    ]
                     if user_ids:
                         avatar_sources = dict(
-                            UPModel.objects.filter(id__in=user_ids).values_list("id", "avatar_source")
+                            UPModel.objects.filter(id__in=user_ids).values_list(
+                                "id", "avatar_source"
+                            )
                         )
                         for p in state["raw_users"].values():
                             if "avatar_url" not in p:
@@ -1575,7 +1579,9 @@ def apply_event(
                             user_id: (avatar_source, delivery_email, email, avatar_version)
                             for user_id, avatar_source, delivery_email, email, avatar_version in UPModel.objects.filter(
                                 id__in=user_ids
-                            ).values_list("id", "avatar_source", "delivery_email", "email", "avatar_version")
+                            ).values_list(
+                                "id", "avatar_source", "delivery_email", "email", "avatar_version"
+                            )
                         }
                         # user_data maps user_id -> (avatar_source, delivery_email, email, avatar_version)
                         for p in state["realm_users"]:
@@ -1584,7 +1590,9 @@ def apply_event(
                             user_id = p["user_id"]
                             if user_id not in user_data:
                                 continue
-                            avatar_source, delivery_email, email, avatar_version = user_data[user_id]
+                            avatar_source, delivery_email, email, avatar_version = user_data[
+                                user_id
+                            ]
                             if avatar_source != UserProfile.AVATAR_FROM_DEFAULT:
                                 continue
                             try:
