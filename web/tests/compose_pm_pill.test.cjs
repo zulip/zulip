@@ -197,3 +197,103 @@ run_test("has_unconverted_data", ({override}) => {
     // we have some unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
 });
+
+run_test("update_user_pill_active_status", ({override}) => {
+    const othello = {
+        user_id: 1,
+        email: "othello@example.com",
+        full_name: "Othello",
+        is_active: true,
+        is_bot: false,
+    };
+
+    const iago = {
+        user_id: 2,
+        email: "iago@zulip.com",
+        full_name: "Iago",
+        is_active: true,
+        is_bot: false,
+    };
+
+    const pills_data = [
+        {
+            item: {user_id: othello.user_id, full_name: othello.full_name},
+            $element: {0: {id: "pill_1"}},
+        },
+        {
+            item: {user_id: iago.user_id, full_name: iago.full_name},
+            $element: {0: {id: "pill_2"}},
+        },
+    ];
+
+    let found_pill_for_update = null;
+    let updated_pill_element = null;
+    let updated_pill_data = null;
+
+    override(compose_pm_pill.widget, "getPillByPredicate", (predicate) => {
+        const pill = pills_data.find((p) => predicate(p.item));
+        if (pill) {
+            found_pill_for_update = pill;
+        }
+        return pill;
+    });
+    override(compose_pm_pill.widget, "updatePill", (element, item) => {
+        updated_pill_element = element;
+        updated_pill_data = item;
+    });
+
+    // Test deactivating a user - should set deactivated to true
+    compose_pm_pill.update_user_pill_active_status(othello, false);
+
+    assert.equal(found_pill_for_update.item.user_id, othello.user_id);
+    assert.deepEqual(updated_pill_element, {id: "pill_1"});
+    assert.equal(updated_pill_data.user_id, othello.user_id);
+    assert.equal(updated_pill_data.deactivated, true);
+
+    // Reset for next test
+    found_pill_for_update = null;
+    updated_pill_element = null;
+    updated_pill_data = null;
+
+    // Test reactivating a user - should set deactivated to false
+    compose_pm_pill.update_user_pill_active_status(othello, true);
+
+    assert.equal(found_pill_for_update.item.user_id, othello.user_id);
+    assert.deepEqual(updated_pill_element, {id: "pill_1"});
+    assert.equal(updated_pill_data.user_id, othello.user_id);
+    assert.equal(updated_pill_data.deactivated, false);
+
+    // Reset for next test
+    found_pill_for_update = null;
+    updated_pill_element = null;
+    updated_pill_data = null;
+
+    // Test updating a user that doesn't have a pill - should be a no-op
+    const hamlet = {
+        user_id: 3,
+        email: "hamlet@example.com",
+        full_name: "Hamlet",
+        is_active: true,
+        is_bot: false,
+    };
+    compose_pm_pill.update_user_pill_active_status(hamlet, true);
+
+    assert.equal(found_pill_for_update, null);
+    assert.equal(updated_pill_element, null);
+    assert.equal(updated_pill_data, null);
+});
+
+run_test("update_user_pill_active_status_with_uninitialized_widget", ({override_rewire}) => {
+    const test_user = {
+        user_id: 999,
+        email: "test@example.com",
+        full_name: "Test User",
+        is_active: true,
+        is_bot: false,
+    };
+
+    override_rewire(compose_pm_pill, "widget", undefined);
+
+    // Should return early without error when widget is undefined
+    compose_pm_pill.update_user_pill_active_status(test_user, false);
+});
