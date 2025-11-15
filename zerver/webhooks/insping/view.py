@@ -13,7 +13,7 @@ MESSAGE_TEMPLATE = """
 State changed to **{state}**:
 * **URL**: {url}
 * **Response time**: {response_time} ms
-* **Timestamp**: {timestamp}
+* **Timestamp**: <time:{timestamp}>
 """.strip()
 
 
