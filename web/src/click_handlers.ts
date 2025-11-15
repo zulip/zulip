@@ -796,7 +796,14 @@ export function initialize(): void {
     function handle_compose_click(e: JQuery.ClickEvent): void {
         const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($target.is(".emoji_map, img.emoji, .drag, .compose-gif-icon-giphy")) {
+        if ($target.is(".emoji_map, img.emoji, .drag")) {
+            return;
+        }
+
+        // GIF icon clicks should be handled by the click handlers defined in their
+        // modules.
+        if ($target.is(".compose-gif-icon-giphy, .compose-gif-icon-tenor")) {
+            e.stopPropagation();
             return;
         }
 

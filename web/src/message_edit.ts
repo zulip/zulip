@@ -634,6 +634,7 @@ function edit_message($row: JQuery, raw_content: string): void {
             content: raw_content,
             file_upload_enabled,
             giphy_enabled: gif_state.is_giphy_enabled(),
+            tenor_enabled: gif_state.is_tenor_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
         }),

@@ -918,6 +918,10 @@ def fetch_initial_state_data(
         # abuse.
         state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
 
+    if want("tenor"):
+        # See Giphy comment above; Tenor API keys work similarly.
+        state["tenor_api_key"] = settings.TENOR_API_KEY if settings.TENOR_API_KEY else ""
+
     if want("push_device"):
         state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
 
