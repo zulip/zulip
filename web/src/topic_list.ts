@@ -10,6 +10,7 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -607,37 +608,45 @@ export function initialize({
 }: {
     on_topic_click: (stream_id: number, topic: string) => void;
 }): void {
-    $("#stream_filters").on(
-        "click",
-        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-unreads",
-        (e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) {
-                return;
-            }
-            if ($(e.target).closest(".show-more-topics").length > 0) {
-                return;
-            }
+    $("#stream_filters").on("click", ".topic-box", (e) => {
+        const $target = $(e.target);
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
 
-            if ($(e.target).hasClass("visibility-policy-icon")) {
-                return;
-            }
+        // We avoid navigating to the topic if the click happens within elements
+        // that are supposed to have their unique behavior on click without triggering
+        // navigation.
+        if ($(e.target).closest(".show-more-topics").length > 0) {
+            return;
+        }
 
-            if (document.getSelection()?.type === "Range") {
-                // To avoid the click behavior if a topic link is selected.
-                e.preventDefault();
-                return;
-            }
-            const $stream_row = $(e.target).parents(".narrow-filter");
-            const stream_id_string = $stream_row.attr("data-stream-id");
-            assert(stream_id_string !== undefined);
-            const stream_id = Number.parseInt(stream_id_string, 10);
-            const topic = $(e.target).parents("li").attr("data-topic-name")!;
-            on_topic_click(stream_id, topic);
+        if (
+            $target.closest(".visibility-policy-icon").get(0) ||
+            $target.closest(".topic-sidebar-menu-icon").get(0)
+        ) {
+            return;
+        }
 
+        // The remaining elements are the topic name, unread counter, and resolved topic
+        // marker, as well as empty space. Clicking any of these elements should navigate
+        // to the topic, being careful to avoid accidentally triggering click handlers when
+        // dragging.
+        if (mouse_drag.is_drag(e)) {
+            // To avoid the click behavior if a topic link is selected.
             e.preventDefault();
-            e.stopPropagation();
-        },
-    );
+            return;
+        }
+        const $stream_row = $(e.target).parents(".narrow-filter");
+        const stream_id_string = $stream_row.attr("data-stream-id");
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
+        const topic = $(e.target).parents("li").attr("data-topic-name")!;
+        on_topic_click(stream_id, topic);
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
 
     $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
