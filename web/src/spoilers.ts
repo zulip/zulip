@@ -64,10 +64,22 @@ export function initialize(): void {
             return;
         }
 
-        // Allow selecting text inside a spoiler header.
-        const selection = document.getSelection();
-        if (selection?.type === "Range") {
-            return;
+        // Check if there's a text selection and where it's located. If the
+        // selection is inside the header (but not in the content area), the
+        // user is selecting text, so we don't toggle. Otherwise, we toggle
+        // the spoiler normally. This prevents the spoiler from becoming
+        // unresponsive to clicks while still allowing users to select text
+        // in the header or message body without breaking toggle functionality.
+        const selection = window.getSelection();
+        if (selection?.type === "Range" && selection?.rangeCount > 0) {
+            const $header = $(this);
+            const range = selection.getRangeAt(0);
+            if (
+                $header[0]?.contains(range.commonAncestorContainer) &&
+                !$spoiler_content[0]?.contains(range.commonAncestorContainer)
+            ) {
+                return;
+            }
         }
 
         e.preventDefault();
