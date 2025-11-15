@@ -10,6 +10,9 @@
                         {{#if has_edit_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=edit_icon_label }}
                         {{/if}}
+                        {{#if has_manage_folder_icon}}
+                            {{> components/icon_button custom_classes="dropdown-list-manage-folder dropdown-list-control-button" intent="neutral" icon="folder-cog" aria-label=manage_folder_icon_label }}
+                        {{/if}}
                         {{#if has_delete_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=delete_icon_label }}
                         {{/if}}
@@ -52,6 +55,9 @@
                     <span class="dropdown-list-buttons">
                         {{#if has_edit_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=(t "Edit folder") }}
+                        {{/if}}
+                        {{#if has_manage_folder_icon}}
+                            {{> components/icon_button custom_classes="dropdown-list-manage-folder dropdown-list-control-button" intent="neutral" icon="folder-cog" aria-label=manage_folder_icon_label }}
                         {{/if}}
                         {{#if has_delete_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=(t "Delete folder") }}

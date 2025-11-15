@@ -14,6 +14,10 @@ let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;
 let active_channel_folder_ids: Set<number>;
 
+function compare_by_name(a: StreamSubscription, b: StreamSubscription): number {
+    return util.strcmp(a.name, b.name);
+}
+
 export function clean_up_description(channel_folder: ChannelFolder): void {
     if (channel_folder.rendered_description !== undefined) {
         channel_folder.rendered_description = channel_folder.rendered_description
@@ -134,6 +138,12 @@ export function update(event: ChannelFolderUpdateEvent): void {
 
 export function get_streams_in_folder(folder_id: number): StreamSubscription[] {
     const streams = stream_data.get_unsorted_subs().filter((sub) => sub.folder_id === folder_id);
+    return streams;
+}
+
+export function get_sorted_streams_in_folder(folder_id: number): StreamSubscription[] {
+    const streams = get_streams_in_folder(folder_id);
+    streams.sort(compare_by_name);
     return streams;
 }
 

@@ -197,9 +197,30 @@
 
 /* Modal-specific CSS belongs below this point. */
 
+.folder-channels-list-header {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.125em; /* 18px at 16px em */
+}
+
 #user-profile-modal .group-list-container,
 #user-profile-modal .stream-list-container {
     height: calc(100% - var(--header-line-height));
+}
+
+#edit_channel_folder .stream-list-container {
+    height: 30vh;
+}
+
+#channel_folder_banner {
+    &:has(.banner) {
+        margin-bottom: 10px;
+    }
+}
+
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container,
+#edit_channel_folder .stream-list-container {
     border-radius: 4px;
     background-color: var(--background-color-user-profile-list-container);
     border: 1px solid var(--color-border-user-profile-list-container);
@@ -253,13 +274,15 @@
     }
 
     .subscription-group-list,
-    .subscription-stream-list {
+    .subscription-stream-list,
+    .edit-channel-folder-stream-list {
         /* We set max-height to remaining height of stream-list-container
             so that we don't clip it. Search field height takes up 2em of total. */
         height: calc(100% - 2em);
 
         .user-group-list,
-        .user-stream-list {
+        .user-stream-list,
+        .folder-stream-list {
             list-style: none;
             margin: 0;
         }
