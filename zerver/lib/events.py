@@ -1658,7 +1658,8 @@ def apply_event(
                     subscriber_key = (
                         "subscribers" if "subscribers" in sub else "partial_subscribers"
                     )
-                    sub[subscriber_key].remove(user_profile.id)
+                    if user_profile.id in sub[subscriber_key]:
+                        sub[subscriber_key].remove(user_profile.id)
 
             state["unsubscribed"] += removed_subs
 
