@@ -26,6 +26,7 @@ export const narrow_canonical_operator_schema = z.enum([
     "channels",
     "dm",
     "dm-including",
+    "dm-with",
     "has",
     "id",
     "in",
