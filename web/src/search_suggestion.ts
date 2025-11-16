@@ -806,6 +806,7 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
             "topic",
             "dm",
             "dm-with",
+            "dm-including",
             "sender",
             "near",
             "from",
@@ -833,10 +834,6 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
         // who have "pm-with" in their muscle memory.
         if (choice === "pm-with") {
             choice = "dm";
-        }
-        // Legacy alias: support dm-including by converting to dm-with
-        if (choice === "dm-including") {
-            choice = "dm-with";
         }
         // Map results for "channel:" operator for users
         // who have "stream" in their muscle memory.
