@@ -1580,6 +1580,7 @@ export class Filter {
         return (
             (this.has_operator("is") && this.operands("is")[0] === "dm") ||
             this.has_operator("dm") ||
+            this.has_operator("dm-with") ||
             this.has_operator("dm-including")
         );
     }
