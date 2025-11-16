@@ -30,3 +30,14 @@
         </div>
     </div>
 </div>
+<div>
+    <div>
+        <h3 class="folder-channels-list-header">
+            {{t 'Add a channel' }}
+        </h3>
+    </div>
+    <div class="add_channel_folder_widget">
+        {{> ../dropdown_widget widget_name="add_channel_folder"}}
+        {{> ../components/action_button label=(t "Add") custom_classes="add-channel-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
+    </div>
+</div>
