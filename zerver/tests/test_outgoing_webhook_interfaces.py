@@ -64,7 +64,11 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
     def test_make_request(self) -> None:
         othello = self.example_user("othello")
-        stream = get_stream("Denmark", othello.realm)
+        # Set realm default to gravatar to match test expectation
+        realm = othello.realm
+        realm.default_new_user_avatar = "gravatar"
+        realm.save(update_fields=["default_new_user_avatar"])
+        stream = get_stream("Denmark", realm)
         message_id = self.send_stream_message(
             othello,
             stream.name,

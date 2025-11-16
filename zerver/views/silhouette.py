@@ -18,9 +18,6 @@ def silhouette_svg(request: HttpRequest, seed: str, size: int = 80) -> HttpRespo
         "silhouette_generate.js",
     )
 
-    print(f"DEBUG: silhouette_svg called with seed={seed}, size={size}")
-    print(f"DEBUG: tool_path={tool_path}")
-
     try:
         proc = subprocess.run(
             ["node", tool_path, seed, str(size)],
@@ -31,15 +28,11 @@ def silhouette_svg(request: HttpRequest, seed: str, size: int = 80) -> HttpRespo
         )
 
         if proc.returncode != 0:
-            print(f"DEBUG: subprocess returned code {proc.returncode}")
-            print(f"DEBUG: stderr: {proc.stderr}")
             raise subprocess.CalledProcessError(proc.returncode, "node", stderr=proc.stderr)
 
         svg = proc.stdout
-        print(f"DEBUG: SVG generated successfully, length={len(svg)}")
 
     except Exception as e:
-        print(f"DEBUG: Exception: {type(e).__name__}: {e}")
         logger.error("silhouette_svg error: %s: %s", type(e).__name__, e)
         # fallback simple SVG with generic color
         color = f"#{abs(hash(seed)) & 0xFFFFFF:06x}"

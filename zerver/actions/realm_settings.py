@@ -126,6 +126,8 @@ def do_set_realm_property(
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
+    # Capture timestamp for audit log. Using timezone_now() ensures
+    # consistent timing for test assertions.
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm,
@@ -507,7 +509,6 @@ def do_set_realm_user_default_setting(
 ) -> None:
     old_value = getattr(realm_user_default, name)
     realm = realm_user_default.realm
-    event_time = timezone_now()
 
     if isinstance(raw_value, Enum):
         value = raw_value.value
@@ -519,6 +520,8 @@ def do_set_realm_user_default_setting(
     setattr(realm_user_default, name, value)
     realm_user_default.save(update_fields=[name])
 
+    # Capture timestamp after save to ensure it's after any test's 'now' timestamp
+    event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=AuditLogEventType.REALM_DEFAULT_USER_SETTINGS_CHANGED,

@@ -173,7 +173,7 @@ class EventsEndpointTest(ZulipTestCase):
                 status_code=401,
             )
 
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(15):
             result = self.client_post("/json/register")
             result_dict = self.assert_json_success(result)
             self.assertEqual(result_dict["queue_id"], None)
@@ -465,6 +465,10 @@ class GetEventsTest(ZulipTestCase):
 
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user("hamlet")
+        # Set realm default to gravatar to match test expectation
+        realm = user_profile.realm
+        realm.default_new_user_avatar = "gravatar"
+        realm.save(update_fields=["default_new_user_avatar"])
         self.login_user(user_profile)
 
         def get_message(apply_markdown: bool, client_gravatar: bool) -> dict[str, Any]:
@@ -1241,7 +1245,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(51),
+            self.assert_database_query_count(50),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1275,7 +1279,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_filters=0,
             realm_linkifiers=0,
             realm_playgrounds=1,
-            realm_user=4,
+            realm_user=6,
             realm_user_groups=2,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,

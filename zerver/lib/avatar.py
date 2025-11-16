@@ -137,6 +137,23 @@ def get_avatar_field(
                 seed = hashlib.sha256((email or str(user_id)).encode()).hexdigest()
                 size = 128 if medium else 80
                 return reverse("silhouette_svg", args=[seed, size])
+        elif realm is None:
+            # Query realm from database to check for procedural avatar settings
+            from zerver.models import Realm
+            try:
+                realm_obj = Realm.objects.get(id=realm_id)
+                if hasattr(realm_obj, "default_new_user_avatar"):
+                    default_choice = realm_obj.default_new_user_avatar
+                    if default_choice == "jdenticon":
+                        seed = hashlib.sha256((email or str(user_id)).encode()).hexdigest()
+                        size = 128 if medium else 80
+                        return reverse("jdenticon_svg", args=[seed, size])
+                    elif default_choice == "colorful_silhouette":
+                        seed = hashlib.sha256((email or str(user_id)).encode()).hexdigest()
+                        size = 128 if medium else 80
+                        return reverse("silhouette_svg", args=[seed, size])
+            except Realm.DoesNotExist:
+                pass
         # Fall through to gravatar for realms without procedural settings
 
     # System bots have hardcoded avatars

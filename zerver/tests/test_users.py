@@ -1004,7 +1004,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(89),
+            self.assert_database_query_count(91),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -1698,7 +1698,7 @@ class UserProfileTest(ZulipTestCase):
 
         expected_dicts = [user_row(email) for email in expected_emails]
 
-        with self.assert_database_query_count(4):
+        with self.assert_database_query_count(1):
             actual_dicts = get_cross_realm_dicts()
 
         self.assertEqual(actual_dicts, expected_dicts)

@@ -14,6 +14,16 @@ class TestJdenticonAvatar(ZulipTestCase):
         self.assertIn("<svg", response.content.decode())
 
 
+class TestSilhouetteAvatar(ZulipTestCase):
+    def test_silhouette_endpoint(self) -> None:
+        seed = "xyz789"
+        response = self.client_get(f"/avatar/silhouette/{seed}/80")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn("<svg", response.content.decode())
+
+
 class TestDefaultAvatarSetting(ZulipTestCase):
     def test_default_avatar_jdenticon(self) -> None:
         realm = get_realm("zulip")

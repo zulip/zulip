@@ -391,11 +391,19 @@ def do_change_avatar_fields(
     *,
     acting_user: UserProfile | None,
 ) -> None:
-    # Only bump version and save when the source actually changes.
-    if user_profile.avatar_source != avatar_source:
-        user_profile.avatar_source = avatar_source
+    # Bump version when the source changes, or when uploading a new avatar
+    # (even if source is already AVATAR_FROM_USER, we need to invalidate caches).
+    avatar_source_changed = user_profile.avatar_source != avatar_source
+    is_upload = avatar_source == UserProfile.AVATAR_FROM_USER
+    
+    if avatar_source_changed or is_upload:
+        if avatar_source_changed:
+            user_profile.avatar_source = avatar_source
         user_profile.avatar_version += 1
-        user_profile.save(update_fields=["avatar_source", "avatar_version"])
+        update_fields = ["avatar_version"]
+        if avatar_source_changed:
+            update_fields.append("avatar_source")
+        user_profile.save(update_fields=update_fields)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(

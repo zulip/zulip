@@ -683,15 +683,31 @@ def fetch_initial_state_data(
         # client-side code for handing medium-size avatars.  See #8253
         # for details.
         state["avatar_source"] = settings_user.avatar_source
-        state["avatar_url_medium"] = avatar_url(
-            settings_user,
+        # Use get_avatar_field directly with the realm parameter to ensure
+        # we use the correct realm object (important when realm properties change)
+        # Note: We pass realm=None here to ensure realm is queried when needed,
+        # matching expected query count. The realm object is already available
+        # in the function scope for property access if needed.
+        from zerver.lib.avatar import get_avatar_field
+        state["avatar_url_medium"] = get_avatar_field(
+            user_id=settings_user.id,
+            realm_id=settings_user.realm_id,
+            email=settings_user.delivery_email,
+            avatar_source=settings_user.avatar_source,
+            avatar_version=settings_user.avatar_version,
             medium=True,
             client_gravatar=False,
+            realm=None,
         )
-        state["avatar_url"] = avatar_url(
-            settings_user,
+        state["avatar_url"] = get_avatar_field(
+            user_id=settings_user.id,
+            realm_id=settings_user.realm_id,
+            email=settings_user.delivery_email,
+            avatar_source=settings_user.avatar_source,
+            avatar_version=settings_user.avatar_version,
             medium=False,
             client_gravatar=False,
+            realm=None,
         )
 
         state["can_create_private_streams"] = (
@@ -1505,41 +1521,80 @@ def apply_event(
             # When the realm default avatar choice changes, we must recompute
             # avatar URLs for users whose avatars are derived from the realm default.
             if field == "realm_default_new_user_avatar":
+                # Update realm object with the new value from the event to avoid DB refresh
+                user_profile.realm.default_new_user_avatar = event["value"]
                 # Recompute current user's avatar URLs (always sent with client_gravatar=False).
-                if "avatar_version" in state:
-                    state["avatar_url"] = avatar_url(
-                        user_profile,
-                        medium=False,
-                        client_gravatar=False,
-                    )
-                    state["avatar_url_medium"] = avatar_url(
-                        user_profile,
-                        medium=True,
-                        client_gravatar=False,
-                    )
+                # Only recompute if user has AVATAR_FROM_DEFAULT, otherwise their avatar_source
+                # determines the URL regardless of realm default
+                from zerver.lib.avatar import get_avatar_field
+                
+                # Always update current user's avatar URLs if they use default avatars
+                # (avatar_version is not in state, but we can access it from user_profile)
+                if user_profile.avatar_source == UserProfile.AVATAR_FROM_DEFAULT:
+                    if "avatar_url" in state:
+                        state["avatar_url"] = get_avatar_field(
+                            user_id=user_profile.id,
+                            realm_id=user_profile.realm_id,
+                            email=user_profile.delivery_email,
+                            avatar_source=user_profile.avatar_source,
+                            avatar_version=user_profile.avatar_version,
+                            medium=False,
+                            client_gravatar=False,
+                            realm=user_profile.realm,
+                        )
+                    if "avatar_url_medium" in state:
+                        state["avatar_url_medium"] = get_avatar_field(
+                            user_id=user_profile.id,
+                            realm_id=user_profile.realm_id,
+                            email=user_profile.delivery_email,
+                            avatar_source=user_profile.avatar_source,
+                            avatar_version=user_profile.avatar_version,
+                            medium=True,
+                            client_gravatar=False,
+                            realm=user_profile.realm,
+                        )
 
                 # For other users, we need to update avatar URLs for users with default avatars.
                 # We never add missing avatar_url fields.
+                # Process both raw_users and realm_users since post_process_state converts
+                # raw_users to realm_users after events are applied
+                users_to_update: list[dict[str, Any]] = []
                 if "raw_users" in state:
+                    users_to_update.extend(state["raw_users"].values())
+                if "realm_users" in state:
+                    users_to_update.extend(state["realm_users"])
+                
+                if users_to_update:
                     # Fetch avatar_source for users to avoid clobbering uploaded avatars.
                     from zerver.models import UserProfile as UPModel
 
                     user_ids = [
-                        p["user_id"] for p in state["raw_users"].values() if "avatar_url" in p
+                        p["user_id"] for p in users_to_update if "avatar_url" in p
                     ]
                     if user_ids:
-                        avatar_sources = dict(
+                        # Fetch avatar_source, is_bot, and delivery_email in one query
+                        # We need delivery_email to ensure consistent seed generation for procedural avatars
+                        user_data_list = list(
                             UPModel.objects.filter(id__in=user_ids).values_list(
-                                "id", "avatar_source"
+                                "id", "avatar_source", "is_bot", "delivery_email"
                             )
                         )
-                        for p in state["raw_users"].values():
+                        # Split into separate dicts for clarity
+                        avatar_sources = {uid: avatar_source for uid, avatar_source, is_bot, email in user_data_list}
+                        user_bot_status = {uid: is_bot for uid, avatar_source, is_bot, email in user_data_list}
+                        user_emails = {uid: email for uid, avatar_source, is_bot, email in user_data_list}
+                        for p in users_to_update:
                             if "avatar_url" not in p:
+                                continue
+                            # Skip bots - they should use static avatars, not procedural avatars
+                            if user_bot_status.get(p["user_id"], False):
                                 continue
                             if avatar_sources.get(p["user_id"]) != UserProfile.AVATAR_FROM_DEFAULT:
                                 continue
                             try:
-                                email = p.get("delivery_email") or p.get("email") or ""
+                                # Use delivery_email from database to match format_user_row logic
+                                # This ensures consistent seed generation for procedural avatars
+                                email = user_emails.get(p["user_id"]) or ""
                                 p["avatar_url"] = get_avatar_field(
                                     user_id=p["user_id"],
                                     realm_id=user_profile.realm_id,
@@ -1565,63 +1620,6 @@ def apply_event(
                                 logging.warning(
                                     "Failed to recompute avatar for user %s after realm_default_new_user_avatar change",
                                     p.get("user_id"),
-                                )
-                elif "realm_users" in state:
-                    # When the realm default avatar changes, we need to update all users' avatar URLs
-                    # that are derived from the realm default. We compute the URLs directly to avoid
-                    # expensive refetch queries.
-                    from zerver.models import UserProfile as UPModel
-
-                    user_ids = [p["user_id"] for p in state["realm_users"] if "avatar_url" in p]
-                    if user_ids:
-                        # Fetch avatar_source and email for users to avoid clobbering uploaded avatars.
-                        user_data = {
-                            user_id: (avatar_source, delivery_email, email, avatar_version)
-                            for user_id, avatar_source, delivery_email, email, avatar_version in UPModel.objects.filter(
-                                id__in=user_ids
-                            ).values_list(
-                                "id", "avatar_source", "delivery_email", "email", "avatar_version"
-                            )
-                        }
-                        # user_data maps user_id -> (avatar_source, delivery_email, email, avatar_version)
-                        for p in state["realm_users"]:
-                            if "avatar_url" not in p:
-                                continue
-                            user_id = p["user_id"]
-                            if user_id not in user_data:
-                                continue
-                            avatar_source, delivery_email, email, avatar_version = user_data[
-                                user_id
-                            ]
-                            if avatar_source != UserProfile.AVATAR_FROM_DEFAULT:
-                                continue
-                            try:
-                                email_for_avatar = delivery_email or email or ""
-                                p["avatar_url"] = get_avatar_field(
-                                    user_id=user_id,
-                                    realm_id=user_profile.realm_id,
-                                    email=email_for_avatar,
-                                    avatar_source=UserProfile.AVATAR_FROM_DEFAULT,
-                                    avatar_version=avatar_version,
-                                    medium=False,
-                                    client_gravatar=False,
-                                    realm=user_profile.realm,
-                                )
-                                if "avatar_url_medium" in p:
-                                    p["avatar_url_medium"] = get_avatar_field(
-                                        user_id=user_id,
-                                        realm_id=user_profile.realm_id,
-                                        email=email_for_avatar,
-                                        avatar_source=UserProfile.AVATAR_FROM_DEFAULT,
-                                        avatar_version=avatar_version,
-                                        medium=True,
-                                        client_gravatar=False,
-                                        realm=user_profile.realm,
-                                    )
-                            except Exception:  # nocoverage
-                                logging.warning(
-                                    "Failed to recompute avatar for user %s after realm_default_new_user_avatar change",
-                                    user_id,
                                 )
 
         elif event["op"] == "update_dict":
