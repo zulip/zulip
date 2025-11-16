@@ -845,6 +845,10 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
         if (choice === "streams") {
             choice = "channels";
         }
+        // NEW: map dm-with → dm-including for display
+        if (choice === "dm-with") {
+            choice = "dm-including";
+        }
         const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op, true);
     });

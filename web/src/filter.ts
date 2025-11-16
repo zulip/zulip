@@ -1108,6 +1108,7 @@ export class Filter {
     is_search_for_specific_group_or_user(): boolean {
         return (
             this.has_operator("dm") ||
+            this.has_operator("dm-with") ||
             this.has_operator("dm-including") ||
             this.has_operator("sender")
         );
