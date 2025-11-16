@@ -330,7 +330,7 @@ There are a few specific formatting guidelines to keep in mind:
   to be longer -- ignore `gitlint` when it complains about them.)
 
 **Tip:** You may find it helpful to configure Git to use your preferred editor
-using the `EDITOR` environment variable or `git config --global core.editor`,
+using the `EDITOR` environment variable or `git config --global core.editor`.
 and configure the editor to automatically wrap text to 70 or fewer columns per
 line (all text editors support this).
 
