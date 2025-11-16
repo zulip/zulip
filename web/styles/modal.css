@@ -23,6 +23,12 @@
             margin: 0;
             font-size: 1.5em;
         }
+
+        .add_channel_folder_widget {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
     }
 }
 
@@ -552,18 +558,12 @@
 }
 
 .modal__body,
+.modal__content,
 .overlay-content {
     .dropdown-widget-button,
     .dropdown_widget_with_label_wrapper {
-        width: var(--modal-input-width);
-    }
-}
-
-.modal__body,
-.modal__content {
-    .dropdown-widget-button,
-    .dropdown_widget_with_label_wrapper {
         max-width: 100%;
+        width: var(--modal-input-width);
     }
 }
 
