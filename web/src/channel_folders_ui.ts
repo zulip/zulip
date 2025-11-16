@@ -1,4 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_confirm_archive_channel_folder from "../templates/confirm_dialog/confirm_archive_channel_folder.hbs";
@@ -12,18 +14,27 @@ import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as modals from "./modals.ts";
 import * as people from "./people.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 let channel_folder_stream_list_widget: ListWidgetType<StreamSubscription> | undefined;
 let stream_list_widget_stream_ids: Set<number> | undefined;
+let add_channel_folder_widget: DropdownWidget | undefined;
+
+function compare_by_name(a: dropdown_widget.Option, b: dropdown_widget.Option): number {
+    return util.strcmp(a.name, b.name);
+}
 
 export function add_channel_folder(): void {
     const html_body = render_create_channel_folder_modal({
@@ -89,6 +100,24 @@ function remove_channel_from_folder(
     const url = "/json/streams/" + stream_id.toString();
     const data = {
         folder_id: JSON.stringify(null),
+    };
+    void channel.patch({
+        url,
+        data,
+        success: on_success,
+        error: on_error,
+    });
+}
+
+function add_channel_to_folder(
+    stream_id: number,
+    folder_id: number,
+    on_success: () => void,
+    on_error: (xhr: JQuery.jqXHR) => void,
+): void {
+    const url = "/json/streams/" + stream_id.toString();
+    const data = {
+        folder_id: JSON.stringify(folder_id),
     };
     void channel.patch({
         url,
@@ -252,6 +281,118 @@ function get_edit_modal_folder_id_if_open(): number | undefined {
     return Number($edit_folder_modal.find(".stream-list-container").attr("data-folder-id"));
 }
 
+function get_channel_folder_candidates(folder_id: number): dropdown_widget.Option[] {
+    return stream_data
+        .get_unsorted_subs()
+        .flatMap((stream) =>
+            stream.folder_id !== folder_id
+                ? [
+                      {
+                          name: stream.name,
+                          unique_id: stream.stream_id,
+                          stream,
+                      },
+                  ]
+                : [],
+        )
+        .toSorted(compare_by_name);
+}
+
+function get_channel_folder_candidates_for_dropdown(): dropdown_widget.Option[] {
+    const folder_id = get_edit_modal_folder_id_if_open();
+    assert(folder_id !== undefined);
+    return get_channel_folder_candidates(folder_id);
+}
+
+function channel_dropdown_item_click_callback(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+): void {
+    dropdown.hide();
+    event.preventDefault();
+    event.stopPropagation();
+    assert(add_channel_folder_widget !== undefined);
+    add_channel_folder_widget.render();
+    $("#edit_channel_folder .add-channel-button").prop("disabled", false);
+}
+
+function reset_add_channel_widget(): void {
+    $("#edit_channel_folder .add-channel-button").prop("disabled", true);
+
+    $("#add_channel_folder_widget .dropdown_widget_value").text(
+        $t({defaultMessage: "Select a channel"}),
+    );
+
+    if (add_channel_folder_widget) {
+        add_channel_folder_widget.current_value = undefined;
+    }
+}
+
+function render_add_channel_folder_widget(): void {
+    const opts: DropdownWidgetOptions = {
+        widget_name: "add_channel_folder",
+        get_options: get_channel_folder_candidates_for_dropdown,
+        item_click_callback: channel_dropdown_item_click_callback,
+        $events_container: $("#edit_channel_folder"),
+        unique_id_type: "number",
+    };
+    add_channel_folder_widget = new dropdown_widget.DropdownWidget(opts);
+    add_channel_folder_widget.setup();
+
+    const $add_channel_button = $("#edit_channel_folder .add-channel-button");
+    $("#add_channel_folder_widget .dropdown_widget_value").text(
+        $t({defaultMessage: "Select a channel"}),
+    );
+
+    $add_channel_button.prop("disabled", true);
+
+    $add_channel_button.on("click", (e) => {
+        e.preventDefault();
+        assert(add_channel_folder_widget !== undefined);
+        const stream_id = add_channel_folder_widget.value();
+        assert(typeof stream_id === "number");
+        const folder_id = get_edit_modal_folder_id_if_open();
+        assert(folder_id !== undefined);
+        function on_success(): void {
+            reset_add_channel_widget();
+            banners.open(
+                {
+                    intent: "success",
+                    label: $t_html({
+                        defaultMessage: "Channel added!",
+                    }),
+                    buttons: [],
+                    close_button: false,
+                },
+                $("#channel_folder_banner"),
+                1200,
+            );
+        }
+
+        function on_error(xhr: JQuery.jqXHR): void {
+            const error_message = channel.xhr_error_message(
+                $t_html({
+                    defaultMessage: "Failed adding channel to the folder",
+                }),
+                xhr,
+            );
+            banners.open(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $("#channel_folder_banner"),
+                1200,
+            );
+            dialog_widget.hide_dialog_spinner();
+        }
+
+        add_channel_to_folder(stream_id, folder_id, on_success, on_error);
+    });
+}
+
 export function update_channel_folder_channels_list(
     stream_id: number,
     folder_id: number | null,
@@ -324,10 +465,12 @@ export function handle_editing_channel_folder(folder_id: number): void {
         on_shown: () => $("#edit_channel_folder_name").trigger("focus"),
         on_hidden() {
             stream_list_widget_stream_ids = undefined;
+            add_channel_folder_widget = undefined;
         },
         update_submit_disabled_state_on_change: true,
         post_render() {
             render_channel_list(subs, folder_id);
+            render_add_channel_folder_widget();
         },
     });
 }

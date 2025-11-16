@@ -208,8 +208,23 @@
     height: calc(100% - var(--header-line-height));
 }
 
-#edit_channel_folder .stream-list-container {
-    height: 30vh;
+#edit_channel_folder {
+    .stream-list-container {
+        height: 30vh;
+    }
+
+    .add_channel_folder_widget {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        gap: 10px;
+
+        .dropdown-widget-button,
+        .dropdown_widget_with_label_wrapper {
+            max-width: 100%;
+            width: var(--modal-input-width);
+        }
+    }
 }
 
 #channel_folder_banner {
