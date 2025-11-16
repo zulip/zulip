@@ -291,13 +291,9 @@ export class Filter {
             // "group-pm-with:" was replaced with "dm-including:"
             return "dm-including";
         }
-
-        if (operator === "dm-including") {
-            return "dm-with";       // canonical now
-        }
-
-        if (operator === "dm-with") {
-            return "dm-with";       // primary operator
+        // Legacy operator support
+        if (operator === "dm-including" || operator === "dm-with") {
+            return "dm-with";  // canonical operator
         }
 
         if (operator === "from") {
