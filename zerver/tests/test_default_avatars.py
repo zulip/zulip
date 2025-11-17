@@ -340,3 +340,51 @@ class AvatarGeneratorViewsTest(ZulipTestCase):
         # Test invalid size
         response = self.client_get(f"/realm/icon/jdenticon/{realm.id}?s=xyz")
         self.assertEqual(response.status_code, 200)
+
+    def test_jdenticon_fallback_on_error(self) -> None:
+        """Test Jdenticon fallback when subprocess fails."""
+        import subprocess
+        from unittest.mock import patch
+
+        hamlet = self.example_user("hamlet")
+
+        # Test subprocess failure
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, ["node"])
+            response = self.client_get(f"/avatar/jdenticon/{hamlet.id}")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "image/svg+xml")
+            # Should contain fallback SVG
+            self.assertIn(b"<svg", response.content)
+            self.assertIn(b'fill="#ddd"', response.content)
+
+        # Test timeout
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.TimeoutExpired("node", 5)
+            response = self.client_get(f"/avatar/jdenticon/{hamlet.id}")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"<svg", response.content)
+
+    def test_silhouette_fallback_on_error(self) -> None:
+        """Test Silhouette fallback when subprocess fails."""
+        import subprocess
+        from unittest.mock import patch
+
+        hamlet = self.example_user("hamlet")
+
+        # Test subprocess failure
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, ["node"])
+            response = self.client_get(f"/avatar/silhouette/{hamlet.id}")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "image/svg+xml")
+            # Should contain fallback SVG with question mark
+            self.assertIn(b"<svg", response.content)
+            self.assertIn(b"?", response.content)
+
+        # Test FileNotFoundError (Node.js not installed)
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = FileNotFoundError()
+            response = self.client_get(f"/avatar/silhouette/{hamlet.id}")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"<svg", response.content)

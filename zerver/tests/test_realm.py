@@ -2541,7 +2541,13 @@ class RealmAPITest(ZulipTestCase):
         # Test no-op update (setting same value again)
         realm.refresh_from_db()
         current_provider = realm.default_avatar_provider
-        realm = self.update_with_api("default_avatar_provider", current_provider)
+        # Call the function directly to test the early return path
+        from zerver.actions.realm_settings import do_change_realm_default_avatar_provider
+
+        do_change_realm_default_avatar_provider(
+            realm, current_provider, acting_user=self.example_user("iago")
+        )
+        realm.refresh_from_db()
         self.assertEqual(realm.default_avatar_provider, current_provider)
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
