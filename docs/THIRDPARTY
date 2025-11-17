@@ -233,6 +233,14 @@ Files: web/icons/external-link.svg
 Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/external-link)
 License: ISC License
 
+Files: web/icons/internal-link.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/external-link)
+License: ISC License
+
+Files: web/icons/inbound-link.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/external-link)
+License: ISC License
+
 Files: web/icons/eye.svg
 Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/eye)
 License: ISC License
