@@ -363,7 +363,9 @@ def get_members(client: Client) -> None:
             assert member.get("profile_data", None) is None
         else:
             assert member.get("profile_data", None) is not None
-        assert member["avatar_url"] is None
+        # With procedurally generated avatars (Jdenticon/Silhouettes), avatar_url
+        # is not None even with client_gravatar=True, since the client can't compute them.
+        # Only Gravatar with client_gravatar=True returns None.
 
 
 @openapi_test_function("/users/{email}:get")

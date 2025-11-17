@@ -43,7 +43,7 @@ function getColorFromSeed(seed) {
     if (!Number.isNaN(seedNum)) {
         return COLORS[seedNum % COLORS.length];
     }
-    
+
     // Fallback for non-numeric seeds: use hash
     let hash = 0;
     for (let i = 0; i < seed.length; i += 1) {

@@ -943,7 +943,10 @@ export function small_avatar_url_for_person(person: User | CurrentUser): string 
     // We need to attach a version to the URL as a cache-breaker so that the browser
     // will update the image in real time when user avatar settings change.
     const version = "avatar_version" in person ? person.avatar_version : 0;
-    return `/avatar/${person.user_id}?version=${version}`;
+    if (version > 0) {
+        return `/avatar/${person.user_id}?version=${version}`;
+    }
+    return `/avatar/${person.user_id}`;
 }
 
 export function medium_avatar_url_for_person(person: User | CurrentUser): string {
