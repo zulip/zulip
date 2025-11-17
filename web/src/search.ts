@@ -171,10 +171,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     // Data storage for the typeahead.
-    // This maps a search string to an object with a "description_html" field.
-    // (It's a bit of legacy that we have an object with only one important
-    // field.  There's also a "search_string" field on each element that actually
-    // just represents the key of the hash, so it's redundant.)
+    // TODO: This map has become very redundant now. We needed this earlier to
+    // to associate search string to its respective "description_html". This currently
+    // now just maps search string to "search_string". We should just remove this when
+    // we change Suggestion object to simple strings.
     let search_map = new Map<string, search_suggestion.Suggestion>();
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
