@@ -1780,7 +1780,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # the sender because they are sending a message to a public
         # stream that you are subscribed to but they are not.
 
-        can_access_sender = check_can_access_user(message.sender, user_profile)
+        can_access_sender = check_can_access_user(message.sender, user_profile, message.realm)
     else:
         # For private messages, the recipient will gain access
         # to the sender if they did not had access previously.
