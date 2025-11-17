@@ -2171,7 +2171,7 @@ def import_message_data(
     realm: Realm,
     sender_map: dict[int, Record],
     import_dir: Path,
-    processes: int = 1,
+    processes: int = 1
 ) -> None:
     """
     Import message data from message dump files.
