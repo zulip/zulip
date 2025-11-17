@@ -10,26 +10,8 @@ import type {Option} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
 import type {Message} from "./message_store.ts";
+import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
-
-export const message_report_type_options: Option[] = [
-    {
-        unique_id: "spam",
-        name: $t_html({defaultMessage: "Spam"}),
-    },
-    {
-        unique_id: "harassment",
-        name: $t_html({defaultMessage: "Harassment"}),
-    },
-    {
-        unique_id: "inappropriate",
-        name: $t_html({defaultMessage: "Inappropriate"}),
-    },
-    {
-        unique_id: "norms",
-        name: $t_html({defaultMessage: "Violates community norms"}),
-    },
-];
 
 export function show_message_report_modal(message: Message): void {
     const html_body = render_report_message_modal({});
@@ -51,14 +33,10 @@ export function show_message_report_modal(message: Message): void {
         }
 
         function get_message_report_types(): Option[] {
-            // Keep this in sync with zerver/models/realms/Realm.REPORT_MESSAGE_REASONS
-            return [
-                ...message_report_type_options,
-                {
-                    unique_id: "other",
-                    name: $t_html({defaultMessage: "Other reason"}),
-                },
-            ];
+            return realm.server_report_message_types.map((report_type) => ({
+                unique_id: report_type.key,
+                name: report_type.name,
+            }));
         }
 
         $message_report_description.on("input", check_toggle_submit_button);
