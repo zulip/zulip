@@ -538,6 +538,22 @@ administrative capabilities.
             help_url="/help/",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=23,
+        message="""
+**Web and desktop updates**
+- You can now [report]({report_a_message_url}) problematic messages if
+moderation requests are [enabled]({enable_moderation_requests_url}).
+- You can now [expand or collapse]({expand_or_collapse_sections_url}) all sections in the left sidebar, and
+[configure]({configure_inbox_folders_url}) whether channels are grouped by
+folder in the inbox view.
+""".format(
+            report_a_message_url="/help/report-a-message",
+            enable_moderation_requests_url="/help/enable-moderation-requests",
+            expand_or_collapse_sections_url="/help/left-sidebar#expand-or-collapse-sections",
+            configure_inbox_folders_url="/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-inbox-view",
+        ),
+    ),
 ]
 
 
