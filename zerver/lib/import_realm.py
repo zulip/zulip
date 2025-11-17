@@ -1975,14 +1975,14 @@ def save_id_map_to_disk(import_dir: Path) -> None:
     """
     id_map_file = os.path.join(import_dir, "id_map.json")
     logging.info("Saving ID_MAP to disk for parallel processing...")
-    
-    with open(id_map_file, 'wb') as f:
+
+    with open(id_map_file, "wb") as f:
         f.write(orjson.dumps(ID_MAP))
-    
+
     logging.info(
         "ID_MAP saved: %d message mappings, %d total tables",
         len(ID_MAP.get("message", {})),
-        len(ID_MAP)
+        len(ID_MAP),
     )
 
 
@@ -1992,11 +1992,11 @@ def load_id_map_from_disk(import_dir: Path) -> dict[str, dict[int, int]]:
     Each worker gets its own copy to avoid threading issues.
     """
     id_map_file = os.path.join(import_dir, "id_map.json")
-    
+
     if not os.path.exists(id_map_file):
         raise Exception("ID_MAP file not found! Import process may be corrupted.")
-    
-    with open(id_map_file, 'rb') as f:
+
+    with open(id_map_file, "rb") as f:
         return orjson.loads(f.read())
 
 
@@ -2016,7 +2016,7 @@ def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
             old_id=old_id,
             new_id=new_id,
         )
-    
+
     # Save ID_MAP to disk after allocation for parallel workers
     save_id_map_to_disk(import_dir)
 
@@ -2085,46 +2085,46 @@ def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> list[int]:
 def process_message_file_worker(args: tuple[int, Path, int, dict[int, Record]]) -> None:
     """
     Worker function to process a single message dump file in parallel.
-    
+
     This function:
     1. Loads the ID_MAP from disk (each worker loads its own copy)
     2. Reads the message file
     3. Re-maps all foreign keys
     4. Fixes message rendering
     5. Imports messages and user-message relationships
-    
+
     Args:
         args: Tuple of (dump_file_id, import_dir, realm_id, sender_map)
     """
     dump_file_id, import_dir, realm_id, sender_map = args
-    
+
     # Load ID_MAP from disk (each worker gets its own copy)
     global ID_MAP
     ID_MAP = load_id_map_from_disk(import_dir)
-    
+
     message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
-    
+
     if not os.path.exists(message_filename):
         logging.warning("Message file %s not found, skipping", message_filename)
         return
-    
+
     logging.info("Worker processing message dump %s (PID: %d)", message_filename, os.getpid())
-    
+
     with open(message_filename, "rb") as f:
         data = orjson.loads(f.read())
-    
+
     # Get realm object
     realm = Realm.objects.get(id=realm_id)
-    
+
     # Re-map foreign keys
     re_map_foreign_keys(data, "zerver_message", "sender", related_table="user_profile")
     re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
     re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
     fix_datetime_fields(data, "zerver_message")
-    
+
     # Parser to update message content with the updated attachment URLs
     fix_upload_links(data, "zerver_message")
-    
+
     # We already created mappings for zerver_message ids
     # in update_message_foreign_keys(), so here we simply apply them.
     message_id_map = ID_MAP["message"]
@@ -2132,55 +2132,53 @@ def process_message_file_worker(args: tuple[int, Path, int, dict[int, Record]]) 
         del row["realm"]
         row["realm_id"] = realm.id
         row["id"] = message_id_map[row["id"]]
-    
+
     for row in data["zerver_usermessage"]:
         assert row["message"] in message_id_map
-    
+
     # Fix message rendering
     fix_message_rendered_content(
         realm=realm,
         sender_map=sender_map,
         messages=data["zerver_message"],
     )
-    
+
     fix_message_edit_history(
-        realm=realm,
-        sender_map=sender_map,
-        messages=data["zerver_message"]
+        realm=realm, sender_map=sender_map, messages=data["zerver_message"]
     )
-    
+
     # Import messages
     bulk_import_model(data, Message)
-    
+
     # Import user-message relationships
     re_map_foreign_keys(data, "zerver_usermessage", "message", related_table="message")
     re_map_foreign_keys(
         data, "zerver_usermessage", "user_profile", related_table="user_profile"
     )
     fix_bitfield_keys(data, "zerver_usermessage", "flags")
-    
+
     bulk_import_user_message_data(data, dump_file_id)
-    
+
     logging.info(
         "Worker completed message dump %s: %d messages, %d user-messages",
         message_filename,
         len(data["zerver_message"]),
-        len(data["zerver_usermessage"])
+        len(data["zerver_usermessage"]),
     )
 
 
 def import_message_data(
-    realm: Realm, 
-    sender_map: dict[int, Record], 
+    realm: Realm,
+    sender_map: dict[int, Record],
     import_dir: Path,
-    processes: int = 1
+    processes: int = 1,
 ) -> None:
     """
     Import message data from message dump files.
-    
+
     When processes > 1, files are processed in parallel for better performance.
     Each message file (messages-NNNNNN.json) is processed independently.
-    
+
     Args:
         realm: The realm being imported
         sender_map: Mapping of user IDs to user profile data
@@ -2188,49 +2186,48 @@ def import_message_data(
         processes: Number of parallel processes to use (default: 1 for sequential)
     """
     logging.info("Starting message import...")
-    
+
     # Count how many message files we have
     dump_file_id = 1
     message_files = []
-    
+
     while True:
         message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
         if not os.path.exists(message_filename):
             break
         message_files.append(dump_file_id)
         dump_file_id += 1
-    
+
     total_files = len(message_files)
-    
+
     if total_files == 0:
         logging.info("No message files to import")
         return
-    
+
     logging.info("Found %d message dump files to process", total_files)
-    
+
     # Determine if we should use parallel processing
     if processes > 1 and total_files > 1:
         # Use parallel processing
         import multiprocessing
-        
+
         # Use the minimum of: requested processes, CPU count, and total files
         num_processes = min(processes, multiprocessing.cpu_count(), total_files)
         logging.info("Using %d parallel processes for message import", num_processes)
-        
+
         # Prepare arguments for each worker
         # Each worker gets: (file_id, import_dir, realm_id, sender_map)
         worker_args = [
-            (file_id, import_dir, realm.id, sender_map)
-            for file_id in message_files
+            (file_id, import_dir, realm.id, sender_map) for file_id in message_files
         ]
-        
+
         # Run in parallel!
         run_parallel(
             process_message_file_worker,
             worker_args,
             processes=num_processes,
         )
-        
+
         logging.info("Parallel message import completed!")
     else:
         # Sequential processing (original behavior)
