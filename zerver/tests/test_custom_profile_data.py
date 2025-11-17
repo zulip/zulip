@@ -694,6 +694,32 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             result, "Only 2 custom profile fields can be displayed in the profile summary."
         )
 
+    def test_update_use_in_mentions(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        self.assertFalse(field.use_in_mentions)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "use_in_mentions": "true",
+            },
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertTrue(field.use_in_mentions)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "use_in_mentions": "false",
+            },
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertFalse(field.use_in_mentions)
+
     def test_update_field_data(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
