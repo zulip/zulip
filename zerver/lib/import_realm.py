@@ -1967,17 +1967,74 @@ def send_zulip_initial_messages_after_import(realm: Realm, target_channel: Strea
         lower_bound_id = user_profiles_batch[-1].id
 
 
+def convert_dict_keys_to_strings(data: Any) -> Any:
+    """
+    Recursively convert all dictionary keys to strings for JSON serialization.
+
+    This is necessary because orjson.dumps() requires all dictionary keys to be strings,
+    but ID_MAP can contain integer keys (e.g., {123: 456}) or even tuple keys in some cases.
+
+    Args:
+        data: Any Python object (dict, list, primitive, etc.)
+
+    Returns:
+        The same data structure with all dict keys converted to strings
+    """
+    if isinstance(data, dict):
+        return {str(key): convert_dict_keys_to_strings(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [convert_dict_keys_to_strings(item) for item in data]
+    else:
+        return data
+
+
+def convert_dict_keys_to_integers(data: Any) -> Any:
+    """
+    Recursively convert stringified dictionary keys back to integers where possible.
+
+    This reverses the effect of convert_dict_keys_to_strings() after JSON deserialization.
+    It attempts to convert string keys to integers, but leaves them as strings if conversion fails.
+
+    Args:
+        data: Any Python object (dict, list, primitive, etc.)
+
+    Returns:
+        The same data structure with numeric string keys converted back to integers
+    """
+    if isinstance(data, dict):
+        converted = {}
+        for key, value in data.items():
+            # Try to convert the key to an integer
+            try:
+                converted_key = int(key)
+            except (ValueError, TypeError):
+                # If conversion fails, keep it as a string
+                converted_key = key
+            converted[converted_key] = convert_dict_keys_to_integers(value)
+        return converted
+    elif isinstance(data, list):
+        return [convert_dict_keys_to_integers(item) for item in data]
+    else:
+        return data
+
+
 def save_id_map_to_disk(import_dir: Path) -> None:
     """
     Save ID_MAP to disk so parallel workers can load it.
     This serves as a 'plan of record' for the import process and enables
     safe parallelization of message imports.
+
+    Note: ID_MAP can contain non-string keys (integers, tuples, etc.), but JSON
+    requires all keys to be strings. We convert keys to strings before serialization.
     """
     id_map_file = os.path.join(import_dir, "id_map.json")
     logging.info("Saving ID_MAP to disk for parallel processing...")
 
+    # Convert all dictionary keys to strings for JSON compatibility
+    serializable_id_map = convert_dict_keys_to_strings(ID_MAP)
+
     with open(id_map_file, "wb") as f:
-        f.write(orjson.dumps(ID_MAP))
+        f.write(orjson.dumps(serializable_id_map))
 
     logging.info(
         "ID_MAP saved: %d message mappings, %d total tables",
@@ -1990,6 +2047,9 @@ def load_id_map_from_disk(import_dir: Path) -> dict[str, dict[int, int]]:
     """
     Load ID_MAP from disk for parallel workers.
     Each worker gets its own copy to avoid threading issues.
+
+    Note: JSON serialization converts all keys to strings, so we convert
+    numeric string keys back to integers after deserialization.
     """
     id_map_file = os.path.join(import_dir, "id_map.json")
 
@@ -1999,12 +2059,8 @@ def load_id_map_from_disk(import_dir: Path) -> dict[str, dict[int, int]]:
     with open(id_map_file, "rb") as f:
         loaded_data = orjson.loads(f.read())
 
-    # JSON serialization converts integer keys to strings, so we need to convert them back
-    id_map: dict[str, dict[int, int]] = {}
-    for table_name, mapping in loaded_data.items():
-        id_map[table_name] = {int(old_id): new_id for old_id, new_id in mapping.items()}
-
-    return id_map
+    # Convert string keys back to integers where possible
+    return convert_dict_keys_to_integers(loaded_data)
 
 
 def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
