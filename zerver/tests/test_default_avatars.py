@@ -257,3 +257,86 @@ class RealmDefaultAvatarProviderTest(ZulipTestCase):
         bot = get_user_profile_by_id(bot.id)
         # Bots should be updated too
         self.assertEqual(bot.avatar_source, "S")
+
+
+class AvatarGeneratorViewsTest(ZulipTestCase):
+    """Test the avatar generator endpoints."""
+
+    def test_jdenticon_avatar_endpoint(self) -> None:
+        """Test the Jdenticon avatar generation endpoint."""
+        hamlet = self.example_user("hamlet")
+
+        # Test with default size
+        response = self.client_get(f"/avatar/jdenticon/{hamlet.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", response.content)
+
+        # Test with custom size
+        response = self.client_get(f"/avatar/jdenticon/{hamlet.id}?s=150")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"<svg", response.content)
+
+        # Test size limits (too small)
+        response = self.client_get(f"/avatar/jdenticon/{hamlet.id}?s=8")
+        self.assertEqual(response.status_code, 200)
+
+        # Test size limits (too large)
+        response = self.client_get(f"/avatar/jdenticon/{hamlet.id}?s=1000")
+        self.assertEqual(response.status_code, 200)
+
+        # Test invalid size parameter
+        response = self.client_get(f"/avatar/jdenticon/{hamlet.id}?s=invalid")
+        self.assertEqual(response.status_code, 200)  # Should fallback to default
+
+    def test_silhouette_avatar_endpoint(self) -> None:
+        """Test the Silhouette avatar generation endpoint."""
+        hamlet = self.example_user("hamlet")
+
+        # Test with default size
+        response = self.client_get(f"/avatar/silhouette/{hamlet.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", response.content)
+
+        # Test with custom size
+        response = self.client_get(f"/avatar/silhouette/{hamlet.id}?s=150")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"<svg", response.content)
+
+        # Test size limits
+        response = self.client_get(f"/avatar/silhouette/{hamlet.id}?s=8")
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client_get(f"/avatar/silhouette/{hamlet.id}?s=1000")
+        self.assertEqual(response.status_code, 200)
+
+        # Test invalid size parameter
+        response = self.client_get(f"/avatar/silhouette/{hamlet.id}?s=bad")
+        self.assertEqual(response.status_code, 200)
+
+    def test_realm_icon_jdenticon_endpoint(self) -> None:
+        """Test the realm Jdenticon icon generation endpoint."""
+        realm = get_realm("zulip")
+
+        # Test with default size
+        response = self.client_get(f"/realm/icon/jdenticon/{realm.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", response.content)
+
+        # Test with custom size
+        response = self.client_get(f"/realm/icon/jdenticon/{realm.id}?s=200")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"<svg", response.content)
+
+        # Test size limits
+        response = self.client_get(f"/realm/icon/jdenticon/{realm.id}?s=10")
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client_get(f"/realm/icon/jdenticon/{realm.id}?s=1000")
+        self.assertEqual(response.status_code, 200)
+
+        # Test invalid size
+        response = self.client_get(f"/realm/icon/jdenticon/{realm.id}?s=xyz")
+        self.assertEqual(response.status_code, 200)

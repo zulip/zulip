@@ -472,6 +472,35 @@ class InviteUserTest(InviteUserBase):
             ],
         )
 
+        # Test the no-realm-icon flag by setting realm to use Gravatar
+        from zerver.actions.realm_icon import do_change_icon_source
+
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR, acting_user=None)
+        # Now we have 6 flags, so the ratio is 2x instead of 3x
+        with self.assertLogs(level="INFO") as m:
+            self.assertFalse(too_many_recent_realm_invites(realm, 2))
+            self.assertTrue(too_many_recent_realm_invites(realm, 3))
+        self.assertEqual(
+            m.output,
+            [
+                (
+                    "INFO:root:sdfoijt23489fuskdfjhksdf "
+                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "inviting 2 more, have 0 recent, but only 1 current users.  "
+                    "Ratio 2.0, 2 allowed"
+                ),
+                (
+                    "WARNING:root:sdfoijt23489fuskdfjhksdf "
+                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "inviting 3 more, have 0 recent, but only 1 current users.  "
+                    "Ratio 3.0, 2 allowed"
+                ),
+            ],
+        )
+
+        # Reset to Jdenticon for the rest of the test
+        do_change_icon_source(realm, Realm.ICON_FROM_JDENTICON, acting_user=None)
+
         # Having another user makes it slightly less suspicious, and
         # also able to invite more in ratio with the current count of
         # users (3x current 2 users)

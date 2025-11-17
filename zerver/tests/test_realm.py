@@ -2538,6 +2538,12 @@ class RealmAPITest(ZulipTestCase):
         result = self.client_patch("/json/realm", {"default_avatar_provider": invalid_provider})
         self.assert_json_error(result, f"Invalid default_avatar_provider {invalid_provider}")
 
+        # Test no-op update (setting same value again)
+        realm.refresh_from_db()
+        current_provider = realm.default_avatar_provider
+        realm = self.update_with_api("default_avatar_provider", current_provider)
+        self.assertEqual(realm.default_avatar_provider, current_provider)
+
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):
             val = orjson.dumps(val).decode()

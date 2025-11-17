@@ -198,9 +198,18 @@ async function delete_realm_icon(page: Page): Promise<void> {
 
 async function test_organization_profile(page: Page): Promise<void> {
     await page.click("li[data-section='organization-profile']");
-    const gravatar_selector =
-        '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
-    await page.waitForSelector(gravatar_selector, {visible: true});
+    // Wait for the image to load with the default icon (Jdenticon or Gravatar)
+    await page.waitForSelector("#realm-icon-upload-widget .image-block", {visible: true});
+    // Verify it has a default icon (either Jdenticon or Gravatar)
+    const icon_src = await page.$eval(
+        "#realm-icon-upload-widget .image-block",
+        (el) => el.getAttribute("src") ?? "",
+    );
+    // Test fixtures may use either Jdenticon (new default) or Gravatar (legacy)
+    const has_default_icon =
+        icon_src.includes("/realm/icon/jdenticon/") ||
+        icon_src.includes("https://secure.gravatar.com/avatar/");
+    assert.ok(has_default_icon, `Expected default icon, got: ${icon_src}`);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 
     await test_upload_realm_icon_image(page);
@@ -208,7 +217,18 @@ async function test_organization_profile(page: Page): Promise<void> {
 
     await delete_realm_icon(page);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
-    await page.waitForSelector(gravatar_selector, {visible: true});
+    // After deleting, it should go back to the default icon
+    const icon_src_after_delete = await page.$eval(
+        "#realm-icon-upload-widget .image-block",
+        (el) => el.getAttribute("src") ?? "",
+    );
+    const has_default_icon_after_delete =
+        icon_src_after_delete.includes("/realm/icon/jdenticon/") ||
+        icon_src_after_delete.includes("https://secure.gravatar.com/avatar/");
+    assert.ok(
+        has_default_icon_after_delete,
+        `Expected default icon after delete, got: ${icon_src_after_delete}`,
+    );
 }
 
 async function test_authentication_methods(page: Page): Promise<void> {
