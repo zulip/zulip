@@ -29,7 +29,6 @@ def schedule_reminder_for_message(
         addressee,
         get_reminder_formatted_content(message, current_user, note),
         current_user.realm,
-        forwarder_user_profile=current_user,
     )
     send_request.deliver_at = deliver_at
     send_request.reminder_target_message_id = message_id
