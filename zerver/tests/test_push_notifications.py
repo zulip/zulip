@@ -35,9 +35,11 @@ from zerver.lib.push_notifications import (
     get_apns_badge_count_future,
     get_apns_context,
     get_base_payload,
+    get_message_payload,
     get_message_payload_apns,
     get_message_payload_gcm,
     get_mobile_push_content,
+    handle_push_notification,
     parse_fcm_options,
     send_android_push_notification_to_user,
     send_apple_push_notification,
@@ -812,9 +814,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         remote_server.last_api_feature_level = 235
         remote_server.save()
 
-        gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        message_payload = get_message_payload(hamlet, message)
+        gcm_payload, gcm_options = get_message_payload_gcm(message_payload, hamlet, message)
         apns_payload = get_message_payload_apns(
-            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+            message_payload, hamlet, message, NotificationTriggers.DIRECT_MESSAGE
         )
         payload = {
             "user_id": hamlet.id,
@@ -1447,6 +1450,31 @@ class TestAPNs(PushNotificationTestCase):
 
 
 class TestGetAPNsPayload(PushNotificationTestCase):
+    def _get_message_payload_apns(
+        self,
+        user_profile: UserProfile,
+        message: Message,
+        trigger: str,
+        mentioned_user_group_id: int | None = None,
+        mentioned_user_group_name: str | None = None,
+        can_access_sender: bool = True,
+    ) -> dict[str, Any]:
+        message_payload = get_message_payload(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
+        apns_payload = get_message_payload_apns(
+            message_payload,
+            user_profile,
+            message,
+            trigger,
+            can_access_sender,
+        )
+        return apns_payload
+
     def test_get_message_payload_apns_personal_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_personal_message(
@@ -1455,7 +1483,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             "Content of personal message",
         )
         message = Message.objects.get(id=message_id)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
@@ -1495,7 +1523,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         )
         message = Message.objects.get(id=message_id)
         self.assertEqual(message.recipient, direct_message_group.recipient)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
@@ -1534,7 +1562,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             self.sender, [self.example_user("othello"), self.example_user("cordelia")]
         )
         message = Message.objects.get(id=message_id)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
@@ -1580,7 +1608,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
             message.save()
             topic_display_name = Message.EMPTY_TOPIC_FALLBACK_NAME
 
-        payload = get_message_payload_apns(self.sender, message, trigger)
+        payload = self._get_message_payload_apns(self.sender, message, trigger)
         expected = {
             "alert": {
                 "title": f"#Verona > {topic_display_name}",
@@ -1622,7 +1650,9 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(user_profile, message, NotificationTriggers.MENTION)
+        payload = self._get_message_payload_apns(
+            user_profile, message, NotificationTriggers.MENTION
+        )
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1656,7 +1686,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         )
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile, message, NotificationTriggers.MENTION, user_group.id, user_group.name
         )
         expected = {
@@ -1691,7 +1721,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             user_profile,
             message,
             trigger,
@@ -1761,7 +1791,7 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         self.sender = hamlet
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
 
-        payload = get_message_payload_apns(
+        payload = self._get_message_payload_apns(
             polonius, message, NotificationTriggers.STREAM_PUSH, can_access_sender=False
         )
         expected = {
@@ -1792,6 +1822,26 @@ class TestGetAPNsPayload(PushNotificationTestCase):
 
 
 class TestGetGCMPayload(PushNotificationTestCase):
+    def _get_message_payload_gcm(
+        self,
+        user_profile: UserProfile,
+        message: Message,
+        mentioned_user_group_id: int | None = None,
+        mentioned_user_group_name: str | None = None,
+        can_access_sender: bool = True,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        message_payload = get_message_payload(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
+        gcm_payload, gcm_options = get_message_payload_gcm(
+            message_payload, user_profile, message, can_access_sender
+        )
+        return gcm_payload, gcm_options
+
     def _test_get_message_payload_gcm_stream_message(
         self,
         truncate_content: bool = False,
@@ -1816,7 +1866,7 @@ class TestGetGCMPayload(PushNotificationTestCase):
             topic_display_name = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
+        payload, gcm_options = self._get_message_payload_gcm(
             hamlet, message, mentioned_user_group_id, mentioned_user_group_name
         )
         expected_payload = {
@@ -1878,7 +1928,7 @@ class TestGetGCMPayload(PushNotificationTestCase):
             realm_id=self.personal_recipient_user.realm_id,
         )
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        payload, gcm_options = self._get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
             {
@@ -1925,7 +1975,9 @@ class TestGetGCMPayload(PushNotificationTestCase):
         self.sender = hamlet
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
 
-        payload, gcm_options = get_message_payload_gcm(polonius, message, can_access_sender=False)
+        payload, gcm_options = self._get_message_payload_gcm(
+            polonius, message, can_access_sender=False
+        )
         self.assertDictEqual(
             payload,
             {
@@ -2039,6 +2091,84 @@ class TestSendNotificationsToBouncer(PushNotificationTestCase):
         )
         user.realm.refresh_from_db()
         self.assertEqual(user.realm.push_notifications_enabled, False)
+
+    @activate_push_notification_service()
+    def test_payload_both_android_apple_registered(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        realm = get_realm("zulip")
+        user_group = check_add_user_group(realm, "test_user_group", [hamlet], acting_user=hamlet)
+
+        time_now = now()
+        channel = self.subscribe(aaron, "Denmark")
+        self.setup_apns_tokens()
+        self.setup_fcm_tokens()
+        with time_machine.travel(time_now, tick=False):
+            message_id = self.send_stream_message(
+                sender=aaron,
+                stream_name=channel.name,
+                content=f"@*{user_group.name}*",
+                skip_capture_on_commit_callbacks=True,
+            )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.MENTION,
+            "mentioned_user_group_id": user_group.id,
+        }
+
+        apns_expected_payload = {
+            "alert": {
+                "body": f"@{user_group.name}",
+                "subtitle": f"{aaron.full_name} mentioned @{user_group.name}:",
+                "title": f"#{channel.name} > test",
+            },
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "mentioned_user_group_id": user_group.id,
+                    "mentioned_user_group_name": user_group.name,
+                    "message_ids": [message_id],
+                    "realm_name": realm.name,
+                    "realm_uri": realm.url,
+                    "realm_url": realm.url,
+                    "recipient_type": "stream",
+                    "sender_email": aaron.email,
+                    "sender_id": aaron.id,
+                    "stream": channel.name,
+                    "stream_id": channel.id,
+                    "topic": "test",
+                    "user_id": hamlet.id,
+                }
+            },
+            "sound": "default",
+        }
+        fcm_expected_payload = {
+            "content": f"@{user_group.name}",
+            "event": "message",
+            "mentioned_user_group_id": user_group.id,
+            "mentioned_user_group_name": user_group.name,
+            "realm_id": realm.id,
+            "realm_name": realm.name,
+            "realm_uri": realm.url,
+            "realm_url": realm.url,
+            "recipient_type": "stream",
+            "sender_avatar_url": absolute_avatar_url(aaron),
+            "sender_email": aaron.email,
+            "sender_full_name": aaron.full_name,
+            "sender_id": aaron.id,
+            "server": "testserver",
+            "stream": channel.name,
+            "stream_id": channel.id,
+            "time": datetime_to_timestamp(time_now),
+            "topic": "test",
+            "user_id": hamlet.id,
+            "zulip_message_id": message_id,
+        }
+        with mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy") as m:
+            handle_push_notification(hamlet.id, missed_message)
+
+            self.assertEqual(m.call_args.args[1], apns_expected_payload)
+            self.assertEqual(m.call_args.args[2], fcm_expected_payload)
 
 
 @activate_push_notification_service()
