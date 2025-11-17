@@ -45,7 +45,6 @@ def check_schedule_message(
     deliver_at: datetime,
     realm: Realm | None = None,
     *,
-    forwarder_user_profile: UserProfile | None = None,
     read_by_sender: bool | None = None,
     skip_events: bool = False,
 ) -> int:
@@ -56,7 +55,6 @@ def check_schedule_message(
         addressee,
         message_content,
         realm=realm,
-        forwarder_user_profile=forwarder_user_profile,
     )
     send_request.deliver_at = deliver_at
 
@@ -236,7 +234,6 @@ def edit_scheduled_message(
             addressee,
             updated_content,
             realm=realm,
-            forwarder_user_profile=sender,
         )
 
     if recipient_type_name is not None or message_to is not None:
