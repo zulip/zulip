@@ -43,7 +43,7 @@ const admin_settings_label = {
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
     realm_default_avatar_provider: $t({
-        defaultMessage: "Default profile pictures for new users",
+        defaultMessage: "Change default avatar",
     }),
     realm_require_e2ee_push_notifications: $t({
         defaultMessage: "Require end-to-end encryption for push notification content",
