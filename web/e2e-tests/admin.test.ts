@@ -206,9 +206,12 @@ async function test_organization_profile(page: Page): Promise<void> {
         (el) => el.getAttribute("src") ?? "",
     );
     // Test fixtures may use either Jdenticon (new default) or Gravatar (legacy)
-    const has_default_icon =
-        icon_src.includes("/realm/icon/jdenticon/") ||
-        icon_src.includes("https://secure.gravatar.com/avatar/");
+    // Properly validate URLs to avoid security issues
+    const is_jdenticon = icon_src.startsWith("/realm/icon/jdenticon/");
+    const is_gravatar =
+        icon_src.startsWith("https://secure.gravatar.com/avatar/") ||
+        icon_src.startsWith("http://secure.gravatar.com/avatar/");
+    const has_default_icon = is_jdenticon || is_gravatar;
     assert.ok(has_default_icon, `Expected default icon, got: ${icon_src}`);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 
@@ -222,9 +225,11 @@ async function test_organization_profile(page: Page): Promise<void> {
         "#realm-icon-upload-widget .image-block",
         (el) => el.getAttribute("src") ?? "",
     );
-    const has_default_icon_after_delete =
-        icon_src_after_delete.includes("/realm/icon/jdenticon/") ||
-        icon_src_after_delete.includes("https://secure.gravatar.com/avatar/");
+    const is_jdenticon_after = icon_src_after_delete.startsWith("/realm/icon/jdenticon/");
+    const is_gravatar_after =
+        icon_src_after_delete.startsWith("https://secure.gravatar.com/avatar/") ||
+        icon_src_after_delete.startsWith("http://secure.gravatar.com/avatar/");
+    const has_default_icon_after_delete = is_jdenticon_after || is_gravatar_after;
     assert.ok(
         has_default_icon_after_delete,
         `Expected default icon after delete, got: ${icon_src_after_delete}`,
