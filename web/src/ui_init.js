@@ -473,6 +473,16 @@ export async function initialize_everything(state_data) {
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
+
+    // The user_group must be initialized before right sidebar
+    // module, so that we can tell whether user is member of
+    // user_group whose members are allowed to create multiuse
+    // invite. The user_group module must also be initialized
+    // before people module, so that can_access_all_users_group
+    // setting group can be used to check whether the user
+    // has permission to access all other users.
+    user_groups.initialize(state_data.user_groups);
+
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
@@ -482,11 +492,6 @@ export async function initialize_everything(state_data) {
         ...state_data.emoji,
         emoji_codes: generated_emoji_codes,
     });
-
-    // The user_group must be initialized before right sidebar
-    // module, so that we can tell whether user is member of
-    // user_group whose members are allowed to create multiuse invite.
-    user_groups.initialize(state_data.user_groups);
 
     // Channel folders data must be initialized before left sidebar.
     channel_folders.initialize(state_data.channel_folders);
