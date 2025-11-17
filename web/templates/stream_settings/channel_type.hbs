@@ -1,0 +1,17 @@
+<div class="input-group stream-privacy-values">
+    <div class="alert stream-privacy-status"></div>
+    <label>{{t 'Who can access this channel'}}
+        {{> ../help_link_widget link="/help/channel-permissions" }}
+    </label>
+
+    <div class="stream-privacy_choices prop-element" id="{{prefix}}stream_privacy" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+        {{#each stream_privacy_policy_values}}
+            <div class="settings-radio-input-parent">
+                <label class="radio">
+                    <input type="radio" name="privacy" value="{{ this.code }}" {{#if (eq this.code ../stream_privacy_policy) }}checked{{/if}} />
+                    <b class="highlighted-element">{{ this.name }}:</b> {{ this.description }}
+                </label>
+            </div>
+        {{/each}}
+    </div>
+</div>
