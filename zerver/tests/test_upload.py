@@ -1887,6 +1887,8 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_settings_realm_icon(self) -> None:
         self.login("hamlet")
+        realm = get_realm("zulip")
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR, acting_user=None)
         with self.settings(
             ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/icon.svg"
         ):

@@ -943,10 +943,7 @@ export function small_avatar_url_for_person(person: User | CurrentUser): string 
     // We need to attach a version to the URL as a cache-breaker so that the browser
     // will update the image in real time when user avatar settings change.
     const version = "avatar_version" in person ? person.avatar_version : 0;
-    if (version > 0) {
-        return `/avatar/${person.user_id}?version=${version}`;
-    }
-    return `/avatar/${person.user_id}`;
+    return `/avatar/${person.user_id}${version > 0 ? `?version=${version}` : ""}`;
 }
 
 export function medium_avatar_url_for_person(person: User | CurrentUser): string {
@@ -962,14 +959,6 @@ export function medium_avatar_url_for_person(person: User | CurrentUser): string
         const url = new URL(person.avatar_url, window.location.origin);
         if (url.origin === "https://secure.gravatar.com") {
             url.search += (url.search ? "&" : "") + "s=500";
-            return url.href;
-        }
-        // For other avatar types (Jdenticon, Silhouettes), update the size parameter
-        if (
-            url.pathname.startsWith("/avatar/jdenticon/") ||
-            url.pathname.startsWith("/avatar/silhouette/")
-        ) {
-            url.searchParams.set("s", "500");
             return url.href;
         }
     }
