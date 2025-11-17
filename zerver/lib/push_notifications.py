@@ -1148,21 +1148,19 @@ def get_apns_badge_count_future(
 
 
 def get_message_payload_apns(
+    message_payload: Mapping[str, Any],
     user_profile: UserProfile,
     message: Message,
     trigger: str,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
-    zulip_data = get_message_payload(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
-    )
-    zulip_data.update(
+    message_payload = dict(copy.deepcopy(message_payload))
+    message_payload.update(
         message_ids=[message.id],
     )
-    remove_obsolete_fields_apns(zulip_data)
+    mentioned_user_group_name = message_payload.get("mentioned_user_group_name")
+    remove_obsolete_fields_apns(message_payload)
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
@@ -1177,29 +1175,19 @@ def get_message_payload_apns(
             },
             "sound": "default",
             "badge": get_apns_badge_count(user_profile),
-            "custom": {"zulip": zulip_data},
+            "custom": {"zulip": message_payload},
         }
     return apns_data
 
 
 def get_message_payload_gcm(
+    message_payload: Mapping[str, Any],
     user_profile: UserProfile,
     message: Message,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
     for_legacy_clients: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `message` payload + options, for Android via FCM."""
-    data = get_message_payload(
-        user_profile,
-        message,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-        for_legacy_clients,
-    )
-
     if not can_access_sender:
         # A guest user can only receive a stream message from an
         # inaccessible user as we allow unsubscribed users to send
@@ -1211,42 +1199,25 @@ def get_message_payload_gcm(
         sender_avatar_url = absolute_avatar_url(message.sender)
         sender_name = message.sender.full_name
 
+    message_payload = dict(copy.deepcopy(message_payload))
     if for_legacy_clients:
-        data["event"] = "message"
-        data["zulip_message_id"] = message.id  # message_id is reserved for CCS
+        message_payload["event"] = "message"
+        message_payload["zulip_message_id"] = message.id  # message_id is reserved for CCS
     else:
-        data["type"] = "message"
-        data["message_id"] = message.id
+        message_payload["type"] = "message"
+        message_payload["message_id"] = message.id
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, _truncated = truncate_content(get_mobile_push_content(message.rendered_content))
-        data.update(
+        message_payload.update(
             time=datetime_to_timestamp(message.date_sent),
             content=content,
             sender_full_name=sender_name,
             sender_avatar_url=sender_avatar_url,
         )
     gcm_options = {"priority": "high"}
-    return data, gcm_options
-
-
-def get_payload_data_to_encrypt(
-    user_profile: UserProfile,
-    message: Message,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
-    can_access_sender: bool = True,
-) -> dict[str, Any]:
-    payload_data_to_encrypt, _gcm_options = get_message_payload_gcm(
-        user_profile,
-        message,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-        for_legacy_clients=False,
-    )
-    return payload_data_to_encrypt
+    return message_payload, gcm_options
 
 
 def get_remove_payload_gcm(
@@ -1811,13 +1782,20 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     def get_payload_legacy(
         apple_device_exists: bool, android_device_exists: bool
     ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        assert apple_device_exists or android_device_exists
+        message_payload = get_message_payload(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
         apns_payload = (
             get_message_payload_apns(
+                message_payload,
                 user_profile,
                 message,
                 trigger,
-                mentioned_user_group_id,
-                mentioned_user_group_name,
                 can_access_sender,
             )
             if apple_device_exists
@@ -1825,10 +1803,9 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         )
         gcm_payload, gcm_options = (
             get_message_payload_gcm(
+                message_payload,
                 user_profile,
                 message,
-                mentioned_user_group_id,
-                mentioned_user_group_name,
                 can_access_sender,
             )
             if android_device_exists
@@ -1837,12 +1814,20 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         return apns_payload, gcm_payload, gcm_options
 
     def get_payload_to_encrypt() -> dict[str, Any]:
-        payload_data_to_encrypt = get_payload_data_to_encrypt(
+        message_payload = get_message_payload(
             user_profile,
             message,
             mentioned_user_group_id,
             mentioned_user_group_name,
             can_access_sender,
+            for_legacy_clients=False,
+        )
+        payload_data_to_encrypt, _gcm_options = get_message_payload_gcm(
+            message_payload,
+            user_profile,
+            message,
+            can_access_sender,
+            for_legacy_clients=False,
         )
         return payload_data_to_encrypt
 
