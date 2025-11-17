@@ -1,38 +1,44 @@
 # Outgoing webhooks
 
 Outgoing webhooks allow you to build or set up Zulip integrations
-which are notified when certain types of messages are sent in
-Zulip. When one of those events is triggered, we'll send an HTTP POST
-payload to the webhook's configured URL.  Webhooks can be used to
-power a wide range of Zulip integrations.  For example, the
-[Zulip Botserver][zulip-botserver] is built on top of this API.
+which are notified when certain types of messages are sent in Zulip
+When one of those events is [triggered](#triggering), the Zulip server
+will send an HTTP POST payload to the webhook's configured URL.
 
-Zulip supports outgoing webhooks both in a clean native Zulip format,
-as well as a format that's compatible with
-[Slack's outgoing webhook API][slack-outgoing-webhook], which can help
-with porting an existing Slack integration to work with Zulip.
+Outgoing webhooks can be used to power a wide range of Zulip
+integrations. For example, the [Zulip Botserver](/api/deploying-bots#zulip-botserver)
+is built on top of this API.
 
-[zulip-botserver]: /api/deploying-bots#zulip-botserver
-[slack-outgoing-webhook]: https://api.slack.com/custom-integrations/outgoing-webhooks
+## Create an outgoing webhook bot user
 
-To register an outgoing webhook:
+{start_tabs}
 
-* Log in to the Zulip server.
-* Navigate to *Personal settings (<i class="zulip-icon zulip-icon-gear"></i>)* -> *Bots* ->
-  *Add a new bot*.  Select *Outgoing webhook* for bot type, the URL
-  you'd like Zulip to post to as the **Endpoint URL**, the format you
-  want, and click on *Create bot*. to submit the form/
-* Your new bot user will appear in the *Active bots* panel, which you
-  can use to edit the bot's settings.
+{tab|desktop-web}
+
+{settings_tab|your-bots}
+
+1. Click **Add a new bot**.
+
+1. Set **Bot type** to **Outgoing webhook**.
+
+1. Fill out the fields, with **Endpoint URL** set to the URL you'd like
+   Zulip to post to, and the outgoing webhook [format](#formats) you
+   plan on using.
+
+1. Click **Add**.
+
+{end_tabs}
 
 ## Triggering
 
 There are currently two ways to trigger an outgoing webhook:
 
-*  **@-mention** the bot user in a channel.  If the bot replies, its
-    reply will be sent to that channel and topic.
-*  **Send a direct message** with the bot as one of the recipients.
-    If the bot replies, its reply will be sent to that thread.
+*  **@-mention** the bot user in a channel.  If the bot
+   [replies](#replying-with-a-message), its reply will be sent to that
+   channel and topic.
+*  **Send a direct message** with the bot user as one of the recipients.
+    If the bot [replies](#replying-with-a-message), its reply will be
+    sent to that direct message conversation.
 
 ## Timeouts
 
@@ -40,17 +46,7 @@ The remote server must respond to a `POST` request in a timely manner.
 The default timeout for outgoing webhooks is 10 seconds, though this
 can be configured by the administrator of the Zulip server by setting
 `OUTGOING_WEBHOOKS_TIMEOUT_SECONDS` in the [server's
-settings][settings].
-
-[settings]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
-
-## Outgoing webhook format
-
-{generate_code_example|/zulip-outgoing-webhook:post|fixture}
-
-### Fields documentation
-
-{generate_return_values_table|zulip.yaml|/zulip-outgoing-webhook:post}
+settings](https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings).
 
 ## Replying with a message
 
@@ -87,16 +83,33 @@ you would like to send a response message:
 }
 ```
 
-The `content` field should contain Zulip-format Markdown.
+The `content` field should contain [Zulip-flavored Markdown](/help/format-your-message-using-markdown).
 
 Note that an outgoing webhook bot can use the [Zulip REST
 API](/api/rest) with its API key in case your bot needs to do
 something else, like add an emoji reaction or upload a file.
 
-## Slack-compatible webhook format
+## Formats
 
-The Slack-compatible webhook format allows immediate integration with
-many third-party systems that already support Slack outgoing webhooks.
+Zulip supports outgoing webhooks in a clean, native
+[Zulip format](#zulip-format), as well as in a
+[Slack-compatible format](#slack-compatible-format).
+
+### Zulip format
+
+{generate_code_example|/zulip-outgoing-webhook:post|fixture}
+
+### Fields documentation
+
+{generate_return_values_table|zulip.yaml|/zulip-outgoing-webhook:post}
+
+### Slack-compatible format
+
+This webhook format is compatible with [Slack's outgoing webhook
+API](https://api.slack.com/custom-integrations/outgoing-webhooks),
+which can help with porting an existing Slack integration to work with
+Zulip, and allows immediate integration with many third-party systems
+that already support Slack outgoing webhooks.
 
 The following table details how the Zulip server translates a Zulip
 message into the Slack-compatible webhook format.
