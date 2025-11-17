@@ -940,10 +940,13 @@ export function small_avatar_url_for_person(person: User | CurrentUser): string 
         return person.avatar_url;
     }
 
-    return `/avatar/${person.user_id}`;
+    // We need to attach a version to the URL as a cache-breaker so that the browser
+    // will update the image in real time when user avatar settings change.
+    const version = "avatar_version" in person ? person.avatar_version : 0;
+    return `/avatar/${person.user_id}?version=${version}`;
 }
 
-export function medium_avatar_url_for_person(person: User): string {
+export function medium_avatar_url_for_person(person: User | CurrentUser): string {
     /* Unlike the small avatar URL case, we don't generally have a
      * medium avatar URL included in person objects. So only have the
      * gravatar and server endpoints here. */
@@ -958,6 +961,14 @@ export function medium_avatar_url_for_person(person: User): string {
             url.search += (url.search ? "&" : "") + "s=500";
             return url.href;
         }
+        // For other avatar types (Jdenticon, Silhouettes), update the size parameter
+        if (
+            url.pathname.startsWith("/avatar/jdenticon/") ||
+            url.pathname.startsWith("/avatar/silhouette/")
+        ) {
+            url.searchParams.set("s", "500");
+            return url.href;
+        }
     }
 
     // We need to attach a version to the URL as a cache-breaker so that the browser
@@ -967,7 +978,8 @@ export function medium_avatar_url_for_person(person: User): string {
     // the report_late_add code path; these are missing the avatar_version
     // metadata. Long term, we should clean up that possibility, but
     // until it is, we fallback to using a version number of 0.
-    return `/avatar/${person.user_id}/medium?version=${person.avatar_version ?? 0}`;
+    const version = "avatar_version" in person ? person.avatar_version : 0;
+    return `/avatar/${person.user_id}/medium?version=${version}`;
 }
 
 export function sender_info_for_recent_view_row(sender_ids: number[]): SenderInfo[] {

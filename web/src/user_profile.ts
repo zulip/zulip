@@ -168,7 +168,7 @@ export function update_profile_modal_ui(
     if (new_data.avatar_url !== undefined) {
         $("#avatar").css(
             "background-image",
-            `url(${CSS.escape(people.medium_avatar_url_for_person(user))})`,
+            `url(${CSS.escape(people.small_avatar_url_for_person(user))})`,
         );
     }
     if (new_data.delivery_email !== undefined) {
@@ -645,7 +645,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         show_user_subscribe_widget,
         show_user_group_container,
-        user_avatar: people.medium_avatar_url_for_person(user),
+        user_avatar: people.small_avatar_url_for_person(user),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         user_id: user.user_id,
         user_is_guest: user.is_guest,

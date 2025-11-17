@@ -4410,6 +4410,11 @@ class RealmPropertyActionTest(BaseAction):
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
+            default_avatar_provider=[
+                Realm.DEFAULT_AVATAR_JDENTICON,
+                Realm.DEFAULT_AVATAR_SILHOUETTES,
+                Realm.DEFAULT_AVATAR_GRAVATAR,
+            ],
         )
 
         vals = test_values.get(name)

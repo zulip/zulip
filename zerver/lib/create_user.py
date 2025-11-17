@@ -21,6 +21,16 @@ from zerver.models import (
 from zerver.models.realms import get_fake_email_domain
 
 
+def get_default_avatar_source(realm: Realm) -> str:
+    """Get the default avatar source based on realm's default_avatar_provider setting."""
+    if realm.default_avatar_provider == Realm.DEFAULT_AVATAR_JDENTICON:
+        return UserProfile.AVATAR_FROM_JDENTICON
+    elif realm.default_avatar_provider == Realm.DEFAULT_AVATAR_SILHOUETTES:
+        return UserProfile.AVATAR_FROM_SILHOUETTES
+    else:  # DEFAULT_AVATAR_GRAVATAR or fallback
+        return UserProfile.AVATAR_FROM_GRAVATAR
+
+
 def copy_default_settings(
     settings_source: UserProfile | RealmUserDefault, target_profile: UserProfile
 ) -> None:
@@ -168,7 +178,7 @@ def create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str | None = None,
     is_mirror_dummy: bool = False,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
@@ -181,6 +191,10 @@ def create_user(
     enable_marketing_emails: bool | None = None,
     email_address_visibility: int | None = None,
 ) -> UserProfile:
+    # If avatar_source is not provided, use realm's default avatar provider
+    if avatar_source is None:
+        avatar_source = get_default_avatar_source(realm)
+
     realm_user_default = RealmUserDefault.objects.get(realm=realm)
     if bot_type is None:
         if email_address_visibility is not None:

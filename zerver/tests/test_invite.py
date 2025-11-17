@@ -441,32 +441,33 @@ class InviteUserTest(InviteUserBase):
             [
                 (
                     "INFO:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "(!: random-realm-name,no-realm-description,realm-created-in-last-hour,only-one-user,no-messages-sent) "
                     "inviting 1 more, have 0 recent, but only 1 current users.  "
-                    "Ratio 1.0, 2 allowed"
+                    "Ratio 1.0, 3 allowed"
                 )
             ],
         )
 
         # This realm is currently very suspicious, so can only invite
-        # 2 users at once (2x current 1 user)
+        # 3 users at once (3x current 1 user) - changed from 2x because
+        # realms now have default icons (Jdenticon) so 5 flags instead of 6
         with self.assertLogs(level="INFO") as m:
-            self.assertFalse(too_many_recent_realm_invites(realm, 2))
-            self.assertTrue(too_many_recent_realm_invites(realm, 3))
+            self.assertFalse(too_many_recent_realm_invites(realm, 3))
+            self.assertTrue(too_many_recent_realm_invites(realm, 4))
         self.assertEqual(
             m.output,
             [
                 (
                     "INFO:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
-                    "inviting 2 more, have 0 recent, but only 1 current users.  "
-                    "Ratio 2.0, 2 allowed"
+                    "(!: random-realm-name,no-realm-description,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "inviting 3 more, have 0 recent, but only 1 current users.  "
+                    "Ratio 3.0, 3 allowed"
                 ),
                 (
                     "WARNING:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,only-one-user,no-messages-sent) "
-                    "inviting 3 more, have 0 recent, but only 1 current users.  "
-                    "Ratio 3.0, 2 allowed"
+                    "(!: random-realm-name,no-realm-description,realm-created-in-last-hour,only-one-user,no-messages-sent) "
+                    "inviting 4 more, have 0 recent, but only 1 current users.  "
+                    "Ratio 4.0, 3 allowed"
                 ),
             ],
         )
@@ -483,13 +484,13 @@ class InviteUserTest(InviteUserBase):
             [
                 (
                     "INFO:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
+                    "(!: random-realm-name,no-realm-description,realm-created-in-last-hour,no-messages-sent) "
                     "inviting 6 more, have 0 recent, but only 2 current users.  "
                     "Ratio 3.0, 3 allowed"
                 ),
                 (
                     "WARNING:root:sdfoijt23489fuskdfjhksdf "
-                    "(!: random-realm-name,no-realm-description,no-realm-icon,realm-created-in-last-hour,no-messages-sent) "
+                    "(!: random-realm-name,no-realm-description,realm-created-in-last-hour,no-messages-sent) "
                     "inviting 7 more, have 0 recent, but only 2 current users.  "
                     "Ratio 3.5, 3 allowed"
                 ),
@@ -511,13 +512,13 @@ class InviteUserTest(InviteUserBase):
             [
                 (
                     "INFO:root:reasonable "
-                    "(!: no-realm-icon,no-messages-sent) "
+                    "(!: no-messages-sent) "
                     "inviting 10 more, have 0 recent, but only 2 current users.  "
                     "Ratio 5.0, 5 allowed"
                 ),
                 (
                     "WARNING:root:reasonable "
-                    "(!: no-realm-icon,no-messages-sent) "
+                    "(!: no-messages-sent) "
                     "inviting 11 more, have 0 recent, but only 2 current users.  "
                     "Ratio 5.5, 5 allowed"
                 ),
@@ -549,13 +550,13 @@ class InviteUserTest(InviteUserBase):
             [
                 (
                     "INFO:root:reasonable "
-                    "(!: no-realm-icon,no-messages-sent) "
+                    "(!: no-messages-sent) "
                     "inviting 10 more, have 0 recent, but only 2 current users.  "
                     "Ratio 5.0, 5 allowed"
                 ),
                 (
                     "WARNING:root:reasonable "
-                    "(!: no-realm-icon,no-messages-sent) "
+                    "(!: no-messages-sent) "
                     "inviting 11 more, have 0 recent, but only 2 current users.  "
                     "Ratio 5.5, 5 allowed"
                 ),

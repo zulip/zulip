@@ -25,6 +25,7 @@ from zerver.tornado.views import (
     notify,
     web_reload_clients,
 )
+from zerver.views import avatar_generators
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
@@ -816,6 +817,22 @@ urls += [
             avatar_medium,
             {"override_api_url_scheme", "allow_anonymous_user_web"},
         ),
+    ),
+    # Procedurally generated avatars
+    path(
+        "avatar/jdenticon/<int:user_id>",
+        avatar_generators.avatar_jdenticon,
+        name="avatar_jdenticon",
+    ),
+    path(
+        "avatar/silhouette/<int:user_id>",
+        avatar_generators.avatar_silhouette,
+        name="avatar_silhouette",
+    ),
+    path(
+        "realm/icon/jdenticon/<int:realm_id>",
+        avatar_generators.realm_icon_jdenticon,
+        name="realm_icon_jdenticon",
     ),
     path(
         "user_avatars/<path:path>",

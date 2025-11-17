@@ -312,6 +312,21 @@ type StreamTopicsPolicyValues = {
     empty_topic_only: PolicyValue;
 } & RealmTopicsPolicyValues;
 
+export const default_avatar_provider_values = {
+    jdenticon: {
+        code: 1,
+        description: $t({defaultMessage: "Jdenticon"}),
+    },
+    gravatar: {
+        code: 2,
+        description: $t({defaultMessage: "Gravatar"}),
+    },
+    silhouettes: {
+        code: 3,
+        description: $t({defaultMessage: "Colorful silhouettes"}),
+    },
+};
+
 export const get_realm_topics_policy_values = (): RealmTopicsPolicyValues => {
     const empty_topic_name = util.get_final_topic_display_name("");
 

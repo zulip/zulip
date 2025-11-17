@@ -29,7 +29,6 @@ import * as pm_list from "./pm_list.ts";
 import * as recent_view_data from "./recent_view_data.ts";
 import * as rows from "./rows.ts";
 import * as sent_messages from "./sent_messages.ts";
-import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -266,7 +265,9 @@ export function insert_local_message(
         content_type: "text/html",
         sender_email: people.my_current_email(),
         sender_full_name: people.my_full_name(),
-        avatar_url: people.small_avatar_url_for_person(current_user),
+        avatar_url: people.small_avatar_url_for_person(
+            people.get_by_user_id(people.my_current_user_id()),
+        ),
         timestamp: Date.now() / 1000,
         local_id: local_id_float.toString(),
         locally_echoed: true,

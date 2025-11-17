@@ -189,9 +189,10 @@ function initialize_bottom_whitespace() {
 }
 
 function initialize_navbar() {
+    const my_person = people.get_by_user_id(current_user.user_id);
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
-        user_avatar: current_user.avatar_url_medium,
+        user_avatar: people.small_avatar_url_for_person(my_person),
         realm_icon_url: realm.realm_icon_url,
     });
 

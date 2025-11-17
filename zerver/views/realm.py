@@ -121,6 +121,7 @@ def update_realm(
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
     default_code_block_language: str | None = None,
     default_language: str | None = None,
+    default_avatar_provider: Json[int] | None = None,
     description: Annotated[
         str | None, StringConstraints(max_length=Realm.MAX_REALM_DESCRIPTION_LENGTH)
     ] = None,
@@ -242,6 +243,15 @@ def update_realm(
     }:
         raise JsonableError(
             _("Invalid giphy_rating {giphy_rating}").format(giphy_rating=giphy_rating)
+        )
+
+    if default_avatar_provider is not None and default_avatar_provider not in {
+        p[0] for p in Realm.DEFAULT_AVATAR_PROVIDER_TYPES
+    }:
+        raise JsonableError(
+            _("Invalid default_avatar_provider {default_avatar_provider}").format(
+                default_avatar_provider=default_avatar_provider
+            )
         )
 
     message_retention_days: int | None = None
@@ -387,6 +397,20 @@ def update_realm(
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             if k == setting_name:
                 req_group_setting_vars[k] = v
+
+    # Handle default_avatar_provider specially to update all users
+    if (
+        default_avatar_provider is not None
+        and realm.default_avatar_provider != default_avatar_provider
+    ):
+        from zerver.actions.realm_settings import do_change_realm_default_avatar_provider
+
+        do_change_realm_default_avatar_provider(
+            realm, default_avatar_provider, acting_user=user_profile
+        )
+        data["default_avatar_provider"] = default_avatar_provider
+        # Remove from req_vars to avoid double processing
+        req_vars.pop("default_avatar_provider", None)
 
     for k, v in req_vars.items():
         if v is not None and getattr(realm, k) != v:

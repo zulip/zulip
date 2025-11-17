@@ -482,6 +482,7 @@ export const realm_schema = z.object({
     realm_require_e2ee_push_notifications: z.boolean(),
     realm_require_unique_names: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
+    realm_default_avatar_provider: z.number(),
     realm_signup_announcements_stream_id: z.number(),
     realm_topics_policy: z.enum(["allow_empty_topic", "disable_empty_topic"]),
     realm_upload_quota_mib: z.nullable(z.number()),

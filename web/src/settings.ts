@@ -85,13 +85,15 @@ export function build_page(): void {
         ...settings_config.preferences_settings_labels,
     };
 
+    const my_person = people.get_by_user_id(people.my_current_user_id());
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
-        profile_picture: people.small_avatar_url_for_person(
-            people.get_by_user_id(people.my_current_user_id()),
-        ),
+        profile_picture: people.small_avatar_url_for_person(my_person),
         date_joined_text: get_parsed_date_of_joining(),
-        current_user,
+        current_user: {
+            ...current_user,
+            avatar_url_medium: people.small_avatar_url_for_person(my_person),
+        },
         page_params,
         realm,
         enable_sound_select:
@@ -154,6 +156,14 @@ export function build_page(): void {
     });
 
     $(".settings-box").html(rendered_settings_tab);
+
+    // Ensure the avatar is displayed correctly after render
+    const my_person_for_avatar = people.get_by_user_id(people.my_current_user_id());
+    $("#user-avatar-upload-widget .image-block").attr(
+        "src",
+        people.small_avatar_url_for_person(my_person_for_avatar),
+    );
+
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
 }
 

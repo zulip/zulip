@@ -335,6 +335,7 @@ export function get_change_visibility_policy_popover_content_context(
 
 export function get_personal_menu_content_context(): PersonalMenuContext {
     const my_user_id = current_user.user_id;
+    const my_person = people.get_by_user_id(my_user_id);
     const invisible_mode = !user_settings.presence_enabled;
     const status_text = user_status.get_status_text(my_user_id);
     const status_emoji_info = user_status.get_status_emoji(my_user_id);
@@ -345,7 +346,7 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
         spectator_view: page_params.is_spectator,
 
         // user information
-        user_avatar: current_user.avatar_url_medium,
+        user_avatar: people.small_avatar_url_for_person(my_person),
         is_active: people.is_active_user_for_popover(my_user_id),
         user_circle_class: buddy_data.get_user_circle_class(my_user_id),
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(my_user_id),

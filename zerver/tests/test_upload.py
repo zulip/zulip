@@ -31,10 +31,11 @@ from zerver.lib.avatar import (
     DEFAULT_AVATAR_FILE,
     avatar_url,
     get_avatar_field,
+    get_silhouette_color,
     get_static_avatar_url,
 )
 from zerver.lib.cache import cache_delete, cache_get, get_realm_used_upload_space_cache_key
-from zerver.lib.create_user import copy_default_settings
+from zerver.lib.create_user import copy_default_settings, get_default_avatar_source
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
@@ -1669,6 +1670,171 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             get_static_avatar_url("false-bot@zulip.com", False)
         expected_error_message = "Unknown avatar file for: false-bot@zulip.com"
         self.assertEqual(str(e.exception), expected_error_message)
+
+    def test_jdenticon_avatar_url(self) -> None:
+        """Test Jdenticon avatar URL generation"""
+        cordelia = self.example_user("cordelia")
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_JDENTICON
+        cordelia.avatar_version = 5
+        cordelia.save()
+
+        url = avatar_url(cordelia, medium=False)
+        assert url is not None
+        self.assertIn(f"/avatar/jdenticon/{cordelia.id}", url)
+        self.assertIn("s=80", url)
+        self.assertIn("v=5", url)
+
+        url = avatar_url(cordelia, medium=True)
+        assert url is not None
+        self.assertIn(f"/avatar/jdenticon/{cordelia.id}", url)
+        self.assertIn("s=500", url)  # MEDIUM_AVATAR_SIZE
+
+    def test_silhouette_avatar_url(self) -> None:
+        """Test Silhouette avatar URL generation"""
+        hamlet = self.example_user("hamlet")
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_SILHOUETTES
+        hamlet.avatar_version = 3
+        hamlet.save()
+
+        url = avatar_url(hamlet, medium=False)
+        assert url is not None
+        self.assertIn(f"/avatar/silhouette/{hamlet.id}", url)
+        self.assertIn("s=80", url)
+        self.assertIn("v=3", url)
+        self.assertIn("color=", url)  # Should have color parameter
+
+    def test_jdenticon_avatar_endpoint(self) -> None:
+        """Test Jdenticon avatar generation endpoint"""
+        cordelia = self.example_user("cordelia")
+
+        # Test basic endpoint
+        response = self.client_get(f"/avatar/jdenticon/{cordelia.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", response.content)
+        self.assertIn(b"</svg>", response.content)
+
+        # Test with size parameter
+        response = self.client_get(f"/avatar/jdenticon/{cordelia.id}?s=120")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'width="120"', response.content)
+        self.assertIn(b'height="120"', response.content)
+
+        # Test with config parameter
+        response = self.client_get(
+            f"/avatar/jdenticon/{cordelia.id}?config=86444400014146122850195a"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Test that different users get different avatars
+        hamlet = self.example_user("hamlet")
+        response1 = self.client_get(f"/avatar/jdenticon/{cordelia.id}")
+        response2 = self.client_get(f"/avatar/jdenticon/{hamlet.id}")
+        self.assertNotEqual(response1.content, response2.content)
+
+    def test_silhouette_avatar_endpoint(self) -> None:
+        """Test Silhouette avatar generation endpoint"""
+        hamlet = self.example_user("hamlet")
+
+        # Test basic endpoint
+        response = self.client_get(f"/avatar/silhouette/{hamlet.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", response.content)
+        self.assertIn(b"</svg>", response.content)
+
+        # Check for user icon elements (from the silhouette generator)
+        self.assertIn(b"rect", response.content)  # Background rectangle
+        self.assertIn(b"path", response.content)  # User icon paths
+
+        # Test with size parameter
+        response = self.client_get(f"/avatar/silhouette/{hamlet.id}?s=150")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'width="150"', response.content)
+
+    def test_realm_icon_jdenticon_endpoint(self) -> None:
+        """Test Realm Jdenticon icon generation endpoint"""
+        realm = get_realm("zulip")
+
+        # Test basic endpoint
+        response = self.client_get(f"/realm/icon/jdenticon/{realm.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/svg+xml")
+        self.assertIn(b"<svg", response.content)
+
+        # Test with size parameter
+        response = self.client_get(f"/realm/icon/jdenticon/{realm.id}?s=200")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'width="200"', response.content)
+
+    def test_default_avatar_provider_new_user(self) -> None:
+        """Test that new users get correct avatar_source based on realm setting"""
+        from zerver.actions.create_user import do_create_user
+
+        realm = get_realm("zulip")
+        acting_user = self.example_user("hamlet")
+
+        # Test with Jdenticon (default)
+        realm.default_avatar_provider = Realm.DEFAULT_AVATAR_JDENTICON
+        realm.save()
+        self.assertEqual(get_default_avatar_source(realm), UserProfile.AVATAR_FROM_JDENTICON)
+
+        user1 = do_create_user(
+            email="jdenticon_user@zulip.com",
+            password="test",
+            realm=realm,
+            full_name="Jdenticon User",
+            acting_user=acting_user,
+        )
+        self.assertEqual(user1.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+
+        # Test with Gravatar
+        realm.default_avatar_provider = Realm.DEFAULT_AVATAR_GRAVATAR
+        realm.save()
+        self.assertEqual(get_default_avatar_source(realm), UserProfile.AVATAR_FROM_GRAVATAR)
+
+        user2 = do_create_user(
+            email="gravatar_user@zulip.com",
+            password="test",
+            realm=realm,
+            full_name="Gravatar User",
+            acting_user=acting_user,
+        )
+        self.assertEqual(user2.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
+        # Test with Silhouettes
+        realm.default_avatar_provider = Realm.DEFAULT_AVATAR_SILHOUETTES
+        realm.save()
+        self.assertEqual(get_default_avatar_source(realm), UserProfile.AVATAR_FROM_SILHOUETTES)
+
+        user3 = do_create_user(
+            email="silhouette_user@zulip.com",
+            password="test",
+            realm=realm,
+            full_name="Silhouette User",
+            acting_user=acting_user,
+        )
+        self.assertEqual(user3.avatar_source, UserProfile.AVATAR_FROM_SILHOUETTES)
+
+    def test_get_silhouette_color(self) -> None:
+        """Test that silhouette color is deterministic and cycles through palette"""
+        from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+
+        cordelia = self.example_user("cordelia")
+
+        # Same user should always get same color
+        color1 = get_silhouette_color(cordelia.id)
+        color2 = get_silhouette_color(cordelia.id)
+        self.assertEqual(color1, color2)
+
+        # Color should be from the palette
+        self.assertIn(color1, STREAM_ASSIGNMENT_COLORS)
+
+        # Different users should get colors based on modulo
+        expected_cordelia_color = STREAM_ASSIGNMENT_COLORS[
+            cordelia.id % len(STREAM_ASSIGNMENT_COLORS)
+        ]
+        self.assertEqual(color1, expected_cordelia_color)
 
 
 class RealmIconTest(UploadSerializeMixin, ZulipTestCase):

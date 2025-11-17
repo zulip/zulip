@@ -19806,6 +19806,17 @@ paths:
                           that both `null` and an empty string could represent that no default was
                           set for this realm setting. Clients supporting older server versions
                           should treat either value (`null` or `""`) as no default being set.
+                      realm_default_avatar_provider:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The default avatar provider for users in this organization who do not
+                          have a custom uploaded avatar.
+
+                          - 1 = Jdenticon
+                          - 2 = Gravatar
+                          - 3 = Silhouettes
                       realm_message_content_delete_limit_seconds:
                         type: integer
                         nullable: true

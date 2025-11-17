@@ -701,10 +701,25 @@ class Realm(models.Model):
     # Whether to notify client when a DM has a guest recipient.
     enable_guest_user_dm_warning = models.BooleanField(default=True)
 
+    # Default avatar provider for new users
+    DEFAULT_AVATAR_JDENTICON = 1
+    DEFAULT_AVATAR_GRAVATAR = 2
+    DEFAULT_AVATAR_SILHOUETTES = 3
+    DEFAULT_AVATAR_PROVIDER_TYPES = (
+        (DEFAULT_AVATAR_JDENTICON, "Jdenticon"),
+        (DEFAULT_AVATAR_GRAVATAR, "Gravatar"),
+        (DEFAULT_AVATAR_SILHOUETTES, "Colorful silhouettes"),
+    )
+    default_avatar_provider = models.PositiveSmallIntegerField(
+        default=DEFAULT_AVATAR_JDENTICON,
+        choices=DEFAULT_AVATAR_PROVIDER_TYPES,
+    )
+
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | UnionType] = dict(
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
+        default_avatar_provider=int,
         default_code_block_language=str,
         default_language=str,
         description=str,
@@ -881,12 +896,14 @@ class Realm(models.Model):
     # Icon is the square mobile icon.
     ICON_FROM_GRAVATAR = "G"
     ICON_UPLOADED = "U"
+    ICON_FROM_JDENTICON = "J"
     ICON_SOURCES = (
         (ICON_FROM_GRAVATAR, "Hosted by Gravatar"),
         (ICON_UPLOADED, "Uploaded by administrator"),
+        (ICON_FROM_JDENTICON, "Jdenticon"),
     )
     icon_source = models.CharField(
-        default=ICON_FROM_GRAVATAR,
+        default=ICON_FROM_JDENTICON,
         choices=ICON_SOURCES,
         max_length=1,
     )

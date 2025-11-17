@@ -42,6 +42,9 @@ const admin_settings_label = {
     }),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
+    realm_default_avatar_provider: $t({
+        defaultMessage: "Default profile pictures for new users",
+    }),
     realm_require_e2ee_push_notifications: $t({
         defaultMessage: "Require end-to-end encryption for push notification content",
     }),
@@ -139,10 +142,11 @@ export function build_page(): void {
             "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
     }
 
+    const my_person = people.get_by_user_id(current_user.user_id);
     const options = {
         custom_profile_field_types: realm.custom_profile_field_types,
         full_name: current_user.full_name,
-        profile_picture: people.small_avatar_url_for_person(current_user),
+        profile_picture: people.small_avatar_url_for_person(my_person),
         realm_name: realm.realm_name,
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
@@ -203,6 +207,7 @@ export function build_page(): void {
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
+        realm_default_avatar_provider: realm.realm_default_avatar_provider,
         realm_enable_welcome_message_custom_text:
             realm.realm_welcome_message_custom_text.length > 0,
         realm_welcome_message_custom_text: realm.realm_welcome_message_custom_text,
@@ -226,6 +231,7 @@ export function build_page(): void {
             settings_config.waiting_period_threshold_dropdown_values,
         message_edit_history_visibility_policy_values:
             settings_config.message_edit_history_visibility_policy_values,
+        default_avatar_provider_values: settings_config.default_avatar_provider_values,
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         realm_invite_required: realm.realm_invite_required,

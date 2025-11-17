@@ -8,6 +8,7 @@ from zerver.lib.avatar_hash import (
     user_avatar_base_path_from_ids,
     user_avatar_content_hash,
 )
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE
 from zerver.lib.upload import get_avatar_url
 from zerver.lib.url_encoding import append_url_query_string
@@ -17,6 +18,9 @@ from zerver.models.users import is_cross_realm_bot_email
 STATIC_AVATARS_DIR = "images/static_avatars/"
 
 DEFAULT_AVATAR_FILE = "images/default-avatar.png"
+
+# Jdenticon default configuration: https://jdenticon.com/icon-designer.html?config=86444400014146122850195a
+JDENTICON_CONFIG = "86444400014146122850195a"
 
 
 def avatar_url(
@@ -107,13 +111,20 @@ def get_avatar_field(
 
     """
     If we get this far, we'll compute an avatar URL that may be
-    either user-uploaded or a gravatar, and then we'll add version
+    either user-uploaded, gravatar, jdenticon, or silhouette, and then we'll add version
     info to try to avoid stale caches.
     """
     if avatar_source == "U":
         hash_key = user_avatar_base_path_from_ids(user_id, avatar_version, realm_id)
         return get_avatar_url(hash_key, medium=medium)
 
+    if avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        return get_jdenticon_url(user_id, avatar_version, medium)
+
+    if avatar_source == UserProfile.AVATAR_FROM_SILHOUETTES:
+        return get_silhouette_url(user_id, avatar_version, medium)
+
+    # Default to Gravatar
     return get_gravatar_url(
         email=email,
         avatar_version=avatar_version,
@@ -140,6 +151,30 @@ def _get_unversioned_gravatar_url(email: str, medium: bool, realm_id: int) -> st
         return settings.DEFAULT_AVATAR_URI
     else:
         return staticfiles_storage.url("images/default-avatar.png")
+
+
+def get_jdenticon_url(user_id: int, avatar_version: int, medium: bool = False) -> str:
+    """Generate a Jdenticon URL for a user."""
+    # Use user_id as the seed for consistent avatars
+    size = MEDIUM_AVATAR_SIZE if medium else 80
+    # We'll use a data URL or CDN URL for Jdenticon
+    # For now, return a placeholder that the frontend can handle
+    return f"/avatar/jdenticon/{user_id}?s={size}&v={avatar_version}&config={JDENTICON_CONFIG}"
+
+
+def get_silhouette_color(user_id: int) -> str:
+    """Pick a color from the stream color palette for silhouette avatars."""
+    # Use modulo to consistently assign colors based on user_id
+    return STREAM_ASSIGNMENT_COLORS[user_id % len(STREAM_ASSIGNMENT_COLORS)]
+
+
+def get_silhouette_url(user_id: int, avatar_version: int, medium: bool = False) -> str:
+    """Generate a Silhouette URL for a user."""
+    size = MEDIUM_AVATAR_SIZE if medium else 80
+    color = get_silhouette_color(user_id)
+    # Remove the # from the color hex
+    color_hex = color.lstrip("#")
+    return f"/avatar/silhouette/{user_id}?s={size}&v={avatar_version}&color={color_hex}"
 
 
 def absolute_avatar_url(user_profile: UserProfile) -> str:

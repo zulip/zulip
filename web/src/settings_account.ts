@@ -863,6 +863,13 @@ export function set_up(): void {
     // user avatar upload widget and handlers.
     user_avatar_widget_created = false;
 
+    // Ensure the avatar is displayed correctly with the person object
+    const my_person = people.get_by_user_id(people.my_current_user_id());
+    $("#user-avatar-upload-widget .image-block").attr(
+        "src",
+        people.small_avatar_url_for_person(my_person),
+    );
+
     if (settings_data.user_can_change_avatar()) {
         avatar.build_user_avatar_widget(upload_avatar);
         user_avatar_widget_created = true;

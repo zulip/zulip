@@ -156,13 +156,24 @@ export const update_person = function update(event: UserUpdate): void {
             current_user.avatar_source = event.avatar_source;
             current_user.avatar_url = url;
             current_user.avatar_url_medium = event.avatar_url_medium;
-            $("#user-avatar-upload-widget .image-block").attr("src", event.avatar_url_medium);
-            $("#personal-menu-dropdown .avatar-image, .header-button-avatar-image").attr(
+            const my_person = people.get_by_user_id(event.user_id);
+            $("#user-avatar-upload-widget .image-block").attr(
                 "src",
-                `${event.avatar_url_medium}`,
+                people.small_avatar_url_for_person(my_person),
+            );
+            $(".header-button-avatar-image").attr(
+                "src",
+                people.small_avatar_url_for_person(my_person),
+            );
+            $("#personal-menu-dropdown .avatar-image").attr(
+                "src",
+                people.small_avatar_url_for_person(my_person),
             );
         }
 
+        // Avatar updates don't affect the fields managed by settings_users.update_user_data
+        // (which only updates full_name/role in the admin tables), so we skip calling it here.
+        activity_ui.redraw();
         message_live_update.update_avatar(user.user_id, event.avatar_url);
         user_profile.update_profile_modal_ui(user, event);
     }

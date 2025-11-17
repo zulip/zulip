@@ -670,9 +670,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_USER = "U"
+    AVATAR_FROM_JDENTICON = "J"
+    AVATAR_FROM_SILHOUETTES = "S"
     AVATAR_SOURCES = (
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
         (AVATAR_FROM_USER, "Uploaded by user"),
+        (AVATAR_FROM_JDENTICON, "Jdenticon"),
+        (AVATAR_FROM_SILHOUETTES, "Colorful silhouettes"),
     )
     avatar_source = models.CharField(
         default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1

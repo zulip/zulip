@@ -514,7 +514,7 @@ function init_email_tooltip(user: User): void {
 }
 
 function load_medium_avatar(user: User, $elt: JQuery): void {
-    const user_avatar_url = people.medium_avatar_url_for_person(user);
+    const user_avatar_url = people.small_avatar_url_for_person(user);
     const sender_avatar_medium = new Image();
 
     sender_avatar_medium.src = user_avatar_url;

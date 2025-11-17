@@ -1018,6 +1018,7 @@ class RealmTest(ZulipTestCase):
             message_content_edit_limit_seconds=0,
             move_messages_within_stream_limit_seconds=0,
             move_messages_between_streams_limit_seconds=0,
+            default_avatar_provider=999,
         )
 
         # We need an admin user.
@@ -2079,6 +2080,11 @@ class RealmAPITest(ZulipTestCase):
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
+            default_avatar_provider=[
+                Realm.DEFAULT_AVATAR_JDENTICON,
+                Realm.DEFAULT_AVATAR_SILHOUETTES,
+                Realm.DEFAULT_AVATAR_GRAVATAR,
+            ],
         )
 
         vals = test_values.get(name)
@@ -2476,6 +2482,61 @@ class RealmAPITest(ZulipTestCase):
             {"topics_policy": "invalid"},
         )
         self.assert_json_error(result, "Invalid topics_policy")
+
+    def test_update_realm_default_avatar_provider(self) -> None:
+        """Test updating the default avatar provider setting and applying to all users"""
+        realm = get_realm("zulip")
+
+        # Create test users with different avatar sources
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        # Note: After migration 0761, realm.default_avatar_provider defaults to Jdenticon (1)
+        # But existing test users may still have Gravatar ('G') as their avatar_source
+        # from before the migration. This test ensures the update mechanism works.
+
+        # Set realm to Gravatar initially so we can test changing to Jdenticon
+        realm.default_avatar_provider = Realm.DEFAULT_AVATAR_GRAVATAR
+        realm.save(update_fields=["default_avatar_provider"])
+
+        # Force hamlet to start with Gravatar to test the update
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+        hamlet.save(update_fields=["avatar_source"])
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
+        # Set cordelia to custom upload - she should NOT be affected by provider changes
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
+        cordelia.save()
+
+        # Test setting to Jdenticon
+        realm = self.update_with_api("default_avatar_provider", Realm.DEFAULT_AVATAR_JDENTICON)
+        self.assertEqual(realm.default_avatar_provider, Realm.DEFAULT_AVATAR_JDENTICON)
+
+        # Verify hamlet's avatar changed to Jdenticon
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+
+        # Verify cordelia's custom upload was NOT changed
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        # Test setting to Silhouettes
+        realm = self.update_with_api("default_avatar_provider", Realm.DEFAULT_AVATAR_SILHOUETTES)
+        self.assertEqual(realm.default_avatar_provider, Realm.DEFAULT_AVATAR_SILHOUETTES)
+
+        # Verify hamlet's avatar changed to Silhouettes
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_SILHOUETTES)
+
+        # Verify cordelia's custom upload still NOT changed
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        # Test invalid value
+        invalid_provider = 999
+        result = self.client_patch("/json/realm", {"default_avatar_provider": invalid_provider})
+        self.assert_json_error(result, f"Invalid default_avatar_provider {invalid_provider}")
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):

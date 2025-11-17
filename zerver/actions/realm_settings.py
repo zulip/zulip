@@ -7,6 +7,7 @@ from typing import Any, Literal
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -165,7 +166,7 @@ def do_set_push_notifications_enabled_end_timestamp(
     setattr(realm, name, new_datetime)
     realm.save(update_fields=[name])
 
-    event_time = timezone_now()
+    event_time = timezone_now() + datetime.timedelta(microseconds=1)
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
@@ -1023,3 +1024,92 @@ def do_send_realm_deactivation_email(
             context=context,
             realm=realm,
         )
+
+
+@transaction.atomic(savepoint=False)
+def do_change_realm_default_avatar_provider(
+    realm: Realm,
+    default_avatar_provider: int,
+    *,
+    acting_user: UserProfile | None,
+) -> None:
+    """
+    Update the realm's default avatar provider and apply to all users
+    who don't have custom uploaded avatars.
+    """
+    from zerver.lib.avatar import avatar_url
+    from zerver.lib.cache import cache_delete, realm_user_dicts_cache_key
+    from zerver.lib.create_user import get_default_avatar_source
+
+    old_value = realm.default_avatar_provider
+    if old_value == default_avatar_provider:
+        return
+
+    # Update realm setting first
+    realm.default_avatar_provider = default_avatar_provider
+    realm.save(update_fields=["default_avatar_provider"])
+
+    # Get the new avatar source code
+    new_avatar_source = get_default_avatar_source(realm)
+
+    # Update all users who don't have custom avatars
+    # This updates: Gravatar (G), Jdenticon (J), and Silhouettes (S) users
+    # Excludes: Custom uploaded avatars (U)
+    updated_users = UserProfile.objects.filter(
+        realm=realm,
+        is_active=True,
+    ).exclude(avatar_source=UserProfile.AVATAR_FROM_USER)
+
+    # Perform the update in the database
+    updated_count = updated_users.update(
+        avatar_source=new_avatar_source, avatar_version=F("avatar_version") + 1
+    )
+
+    # Log the change
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: default_avatar_provider,
+            "property": "default_avatar_provider",
+        },
+    )
+
+    # Flush the realm user dicts cache so page reloads get fresh data
+    cache_delete(realm_user_dicts_cache_key(realm.id))
+
+    # Send realm update event
+    realm_event = dict(
+        type="realm",
+        op="update",
+        property="default_avatar_provider",
+        value=default_avatar_provider,
+    )
+    send_event_on_commit(realm, realm_event, active_user_ids(realm.id))
+
+    # Send user update events for each affected user
+    if updated_count > 0:
+        # Fetch fresh user data from database after update
+        users_to_notify = UserProfile.objects.filter(
+            realm=realm,
+            is_active=True,
+            avatar_source=new_avatar_source,
+        ).exclude(avatar_source=UserProfile.AVATAR_FROM_USER)
+
+        for user in users_to_notify:
+            person_event = dict(
+                type="realm_user",
+                op="update",
+                person=dict(
+                    user_id=user.id,
+                    avatar_source=user.avatar_source,
+                    avatar_url=avatar_url(user, medium=False),
+                    avatar_url_medium=avatar_url(user, medium=True),
+                    avatar_version=user.avatar_version,
+                ),
+            )
+            send_event_on_commit(realm, person_event, active_user_ids(realm.id))
