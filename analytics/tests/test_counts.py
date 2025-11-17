@@ -1445,6 +1445,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
             rendered_content="This is test content",
             date_sent=timezone_now(),
             sending_client=get_client("test"),
+            is_channel_message=False,
         )
         message.set_topic_name("Test topic")
         message.save()
