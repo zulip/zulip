@@ -89,8 +89,6 @@ from zerver.lib.event_types import (
     EventTypingEditMessageStop,
     EventTypingStart,
     EventTypingStop,
-    EventUpdateDisplaySettings,
-    EventUpdateGlobalNotifications,
     EventUpdateMessage,
     EventUpdateMessageFlagsAdd,
     EventUpdateMessageFlagsRemove,
@@ -261,8 +259,6 @@ _check_realm_update_dict = make_checker(EventRealmUpdateDict)
 _check_realm_user_update = make_checker(EventRealmUserUpdate)
 _check_stream_update = make_checker(EventStreamUpdate)
 _check_subscription_update = make_checker(EventSubscriptionUpdate)
-_check_update_display_settings = make_checker(EventUpdateDisplaySettings)
-_check_update_global_notifications = make_checker(EventUpdateGlobalNotifications)
 _check_update_message = make_checker(EventUpdateMessage)
 _check_user_group_update = make_checker(EventUserGroupUpdate)
 _check_user_settings_update = make_checker(EventUserSettingsUpdate)
@@ -630,32 +626,6 @@ def check_subscription_update(
     assert event["value"] == value
 
 
-def check_update_display_settings(
-    var_name: str,
-    event: dict[str, object],
-) -> None:
-    """
-    Display setting events have a "setting" field that
-    is more specifically typed according to the
-    UserProfile.property_types dictionary.
-    """
-    _check_update_display_settings(var_name, event)
-    setting_name = event["setting_name"]
-    setting = event["setting"]
-
-    assert isinstance(setting_name, str)
-    if setting_name == "timezone":
-        assert isinstance(setting, str)
-    else:
-        setting_type = UserProfile.property_types[setting_name]
-        assert isinstance(setting, setting_type)
-
-    if setting_name == "default_language":
-        assert "language_name" in event
-    else:
-        assert "language_name" not in event
-
-
 def check_user_settings_update(
     var_name: str,
     event: dict[str, object],
@@ -679,25 +649,6 @@ def check_user_settings_update(
         assert "language_name" in event
     else:
         assert "language_name" not in event
-
-
-def check_update_global_notifications(
-    var_name: str,
-    event: dict[str, object],
-    desired_val: bool | int | str,
-) -> None:
-    """
-    See UserProfile.notification_settings_legacy for
-    more details.
-    """
-    _check_update_global_notifications(var_name, event)
-    setting_name = event["notification_name"]
-    setting = event["setting"]
-    assert setting == desired_val
-
-    assert isinstance(setting_name, str)
-    setting_type = UserProfile.notification_settings_legacy[setting_name]
-    assert isinstance(setting, setting_type)
 
 
 def check_update_message(
