@@ -1059,7 +1059,11 @@ def get_message_payload(
     return data
 
 
-def get_apns_alert_title(message: Message, language: str) -> str:
+def get_apns_alert_title(
+    message: Message,
+    channel_name: str | None = None,
+    topic_display_name: str | None = None,
+) -> str:
     """
     On an iOS notification, this is the first bolded line.
     """
@@ -1069,9 +1073,8 @@ def get_apns_alert_title(message: Message, language: str) -> str:
         if len(recipients) > 2:
             return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_channel_message:
-        stream_name = get_message_stream_name_from_database(message)
-        topic_display_name = get_topic_display_name(message.topic_name(), language)
-        return f"#{stream_name} > {topic_display_name}"
+        assert channel_name is not None and topic_display_name is not None
+        return f"#{channel_name} > {topic_display_name}"
     # For 1:1 direct messages, we just show the sender name.
     return message.sender.full_name
 
@@ -1162,12 +1165,19 @@ def get_message_payload_apns(
     mentioned_user_group_name = message_payload.get("mentioned_user_group_name")
     remove_obsolete_fields_apns(message_payload)
 
+    if message.is_channel_message:
+        alert_title = get_apns_alert_title(
+            message, message_payload["stream"], message_payload["topic"]
+        )
+    else:
+        alert_title = get_apns_alert_title(message)
+
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
         apns_data = {
             "alert": {
-                "title": get_apns_alert_title(message, user_profile.default_language),
+                "title": alert_title,
                 "subtitle": get_apns_alert_subtitle(
                     message, trigger, user_profile, mentioned_user_group_name, can_access_sender
                 ),

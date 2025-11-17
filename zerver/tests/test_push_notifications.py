@@ -752,6 +752,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             rendered_content="This is test content",
             date_sent=current_time,
             sending_client=get_client("test"),
+            is_channel_message=False,
         )
         message.save()
 
