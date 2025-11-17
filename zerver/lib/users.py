@@ -686,11 +686,19 @@ def all_users_accessible_by_everyone_in_realm(realm: Realm) -> bool:
     return False
 
 
-def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
+def user_access_restricted_in_realm(
+    target_user: UserProfile,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
+) -> bool:
     if target_user.is_bot:
         return False
 
-    if all_users_accessible_by_everyone_in_realm(target_user.realm):
+    if realm is None:
+        realm = target_user.realm
+
+    if all_users_accessible_by_everyone_in_realm(realm):
         return False
 
     return True
@@ -717,9 +725,13 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
 
 
 def check_can_access_user(
-    target_user: UserProfile, user_profile: UserProfile | None = None
+    target_user: UserProfile,
+    user_profile: UserProfile | None = None,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
 ) -> bool:
-    if not user_access_restricted_in_realm(target_user):
+    if not user_access_restricted_in_realm(target_user, realm):
         return True
 
     if check_user_can_access_all_users(user_profile):
