@@ -1269,6 +1269,18 @@ export let init_dropdown_widgets = (): void => {
         "language",
     );
 
+    const default_avatar_provider_options = (): dropdown_widget.Option[] =>
+        Object.values(settings_config.default_avatar_provider_values).map((value) => ({
+            name: value.description,
+            unique_id: value.code,
+        }));
+
+    set_up_dropdown_widget(
+        "realm_default_avatar_provider",
+        default_avatar_provider_options,
+        "avatar",
+    );
+
     set_up_dropdown_widget_for_realm_group_settings();
 };
 
