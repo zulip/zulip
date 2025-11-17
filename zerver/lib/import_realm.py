@@ -1774,7 +1774,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         realm=realm,
         sender_map=sender_map,
         import_dir=import_dir,
-        processes=processes
+        processes=processes,
     )
 
     if "zerver_onboardingusermessage" in data:
@@ -2143,18 +2143,14 @@ def process_message_file_worker(args: tuple[int, Path, int, dict[int, Record]]) 
         messages=data["zerver_message"],
     )
 
-    fix_message_edit_history(
-        realm=realm, sender_map=sender_map, messages=data["zerver_message"]
-    )
+    fix_message_edit_history(realm=realm, sender_map=sender_map, messages=data["zerver_message"])
 
     # Import messages
     bulk_import_model(data, Message)
 
     # Import user-message relationships
     re_map_foreign_keys(data, "zerver_usermessage", "message", related_table="message")
-    re_map_foreign_keys(
-        data, "zerver_usermessage", "user_profile", related_table="user_profile"
-    )
+    re_map_foreign_keys(data, "zerver_usermessage", "user_profile", related_table="user_profile")
     fix_bitfield_keys(data, "zerver_usermessage", "flags")
 
     bulk_import_user_message_data(data, dump_file_id)
@@ -2171,7 +2167,7 @@ def import_message_data(
     realm: Realm,
     sender_map: dict[int, Record],
     import_dir: Path,
-    processes: int = 1
+    processes: int = 1,
 ) -> None:
     """
     Import message data from message dump files.
@@ -2217,9 +2213,7 @@ def import_message_data(
 
         # Prepare arguments for each worker
         # Each worker gets: (file_id, import_dir, realm_id, sender_map)
-        worker_args = [
-            (file_id, import_dir, realm.id, sender_map) for file_id in message_files
-        ]
+        worker_args = [(file_id, import_dir, realm.id, sender_map) for file_id in message_files]
 
         # Run in parallel!
         run_parallel(
