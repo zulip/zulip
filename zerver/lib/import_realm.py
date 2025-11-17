@@ -2105,10 +2105,12 @@ def process_message_file_worker(args: tuple[int, Path, int, dict[int, Record]]) 
     message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
 
     if not os.path.exists(message_filename):
-        logging.warning("Message file %s not found, skipping", message_filename)
+        logging.warning("Message file messages-%06d.json not found, skipping", dump_file_id)
         return
 
-    logging.info("Worker processing message dump %s (PID: %d)", message_filename, os.getpid())
+    logging.info(
+        "Worker processing message dump messages-%06d.json (PID: %d)", dump_file_id, os.getpid()
+    )
 
     with open(message_filename, "rb") as f:
         data = orjson.loads(f.read())
@@ -2156,8 +2158,8 @@ def process_message_file_worker(args: tuple[int, Path, int, dict[int, Record]]) 
     bulk_import_user_message_data(data, dump_file_id)
 
     logging.info(
-        "Worker completed message dump %s: %d messages, %d user-messages",
-        message_filename,
+        "Worker completed message dump messages-%06d.json: %d messages, %d user-messages",
+        dump_file_id,
         len(data["zerver_message"]),
         len(data["zerver_usermessage"]),
     )
