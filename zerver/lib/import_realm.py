@@ -1997,7 +1997,14 @@ def load_id_map_from_disk(import_dir: Path) -> dict[str, dict[int, int]]:
         raise Exception("ID_MAP file not found! Import process may be corrupted.")
 
     with open(id_map_file, "rb") as f:
-        return orjson.loads(f.read())
+        loaded_data = orjson.loads(f.read())
+
+    # JSON serialization converts integer keys to strings, so we need to convert them back
+    id_map: dict[str, dict[int, int]] = {}
+    for table_name, mapping in loaded_data.items():
+        id_map[table_name] = {int(old_id): new_id for old_id, new_id in mapping.items()}
+
+    return id_map
 
 
 def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
