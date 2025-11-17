@@ -70,6 +70,8 @@ export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
     appendValidatedData: (item: ItemType, disabled?: boolean, quiet?: boolean) => void;
     getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
+    getPillByPredicate: (predicate: (item: ItemType) => boolean) => InputPill<ItemType> | undefined;
+    updatePill: (element: HTMLElement, new_item: ItemType) => void;
     items: () => ItemType[];
     removePill: (
         element: HTMLElement,
@@ -296,6 +298,34 @@ export function create<ItemType extends {type: string}>(
             return store.pills.find((pill) => pill.$element[0] === element);
         },
 
+        // This searches for a pill using a predicate function and returns it,
+        // or undefined if no pill matches.
+        getPillByPredicate(
+            predicate: (item: ItemType) => boolean,
+        ): InputPill<ItemType> | undefined {
+            return store.pills.find((pill) => predicate(pill.item));
+        },
+
+        // Updates a pill's item data and refreshes its HTML representation in-place.
+        // This is useful for real-time updates like user deactivated status.
+        updatePill(element: HTMLElement, new_item: ItemType): void {
+            const pill = this.getByElement(element);
+            if (!pill) {
+                return;
+            }
+
+            // Update the item data
+            pill.item = new_item;
+
+            // Regenerate the pill HTML with updated data
+            const pill_html = funcs.generatePillHtml(new_item, pill.disabled);
+
+            // Replace the pill element in the DOM
+            const $new_element = $(pill_html);
+            pill.$element.replaceWith($new_element);
+            pill.$element = $new_element;
+        },
+
         _get_pills_for_testing() {
             return store.pills;
         },
@@ -503,6 +533,8 @@ export function create<ItemType extends {type: string}>(
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
         getByElement: funcs.getByElement.bind(funcs),
+        getPillByPredicate: funcs.getPillByPredicate.bind(funcs),
+        updatePill: funcs.updatePill.bind(funcs),
         getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
         removePill: funcs.removePill.bind(funcs),
