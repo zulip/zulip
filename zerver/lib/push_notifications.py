@@ -1082,7 +1082,6 @@ def get_apns_alert_title(
 def get_apns_alert_subtitle(
     message: Message,
     trigger: str,
-    user_profile: UserProfile,
     mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> str:
@@ -1179,7 +1178,7 @@ def get_message_payload_apns(
             "alert": {
                 "title": alert_title,
                 "subtitle": get_apns_alert_subtitle(
-                    message, trigger, user_profile, mentioned_user_group_name, can_access_sender
+                    message, trigger, mentioned_user_group_name, can_access_sender
                 ),
                 "body": content,
             },
