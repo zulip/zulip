@@ -1759,7 +1759,7 @@ label.preferences-radio-choice-label {
     margin-bottom: 20px;
 }
 
-.settings_textarea {
+.settings-textarea {
     color: var(--color-text-default);
     background-color: hsl(0deg 0% 100%);
     border-radius: 4px;
@@ -2190,7 +2190,7 @@ label.preferences-radio-choice-label {
 
     .settings_url_input,
     .settings_text_input,
-    .settings_textarea,
+    .settings-textarea,
     .pill-container {
         margin-bottom: 0;
 
