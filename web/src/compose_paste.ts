@@ -209,7 +209,7 @@ export function is_single_image(paste_html: string): boolean {
     );
 }
 
-function get_code_block_lanaguage(
+function get_code_block_language(
     pre_element: HTMLElement,
     code_element_class_name: string,
 ): string {
@@ -512,7 +512,7 @@ export function paste_handler_converter(
             assert(code !== null);
 
             const className = codeElement.getAttribute("class") ?? "";
-            const language = get_code_block_lanaguage(node, className);
+            const language = get_code_block_language(node, className);
             // We convert single line code inside a code block which does not have language metadata
             // to inline markdown code, and the code for this is taken from upstream's `code` rule.
             if (!code.includes("\n") && language === "") {
