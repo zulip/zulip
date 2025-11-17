@@ -155,18 +155,21 @@ export function create<ItemType extends {type: string}>(
             return item;
         },
 
+        // Helper to generate pill HTML with the appropriate renderer
+        generatePillHtml(item: ItemType, disabled: boolean): string {
+            if (store.generate_pill_html !== undefined) {
+                return store.generate_pill_html(item, disabled);
+            }
+            return render_input_pill({
+                display_value: store.get_display_value_from_item(item),
+                disabled,
+            });
+        },
+
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData(item: ItemType, disabled = false, quiet = false) {
-            let pill_html;
-            if (store.generate_pill_html !== undefined) {
-                pill_html = store.generate_pill_html(item, disabled);
-            } else {
-                pill_html = render_input_pill({
-                    display_value: store.get_display_value_from_item(item),
-                    disabled,
-                });
-            }
+            const pill_html = funcs.generatePillHtml(item, disabled);
             const payload: InputPill<ItemType> = {
                 item,
                 $element: $(pill_html),
