@@ -2050,6 +2050,7 @@ def load_id_map_from_disk(import_dir: Path) -> dict[str, dict[int, int]]:
 
     Note: JSON serialization converts all keys to strings, so we convert
     numeric string keys back to integers after deserialization.
+    We only convert the nested ID mapping keys, not the top-level table names.
     """
     id_map_file = os.path.join(import_dir, "id_map.json")
 
@@ -2059,8 +2060,19 @@ def load_id_map_from_disk(import_dir: Path) -> dict[str, dict[int, int]]:
     with open(id_map_file, "rb") as f:
         loaded_data = orjson.loads(f.read())
 
-    # Convert string keys back to integers where possible
-    return convert_dict_keys_to_integers(loaded_data)
+    # Convert string keys back to integers, but only for the nested ID mappings
+    # The top-level keys (table names) should remain as strings
+    id_map: dict[str, dict[int, int]] = {}
+    for table_name, mapping in loaded_data.items():
+        # Ensure table_name stays as a string
+        if isinstance(mapping, dict):
+            # Convert the nested ID mapping keys from strings to integers
+            id_map[str(table_name)] = {int(old_id): new_id for old_id, new_id in mapping.items()}
+        else:
+            # Handle edge cases where mapping might not be a dict
+            id_map[str(table_name)] = mapping
+
+    return id_map
 
 
 def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
