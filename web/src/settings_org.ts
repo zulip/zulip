@@ -1116,6 +1116,7 @@ export function save_organization_settings(
                 // a change.
                 unsaved_welcome_message_custom_text = "";
             }
+            settings_components.resize_textareas_in_subsection($subsection_parent);
         },
         error(xhr) {
             settings_components.change_save_button_state($save_button_container, "failed");
