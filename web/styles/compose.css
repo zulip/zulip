@@ -1223,6 +1223,16 @@ textarea.new_message_textarea {
     outline-color: transparent;
 }
 
+.compose-box-open {
+    #compose_controls {
+        display: none;
+    }
+
+    .message_comp {
+        display: block;
+    }
+}
+
 /* We want transitions to run only on user interactions with
    the mouse, once the compose box is open. Any keyboard
    interactions (e.g., Shift-Tabbing from the compose textarea
