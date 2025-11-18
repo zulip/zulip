@@ -44,6 +44,7 @@ import * as user_pill from "./user_pill.ts";
 import type {UserPillData} from "./user_pill.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
+import * as compose_banner from "./compose_banner.ts";
 
 /* Maximum channel name length + link syntax (#**>**) + some topic characters */
 const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
@@ -415,6 +416,18 @@ function handle_keyup(e: JQuery.KeyUpEvent): void {
         // Prevent the form from submitting
         e.preventDefault();
     }
+
+    // Get the current compose textarea content
+    const message_text = (e.target as HTMLTextAreaElement).value;
+
+    // Get the container that holds warning banners
+    const $banner_container = compose_banner.get_compose_banner_container(
+        $("textarea#compose-textarea"),
+    );
+
+    // Sync banners with current mentions
+    // If a mention was removed, its corresponding banner will be removed too.
+    compose_banner.remove_banners_of_not_mentioned_users(message_text, $banner_container);
 }
 
 export let split_at_cursor = (query: string, $input: JQuery): [string, string] => {

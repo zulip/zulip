@@ -315,3 +315,65 @@ export function show_convert_pasted_text_to_file_banner({
     append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
     return $new_row;
 }
+
+// Syncs "users not subscribed" banners with actual mentions present
+// in the compose textarea. If a mention was removed, remove its banner.
+export function remove_banners_of_not_mentioned_users(
+    message_text: string,
+    $banner_container: JQuery,
+): void {
+    const existing_banners = $banner_container.find(
+        `.${CSS.escape(CLASSNAMES.recipient_not_subscribed)}`,
+    );
+
+    const invites = [...existing_banners].map((row) => {
+        const $row = $(row);
+        return {
+            user_id: Number($row.attr("data-user-id")),
+            name: $row.attr("data-name"),
+        };
+    });
+
+    const mentions = extract_mentions_from_text(message_text);
+
+    const invites_to_remove = invites.filter((invite) => {
+        return !mentions.some((mention) => {
+            if (mention.user_id !== null) {
+                return mention.user_id === invite.user_id;
+            }
+            return mention.full_name === invite.name;
+        });
+    });
+
+    for (const invite of invites_to_remove) {
+        if (invite.user_id) {
+            $banner_container
+                .find(
+                    `.${CSS.escape(CLASSNAMES.recipient_not_subscribed)}[data-user-id="${invite.user_id}"]`,
+                )
+                .remove();
+        } else {
+            $banner_container
+                .find(
+                    `.${CSS.escape(CLASSNAMES.recipient_not_subscribed)}[data-name="${invite.name}"]`,
+                )
+                .remove();
+        }
+    }
+}
+
+// Extract user mentions from raw compose textarea text.
+// Matches Zulip mention syntax: @**Full Name|123** or @_**Name**.
+function extract_mentions_from_text(text: string): {full_name: string; user_id: number | null}[] {
+    const MENTION_REGEX = /@_?\*\*([^*|]+)(?:\|(\d+))?\*\*/g;
+    const results = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = MENTION_REGEX.exec(text)) !== null) {
+        const full_name = (match[1] || "").trim();
+        const user_id = match[2] ? Number(match[2]) : null;
+        results.push({full_name, user_id});
+    }
+
+    return results;
+}
