@@ -413,6 +413,17 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("public_stream_3", realm)
         self.assertTrue(stream.invite_only)
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            params,
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
     def test_create_web_public_stream(self) -> None:
         user_profile = self.example_user("hamlet")
         owner = self.example_user("desdemona")
@@ -545,6 +556,17 @@ class StreamAdminTest(ZulipTestCase):
             "property": "history_public_to_subscribers",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            params,
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
 
     def test_make_stream_web_public(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1599,6 +1621,17 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(message.sender.email, "notification-bot@zulip.com")
         self.assertEqual(message.sender.realm, get_realm(settings.SYSTEM_BOT_REALM))
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"new_name": "stream_without_notification2"},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
     def test_realm_admin_can_update_unsub_private_stream(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
@@ -1792,6 +1825,17 @@ class StreamAdminTest(ZulipTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"description": "New Description"},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
         # Verify that we don't render inline URL previews in this code path.
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch(
@@ -1920,6 +1964,17 @@ class StreamAdminTest(ZulipTestCase):
             RealmAuditLog.NEW_VALUE: None,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps(2).decode()},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
 
     def test_change_stream_message_retention_days(self) -> None:
         user_profile = self.example_user("desdemona")
@@ -2260,6 +2315,17 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("TestStream2")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"topics_policy": allow_empty_topic},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
     def test_can_set_topics_policy_group(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
@@ -2419,6 +2485,17 @@ class StreamAdminTest(ZulipTestCase):
             f"* **New**: @_*{nobody_group.name}*"
         )
         self.assertEqual(messages[-1].content, expected_notification)
+
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_send_message_group": orjson.dumps({"new": everyone_group.id}).decode()},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
 
     def set_up_stream_for_archiving(
         self, stream_name: str, invite_only: bool = False, subscribed: bool = True
@@ -3480,6 +3557,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         new_stream_announcements_stream = Stream.objects.get(name="general", realm=realm)
         realm.new_stream_announcements_stream = new_stream_announcements_stream
+        # `send_channel_events_messages` is `False` for new organizations.
+        realm.send_channel_events_messages = True
         realm.save()
 
         invite_streams = ["cross_stream"]

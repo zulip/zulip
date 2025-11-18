@@ -324,6 +324,7 @@ export function dispatch_normal_event(event) {
                 require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
+                send_channel_events_messages: noop,
                 signup_announcements_stream_id: noop,
                 zulip_update_announcements_stream_id: noop,
                 emails_restricted_to_domains: noop,

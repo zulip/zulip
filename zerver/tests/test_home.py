@@ -211,6 +211,7 @@ class HomeTest(ZulipTestCase):
         "realm_push_notifications_enabled_end_timestamp",
         "realm_require_e2ee_push_notifications",
         "realm_require_unique_names",
+        "realm_send_channel_events_messages",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",
         "realm_topics_policy",

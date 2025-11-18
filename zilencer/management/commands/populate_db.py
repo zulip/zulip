@@ -31,7 +31,10 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_linkifiers import do_add_linkifier
-from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
+from zerver.actions.realm_settings import (
+    do_set_realm_moderation_request_channel,
+    do_set_realm_property,
+)
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
@@ -926,6 +929,12 @@ class Command(ZulipBaseCommand):
                     acting_user=None,
                 )
 
+            # Channel event messages are disabled by default, but we want them
+            # enabled in the development environment (so that we naturally test
+            # them when doing manual testing) and unit tests (to preserve the old behaviour).
+            do_set_realm_property(
+                zulip_realm, "send_channel_events_messages", True, acting_user=None
+            )
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:

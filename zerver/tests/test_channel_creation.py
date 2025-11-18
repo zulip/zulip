@@ -4,6 +4,7 @@ from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
+    do_set_realm_property,
 )
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_user_role
@@ -315,6 +316,19 @@ class TestCreateStreams(ZulipTestCase):
             "```` quote\ntest channel\n````"
         )
         self.assertEqual(message.content, expected_message_content)
+
+        # Test channel created notification is not sent if `send_channel_events_messages`
+        # realm setting is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        result = self.create_channel_via_post(
+            user_profile,
+            name="testchannel2",
+        )
+        self.assert_json_success(result)
+        stream = get_stream("testchannel2", user_profile.realm)
+        self.assertEqual(stream.name, "testchannel2")
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
 
         # Creating an existing channel should return an error.
         result = self.create_channel_via_post(user_profile, name="basketball")
