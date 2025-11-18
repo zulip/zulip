@@ -117,9 +117,30 @@ function build_page(): void {
             const $add_playground_button = $(".new-playground-form button");
             $add_playground_button.prop("disabled", true);
             $playground_status.hide();
+
+            const $language_input = $<HTMLInputElement>("input#playground_pygments_language");
+            const language_val = $language_input.val() ?? "";
+            if (language_val.includes(" ")) {
+                $add_playground_button.prop("disabled", false);
+                ui_report.client_error(
+                    $t_html({defaultMessage: "Language name cannot contain spaces."}),
+                    $playground_status,
+                );
+                return;
+            }
+
+            const disallowed_keywords = ["latex", "math", "quote", "spoiler"];
+            if (disallowed_keywords.includes(language_val.toLowerCase())) {
+                $add_playground_button.prop("disabled", false);
+                ui_report.client_error(
+                    $t_html({defaultMessage: "This is a special keyword and cannot be used."}),
+                    $playground_status,
+                );
+                return;
+            }
             const data = {
                 name: $("#playground_name").val(),
-                pygments_language: $("#playground_pygments_language").val(),
+                pygments_language: language_val.toLowerCase(),
                 url_template: $("#playground_url_template").val(),
             };
             void channel.post({
