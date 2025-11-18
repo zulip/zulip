@@ -1522,3 +1522,124 @@ label.label-title {
 .markdown-image-with-caption {
     margin: 0;
 }
+/* ============================================================
+   DARK MODE FOR LOGGED-OUT (PORTICO) PAGES
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+
+    /* Overall page */
+    body {
+        background-color: #0f0f0f;
+        color: #e6e6e6;
+    }
+
+    /* Header */
+    .header,
+    .portico-header {
+        background: #1a1a1a;
+        color: #e6e6e6;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Forms / white boxes */
+    .login-form,
+    .register-form,
+    .password-reset,
+    .digest-email-html,
+    .white-box,
+    .devlogin,
+    .portico-page-container,
+    .center-block {
+        background: #1a1a1a !important;
+        color: #e6e6e6 !important;
+        border-color: #333 !important;
+        box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    }
+
+    /* Inputs */
+    input,
+    select,
+    textarea {
+        background: #242424 !important;
+        color: #fafafa !important;
+        border: 1px solid #3a3a3a !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: #aaaaaa;
+    }
+
+    /* Buttons */
+    button,
+    .button,
+    input[type="submit"],
+    input[type="button"],
+    .btn {
+        background: #00897b !important;
+        border-color: #00a796 !important;
+        color: white !important;
+    }
+
+    button:hover,
+    .button:hover,
+    .btn:hover {
+        background: #00a796 !important;
+    }
+
+    /* Tables */
+    table,
+    .table-striped,
+    .devlogin table {
+        background: #1a1a1a !important;
+        color: #e6e6e6 !important;
+        border-color: #333 !important;
+    }
+
+    .table-striped tr:nth-child(odd) td {
+        background: #242424 !important;
+    }
+
+    /* Hyperlinks */
+    a {
+        color: #72c9ff !important;
+    }
+
+    a:hover {
+        color: #9ed8ff !important;
+    }
+
+    /* Devlogin panel */
+    .devlogin-table td,
+    .devlogin-table th {
+        background: #1a1a1a;
+        border-color: #333;
+    }
+
+    .devlogin-table tr:hover td {
+        background: #2a2a2a;
+    }
+
+    /* Help page sidebar */
+    .help .sidebar {
+        background: #153a37;
+        color: #e6e6e6;
+        border-right: 1px solid #2b2b2b;
+    }
+
+    .help .markdown {
+        background: #111;
+        color: #ddd;
+    }
+
+    /* Error pages */
+    .error_page {
+        background: #102d2a;
+        color: #e6e6e6;
+    }
+
+    .error_page .errorbox {
+        background: #1a1a1a;
+        border-color: #167f72;
+    }
+}
