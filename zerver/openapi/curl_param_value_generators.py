@@ -426,3 +426,6 @@ def get_temporary_url_for_uploaded_file() -> dict[str, object]:
         realm_id = upload_path_parts[1]
         filename = upload_path_parts[2]
     return {"realm_id_str": realm_id, "filename": filename}
+# Instead of fixed id: 42
+example_message_id = Message.objects.order_by("-id").first().id
+return str(example_message_id)

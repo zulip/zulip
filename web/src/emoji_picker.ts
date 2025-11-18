@@ -58,6 +58,12 @@ let section_head_offsets: {
 let edit_message_id: number | null = null;
 let current_message_id: number | null = null;
 
+function record_emoji_usage(emoji_name: string): void {
+    const data = JSON.parse(localStorage.getItem("frequent_emojis") || "{}");
+    data[emoji_name] = (data[emoji_name] || 0) + 1;
+    localStorage.setItem("frequent_emojis", JSON.stringify(data));
+}
+
 const EMOJI_CATEGORIES = [
     {name: "Popular", icon: "fa-star-o", translated: $t({defaultMessage: "Popular"})},
     {
@@ -155,6 +161,26 @@ export function rebuild_catalog(): void {
         ],
     ]);
 
+        // ⭐⭐ Load Frequently Used Emojis ⭐⭐
+    function load_frequent_emojis() {
+        const data = JSON.parse(localStorage.getItem("frequent_emojis") || "{}");
+
+        const sorted = Object.entries(data)
+            .sort((a, b) => b[1] - a[1])  // highest usage first
+            .slice(0, 20)                // top 20 emojis
+            .map(([name]) => emoji.emojis_by_name.get(name))
+            .filter(Boolean);
+
+        return sorted;
+    }
+
+    const frequent_emojis = load_frequent_emojis();
+
+    if (frequent_emojis.length > 0) {
+        catalog.set("Frequently used", frequent_emojis);
+    }
+
+
     for (const [category, raw_codepoints] of Object.entries(emoji_codes.emoji_catalog)) {
         const codepoints = z.array(z.string()).parse(raw_codepoints);
         const emojis = [];
@@ -190,6 +216,17 @@ export function rebuild_catalog(): void {
         emojis: catalog.get(category.name)!,
         translated: category.translated,
     }));
+
+    const frequent = catalog.get("Frequently used");
+
+if (frequent) {
+    complete_emoji_catalog.unshift({
+        name: "Frequently used",
+        icon: "fa-star",  // any icon, optional
+        emojis: frequent,
+        translated: "Frequently used",
+    });
+}
     const emojis_by_category = complete_emoji_catalog.flatMap((category) => {
         if (category.name === "Popular") {
             // popular category has repeated emojis in the catalog so we skip it
@@ -781,6 +818,8 @@ function handle_emoji_clicked(
     if (emoji_name === undefined) {
         return;
     }
+    record_emoji_usage(emoji_name);
+
 
     const emoji_destination = $emoji
         .closest(".emoji-picker-popover")

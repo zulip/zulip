@@ -432,3 +432,11 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+# zerver/lib/types.py
+
+from typing import TypedDict, Any
+
+class UserProfileChangeDict(TypedDict):
+    field_name: str
+    old_value: Any
+    new_value: Any

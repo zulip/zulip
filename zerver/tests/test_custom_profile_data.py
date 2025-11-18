@@ -1300,3 +1300,26 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/realm/profile_fields", info={"order": orjson.dumps(order).decode()}
         )
         self.assert_json_error(result, "Invalid order mapping.")
+class CustomProfileFieldNotificationTest(ZulipTestCase):
+    def test_custom_field_update_sends_notification(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("desdemona")
+
+        field_id = self.create_select_custom_profile_field()
+
+        self.login_user(admin)
+
+        result = self.client_patch(
+            f"/json/users/{user.id}",
+            {
+                f"profile_data[{field_id}]": "New Value",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = self.get_messages(user)
+        body = messages[-1]["content"]
+
+        self.assertIn("New Value", body)
+        self.assertIn("Custom profile", body)

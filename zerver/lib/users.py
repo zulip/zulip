@@ -1226,3 +1226,67 @@ def max_message_id_for_user(user_profile: UserProfile | None) -> int:
         return max_message.message_id
     else:
         return -1
+from zerver.lib.types import UserProfileChangeDict;
+
+def update_user_full_name(
+    acting_user: UserProfile,
+    user_profile: UserProfile,
+    full_name_raw: str,
+) -> None:
+    old_full_name = user_profile.full_name
+    new_name = check_full_name(full_name_raw, user_profile=user_profile, realm=user_profile.realm)
+
+    if new_name == old_full_name:
+        return
+
+    user_profile.full_name = new_name
+    user_profile.save(update_fields=["full_name"])
+
+    # Build notification changes
+    changes = [{
+        "field_name": "Full name",
+        "old_value": old_full_name,
+        "new_value": new_name,
+    }]
+
+    # Only notify if an admin changed another user's profile
+    if acting_user.id != user_profile.id:
+        from zerver.actions.message_send import send_user_profile_update_notification
+        send_user_profile_update_notification(
+            acting_user,
+            user_profile,
+            changes,
+        )
+
+def do_change_user_role(
+    acting_user: UserProfile,
+    user_profile: UserProfile,
+    new_role: int,
+) -> None:
+    old_role = user_profile.role
+    if old_role == new_role:
+        return
+
+    # Normal Zulip permission checks
+    if new_role == UserProfile.ROLE_REALM_OWNER and not acting_user.is_realm_owner:
+        raise JsonableError(_("Only organization owners can promote a user to owner."))
+
+    user_profile.role = new_role
+    user_profile.save(update_fields=["role"])
+
+    # Build notification block
+    from zerver.lib.users import role_name
+    changes = [{
+        "field_name": "Role",
+        "old_value": role_name(old_role),
+        "new_value": role_name(new_role),
+    }]
+
+    # Only notify if changed by admin
+    if acting_user.id != user_profile.id:
+        from zerver.actions.message_send import send_user_profile_update_notification
+        send_user_profile_update_notification(
+            acting_user,
+            user_profile,
+            changes,
+        )

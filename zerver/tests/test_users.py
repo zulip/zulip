@@ -3453,3 +3453,23 @@ class TestBulkRegenerateAPIKey(ZulipTestCase):
         self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)
 
         self.assertEqual(othello_old_api_key, othello.api_key)
+class UserProfileUpdateNotificationTest(ZulipTestCase):
+    def test_full_name_change_sends_notification(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+
+        self.login_user(admin)
+
+        result = self.client_patch(
+            f"/json/users/{user.id}",
+            {"full_name": "Cordelia Updated"},
+        )
+
+        self.assert_json_success(result)
+
+        messages = self.get_messages(user)
+        notification = messages[-1]["content"]
+
+        self.assertIn("Your account settings were updated", notification)
+        self.assertIn("Full name", notification)
+        self.assertIn("Cordelia Updated", notification)

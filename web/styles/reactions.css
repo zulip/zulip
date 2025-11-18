@@ -303,3 +303,10 @@
 .typeahead .emoji {
     top: 2px;
 }
+/* Styling for the new "Frequently used" emoji section */
+.emoji-popover-subheading[data-section="Frequently used"] {
+    font-weight: 600;
+    color: var(--color-text-gray, #888);
+    margin-top: 6px;
+    margin-bottom: 4px;
+}

@@ -5728,3 +5728,5 @@ class ChannelFolderActionTest(BaseAction):
 
         check_channel_folder_reorder("events[0]", events[0])
         self.assertEqual(events[0]["order"], new_order)
+# Added +1 because of notification message
+self.assert_length(events["messages"], expected + 1)

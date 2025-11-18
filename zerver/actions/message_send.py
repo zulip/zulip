@@ -2169,3 +2169,37 @@ def internal_send_group_direct_message(
 
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
+# zerver/actions/message_send.py
+
+from typing import List
+from zerver.lib.types import UserProfileChangeDict
+
+def send_user_profile_update_notification(
+    admin: UserProfile,
+    user: UserProfile,
+    changes: List[UserProfileChangeDict],
+) -> None:
+
+    if not changes:
+        return
+
+    lines: List[str] = [
+        f"**Your account settings were updated by {admin.full_name}.**",
+        "",
+        "Here’s what changed:",
+        "",
+    ]
+
+    for change in changes:
+        field = change["field_name"]
+        old = change["old_value"]
+        new = change["new_value"]
+        lines.append(f"• **{field}**: `{old}` → `{new}`")
+
+    content = "\n".join(lines)
+
+    internal_send_private_message(
+        sender=admin,
+        recipient_user=user,
+        content=content,
+    )
