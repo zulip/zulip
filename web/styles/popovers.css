@@ -542,7 +542,7 @@ ul.popover-group-menu-member-list {
     .stream-tab-element-header {
         margin: 0;
         display: inline-block;
-        font-weight: inherit;
+        font-weight: 600;
         /* 21px at 14px/1em */
         font-size: 1.5em;
     }
