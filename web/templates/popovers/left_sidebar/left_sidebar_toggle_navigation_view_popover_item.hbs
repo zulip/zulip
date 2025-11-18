@@ -1,0 +1,14 @@
+<li role="none" class="link-item popover-menu-list-item">
+    {{#if is_currently_active_unpinned_view}}
+    <a role="menuitem" class="show-navigation-view popover-menu-link" data-fragment="{{fragment}}" tabindex="0">
+        <i class="popover-menu-icon zulip-icon zulip-icon-eye" aria-hidden="true"></i>
+        <span class="popover-menu-label">{{t "Show in left sidebar" }}</span>
+    </a>
+    {{else}}
+    <a role="menuitem" class="hide-navigation-view popover-menu-link" data-fragment="{{fragment}}" tabindex="0">
+        <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
+        <span class="popover-menu-label">{{t "Hide from left sidebar" }}</span>
+    </a>
+    {{/if}}
+</li>
+

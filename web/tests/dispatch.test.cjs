@@ -98,6 +98,7 @@ mock_esm("../src/left_sidebar_navigation_area", {
     update_scheduled_messages_row() {},
     update_reminders_row() {},
     handle_home_view_changed() {},
+    update_sidebar_for_navigation_views() {},
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
@@ -217,11 +218,13 @@ run_test("navigation_views", ({override}) => {
     const update_event = event_fixtures.navigation_view__update;
     {
         const stub = make_stub();
-        override(navigation_views, "update_navigation_view", stub.f);
+        override(navigation_views, "update_navigation_view_by_fragment", stub.f);
 
         dispatch(update_event);
         assert.equal(stub.num_calls, 1);
-        assert_same(stub.get_args("event").event, update_event.fragment);
+        const {fragment, data} = stub.get_args("fragment", "data");
+        assert_same(fragment, update_event.fragment);
+        assert_same(data, update_event.data);
     }
 
     const remove_event = event_fixtures.navigation_view__remove;

@@ -2,11 +2,17 @@
 
 const assert = require("node:assert/strict");
 
-const {set_global, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 set_global("page_params", {
     is_spectator: false,
+});
+
+const channel = mock_esm("../src/channel", {
+    patch() {},
+    post() {},
+    del() {},
 });
 
 const params = {
@@ -66,7 +72,7 @@ run_test("add_navigation_view", () => {
     assert.equal(navigation_views.get_navigation_view_by_fragment(view.fragment), view);
 });
 
-run_test("update_navigation_view", () => {
+run_test("update_navigation_view_by_fragment", () => {
     const view = {
         fragment: "inbox",
         is_pinned: true,
@@ -74,10 +80,23 @@ run_test("update_navigation_view", () => {
     };
     navigation_views.add_navigation_view(view);
     assert.equal(navigation_views.get_navigation_view_by_fragment(view.fragment), view);
-    navigation_views.update_navigation_view(view.fragment, {is_pinned: false});
+    navigation_views.update_navigation_view_by_fragment(view.fragment, {is_pinned: false});
     assert.equal(navigation_views.get_navigation_view_by_fragment(view.fragment).is_pinned, false);
     blueslip.expect("error", "Cannot find navigation view to update");
-    navigation_views.update_navigation_view("nonexistent", {name: "Nonexistent"});
+    navigation_views.update_navigation_view_by_fragment("nonexistent", {name: "Nonexistent"});
+});
+
+run_test("update_navigation_view", () => {
+    const view = {
+        fragment: "direct/update/test",
+        is_pinned: true,
+        name: null,
+    };
+    navigation_views.add_navigation_view(view);
+    const existing_view = navigation_views.get_navigation_view_by_fragment(view.fragment);
+    assert.ok(existing_view);
+    navigation_views.update_navigation_view(existing_view, {is_pinned: false});
+    assert.equal(navigation_views.get_navigation_view_by_fragment(view.fragment).is_pinned, false);
 });
 
 run_test("remove_navigation_view", () => {
@@ -128,4 +147,117 @@ run_test("get_all_navigation_views", () => {
     const fragments = all_views.map((view) => view.fragment);
     const unique_fragments = [...new Set(fragments)];
     assert.equal(fragments.length, unique_fragments.length);
+});
+
+run_test("set_view_pinned_status - update existing view", () => {
+    let success_func;
+    let error_func;
+
+    channel.patch = (opts) => {
+        assert.equal(opts.url, "/json/navigation_views/narrow%2Fis%2Fstarred");
+        assert.deepEqual(opts.data, {is_pinned: false});
+        success_func = opts.success;
+        error_func = opts.error;
+    };
+
+    let success_called = false;
+    let error_called = false;
+
+    navigation_views.set_view_pinned_status(
+        "narrow/is/starred",
+        false,
+        () => {
+            success_called = true;
+        },
+        () => {
+            error_called = true;
+        },
+    );
+
+    success_func();
+    assert.ok(success_called);
+    assert.ok(!error_called);
+    assert.equal(
+        navigation_views.get_navigation_view_by_fragment("narrow/is/starred").is_pinned,
+        false,
+    );
+
+    success_called = false;
+    error_called = false;
+    blueslip.error = () => {};
+
+    error_func();
+    assert.ok(!success_called);
+    assert.ok(error_called);
+});
+
+run_test("set_view_pinned_status - create new view", () => {
+    let success_func;
+    let error_func;
+
+    channel.post = (opts) => {
+        assert.equal(opts.url, "/json/navigation_views");
+        assert.deepEqual(opts.data, {
+            fragment: "new/custom/view",
+            is_pinned: true,
+        });
+        success_func = opts.success;
+        error_func = opts.error;
+    };
+
+    let success_called = false;
+    let error_called = false;
+
+    navigation_views.set_view_pinned_status(
+        "new/custom/view",
+        true,
+        () => {
+            success_called = true;
+        },
+        () => {
+            error_called = true;
+        },
+    );
+
+    success_func();
+    assert.ok(success_called);
+    assert.ok(!error_called);
+
+    const new_view = navigation_views.get_navigation_view_by_fragment("new/custom/view");
+    assert.ok(new_view);
+    assert.equal(new_view.is_pinned, true);
+    assert.equal(new_view.name, null);
+
+    success_called = false;
+    error_called = false;
+    blueslip.error = () => {};
+
+    error_func();
+    assert.ok(!success_called);
+    assert.ok(error_called);
+});
+
+run_test("is_view_pinned", () => {
+    assert.equal(navigation_views.is_view_pinned("narrow/is/starred"), false);
+    assert.equal(navigation_views.is_view_pinned("narrow/is/mentioned"), false);
+
+    assert.equal(
+        navigation_views.is_view_pinned("inbox"),
+        built_in_views_meta_data.inbox.is_pinned,
+    );
+    assert.equal(
+        navigation_views.is_view_pinned("feed"),
+        built_in_views_meta_data.all_messages.is_pinned,
+    );
+    assert.equal(
+        navigation_views.is_view_pinned("recent"),
+        built_in_views_meta_data.recent_view.is_pinned,
+    );
+
+    assert.equal(navigation_views.is_view_pinned("nonexistent/fragment"), false);
+});
+
+run_test("is_built_in_view_key", () => {
+    assert.equal(navigation_views.is_built_in_view_key("inbox"), true);
+    assert.equal(navigation_views.is_built_in_view_key("nonexistent"), false);
 });

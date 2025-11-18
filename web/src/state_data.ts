@@ -206,9 +206,11 @@ export const channel_folder_schema = z.object({
 
 export const navigation_view_schema = z.object({
     fragment: z.string(),
-    name: z.string(),
+    name: z.nullable(z.string()),
     is_pinned: z.boolean(),
 });
+
+export type NavigationView = z.infer<typeof navigation_view_schema>;
 
 export const user_topic_schema = z.object({
     stream_id: z.number(),
