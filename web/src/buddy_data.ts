@@ -256,7 +256,11 @@ export type TitleData = {
     is_deactivated?: boolean;
 };
 
-export function get_title_data(user_ids_string: string, is_group: boolean): TitleData {
+export function get_title_data(
+    user_ids_string: string,
+    is_group: boolean,
+    should_show_status: boolean,
+): TitleData {
     if (is_group) {
         // For groups, just return a string with recipient names.
         return {
@@ -317,7 +321,7 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
     if (user_status.get_status_text(user_id)) {
         return {
             first_line: person.full_name,
-            second_line: user_status.get_status_text(user_id),
+            second_line: should_show_status ? user_status.get_status_text(user_id) : "",
             third_line: last_seen,
             show_you: is_my_user,
         };
