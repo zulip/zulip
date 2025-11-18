@@ -1,4 +1,5 @@
 import Handlebars from "handlebars/runtime.js";
+import $ from "jquery";
 import _ from "lodash";
 import * as z from "zod/mini";
 
@@ -280,6 +281,87 @@ export function canonicalize_channel_synonyms(text: string): string {
         return "channels";
     }
     return text;
+}
+
+export function is_url_previewable(href: string): boolean {
+    try {
+        const url = new URL(href);
+        if (
+            ["https:", "http:"].includes(url.protocol) &&
+            ["github.com", "www.github.com"].includes(url.hostname) &&
+            url.port === ""
+        ) {
+            const work_item = url.pathname.split("/")[3];
+            return work_item !== undefined && ["issues", "pull"].includes(work_item);
+        }
+        return false;
+    } catch {
+        return false;
+    }
+}
+
+export function initialize(): void {
+    $("#main_div").on(
+        "mouseenter",
+        ".rendered_markdown a",
+        (e: JQuery.TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>) => {
+            let elt: HTMLElement = e.target;
+            if (elt.parentElement && elt.nodeName === "IMG") {
+                elt = elt.parentElement;
+            }
+            const href = elt.getAttribute("href");
+            // const title = elt.getAttribute("title");
+            const aria_label = elt.getAttribute("aria-label");
+            // const parentElement = elt.parentElement;
+            if (
+                !href ||
+                // (title && !parentElement?.classList.contains("message_inline_image")) ||
+                aria_label ||
+                elt.classList.contains("previewable")
+            ) {
+                return;
+            }
+            if (is_url_previewable(href)) {
+                elt.classList.add("previewable");
+                return;
+            }
+            if (elt.parentElement?.classList.contains("message_inline_image")) {
+                // For inline images we want to handle the tooltips explicitly, and disable
+                // the browser's built in handling of the title attribute.
+                const title = elt.getAttribute("title");
+                if (title !== null) {
+                    elt.setAttribute("aria-label", title);
+                    elt.removeAttribute("title");
+                }
+            } else {
+                // For non-image user uploads, the following block ensures that the title
+                // attribute always displays the filename as a security measure.
+                let title: string;
+                let legacy_title: string;
+                const url = new URL(href, window.location.href);
+                if (
+                    url.origin === window.location.origin &&
+                    url.pathname.startsWith("/user_uploads/")
+                ) {
+                    // We add the word "download" to make clear what will
+                    // happen when clicking the file.  This is particularly
+                    // important in the desktop app, where hovering a URL does
+                    // not display the URL like it does in the web app.
+                    title = legacy_title = $t(
+                        {defaultMessage: "Download {filename}"},
+                        {filename: url.pathname.slice(url.pathname.lastIndexOf("/") + 1)},
+                    );
+                } else {
+                    title = url.toString();
+                    legacy_title = href;
+                }
+                elt.setAttribute(
+                    "title",
+                    ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
+                );
+            }
+        },
+    );
 }
 
 export function filter_by_word_prefix_match<T>(

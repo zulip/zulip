@@ -20,6 +20,7 @@
 * [Get a message's read receipts](/api/get-read-receipts)
 * [Get temporary URL for an uploaded file](/api/get-file-temporary-url)
 * [Report a message](/api/report-message)
+* [Endpoint to fetch data of a previewable URL](/api/previewable)
 
 #### Scheduled messages
 
