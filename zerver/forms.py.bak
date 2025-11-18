@@ -651,21 +651,8 @@ class MultiEmailField(forms.Field):
     def validate(self, emails: list[str]) -> None:
         """Check if value consists only of valid emails."""
         super().validate(emails)
-
-        invalid = []
         for email in emails:
-            try:
-                validate_email(email)
-            except ValidationError:
-                invalid.append(email)
-
-        if invalid:
-            details = ", ".join(invalid)
-            raise forms.ValidationError(
-                _(
-                    "Invalid email format; please fix the following email(s) and try again: {details}"
-                ).format(details=details)
-            )
+            validate_email(email)
 
 
 class FindMyTeamForm(forms.Form):

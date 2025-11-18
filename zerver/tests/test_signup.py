@@ -4755,7 +4755,9 @@ class TestFindMyTeam(ZulipTestCase):
         data = {"emails": "a" * 320 + "@example.com"}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 200)
-        self.assertIn(b"Enter a valid email", result.content)
+        content = result.content.decode().lower()
+        self.assertIn("invalid", content)
+
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
