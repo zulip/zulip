@@ -2373,3 +2373,13 @@ label.preferences-radio-choice-label {
         }
     }
 }
+/* Fix: Expand textarea width to match panel container */
+.settings-section textarea,
+.organization-settings textarea,
+#organization-settings textarea,
+.modal-body textarea {
+    width: 50%;
+    max-width: 100%;
+    box-sizing: border-box;
+    resize: both;
+}
