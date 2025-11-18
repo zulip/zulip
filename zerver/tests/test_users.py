@@ -3020,9 +3020,6 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
     def test_restricted_access_to_users(self) -> None:
-        othello = self.example_user("othello")
-        cordelia = self.example_user("cordelia")
-        desdemona = self.example_user("desdemona")
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         prospero = self.example_user("prospero")
@@ -3036,11 +3033,7 @@ class GetProfileTest(ZulipTestCase):
         self.login("polonius")
         with self.assert_database_query_count(9):
             result = orjson.loads(self.client_get("/json/users").content)
-        accessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
-        ]
+        accessible_users = result["members"]
         # The user can access 3 bot users and 7 human users.
         self.assert_length(accessible_users, 10)
         accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
@@ -3059,22 +3052,11 @@ class GetProfileTest(ZulipTestCase):
             {polonius.id, hamlet.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id},
         )
 
-        inaccessible_user_ids = {
-            user["user_id"]
-            for user in result["members"]
-            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        }
-        self.assertEqual(inaccessible_user_ids, {cordelia.id, desdemona.id, othello.id})
-
         do_deactivate_user(hamlet, acting_user=None)
         do_deactivate_user(aaron, acting_user=None)
         do_deactivate_user(shiva, acting_user=None)
         result = orjson.loads(self.client_get("/json/users").content)
-        accessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
-        ]
+        accessible_users = result["members"]
         self.assert_length(accessible_users, 9)
         # Guests can only access those deactivated users who were involved in
         # DMs and not those who were subscribed to some common streams.
@@ -3084,13 +3066,6 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(
             accessible_user_ids, {polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id}
         )
-
-        inaccessible_user_ids = {
-            user["user_id"]
-            for user in result["members"]
-            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        }
-        self.assertEqual(inaccessible_user_ids, {cordelia.id, desdemona.id, othello.id, hamlet.id})
 
     def test_get_user_dicts_with_ids(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -3117,11 +3092,7 @@ class GetProfileTest(ZulipTestCase):
                     "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
                 ).content
             )
-        accessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
-        ]
+        accessible_users = result["members"]
         self.assert_length(accessible_users, len(accessible_user_ids_subset))
         accessible_user_ids = [user["user_id"] for user in accessible_users]
         self.assertCountEqual(
@@ -3130,13 +3101,6 @@ class GetProfileTest(ZulipTestCase):
         )
         accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
         self.assert_length(accessible_human_users, 4)
-        inaccessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        ]
-        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
-        self.assertCountEqual(inaccessible_user_ids, inaccessible_user_ids_subset)
 
         # Desdemona can access all users since she is an admin.
         self.login("desdemona")

@@ -1133,7 +1133,7 @@ def get_users_for_api(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
-    user_list_incomplete: bool = False,
+    user_list_incomplete: bool = True,
     user_ids: list[int] | None = None,
 ) -> dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to
