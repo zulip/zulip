@@ -30,6 +30,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
+import * as compose_banner from "./compose_banner.ts";
 
 export const DEFAULT_COMPOSE_PLACEHOLDER = $t({defaultMessage: "Compose your message here"});
 
@@ -622,6 +623,13 @@ export function handle_keyup(
     }
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
+
+    const message_text = ($textarea.val() as string) ?? "";
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+
+    // Sync banners with current mentions
+    // If a mention was removed, its corresponding banner will be removed too.
+    compose_banner.remove_banners_of_not_mentioned_users(message_text, $banner_container);
 }
 
 export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
