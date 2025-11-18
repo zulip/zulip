@@ -1770,7 +1770,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     map_messages_to_attachments(attachment_data)
 
     # Import zerver_message and zerver_usermessage
-    import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
+    import_message_data(
+        realm=realm, sender_map=sender_map, import_dir=import_dir, processes=processes
+    )
 
     if "zerver_onboardingusermessage" in data:
         fix_bitfield_keys(data, "zerver_onboardingusermessage", "flags")
@@ -1979,6 +1981,15 @@ def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
             new_id=new_id,
         )
 
+    # Save ID_MAP to disk so parallel workers can load it
+    # Convert integer keys to strings for JSON compatibility
+    id_map_path = os.path.join(import_dir, "id_map.json")
+    serializable_id_map = {
+        table: {str(k): v for k, v in mapping.items()} for table, mapping in ID_MAP.items()
+    }
+    with open(id_map_path, "wb") as f:
+        f.write(orjson.dumps(serializable_id_map))
+
     # We don't touch user_message keys here; that happens later when
     # we're actually read the files a second time to get actual data.
 
@@ -2041,61 +2052,99 @@ def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> list[int]:
     return message_ids
 
 
-def import_message_data(realm: Realm, sender_map: dict[int, Record], import_dir: Path) -> None:
+def import_message_data(
+    realm: Realm, sender_map: dict[int, Record], import_dir: Path, processes: int = 1
+) -> None:
+    # Count message files
     dump_file_id = 1
+    message_files = []
     while True:
         message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
         if not os.path.exists(message_filename):
             break
-
-        with open(message_filename, "rb") as f:
-            data = orjson.loads(f.read())
-
-        logging.info("Importing message dump %s", message_filename)
-        re_map_foreign_keys(data, "zerver_message", "sender", related_table="user_profile")
-        re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
-        re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
-        fix_datetime_fields(data, "zerver_message")
-        # Parser to update message content with the updated attachment URLs
-        fix_upload_links(data, "zerver_message")
-
-        # We already create mappings for zerver_message ids
-        # in update_message_foreign_keys(), so here we simply
-        # apply them.
-        message_id_map = ID_MAP["message"]
-        for row in data["zerver_message"]:
-            del row["realm"]
-            row["realm_id"] = realm.id
-            row["id"] = message_id_map[row["id"]]
-
-        for row in data["zerver_usermessage"]:
-            assert row["message"] in message_id_map
-
-        fix_message_rendered_content(
-            realm=realm,
-            sender_map=sender_map,
-            messages=data["zerver_message"],
-        )
-        logging.info("Successfully rendered Markdown for message batch")
-
-        fix_message_edit_history(
-            realm=realm, sender_map=sender_map, messages=data["zerver_message"]
-        )
-        # A LOT HAPPENS HERE.
-        # This is where we actually import the message data.
-        bulk_import_model(data, Message)
-
-        # Due to the structure of these message chunks, we're
-        # guaranteed to have already imported all the Message objects
-        # for this batch of UserMessage objects.
-        re_map_foreign_keys(data, "zerver_usermessage", "message", related_table="message")
-        re_map_foreign_keys(
-            data, "zerver_usermessage", "user_profile", related_table="user_profile"
-        )
-        fix_bitfield_keys(data, "zerver_usermessage", "flags")
-
-        bulk_import_user_message_data(data, dump_file_id)
+        message_files.append(dump_file_id)
         dump_file_id += 1
+
+    if not message_files:
+        return
+
+    # Sequential processing (original behavior)
+    if processes == 1 or len(message_files) == 1:
+        for file_id in message_files:
+            _process_message_file(file_id, realm, sender_map, import_dir)
+    else:
+        # Parallel processing
+        import multiprocessing
+
+        num_processes = min(processes, multiprocessing.cpu_count(), len(message_files))
+        worker_data = [(file_id, realm.id, sender_map, import_dir) for file_id in message_files]
+
+        run_parallel(
+            _import_message_file_worker,
+            worker_data,
+            num_processes,
+        )
+
+
+def _process_message_file(
+    dump_file_id: int, realm: Realm, sender_map: dict[int, Record], import_dir: Path
+) -> None:
+    """Process a single message file (used for sequential import)."""
+    message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
+
+    with open(message_filename, "rb") as f:
+        data = orjson.loads(f.read())
+
+    re_map_foreign_keys(data, "zerver_message", "sender", related_table="user_profile")
+    re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
+    re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
+    fix_datetime_fields(data, "zerver_message")
+    fix_upload_links(data, "zerver_message")
+
+    message_id_map = ID_MAP["message"]
+    for row in data["zerver_message"]:
+        del row["realm"]
+        row["realm_id"] = realm.id
+        row["id"] = message_id_map[row["id"]]
+
+    for row in data["zerver_usermessage"]:
+        assert row["message"] in message_id_map
+
+    fix_message_rendered_content(
+        realm=realm,
+        sender_map=sender_map,
+        messages=data["zerver_message"],
+    )
+    logging.info("Successfully rendered Markdown for message batch")
+
+    fix_message_edit_history(realm=realm, sender_map=sender_map, messages=data["zerver_message"])
+    bulk_import_model(data, Message)
+
+    re_map_foreign_keys(data, "zerver_usermessage", "message", related_table="message")
+    re_map_foreign_keys(data, "zerver_usermessage", "user_profile", related_table="user_profile")
+    fix_bitfield_keys(data, "zerver_usermessage", "flags")
+
+    bulk_import_user_message_data(data, dump_file_id)
+
+
+def _import_message_file_worker(data: tuple[int, int, dict[int, Record], Path]) -> None:
+    """Worker function for parallel message import."""
+    dump_file_id, realm_id, sender_map, import_dir = data
+
+    # Load ID_MAP in worker
+    id_map_path = os.path.join(import_dir, "id_map.json")
+    with open(id_map_path, "rb") as f:
+        loaded_id_map = orjson.loads(f.read())
+
+    # Convert string keys back to integers
+    for table_name in loaded_id_map:
+        if isinstance(loaded_id_map[table_name], dict):
+            loaded_id_map[table_name] = {int(k): v for k, v in loaded_id_map[table_name].items()}
+
+    ID_MAP.update(loaded_id_map)
+
+    realm = Realm.objects.get(id=realm_id)
+    _process_message_file(dump_file_id, realm, sender_map, import_dir)
 
 
 def import_attachments(data: ImportedTableData) -> None:
