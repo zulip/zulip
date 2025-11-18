@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 from zerver.webhooks import fixtureless_integrations
 
@@ -614,6 +614,15 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
+    ),
+    WebhookIntegration(
+        "dbt",
+        ["deployment"],
+        [WebhookScreenshotConfig("job_run_completed_errored.json")],
+        display_name="DBT",
+        url_options=[
+            WebhookUrlOption(name="access_url", label="DBT Access URL", validator=check_string)
+        ],
     ),
     WebhookIntegration(
         "dialogflow",
