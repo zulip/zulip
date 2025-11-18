@@ -102,7 +102,30 @@ in order to export direct message data.
 <ImportYourDataIntoZulip />
 
 <Tabs>
-  <TabItem label="Zulip Cloud">
+  <TabItem label="Zulip Cloud (self-serve)">
+    <Steps>
+      1. If you've already created an organization at the subdomain you plan to
+         use, email [support@zulip.com](mailto:support@zulip.com) to get it
+         deleted, so that you can start the import process.
+      1. Fill out the information to [create a new Zulip Cloud
+         organization](https://zulip.com/new/). Under **Import chat history?**,
+         select **Import from Slack**.
+      1. Click **Complete registration** in the confirmation email you received.
+      1. Enter your Slack **Bot User OAuth Token**, which will be a long
+         string of numbers and characters starting with `xoxb-`, and click
+         **Submit**.
+      1. Click **Start upload** to upload the **exported data** `.zip` file
+         from your Slack workspace.
+      1. Configure **Who will be allowed to see other users' email addresses?**,
+         and click **Start import**. The import may take some time to complete.
+      1. If you're using a different registration email from your Slack account,
+         select your Slack account from the dropdown. If you don't have an
+         account in the imported workspace, you can create a new Zulip account.
+      1. Set a password for your Zulip account, and click **Submit**.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Zulip Cloud (via support)">
     <ImportIntoAZulipCloudOrganization />
 
     <Steps>
@@ -113,7 +136,7 @@ in order to export direct message data.
     <ImportZulipCloudOrganizationWarning />
   </TabItem>
 
-  <TabItem label="Self hosting">
+  <TabItem label="Self-hosted">
     <ImportIntoASelfHostedServerDescription />
 
     <FlattenedSteps>
