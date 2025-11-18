@@ -234,15 +234,11 @@ function change_state_of_subscribe_button(
     event.stopPropagation();
     assert(user_profile_subscribe_widget !== undefined);
     user_profile_subscribe_widget.render();
-    const $subscribe_button = $("#user-profile-modal .add-subscription-button");
-    ui_util.enable_element_and_remove_tooltip($subscribe_button);
+    $("#user-profile-modal .add-subscription-button").prop("disabled", false);
 }
 
 function reset_subscribe_widget(): void {
-    ui_util.disable_element_and_add_tooltip(
-        $("#user-profile-modal .add-subscription-button"),
-        $t({defaultMessage: "Select a channel to subscribe"}),
-    );
+    $("#user-profile-modal .add-subscription-button").prop("disabled", true);
     $("#user_profile_subscribe_widget .dropdown_widget_value").text(
         $t({defaultMessage: "Select a channel"}),
     );
