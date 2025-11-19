@@ -150,7 +150,7 @@ export function initialize(): void {
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams();
             const tooltip_text = can_create_streams
-                ? $t({defaultMessage: "Add channels"})
+                ? $t({defaultMessage: "Browse or create channels"})
                 : $t({defaultMessage: "Browse channels"});
             instance.setContent(tooltip_text);
         },
