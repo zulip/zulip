@@ -19,6 +19,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
     SubscriberHandler,
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_direct_message_group,
@@ -355,7 +356,7 @@ def process_message_attachments(
     message_id: int,
     user_id: int,
     zerver_attachment: list[ZerverFieldsT],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     mattermost_data_dir: str,
     output_dir: str,
 ) -> tuple[str, bool]:
@@ -391,16 +392,17 @@ def process_message_attachments(
             "created": os.path.getmtime(attachment_full_path),
         }
 
-        upload = dict(
-            path=s3_path,
-            realm_id=realm_id,
-            content_type=None,
-            user_profile_id=user_id,
-            last_modified=fileinfo["created"],
-            s3_path=s3_path,
-            size=fileinfo["size"],
+        uploads_list.append(
+            UploadRecordData(
+                content_type=None,
+                last_modified=fileinfo["created"],
+                path=s3_path,
+                realm_id=realm_id,
+                s3_path=s3_path,
+                size=fileinfo["size"],
+                user_profile_id=user_id,
+            )
         )
-        uploads_list.append(upload)
 
         build_attachment(
             realm_id=realm_id,
@@ -434,7 +436,7 @@ def process_raw_message_batch(
     output_dir: str,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
@@ -579,7 +581,7 @@ def process_posts(
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
@@ -692,7 +694,7 @@ def write_message_data(
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
@@ -1014,7 +1016,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         )
 
         total_reactions: list[dict[str, Any]] = []
-        uploads_list: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
         zerver_attachment: list[ZerverFieldsT] = []
 
         write_message_data(
@@ -1046,7 +1048,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
 
         # Export message attachments
         attachment: dict[str, list[Any]] = {"zerver_attachment": zerver_attachment}
-        create_converted_data_files(uploads_list, realm_output_dir, "/uploads/records.json")
         create_converted_data_files(attachment, realm_output_dir, "/attachment.json")
+        create_converted_data_files(uploads_list, realm_output_dir, "/uploads/records.json")
 
         do_common_export_processes(realm_output_dir)

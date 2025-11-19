@@ -7,7 +7,7 @@ from unittest.mock import call, patch
 import orjson
 from django.test import override_settings
 
-from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT
+from zerver.data_import.import_util import SubscriberHandler, UploadRecordData, ZerverFieldsT
 from zerver.data_import.mattermost import (
     build_reactions,
     check_user_in_team,
@@ -556,7 +556,7 @@ class MatterMostImporter(ZulipTestCase):
         )
 
         zerver_attachments: list[ZerverFieldsT] = []
-        uploads_list: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
 
         process_message_attachments(
             attachments=mattermost_data["post"]["direct_post"][0]["attachments"],
@@ -579,7 +579,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_id"], 2)
+        self.assertEqual(uploads_list[0].user_profile_id, 2)
 
         attachment_path = self.fixture_file_name(
             mattermost_data["post"]["direct_post"][0]["attachments"][0]["path"],
