@@ -748,8 +748,28 @@ export function process_tab_key(): boolean {
 
     const $focused_message_edit_content = $(".message_edit_content:focus");
     if ($focused_message_edit_content.length > 0) {
+        // Instead of jumping directly to Save button, let the browser naturally
+        // tab to formatting buttons first. Only intervene if no formatting buttons exist.
         $message_edit_form = $focused_message_edit_content.closest(".message_edit_form");
-        // Open message edit forms either have a save button or a close button, but not both.
+        const $formatting_buttons = $message_edit_form.find(
+            ".message-edit-feature-group .compose_control_button[tabindex='0']",
+        );
+
+        if ($formatting_buttons.length > 0) {
+            // Let browser handle Tab to go to first formatting button
+            return false;
+        }
+
+        // No formatting buttons (shouldn't happen), go to save/close button
+        $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
+        return true;
+    }
+
+    // When tabbing from the last element in the formatting area (help button),
+    // move focus to the Save/Close button
+    const $focused_help_button = $(".message_edit_form .compose_help_button:focus");
+    if ($focused_help_button.length > 0) {
+        $message_edit_form = $focused_help_button.closest(".message_edit_form");
         $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
         return true;
     }
@@ -786,10 +806,29 @@ export function process_shift_tab_key(): boolean {
         return true;
     }
 
-    // Shift-Tabbing from the edit message save button takes you to the content.
+    // Shift-Tabbing from the edit message save button: go to last formatting button
+    // (help button) if it exists, otherwise go to textarea
     const $focused_message_edit_save = $(".message_edit_save:focus");
     if ($focused_message_edit_save.length > 0) {
-        $focused_message_edit_save
+        const $message_edit_form = $focused_message_edit_save.closest(".message_edit_form");
+        const $help_button = $message_edit_form.find(".compose_help_button[tabindex='0']");
+
+        if ($help_button.length > 0) {
+            // Go to the last focusable element (help button) in formatting area
+            $help_button.trigger("focus");
+        } else {
+            // No formatting buttons, go directly to textarea
+            $message_edit_form.find(".message_edit_content").trigger("focus");
+        }
+        return true;
+    }
+
+    // When Shift-Tabbing from the first formatting button (preview), go back to textarea
+    const $focused_preview_button = $(
+        ".message_edit_form .markdown_preview.compose_control_button:focus",
+    );
+    if ($focused_preview_button.length > 0) {
+        $focused_preview_button
             .closest(".message_edit_form")
             .find(".message_edit_content")
             .trigger("focus");
