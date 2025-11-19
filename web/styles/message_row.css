@@ -1249,6 +1249,10 @@
     padding-bottom: 10px;
     text-align: center;
 
+    .zulip-icon {
+        margin-left: 0.1667em; /* 2px at 12px / em */
+    }
+
     .stream-status {
         opacity: 0.6;
 
@@ -1330,5 +1334,26 @@
         .muted-message-notice {
             display: none;
         }
+    }
+}
+
+.not-subscribed-banner {
+    .banner-content {
+        align-items: center;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        font-size: 0.8571em; /* 12px at 14px/1em */
+        vertical-align: -0.0714em; /* -1px at 14px/1em */
+    }
+
+    .zulip-icon.zulip-icon-lock {
+        font-size: 0.9286em; /* 13px at 14px/1em */
+        vertical-align: -0.0714em; /* -1px at 14px/1em */
+    }
+
+    .zulip-icon.zulip-icon-hashtag {
+        font-size: 0.9286em; /* 13px at 14px/1em */
+        vertical-align: -0.1429em; /* -2px at 14px/1em */
     }
 }
