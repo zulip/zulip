@@ -125,7 +125,14 @@ can override that default based on `web_channel_default_view` setting.
 
 Zulip's [emoji][help-emoji] support includes standard Unicode emoji, a
 built-in Zulip custom emoji like `:zulip:` and [custom realm
-emoji][help-custom-emoji].
+emoji][help-custom-emoji]. To maximize legibility, emoji should be
+displayed inline with text, at the maximum size that does not
+interfere with line spacing.
+
+**Large emoji**. Clients are recommended to display single-paragraph
+messages that contain only emoji elements with a greatly increased
+size. For example, Zulip the web app scales large emoji to be 2x the
+size of other message emoji.
 
 Unicode emoji, such as `:smiling_face:` (☺️ / `263a`), are represented
 in the HTML by spans with the following format:
@@ -157,6 +164,8 @@ the Zulip server's hostname:
 <img alt=":zulip:" class="emoji" title="zulip"
   src="/static/generated/emoji/images/emoji/unicode/zulip.png">
 ```
+
+**Changes**: Large emoji are new in Zulip 12.0 (feature level 436).
 
 ## Images
 

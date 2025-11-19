@@ -254,6 +254,15 @@
         vertical-align: var(--line-fitted-vertical-align-offset-em);
     }
 
+    /* We double the size of emoji on emoji-only messages. As there
+       is by definition no adjacent text in these messages, there is
+       no need to adjust the `margin` or `vertical-align` properties
+       declared above. */
+    .emoji-only .emoji {
+        height: calc(var(--length-line-oversize-block) * 2);
+        width: calc(var(--length-line-oversize-block) * 2);
+    }
+
     /* Mentions and alert words */
     .user-group-mention,
     .user-mention,
