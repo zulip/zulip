@@ -1079,7 +1079,7 @@ textarea.new_message_textarea {
     box-shadow: none;
 
     font-size: 1em;
-    line-height: inherit;
+    line-height: var(--base-line-height-unitless);
     font-family: "Source Sans 3 VF", sans-serif;
 
     &:focus {
