@@ -1452,22 +1452,22 @@ export function initialize(): void {
         e.preventDefault();
     });
 
+    /* These click handlers are implemented as just deep links to the
+     * relevant part of the Zulip UI, so we don't want preventDefault,
+     * but we do want to close the modal when you click them. */
+
     $("body").on("click", "#user-profile-modal #name .user-profile-profile-settings-button", () => {
         browser_history.go_to_location("#settings/profile");
         hide_user_profile();
     });
 
-    /* These click handlers are implemented as just deep links to the
-     * relevant part of the Zulip UI, so we don't want preventDefault,
-     * but we do want to close the modal when you click them. */
-
-    $("body").on("click", "#user-profile-modal .user-profile-channel-list-item", () => {
-        hide_user_profile();
-    });
-
-    $("body").on("click", "#user-profile-modal .group_list_item_link", () => {
-        hide_user_profile();
-    });
+    $("body").on(
+        "click",
+        "#user-profile-modal .user-profile-channel-row, .user-profile-group-row",
+        () => {
+            hide_user_profile();
+        },
+    );
 
     bot_helper.initialize_bot_click_handlers();
 
