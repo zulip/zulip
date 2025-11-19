@@ -18,9 +18,19 @@ export type AlertBanner = Banner & {
     process: string;
 };
 
-export function open(banner: Banner | AlertBanner, $banner_container: JQuery): void {
+export function open(
+    banner: Banner | AlertBanner,
+    $banner_container: JQuery,
+    remove_after?: number,
+): void {
     const banner_html = render_banner(banner);
     $banner_container.html(banner_html);
+
+    if (remove_after !== undefined) {
+        setTimeout(() => {
+            close($banner_container.find(".banner"));
+        }, remove_after);
+    }
 }
 
 export function append(banner: Banner | AlertBanner, $banner_container: JQuery): void {
