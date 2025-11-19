@@ -17,6 +17,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_fetch from "./message_fetch.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
@@ -275,6 +276,17 @@ export function initialize(): void {
             return;
         }
         window.location.href = this.href;
+    });
+
+    $("#main_div").on("click", ".load-newer-messages-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (message_lists.current) {
+            message_fetch.maybe_load_newer_messages({
+                msg_list: message_lists.current,
+                force: true,
+            });
+        }
     });
 
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
