@@ -1461,13 +1461,16 @@ export function initialize(): void {
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
-    $("body").on("click", "#user-profile-modal .user-profile-channel-list-item", () => {
-        hide_user_profile();
-    });
-
-    $("body").on("click", "#user-profile-modal .group_list_item_link", () => {
-        hide_user_profile();
-    });
+    $("body").on(
+        "click",
+        "#user-profile-modal .user-profile-channel-row, .user-profile-group-row",
+        (e) => {
+            if ($(e.target).closest(".remove-button-wrapper").length > 0) {
+                return;
+            }
+            hide_user_profile();
+        },
+    );
 
     bot_helper.initialize_bot_click_handlers();
 
