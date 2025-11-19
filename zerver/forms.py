@@ -141,7 +141,10 @@ class RealmDetailsForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["realm_default_language"] = forms.ChoiceField(
             choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
+            required=self.realm_creation,
         )
+        self.fields["realm_type"].required = self.realm_creation
+        self.fields["realm_name"].required = self.realm_creation
 
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
@@ -179,18 +182,6 @@ class RegistrationForm(RealmDetailsForm):
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
-        self.fields["realm_name"] = forms.CharField(
-            max_length=Realm.MAX_REALM_NAME_LENGTH, required=self.realm_creation
-        )
-        self.fields["realm_type"] = forms.TypedChoiceField(
-            coerce=int,
-            choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
-            required=self.realm_creation,
-        )
-        self.fields["realm_default_language"] = forms.ChoiceField(
-            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
-            required=self.realm_creation,
-        )
         self.fields["how_realm_creator_found_zulip"] = forms.ChoiceField(
             choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
             required=self.realm_creation,
