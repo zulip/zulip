@@ -1446,28 +1446,6 @@ export function initialize(): void {
         add_user_to_groups(group_ids, user_id, $alert_box);
     });
 
-    $("body").on("click", "#user-profile-modal #clear_stream_search", (e) => {
-        const $input = $("#user-profile-streams-tab .stream-search");
-        $input.val("");
-
-        // This is a hack to rerender complete
-        // stream list once the text is cleared.
-        $input.trigger("input");
-
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", "#user-profile-modal #clear_groups_search", (e) => {
-        const $input = $("#user-profile-groups-tab .group-search");
-        $input.val("");
-
-        $input.trigger("input");
-
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
     $("body").on("click", "#user-profile-modal #name .user-profile-update-user-tab-button", (e) => {
         show_manage_user_tab("manage-profile-tab");
         e.stopPropagation();
@@ -1489,24 +1467,6 @@ export function initialize(): void {
 
     $("body").on("click", "#user-profile-modal .group_list_item_link", () => {
         hide_user_profile();
-    });
-
-    $("body").on("input", "#user-profile-streams-tab .stream-search", () => {
-        const $input = $<HTMLInputElement>("#user-profile-streams-tab input.stream-search");
-        if ($input.val()!.trim().length > 0) {
-            $("#user-profile-streams-tab #clear_stream_search").show();
-        } else {
-            $("#user-profile-streams-tab #clear_stream_search").hide();
-        }
-    });
-
-    $("body").on("input", "#user-profile-groups-tab .group-search", () => {
-        const $input = $<HTMLInputElement>("#user-profile-groups-tab input.group-search");
-        if ($input.val()!.trim().length > 0) {
-            $("#user-profile-groups-tab #clear_groups_search").show();
-        } else {
-            $("#user-profile-groups-tab #clear_groups_search").hide();
-        }
     });
 
     bot_helper.initialize_bot_click_handlers();
