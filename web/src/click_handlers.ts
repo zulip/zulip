@@ -303,6 +303,22 @@ export function initialize(): void {
         window.location.href = this.href;
     });
 
+    $("body").on("click", ".not-subscribed-banner .load-newer-messages-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const filter = narrow_state.filter();
+        if (filter === undefined) {
+            return;
+        }
+
+        message_view.show(filter.terms(), {
+            then_select_id: message_lists.current?.selected_id(),
+            then_select_offset: browser_history.current_scroll_offset(),
+            force_rerender: true,
+            trigger: "bookend load updates",
+        });
+    });
+
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
         e.preventDefault();
         e.stopPropagation();

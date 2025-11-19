@@ -472,7 +472,7 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
     );
     assert.ok(
         (await page.$(
-            `.message-list[data-message-list-id='${message_list_id}'] .stream-status`,
+            `.message-list[data-message-list-id='${message_list_id}'] .stream-status, .message-list[data-message-list-id='${message_list_id}'] .not-subscribed-banner`,
         )) !== null,
     );
 

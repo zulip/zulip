@@ -1933,6 +1933,7 @@ export class MessageListView {
         is_spectator: boolean,
         invite_only: boolean,
         is_web_public: boolean,
+        can_subscribe: boolean | undefined,
     ): void {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
@@ -1947,6 +1948,7 @@ export class MessageListView {
                 is_trailing_bookend: true,
                 invite_only,
                 is_web_public,
+                can_subscribe,
             }),
         );
         this.$list.append($rendered_trailing_bookend);
