@@ -64,7 +64,7 @@ from zerver.lib.streams import (
     notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
-from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
+from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     ORIG_TOPIC,
@@ -1741,7 +1741,7 @@ def re_thumbnail(
 ) -> None:
     message = message_class.objects.select_for_update().get(id=message_id)
     assert message.rendered_content is not None
-    image_metadata = get_user_upload_previews(
+    image_metadata = manifest_and_get_user_upload_previews(
         message.realm_id,
         message.rendered_content,
         enqueue=enqueue,

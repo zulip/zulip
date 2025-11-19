@@ -414,7 +414,7 @@ class AttachmentData:
     image_metadata: dict[str, MarkdownImageMetadata]
 
 
-def get_user_upload_previews(
+def manifest_and_get_user_upload_previews(
     realm_id: int,
     content: str,
     lock: bool = False,
