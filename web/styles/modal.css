@@ -315,6 +315,7 @@
         width: 97%;
         resize: vertical;
         margin-bottom: 10px;
+        min-height: 2em;
     }
 
     .border-top {

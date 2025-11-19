@@ -1568,6 +1568,8 @@ label.preferences-radio-choice-label {
 
         & textarea {
             height: 80px;
+            min-height: 2em;
+            resize: vertical;
         }
 
         &:hover .remove_date {
