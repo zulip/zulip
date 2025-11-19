@@ -15,11 +15,11 @@ class PapertrailHookTests(WebhookTestCase):
         expected_message = """
 [Search for "Important stuff"](https://papertrailapp.com/searches/42) found **2** matches:
 
-<time:May 18 20:30:02> - abc - cron OR server1:
+<time:2011-05-18T20:30:02-07:00> - abc - cron OR server1:
 ``` quote
 message body
 ```
-<time:May 18 20:30:02> - server1 - cron OR server1:
+<time:2011-05-18T20:30:02-07:00> - server1 - cron OR server1:
 ``` quote
 A short event
 ```
@@ -37,19 +37,19 @@ A short event
         expected_message = """
 [Search for "Important stuff"](https://papertrailapp.com/searches/42) found **5** matches:
 
-<time:May 18 20:30:02> - abc - cron OR server1:
+<time:2011-05-18T20:30:02-07:00> - abc - cron OR server1:
 ``` quote
 message body 1
 ```
-<time:May 18 20:30:02> - abc - cron OR server1:
+<time:2011-05-18T20:30:02-07:00> - abc - cron OR server1:
 ``` quote
 message body 2
 ```
-<time:May 18 20:30:02> - abc - cron OR server1:
+<time:2011-05-18T20:30:02-07:00> - abc - cron OR server1:
 ``` quote
 message body 3
 ```
-<time:May 18 20:30:02> - abc - cron OR server1:
+<time:2011-05-18T20:30:02-07:00> - abc - cron OR server1:
 ``` quote
 message body 4
 ```

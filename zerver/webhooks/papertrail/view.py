@@ -39,7 +39,7 @@ def api_papertrail_webhook(
 
     for i, event in enumerate(payload["events"]):
         event_text = SEARCH_TEMPLATE.format(
-            timestamp=event["display_received_at"].tame(check_string),
+            timestamp=event["received_at"].tame(check_string),
             source=event["source_name"].tame(check_string),
             query=payload["saved_search"]["query"].tame(check_string),
             message=event["message"].tame(check_string),
