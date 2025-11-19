@@ -2013,7 +2013,7 @@ Output:
         """
         dct = {}
 
-        for realm_emoji in RealmEmoji.objects.all():
+        for realm_emoji in RealmEmoji.objects.all().iterator():
             dct[realm_emoji.id] = realm_emoji
 
         if not dct:

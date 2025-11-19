@@ -63,7 +63,7 @@ def handle_same_anonymous_group_used_for_multiple_streams(
 
         return results_dict
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         anonymous_group_ids = UserGroup.objects.filter(
             realm=realm, named_user_group=None
         ).values_list("id", flat=True)
