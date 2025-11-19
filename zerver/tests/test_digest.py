@@ -207,6 +207,41 @@ class TestDigestEmailMessages(ZulipTestCase):
         new_stream_names = kwargs["context"]["new_channels"]["plain"]
         self.assertTrue("web_public_stream" in new_stream_names)
 
+    def test_general_chat_in_digest(self) -> None:
+        othello = self.example_user("othello")
+        self.subscribe(othello, "Verona")
+
+        one_day_ago = timezone_now() - timedelta(days=1)
+        # Backdate the subscription audit log so the stream is not excluded
+        RealmAuditLog.objects.filter(
+            modified_user=othello,
+            event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
+        ).update(event_time=one_day_ago)
+
+        Message.objects.all().update(date_sent=one_day_ago)
+        one_hour_ago = timezone_now() - timedelta(seconds=3600)
+
+        cutoff = time.mktime(one_hour_ago.timetuple())
+
+        # Send a message to "general chat" (empty topic)
+        self.send_stream_message(self.example_user("hamlet"), "Verona", "hello", topic_name="")
+
+        # Clear the LRU cache on the stream topics
+        get_recent_topics.cache_clear()
+        
+        with mock.patch("zerver.lib.digest.enough_traffic", return_value=True), \
+             mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
+            bulk_handle_digest_email([othello.id], cutoff)
+
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        
+        hot_convo = kwargs["context"]["hot_conversations"][0]
+        # Verify the header HTML contains the italicized general chat
+        header_html = hot_convo["first_few_messages"][0]["header"]["html"]
+        self.assertIn("<i>general chat</i>", header_html)
+
+
     def test_no_logging(self) -> None:
         hamlet = self.example_user("hamlet")
         startlen = len(RealmAuditLog.objects.all())
