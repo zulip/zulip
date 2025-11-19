@@ -560,7 +560,7 @@ ul.popover-group-menu-member-list {
             "bottom" auto
             / minmax(0, 1fr);
 
-        .stream_list_info,
+        .stream_list_info:has(.banner),
         .user-profile-group-list-alert {
             grid-area: alert;
             margin-bottom: 8px;
