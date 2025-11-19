@@ -5,7 +5,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_giphy_picker from "../templates/giphy_picker.hbs";
+import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -130,13 +130,13 @@ async function update_grid_with_search_term(): Promise<void> {
         return;
     }
 
-    const $search_elem = $<HTMLInputElement>("input#giphy-search-query");
+    const $search_elem = $<HTMLInputElement>("input#gif-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
     if ($search_elem.length > 0) {
         search_term = the($search_elem).value;
         gifs_grid.remove();
-        gifs_grid = await renderGIPHYGrid(the($("#giphy_grid_in_popover .giphy-content")));
+        gifs_grid = await renderGIPHYGrid(the($(".gif-grid-in-popover .giphy-content")));
         return;
     }
 
@@ -163,7 +163,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_giphy_picker()));
+                instance.setContent(ui_util.parse_html(render_gif_picker_ui({is_giphy: true})));
                 $(instance.popper).addClass("giphy-popover");
             },
             onShow(instance) {
@@ -185,7 +185,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
 
                 $popper.on(
                     "keyup",
-                    "#giphy-search-query",
+                    "#gif-search-query",
                     // Use debounce to create a 300ms interval between
                     // every search. This makes the UX of searching pleasant
                     // by allowing user to finish typing before search
@@ -198,7 +198,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
 
                 $popper.on("click", "#giphy_search_clear", (e) => {
                     e.stopPropagation();
-                    $("#giphy-search-query").val("");
+                    $("#gif-search-query").val("");
                     void update_grid_with_search_term();
                 });
 
@@ -208,7 +208,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
                     // Focus on search box by default.
                     // This is specially helpful for users
                     // navigating via keyboard.
-                    $("#giphy-search-query").trigger("focus");
+                    $("#gif-search-query").trigger("focus");
                 })();
             },
             onHidden() {

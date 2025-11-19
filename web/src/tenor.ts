@@ -4,8 +4,8 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
+import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import render_tenor_gif from "../templates/tenor_gif.hbs";
-import render_tenor_picker from "../templates/tenor_picker.hbs";
 
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -164,7 +164,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_tenor_picker()));
+                instance.setContent(ui_util.parse_html(render_gif_picker_ui({is_giphy: false})));
                 $(instance.popper).addClass("tenor-popover");
             },
             onShow(instance) {
@@ -181,7 +181,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 } else {
                     edit_message_id = undefined;
                 }
-                $popper.on("keyup", "#tenor-search-query", (e) => {
+                $popper.on("keyup", "#gif-search-query", (e) => {
                     assert(e.target instanceof HTMLInputElement);
                     debounced_search(e.target.value);
                 });
@@ -203,7 +203,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
             onMount(instance) {
                 render_featured_gifs(false);
                 const $popper = $(instance.popper);
-                $popper.find("#tenor-search-query").trigger("focus");
+                $popper.find("#gif-search-query").trigger("focus");
                 const scrollEl = util.the(
                     $popper.find(".gif-scrolling-container .simplebar-content-wrapper"),
                 );
