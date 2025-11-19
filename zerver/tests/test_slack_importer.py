@@ -35,6 +35,7 @@ from zerver.data_import.slack import (
     AddedChannelsT,
     AddedMPIMsT,
     DMMembersT,
+    MessageConversionResult,
     SlackBotEmail,
     SlackBotNotFoundError,
     channel_message_to_zerver_message,
@@ -169,13 +170,7 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
 class SlackImporter(ZulipTestCase):
     def run_channel_message_to_zerver_message_with_fixtures(
         self, fixture_names: list[str], **kwargs: dict[str, Any]
-    ) -> tuple[
-        list[ZerverFieldsT],
-        list[ZerverFieldsT],
-        list[ZerverFieldsT],
-        list[UploadRecordData],
-        list[ZerverFieldsT],
-    ]:
+    ) -> MessageConversionResult:
         """
         This is a wrapper for `channel_message_to_zerver_message`, it
         comes with default values for most of the method's parameters.
@@ -1353,13 +1348,7 @@ class SlackImporter(ZulipTestCase):
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
-        (
-            zerver_message,
-            zerver_usermessage,
-            attachment,
-            uploads,
-            reaction,
-        ) = channel_message_to_zerver_message(
+        conversion_result = channel_message_to_zerver_message(
             1,
             user_data,
             slack_user_id_to_zulip_user_id,
@@ -1373,6 +1362,12 @@ class SlackImporter(ZulipTestCase):
             set(),
             convert_slack_threads=False,
         )
+        zerver_message = conversion_result.zerver_message
+        zerver_usermessage = conversion_result.zerver_usermessage
+        attachment = conversion_result.zerver_attachment
+        uploads = conversion_result.uploads_list
+        reaction = conversion_result.reaction_list
+
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -1454,16 +1449,16 @@ class SlackImporter(ZulipTestCase):
             "random": 2,
             "general": 1,
         }
-        (
-            zerver_message,
-            zerver_usermessage,
-            attachment,
-            uploads,
-            _reaction,
-        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["normal_messages", "normal_thread"],
             slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
+
+        zerver_message = conversion_result.zerver_message
+        zerver_usermessage = conversion_result.zerver_usermessage
+        attachment = conversion_result.zerver_attachment
+        uploads = conversion_result.uploads_list
+
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -1492,15 +1487,12 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
     def test_convert_thread_topic_name_cut_off(self) -> None:
-        (
-            zerver_message,
-            _zerver_usermessage,
-            _attachment,
-            _uploads,
-            _reaction,
-        ) = self.run_channel_message_to_zerver_message_with_fixtures(
-            ["thread_with_long_topic_name"]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_long_topic_name"],
         )
+
+        zerver_message = conversion_result.zerver_message
+
         self.assert_length(zerver_message, 4)
         # Test thread topic name cut off.
         expected_thread_1_message_1_content = (
@@ -1530,15 +1522,12 @@ class SlackImporter(ZulipTestCase):
         self.assert_length(zerver_message[2][EXPORT_TOPIC_NAME], 60)
 
     def test_convert_colliding_thread_topic_names(self) -> None:
-        (
-            zerver_message,
-            _zerver_usermessage,
-            _attachment,
-            _uploads,
-            _reaction,
-        ) = self.run_channel_message_to_zerver_message_with_fixtures(
-            ["threads_with_colliding_topic_names"]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["threads_with_colliding_topic_names"],
         )
+
+        zerver_message = conversion_result.zerver_message
+
         self.assert_length(zerver_message, 6)
         ### THREAD 1 CONVERSATION ###
         expected_thread_1_message_1_content = "message body text"
@@ -1560,15 +1549,12 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
 
     def test_convert_thread_topic_name_with_mention_syntax(self) -> None:
-        (
-            zerver_message,
-            _zerver_usermessage,
-            _attachment,
-            _uploads,
-            _reaction,
-        ) = self.run_channel_message_to_zerver_message_with_fixtures(
-            ["thread_with_mention_syntax_in_topic_name"]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_mention_syntax_in_topic_name"],
         )
+
+        zerver_message = conversion_result.zerver_message
+
         self.assert_length(zerver_message, 2)
         # Test mention syntax in thread topic name.
         expected_thread_message_1_content = "@**Jon** please reply to this message"
@@ -1577,18 +1563,15 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
     def test_convert_thread_topic_name_with_file_link_formatting(self) -> None:
-        (
-            zerver_message,
-            _zerver_usermessage,
-            attachment,
-            uploads,
-            _reaction,
-        ) = self.run_channel_message_to_zerver_message_with_fixtures(
-            ["thread_with_file_link_formatting_in_topic_name"]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_file_link_formatting_in_topic_name"],
         )
+
+        zerver_message = conversion_result.zerver_message
+
         self.assert_length(zerver_message, 2)
-        self.assert_length(uploads, 1)
-        self.assert_length(attachment, 1)
+        self.assert_length(conversion_result.uploads_list, 1)
+        self.assert_length(conversion_result.zerver_attachment, 1)
         # Test file link in thread topic name.
         expected_thread_message_1_content = "Look!\n[Apple](/user_uploads/"
         expected_thread_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
@@ -1596,15 +1579,12 @@ class SlackImporter(ZulipTestCase):
         self.assertTrue(zerver_message[0][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
 
     def test_convert_thread_topic_name_with_text_formattings(self) -> None:
-        (
-            zerver_message,
-            _zerver_usermessage,
-            _attachment,
-            _uploads,
-            _reaction,
-        ) = self.run_channel_message_to_zerver_message_with_fixtures(
-            ["thread_with_text_formattings_in_topic_name"]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_text_formattings_in_topic_name"],
         )
+
+        zerver_message = conversion_result.zerver_message
+
         self.assert_length(zerver_message, 2)
         # Test various formatting syntaxes in thread topic name.
         expected_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
@@ -1736,13 +1716,7 @@ class SlackImporter(ZulipTestCase):
         subscriber_map: dict[int, set[int]] = {}
         added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
 
-        (
-            zerver_message,
-            zerver_usermessage,
-            attachment,
-            uploads,
-            _reaction,
-        ) = channel_message_to_zerver_message(
+        conversion_result = channel_message_to_zerver_message(
             1,
             user_data,
             slack_user_id_to_zulip_user_id,
@@ -1756,6 +1730,12 @@ class SlackImporter(ZulipTestCase):
             set(),
             convert_slack_threads=True,
         )
+
+        zerver_message = conversion_result.zerver_message
+        zerver_usermessage = conversion_result.zerver_usermessage
+        attachment = conversion_result.zerver_attachment
+        uploads = conversion_result.uploads_list
+
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -1827,13 +1807,25 @@ by Pieter
 
         mock_get_messages_iterator.side_effect = fake_get_messages_iter
         mock_message.side_effect = [
-            [zerver_message[:1], zerver_usermessage[:2], attachments, uploads, reactions[:1]],
-            [zerver_message[1:2], zerver_usermessage[2:5], attachments, uploads, reactions[1:1]],
+            MessageConversionResult(
+                zerver_message=zerver_message[:1],
+                zerver_usermessage=zerver_usermessage[:2],
+                zerver_attachment=attachments,
+                uploads_list=uploads,
+                reaction_list=reactions[:1],
+            ),
+            MessageConversionResult(
+                zerver_message=zerver_message[1:2],
+                zerver_usermessage=zerver_usermessage[2:5],
+                zerver_attachment=attachments,
+                uploads_list=uploads,
+                reaction_list=reactions[1:1],
+            ),
         ]
 
         with self.assertLogs(level="INFO"):
             # Hacky: We should include a zerver_userprofile, not the empty []
-            test_reactions, uploads, _zerver_attachment = convert_slack_workspace_messages(
+            test_reactions, _upload_list, _zerver_attachment = convert_slack_workspace_messages(
                 "./random_path",
                 user_list,
                 2,
