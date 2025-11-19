@@ -8,7 +8,7 @@ import time
 import zipfile
 from collections import defaultdict
 from collections.abc import Iterator
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from email.errors import HeaderDefect
 from email.headerregistry import Address
@@ -74,6 +74,7 @@ AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 DMMembersT: TypeAlias = dict[str, tuple[str, str]]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
+
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -832,13 +833,7 @@ def convert_slack_workspace_messages(
     )
 
     while message_data := list(itertools.islice(all_messages, chunk_size)):
-        (
-            zerver_message,
-            zerver_usermessage,
-            attachment,
-            uploads,
-            reactions,
-        ) = channel_message_to_zerver_message(
+        convert_result = channel_message_to_zerver_message(
             realm_id,
             users,
             slack_user_id_to_zulip_user_id,
@@ -853,15 +848,18 @@ def convert_slack_workspace_messages(
             convert_slack_threads,
         )
 
-        message_json = dict(zerver_message=zerver_message, zerver_usermessage=zerver_usermessage)
+        message_json = dict(
+            zerver_message=convert_result.zerver_message,
+            zerver_usermessage=convert_result.zerver_usermessage,
+        )
 
         message_file = f"/messages-{dump_file_id:06}.json"
         logging.info("Writing messages to %s\n", output_dir + message_file)
         create_converted_data_files(message_json, output_dir, message_file)
 
-        total_reactions += reactions
-        total_attachments += attachment
-        total_uploads += [asdict(upload) for upload in uploads]
+        total_reactions += convert_result.reaction_list
+        total_attachments += convert_result.zerver_attachment
+        total_uploads += [asdict(upload) for upload in convert_result.uploads_list]
 
         dump_file_id += 1
 
@@ -1007,6 +1005,15 @@ def get_zulip_thread_topic_name(
     return final_topic_name
 
 
+@dataclass
+class MessageConversionResult:
+    zerver_message: list[ZerverFieldsT]
+    zerver_usermessage: list[ZerverFieldsT]
+    zerver_attachment: list[ZerverFieldsT]
+    uploads_list: list[UploadRecordData]
+    reaction_list: list[ZerverFieldsT]
+
+
 def channel_message_to_zerver_message(
     realm_id: int,
     users: list[ZerverFieldsT],
@@ -1020,21 +1027,7 @@ def channel_message_to_zerver_message(
     domain_name: str,
     long_term_idle: set[int],
     convert_slack_threads: bool,
-) -> tuple[
-    list[ZerverFieldsT],
-    list[ZerverFieldsT],
-    list[ZerverFieldsT],
-    list[UploadRecordData],
-    list[ZerverFieldsT],
-]:
-    """
-    Returns:
-    1. zerver_message, which is a list of the messages
-    2. zerver_usermessage, which is a list of the usermessages
-    3. zerver_attachment, which is a list of the attachments
-    4. uploads_list, which is a list of uploads to be mapped in uploads records.json
-    5. reaction_list, which is a list of all user reactions
-    """
+) -> MessageConversionResult:
     zerver_message = []
     zerver_usermessage: list[ZerverFieldsT] = []
     uploads_list: list[UploadRecordData] = []
@@ -1209,7 +1202,13 @@ def channel_message_to_zerver_message(
         total_user_messages,
         total_skipped_user_messages,
     )
-    return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, reaction_list
+    return MessageConversionResult(
+        zerver_message=zerver_message,
+        zerver_usermessage=zerver_usermessage,
+        zerver_attachment=zerver_attachment,
+        uploads_list=uploads_list,
+        reaction_list=reaction_list,
+    )
 
 
 def process_message_files(
