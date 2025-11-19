@@ -629,7 +629,7 @@ def restore_data_from_archive_by_realm(realm: Realm) -> None:
 
 
 def restore_all_data_from_archive(restore_manual_transactions: bool = True) -> None:
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         restore_data_from_archive_by_realm(realm)
 
     if restore_manual_transactions:

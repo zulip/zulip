@@ -788,7 +788,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # RemoteRealm objects should be created for all realms on the server but no customer plans.
         self.assert_length(RemoteRealm.objects.all(), 4)
-        for remote_realm in RemoteRealm.objects.all():
+        for remote_realm in RemoteRealm.objects.all().iterator():
             self.assertIsNone(get_customer_by_remote_realm(remote_realm))
 
         # Same customer plan exists for server since there are multiple realms to manage here.
@@ -1055,7 +1055,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # RemoteRealm objects should be created for all realms on the server but no customer plans.
         self.assert_length(RemoteRealm.objects.all(), 4)
-        for remote_realm in RemoteRealm.objects.all():
+        for remote_realm in RemoteRealm.objects.all().iterator():
             self.assertIsNone(get_customer_by_remote_realm(remote_realm))
 
         # Same customer plan exists for server since there are multiple realms to manage here.

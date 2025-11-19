@@ -1794,7 +1794,7 @@ class RealmImportExportTest(ExportFile):
             else:
                 self.assertIsNone(stream.folder_id)
 
-        for dm_group in DirectMessageGroup.objects.all():
+        for dm_group in DirectMessageGroup.objects.all().iterator():
             # Direct Message groups don't have a realm column, so we just test all
             # Direct Message groups for simplicity.
             self.assertEqual(

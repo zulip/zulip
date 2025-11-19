@@ -982,7 +982,7 @@ class TestCleaningArchive(ArchiveMessagesTestingBase):
             ArchivedUserMessage.objects.filter(message_id__in=message_ids_to_clean).exists()
         )
 
-        for message in ArchivedMessage.objects.all():
+        for message in ArchivedMessage.objects.all().iterator():
             self.assertIn(
                 message.archive_transaction_id,
                 [remaining_transactions[0].id, remaining_transactions[1].id],
@@ -1010,7 +1010,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         """
 
         result = []
-        for realm in Realm.objects.all():
+        for realm in Realm.objects.all().iterator():
             if realm.message_retention_days != -1:
                 streams = Stream.objects.filter(realm=realm).exclude(message_retention_days=-1)
                 result.append((realm, list(streams)))

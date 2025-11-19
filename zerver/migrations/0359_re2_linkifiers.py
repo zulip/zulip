@@ -10,7 +10,7 @@ def delete_re2_invalid(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
 
     RealmFilter = apps.get_model("zerver", "RealmFilter")
     found_errors = False
-    for linkifier in RealmFilter.objects.all():
+    for linkifier in RealmFilter.objects.all().iterator():
         try:
             re2.compile(linkifier.pattern, options=options)
         except re2.error:
