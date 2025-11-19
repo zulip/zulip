@@ -154,3 +154,18 @@ outreach/index
 
 Index <https://zulip.readthedocs.io/en/latest/>
 ```
+(development)=
+```{toctree}
+:maxdepth: 3
+:hidden:
+
+development/overview
+development/setup-recommended
+development/setup-advanced
+development/using
+development/remote
+development/request-remote
+development/test-install
+development/refreshing-dependencies
+```
+
