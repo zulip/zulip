@@ -611,10 +611,15 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
     function add_user_to_next_group(): void {
         if (group_ids_successfully_added.length >= group_ids.length) {
             if (group_ids_successfully_added.length > 0) {
-                ui_report.success(
-                    $t_html({
-                        defaultMessage: "Added successfully!",
-                    }),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Added successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
@@ -662,7 +667,15 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
                           },
                       );
 
-                ui_report.client_error(error_message, $alert_box);
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
+                    $alert_box,
+                );
                 clear_successful_pills();
             },
         });
@@ -1529,7 +1542,18 @@ export function initialize(): void {
         const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
 
         function removal_success(): void {
-            ui_report.success($t_html({defaultMessage: "Removed successfully!"}), $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "success",
+                    label: $t({
+                        defaultMessage: "Removed successfully!",
+                    }),
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
 
         function removal_failure(): void {
@@ -1547,7 +1571,16 @@ export function initialize(): void {
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
 
         user_group_edit_members.edit_user_group_membership({
