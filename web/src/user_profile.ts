@@ -18,6 +18,7 @@ import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 
 import * as avatar from "./avatar.ts";
+import * as banners from "./banners.ts";
 import * as bot_data from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
 import * as browser_history from "./browser_history.ts";
@@ -1378,21 +1379,45 @@ export function initialize(): void {
                 .parse(raw_data);
             if (Object.keys(data.subscribed).length > 0) {
                 reset_subscribe_widget();
-                ui_report.success(
-                    $t_html({defaultMessage: "Subscribed successfully!"}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Subscribed successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             } else {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Already subscribed."}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Already subscribed.",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             }
         }
         function addition_failure(xhr: JQuery.jqXHR): void {
-            ui_report.error("", xhr, $alert_box, 1200);
+            const message = channel.xhr_error_message("", xhr);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
         subscriber_api.add_user_ids_to_stream(
             [target_user_id],
@@ -1424,14 +1449,28 @@ export function initialize(): void {
                 })
                 .parse(raw_data);
             if (data.removed.length > 0) {
-                ui_report.success(
-                    $t_html({defaultMessage: "Unsubscribed successfully!"}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Unsubscribed successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             } else {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Already not subscribed."}),
+                banners.open_and_close(
+                    {
+                        intent: "danger",
+                        label: $t({
+                            defaultMessage: "Already not subscribed.",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
@@ -1453,7 +1492,16 @@ export function initialize(): void {
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
         assert(sub !== undefined);
         if (
