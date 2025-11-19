@@ -1782,7 +1782,7 @@ label.preferences-radio-choice-label {
         box-shadow linear 0.2s;
 
     font-size: 1em;
-    line-height: inherit;
+    line-height: var(--base-line-height-unitless);
     font-family: "Source Sans 3 VF", sans-serif;
 
     &:focus {
