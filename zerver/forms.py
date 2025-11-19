@@ -371,6 +371,34 @@ class AltchaWidget(forms.TextInput):
         )
 
 
+def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None:
+    if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+        raise forms.ValidationError(_("Challenges are not enabled."))
+
+    try:
+        ok, err = verify_solution(captcha_payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
+        if not ok:
+            logging.warning("Invalid altcha solution: %s", err)
+            raise forms.ValidationError(_("Validation failed, please try again."))
+    except forms.ValidationError:
+        raise
+    except Exception as e:
+        logging.exception(e)
+        raise forms.ValidationError(_("Validation failed, please try again."))
+
+    captcha_data = orjson.loads(base64.b64decode(captcha_payload))
+    challenge = captcha_data["challenge"]
+    session_challenges = [e[0] for e in request.session.get("altcha_challenges", [])]
+    if challenge not in session_challenges:
+        logging.warning("Expired or replayed altcha solution")
+        raise forms.ValidationError(_("Validation failed, please try again."))
+
+    # Remove the successful solve from the session, to prevent replay
+    request.session["altcha_challenges"] = [
+        e for e in request.session.get("altcha_challenges", []) if e[0] != challenge
+    ]
+
+
 class CaptchaRealmCreationForm(RealmCreationForm):
     captcha = forms.CharField(required=True, widget=AltchaWidget)
 
@@ -392,32 +420,7 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
     def clean_captcha(self) -> str:
         payload = self.data.get("captcha", "")
-        if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
-            raise forms.ValidationError(_("Challenges are not enabled."))
-
-        try:
-            ok, err = verify_solution(payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
-            if not ok:
-                logging.warning("Invalid altcha solution: %s", err)
-                raise forms.ValidationError(_("Validation failed, please try again."))
-        except forms.ValidationError:
-            raise
-        except Exception as e:
-            logging.exception(e)
-            raise forms.ValidationError(_("Validation failed, please try again."))
-
-        payload = orjson.loads(base64.b64decode(payload))
-        challenge = payload["challenge"]
-        session_challenges = [e[0] for e in self.request.session.get("altcha_challenges", [])]
-        if challenge not in session_challenges:
-            logging.warning("Expired or replayed altcha solution")
-            raise forms.ValidationError(_("Validation failed, please try again."))
-
-        # Remove the successful solve from the session, to prevent replay
-        self.request.session["altcha_challenges"] = [
-            e for e in self.request.session.get("altcha_challenges", []) if e[0] != challenge
-        ]
-
+        validate_captcha_payload(self.request, payload)
         return payload
 
 
