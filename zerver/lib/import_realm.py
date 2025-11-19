@@ -54,7 +54,7 @@ from zerver.lib.streams import (
 from zerver.lib.thumbnail import (
     THUMBNAIL_ACCEPT_IMAGE_TYPES,
     BadImageError,
-    get_user_upload_previews,
+    manifest_and_get_user_upload_previews,
     maybe_thumbnail,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -464,7 +464,7 @@ def fix_message_rendered_content(
             # time, and a no-op when those are processed.  The return
             # value will also be out of date -- but that is irrelevant
             # in this use case.
-            get_user_upload_previews(realm.id, message[content_key])
+            manifest_and_get_user_upload_previews(realm.id, message[content_key])
 
             continue
 

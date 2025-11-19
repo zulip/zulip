@@ -75,7 +75,7 @@ from zerver.lib.streams import (
     subscribed_to_stream,
 )
 from zerver.lib.string_validation import check_stream_name
-from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
+from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
@@ -935,7 +935,7 @@ def do_send_messages(
             # does not support this yet: (https://code.djangoproject.com/ticket/10088)
             assert send_request.message.rendered_content is not None
             if send_request.rendering_result.thumbnail_spinners:
-                previews = get_user_upload_previews(
+                previews = manifest_and_get_user_upload_previews(
                     send_request.message.realm_id,
                     send_request.message.content,
                     lock=True,
