@@ -54,16 +54,14 @@ declare global {
     }
 }
 
-function show_all_message_view(): void {
+function show_all_message_view(narrow_opts?: message_view.ShowMessageViewOpts): void {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
-    const current_state = z.nullable(browser_history.state_data_schema).parse(window.history.state);
     message_view.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
-        then_select_id: current_state?.narrow_pointer,
-        then_select_offset: current_state?.narrow_offset,
+        ...narrow_opts,
     });
 }
 
@@ -124,7 +122,7 @@ export function set_hash_to_home_view(triggered_by_escape_key = false): void {
     hashchanged(false);
 }
 
-function show_home_view(): void {
+function show_home_view(narrow_opts?: message_view.ShowMessageViewOpts): void {
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
@@ -137,7 +135,7 @@ function show_home_view(): void {
         }
         case "all_messages": {
             // Hides inbox/recent views internally if open.
-            show_all_message_view();
+            show_all_message_view(narrow_opts);
             break;
         }
         case "inbox": {
@@ -164,6 +162,26 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
     const hash = window.location.hash.split("/");
+
+    const narrow_opts: message_view.ShowMessageViewOpts = {
+        change_hash: false, // already set
+        trigger: "hash change",
+        show_more_topics: false,
+    };
+    if (from_reload) {
+        blueslip.debug("We are narrowing as part of a reload.");
+        if (message_fetch.initial_narrow_pointer !== undefined) {
+            narrow_opts.then_select_id = message_fetch.initial_narrow_pointer;
+            narrow_opts.then_select_offset = message_fetch.initial_narrow_offset;
+        }
+    }
+
+    const data_for_hash = z.nullable(browser_history.state_data_schema).parse(window.history.state);
+    if (restore_selected_id && data_for_hash) {
+        narrow_opts.then_select_id = data_for_hash.narrow_pointer;
+        narrow_opts.then_select_offset = data_for_hash.narrow_offset;
+        narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
+    }
 
     switch (hash[0]) {
         case "#topics":
@@ -199,33 +217,12 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 }
             }
 
-            const narrow_opts: message_view.ShowMessageViewOpts = {
-                change_hash: false, // already set
-                trigger: "hash change",
-                show_more_topics: false,
-            };
-            if (from_reload) {
-                blueslip.debug("We are narrowing as part of a reload.");
-                if (message_fetch.initial_narrow_pointer !== undefined) {
-                    narrow_opts.then_select_id = message_fetch.initial_narrow_pointer;
-                    narrow_opts.then_select_offset = message_fetch.initial_narrow_offset;
-                }
-            }
-
-            const data_for_hash = z
-                .nullable(browser_history.state_data_schema)
-                .parse(window.history.state);
-            if (restore_selected_id && data_for_hash) {
-                narrow_opts.then_select_id = data_for_hash.narrow_pointer;
-                narrow_opts.then_select_offset = data_for_hash.narrow_offset;
-                narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
-            }
             message_view.show(terms, narrow_opts);
             return true;
         }
         case "":
         case "#":
-            show_home_view();
+            show_home_view(narrow_opts);
             break;
         case "#recent_topics":
             // The URL for Recent Conversations was changed from
@@ -249,11 +246,11 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             // the recent hash rename, there are likely few links that
             // would break if this compatibility code was removed, but
             // there's little cost to keeping it.
-            show_all_message_view();
+            show_all_message_view(narrow_opts);
             window.location.replace("#feed");
             break;
         case "#feed":
-            show_all_message_view();
+            show_all_message_view(narrow_opts);
             break;
         case "#keyboard-shortcuts":
         case "#message-formatting":
@@ -270,7 +267,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             blueslip.error("overlay logic skipped for: " + hash[0]);
             break;
         default:
-            show_home_view();
+            show_home_view(narrow_opts);
     }
     return false;
 }
