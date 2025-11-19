@@ -561,7 +561,7 @@ ul.popover-group-menu-member-list {
             / minmax(0, 1fr);
 
         .stream_list_info:has(.banner),
-        .user-profile-group-list-alert {
+        .user-profile-group-list-alert:has(.banner) {
             grid-area: alert;
             margin-bottom: 8px;
         }
