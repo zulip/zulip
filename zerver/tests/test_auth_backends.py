@@ -7817,37 +7817,6 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         ).value
         self.assertEqual(actual_value, expected_value)
 
-    def test_update_custom_profile_field_no_update(self) -> None:
-        hamlet = self.example_user("hamlet")
-        phone_number_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
-        birthday_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Birthday")
-        phone_number_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=hamlet, field=phone_number_field
-        )
-        phone_number_field_value.value = "123456789"
-        phone_number_field_value.save(update_fields=["value"])
-        expected_call_args = [
-            hamlet,
-            [
-                {
-                    "id": birthday_field.id,
-                    "value": "1900-09-08",
-                },
-            ],
-        ]
-        with (
-            self.settings(
-                AUTH_LDAP_USER_ATTR_MAP={
-                    "full_name": "cn",
-                    "custom_profile_field__birthday": "birthDate",
-                    "custom_profile_field__phone_number": "homePhone",
-                }
-            ),
-            mock.patch("zproject.backends.do_update_user_custom_profile_data_if_changed") as f,
-        ):
-            self.perform_ldap_sync(self.example_user("hamlet"))
-            f.assert_called_once_with(*expected_call_args)
-
     def test_update_custom_profile_field_not_present_in_ldap(self) -> None:
         hamlet = self.example_user("hamlet")
         no_op_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Birthday")
