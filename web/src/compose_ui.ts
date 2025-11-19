@@ -241,6 +241,23 @@ export function set_focus(opts: ComposeTriggeredOptions): void {
     if (window.getSelection()!.toString() === "" || opts.trigger !== "message click") {
         const focus_area = get_focus_area(opts);
         $(focus_area).trigger("focus");
+
+        // On mobile, when the keyboard appears after focusing an input,
+        // the compose box can be hidden behind it. We need to scroll the
+        // focused element into view to ensure it's visible.
+        // Use a setTimeout to ensure the keyboard has time to appear and
+        // the viewport has been resized before we scroll.
+        if (util.is_mobile()) {
+            setTimeout(() => {
+                const focused_element = document.querySelector(focus_area);
+                if (focused_element instanceof HTMLElement) {
+                    focused_element.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                    });
+                }
+            }, 300);
+        }
     }
 }
 
