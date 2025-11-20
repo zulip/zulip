@@ -4,6 +4,20 @@ on:
   push:
     branches:
       - zulip-cloud-current
+  workflow_dispatch:
+    inputs:
+      before:
+        description: "Old commit-ish"
+        required: true
+      after:
+        description: "New commit-ish"
+        required: true
+      stream:
+        description: "Stream to send to"
+        default: "zulip cloud"
+      topic:
+        description: "Topic to send to"
+        default: "latest deploy"
 
 permissions:
   contents: read
@@ -48,7 +62,7 @@ jobs:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
           organization-url: "https://chat.zulip.org"
-          to: "zulip cloud"
-          topic: "latest deploy"
+          to: "${{ inputs.stream || 'zulip cloud' }}"
+          topic: "${{ inputs.topic || 'latest deploy' }}"
           type: "stream"
           content: ${{ steps.generate.outputs.content }}
