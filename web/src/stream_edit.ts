@@ -541,11 +541,16 @@ export function initialize(): void {
                 max_stream_description_length: realm.max_stream_description_length,
             };
             const change_stream_info_modal = render_change_stream_info_modal(template_data);
+
+            const heading = stream.is_archived
+                ? $t_html(
+                      {defaultMessage: "Edit #{channel_name} (<i>archived</i>)"},
+                      {channel_name: stream.name},
+                  )
+                : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
+
             dialog_widget.launch({
-                html_heading: $t_html(
-                    {defaultMessage: "Edit #{channel_name}"},
-                    {channel_name: stream.name},
-                ),
+                html_heading: heading,
                 html_body: change_stream_info_modal,
                 id: "change_stream_info_modal",
                 loading_spinner: true,
