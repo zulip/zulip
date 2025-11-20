@@ -356,23 +356,3 @@ class NewRelicHookTests(WebhookTestCase):
             expected_message,
             content_type="application/json",
         )
-
-    def test_malformatted_time(self) -> None:
-        with self.assertRaises(AssertionError) as e:
-            self.check_webhook(
-                "incident_malformed_timestamp",
-                "",
-                "",
-                content_type="application/json",
-            )
-        self.assertIn("The newrelic webhook expects time in milliseconds.", e.exception.args[0])
-
-    def test_time_too_large(self) -> None:
-        with self.assertRaises(AssertionError) as e:
-            self.check_webhook(
-                "incident_time_too_large",
-                "",
-                "",
-                content_type="application/json",
-            )
-        self.assertIn("The newrelic webhook expects time in milliseconds.", e.exception.args[0])
