@@ -15,12 +15,14 @@
                 <div class="tenor-content"></div>
             {{/if}}
         </div>
-        <div class="popover-footer">
-            {{#if is_giphy}}
+        {{!-- We are required to include the
+        "Powered By GIPHY" banner, which isn't mandatory
+        for Tenor. So we avoid including one for Tenor
+        to save space. --}}
+        {{#if is_giphy}}
+            <div class="popover-footer">
                 <img src="../images/giphy/GIPHY_attribution.png" alt="{{t 'GIPHY attribution' }}" />
-            {{else}}
-                <img src="../images/tenor/tenor_attribution.png" alt="{{t 'Powered By Tenor' }}" />
-            {{/if}}
-        </div>
+            </div>
+        {{/if}}
     </div>
 </div>

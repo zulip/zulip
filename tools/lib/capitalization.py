@@ -149,7 +149,6 @@ IGNORED_PHRASES = [
     r"GIPHY",
     # Used for Tenor attributions
     r"Search Tenor",
-    r"Powered By Tenor",
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
