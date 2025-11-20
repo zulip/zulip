@@ -124,6 +124,24 @@ run_test("language_list", () => {
             name: "Bahasa Indonesia",
             percent_translated: 32,
         },
+        {
+            code: "mn",
+            locale: "mn",
+            name: "Mongolian",
+            percent_translated: 53,
+        },
+        {
+            code: "bqi",
+            locale: "bqi",
+            name: "Luri (Bakhtiari)",
+            percent_translated: 5,
+        },
+        {
+            code: "zh-hans",
+            locale: "zh_Hans",
+            name: "简体中文",
+            percent_translated: 86,
+        },
     ];
     initialize({language_list});
     assert.equal(get_language_name("en"), "English");
@@ -132,19 +150,37 @@ run_test("language_list", () => {
         {
             name: "English",
             code: "en",
-            name_with_percent: "English",
+            name_with_percent: "English (US)",
             selected: true,
         },
         {
             name: "British English",
             code: "en-gb",
-            name_with_percent: "British English (99%)",
+            name_with_percent: "English (UK) (99%)",
             selected: false,
         },
         {
             name: "Bahasa Indonesia",
             code: "id",
-            name_with_percent: "Bahasa Indonesia (32%)",
+            name_with_percent: "Indonesia (32%)",
+            selected: false,
+        },
+        {
+            name: "Mongolian",
+            code: "mn",
+            name_with_percent: "Монгол (53%)",
+            selected: false,
+        },
+        {
+            name: "Luri (Bakhtiari)",
+            code: "bqi",
+            name_with_percent: "Bakhtiari (5%)",
+            selected: false,
+        },
+        {
+            name: "简体中文",
+            code: "zh-hans",
+            name_with_percent: "中文 (简体) (86%)",
             selected: false,
         },
     ];
