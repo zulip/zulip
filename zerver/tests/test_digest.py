@@ -228,19 +228,20 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Clear the LRU cache on the stream topics
         get_recent_topics.cache_clear()
-        
-        with mock.patch("zerver.lib.digest.enough_traffic", return_value=True), \
-             mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
+
+        with (
+            mock.patch("zerver.lib.digest.enough_traffic", return_value=True),
+            mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email,
+        ):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
-        
+
         hot_convo = kwargs["context"]["hot_conversations"][0]
         # Verify the header HTML contains the italicized general chat
         header_html = hot_convo["first_few_messages"][0]["header"]["html"]
         self.assertIn("<i>general chat</i>", header_html)
-
 
     def test_no_logging(self) -> None:
         hamlet = self.example_user("hamlet")

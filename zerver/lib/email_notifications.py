@@ -35,10 +35,7 @@ from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notificatio
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import format_datetime_to_string
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import (
-    get_topic_display_name,
-    get_topic_resolution_and_bare_name,
-)
+from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     message_link_url,
@@ -336,11 +333,13 @@ def build_message_list(
             )
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
-            
+
             topic_display_name = message.topic_name()
             if topic_display_name == "":
-                topic_display_name = get_topic_display_name(topic_display_name, user.default_language)
-                topic_display_name = Markup(f"<i>{topic_display_name}</i>")
+                topic_display_name = get_topic_display_name(
+                    topic_display_name, user.default_language
+                )
+                topic_display_name = Markup("<i>{}</i>").format(topic_display_name)
 
             header_html = Markup(
                 "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
