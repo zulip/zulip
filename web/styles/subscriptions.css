@@ -116,6 +116,23 @@
     color: hsl(0deg 100% 50%);
 }
 
+.stream_creation_error a,
+#change_stream_name_error a {
+    text-decoration: underline;
+}
+
+#change_stream_name {
+    margin-bottom: 0;
+}
+
+#change_stream_name_error {
+    color: hsl(0deg 100% 50%);
+}
+
+.change-stream-name-container {
+    margin-bottom: 20px;
+}
+
 /* TODO: Unify with settings.css definition */
 h3.stream_setting_subsection_title,
 h3.user_group_setting_subsection_title {

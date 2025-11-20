@@ -8,6 +8,7 @@ import render_settings_deactivation_stream_modal from "../templates/confirm_dial
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
@@ -150,7 +151,43 @@ export function save_stream_info(): void {
         data.description = new_description;
     }
 
-    dialog_widget.submit_api_request(channel.patch, url, data);
+    dialog_widget.submit_api_request(channel.patch, url, data, {
+        error_continuation(xhr) {
+            const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+
+            if (code === "CHANNEL_ALREADY_EXISTS") {
+                $("#dialog_error").hide().empty();
+
+                assert(data.new_name !== undefined);
+                const existing_stream = stream_data.get_sub_by_name(data.new_name);
+
+                if (existing_stream) {
+                    const can_rename =
+                        existing_stream.is_archived &&
+                        stream_settings_data.get_sub_for_settings(existing_stream)
+                            .can_change_name_description;
+
+                    const rendered_error = render_channel_name_conflict_error({
+                        stream_id: existing_stream.stream_id,
+                        is_archived: existing_stream.is_archived,
+                        show_rename: can_rename,
+                        can_view_channel: true,
+                    });
+
+                    $("#change_stream_name_error").html(rendered_error).show();
+                } else {
+                    const rendered_error = render_channel_name_conflict_error({
+                        stream_id: undefined,
+                        is_archived: false,
+                        show_rename: false,
+                        can_view_channel: false,
+                    });
+                    $("#change_stream_name_error").html(rendered_error).show();
+                }
+                $("#change_stream_name").trigger("focus");
+            }
+        },
+    });
 }
 
 export function get_display_text_for_realm_message_retention_setting(): string {
@@ -589,6 +626,16 @@ export function initialize(): void {
             open_stream_edit_modal(stream_id);
         },
     );
+
+    $("body").on("click", "#change_stream_info_modal #archived_stream_rename", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
+
+        dialog_widget.close();
+        open_stream_edit_modal(stream_id);
+    });
 
     $("#channels_overlay_container").on("keydown", "#change_stream_description", (e) => {
         // Stream descriptions cannot be multiline, so disable enter key
