@@ -849,9 +849,6 @@
     min-width: 206px;
     min-height: 52px;
     box-sizing: border-box;
-    /* Setting resize as none hides the bottom right diagonal box
-       (which even has a background color of its own!). */
-    resize: none !important;
     color: var(--color-text-default);
     background-color: var(--background-color-textarea);
     /* Flatten the bottom edge of the textarea to
@@ -872,6 +869,10 @@
 
     &:focus {
         outline: 0;
+    }
+
+    &:read-write {
+        resize: vertical !important;
     }
 
     &:read-only,
