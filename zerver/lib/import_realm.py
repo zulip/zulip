@@ -2104,6 +2104,7 @@ def _process_message_file(
     """Process a single message file - imports messages and user_messages from one dump file."""
     message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
 
+    # Log the filename being processed (not message content)
     logging.info("Importing message dump %s", message_filename)
 
     with open(message_filename, "rb") as f:
