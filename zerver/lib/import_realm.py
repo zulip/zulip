@@ -1981,15 +1981,6 @@ def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
             new_id=new_id,
         )
 
-    # Save ID_MAP to disk so parallel workers can load it
-    # Convert integer keys to strings for JSON compatibility
-    id_map_path = os.path.join(import_dir, "id_map.json")
-    serializable_id_map = {
-        table: {str(k): v for k, v in mapping.items()} for table, mapping in ID_MAP.items()
-    }
-    with open(id_map_path, "wb") as f:
-        f.write(orjson.dumps(serializable_id_map))
-
     # We don't touch user_message keys here; that happens later when
     # we're actually read the files a second time to get actual data.
 
@@ -2068,29 +2059,43 @@ def import_message_data(
     if not message_files:
         return
 
-    # Sequential processing (original behavior)
-    if processes == 1 or len(message_files) == 1:
-        for file_id in message_files:
-            _process_message_file(file_id, realm, sender_map, import_dir)
-    else:
-        # Parallel processing
-        import multiprocessing
+    # Cap processes at the number of message files (no point having more processes than files)
+    num_processes = min(processes, len(message_files))
 
-        num_processes = min(processes, multiprocessing.cpu_count(), len(message_files))
-        worker_data = [(file_id, realm.id, sender_map, import_dir) for file_id in message_files]
+    run_parallel(
+        _import_message_file_worker,
+        message_files,
+        num_processes,
+        initializer=_initialize_message_worker,
+        initargs=(ID_MAP, realm.id, sender_map, import_dir),
+    )
 
-        run_parallel(
-            _import_message_file_worker,
-            worker_data,
-            num_processes,
-        )
+
+def _initialize_message_worker(
+    id_map: dict[str, dict[int, int]], realm_id: int, sender_map: dict[int, Record], import_dir: Path
+) -> None:
+    """Initialize worker process with shared data for parallel message import."""
+    # Populate the global ID_MAP in this worker process
+    ID_MAP.update(id_map)
+    # Store realm and other shared data as globals for this worker
+    global _worker_realm, _worker_sender_map, _worker_import_dir
+    _worker_realm = Realm.objects.get(id=realm_id)
+    _worker_sender_map = sender_map
+    _worker_import_dir = import_dir
+
+
+def _import_message_file_worker(dump_file_id: int) -> None:
+    """Worker function for parallel message import - processes a single message file."""
+    _process_message_file(dump_file_id, _worker_realm, _worker_sender_map, _worker_import_dir)
 
 
 def _process_message_file(
     dump_file_id: int, realm: Realm, sender_map: dict[int, Record], import_dir: Path
 ) -> None:
-    """Process a single message file (used for sequential import)."""
+    """Process a single message file - imports messages and user_messages from one dump file."""
     message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
+
+    logging.info("Importing message dump %s", message_filename)
 
     with open(message_filename, "rb") as f:
         data = orjson.loads(f.read())
@@ -2099,8 +2104,12 @@ def _process_message_file(
     re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
     re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
     fix_datetime_fields(data, "zerver_message")
+    # Parser to update message content with the updated attachment URLs
     fix_upload_links(data, "zerver_message")
 
+    # We already create mappings for zerver_message ids
+    # in update_message_foreign_keys(), so here we simply
+    # apply them.
     message_id_map = ID_MAP["message"]
     for row in data["zerver_message"]:
         del row["realm"]
@@ -2118,33 +2127,18 @@ def _process_message_file(
     logging.info("Successfully rendered Markdown for message batch")
 
     fix_message_edit_history(realm=realm, sender_map=sender_map, messages=data["zerver_message"])
+    # A LOT HAPPENS HERE.
+    # This is where we actually import the message data.
     bulk_import_model(data, Message)
 
+    # Due to the structure of these message chunks, we're
+    # guaranteed to have already imported all the Message objects
+    # for this batch of UserMessage objects.
     re_map_foreign_keys(data, "zerver_usermessage", "message", related_table="message")
     re_map_foreign_keys(data, "zerver_usermessage", "user_profile", related_table="user_profile")
     fix_bitfield_keys(data, "zerver_usermessage", "flags")
 
     bulk_import_user_message_data(data, dump_file_id)
-
-
-def _import_message_file_worker(data: tuple[int, int, dict[int, Record], Path]) -> None:
-    """Worker function for parallel message import."""
-    dump_file_id, realm_id, sender_map, import_dir = data
-
-    # Load ID_MAP in worker
-    id_map_path = os.path.join(import_dir, "id_map.json")
-    with open(id_map_path, "rb") as f:
-        loaded_id_map = orjson.loads(f.read())
-
-    # Convert string keys back to integers
-    for table_name in loaded_id_map:
-        if isinstance(loaded_id_map[table_name], dict):
-            loaded_id_map[table_name] = {int(k): v for k, v in loaded_id_map[table_name].items()}
-
-    ID_MAP.update(loaded_id_map)
-
-    realm = Realm.objects.get(id=realm_id)
-    _process_message_file(dump_file_id, realm, sender_map, import_dir)
 
 
 def import_attachments(data: ImportedTableData) -> None:
