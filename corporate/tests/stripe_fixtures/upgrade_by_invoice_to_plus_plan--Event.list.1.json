@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -34,9 +34,9 @@
           "on_behalf_of": null,
           "payment_details": {
             "customer_reference": null,
-            "order_reference": "in_1SSdNmRVfKEFJaqcP11fI6"
+            "order_reference": "in_1SVWrADwzgQ85STgfxZrHK"
           },
-          "payment_method": "pm_NORMALIZED",
+          "payment_method": null,
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {

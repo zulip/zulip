@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 433
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (358, 0)  # bumped 2025-11-08 to replace @uppy/drag-drop with @uppy/dashboard
+PROVISION_VERSION = (359, 0)  # bumped 2025-11-20 to upgrade stripe python SDK
