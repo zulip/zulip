@@ -369,9 +369,12 @@ class CommitRangeAnalyzer:
 
 
 def validate_github_token(value: str) -> str:
-    if not value.startswith("github_"):
-        raise typer.BadParameter("Github access tokens start with `github_`")
-    return value
+    # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#githubs-token-formats
+    if value.startswith("github_"):
+        return value
+    if re.match(r"gh[pousr]_", value):
+        return value
+    raise typer.BadParameter("Github access tokens start with `github_`, or `gh`")
 
 
 from enum import Enum
