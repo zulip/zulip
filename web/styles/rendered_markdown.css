@@ -1001,8 +1001,8 @@
 }
 
 /* Both the horizontal scrollbar in <pre/> as well as
-   vertical scrollbar in the <textarea/> is styled similarly. */
-.message_edit_form textarea,
+   vertical scrollbar in the view source <textarea/> is styled similarly. */
+.message_edit_form textarea:read-only,
 .rendered_markdown pre {
     /* Ensure the horizontal scrollbar is visible on Mac */
     &::-webkit-scrollbar {
