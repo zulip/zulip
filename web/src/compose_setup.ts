@@ -25,6 +25,7 @@ import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
@@ -117,6 +118,7 @@ export function initialize(): void {
     });
 
     resize.watch_manual_resize("#compose-textarea");
+    message_viewport.register_resize_handler(message_edit.maybe_autosize_message_edit_box);
 
     // Updates compose max-height and scroll to bottom button position when
     // there is a change in compose height like when a compose banner is displayed.

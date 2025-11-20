@@ -521,16 +521,18 @@ export class MessageList {
         }
     }
 
-    show_edit_message($row: JQuery, $form: JQuery): void {
+    show_edit_message($row: JQuery, $form: JQuery, do_autosize: boolean): void {
         if ($row.find(".message_edit_form form").length > 0) {
             return;
         }
         $row.find(".messagebox-content").append($form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".messagebox-content").addClass("content_edit_mode");
-        // autosize will not change the height of the textarea if the `$row` is not
-        // rendered in DOM yet. So, we call `autosize.update` post render.
-        autosize($row.find(".message_edit_content"));
+        if (do_autosize) {
+            // autosize will not change the height of the textarea if the `$row` is not
+            // rendered in DOM yet. So, we call `autosize.update` post render.
+            autosize($row.find(".message_edit_content"));
+        }
         compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
     }
 
