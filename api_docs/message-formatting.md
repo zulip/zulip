@@ -121,6 +121,43 @@ the href for those is the default behavior of the link that also
 encodes the channel alongside the data-stream-id field, but clients
 can override that default based on `web_channel_default_view` setting.
 
+## Emoji
+
+Zulip's [emoji][help-emoji] support includes standard Unicode emoji, a
+built-in Zulip custom emoji like `:zulip:` and [custom realm
+emoji][help-custom-emoji].
+
+Unicode emoji, such as `:smiling_face:` (☺️ / `263a`), are represented
+in the HTML by spans with the following format:
+
+```html
+<span aria-label="smiling face" class="emoji emoji-263a" role="img"
+  title="smiling face">:smiling_face:</span>
+```
+
+Note that Unicode emoji in messages that were originally sent on Zulip
+versions older than Zulip 1.9.2 will not have the `role` or
+`aria-label` attributes. Thus, clients should not rely on those fields
+existing.
+
+The `server_emoji_data_url` key in the [`POST
+/register`](/api/register-queue) response contains the server's
+mapping between Unicode codepoints and emoji names.
+
+Custom emoji are represented in the HTML by image tags that also use
+the `.emoji` class. The `src` URL should be resolved with respect to
+the Zulip server's hostname:
+
+```html
+<-- Configured realm-specific custom emoji -->
+<img alt=":example_custom_emoji:" class="emoji" title="example_custom_emoji"
+  src="/user_avatars/2/emoji/images/dbe43627.png">
+
+<-- Built-in custom emoji like :zulip: -->
+<img alt=":zulip:" class="emoji" title="zulip"
+  src="/static/generated/emoji/images/emoji/unicode/zulip.png">
+```
+
 ## Images
 
 When a Zulip message is sent linking to an uploaded image, Zulip will
@@ -474,6 +511,8 @@ inconsistent syntax, were removed.
 * [Render a message](/api/render-message)
 
 [help-code]: /help/code-blocks
+[help-emoji]: /help/emoji-and-emoticons
+[help-custom-emoji]: /help/custom-emoji
 [help-playgrounds]: /help/code-blocks#code-playgrounds
 [help-spoilers]: /help/spoilers
 [help-global-time]: /help/global-times
