@@ -266,11 +266,11 @@ def gather_new_streams(
 
     for stream in new_streams:
         narrow_url = stream_narrow_url(realm, stream)
-        channel_link = Markup("<a href='{narrow_url}'>{stream_name}</a>").format(
+        channel_link = Markup("<a href='{narrow_url}'>#{stream_name}</a>").format(
             narrow_url=narrow_url, stream_name=stream.name
         )
         channels_html.append(channel_link)
-        channels_plain.append(stream.name)
+        channels_plain.append(f"#{stream.name}")
 
     return len(new_streams), {"html": channels_html, "plain": channels_plain}
 

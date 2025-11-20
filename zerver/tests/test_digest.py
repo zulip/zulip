@@ -205,7 +205,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(kwargs["to_user_ids"], [polonius.id])
 
         new_stream_names = kwargs["context"]["new_channels"]["plain"]
-        self.assertTrue("web_public_stream" in new_stream_names)
+        self.assertTrue("#web_public_stream" in new_stream_names)
 
     def test_no_logging(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -526,8 +526,9 @@ class TestDigestEmailMessages(ZulipTestCase):
             realm, recently_created_streams, can_access_public=True
         )
         self.assertEqual(stream_count, 1)
-        expected_html = f"<a href='http://zulip.testserver/#narrow/channel/{stream.id}-New-stream'>New stream</a>"
+        expected_html = f"<a href='http://zulip.testserver/#narrow/channel/{stream.id}-New-stream'>#New stream</a>"
         self.assertEqual(stream_info["html"][0], expected_html)
+
 
         # guests don't see our stream
         stream_count, stream_info = gather_new_streams(
