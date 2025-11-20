@@ -491,6 +491,20 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             id_info.target_id = Number.parseInt(filter.operands("id")[0]!, 10);
         }
 
+        if (
+            // Filter has `with` operator but we don't have message locally.
+            filter.requires_adjustment_for_moved_with_target &&
+            opts.then_select_id !== -1
+        ) {
+            // We have a specific message ID to select, but we cannot do so until
+            // we know user is in the correct narrow and that `then_select_id` is
+            // still in that narrow. So, we need to fetch `with` operator message
+            // from server first and then try to select `then_select_id` message.
+            // There is no risk of this hack causing any issues since the `id_info`
+            // will be reset after we fetch the `with` operator message.
+            id_info.target_id = Number.parseInt(filter.operands("with")[0]!, 10);
+        }
+
         // Narrow with near / id operator. There are two possibilities:
         // * The user is clicking a permanent link to a conversation, in which
         //   case we want to look up the anchor message and see if it has moved.
