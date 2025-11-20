@@ -99,6 +99,60 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     }
 }
 
+export function open_stream_edit_modal(stream_id: number): void {
+    const stream = sub_store.get(stream_id);
+    assert(stream !== undefined);
+
+    const is_archived = stream.is_archived;
+
+    const template_data = {
+        stream_name: stream.name,
+        stream_description: stream.description,
+        max_stream_name_length: realm.max_stream_name_length,
+        max_stream_description_length: realm.max_stream_description_length,
+    };
+    const change_stream_info_modal = render_change_stream_info_modal(template_data);
+
+    const heading = is_archived
+        ? $t_html(
+              {defaultMessage: "Edit #{channel_name} (<i>archived</i>)"},
+              {channel_name: stream.name},
+          )
+        : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
+    dialog_widget.launch({
+        html_heading: heading,
+        html_body: change_stream_info_modal,
+        id: "change_stream_info_modal",
+        loading_spinner: true,
+        on_click: save_stream_info,
+        post_render() {
+            $("#change_stream_info_modal .dialog_submit_button")
+                .addClass("save-button")
+                .attr("data-stream-id", stream_id);
+        },
+        update_submit_disabled_state_on_change: true,
+    });
+}
+
+export function save_stream_info(): void {
+    const sub = get_sub_for_target(util.the($("#change_stream_info_modal .dialog_submit_button")));
+    const url = `/json/streams/${sub.stream_id}`;
+    const data: {new_name?: string; description?: string} = {};
+    const new_name = $<HTMLInputElement>("input#change_stream_name").val()!.trim();
+    const new_description = $<HTMLTextAreaElement>("textarea#change_stream_description")
+        .val()!
+        .trim();
+
+    if (new_name !== sub.name) {
+        data.new_name = new_name;
+    }
+    if (new_description !== sub.description) {
+        data.description = new_description;
+    }
+
+    dialog_widget.submit_api_request(channel.patch, url, data);
+}
+
 export function get_display_text_for_realm_message_retention_setting(): string {
     const realm_message_retention_days = realm.realm_message_retention_days;
     if (realm_message_retention_days === settings_config.retain_message_forever) {
@@ -532,36 +586,7 @@ export function initialize(): void {
             e.preventDefault();
             e.stopPropagation();
             const stream_id = get_stream_id(this);
-            const stream = sub_store.get(stream_id);
-            assert(stream !== undefined);
-            const template_data = {
-                stream_name: stream.name,
-                stream_description: stream.description,
-                max_stream_name_length: realm.max_stream_name_length,
-                max_stream_description_length: realm.max_stream_description_length,
-            };
-            const change_stream_info_modal = render_change_stream_info_modal(template_data);
-
-            const heading = stream.is_archived
-                ? $t_html(
-                      {defaultMessage: "Edit #{channel_name} (<i>archived</i>)"},
-                      {channel_name: stream.name},
-                  )
-                : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
-
-            dialog_widget.launch({
-                html_heading: heading,
-                html_body: change_stream_info_modal,
-                id: "change_stream_info_modal",
-                loading_spinner: true,
-                on_click: save_stream_info,
-                post_render() {
-                    $("#change_stream_info_modal .dialog_submit_button")
-                        .addClass("save-button")
-                        .attr("data-stream-id", stream_id);
-                },
-                update_submit_disabled_state_on_change: true,
-            });
+            open_stream_edit_modal(stream_id);
         },
     );
 
@@ -604,27 +629,6 @@ export function initialize(): void {
             $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
-
-    function save_stream_info(): void {
-        const sub = get_sub_for_target(
-            util.the($("#change_stream_info_modal .dialog_submit_button")),
-        );
-        const url = `/json/streams/${sub.stream_id}`;
-        const data: {new_name?: string; description?: string} = {};
-        const new_name = $<HTMLInputElement>("input#change_stream_name").val()!.trim();
-        const new_description = $<HTMLTextAreaElement>("textarea#change_stream_description")
-            .val()!
-            .trim();
-
-        if (new_name !== sub.name) {
-            data.new_name = new_name;
-        }
-        if (new_description !== sub.description) {
-            data.description = new_description;
-        }
-
-        dialog_widget.submit_api_request(channel.patch, url, data);
-    }
 
     $("#channels_overlay_container").on(
         "click",
