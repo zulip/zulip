@@ -3,11 +3,9 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
-import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
-import * as dialog_widget from "./dialog_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -19,6 +17,7 @@ import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_create_subscribers from "./stream_create_subscribers.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_edit from "./stream_edit.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import {stream_permission_group_settings_schema} from "./stream_types.ts";
@@ -666,53 +665,10 @@ export function initialize(): void {
     $("#channels_overlay_container").on("click", "#archived_stream_rename", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const stream_id = Number.parseInt($("#archived_stream_rename").attr("data-stream-id")!, 10);
-        const stream = stream_data.get_sub_by_id(stream_id);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
 
-        assert(stream !== undefined);
-
-        const template_data = {
-            stream_name: stream.name,
-            stream_description: stream.description,
-            max_stream_name_length: realm.max_stream_name_length,
-            max_stream_description_length: realm.max_stream_description_length,
-        };
-        const change_stream_info_modal = render_change_stream_info_modal(template_data);
-        dialog_widget.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Edit #{stream_name} (<i>archived</i>)"},
-                {stream_name: stream.name},
-            ),
-            html_body: change_stream_info_modal,
-            id: "change_stream_info_modal",
-            loading_spinner: true,
-            on_click: save_stream_info,
-            post_render() {
-                $("#change_stream_info_modal .dialog_submit_button")
-                    .addClass("save-button")
-                    .attr("data-stream-id", stream_id);
-            },
-            update_submit_disabled_state_on_change: true,
-        });
+        stream_edit.open_stream_edit_modal(stream_id);
     });
-
-    function save_stream_info(): void {
-        const stream_id = Number.parseInt($("#archived_stream_rename").attr("data-stream-id")!, 10);
-        const sub = stream_data.get_sub_by_id(stream_id);
-        const url = `/json/streams/${sub?.stream_id}`;
-        const data: {new_name?: string; description?: string} = {};
-        const new_name = $<HTMLInputElement>("#change_stream_name").val()!.trim();
-        const new_description = $<HTMLInputElement>("#change_stream_description").val()!.trim();
-
-        if (new_name !== sub?.name) {
-            data.new_name = new_name;
-        }
-        if (new_description !== sub?.description) {
-            data.description = new_description;
-        }
-
-        dialog_widget.submit_api_request(channel.patch, url, data);
-    }
 }
 
 export function set_channel_folder_dropdown_value(folder_id: number): void {
