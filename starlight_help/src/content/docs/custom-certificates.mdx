@@ -29,10 +29,8 @@ username and password.
 
 ## Desktop
 
-### Version 5.4.0 and above
-
-Zulip Desktop version 5.4.0 and above use the operating system's
-certificate store, like your web browser.
+Zulip Desktop uses the operating system's certificate store, like your web
+browser.
 
 <Tabs>
   <TabItem label="macOS">
@@ -84,21 +82,6 @@ certificate store, like your web browser.
     new certificate.
   </TabItem>
 </Tabs>
-
-### Version 5.3.0 and below
-
-On Zulip Desktop version 5.3.0 and below, we require you to manually
-enter the certificate details before you can connect to your Zulip
-server. You'll need to get a certificate file (should end in `.crt` or
-`.pem`) from your server administrator and add it:
-
-<FlattenedSteps>
-  <DesktopSidebarSettingsMenu />
-
-  1. Select the **Organizations** tab.
-  1. Under **Add Custom Certificates**, enter your organization URL and add
-     the custom certificate file (it should end in `.crt` or `.pem`).
-</FlattenedSteps>
 
 [linux]: https://chromium.googlesource.com/chromium/src.git/+/main/docs/linux/cert_management.md
 
