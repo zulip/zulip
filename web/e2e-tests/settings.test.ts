@@ -391,8 +391,8 @@ async function assert_language_changed_to_chinese(page: Page): Promise<void> {
     });
     const default_language = await common.get_text_from_selector(page, ".dropdown_widget_value");
     assert.strictEqual(
-        default_language.slice(0, 4),
-        "简体中文",
+        default_language.slice(0, 7),
+        "中文 (简体)",
         "Default language has not been changed to Chinese.",
     );
 }

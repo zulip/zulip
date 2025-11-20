@@ -60,10 +60,38 @@ export function $t_html(
     });
 }
 
-export let language_list: (typeof page_params & {page_type: "home"})["language_list"];
+export let language_list: ((typeof page_params & {page_type: "home"})["language_list"][number] & {
+    display_name: string;
+})[];
 
 export function get_language_name(language_code: string): string | undefined {
     return language_list.find((language) => language.code === language_code)?.name;
+}
+
+function get_language_display_name(language_code: string): string {
+    // For "Monoglian" and "Bqi", "Intl.DisplayNames" returns their English names
+    // in Chromium based browsers. So, we hard-code the display names for these
+    // two languages.
+    if (language_code === "bqi") {
+        return "Bakhtiari";
+    }
+
+    if (language_code === "mn") {
+        return "Монгол";
+    }
+
+    const locale = new Intl.Locale(language_code === "en" ? "en-US" : language_code);
+    let language_display_name = new Intl.DisplayNames([locale], {type: "language"})
+        .of(locale.language)!
+        .replace(/^./u, (c) => c.toLocaleUpperCase(locale));
+
+    if (locale.script !== undefined) {
+        language_display_name += ` (${new Intl.DisplayNames([locale], {type: "script"}).of(locale.script)})`;
+    }
+    if (locale.region !== undefined) {
+        language_display_name += ` (${new Intl.DisplayNames([locale], {type: "region"}).of(locale.region)})`;
+    }
+    return language_display_name;
 }
 
 export function initialize(language_params: {language_list: typeof language_list}): void {
@@ -78,6 +106,7 @@ export function initialize(language_params: {language_list: typeof language_list
                 locale: language.locale,
                 name: language.name,
                 percent_translated: language.percent_translated,
+                display_name: get_language_display_name(language.code),
             });
         }
     }
@@ -92,9 +121,9 @@ type Language = {
 export function get_language_list_columns(default_language: string): Language[] {
     const formatted_list: Language[] = [];
     for (const language of language_list) {
-        let name_with_percent = language.name;
+        let name_with_percent = language.display_name;
         if (language.percent_translated !== undefined) {
-            name_with_percent = `${language.name} (${language.percent_translated}%)`;
+            name_with_percent = `${language.display_name} (${language.percent_translated}%)`;
         }
 
         const selected = default_language === language.code || default_language === language.locale;
