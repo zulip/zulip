@@ -1471,6 +1471,15 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(realm_creation_audit_log.acting_user, user)
         self.assertEqual(realm_creation_audit_log.event_time, realm.date_created)
+        audit_log_extra_data = realm_creation_audit_log.extra_data
+        self.assertEqual(
+            audit_log_extra_data["how_realm_creator_found_zulip"],
+            RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"],
+        )
+        self.assertEqual(
+            audit_log_extra_data["how_realm_creator_found_zulip_extra_context"],
+            "I found it on the internet.",
+        )
 
         # Piggyback a little check for how we handle
         # empty string_ids.
