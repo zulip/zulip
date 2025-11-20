@@ -159,7 +159,20 @@ class RealmDetailsForm(forms.Form):
         return subdomain
 
 
-class RegistrationForm(RealmDetailsForm):
+class HowFoundZulipFormMixin(forms.Form):
+    how_realm_creator_found_zulip = forms.ChoiceField(
+        choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items()
+    )
+    how_realm_creator_found_zulip_other_text = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_where_ad = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_which_organization = forms.CharField(
+        max_length=100, required=False
+    )
+    how_realm_creator_found_zulip_review_site = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_which_ai_chatbot = forms.CharField(max_length=100, required=False)
+
+
+class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
     MAX_PASSWORD_LENGTH = 100
     full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # The required-ness of the password field gets overridden if it isn't
@@ -182,25 +195,7 @@ class RegistrationForm(RealmDetailsForm):
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
-        self.fields["how_realm_creator_found_zulip"] = forms.ChoiceField(
-            choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
-            required=self.realm_creation,
-        )
-        self.fields["how_realm_creator_found_zulip_other_text"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_where_ad"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_review_site"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_which_ai_chatbot"] = forms.CharField(
-            max_length=100, required=False
-        )
+        self.fields["how_realm_creator_found_zulip"].required = self.realm_creation
 
     def clean_full_name(self) -> str:
         try:
