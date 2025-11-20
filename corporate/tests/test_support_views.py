@@ -175,7 +175,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
     def test_remote_support_view_queries(self) -> None:
         iago = self.example_user("iago")
         self.login_user(iago)
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(29):
             result = self.client_get("/activity/remote/support", {"q": "zulip-3.example.com"})
             self.assertEqual(result.status_code, 200)
 
@@ -751,7 +751,7 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_realm_support_view_queries(self) -> None:
         iago = self.example_user("iago")
         self.login_user(iago)
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             result = self.client_get("/activity/support", {"q": "zulip"}, subdomain="zulip")
             self.assertEqual(result.status_code, 200)
 

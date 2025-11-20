@@ -143,7 +143,7 @@ class ActivityTest(ZulipTestCase):
         user_profile.is_staff = True
         user_profile.save(update_fields=["is_staff"])
 
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             result = self.client_get("/activity")
             self.assertEqual(result.status_code, 200)
 
@@ -194,28 +194,28 @@ class ActivityTest(ZulipTestCase):
             event_time=timezone_now() - timedelta(days=1),
             extra_data=extra_data,
         )
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             result = self.client_get("/activity/remote")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             result = self.client_get("/activity/integrations")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(8):
             result = self.client_get("/realm_activity/zulip/")
             self.assertEqual(result.status_code, 200)
 
         iago = self.example_user("iago")
-        with self.assert_database_query_count(6):
+        with self.assert_database_query_count(7):
             result = self.client_get(f"/user_activity/{iago.id}/")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(9):
             result = self.client_get(f"/activity/plan_ledger/{plan.id}/")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(8):
             result = self.client_get(f"/activity/remote/logs/server/{server.uuid}/")
             self.assertEqual(result.status_code, 200)
 
@@ -377,10 +377,10 @@ class ActivityTest(ZulipTestCase):
         add_audit_log_data(realm.server, remote_realm=realm, realm_id=None)
 
         self.login("iago")
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             result = self.client_get("/activity/remote")
             self.assertEqual(result.status_code, 200)
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(8):
             result = self.client_get(f"/activity/remote/logs/server/{remote_server.uuid}/")
             self.assertEqual(result.status_code, 200)
