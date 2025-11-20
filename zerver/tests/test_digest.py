@@ -529,7 +529,6 @@ class TestDigestEmailMessages(ZulipTestCase):
         expected_html = f"<a href='http://zulip.testserver/#narrow/channel/{stream.id}-New-stream'>#New stream</a>"
         self.assertEqual(stream_info["html"][0], expected_html)
 
-
         # guests don't see our stream
         stream_count, stream_info = gather_new_streams(
             realm, recently_created_streams, can_access_public=False
