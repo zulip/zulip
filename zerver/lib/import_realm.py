@@ -189,6 +189,12 @@ id_map_to_list: dict[str, dict[int, list[int]]] = {
     "huddle_to_user_list": {},
 }
 
+# Worker process globals for parallel message import
+# These are populated by _initialize_message_worker() in each worker process
+_worker_realm: Realm
+_worker_sender_map: dict[int, Record]
+_worker_import_dir: Path
+
 path_maps: dict[str, dict[str, str]] = {
     # Maps original attachment path pre-import to the final, post-import
     # attachment path.
