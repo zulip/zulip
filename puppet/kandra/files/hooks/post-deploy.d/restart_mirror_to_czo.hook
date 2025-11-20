@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+# This script uses `uv run`, and thus uses the production venv.  This
+# means that we need to make sure that we restart into the new venv,
+# so we don't start to error when the old venv gets garbage collected.
+supervisorctl restart mirror_to_czo:*
