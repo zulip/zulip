@@ -159,6 +159,18 @@ class RealmDetailsForm(forms.Form):
         return subdomain
 
 
+# These are the matching field names for the options in
+# RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS that
+# ask for more context when creating a new organization.
+HOW_FOUND_ZULIP_EXTRA_CONTEXT = {
+    "other": "how_realm_creator_found_zulip_other_text",
+    "ad": "how_realm_creator_found_zulip_where_ad",
+    "existing_user": "how_realm_creator_found_zulip_which_organization",
+    "review_site": "how_realm_creator_found_zulip_review_site",
+    "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
+}
+
+
 class HowFoundZulipFormMixin(forms.Form):
     how_realm_creator_found_zulip = forms.ChoiceField(
         choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items()

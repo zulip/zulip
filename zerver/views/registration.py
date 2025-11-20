@@ -53,6 +53,7 @@ from zerver.context_processors import (
 )
 from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
+    HOW_FOUND_ZULIP_EXTRA_CONTEXT,
     CaptchaRealmCreationForm,
     FindMyTeamForm,
     HomepageForm,
@@ -666,24 +667,11 @@ def registration_helper(
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             is_demo_organization = form.cleaned_data["is_demo_organization"]
-            how_realm_creator_found_zulip = RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
-                form.cleaned_data["how_realm_creator_found_zulip"]
-            ]
-            how_realm_creator_found_zulip_extra_context = ""
-            extra_context_options = {
-                "other": "how_realm_creator_found_zulip_other_text",
-                "ad": "how_realm_creator_found_zulip_where_ad",
-                "existing_user": "how_realm_creator_found_zulip_which_organization",
-                "review_site": "how_realm_creator_found_zulip_review_site",
-                "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
-            }
-            for option, field_name in extra_context_options.items():
-                if (
-                    how_realm_creator_found_zulip
-                    == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[option]
-                ):
-                    how_realm_creator_found_zulip_extra_context = form.cleaned_data[field_name]
-                    break
+            how_found_zulip = form.cleaned_data["how_realm_creator_found_zulip"]
+            how_found_zulip_extra_context = ""
+            if how_found_zulip in HOW_FOUND_ZULIP_EXTRA_CONTEXT:
+                extra_context_field = HOW_FOUND_ZULIP_EXTRA_CONTEXT[how_found_zulip]
+                how_found_zulip_extra_context = form.cleaned_data[extra_context_field]
 
             realm = do_create_realm(
                 string_id,
@@ -692,8 +680,10 @@ def registration_helper(
                 default_language=realm_default_language,
                 is_demo_organization=is_demo_organization,
                 prereg_realm=prereg_realm,
-                how_realm_creator_found_zulip=how_realm_creator_found_zulip,
-                how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
+                how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                    how_found_zulip
+                ],
+                how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
             )
         assert realm is not None
 
