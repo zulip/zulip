@@ -39,6 +39,7 @@ let is_loading_more = false;
 let tenor_popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
 const BASE_URL = "https://tenor.googleapis.com/v2";
+let base_payload: object;
 
 function handleGifClick(imgEl: HTMLElement): void {
     const insert_url = imgEl.dataset.insertUrl;
@@ -102,12 +103,8 @@ function render_featured_gifs(next_page: boolean): void {
     if (is_loading_more || (current_search_term !== undefined && current_search_term.length > 0)) {
         return;
     }
-    let data: object = {
-        key: realm.tenor_api_key,
-        client_key: realm.tenor_client_key,
-        limit: "10",
-        media_filter: "tinygif,mediumgif",
-        locale: user_settings.default_language,
+    let data = {
+        ...base_payload,
     };
 
     if (next_page) {
@@ -137,11 +134,7 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
     }
     let data: object = {
         q: search_term,
-        key: realm.tenor_api_key,
-        client_key: realm.tenor_client_key,
-        limit: "10",
-        media_filter: "tinygif,mediumgif",
-        locale: user_settings.default_language,
+        ...base_payload,
     };
 
     if (next_page) {
@@ -247,4 +240,16 @@ function register_click_handlers(): void {
 
 export function initialize(): void {
     register_click_handlers();
+    base_payload = {
+        key: realm.tenor_api_key,
+        client_key: realm.tenor_client_key,
+        limit: "10",
+        media_filter: "tinygif,mediumgif",
+        locale: user_settings.default_language,
+        // TODO: This must be configurable, preferably via admin settings
+        // just like GIPHY. For that we would first have to figure out
+        // how to map the GIPHY and Tenor ratings, since they don't have
+        // a 1:1 alignment based on the current `realm_giphy_rating` configuration.
+        contentfilter: "high",
+    };
 }
