@@ -2072,7 +2072,10 @@ def import_message_data(
 
 
 def _initialize_message_worker(
-    id_map: dict[str, dict[int, int]], realm_id: int, sender_map: dict[int, Record], import_dir: Path
+    id_map: dict[str, dict[int, int]],
+    realm_id: int,
+    sender_map: dict[int, Record],
+    import_dir: Path,
 ) -> None:
     """Initialize worker process with shared data for parallel message import."""
     # Populate the global ID_MAP in this worker process
