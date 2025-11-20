@@ -109,7 +109,7 @@ export function rewire_select_top_left_corner_item(
 
 export function handle_narrow_activated(filter: Filter): void {
     let ops: NarrowTerm[];
-    let filter_name: string;
+    let filter_name: NarrowTerm["operand"];
 
     // TODO: handle confused filters like "in:all stream:foo"
     ops = filter.terms_with_operator("in");
@@ -134,7 +134,7 @@ export function handle_narrow_activated(filter: Filter): void {
     const term_types = filter.sorted_term_types();
     if (
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
-        filter.terms_with_operator("sender")[0]!.operand === people.my_current_email()
+        filter.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
     ) {
         select_top_left_corner_item(".top_left_my_reactions");
         return;

@@ -10,7 +10,7 @@ import * as people from "./people.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {narrow_term_schema, realm} from "./state_data.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
@@ -28,26 +28,29 @@ export function get_reload_hash(): string {
     return hash;
 }
 
-export function encode_operand(operator: string, operand: string): string {
-    if (
-        operator === "group-pm-with" ||
-        operator === "dm-including" ||
-        operator === "dm" ||
-        operator === "sender" ||
-        operator === "pm-with"
-    ) {
-        const slug = people.emails_to_slug(operand);
-        if (slug) {
-            return slug;
-        }
+export function encode_operand(term: NarrowCanonicalTerm): string {
+    let user_ids: number[] | undefined;
+    let slug: string | undefined;
+    switch (term.operator) {
+        case "dm-including":
+        case "dm":
+            user_ids = term.operand;
+            break;
+        case "sender":
+            user_ids = [term.operand];
+            break;
+        case "channel":
+            slug = encode_stream_id(Number.parseInt(term.operand, 10));
+            break;
+        default:
+            return internal_url.encodeHashComponent(term.operand);
     }
 
-    if (util.canonicalize_channel_synonyms(operator) === "channel") {
-        const stream_id = Number.parseInt(operand, 10);
-        return encode_stream_id(stream_id);
+    if (user_ids !== undefined) {
+        slug = people.user_ids_to_slug(user_ids);
     }
 
-    return internal_url.encodeHashComponent(operand);
+    return slug!;
 }
 
 export function encode_stream_id(stream_id: number): string {
@@ -132,7 +135,7 @@ export function by_channel_topic_permalink(stream_id: number, topic: string): st
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
-export function search_terms_to_hash(terms?: NarrowTerm[]): string {
+export function search_terms_to_hash(terms?: NarrowCanonicalTerm[]): string {
     // Note: This does not return the correct hash for combined feed, recent and inbox view.
     // These views can have multiple hashes that lead to them, so this function cannot support them.
     let hash = "#";
@@ -143,7 +146,6 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
         for (const term of terms) {
             // Support legacy tuples.
             const operator = util.canonicalize_channel_synonyms(term.operator);
-            const operand = term.operand;
 
             const sign = term.negated ? "-" : "";
             hash +=
@@ -151,15 +153,15 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
                 sign +
                 internal_url.encodeHashComponent(operator) +
                 "/" +
-                encode_operand(operator, operand);
+                encode_operand(term);
         }
     }
 
     return hash;
 }
 
-export function by_sender_url(reply_to: string): string {
-    return search_terms_to_hash([{operator: "sender", operand: reply_to}]);
+export function by_sender_url(user_id: number): string {
+    return search_terms_to_hash([{operator: "sender", operand: user_id}]);
 }
 
 export function pm_with_url(user_ids_string: string): string {
@@ -197,7 +199,7 @@ export function group_edit_url(group: UserGroup, right_side_tab: string): string
     return hash;
 }
 
-export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
+export function search_public_streams_notice_url(terms: NarrowCanonicalTerm[]): string {
     const public_operator: NarrowTerm = {operator: "channels", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
 }
@@ -387,14 +389,8 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
         ) {
             return null;
         }
-        if (people.is_valid_bulk_emails_for_compose(terms[0].operand.split(","))) {
-            const user_ids = people.emails_strings_to_user_ids_array(terms[0].operand);
-            if (!user_ids) {
-                return null;
-            }
-            return user_ids;
-        }
-        return null;
+        assert(terms[0].operator === "dm");
+        return terms[0].operand;
     } catch {
         return null;
     }

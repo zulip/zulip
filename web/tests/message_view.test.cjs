@@ -211,7 +211,7 @@ run_test("urls", () => {
     url = hash_util.direct_message_group_with_url("22,23");
     assert.equal(url, "#narrow/dm/22,23-group");
 
-    url = hash_util.by_sender_url(ray.email);
+    url = hash_util.by_sender_url(ray.user_id);
     assert.equal(url, "#narrow/sender/22-Raymond");
 
     let emails = hash_util.decode_operand("dm", "22,23-group");

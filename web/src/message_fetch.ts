@@ -333,10 +333,16 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 }
 
 export function get_narrow_for_message_fetch(filter: Filter): string {
-    let narrow_data: NarrowTerm[] = [];
+    // narrow_data is different from `NarrowTerm[]` because we
+    // expand `dm-including` operators into multiple terms here.
+    let narrow_data: {
+        operator: NarrowTerm["operator"];
+        operand: NarrowTerm["operand"];
+        negated?: boolean | undefined;
+    }[] = [];
     for (const term of filter.public_terms()) {
         if (term.operator === "dm-including") {
-            for (const operand of term.operand.split(",")) {
+            for (const operand of term.operand) {
                 narrow_data.push({
                     ...term,
                     operand,
