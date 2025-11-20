@@ -186,17 +186,17 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#subscription_overlay .subscription_settings .sub-stream-name",
+        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "top",
         onShow(instance) {
-            const stream_name_element = instance.reference;
-            assert(stream_name_element instanceof HTMLElement);
-            // Only show tooltip if the stream name is truncated.
+            const name_element = instance.reference;
+            assert(name_element instanceof HTMLElement);
+            // Only show tooltip if the stream or group name is truncated.
             // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
             // for more details.
-            if (stream_name_element.offsetWidth >= stream_name_element.scrollWidth) {
+            if (name_element.offsetWidth >= name_element.scrollWidth) {
                 return false;
             }
 
