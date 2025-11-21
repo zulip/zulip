@@ -669,26 +669,22 @@ class Realm(models.Model):
             "name": gettext_lazy("GIPHY integration disabled"),
             "id": 0,
         },
-        # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
-        "y": {
-            "name": gettext_lazy("Allow GIFs rated Y (Very young audience)"),
-            "id": 1,
-        },
+        # Source: https://developers.giphy.com/docs/optional-settings/#rating
         "g": {
             "name": gettext_lazy("Allow GIFs rated G (General audience)"),
-            "id": 2,
+            "id": 1,
         },
         "pg": {
             "name": gettext_lazy("Allow GIFs rated PG (Parental guidance)"),
-            "id": 3,
+            "id": 2,
         },
         "pg-13": {
             "name": gettext_lazy("Allow GIFs rated PG-13 (Parental guidance - under 13)"),
-            "id": 4,
+            "id": 3,
         },
         "r": {
             "name": gettext_lazy("Allow GIFs rated R (Restricted)"),
-            "id": 5,
+            "id": 4,
         },
     }
 
