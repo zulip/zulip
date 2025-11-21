@@ -45,7 +45,7 @@ export function update_giphy_rating(): void {
 
 function get_rating(): Rating {
     const options = realm.giphy_rating_options;
-    for (const rating of ["pg", "g", "y", "pg-13", "r"] as const) {
+    for (const rating of ["pg", "g", "pg-13", "r"] as const) {
         if (options[rating]?.id === realm.realm_giphy_rating) {
             return rating;
         }
