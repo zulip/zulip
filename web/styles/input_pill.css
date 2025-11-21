@@ -51,6 +51,12 @@
             }
         }
 
+        /* Ensure a hover state on pills that can be clicked
+           to reveal a user card. */
+        &.view_user_profile:hover {
+            background-color: var(--color-background-input-pill-hover);
+        }
+
         .pill-image {
             height: var(--height-input-pill);
             width: var(--height-input-pill);
