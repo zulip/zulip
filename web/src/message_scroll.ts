@@ -15,6 +15,7 @@ import * as unread_ui from "./unread_ui.ts";
 import {the} from "./util.ts";
 
 let hide_scroll_to_bottom_timer: ReturnType<typeof setTimeout> | undefined;
+let scroll_finished_timer: ReturnType<typeof setTimeout> | undefined;
 export function hide_scroll_to_bottom(): void {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
     if (message_lists.current === undefined) {
@@ -68,6 +69,9 @@ $(document).on("keydown", (e) => {
 });
 
 export function scroll_finished(): void {
+    scroll_finished_timer = setTimeout(() => {
+        $("#scroll-to-bottom-button").addClass("scroll-finished");
+    }, 500);
     message_scroll_state.set_actively_scrolling(false);
     hide_scroll_to_bottom();
 
@@ -135,6 +139,8 @@ function scroll_finish(): void {
     }
     message_scroll_state.set_keyboard_triggered_current_scroll(false);
 
+    clearTimeout(scroll_finished_timer);
+    $("#scroll-to-bottom-button").removeClass("scroll-finished");
     clearTimeout(scroll_timer);
     scroll_timer = setTimeout(scroll_finished, 100);
 }
