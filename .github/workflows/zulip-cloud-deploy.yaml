@@ -27,6 +27,8 @@ permissions:
 jobs:
   build-messages:
     runs-on: ubuntu-latest
+    outputs:
+      filenames: ${{ steps.set-matrix.outputs.filenames }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
