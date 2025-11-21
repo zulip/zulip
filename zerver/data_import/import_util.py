@@ -880,8 +880,9 @@ class AttachmentLinkResult:
 def get_attachment_path_and_content(
     link_name: str, filename: str, realm_id: int
 ) -> AttachmentLinkResult:
-    # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
-    # 'upload_message_attachment'
+    # Since the files will be remapped during import, the layout is
+    # for the most part arbitrary. They are split into 256 subdirectories
+    # to prevent directories from getting to big.
     path_id = "/".join(
         [
             str(realm_id),
