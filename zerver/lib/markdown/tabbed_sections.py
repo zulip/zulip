@@ -128,6 +128,8 @@ TAB_SECTION_LABELS = {
     "for-yourself": "For yourself",
     "new-organizations": "New organizations",
     "imported-organizations": "Imported organizations",
+    "grafana-latest": "Grafana 8.3+",
+    "grafana-older-version": "Grafana 8.2 and below",
 }
 
 
