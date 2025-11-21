@@ -42,6 +42,13 @@ from zproject.backends import all_default_backend_names
 # stubs
 ZerverFieldsT: TypeAlias = dict[str, Any]
 
+
+@dataclass
+class AttachmentLinkResult:
+    path_id: str
+    markdown_link: str
+
+
 DATA_IMPORT_CLIENTS = {
     # Match low ID clients in zerver/lib/server_initialization.py.
     # This has no functional impact other than ensuring low IDs.
@@ -884,7 +891,7 @@ def get_data_file(path: str) -> Any:
 
 def get_attachment_path_and_content(
     link_name: str, filename: str, realm_id: int
-) -> tuple[str, str]:
+) -> AttachmentLinkResult:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
     # 'upload_message_attachment'
     s3_path = "/".join(
@@ -898,4 +905,4 @@ def get_attachment_path_and_content(
     attachment_path = f"/user_uploads/{s3_path}"
     content = f"[{link_name}]({attachment_path})"
 
-    return s3_path, content
+    return AttachmentLinkResult(path_id=s3_path, markdown_link=content)

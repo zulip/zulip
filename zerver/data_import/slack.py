@@ -1320,10 +1320,10 @@ def process_message_files(
             has_link = True
             has_image = "image" in fileinfo["mimetype"]
 
-            s3_path, content_for_link = get_attachment_path_and_content(
+            attachment_data = get_attachment_path_and_content(
                 link_name=fileinfo["title"], filename=fileinfo["name"], realm_id=realm_id
             )
-            markdown_links.append(content_for_link)
+            markdown_links.append(attachment_data.markdown_link)
 
             uploads_list.append(
                 UploadRecordData(
@@ -1332,7 +1332,7 @@ def process_message_files(
                     # Save Slack's URL here, which is used later while processing
                     path=fileinfo["url_private"],
                     realm_id=realm_id,
-                    s3_path=s3_path,
+                    s3_path=attachment_data.path_id,
                     size=fileinfo["size"],
                     user_profile_id=slack_user_id_to_zulip_user_id[slack_user_id],
                 )
@@ -1343,7 +1343,7 @@ def process_message_files(
                 {message_id},
                 slack_user_id_to_zulip_user_id[slack_user_id],
                 fileinfo,
-                s3_path,
+                attachment_data.path_id,
                 zerver_attachment,
             )
         else:
