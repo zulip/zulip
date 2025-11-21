@@ -1296,15 +1296,12 @@ run_test("remove-banners", () => {
     const $banner1 = $.create("banner1");
     $banner1.attr("data-user-id", 1);
     $banner1.attr("data-name", "Iago");
-    $banner1.remove = () => {
-        $banner1.attr("removed", true); // for assertion
-    };
 
     const $banner2 = $.create("banner2");
     $banner2.attr("data-user-id", 2);
     $banner2.attr("data-name", "Desdemona");
     $banner2.remove = () => {
-        $banner2.attr("removed", true); // for assertion
+        $banner2.attr("removed", true);
     };
 
     $banner_container.set_find_results(
