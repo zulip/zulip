@@ -3,11 +3,13 @@ from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urljoin
 
+import dateutil.parser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -24,7 +26,7 @@ MESSAGE_EVENT_TEMPLATE = """
 **New message event:** [{title}]({web_link})
 ```quote
 **level:** {level}
-**timestamp:** <time:{datetime}>
+**timestamp:** {global_time}
 ```
 """
 
@@ -32,7 +34,7 @@ EXCEPTION_EVENT_TEMPLATE = """
 **New exception:** [{title}]({web_link})
 ```quote
 **level:** {level}
-**timestamp:** <time:{datetime}>
+**timestamp:** {global_time}
 **filename:** {filename}
 ```
 """
@@ -53,7 +55,7 @@ ISSUE_CREATED_MESSAGE_TEMPLATE = """
 **New issue created:** {title}
 ```quote
 **level:** {level}
-**timestamp:** <time:{datetime}>
+**timestamp:** {global_time}
 **assignee:** {assignee}
 ```
 """
@@ -79,6 +81,11 @@ syntax_highlight_as_map = {
     "python": "python3",
     "ruby": "ruby",
 }
+
+
+def get_global_time(dt_str: str) -> str:
+    dt = dateutil.parser.parse(dt_str)
+    return datetime_to_global_time(dt)
 
 
 def is_sample_event(event: dict[str, Any]) -> bool:
@@ -120,7 +127,7 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
         "title": topic_name,
         "level": event["level"],
         "web_link": event["web_url"],
-        "datetime": event["datetime"].split(".")[0].replace("T", " "),
+        "global_time": get_global_time(event["datetime"]),
     }
 
     if "exception" in event:
@@ -186,7 +193,7 @@ def handle_issue_payload(
 ) -> tuple[str, str]:
     """Handle either an issue type event."""
     topic_name = issue["title"]
-    datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
+    global_time = get_global_time(issue["lastSeen"])
 
     if issue["assignedTo"]:
         if issue["assignedTo"]["type"] == "team":
@@ -200,7 +207,7 @@ def handle_issue_payload(
         context = {
             "title": topic_name,
             "level": issue["level"],
-            "datetime": datetime,
+            "global_time": global_time,
             "assignee": assignee,
         }
         body = ISSUE_CREATED_MESSAGE_TEMPLATE.format(**context)
