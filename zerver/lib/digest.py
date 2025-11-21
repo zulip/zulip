@@ -17,6 +17,7 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
 from zerver.lib.email_notifications import (
     build_message_list,
+    get_channel_privacy_icon,
     message_content_allowed_in_missedmessage_emails,
 )
 from zerver.lib.logging_util import log_to_file
@@ -266,8 +267,12 @@ def gather_new_streams(
 
     for stream in new_streams:
         narrow_url = stream_narrow_url(realm, stream)
-        channel_link = Markup("<a href='{narrow_url}'>{stream_name}</a>").format(
-            narrow_url=narrow_url, stream_name=stream.name
+        channel_link = Markup(
+            "<a href='{narrow_url}'>{channel_privacy_icon}{stream_name}</a>"
+        ).format(
+            narrow_url=narrow_url,
+            channel_privacy_icon=get_channel_privacy_icon(stream),
+            stream_name=stream.name,
         )
         channels_html.append(channel_link)
         channels_plain.append(stream.name)

@@ -217,6 +217,18 @@ def add_quote_prefix_in_text(content: str) -> str:
     return "\n".join(output)
 
 
+def get_channel_privacy_icon(channel: Stream) -> str:
+    """
+    Return the relevant icon for given channel.
+    """
+    # TODO: Implement emoji icons (🔒, 🌍, etc.) here.
+    #       Emojis were approved in #design > digest email design; when working
+    #       on this, include comments to keep this logic consistent with the
+    #       web app and avoid future drift.
+
+    return "#"
+
+
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
@@ -301,12 +313,14 @@ def build_message_list(
             stream=stream,
             topic_name=message.topic_name(),
         )
-        header = f"{stream.name} > {message.topic_name()}"
+        channel_privacy_icon = get_channel_privacy_icon(stream)
+        header = f"{channel_privacy_icon}{stream.name} > {message.topic_name()}"
         stream_link = stream_narrow_url(user.realm, stream)
         header_html = Markup(
-            "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+            "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
         ).format(
             stream_link=stream_link,
+            channel_privacy_icon=channel_privacy_icon,
             stream_name=stream.name,
             narrow_link=narrow_link,
             topic_name=message.topic_name(),
