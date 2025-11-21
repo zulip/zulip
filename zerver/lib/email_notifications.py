@@ -221,12 +221,11 @@ def build_message_list(
     user: UserProfile,
     messages: list[Message],
     stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
-) -> list[dict[str, Any]]:
+) -> dict[str, Any]:
     """
     Builds the message list object for the message notification email and
     digest email template. All `messages` share the same recipient (and topic).
     """
-    messages_to_render: list[dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
         if message.recipient.type == Recipient.STREAM:
@@ -342,54 +341,37 @@ def build_message_list(
             "html": header_html,
         }
 
-    # # Collapse message list to
-    # [
-    #    {
-    #       "header": {
-    #                   "plain":"header",
-    #                   "html":"htmlheader"
-    #                 }
-    #       "senders":[
-    #          {
-    #             "sender":"sender_name",
-    #             "content":[
-    #                {
-    #                   "plain":"content",
-    #                   "html":"htmlcontent"
-    #                }
-    #                {
-    #                   "plain":"content",
-    #                   "html":"htmlcontent"
-    #                }
-    #             ]
-    #          }
-    #       ]
-    #    },
-    # ]
+    # Collapse message list to:
+    # {
+    #     "header": {"plain": "header", "html": "htmlheader"},
+    #     "senders": [
+    #         {
+    #             "sender": "sender_name",
+    #             "content": [
+    #                 {"plain": "content", "html": "htmlcontent"},
+    #                 {"plain": "content", "html": "htmlcontent"},
+    #             ],
+    #         }
+    #     ],
+    # }
 
     assert len(messages) > 0
     recipients = {(message.recipient_id, message.topic_name().lower()) for message in messages}
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
-    header = message_header(messages[0])
     messages.sort(key=lambda message: message.date_sent)
 
-    for message in messages:
-        # If we want to collapse into the previous recipient block
-        if len(messages_to_render) > 0:
-            sender = sender_string(message)
-            sender_block = messages_to_render[-1]["senders"]
+    header = message_header(messages[0])
+    sender_block = [build_sender_payload(messages[0])]
+    messages_to_render = {"header": header, "senders": sender_block}
 
-            # Same message sender, collapse again
-            if sender_block[-1]["sender"] == sender:
-                sender_block[-1]["content"].append(build_message_payload(message))
-            else:
-                # Start a new sender block
-                sender_block.append(build_sender_payload(message))
+    for message in messages[1:]:
+        sender = sender_string(message)
+        # Same message sender, collapse again
+        if sender_block[-1]["sender"] == sender:
+            sender_block[-1]["content"].append(build_message_payload(message))
         else:
-            # New recipient and sender block
-            recipient_block = {"header": header, "senders": [build_sender_payload(message)]}
-
-            messages_to_render.append(recipient_block)
+            # Start a new sender block
+            sender_block.append(build_sender_payload(message))
 
     return messages_to_render
 
