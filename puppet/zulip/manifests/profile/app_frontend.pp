@@ -39,11 +39,15 @@ class zulip::profile::app_frontend {
     require => Package[certbot],
   }
   file { '/etc/letsencrypt/renewal-hooks/deploy/001-nginx.sh':
+    # This was renumbered
+    ensure => absent,
+  }
+  file { '/etc/letsencrypt/renewal-hooks/deploy/050-nginx.sh':
     ensure  => file,
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    source  => 'puppet:///modules/zulip/letsencrypt/nginx-deploy-hook.sh',
+    source  => 'puppet:///modules/zulip/letsencrypt/050-nginx.sh',
     require => Package[certbot],
   }
 
