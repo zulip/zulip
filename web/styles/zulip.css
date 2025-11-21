@@ -2135,20 +2135,37 @@ body:not(.spectator-view) {
         cursor: pointer;
 
         &:hover #scroll-to-bottom-button {
-            background: hsl(240deg 96% 68%);
+            background-color: var(
+                --color-background-info-icon-button-square-hover
+            );
+
+            & .scroll-to-bottom-icon {
+                color: var(--color-text-info-icon-button-hover);
+            }
+        }
+
+        &:active #scroll-to-bottom-button {
+            background-color: var(
+                --color-background-info-icon-button-square-active
+            );
+
+            & .scroll-to-bottom-icon {
+                color: var(--color-text-info-icon-button-square-active);
+            }
         }
 
         #scroll-to-bottom-button {
             text-align: center;
             width: 2.5em; /* 40px at 16px em */
             height: 2.5em; /* 40px at 16px em */
-            background: hsl(240deg 96% 68% / 50%);
+            background-color: var(--color-background-message-feed);
             border-radius: 50%;
             display: flex;
             align-items: center;
+            box-shadow: 0 0 4px 0 hsl(0deg 0% 0% / 10%);
 
             & .scroll-to-bottom-icon {
-                color: hsl(0deg 0% 100%);
+                color: var(--color-text-info-icon-button);
                 margin: 0 auto;
                 font-size: 1.3125em; /* 21px at 16px em */
             }
