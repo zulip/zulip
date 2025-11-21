@@ -49,6 +49,7 @@ jobs:
         run: |
           BASE="${{ inputs.before || github.event.before }}"
           HEAD="${{ inputs.after || github.event.after }}"
+          set -o pipefail
 
           mkdir closed-by-commits-output
           ./tools/closed-by-commits "$BASE" "$HEAD" \
