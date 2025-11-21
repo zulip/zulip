@@ -557,7 +557,7 @@ export function unsaved_message_user_mention_event_handler(
     this: HTMLElement,
     e: JQuery.ClickEvent,
 ): void {
-    if (document.getSelection()?.type === "Range") {
+    if (mouse_drag.is_drag(e)) {
         return;
     }
 
