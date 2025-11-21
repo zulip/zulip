@@ -1140,12 +1140,8 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     | {"email", "onyx"}
     # Video call integrations
     | {"big-blue-button", "jitsi", "zoom"}
-    | {
-        # the integration does not send messages
-        "giphy",
-        # the integration is planned to be removed
-        "twitter",
-    }
+    # integrations that do not send messages
+    | {"giphy"}
 )
 
 NO_SCREENSHOT_CONFIG = INTEGRATIONS_MISSING_SCREENSHOT_CONFIG | INTEGRATIONS_WITHOUT_SCREENSHOTS
