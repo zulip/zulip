@@ -1,10 +1,10 @@
 {% if show_message_content %}
 {% if hot_conversations %}
-{% for convo in hot_conversations %}{% for recipient_block in convo.first_few_messages %}{{ recipient_block.header.plain }}
+{% for convo in hot_conversations %}{% with recipient_block=convo.first_few_messages %}{{ recipient_block.header.plain }}
 {% for sender_block in recipient_block.senders %}
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}{% endfor %}
-{% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.{% endif %}{% endfor %}{% endfor %}{% endif %}
+{% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.{% endif %}{% endwith %}{% endfor %}{% endif %}
 
 {% if new_channels.plain %}** {% trans %}New channels{% endtrans %} **
     {{ new_channels.plain|display_list(1000) }}.

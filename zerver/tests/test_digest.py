@@ -75,7 +75,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         self.assertEqual(set(hot_convo["participants"]), expected_participants)
         self.assertEqual(hot_convo["count"], 5 - 2)  # 5 messages, but 2 shown
-        teaser_messages = hot_convo["first_few_messages"][0]["senders"]
+        teaser_messages = hot_convo["first_few_messages"]["senders"]
         self.assertIn("some content", teaser_messages[0]["content"][0]["plain"])
         self.assertIn(teaser_messages[0]["sender"], expected_participants)
 
@@ -276,7 +276,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
             self.assertEqual(set(hot_convo["participants"]), expected_participants)
             self.assertEqual(hot_convo["count"], 5 - 2)  # 5 messages, but 2 shown
-            teaser_messages = hot_convo["first_few_messages"][0]["senders"]
+            teaser_messages = hot_convo["first_few_messages"]["senders"]
             self.assertIn("some content", teaser_messages[0]["content"][0]["plain"])
             self.assertIn(teaser_messages[0]["sender"], expected_participants)
 
