@@ -345,7 +345,6 @@ def build_message_list(
             "grouping": grouping,
             "plain": header,
             "html": header_html,
-            "stream_message": message.recipient.type_name() == "stream",
         }
 
     # # Collapse message list to
