@@ -364,14 +364,19 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         admin = self.example_user("iago")
         bot = self.notification_bot(admin.realm)
+        # Check that original owner of the notification bot is the bot itself.
+        self.assertEqual(bot.bot_owner, bot)
         bot_owner = self.example_user("hamlet")
         do_change_bot_owner(bot, bot_owner, admin)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED, event_time__gte=now
-            ).count(),
-            1,
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED, event_time__gte=now
         )
+        self.assertEqual(audit_log_entries.count(), 1)
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: bot.id,
+            RealmAuditLog.NEW_VALUE: bot_owner.id,
+        }
+        self.assertEqual(audit_log_entries[0].extra_data, expected_extra_data)
         self.assertEqual(bot_owner, bot.bot_owner)
 
     def test_regenerate_api_key(self) -> None:
