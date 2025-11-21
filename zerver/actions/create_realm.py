@@ -222,6 +222,12 @@ def do_create_realm(
         assert not settings.PRODUCTION
         kwargs["date_created"] = date_created
 
+    if is_demo_organization:
+        # To enable creating demo organizations, a deadline of the number
+        # of days after creation that a demo organization should be deleted
+        # needs to be set on the server.
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+
     # Generally, closed organizations like companies want read
     # receipts, whereas it's unclear what an open organization's
     # preferences will be. We enable the setting by default only for
@@ -241,6 +247,7 @@ def do_create_realm(
     with transaction.atomic(durable=True):
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
+            assert settings.DEMO_ORG_DEADLINE_DAYS is not None
             realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
                 days=settings.DEMO_ORG_DEADLINE_DAYS
             )

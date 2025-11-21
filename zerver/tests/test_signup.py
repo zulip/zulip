@@ -1372,7 +1372,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
 
 class DemoCreationTest(ZulipTestCase):
-    @override_settings(OPEN_REALM_CREATION=True)
+    @override_settings(OPEN_REALM_CREATION=True, DEMO_ORG_DEADLINE_DAYS=30)
     def test_create_demo_organization(self) -> None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
@@ -1389,9 +1389,7 @@ class DemoCreationTest(ZulipTestCase):
 
         self.assertIn("demo-", realm.string_id)
         self.assertIn("demo test", realm.name)
-        expected_deletion_date = realm.date_created + timedelta(
-            days=settings.DEMO_ORG_DEADLINE_DAYS
-        )
+        expected_deletion_date = realm.date_created + timedelta(days=30)
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
@@ -1540,14 +1538,7 @@ class DemoCreationTest(ZulipTestCase):
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("Demo organizations are not enabled on this server.", result)
 
-        with self.settings(OPEN_REALM_CREATION=True, CORPORATE_ENABLED=False):
-            result = self.submit_demo_creation_form("demo test")
-            self.assertEqual(result.status_code, 200)
-            self.assert_in_response("Demo organizations are not enabled on this server.", result)
-
-        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
-        # to be fully implemented.
-        with self.settings(OPEN_REALM_CREATION=True, CORPORATE_ENABLED=True, DEVELOPMENT=False):
+        with self.settings(DEMO_ORG_DEADLINE_DAYS=None):
             result = self.submit_demo_creation_form("demo test")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("Demo organizations are not enabled on this server.", result)
@@ -4719,7 +4710,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(
             user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
-
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
         expected_deletion_date = realm.date_created + timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
