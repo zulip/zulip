@@ -72,18 +72,6 @@ export function maybe_update_error_message(): void {
     stream_name_error.pre_validate(stream_name);
 }
 
-const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
-    ["can_add_subscribers_group", null],
-    ["can_administer_channel_group", null],
-    ["can_delete_any_message_group", null],
-    ["can_delete_own_message_group", null],
-    ["can_move_messages_out_of_channel_group", null],
-    ["can_move_messages_within_channel_group", null],
-    ["can_remove_subscribers_group", null],
-    ["can_resolve_topics_group", null],
-    ["can_send_message_group", null],
-]);
-
 class StreamSubscriptionError {
     report_no_subs_to_stream(): void {
         $("#stream_subscription_error").text(
@@ -207,7 +195,8 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
     let is_any_stream_group_widget_pending = false;
     const permission_settings = Object.keys(realm.server_supported_permission_settings.stream);
     for (const setting_name of permission_settings) {
-        const widget = group_setting_widget_map.get(setting_name);
+        const widget =
+            stream_settings_components.get_group_setting_widget_for_new_stream(setting_name);
         assert(widget !== undefined);
         assert(widget !== null);
         if (widget.is_pending()) {
@@ -559,6 +548,7 @@ export function show_new_stream_modal(): void {
     stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_option_state($("#stream-creation"));
     stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -571,8 +561,21 @@ function set_up_group_setting_widgets(): void {
                 $pill_container: $("#id_new_" + setting_name),
                 setting_name: stream_permission_group_settings_schema.parse(setting_name),
             });
-        group_setting_widget_map.set(setting_name, group_setting_widgets[setting_name]);
+        stream_settings_components.set_group_setting_widget_for_new_stream(
+            setting_name,
+            group_setting_widgets[setting_name],
+        );
     }
+
+    // Enable or disable protected history stream privacy option when
+    // can_create_topic_group setting is updated.
+    const can_create_topic_group_widget = group_setting_widgets.can_create_topic_group!;
+    can_create_topic_group_widget.onPillCreate(() => {
+        stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    });
+    can_create_topic_group_widget.onPillRemove(() => {
+        stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    });
 }
 
 export function set_up_handlers(): void {
@@ -589,6 +592,7 @@ export function set_up_handlers(): void {
         update_announce_stream_state();
         stream_ui_updates.update_default_stream_option_state($container);
         stream_ui_updates.update_can_subscribe_group_label($container);
+        stream_ui_updates.update_can_create_topic_group_setting_state($container);
     });
 
     $container.on("change", ".default-stream input", () => {
