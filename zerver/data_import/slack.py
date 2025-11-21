@@ -1272,7 +1272,7 @@ def process_message_files(
                     # Save Slack's URL here, which is used later while processing
                     path=fileinfo["url_private"],
                     realm_id=realm_id,
-                    s3_path=attachment_data.path,
+                    s3_path=attachment_data.url,
                     size=fileinfo["size"],
                     user_profile_id=slack_user_id_to_zulip_user_id[slack_user_id],
                 )
@@ -1283,7 +1283,7 @@ def process_message_files(
                 {message_id},
                 slack_user_id_to_zulip_user_id[slack_user_id],
                 fileinfo,
-                attachment_data.path,
+                attachment_data.url,
                 zerver_attachment,
             )
         else:
