@@ -87,7 +87,8 @@
         "./src/bundles/portico.ts",
         "./src/portico/integrations.ts",
         "./styles/portico/landing_page.css",
-        "./styles/portico/integrations.css"
+        "./styles/portico/integrations.css",
+        "./src/portico/help.ts"
     ],
     "communities": [
         "./src/bundles/portico.ts",
