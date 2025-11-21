@@ -24,6 +24,7 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
@@ -344,11 +345,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
                     sender,
                     target_realm=realm,
                 )
-                # Our markdown has no escaping, so we cannot link any
-                # text containing brackets; strip them from the
-                # filename we're linking.
-                filename = re.sub(r"\[|\]", "", filename)
-                formatted_link = f"[{filename}]({upload_url})"
+                formatted_link = get_markdown_link_for_url(filename, upload_url)
                 attachment_links.append(formatted_link)
             else:
                 logger.warning(
