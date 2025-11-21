@@ -404,6 +404,7 @@
 
     .inbox-header-stream-archived {
         color: var(--color-text-message-header-archived);
+        margin-left: 0.3125em; /* 5px at 16px em */
     }
 }
 
