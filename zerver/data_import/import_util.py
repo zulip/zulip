@@ -18,6 +18,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.email_mirror import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
 from zerver.lib.parallel import run_parallel
@@ -887,6 +888,6 @@ def get_attachment_path_and_content(
         ]
     )
     attachment_path = f"/user_uploads/{s3_path}"
-    content = f"[{link_name}]({attachment_path})"
+    markdown_link = get_markdown_link_for_url(link_name, attachment_path)
 
-    return AttachmentLinkResult(path=s3_path, markdown_link=content)
+    return AttachmentLinkResult(path=s3_path, markdown_link=markdown_link)
