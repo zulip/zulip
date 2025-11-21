@@ -349,15 +349,18 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_tos_version(self) -> None:
         now = timezone_now()
         user = self.example_user("hamlet")
+        old_tos_version = user.tos_version
         tos_version = "android"
         do_change_tos_version(user, tos_version)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
-                event_time__gte=now,
-            ).count(),
-            1,
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED, event_time__gte=now
         )
+        self.assertEqual(audit_log_entries.count(), 1)
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: old_tos_version,
+            RealmAuditLog.NEW_VALUE: tos_version,
+        }
+        self.assertEqual(audit_log_entries[0].extra_data, expected_extra_data)
         self.assertEqual(tos_version, user.tos_version)
 
     def test_change_bot_owner(self) -> None:
