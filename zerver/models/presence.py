@@ -11,13 +11,6 @@ from zerver.models.users import UserProfile
 class UserPresence(models.Model):
     """A record from the last time we heard from a given user on a given client.
 
-    This is the core table for Zulip's presence API, which consists of two components:
-    1) The update-presence endpoint, which is used for clients to update their presence
-       status and fetch latest presence data the whole realm:
-       https://zulip.com/api/update-presence
-    2) The events system is used to send limited immediate updates when
-       a user comes back online: https://zulip.com/api/get-events#presence
-
     NOTE: Users can disable updates to this table (see UserProfile.presence_enabled),
     so this cannot be used to determine if a user was recently active on Zulip.
     The UserActivity table is recommended for that purpose.
@@ -36,8 +29,6 @@ class UserPresence(models.Model):
     # the row gets last_update_id equal to 1 more than the previously updated
     # row in that realm.
     # This allows us to order UserPresence rows by when they were last updated.
-    # The API side of this functionality is documented at:
-    # https://zulip.com/api/update-presence#parameter-last_update_id
     last_update_id = models.PositiveBigIntegerField(db_index=True, default=0)
 
     # The last time the user had a client connected to Zulip,

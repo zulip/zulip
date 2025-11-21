@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -41,7 +41,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,

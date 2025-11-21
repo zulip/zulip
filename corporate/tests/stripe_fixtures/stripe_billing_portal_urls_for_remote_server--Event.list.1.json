@@ -1,12 +1,12 @@
 {
   "data": [
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
-          "amount_paid": 176000,
-          "amount_requested": 176000,
+          "amount_paid": 51600,
+          "amount_requested": 51600,
           "created": 1000000000,
           "currency": "usd",
           "id": "stripe_billing_portal_urls_for_remote_server--Event.list.1.json",

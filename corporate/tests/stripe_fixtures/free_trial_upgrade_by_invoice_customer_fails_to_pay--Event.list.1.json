@@ -1,11 +1,11 @@
 {
   "data": [
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
-          "amount": 56000,
+          "amount": 984000,
           "amount_capturable": 0,
           "amount_details": {
             "tip": {}
@@ -34,9 +34,9 @@
           "on_behalf_of": null,
           "payment_details": {
             "customer_reference": null,
-            "order_reference": "in_1SVX4CDwzgQ85STgmZPeNm"
+            "order_reference": "in_1SSdOgRVfKEFJaqcc9uev4"
           },
-          "payment_method": null,
+          "payment_method": "pm_NORMALIZED",
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {

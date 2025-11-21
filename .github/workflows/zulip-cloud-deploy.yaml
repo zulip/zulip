@@ -4,20 +4,6 @@ on:
   push:
     branches:
       - zulip-cloud-current
-  workflow_dispatch:
-    inputs:
-      before:
-        description: "Old commit-ish"
-        required: true
-      after:
-        description: "New commit-ish"
-        required: true
-      stream:
-        description: "Stream to send to"
-        default: "zulip cloud"
-      topic:
-        description: "Topic to send to"
-        default: "latest deploy"
 
 permissions:
   contents: read
@@ -25,7 +11,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  build-messages:
+  zulip-cloud-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -47,56 +33,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BASE="${{ inputs.before || github.event.before }}"
-          HEAD="${{ inputs.after || github.event.after }}"
-          set -o pipefail
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.event.after }}"
 
-          mkdir closed-by-commits-output
-          ./tools/closed-by-commits "$BASE" "$HEAD" \
-            | perl -ple 'undef $/;s/\n\n/\x00/g' \
-            | split -t '\0' -C 5000 -d - closed-by-commits-output/message-
-          perl -pi -e 's/\00/\n\n/g' closed-by-commits-output/message-*
-
-      - name: Upload messages as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: closed-by-commits-output
-          path: closed-by-commits-output/
-
-      - name: Store filename list for matrix
-        id: set-matrix
-        run: |
-          cd closed-by-commits-output/
-          echo "filenames=$(ls | jq -Rnc '[inputs]')" >> $GITHUB_OUTPUT
-
-  send-messages:
-    needs: build-messages
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        filename: ${{ fromJson(needs.build-messages.outputs.filenames) }}
-    if: success() && ${{github.repository == 'zulip/zulip'}}
-    steps:
-      - name: Download messages as artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: closed-by-commits-output
-          path: closed-by-commits-output/
-
-      - name: Read message contents
-        id: read-file
-        run: |
+          ./tools/closed-by-commits "$BASE" "$HEAD" | tee release_notes.md
           echo "content<<EOF" >> $GITHUB_OUTPUT
-          cat closed-by-commits-output/${{ matrix.filename }} >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Send to Zulip
+        if: ${{github.repository == 'zulip/zulip'}}
         uses: zulip/github-actions-zulip/send-message@v1
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
           organization-url: "https://chat.zulip.org"
-          to: "${{ inputs.stream || 'zulip cloud' }}"
-          topic: "${{ inputs.topic || 'latest deploy' }}"
+          to: "zulip cloud"
+          topic: "latest deploy"
           type: "stream"
-          content: ${{ steps.read-file.outputs.content }}
+          content: ${{ steps.generate.outputs.content }}

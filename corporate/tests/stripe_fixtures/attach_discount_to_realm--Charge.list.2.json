@@ -58,7 +58,7 @@
       "payment_method_details": {
         "card": {
           "amount_authorized": 36000,
-          "authorization_code": "906978",
+          "authorization_code": "393148",
           "brand": "visa",
           "checks": {
             "address_line1_check": "pass",
@@ -86,7 +86,7 @@
           "network_token": {
             "used": false
           },
-          "network_transaction_id": "749857738210088",
+          "network_transaction_id": "100110997670110",
           "overcapture": {
             "maximum_amount_capturable": 36000,
             "status": "unavailable"
@@ -170,7 +170,7 @@
       "payment_method_details": {
         "card": {
           "amount_authorized": 7200,
-          "authorization_code": "691896",
+          "authorization_code": "281255",
           "brand": "visa",
           "checks": {
             "address_line1_check": "pass",
@@ -198,7 +198,7 @@
           "network_token": {
             "used": false
           },
-          "network_transaction_id": "749857738210088",
+          "network_transaction_id": "100110997670110",
           "overcapture": {
             "maximum_amount_capturable": 7200,
             "status": "unavailable"

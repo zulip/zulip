@@ -14,21 +14,21 @@
   },
   "billing_address_collection": "required",
   "branding_settings": {
-    "background_color": "#dbedff",
+    "background_color": "#ffffff",
     "border_style": "rounded",
-    "button_color": "#3e6bfe",
-    "display_name": "Violet Beam",
-    "font_family": "source_sans_pro",
+    "button_color": "#0074d4",
+    "display_name": "Sandbox",
+    "font_family": "default",
     "icon": {
-      "file": "file_1RxpnoDwzgQ85STgf3bBl5KY",
+      "file": "file_1RCGizRVfKEFJaqcFHPvd6rl",
       "type": "file"
     },
     "logo": {
-      "file": "file_1RxpnoDwzgQ85STgvEm4ntJu",
+      "file": "file_1RCGiyRVfKEFJaqc9ny0K376",
       "type": "file"
     }
   },
-  "cancel_url": "http://selfhosting.testserver/realm/696c2d4f-86ba-44c0-9137-8d2908ba59b6/upgrade/?manual_license_management=false&tier=1",
+  "cancel_url": "http://selfhosting.testserver/realm/99423a0a-fa84-4fd7-be9a-d10b8af15320/upgrade/?manual_license_management=false&tier=1",
   "client_reference_id": null,
   "client_secret": null,
   "collected_information": {
@@ -101,7 +101,7 @@
   "status": "open",
   "submit_type": null,
   "subscription": null,
-  "success_url": "http://selfhosting.testserver/realm/696c2d4f-86ba-44c0-9137-8d2908ba59b6/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
+  "success_url": "http://selfhosting.testserver/realm/99423a0a-fa84-4fd7-be9a-d10b8af15320/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
   "total_details": null,
   "ui_mode": "hosted",
   "url": "https://checkout.stripe.com/c/pay/cs_test_NORMALIZED",

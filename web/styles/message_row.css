@@ -836,11 +836,6 @@
     }
 }
 
-.upload-overlay-visible .edit-form {
-    position: relative;
-    z-index: var(--compose-with-upload-overlay-z-index);
-}
-
 .message_edit_content {
     max-height: var(--max-message-edit-height);
     width: 100%;

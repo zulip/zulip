@@ -77,11 +77,21 @@ def get_normal_push_event_body(payload: WildValue) -> str:
         for commit in payload["commits"]
     ]
 
+    force_push_raw = payload.get("forced")
+    force_push = bool(force_push_raw) and str(force_push_raw).lower() not in (
+        "false",
+        "0",
+        "",
+        "none",
+        "null",
+    )
+
     return get_push_commits_event_message(
         get_user_name(payload),
         compare_url,
         get_branch_name(payload),
         commits,
+        force_push=force_push,
     )
 
 

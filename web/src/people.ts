@@ -683,10 +683,7 @@ export function pm_perma_link(message: Message): string | undefined {
 }
 
 export function get_slug_from_full_name(full_name: string): string {
-    // We don't use \p{C} or \p{Cs} due to https://bugs.webkit.org/show_bug.cgi?id=267011
-    return internal_url.encodeHashComponent(
-        full_name.replaceAll(/[ "%/<>`\p{Cc}\p{Cf}\p{Co}\p{Cn}]+/gu, "-"),
-    );
+    return internal_url.encodeHashComponent(full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-"));
 }
 
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {

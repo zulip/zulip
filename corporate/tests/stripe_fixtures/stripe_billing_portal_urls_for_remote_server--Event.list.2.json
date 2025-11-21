@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -62,7 +62,7 @@
           "payment_method_details": {
             "card": {
               "amount_authorized": 176000,
-              "authorization_code": "939138",
+              "authorization_code": "251510",
               "brand": "visa",
               "checks": {
                 "address_line1_check": "pass",
@@ -90,7 +90,7 @@
               "network_token": {
                 "used": false
               },
-              "network_transaction_id": "749857738210088",
+              "network_transaction_id": "100110997670110",
               "overcapture": {
                 "maximum_amount_capturable": 176000,
                 "status": "unavailable"
@@ -128,7 +128,7 @@
       "type": "charge.succeeded"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -168,7 +168,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -336,7 +336,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -376,7 +376,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -560,7 +560,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -632,7 +632,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -672,7 +672,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -893,7 +893,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -940,7 +940,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -980,7 +980,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -1120,7 +1120,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1167,7 +1167,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1207,7 +1207,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -1294,7 +1294,7 @@
       "type": "invoice.created"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {

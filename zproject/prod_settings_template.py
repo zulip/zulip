@@ -724,9 +724,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
 # VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
 # VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "<your Zoom account ID>"
-## Set these if using a Zoom host that is not https://zoom.us.
-# VIDEO_ZOOM_OAUTH_URL = "https://zoom.example.com"
-# VIDEO_ZOOM_API_URL = "https://api.zoom.example.com"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify

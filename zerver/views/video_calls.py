@@ -2,10 +2,8 @@ import hashlib
 import json
 import logging
 import random
-from abc import ABC, abstractmethod
 from base64 import b64encode
-from typing import Any
-from urllib.parse import quote, urlencode, urljoin, urlsplit
+from urllib.parse import quote, urlencode, urljoin
 
 import requests
 from defusedxml import ElementTree
@@ -21,9 +19,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
 from pydantic import Json
-from requests import Response
 from requests_oauthlib import OAuth2Session
-from typing_extensions import TypedDict, override
+from typing_extensions import TypedDict
 
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.decorator import zulip_login_required
@@ -50,13 +47,11 @@ class VideoCallSession(OutgoingSession):
         super().__init__(role="video_calls", timeout=5)
 
 
-class InvalidVideoCallProviderTokenError(JsonableError):
-    code = ErrorCode.INVALID_VIDEO_CALL_PROVIDER_TOKEN
+class InvalidZoomTokenError(JsonableError):
+    code = ErrorCode.INVALID_ZOOM_TOKEN
 
-    def __init__(self, provider_name: str) -> None:
-        super().__init__(
-            _("Invalid {provider_name} access token").format(provider_name=provider_name)
-        )
+    def __init__(self) -> None:
+        super().__init__(_("Invalid Zoom access token"))
 
 
 class UnknownZoomUserError(JsonableError):
@@ -66,157 +61,56 @@ class UnknownZoomUserError(JsonableError):
         super().__init__(_("Unknown Zoom user email"))
 
 
-class OAuthVideoCallProvider(ABC):
-    provider_name: str = NotImplemented
-    client_id: str | None = NotImplemented
-    client_secret: str | None = NotImplemented
-    authorization_scope: str | None = NotImplemented
-    authorization_url: str = NotImplemented
-    token_url: str = NotImplemented
-    auto_refresh_url: str = NotImplemented
-    create_meeting_url: str = NotImplemented
+def get_zoom_session(user: UserProfile) -> OAuth2Session:
+    if settings.VIDEO_ZOOM_CLIENT_ID is None:
+        raise JsonableError(_("Zoom credentials have not been configured"))
 
-    @abstractmethod
-    def get_token(self, user: UserProfile) -> object | None:
-        pass
+    client_id = settings.VIDEO_ZOOM_CLIENT_ID
+    client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
 
-    @abstractmethod
-    def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
-        pass
-
-    @abstractmethod
-    def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
-        pass
-
-    def __get_session(self, user: UserProfile) -> OAuth2Session:
-        if self.client_id is None or self.client_secret is None:
-            raise JsonableError(
-                _("{provider_name} credentials have not been configured").format(
-                    provider_name=self.provider_name
-                )
-            )
-
-        return OAuth2Session(
-            self.client_id,
-            scope=self.authorization_scope,
-            redirect_uri=urljoin(
-                settings.ROOT_DOMAIN_URI, f"/calls/{self.provider_name.lower()}/complete"
-            ),
-            auto_refresh_url=self.auto_refresh_url,
-            auto_refresh_kwargs={
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
-            },
-            token=self.get_token(user),
-            token_updater=partial(self.update_token, user),
-        )
-
-    def __get_sid(self, request: HttpRequest) -> str:
-        # This is used to prevent CSRF attacks on the OAuth
-        # authentication flow.  We want this value to be unpredictable and
-        # tied to the session, but we don’t want to expose the main CSRF
-        # token directly to the server.
-
-        csrf.get_token(request)
-        # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
-        # data out of this function. 'request.META' is indeed user controlled, but
-        # post-HMAC output is no longer meaningfully controllable.
-        return mark_sanitized(
-            ""
-            if getattr(request, "_dont_enforce_csrf_checks", False)
-            else salted_hmac(
-                f"Zulip {self.provider_name.capitalize()} sid", request.META["CSRF_COOKIE"]
-            ).hexdigest()
-        )
-
-    def register_user(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
-        assert isinstance(request.user, UserProfile)
-        oauth = self.__get_session(request.user)
-        authorization_url, _state = oauth.authorization_url(
-            self.authorization_url,
-            state=json.dumps(
-                {"realm": get_subdomain(request), "sid": self.__get_sid(request)},
-            ),
-            **kwargs,
-        )
-        return redirect(authorization_url)
-
-    def complete_user(
-        self, request: HttpRequest, sid: str, code: str, **kwargs: Any
-    ) -> HttpResponse:
-        if not constant_time_compare(sid, self.__get_sid(request)):
-            raise JsonableError(
-                _("Invalid {provider_name} session identifier").format(
-                    provider_name=self.provider_name
-                )
-            )
-        assert isinstance(request.user, UserProfile)
-        oauth = self.__get_session(request.user)
-        try:
-            token = oauth.fetch_token(
-                self.token_url, code=code, client_secret=self.client_secret, **kwargs
-            )
-        except OAuth2Error:
-            raise JsonableError(
-                _("Invalid {provider_name} credentials").format(provider_name=self.provider_name)
-            )
-
-        self.update_token(request.user, token)
-        return render(request, "zerver/close_window.html")
-
-    def make_video_call(
-        self, request: HttpRequest, user: UserProfile, payload: object = {}, **kwargs: Any
-    ) -> HttpResponse:
-        oauth = self.__get_session(user)
-        if not oauth.authorized:
-            raise InvalidVideoCallProviderTokenError(self.provider_name)
-
-        try:
-            response = oauth.post(self.create_meeting_url, json=payload, **kwargs)
-        except OAuth2Error:
-            self.update_token(user, None)
-            raise InvalidVideoCallProviderTokenError(self.provider_name)
-
-        if response.status_code == 401:
-            self.update_token(user, None)
-            raise InvalidVideoCallProviderTokenError(self.provider_name)
-        elif not response.ok:
-            raise JsonableError(
-                _("Failed to create {provider_name} call").format(provider_name=self.provider_name)
-            )
-
-        return self.get_meeting_details(request, response)
+    return OAuth2Session(
+        client_id,
+        redirect_uri=urljoin(settings.ROOT_DOMAIN_URI, "/calls/zoom/complete"),
+        auto_refresh_url="https://zoom.us/oauth/token",
+        auto_refresh_kwargs={
+            "client_id": client_id,
+            "client_secret": client_secret,
+        },
+        token=user.zoom_token,
+        token_updater=partial(do_set_zoom_token, user),
+    )
 
 
-class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
-    provider_name = "Zoom"
-    authorization_scope = None
+def get_zoom_sid(request: HttpRequest) -> str:
+    # This is used to prevent CSRF attacks on the Zoom OAuth
+    # authentication flow.  We want this value to be unpredictable and
+    # tied to the session, but we don’t want to expose the main CSRF
+    # token directly to the Zoom server.
 
-    def __init__(self) -> None:
-        self.client_id = settings.VIDEO_ZOOM_CLIENT_ID
-        self.client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
-        self.authorization_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/authorize")
-        self.token_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
-        self.auto_refresh_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
-        self.create_meeting_url = urljoin(settings.VIDEO_ZOOM_API_URL, "/v2/users/me/meetings")
-
-    @override
-    def get_token(self, user: UserProfile) -> object | None:
-        return user.zoom_token
-
-    @override
-    def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
-        do_set_zoom_token(user, token)
-
-    @override
-    def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
-        return json_success(request, data={"url": response.json()["join_url"]})
+    csrf.get_token(request)
+    # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
+    # data out of this function. 'request.META' is indeed user controlled, but
+    # post-HMAC output is no longer meaningfully controllable.
+    return mark_sanitized(
+        ""
+        if getattr(request, "_dont_enforce_csrf_checks", False)
+        else salted_hmac("Zulip Zoom sid", request.META["CSRF_COOKIE"]).hexdigest()
+    )
 
 
 @zulip_login_required
 @never_cache
 def register_zoom_user(request: HttpRequest) -> HttpResponse:
-    return ZoomGeneralOAuthProvider().register_user(request=request)
+    assert request.user.is_authenticated
+
+    oauth = get_zoom_session(request.user)
+    authorization_url, _state = oauth.authorization_url(
+        "https://zoom.us/oauth/authorize",
+        state=json.dumps(
+            {"realm": get_subdomain(request), "sid": get_zoom_sid(request)},
+        ),
+    )
+    return redirect(authorization_url)
 
 
 class StateDictRealm(TypedDict):
@@ -239,7 +133,6 @@ class ZoomPayload(TypedDict):
 
 
 @never_cache
-@zulip_login_required
 @typed_endpoint
 def complete_zoom_user(
     request: HttpRequest,
@@ -249,7 +142,61 @@ def complete_zoom_user(
 ) -> HttpResponse:
     if get_subdomain(request) != state["realm"]:
         return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
-    return ZoomGeneralOAuthProvider().complete_user(request, code=code, sid=state["sid"])
+    return complete_zoom_user_in_realm(request, code=code, state=state)
+
+
+@zulip_login_required
+@typed_endpoint
+def complete_zoom_user_in_realm(
+    request: HttpRequest,
+    *,
+    code: str,
+    state: Json[StateDict],
+) -> HttpResponse:
+    assert request.user.is_authenticated
+
+    if not constant_time_compare(state["sid"], get_zoom_sid(request)):
+        raise JsonableError(_("Invalid Zoom session identifier"))
+
+    client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+
+    oauth = get_zoom_session(request.user)
+    try:
+        token = oauth.fetch_token(
+            "https://zoom.us/oauth/token",
+            code=code,
+            client_secret=client_secret,
+        )
+    except OAuth2Error:
+        raise JsonableError(_("Invalid Zoom credentials"))
+
+    do_set_zoom_token(request.user, token)
+    return render(request, "zerver/close_window.html")
+
+
+def make_user_authenticated_zoom_video_call(
+    request: HttpRequest,
+    user: UserProfile,
+    *,
+    payload: ZoomPayload,
+) -> HttpResponse:
+    oauth = get_zoom_session(user)
+    if not oauth.authorized:
+        raise InvalidZoomTokenError
+
+    try:
+        res = oauth.post("https://api.zoom.us/v2/users/me/meetings", json=payload)
+    except OAuth2Error:
+        do_set_zoom_token(user, None)
+        raise InvalidZoomTokenError
+
+    if res.status_code == 401:
+        do_set_zoom_token(user, None)
+        raise InvalidZoomTokenError
+    elif not res.ok:
+        raise JsonableError(_("Failed to create Zoom call"))
+
+    return json_success(request, data={"url": res.json()["join_url"]})
 
 
 @cache_with_key(zoom_server_access_token_cache_key, timeout=3600 - 240)
@@ -260,12 +207,12 @@ def get_zoom_server_to_server_access_token(account_id: str) -> str:
     client_id = settings.VIDEO_ZOOM_CLIENT_ID.encode("utf-8")
     client_secret = str(settings.VIDEO_ZOOM_CLIENT_SECRET).encode("utf-8")
 
-    url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
+    url = "https://zoom.us/oauth/token"
     data = {"grant_type": "account_credentials", "account_id": account_id}
 
     client_information = client_id + b":" + client_secret
     encoded_client = b64encode(client_information).decode("ascii")
-    headers = {"Host": urlsplit(url).hostname, "Authorization": f"Basic {encoded_client}"}
+    headers = {"Host": "zoom.us", "Authorization": f"Basic {encoded_client}"}
 
     response = VideoCallSession().post(url, data, headers=headers)
     if not response.ok:
@@ -279,7 +226,7 @@ def get_zoom_server_to_server_call(
     user: UserProfile, access_token: str, payload: ZoomPayload
 ) -> str:
     email = user.delivery_email
-    url = f"{settings.VIDEO_ZOOM_API_URL}/v2/users/{email}/meetings"
+    url = f"https://api.zoom.us/v2/users/{email}/meetings"
     headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
     response = VideoCallSession().post(url, json=payload, headers=headers)
     if not response.ok:
@@ -344,7 +291,7 @@ def make_zoom_video_call(
     )
     if settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is not None:
         return make_server_authenticated_zoom_video_call(request, user, payload=payload)
-    return ZoomGeneralOAuthProvider().make_video_call(request=request, user=user, payload=payload)
+    return make_user_authenticated_zoom_video_call(request, user, payload=payload)
 
 
 @csrf_exempt
