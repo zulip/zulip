@@ -1494,26 +1494,12 @@ def create_demo_helper(
 def create_demo_organization(
     request: HttpRequest, *, timezone: Annotated[str, timezone_or_empty_validator()] = ""
 ) -> HttpResponse:
-    if not settings.OPEN_REALM_CREATION:
-        return TemplateResponse(
-            request,
-            "zerver/portico_error_pages/demo_creation_disabled.html",
-        )
-    if not settings.CORPORATE_ENABLED:
-        return TemplateResponse(
-            request,
-            "zerver/portico_error_pages/demo_creation_disabled.html",
-        )
-    # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
-    # to be fully implemented.
-    if not settings.DEVELOPMENT:
+    if not settings.OPEN_REALM_CREATION or settings.DEMO_ORG_DEADLINE_DAYS is None:
         return TemplateResponse(
             request,
             "zerver/portico_error_pages/demo_creation_disabled.html",
         )
 
-    # When settings.OPEN_REALM_CREATION and settings.CORPORATE_ENABLED are true,
-    # anyone can create a demo organization.
     if request.method == "POST":
         if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
             form: DemoRegistrationForm = CaptchaDemoRegistrationForm(

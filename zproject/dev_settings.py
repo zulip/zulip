@@ -220,6 +220,9 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5
 # See: https://zulip.readthedocs.io/en/latest/subsystems/realms.html#working-with-subdomains-in-development-environment
 ROOT_DOMAIN_LANDING_PAGE = True
 
+# Enable demo organizations feature in dev environment.
+DEMO_ORG_DEADLINE_DAYS = 30
+
 # Enable ALTCHA, so that we test this flow; we can only do this on localhost.
 if external_host_env is None and not IS_DEV_DROPLET:
     USING_CAPTCHA = True

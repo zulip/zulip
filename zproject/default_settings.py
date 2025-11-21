@@ -436,7 +436,7 @@ WEB_PUBLIC_STREAMS_ENABLED = False
 SYSTEM_ONLY_REALMS = {"zulip"}
 
 # Default deadline for demo organizations
-DEMO_ORG_DEADLINE_DAYS = 30
+DEMO_ORG_DEADLINE_DAYS: int | None = None
 
 # Alternate hostnames to serve particular realms on, in addition to
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),
