@@ -867,9 +867,15 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
         raise ValidationError(error_log)
 
 
+@dataclass
+class AttachmentLinkResult:
+    path: str
+    markdown_link: str
+
+
 def get_attachment_path_and_content(
     link_name: str, filename: str, realm_id: int
-) -> tuple[str, str]:
+) -> AttachmentLinkResult:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
     # 'upload_message_attachment'
     s3_path = "/".join(
@@ -883,4 +889,4 @@ def get_attachment_path_and_content(
     attachment_path = f"/user_uploads/{s3_path}"
     content = f"[{link_name}]({attachment_path})"
 
-    return s3_path, content
+    return AttachmentLinkResult(path=s3_path, markdown_link=content)
