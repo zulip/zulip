@@ -267,6 +267,9 @@
         border-radius: 4px;
         border: none;
         outline: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        overflow-wrap: normal;
         font-variant: all-small-caps;
 
         &:hover {
@@ -1185,4 +1188,19 @@ of the base style defined for a read-only textarea in dark mode. */
 .date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
+}
+
+#report-message-preview-container {
+    .message_row {
+        border-radius: 0 0 7px 7px;
+        border: 1px solid var(--color-message-list-border);
+    }
+
+    .message_header {
+        /* We don't need these effects applied for message preview in the report
+           message modal. */
+        box-shadow: none !important;
+        border: 0 !important;
+        background: transparent;
+    }
 }

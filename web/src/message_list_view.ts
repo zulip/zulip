@@ -87,6 +87,8 @@ export type MessageGroup = {
     date_unchanged: boolean;
     message_containers: MessageContainer[];
     message_group_id: string;
+    hide_topic_visibility_policy_menu: boolean;
+    hide_topic_menu: boolean;
 } & (
     | {
           is_stream: true;
@@ -233,7 +235,7 @@ function get_message_date_divider_data(opts: {
     };
 }
 
-function get_timestr(message: Message): string {
+export function get_timestr(message: Message): string {
     const time = new Date(message.timestamp * 1000);
     return timerender.stringify_time(time);
 }
@@ -356,11 +358,13 @@ type SubscriptionMarkers = {
     subscribed?: boolean;
     just_unsubscribed?: boolean;
 };
-function populate_group_from_message(
+export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
     subscription_markers: SubscriptionMarkers | undefined,
+    hide_topic_visibility_policy_menu = false,
+    hide_topic_menu = false,
 ): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
@@ -443,6 +447,8 @@ function populate_group_from_message(
             visibility_policy,
             all_visibility_policies,
             always_display_date,
+            hide_topic_visibility_policy_menu,
+            hide_topic_menu,
         };
     }
     // Private message group
@@ -464,6 +470,8 @@ function populate_group_from_message(
         is_dm_with_self: people.is_direct_message_conversation_with_self(user_ids),
         display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
         always_display_date,
+        hide_topic_visibility_policy_menu,
+        hide_topic_menu,
     };
 }
 

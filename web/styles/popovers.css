@@ -923,7 +923,7 @@ ul.popover-group-menu-member-list {
 
     #message-report-description {
         width: 100%;
-        box-sizing: border-box;
+        box-sizing: content-box;
     }
 
     #move_messages_count {
