@@ -655,6 +655,21 @@ class NormalActionsTest(BaseAction):
                     skip_capture_on_commit_callbacks=True,
                 )
 
+    def test_alert_words_send_message_events(self) -> None:
+        user = self.example_user("hamlet")
+        # Add alert words for the user
+        do_add_alert_words(user, ["alert_word"])
+
+        for i in range(3):
+            content = "message containing alert_word " + str(i)
+            with self.verify_action():
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
+
     def test_pm_send_message_events(self) -> None:
         with self.verify_action() as events:
             self.send_personal_message(
@@ -1227,8 +1242,11 @@ class NormalActionsTest(BaseAction):
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
         user_profile = self.example_user("hamlet")
         mention = "@**" + user_profile.full_name + "**"
+        
+        # Add alert word for testing
+        do_add_alert_words(user_profile, ["alertword"])
 
-        for content in ["hello", mention]:
+        for content in ["hello", mention, "alertword"]:
             message = self.send_stream_message(
                 self.example_user("cordelia"),
                 "Verona",
