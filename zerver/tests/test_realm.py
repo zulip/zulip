@@ -402,7 +402,10 @@ class RealmTest(ZulipTestCase):
             event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=iago
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {"old_subdomain": "zulip", "new_subdomain": "newzulip"}
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: "zulip",
+            RealmAuditLog.NEW_VALUE: "newzulip",
+        }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
 
