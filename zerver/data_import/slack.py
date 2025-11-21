@@ -45,6 +45,7 @@ from zerver.data_import.import_util import (
     make_subscriber_map,
     process_avatars,
     process_emojis,
+    request_file_stream,
     validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
@@ -1614,7 +1615,7 @@ def fetch_team_icons(
     if icon_url is None:
         return []
 
-    response = requests.get(icon_url, stream=True)
+    response = request_file_stream(icon_url)
     response_raw = response.raw
 
     realm_id = zerver_realm["id"]

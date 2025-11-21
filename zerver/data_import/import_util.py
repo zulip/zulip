@@ -611,7 +611,7 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
         # Adjust the avatar size for a typical Slack user.
         avatar_url += size_url_suffix
 
-    response = requests.get(avatar_url, stream=True)
+    response = request_file_stream(avatar_url)
     with open(image_path, "wb") as image_file:
         shutil.copyfileobj(response.raw, image_file)
     shutil.copy(image_path, original_image_path)
@@ -730,7 +730,7 @@ def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> Zerv
 def get_emojis(emoji_dir: str, emoji_url: str, emoji_path: str) -> str | None:
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
-    response = requests.get(emoji_url, stream=True)
+    response = request_file_stream(emoji_url)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
     with open(upload_emoji_path, "wb") as emoji_file:
         shutil.copyfileobj(response.raw, emoji_file)
