@@ -2488,6 +2488,23 @@ def social_auth_exception_guard(logger: logging.Logger) -> Generator[AbortFlag, 
         abort_flag.aborted = True
 
 
+# Several backends store information about the parameters of a user's
+# initiated authentication session in redis. Such data lives in redis
+# while the user is redirected to a third party authentication provider,
+# and retrieved when the user returns to the auth completion endpoint
+# appropriate for the backend.
+# Protocol and implementation details vary, but the common idea is that
+# it is transient data which should live just long enough for users to be
+# able to successfully complete their authentication flow even if they're
+# somewhat slow to get through the third party's authentication step
+# (e.g. due to needing to recover their password there, or find 2FA tokens).
+#
+# To be generous, we set this to 15 minutes. An authentication session
+# that takes a user longer than 15 minutes can reasonably be considered
+# stale and allowed to fail.
+DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE = 60 * 15
+
+
 class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # Whether we expect that the full_name value obtained by the
     # social backend is definitely how the user should be referred to
@@ -2730,7 +2747,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     # But if Apple does send us the user's name, it will be validated,
     # so it's appropriate to set full_name_validated here.
     full_name_validated = True
-    REDIS_EXPIRATION_SECONDS = 60 * 10
+    REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
     SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
 
@@ -3064,7 +3081,7 @@ class SAMLResponse(SAMLDocument):
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
-    REDIS_EXPIRATION_SECONDS = 60 * 15
+    REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
     name = "saml"
     # Organization which go through the trouble of setting up SAML are most likely
@@ -3533,7 +3550,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     auth_backend_name = "OpenID Connect"
     sort_order = 100
 
-    REDIS_EXPIRATION_SECONDS = 60 * 15
+    REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
