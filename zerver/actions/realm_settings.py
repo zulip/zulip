@@ -837,8 +837,11 @@ def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: Use
         event_time=timezone_now(),
         acting_user=acting_user,
         extra_data={
-            "old_value": old_value,
-            "new_value": new_max,
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: new_max,
             "property": "max_invites",
         },
     )
