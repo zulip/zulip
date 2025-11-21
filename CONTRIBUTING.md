@@ -400,6 +400,10 @@ workflows.
 1. Similarly, when responding to a pull request comment, **explain _your_
    reasoning**. Don't prompt an LLM to re-describe what can already be seen from
    the code.
+1. Verify that **everything you write is accurate**, whether or not an LLM
+   generated any part of it. Zulip's maintainers will be unable to review your
+   contributions if you misrepresent your work (e.g., misdescribing your code
+   changes, their effect, or your testing process).
 1. Complete all parts of the **PR description template**, including screenshots
    and the self-review checklist. Don't simply overwrite the template with LLM
    output.
