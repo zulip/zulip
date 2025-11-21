@@ -1539,8 +1539,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": Realm.PLAN_TYPE_SELF_HOSTED,
-            "new_value": Realm.PLAN_TYPE_STANDARD,
+            RealmAuditLog.OLD_VALUE: Realm.PLAN_TYPE_SELF_HOSTED,
+            RealmAuditLog.NEW_VALUE: Realm.PLAN_TYPE_STANDARD,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)

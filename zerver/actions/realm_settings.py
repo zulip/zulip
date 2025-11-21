@@ -893,7 +893,13 @@ def do_change_realm_plan_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data={"old_value": old_value, "new_value": plan_type},
+        extra_data={
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: plan_type,
+        },
     )
 
     realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
