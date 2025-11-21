@@ -1,7 +1,6 @@
 import logging
 import os
 import random
-import secrets
 import shutil
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
@@ -25,7 +24,7 @@ from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
-from zerver.lib.upload import sanitize_name
+from zerver.lib.upload import sanitize_name, upload_backend
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -877,17 +876,9 @@ class AttachmentLinkResult:
 def get_attachment_path_and_content(
     link_name: str, filename: str, realm_id: int
 ) -> AttachmentLinkResult:
-    # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
-    # 'upload_message_attachment'
-    s3_path = "/".join(
-        [
-            str(realm_id),
-            format(random.randint(0, 255), "x"),
-            secrets.token_urlsafe(18),
-            sanitize_name(filename),
-        ]
+    attachment_path = upload_backend.generate_message_upload_path(
+        str(realm_id), sanitize_name(filename)
     )
-    attachment_path = f"/user_uploads/{s3_path}"
     markdown_link = get_markdown_link_for_url(link_name, attachment_path)
 
-    return AttachmentLinkResult(path=s3_path, markdown_link=markdown_link)
+    return AttachmentLinkResult(path=attachment_path, markdown_link=markdown_link)
