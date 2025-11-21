@@ -223,9 +223,8 @@ def build_message_list(
     stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
 ) -> list[dict[str, Any]]:
     """
-    Builds the message list object for the message notification email template.
-    The messages are collapsed into per-recipient and per-sender blocks, like
-    our web interface
+    Builds the message list object for the message notification email and
+    digest email template. All `messages` share the same recipient (and topic).
     """
     messages_to_render: list[dict[str, Any]] = []
 
@@ -294,7 +293,6 @@ def build_message_list(
 
     def message_header(message: Message) -> dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
-            grouping: dict[str, Any] = {"user": message.sender_id}
             narrow_link = personal_narrow_url(
                 realm=user.realm,
                 sender_id=message.sender.id,
@@ -305,7 +303,6 @@ def build_message_list(
                 "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
             ).format(narrow_link=narrow_link, header=header)
         elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-            grouping = {"huddle": message.recipient_id}
             display_recipient = get_display_recipient(message.recipient)
             narrow_link = direct_message_group_narrow_url(
                 user=user,
@@ -318,7 +315,6 @@ def build_message_list(
             ).format(narrow_link=narrow_link, header=header)
         else:
             assert message.recipient.type == Recipient.STREAM
-            grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
             stream_id = message.recipient.type_id
             if stream_id_map is not None and stream_id in stream_id_map:
                 stream = stream_id_map[stream_id]
@@ -342,7 +338,6 @@ def build_message_list(
                 topic_name=message.topic_name(),
             )
         return {
-            "grouping": grouping,
             "plain": header,
             "html": header_html,
         }
@@ -372,16 +367,15 @@ def build_message_list(
     #    },
     # ]
 
+    assert len(messages) > 0
+    recipients = {(message.recipient_id, message.topic_name().lower()) for message in messages}
+    assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
+    header = message_header(messages[0])
     messages.sort(key=lambda message: message.date_sent)
 
     for message in messages:
-        header = message_header(message)
-
         # If we want to collapse into the previous recipient block
-        if (
-            len(messages_to_render) > 0
-            and messages_to_render[-1]["header"]["grouping"] == header["grouping"]
-        ):
+        if len(messages_to_render) > 0:
             sender = sender_string(message)
             sender_block = messages_to_render[-1]["senders"]
 
