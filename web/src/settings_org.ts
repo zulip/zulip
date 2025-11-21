@@ -84,7 +84,7 @@ export function maybe_disable_widgets(): void {
     }
 
     $(".organization-box [data-name='organization-profile']")
-        .find("input, textarea, button, select")
+        .find("input, textarea, .deactivate_realm_button, select")
         .prop("disabled", true);
 
     $(".organization-box [data-name='organization-profile']").find(".image_upload_button").hide();
