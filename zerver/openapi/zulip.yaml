@@ -3453,6 +3453,13 @@ paths:
                                           of the user.
 
                                           Present only if the message mentions the current user.
+                                      has_alert_word:
+                                        type: boolean
+                                        description: |
+                                          A flag which indicates whether the message contains one of
+                                          the user's configured alert words.
+
+                                          Present only if the message has an alert word for the current user.
                                       user_ids:
                                         type: array
                                         items:
@@ -17599,6 +17606,13 @@ paths:
 
                               **Changes**: Before Zulip 8.0 (feature level 213), the unmute and follow
                               topic features were not handled correctly in calculating this field.
+                            items:
+                              type: integer
+                          alert_words:
+                            type: array
+                            description: |
+                              Array containing the IDs of all unread messages that contain one of the
+                              user's configured alert words.
                             items:
                               type: integer
                           old_unreads_missing:
