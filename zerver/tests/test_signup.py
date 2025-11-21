@@ -68,6 +68,7 @@ from zerver.lib.test_helpers import (
     ratelimit_rule,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
+from zerver.lib.types import Invitee
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -4356,7 +4357,7 @@ class UserSignUpTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 admin,
-                [mirror_dummy.delivery_email],
+                [Invitee(email=mirror_dummy.delivery_email)],
                 [],
                 invite_expires_in_minutes=None,
                 include_realm_default_subscriptions=True,

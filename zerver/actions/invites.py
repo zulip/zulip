@@ -37,6 +37,7 @@ from zerver.lib.send_email import (
     send_future_email,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.types import Invitee
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -190,7 +191,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
 @transaction.atomic(durable=True)
 def do_invite_users(
     user_profile: UserProfile,
-    invitee_emails: Collection[str],
+    invitees: Collection[Invitee],
     streams: Collection[Stream],
     notify_referrer_on_join: bool = True,
     user_groups: Collection[NamedUserGroup] = [],
@@ -200,7 +201,7 @@ def do_invite_users(
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
     welcome_message_custom_text: str | None = None,
 ) -> list[tuple[str, str, bool]]:
-    num_invites = len(invitee_emails)
+    num_invites = len(invitees)
 
     # Lock the realm, since we need to not race with other invitations
     realm = Realm.objects.select_for_update().get(id=user_profile.realm_id)
@@ -231,36 +232,36 @@ def do_invite_users(
                 sent_invitations=False,
             )
 
-    good_emails: set[str] = set()
+    good_invitees: set[Invitee] = set()
     errors: list[tuple[str, str, bool]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(realm)
-    for email in invitee_emails:
-        if email == "":
-            continue
+    for invitee in invitees:
         email_error = validate_email_is_valid(
-            email,
+            invitee.email,
             validate_email_allowed_in_realm,
         )
 
         if email_error:
-            errors.append((email, email_error, False))
+            errors.append((invitee.email, email_error, False))
         else:
-            good_emails.add(email)
+            good_invitees.add(invitee)
 
     """
-    good_emails are emails that look ok so far,
+    good_invitees are invitee names and emails that look ok so far,
     but we still need to make sure they're not
     gonna conflict with existing users
     """
-    error_dict = get_existing_user_errors(realm, good_emails, allow_inactive_mirror_dummies=True)
+    error_dict = get_existing_user_errors(
+        realm, {invitee.email for invitee in good_invitees}, allow_inactive_mirror_dummies=True
+    )
 
     skipped: list[tuple[str, str, bool]] = []
     for email in error_dict:
         msg, deactivated = error_dict[email]
         skipped.append((email, msg, deactivated))
-        good_emails.remove(email)
+        good_invitees = {item for item in good_invitees if item.email != email}
 
-    validated_emails = list(good_emails)
+    validated_invitees = list(good_invitees)
 
     if errors:
         raise InvitationError(
@@ -269,7 +270,7 @@ def do_invite_users(
             sent_invitations=False,
         )
 
-    if skipped and len(skipped) == len(invitee_emails):
+    if skipped and len(skipped) == len(invitees):
         # All e-mails were skipped, so we didn't actually invite anyone.
         raise InvitationError(
             _("We weren't able to invite anyone."), skipped, sent_invitations=False
@@ -277,10 +278,13 @@ def do_invite_users(
 
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
-    for email in validated_emails:
+    for validated_invitee in validated_invitees:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(
-            email=email,
+            email=validated_invitee.email,
+            # We include a name if specified in the invitation request, but leave full_name_validated=False,
+            # so the receiving user can spell their name as they like after accepting the invitation.
+            full_name=validated_invitee.full_name,
             referred_by=user_profile,
             invited_as=invite_as,
             realm=realm,
