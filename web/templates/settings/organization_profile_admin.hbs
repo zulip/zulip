@@ -85,13 +85,14 @@
                   image = realm_night_logo_url }}
             </div>
         </div>
+        {{#if is_owner}}
         <h3 class="light">
             {{t "Deactivate organization" }}
             {{> ../help_link_widget link="/help/deactivate-your-organization" }}
         </h3>
         <div class="deactivate-realm-section">
             <div class="input-group">
-                <div id="deactivate_realm_button_container" class="inline-block {{#unless is_owner}}disabled_setting_tooltip{{/unless}}">
+                <div id="deactivate_realm_button_container" class="inline-block">
                     {{> ../components/action_button
                       label=(t "Deactivate organization")
                       attention="quiet"
@@ -101,5 +102,6 @@
                 </div>
             </div>
         </div>
+        {{/if}}
     </form>
 </div>
