@@ -47,8 +47,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BASE="${{ github.event.before }}"
-          HEAD="${{ github.event.after }}"
+          BASE="${{ inputs.before || github.event.before }}"
+          HEAD="${{ inputs.after || github.event.after }}"
 
           mkdir closed-by-commits-output
           ./tools/closed-by-commits "$BASE" "$HEAD" \
