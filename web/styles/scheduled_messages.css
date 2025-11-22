@@ -26,4 +26,5 @@
     width: 100%;
     min-width: 10em;
     padding: 3px;
+    min-height: 2em;
 }

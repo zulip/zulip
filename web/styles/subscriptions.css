@@ -1356,6 +1356,8 @@ div.settings-radio-input-parent {
     height: 80px;
     margin-bottom: 4px;
     box-sizing: border-box;
+    min-height: 2em;
+    resize: vertical;
 }
 
 .advanced-configurations-container
