@@ -320,17 +320,18 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
             active=True,
             is_muted=False,
         )
-        .alias(
-            was_modified=Exists(
-                RealmAuditLog.objects.filter(
-                    modified_stream_id=OuterRef("recipient__type_id"),
-                    modified_user_id=OuterRef("user_profile_id"),
-                    event_time__gt=cutoff_date,
-                    event_type__in=events,
-                )
-            )
-        )
-        .filter(was_modified=False)
+       # .alias(
+#     was_modified=Exists(
+#         RealmAuditLog.objects.filter(
+#             modified_stream_id=OuterRef("recipient__type_id"),
+#             modified_user_id=OuterRef("user_profile_id"),
+#             event_time__gt=cutoff_date,
+#             event_type__in=events,
+#         )
+#     )
+# )
+# .filter(was_modified=False)
+
         .values("user_profile_id", "recipient__type_id")
     )
 

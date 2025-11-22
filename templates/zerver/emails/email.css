@@ -32,7 +32,7 @@ table.layout {
     width: 100%;
 }
 
-table.layout > tbody > tr > td {
+table.layout>tbody>tr>td {
     font-family: sans-serif;
     font-size: 14px;
     vertical-align: top;
@@ -223,13 +223,13 @@ p.digest_paragraph,
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000;
+    border: 1px solid #060404;
     margin-bottom: 4px;
 }
 
 .hot_convo_recipient_header {
     background-color: #9ec9ff;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #030101;
     font-weight: bold;
     padding: 2px;
 }
@@ -308,6 +308,7 @@ p.digest_paragraph,
 }
 
 @media all {
+
     /* See https://templates.mailchimp.com/development/css/client-specific-styles/;
        ExternalClass is something Microsoft Outlook adds to emails. */
     .ExternalClass {
@@ -349,4 +350,90 @@ p.digest_paragraph,
     .float-right-image {
         max-width: 200px;
     }
+}
+
+/* Digest card custom styles for new UI */
+
+/* Hex color codes are used instead of our standard of hsl colors,
+   because hex color codes are rendered by all email clients
+   consistently; HSL colors aren't supported by Hotmail. */
+
+/* ... (keep the base Zulip styles above unchanged) ... */
+
+.digest-card {
+    border: none;
+    background: transparent;
+    margin-bottom: 24px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 0;
+}
+
+.digest-header {
+    background: #A9CCFF;
+    color: #0055cc;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 7px 12px;
+    border: 1px solid #252525;
+    display: flex;
+    border-radius: 8px 8px 0 0;
+}
+
+.digest-header .arrow {
+    margin-left: 10px;
+    color: #000;
+    font-weight: 400;
+}
+
+
+.digest-content {
+    border: 1px solid #110808;
+    border-top: none;
+    padding: 10px 14px;
+    background: #fff;
+    color: #222;
+    font-size: 15px;
+    border-radius: 0 0 8px 8px;
+}
+
+.digest-channel-list {
+    color: #222;
+    font-size: 15px;
+    margin-bottom: 0;
+    margin: 10px 0 18px 8px;
+}
+
+.digest-footer {
+    margin: 9px 0 0 3px;
+    font-size: 14px;
+    color: #444;
+}
+
+.digest-preferences {
+    margin-top: 18px;
+    margin-bottom: 8px;
+}
+
+.digest-channel-title {
+    margin: 10px 0 18px 8px;
+    font-size: 14px;
+    color: #222;
+}
+
+.digest-channel-title b {
+    color: #000509;
+}
+
+.digest-summary {
+    margin: 10px 0 18px 8px;
+    font-size: 14px;
+    color: #222;
+}
+
+.digest-login-link {
+    margin: 18px 0 10px 8px;
+    font-size: 14px;
+    color: #00070e;
 }
