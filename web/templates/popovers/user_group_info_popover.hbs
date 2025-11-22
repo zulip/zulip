@@ -12,12 +12,15 @@
             </div>
         </li>
         {{#if (or displayed_members.length displayed_subgroups.length)}}
-            <li role="none" class="popover-menu-list-item text-item italic">
-                {{#tr}}
-                {members_count, plural, =1 {1 member} other {# members}}
-                {{/tr}}
-            </li>
+            {{#unless is_guest}}
+                <li role="none" class="popover-menu-list-item text-item italic">
+                    {{#tr}}
+                        {members_count, plural, =1 {1 member} other {# members}}
+                    {{/tr}}
+                </li>
+            {{/unless}}
         {{/if}}
+
         {{#if deactivated}}
             <li role="none" class="popover-menu-list-item text-item italic hidden-for-spectators">
                 <span class="popover-menu-label">{{t "This group has been deactivated." }}</span>

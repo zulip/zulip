@@ -197,11 +197,10 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
     return (
         member_ids
             .map((m: number) => people.get_user_by_id_assert_valid(m))
-            // We need to include inaccessible users here separately, since
-            // we do not include them in active_user_dict, but we want to
-            // show them in the popover as "Unknown user".
+            // Only include users we are allowed to show in popovers.
             .filter(
-                (m: User) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user,
+                (m: User) =>
+                    people.is_active_user_for_popover(m.user_id) && !m.is_inaccessible_user,
             )
             .map((p: User) => ({
                 ...p,
