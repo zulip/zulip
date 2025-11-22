@@ -51,8 +51,8 @@ export function clean_up_compose_singleton_tooltip(context: SingletonContext): v
 }
 
 export function initialize_compose_tooltips(context: SingletonContext, selector: string): void {
-    // Listen on body for the very first mouseenter on any element matching `selector`
-    $(document.body).one("mousemove", selector, (e) => {
+    // Helper function to initialize tooltip instances
+    const initialize_tooltip_instances = (): void => {
         // Clean up existing instances first
         clean_up_compose_singleton_tooltip(context);
 
@@ -81,16 +81,26 @@ export function initialize_compose_tooltips(context: SingletonContext, selector:
             },
         });
 
-        // Show the tooltip since user has hovered over the element.
-        if (e.currentTarget instanceof HTMLElement) {
-            e.currentTarget.dispatchEvent(new MouseEvent("mouseenter"));
-        }
-
         compose_button_singleton_context_map.set(context, {
             tooltip_instances,
             singleton_instance,
         });
-    });
+    };
+
+    // For message edit contexts, initialize tooltips immediately to support keyboard navigation
+    if (context.startsWith("edit_message:")) {
+        initialize_tooltip_instances();
+    } else {
+        // For the main compose box, use lazy initialization on first mousemove
+        $(document.body).one("mousemove", selector, (e) => {
+            initialize_tooltip_instances();
+
+            // Show the tooltip since user has hovered over the element.
+            if (e.currentTarget instanceof HTMLElement) {
+                e.currentTarget.dispatchEvent(new MouseEvent("mouseenter"));
+            }
+        });
+    }
 }
 
 export function initialize(): void {

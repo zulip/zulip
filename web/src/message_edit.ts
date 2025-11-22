@@ -581,6 +581,7 @@ function edit_message($row: JQuery, raw_content: string): void {
             giphy_enabled: giphy_state.is_giphy_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
+            preview_mode_on: false,
         }),
     );
 
@@ -1758,6 +1759,7 @@ export function show_preview_area($element: JQuery): void {
 
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
+    $row.find(".undo_markdown_preview").trigger("focus");
 
     render_preview_area($row);
 }
@@ -1780,6 +1782,9 @@ export function render_preview_area($row: JQuery): void {
 
 export function clear_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
+
+    // Return focus to the textarea when exiting preview mode
+    $row.find<HTMLTextAreaElement>("textarea.message_edit_content").trigger("focus");
 
     // While in preview mode we disable unneeded compose_control_buttons,
     // so here we are re-enabling those compose_control_buttons
