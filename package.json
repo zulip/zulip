@@ -163,7 +163,7 @@
     "stylelint-config-standard": "^39.0.0",
     "stylelint-high-performance-animation": "^1.10.0",
     "svgo": "^4.0.0",
-    "typescript": "^5.0.2",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.13.0",
     "vnu-jar": "^24.10.17",
     "webpack-dev-server": "^5.0.2",
