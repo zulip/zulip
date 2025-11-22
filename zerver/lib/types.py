@@ -386,6 +386,8 @@ class RawUserDict(TypedDict):
     avatar_source: str
     avatar_version: int
     is_active: bool
+    is_mirror_dummy: bool
+    is_imported_and_not_activated: bool
     role: int
     is_bot: bool
     timezone: str
