@@ -117,7 +117,7 @@ test("get_conversations", ({override}) => {
             is_bot: false,
             is_current_user: true,
             is_active: false,
-            is_deactivated: false,
+            includes_deactivated_user: false,
             is_group: false,
             is_zero: false,
             recipients: "Me Myself",
@@ -137,7 +137,7 @@ test("get_conversations", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
-            is_deactivated: false,
+            includes_deactivated_user: false,
             url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             is_group: true,
@@ -168,7 +168,7 @@ test("get_conversations", ({override}) => {
         unread: 0,
         is_zero: true,
         is_active: true,
-        is_deactivated: false,
+        includes_deactivated_user: false,
         is_current_user: false,
         url: "#narrow/dm/106-Iago",
         status_emoji_info: {emoji_code: "20"},
@@ -211,7 +211,7 @@ test("get_conversations bot", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
-            is_deactivated: false,
+            includes_deactivated_user: false,
             url: "#narrow/dm/314-Outgoing-webhook",
             status_emoji_info: undefined,
             user_circle_class: "user-circle-offline",
@@ -226,7 +226,7 @@ test("get_conversations bot", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
-            is_deactivated: false,
+            includes_deactivated_user: false,
             url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             status_emoji_info: undefined,
@@ -423,4 +423,91 @@ test("get_list_info_no_unread_messages", ({override}) => {
         "Me Myself",
         "Alice",
     ]);
+});
+
+test("get_list_info_deactivated_users", ({override}) => {
+    override(unread, "num_unread_for_user_ids_string", () => 0);
+
+    // Test case with fewer conversations: when only 5 conversations are present
+    // and Bob is deactivated, we should show only 4.
+    pm_conversations.recent.insert([alice.user_id], 1);
+    pm_conversations.recent.insert([me.user_id], 2);
+    pm_conversations.recent.insert([bob.user_id], 3);
+    pm_conversations.recent.insert([zoe.user_id], 4);
+    pm_conversations.recent.insert([cardelio.user_id], 5);
+
+    // Deactivate Bob.
+    const bob_from_people = people.get_by_user_id(bob.user_id);
+    people.deactivate(bob_from_people);
+
+    let list_info = pm_list_data.get_list_info(false);
+    assert.deepEqual(list_info.conversations_to_be_shown.length, 4);
+    assert.deepEqual(list_info.more_conversations_unread_count, 0);
+    // verify that bob (deactivated) is not included.
+    assert.deepEqual(
+        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
+        ["Cardelio", "Zoe", "Me Myself", "Alice"],
+    );
+
+    // Test case with more than 8 conversations present:
+    // Set up more conversations than max_conversations_to_show (which is 8),
+    // including one group dm that involve Bob who has been deactivated.
+    pm_conversations.recent.insert([zoe.user_id, cardelio.user_id], 6);
+    pm_conversations.recent.insert([bob.user_id, cardelio.user_id], 7);
+    pm_conversations.recent.insert([alice.user_id, iago.user_id], 8);
+    pm_conversations.recent.insert([alice.user_id, cardelio.user_id], 9);
+    pm_conversations.recent.insert([zoe.user_id, iago.user_id], 10);
+    pm_conversations.recent.insert([iago.user_id], 11);
+    pm_conversations.recent.insert([alice.user_id, zoe.user_id], 12);
+    pm_conversations.recent.insert([cardelio.user_id, iago.user_id], 13);
+
+    // With Bob deactivated, we should show up to max_conversations_to_show (8)
+    // conversations that don't involve Bob. There are 13 total conversations, 2 involve
+    // Bob and are excluded. From the remaining 11 conversantions latest 8 are included.
+    // Exclusion due to deactivation = 2 & Exclusion due to limit (8) = 3 (not recent 8).
+    list_info = pm_list_data.get_list_info(false);
+    assert.deepEqual(list_info.conversations_to_be_shown.length, 8);
+    assert.deepEqual(list_info.more_conversations_unread_count, 0);
+    // verify that the conversations included are the latest 8.
+    assert.deepEqual(
+        list_info.conversations_to_be_shown.map((conversation) => conversation.recipients),
+        [
+            "Cardelio, Iago",
+            "Alice, Zoe",
+            "Iago",
+            "Iago, Zoe",
+            "Alice, Cardelio",
+            "Alice, Iago",
+            "Cardelio, Zoe",
+            "Cardelio",
+        ],
+    );
+
+    // Verify that no conversations in the list include Bob.
+    const has_bob_conversation = list_info.conversations_to_be_shown.some((conversation) =>
+        conversation.recipients.includes("Bob"),
+    );
+    assert.ok(!has_bob_conversation);
+
+    // Zooming should reveal the conversations including deactivated
+    // users (Bob in this case).
+    list_info = pm_list_data.get_list_info(true);
+    check_list_info(list_info, 13, 0, [
+        "Cardelio, Iago",
+        "Alice, Zoe",
+        "Iago",
+        "Iago, Zoe",
+        "Alice, Cardelio",
+        "Alice, Iago",
+        "Bob, Cardelio",
+        "Cardelio, Zoe",
+        "Cardelio",
+        "Zoe",
+        "Bob",
+        "Me Myself",
+        "Alice",
+    ]);
+
+    // Reactivate user to not affect other tests.
+    people.add_active_user(bob);
 });
