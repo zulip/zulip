@@ -304,6 +304,7 @@ class MessageMoveTopicTest(ZulipTestCase):
                 send_notification_to_new_thread=False,
                 rendering_result=None,
                 prior_mention_user_ids=set(),
+                prior_alert_word_user_ids=set(),
                 mention_data=None,
             )
 
