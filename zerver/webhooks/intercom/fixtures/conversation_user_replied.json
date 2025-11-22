@@ -1,100 +1,131 @@
 {
-    "type":"notification_event",
-    "app_id":"i6wc9ipe",
-    "data":{
-        "type":"notification_event_data",
-        "item":{
-            "type":"conversation",
-            "id":"21322009097",
-            "created_at":1553290933,
-            "updated_at":1553291307,
-            "user":{
-                "type":"lead",
-                "id":"5c9553cb27e377f24eed49f7",
-                "user_id":"75067020-1204-495c-8edc-abb7d88bdd43",
-                "name":"Eeshan Garg",
-                "email":"jerryguitarist@gmail.com",
-                "do_not_track":null
-            },
-            "assignee":{
-                "type":"admin",
-                "id":"1957471",
-                "name":"Eeshan Garg",
-                "email":"jerryguitarist@gmail.com"
-            },
-            "conversation_message":{
-                "type":"conversation_message",
-                "id":"331499307",
-                "url":"http://localhost:9991/api/",
-                "subject":"",
-                "body":"<p>Hello</p>",
-                "author":{
-                    "type":"user",
-                    "id":"5c9553cb27e377f24eed49f7"
+    "type": "notification_event",
+    "app_id": "i6wc9ipe",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "conversation",
+            "id": "12",
+            "created_at": 1720426049,
+            "updated_at": 1720426078,
+            "waiting_since": 1720426050,
+            "snoozed_until": null,
+            "source": {
+                "type": "conversation",
+                "id": "2290555196",
+                "delivered_as": "customer_initiated",
+                "subject": "",
+                "body": "<p>Hello</p>",
+                "author": {
+                    "type": "lead",
+                    "id": "5c9553cb27e377f24eed49f7",
+                    "name": null,
+                    "email": ""
                 },
-                "attachments":[
-
+                "attachments": [],
+                "url": "http://localhost:9991/api/",
+                "redacted": false
+            },
+            "contacts": {
+                "type": "contact.list",
+                "contacts": [
+                    {
+                        "type": "contact",
+                        "id": "5c9553cb27e377f24eed49f7",
+                        "external_id": "20fa6c3e-98c7-4eba-b7b1-dde32dd2aa66"
+                    }
                 ]
             },
-            "conversation_parts":{
-                "type":"conversation_part.list",
-                "conversation_parts":[
+            "first_contact_reply": {
+                "created_at": 1720426049,
+                "type": "conversation",
+                "url": "http://localhost:9991/api/"
+            },
+            "admin_assignee_id": null,
+            "team_assignee_id": null,
+            "open": true,
+            "state": "open",
+            "read": true,
+            "tags": {
+                "type": "tag.list",
+                "tags": []
+            },
+            "priority": "not_priority",
+            "sla_applied": null,
+            "statistics": {
+                "type": "conversation_statistics",
+                "time_to_assignment": null,
+                "time_to_admin_reply": null,
+                "time_to_first_close": null,
+                "time_to_last_close": null,
+                "median_time_to_reply": null,
+                "first_contact_reply_at": "2024-07-08T08:07:29.000Z",
+                "first_assignment_at": null,
+                "first_admin_reply_at": null,
+                "first_close_at": null,
+                "last_assignment_at": null,
+                "last_assignment_admin_reply_at": null,
+                "last_contact_reply_at": "2024-07-08T08:07:57.000Z",
+                "last_admin_reply_at": null,
+                "last_close_at": null,
+                "last_closed_by_id": null,
+                "count_reopens": 0,
+                "count_assignments": 0,
+                "count_conversation_parts": 6
+            },
+            "conversation_rating": null,
+            "teammates": {
+                "type": "admin.list",
+                "admins": []
+            },
+            "title": "",
+            "custom_attributes": {
+                "Language": "English"
+            },
+            "topics": {},
+            "ticket": null,
+            "linked_objects": {
+                "type": "list",
+                "data": [],
+                "total_count": 0,
+                "has_more": false
+            },
+            "ai_agent": null,
+            "ai_agent_participated": false,
+            "conversation_parts": {
+                "type": "conversation_part.list",
+                "conversation_parts": [
                     {
-                        "type":"conversation_part",
-                        "id":"2824391734",
-                        "part_type":"comment",
-                        "body":"<p>Well, I need some help getting access to a developer account.</p>",
-                        "created_at":1553291307,
-                        "updated_at":1553291307,
-                        "notified_at":1553291307,
-                        "assigned_to":null,
-                        "author":{
-                            "type":"user",
-                            "id":"5c9553cb27e377f24eed49f7",
-                            "name":"Eeshan Garg",
-                            "email":"jerryguitarist@gmail.com"
+                        "type": "conversation_part",
+                        "id": "21039394798",
+                        "part_type": "comment",
+                        "body": "<p>I am looking for zulip integration working</p>",
+                        "created_at": 1720426077,
+                        "updated_at": 1720426077,
+                        "notified_at": 1720426077,
+                        "assigned_to": null,
+                        "author": {
+                            "id": "5c9553cb27e377f24eed49f7",
+                            "type": "user",
+                            "name": null,
+                            "email": ""
                         },
-                        "attachments":[
-
-                        ],
-                        "external_id":null
+                        "attachments": [],
+                        "external_id": null,
+                        "redacted": false
                     }
                 ],
-                "total_count":1
-            },
-            "open":true,
-            "state":"open",
-            "snoozed_until":null,
-            "read":true,
-            "metadata":{
-
-            },
-            "tags":{
-                "type":"tag.list",
-                "tags":[
-
-                ]
-            },
-            "tags_added":{
-                "type":"tag.list",
-                "tags":[
-
-                ]
-            },
-            "links":{
-                "conversation_web":"https://app.intercom.io/a/apps/i6wc9ipe/conversations/21322009097"
+                "total_count": 1
             }
         }
     },
-    "links":{
-
-    },
-    "id":"notif_2c71fff0-65ef-46be-bbfe-dbf637bbff15",
-    "topic":"conversation.user.replied",
-    "delivery_status":"pending",
-    "delivery_attempts":1,
-    "delivered_at":0,
-    "first_sent_at":1553291308,
-    "created_at":1553291308,
-    "self":null
+    "links": {},
+    "id": "notif_f27d38f7-38aa-4937-8bc0-16195f0abd03",
+    "topic": "conversation.user.replied",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1720426079,
+    "created_at": 1720426079,
+    "self": null
 }
