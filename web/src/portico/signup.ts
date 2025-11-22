@@ -3,7 +3,9 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import {page_params as base_page_params} from "../base_page_params.ts";
 import * as common from "../common.ts";
+import * as emojisets from "../emojisets.ts";
 import {$t} from "../i18n.ts";
 import {password_quality, password_warning} from "../password_quality.ts";
 import * as settings_config from "../settings_config.ts";
@@ -14,6 +16,9 @@ import * as portico_modals from "./portico_modals.ts";
 import "altcha";
 
 $(() => {
+    // Initialize emoji set based on realm default.
+    void emojisets.select(base_page_params.realm_default_emojiset);
+
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
