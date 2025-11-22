@@ -650,7 +650,13 @@ export class Typeahead<ItemType extends string | object> {
         this.$menu
             .on("click", "li", this.click.bind(this))
             .on("mouseenter", "li", this.mouseenter.bind(this))
-            .on("mousemove", "li", this.mousemove.bind(this));
+            .on("mousemove", "li", this.mousemove.bind(this))
+            .on("blur", "li", (e) => {
+                // Selecting typeahead item content followed by blur
+                // should hide the typeahead if the relatedTarget is
+                // outside the typeahead.
+                this.blur(e);
+            });
 
         $(window).on("resize", this.resizeHandler.bind(this));
     }
