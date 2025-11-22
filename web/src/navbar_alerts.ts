@@ -6,6 +6,7 @@ import render_navbar_banners_testing_popover from "../templates/popovers/navbar_
 
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
+import {is_browser_supported} from "./browser_support.ts";
 import type {ActionButton} from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
@@ -246,6 +247,24 @@ const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     custom_classes: "navbar-alert-banner",
 };
 
+const UNSUPPORTED_BROWSER_BANNER: AlertBanner = {
+    process: "unsupported-browser",
+    intent: "warning",
+    label: $t({
+        defaultMessage:
+            "Because you're using an unsupported or very old browser, Zulip may not work as expected.",
+    }),
+    buttons: [
+        {
+            attention: "borderless",
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "unsupported-browser-learn-more",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
 const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
     process: "profile-missing-required-fields",
     intent: "warning",
@@ -424,6 +443,8 @@ export function initialize(): void {
         open_navbar_banner_and_resize(demo_organization_deadline_banner());
     } else if (page_params.insecure_desktop_app) {
         open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
+    } else if (!is_browser_supported()) {
+        open_navbar_banner_and_resize(UNSUPPORTED_BROWSER_BANNER);
     } else if (should_offer_to_update_timezone()) {
         open_navbar_banner_and_resize(time_zone_update_offer_banner());
     } else if (realm.server_needs_upgrade) {
@@ -541,6 +562,10 @@ export function initialize(): void {
         );
     });
 
+    $("#navbar_alerts_wrapper").on("click", ".unsupported-browser-learn-more", () => {
+        window.open("/help/supported-browsers", "_blank", "noopener,noreferrer");
+    });
+
     $("#navbar_alerts_wrapper").on(
         "click",
         ".server-upgrade-nag-dismiss",
@@ -655,6 +680,10 @@ export function initialize(): void {
                 });
                 $popper.on("click", ".insecure-desktop-app", () => {
                     open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".unsupported-browser", () => {
+                    open_navbar_banner_and_resize(UNSUPPORTED_BROWSER_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".profile-missing-required-fields", () => {

@@ -12,7 +12,7 @@ from zerver.actions.users import do_change_is_imported_stub
 from zerver.context_processors import get_realm_from_request, get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
-from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
+from zerver.lib.compatibility import is_banned_browser, is_outdated_desktop_app
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.request import RequestNotes
@@ -199,7 +199,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                 "auto_update_broken": auto_update_broken,
             },
         )
-    (unsupported_browser, browser_name) = is_unsupported_browser(client_user_agent)
+    (unsupported_browser, browser_name) = is_banned_browser(client_user_agent)
     if unsupported_browser:
         return render(
             request,

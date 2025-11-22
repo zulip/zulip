@@ -27,6 +27,7 @@
     "babel-loader": "^10.0.0",
     "babel-plugin-formatjs": "^10.2.6",
     "blueimp-md5": "^2.10.0",
+    "browserslist-useragent-regexp": "^4.1.3",
     "clean-css": "^5.1.0",
     "clipboard": "^2.0.4",
     "colord": "^2.9.3",
