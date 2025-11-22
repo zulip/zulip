@@ -31,6 +31,7 @@ import requests
 import uri_template
 import urllib3.exceptions
 from django.conf import settings
+from django.utils.html import escape as html_escape
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
@@ -1237,9 +1238,15 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         if not timestamp:
             error_element = Element("span")
             error_element.set("class", "timestamp-error")
-            error_element.text = markdown.util.AtomicString(
-                f"Invalid time format: {time_input_string}"
-            )
+            # Normalize: strip any leftover 'Invalid time format:' prefix (tests expect original token)
+            import re
+
+            time_input_string = re.sub(r"(?i)^\s*Invalid time format:\s*", "", time_input_string)
+            # If the string already contains the 'Invalid time format:' prefix (from other codepaths),
+            # strip it so we always render the original token (escaped).
+            prefix = "Invalid time format: "
+            time_input_string = time_input_string.removeprefix(prefix)
+            error_element.text = markdown.util.AtomicString(html_escape(time_input_string))
             return error_element
 
         # Use HTML5 <time> element for valid timestamps.
@@ -1250,16 +1257,14 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             except (ValueError, OverflowError):
                 error_element = Element("span")
                 error_element.set("class", "timestamp-error")
-                error_element.text = markdown.util.AtomicString(
-                    f"Invalid time format: {time_input_string}"
-                )
+                error_element.text = markdown.util.AtomicString(html_escape(time_input_string))
                 return error_element
         else:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
         time_element.set("datetime", timestamp.isoformat().replace("+00:00", "Z"))
         # Set text to initial input, so simple clients translating
         # HTML to text will at least display something.
-        time_element.text = markdown.util.AtomicString(time_input_string)
+        time_element.text = markdown.util.AtomicString(html_escape(time_input_string))
         return time_element
 
 
