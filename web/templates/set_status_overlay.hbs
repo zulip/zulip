@@ -23,3 +23,8 @@
         </li>
     {{/each}}
 </ul>
+
+<div class="scheduled-end-time-container">
+    {{> dropdown_widget_with_label widget_name="scheduled_end_time" label=(t 'Automatically clear status')}}
+    <p id="scheduled-end-time-description" class="time-input-formatted-description"></p>
+</div>
