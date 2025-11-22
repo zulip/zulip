@@ -46,6 +46,7 @@ export function set_old_unreads_missing_for_tests(value: boolean): void {
 }
 
 export const unread_mentions_counter = new Set<number>();
+export const unread_alert_words_counter = new Set<number>();
 export const direct_message_with_mention_count = new Set();
 const unread_messages = new Set<number>();
 
@@ -761,6 +762,7 @@ export function process_loaded_messages(
                     id: message.id,
                     mentioned: message.mentioned,
                     mentioned_me_directly: message.mentioned_me_directly,
+                    alerted: message.alerted,
                     type: message.type,
                     user_ids_string: people.pm_reply_user_string(message) ?? "",
                     unread: true,
@@ -770,6 +772,7 @@ export function process_loaded_messages(
                     id: message.id,
                     mentioned: message.mentioned,
                     mentioned_me_directly: message.mentioned_me_directly,
+                    alerted: message.alerted,
                     type: message.type,
                     stream_id: message.stream_id,
                     topic: message.topic,
@@ -787,6 +790,7 @@ type UnreadMessageData = {
     id: number;
     mentioned: boolean | undefined;
     mentioned_me_directly: boolean | undefined;
+    alerted?: boolean | undefined;
     unread: boolean;
 } & (
     | {
@@ -823,6 +827,7 @@ export function process_unread_message(message: UnreadMessageData): void {
     }
 
     update_message_for_mention(message);
+    update_message_for_alert_word(message);
 }
 
 function is_message_in_unmuted_context(message: UnreadMessageData | Message): boolean {
@@ -874,6 +879,26 @@ export function update_message_for_mention(
     return false;
 }
 
+export function update_message_for_alert_word(message: UnreadMessageData | Message): void {
+    // Updates the unread alert words counter for the message.
+    //
+    // Alert words don't have visual indicators in the recent view like mentions do,
+    // so we don't need to return a boolean indicating whether a rerender is needed
+    // (unlike update_message_for_mention, which does return such a boolean).
+    if (!message.unread) {
+        unread_alert_words_counter.delete(message.id);
+        return;
+    }
+
+    const is_unmuted_alert = message.alerted && is_message_in_unmuted_context(message);
+
+    if (is_unmuted_alert) {
+        unread_alert_words_counter.add(message.id);
+    } else {
+        unread_alert_words_counter.delete(message.id);
+    }
+}
+
 export function mark_as_read(message_id: number): void {
     // We don't need to check anything about the message, since all
     // the following methods are cheap and work fine even if message_id
@@ -886,6 +911,7 @@ export function mark_as_read(message_id: number): void {
     unread_direct_message_counter.delete(message_id);
     unread_topic_counter.delete(message_id);
     unread_mentions_counter.delete(message_id);
+    unread_alert_words_counter.delete(message_id);
     direct_message_with_mention_count.delete(message_id);
     unread_messages.delete(message_id);
 
@@ -900,6 +926,7 @@ export function declare_bankruptcy(): void {
     unread_direct_message_counter.clear();
     unread_topic_counter.clear();
     unread_mentions_counter.clear();
+    unread_alert_words_counter.clear();
     direct_message_with_mention_count.clear();
     unread_messages.clear();
     unread_mention_topics.clear();
@@ -916,6 +943,7 @@ export function get_unread_topics(): UnreadTopicCounts {
 export type FullUnreadCountsData = {
     direct_message_count: number;
     mentioned_message_count: number;
+    alert_word_message_count: number;
     direct_message_with_mention_count: number;
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
@@ -943,6 +971,7 @@ export function get_counts(): FullUnreadCountsData {
     return {
         direct_message_count: pm_res.total_count,
         mentioned_message_count: unread_mentions_counter.size,
+        alert_word_message_count: unread_alert_words_counter.size,
         direct_message_with_mention_count: direct_message_with_mention_count.size,
         stream_unread_messages: topic_res.stream_unread_messages,
         followed_topic_unread_messages_count: topic_res.followed_topic_unread_messages,
@@ -1087,6 +1116,12 @@ export function get_msg_ids_for_mentions(): number[] {
     return util.sorted_ids(ids);
 }
 
+export function get_msg_ids_for_alert_words(): number[] {
+    const ids = [...unread_alert_words_counter];
+
+    return util.sorted_ids(ids);
+}
+
 export function get_all_msg_ids(): number[] {
     const ids = [...unread_messages];
 
@@ -1124,6 +1159,9 @@ export function initialize(params: StateData["unread"]): void {
             direct_message_with_mention_count.add(message_id);
         }
     }
+    for (const message_id of unread_msgs.alert_words) {
+        unread_alert_words_counter.add(message_id);
+    }
     clear_and_populate_unread_mentions();
 
     for (const obj of unread_msgs.huddles) {
@@ -1145,6 +1183,9 @@ export function initialize(params: StateData["unread"]): void {
     }
 
     for (const message_id of unread_msgs.mentions) {
+        unread_messages.add(message_id);
+    }
+    for (const message_id of unread_msgs.alert_words) {
         unread_messages.add(message_id);
     }
 }
