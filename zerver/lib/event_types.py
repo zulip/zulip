@@ -618,6 +618,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_set_delete_message_policy_group: int | UserGroupMembersDict | None = None
     can_set_topics_policy_group: int | UserGroupMembersDict | None = None
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
+    can_unsubscribe_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None
 

@@ -62,6 +62,10 @@ exports.make_realm = (opts = {}) => {
         realm_can_set_delete_message_policy_group: 0,
         realm_can_set_topics_policy_group: 0,
         realm_can_summarize_topics_group: 0,
+        realm_can_unsubscribe_group: {
+            direct_subgroups: [],
+            direct_members: [],
+        },
         realm_create_multiuse_invite_group: 0,
         realm_date_created: 0,
         realm_default_code_block_language: "",
@@ -138,8 +142,26 @@ exports.make_realm = (opts = {}) => {
         server_presence_offline_threshold_seconds: 0,
         server_presence_ping_interval_seconds: 0,
         server_supported_permission_settings: {
-            realm: {},
-            stream: {},
+            realm: {
+                can_unsubscribe_group: {
+                    require_system_group: false,
+                    allow_internet_group: false,
+                    allow_nobody_group: true,
+                    allow_everyone_group: true,
+                    default_group_name: "role:everyone",
+                    allowed_system_groups: [],
+                },
+            },
+            stream: {
+                can_unsubscribe_group: {
+                    require_system_group: false,
+                    allow_internet_group: false,
+                    allow_nobody_group: true,
+                    allow_everyone_group: true,
+                    default_group_name: "role:nobody",
+                    allowed_system_groups: [],
+                },
+            },
             group: {},
         },
         server_thumbnail_formats: [],

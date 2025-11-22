@@ -395,6 +395,7 @@ export const realm_schema = z.object({
     realm_can_set_delete_message_policy_group: group_setting_value_schema,
     realm_can_set_topics_policy_group: group_setting_value_schema,
     realm_can_summarize_topics_group: group_setting_value_schema,
+    realm_can_unsubscribe_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),
     realm_default_code_block_language: z.string(),
