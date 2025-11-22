@@ -13,9 +13,10 @@ Here are some best practices for keeping your Zulip server secure:
 5. [Understand security for user-uploaded content and user-generated requests.](#5-understand-security-for-user-uploaded-content-and-user-generated-requests)
 6. [Understand Zulip's rate-limiting system.](#6-understand-zulips-rate-limiting-system)
 
-If you believe you've identified a security issue, please report it to Zulip's
-security team at [security@zulip.com](mailto:security@zulip.com) as soon as
-possible, so that we can address it and make a responsible disclosure.
+To report a possible security vulnerability in Zulip, please [contact our
+security team][report-security-issue] as soon as possible.
+
+[report-security-issue]: ../contributing/reporting-security-vulnerabilities.md#how-to-report-a-possible-security-issue
 
 ## 1. Limit shell access to a small set of trusted individuals.
 
