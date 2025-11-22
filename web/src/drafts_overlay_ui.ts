@@ -315,6 +315,10 @@ function setup_event_handlers(): void {
         ".user-group-mention",
         function (this: HTMLElement, e) {
             if (mouse_drag.is_drag(e)) {
+                // We stop the event from propagating because that is what
+                // the main `.user-group-mention` click handler expects us to
+                // do for drafts.
+                e.stopPropagation();
                 return;
             }
 
