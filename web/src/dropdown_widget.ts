@@ -75,6 +75,8 @@ export type DropdownWidgetOptions = {
     text_if_current_value_not_in_options?: string;
     hide_search_box?: boolean;
     // Disable the widget for spectators.
+    min_items_to_show_search_box?: number;
+
     disable_for_spectators?: boolean;
     dropdown_input_visible_selector?: string;
     prefer_top_start_placement?: boolean;
@@ -114,8 +116,18 @@ export class DropdownWidget {
     unique_id_type: DataType | undefined;
     $events_container: JQuery;
     text_if_current_value_not_in_options: string;
+
+    // Effective value used while dropdown is open.
     hide_search_box: boolean;
+
+    // Remember caller’s explicit request to hide search.
+    force_hide_search_box: boolean;
+
+    // Only show the search box if options.length > threshold.
+    min_items_to_show_search_box: number | undefined;
+
     disable_for_spectators: boolean;
+
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
     dropdown_triggered_via_keyboard: boolean;
@@ -153,7 +165,11 @@ export class DropdownWidget {
         this.$events_container = options.$events_container;
         this.text_if_current_value_not_in_options =
             options.text_if_current_value_not_in_options ?? "";
+
         this.hide_search_box = options.hide_search_box ?? false;
+        this.force_hide_search_box = options.hide_search_box ?? false;
+        this.min_items_to_show_search_box = options.min_items_to_show_search_box ?? 3;
+
         this.disable_for_spectators = options.disable_for_spectators ?? false;
         this.dropdown_input_visible_selector =
             options.dropdown_input_visible_selector ?? this.widget_selector;
@@ -333,11 +349,29 @@ export class DropdownWidget {
                         }),
                     ),
                 );
+
+                // Determine whether search box should be shown based on number of items.
+                const options_list = this.get_options(this.current_value);
+                const should_show_search =
+                    !this.force_hide_search_box &&
+                    options_list.length > (this.min_items_to_show_search_box ?? 3);
+
+                // Update hide_search_box value dynamically for this session
+                this.hide_search_box = !should_show_search;
+
+                // Update DOM: hide or show search input
+                const $search_input = $(instance.popper).find<HTMLInputElement>(
+                    ".dropdown-list-search-input",
+                );
+
+                if (this.hide_search_box) {
+                    $search_input.closest(".dropdown-list-search").hide();
+                } else {
+                    $search_input.closest(".dropdown-list-search").show();
+                }
+
                 const $popper = $(instance.popper);
                 const $dropdown_list_body = $popper.find(".dropdown-list");
-                const $search_input = $popper.find<HTMLInputElement>(
-                    "input.dropdown-list-search-input",
-                );
 
                 if (this.search_placeholder_text) {
                     $search_input.attr("placeholder", this.search_placeholder_text);
