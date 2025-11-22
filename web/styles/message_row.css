@@ -311,15 +311,12 @@
             grid-template-areas:
                 ".      .         .        . .   "
                 "avatar sender    controls . time"
-                "avatar sender    .        . .   "
                 ".      more      .        . .   "
                 ".      reactions .        . .   "
                 ".      reminders .        . .   ";
             grid-template-rows:
-                var(--message-box-vertical-margin) var(
-                    --message-box-avatar-height
-                )
-                minmax(0, auto) repeat(4, auto);
+                var(--message-box-vertical-margin)
+                minmax(var(--message-box-avatar-height), auto) repeat(3, auto);
             /* We align items to the baseline on me messages,
                and unset the align-content property. */
             align-items: baseline;
@@ -347,6 +344,11 @@
                    available grid row height on me-messages, we
                    align to center here. */
                 align-self: center;
+                /* But, we need to adjust the bottom margin by the
+                   message box's vertical margin so that the controls
+                   appear properly aligned with both the time stamp
+                   and any me-message content--including inline images. */
+                margin-bottom: var(--message-box-vertical-margin);
             }
 
             .message_edit_notice {
