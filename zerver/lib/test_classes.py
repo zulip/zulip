@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import logging
 import os
 import re
 import shutil
@@ -10,7 +11,6 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
-import logging
 
 import aioapns
 import firebase_admin.messaging as firebase_messaging
