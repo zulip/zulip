@@ -113,8 +113,9 @@ export function query_matches_string_in_order_assume_canonicalized(
     query: string,
     source_str: string,
     split_char: string,
+    match_prefix?: boolean,
 ): boolean {
-    if (!query.includes(split_char)) {
+    if (!query.includes(split_char) && !match_prefix) {
         // If query is a single token (doesn't contain a separator),
         // the match can be anywhere in the string.
         return source_str.includes(query);
