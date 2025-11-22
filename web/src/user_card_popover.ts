@@ -694,6 +694,10 @@ function register_click_handlers(): void {
     );
 
     $("#main_div").on("click", ".user-mention", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
         const id_string = $(this).attr("data-user-id");
         // We fallback to email to handle legacy Markdown that was rendered
         // before we cut over to using data-user-id
@@ -702,7 +706,6 @@ function register_click_handlers(): void {
             return;
         }
         const $row = $(this).closest(".message_row");
-        e.stopPropagation();
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
