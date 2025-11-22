@@ -329,6 +329,14 @@ def filter_footer(text: str) -> str:
     return re.split(r"^\s*--\s*$", text, maxsplit=1, flags=re.MULTILINE)[0].strip()
 
 
+def get_markdown_link_for_url(filename: str, url: str) -> str:
+    #   Our markdown has no escaping, so we cannot link any
+    # text containing brackets; strip them from the
+    # filename we're linking.
+    filename = re.sub(r"\[|\]", "", filename)
+    return f"[{filename}]({url})"
+
+
 def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: UserProfile) -> str:
     attachment_links = []
     for part in message.walk():
@@ -344,11 +352,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
                     sender,
                     target_realm=realm,
                 )
-                # Our markdown has no escaping, so we cannot link any
-                # text containing brackets; strip them from the
-                # filename we're linking.
-                filename = re.sub(r"\[|\]", "", filename)
-                formatted_link = f"[{filename}]({upload_url})"
+                formatted_link = get_markdown_link_for_url(filename, upload_url)
                 attachment_links.append(formatted_link)
             else:
                 logger.warning(
