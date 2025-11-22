@@ -215,9 +215,15 @@
         }
     }
 
-    .muted-message-notice {
-        opacity: 0.5;
-        user-select: none;
+    .muted-message-notice-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.2em;
+
+        > .muted-message-notice {
+            opacity: 0.5;
+            user-select: none;
+        }
     }
 
     .message_reactions {
