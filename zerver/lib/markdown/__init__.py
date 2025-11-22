@@ -1245,8 +1245,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             # If the string already contains the 'Invalid time format:' prefix (from other codepaths),
             # strip it so we always render the original token (escaped).
             prefix = "Invalid time format: "
-            if time_input_string.startswith(prefix):
-                time_input_string = time_input_string[len(prefix) :]
+            time_input_string = time_input_string.removeprefix(prefix)
             error_element.text = markdown.util.AtomicString(html_escape(time_input_string))
             return error_element
 
