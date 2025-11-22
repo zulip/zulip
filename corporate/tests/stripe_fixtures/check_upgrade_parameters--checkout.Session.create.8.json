@@ -14,17 +14,17 @@
   },
   "billing_address_collection": "required",
   "branding_settings": {
-    "background_color": "#dbedff",
+    "background_color": "#ffffff",
     "border_style": "rounded",
-    "button_color": "#3e6bfe",
-    "display_name": "Violet Beam",
-    "font_family": "source_sans_pro",
+    "button_color": "#0074d4",
+    "display_name": "Sandbox",
+    "font_family": "default",
     "icon": {
-      "file": "file_1RxpnoDwzgQ85STgf3bBl5KY",
+      "file": "file_1RCGizRVfKEFJaqcFHPvd6rl",
       "type": "file"
     },
     "logo": {
-      "file": "file_1RxpnoDwzgQ85STgvEm4ntJu",
+      "file": "file_1RCGiyRVfKEFJaqc9ny0K376",
       "type": "file"
     }
   },

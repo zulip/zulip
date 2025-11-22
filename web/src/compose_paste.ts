@@ -45,13 +45,8 @@ function image_to_zulip_markdown(
     return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
-// Returns the count of valid text nodes in the tree.
-// We return the count as soon as we find at least `cutoff` valid nodes
-// to avoid walking the whole tree.
-function count_valid_text_nodes_upto(child_nodes: ChildNode[], cutoff: number): number {
-    if (cutoff <= 0) {
-        return 0;
-    }
+// Returns 2 or more if there are multiple valid text nodes in the tree.
+function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
     let textful_nodes = 0;
 
     for (const child of child_nodes) {
@@ -63,14 +58,14 @@ function count_valid_text_nodes_upto(child_nodes: ChildNode[], cutoff: number): 
 
         if (child.nodeValue && child.nodeType === Node.TEXT_NODE) {
             textful_nodes += 1;
-            if (textful_nodes >= cutoff) {
+            if (textful_nodes >= 2) {
                 return textful_nodes;
             }
         }
 
-        textful_nodes += count_valid_text_nodes_upto([...child.childNodes], cutoff - textful_nodes);
+        textful_nodes += check_multiple_text_nodes([...child.childNodes]);
 
-        if (textful_nodes >= cutoff) {
+        if (textful_nodes >= 2) {
             return textful_nodes;
         }
     }
@@ -91,7 +86,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
     let textful_nodes = 0;
-    textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
+    textful_nodes = check_multiple_text_nodes([...html_fragment.childNodes]);
     if (textful_nodes >= 2) {
         return false;
     }
@@ -208,8 +203,9 @@ export function is_single_image(paste_html: string): boolean {
     return (
         is_from_excel(html_fragment) ||
         is_from_libreoffice_calc(html_fragment) ||
-        (html_fragment.querySelectorAll("img").length === 1 &&
-            count_valid_text_nodes_upto([...html_fragment.childNodes], 1) === 0)
+        (html_fragment.childNodes.length === 1 &&
+            html_fragment.firstElementChild !== null &&
+            html_fragment.firstElementChild.nodeName === "IMG")
     );
 }
 
