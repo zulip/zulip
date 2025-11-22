@@ -540,11 +540,16 @@ export function initialize(): void {
                 max_stream_name_length: realm.max_stream_name_length,
                 max_stream_description_length: realm.max_stream_description_length,
             };
+            const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
+                stream,
+            });
             const change_stream_info_modal = render_change_stream_info_modal(template_data);
             dialog_widget.launch({
                 html_heading: $t_html(
-                    {defaultMessage: "Edit #{channel_name}"},
-                    {channel_name: stream.name},
+                    {defaultMessage: "Edit <z-link></z-link>"},
+                    {
+                        "z-link": () => stream_name_with_privacy_symbol_html,
+                    },
                 ),
                 html_body: change_stream_info_modal,
                 id: "change_stream_info_modal",
