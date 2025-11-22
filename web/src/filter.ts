@@ -212,6 +212,18 @@ function message_matches_search_term(message: Message, operator: string, operand
             return _.isEqual(operand_ids, user_ids);
         }
 
+        case "dm-with": {
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.all_user_ids_in_pm(message);
+            if (!user_ids) {
+                return false;
+            }
+            return operand_ids.every((operand_id) => user_ids.includes(operand_id));
+        }
+
         case "dm-including": {
             const operand_ids = people.pm_with_operand_ids(operand);
             if (!operand_ids) {
@@ -244,7 +256,8 @@ export function create_user_pill_context(user: User): UserPillItem {
 }
 
 const USER_OPERATORS = new Set([
-    "dm-including",
+    "dm-with",        // NEW primary operator
+    "dm-including",   // legacy alias
     "dm",
     "sender",
     "from",
@@ -277,6 +290,10 @@ export class Filter {
         if (operator === "group-pm-with") {
             // "group-pm-with:" was replaced with "dm-including:"
             return "dm-including";
+        }
+        // Legacy operator support
+        if (operator === "dm-including" || operator === "dm-with") {
+            return "dm-with";  // canonical operator
         }
 
         if (operator === "from") {
@@ -554,7 +571,8 @@ export class Filter {
             case "from":
             case "dm":
             case "pm-with":
-            case "dm-including":
+            case "dm-with":      // NEW
+            case "dm-including": // legacy
                 if (term.operand === "me") {
                     return true;
                 }
@@ -619,6 +637,7 @@ export class Filter {
             "channel",
             "topic",
             "dm",
+            "dm-with",
             "dm-including",
             "with",
             "sender",
@@ -692,6 +711,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "dm-with":
+                return verb + "direct messages with";
 
             case "in":
                 return verb + "messages in";
@@ -1086,6 +1108,7 @@ export class Filter {
     is_search_for_specific_group_or_user(): boolean {
         return (
             this.has_operator("dm") ||
+            this.has_operator("dm-with") ||
             this.has_operator("dm-including") ||
             this.has_operator("sender")
         );
@@ -1557,6 +1580,7 @@ export class Filter {
         return (
             (this.has_operator("is") && this.operands("is")[0] === "dm") ||
             this.has_operator("dm") ||
+            this.has_operator("dm-with") ||
             this.has_operator("dm-including")
         );
     }
