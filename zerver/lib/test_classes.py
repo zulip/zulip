@@ -2345,8 +2345,10 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             streams=Stream.objects.exclude(id__in=stream_ids)
         )
     
+    # Assuming this code is placed inside the ZulipTestCase class definition
+
     @contextmanager
-    def assertNoLogs(self, logger_name: str = "", level: int = logging.DEBUG):
+    def assertNoLogs(self, logger_name: str = "", level: int = logging.DEBUG) -> Iterator[None]:
         """
         Context manager to assert that no logs are emitted inside the block.
 
@@ -2367,7 +2369,8 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         records = []
 
         class ListHandler(logging.Handler):
-            def emit(self, record):
+            # Added type hints: record: logging.LogRecord and -> None
+            def emit(self, record: logging.LogRecord) -> None:
                 records.append(record)
 
         handler = ListHandler()
@@ -2389,7 +2392,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
                     "Expected no logs, but some were emitted:\n" +
                     "\n".join(formatted)
                 )
-
+            
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
