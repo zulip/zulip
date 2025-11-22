@@ -1,0 +1,50 @@
+[
+  {
+    "Name": "Alya Abbott",
+    "UserId": "3c6ee395-529d-4681-b5f7-582c707570f6",
+    "UserName": "alya@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  },
+  {
+    "Name": "Pieter K",
+    "UserId": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+    "UserName": "pieterk@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  },
+  {
+    "Name": "Cordelia",
+    "UserId": "bcbf26d8-e24a-4298-b6fd-d2320ff09fa5",
+    "UserName": "cordelia@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  },
+  {
+    "Name": "zoe",
+    "UserId": "5dbe468a-1e96-4aaa-856d-cdf825081e11",
+    "UserName": "zoe@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  },
+  {
+    "Name": "AARON",
+    "UserId": "4dbd4c6f-163d-40b7-901b-e86b2f2141ae",
+    "UserName": "aaron@ZulipChat.onmicrosoft.com",
+    "Title": "Business development specialist",
+    "Location": null,
+    "Role": null
+  },
+  {
+    "Name": "Guest guy",
+    "UserId": "16741626-4cd8-46cc-bf36-42ecc2b5fdce",
+    "UserName": "kwok.pieter_gmail.com#EXT#@ZulipChat.onmicrosoft.com",
+    "Title": null,
+    "Location": null,
+    "Role": null
+  }
+]
