@@ -456,7 +456,21 @@ function read_external_account_field_data($profile_field_form: JQuery): External
     return field_data;
 }
 
-export type FieldData = SelectFieldData | ExternalAccountFieldData;
+export const long_text_field_data_schema = z.record(z.string(), z.string());
+
+export type LongTextFieldData = z.output<typeof long_text_field_data_schema>;
+
+function read_long_text_field_data($profile_field_form: JQuery): LongTextFieldData {
+    const display_on_user_card = $profile_field_form
+        .find<HTMLInputElement>('input[name="display_on_user_card"]')
+        .is(":checked");
+    if (display_on_user_card) {
+        return {display_on_user_card: "true"};
+    }
+    return {};
+}
+
+export type FieldData = SelectFieldData | ExternalAccountFieldData | LongTextFieldData;
 
 export function read_field_data_from_form(
     field_type_id: number,
@@ -465,13 +479,16 @@ export function read_field_data_from_form(
 ): FieldData | undefined {
     const field_types = realm.custom_profile_field_types;
 
-    // Only the following field types support associated field data.
-    if (field_type_id === field_types.SELECT.id) {
-        return read_select_field_data_from_form($profile_field_form, old_field_data);
-    } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
-        return read_external_account_field_data($profile_field_form);
+    switch (field_type_id) {
+        case field_types.SELECT.id:
+            return read_select_field_data_from_form($profile_field_form, old_field_data);
+        case field_types.EXTERNAL_ACCOUNT.id:
+            return read_external_account_field_data($profile_field_form);
+        case field_types.LONG_TEXT.id:
+            return read_long_text_field_data($profile_field_form);
+        default:
+            return undefined;
     }
-    return undefined;
 }
 
 function get_field_data_input_value($input_elem: JQuery): string | undefined {
@@ -993,9 +1010,34 @@ export function check_custom_profile_property_changed(
     custom_profile_field: CustomProfileField,
 ): boolean {
     const $elem = $(elem);
+    const property_name = extract_property_name($elem);
+    const field_types = realm.custom_profile_field_types;
+
+    if (
+        property_name === "display_on_user_card" &&
+        custom_profile_field.type === field_types.LONG_TEXT.id
+    ) {
+        let current_val = false;
+        if (custom_profile_field.field_data && custom_profile_field.field_data.trim() !== "") {
+            try {
+                const long_text_data = long_text_field_data_schema.parse(
+                    JSON.parse(custom_profile_field.field_data),
+                );
+                current_val = long_text_data.display_on_user_card === "true";
+            } catch {
+                current_val = false;
+            }
+        }
+        const proposed_val = get_input_element_value(elem, "boolean");
+        return current_val !== proposed_val;
+    }
+
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const property_name = extract_property_name($elem) as keyof CustomProfileField;
-    const current_val = get_custom_profile_property_value(property_name, custom_profile_field);
+    const property_name_typed = property_name as keyof CustomProfileField;
+    const current_val = get_custom_profile_property_value(
+        property_name_typed,
+        custom_profile_field,
+    );
     let proposed_val;
     if (property_name === "field_data") {
         proposed_val = get_input_element_value(elem, "field-data-setting");
@@ -1225,12 +1267,22 @@ export function populate_data_for_custom_profile_field_request(
 ): Record<string, string | boolean | number> {
     const data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
+    const field_types = realm.custom_profile_field_types;
+
     for (const input_elem of properties_elements) {
         const $input_elem = $(input_elem);
+        const property_name = extract_property_name($input_elem);
+
+        if (
+            property_name === "display_on_user_card" &&
+            custom_profile_field.type === field_types.LONG_TEXT.id
+        ) {
+            continue;
+        }
+
         if (check_custom_profile_property_changed(input_elem, custom_profile_field)) {
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
-                const property_name = extract_property_name($input_elem);
                 assert(typeof input_value !== "object");
                 data[property_name] = input_value;
             }

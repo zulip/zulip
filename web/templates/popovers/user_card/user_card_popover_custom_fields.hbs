@@ -16,6 +16,13 @@
                 {{/if}}
                 <span class="custom-profile-field-text">{{this.value}}</span>
             </a>
+        {{else if this.display_on_user_card}}
+            <div class="custom-profile-field-value" data-tippy-content="{{this.name}}">
+                <span class="custom-profile-field-text">{{this.name}}</span>
+            </div>
+            <span role="menuitem" tabindex="0" class="popover-menu-link copy-button copy-custom-profile-field-long-text" aria-label="{{t 'Copy' }}" data-tippy-content="{{t 'Copy' }}" data-field-value="{{this.value}}">
+                <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
+            </span>
         {{else if this.rendered_value}}
             <div class="custom-profile-field-value rendered_markdown" data-tippy-content="{{this.name}}">
                 {{rendered_markdown this.rendered_value}}
