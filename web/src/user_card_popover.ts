@@ -558,6 +558,11 @@ export function unsaved_message_user_mention_event_handler(
     e: JQuery.ClickEvent,
 ): void {
     if (mouse_drag.is_drag(e)) {
+        // We stop propagation because, if this event was fired from drafts,
+        // it would otherwise trigger the handler twice: once from the
+        // `.user-mention` listener for drafts and again from the
+        // `.messagebox .user-mention` click handler.
+        e.stopPropagation();
         return;
     }
 
