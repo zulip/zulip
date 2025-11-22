@@ -404,6 +404,7 @@
 
     .inbox-header-stream-archived {
         color: var(--color-text-message-header-archived);
+	margin-left: 4px;
     }
 }
 
@@ -786,4 +787,7 @@
             );
         }
     }
+#inbox-pane #inbox-list .inbox-header .inbox-header-name .inbox-header-stream-archived {
+    margin-left: 6px; 
+}
 }
