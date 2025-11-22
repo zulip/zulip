@@ -744,7 +744,7 @@ class TestStoreThumbnail(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         path_id = upload_backend.generate_message_upload_path(str(hamlet.realm.id), "img.png")
         upload_backend.upload_message_attachment(
-            path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet
+            path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet, hamlet.realm
         )
         source = attachment_source(path_id)
         create_attachment("img.png", path_id, "image/png", source, hamlet, hamlet.realm)

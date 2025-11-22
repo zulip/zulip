@@ -18,7 +18,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.thumbnail import (
     MAX_EMOJI_GIF_FILE_SIZE_BYTES,
@@ -104,7 +104,6 @@ def create_attachment(
         file_size = file_data.size
         file_vips_data = file_data.vips_source
 
-    content_type = maybe_add_charset(content_type, file_data)
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -207,6 +206,7 @@ def upload_message_attachment(
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
+    content_type = maybe_add_charset(content_type, file_data)
 
     with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
@@ -215,6 +215,7 @@ def upload_message_attachment(
             content_type,
             file_data,
             user_profile,
+            target_realm,
         )
         create_attachment(
             uploaded_file_name,
@@ -426,6 +427,7 @@ def upload_emoji_image(
     # a format which is widespread enough that we're willing to inline
     # it.  The latter contains non-image formats, but the former
     # limits to only images.
+    content_type = bare_content_type(content_type)
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
         raise BadImageError(_("Invalid image format"))
 
