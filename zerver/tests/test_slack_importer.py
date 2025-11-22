@@ -1,6 +1,9 @@
 import os
+import re
 import shutil
+import tempfile
 from collections.abc import Iterator
+from contextlib import nullcontext
 from io import BytesIO
 from typing import TYPE_CHECKING, Any
 from unittest import mock
@@ -26,6 +29,7 @@ from zerver.data_import.import_util import (
     build_subscription,
     build_usermessages,
     build_zerver_realm,
+    get_emojis,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
@@ -55,8 +59,10 @@ from zerver.data_import.slack import (
 )
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
+from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import (
     Message,
@@ -2697,3 +2703,225 @@ by Pieter
                     "cancel_import": "true",
                 },
             )
+
+    @responses.activate
+    def test_slack_get_emojis(self) -> None:
+        zerver_realmemoji = [
+            {
+                "id": 0,
+                "name": "bowtie",
+                "file_name": None,
+                "is_animated": False,
+                "deactivated": False,
+                "author": None,
+                "realm": 0,
+            },
+            {
+                "id": 10,
+                "name": "slack_zulip",
+                "file_name": None,
+                "is_animated": False,
+                "deactivated": False,
+                "author": None,
+                "realm": 0,
+            },
+        ]
+        emoji_url_map = {
+            "bowtie": "https://emoji.slack-edge.com/T06NRA6HM3P/bowtie/f3ec6f2bb0.png",
+            "slack_zulip": "https://emoji.slack-edge.com/T06NRA6HM3P/slack_zulip/3d93d672c2ba4dfc.gif",
+        }
+        realm_id = 0
+
+        responses.add(
+            responses.GET,
+            re.compile(r"https://.*\.slack-edge\.com/.*\.png"),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            re.compile(r"https://.*\.slack-edge\.com/.*\.gif"),
+            body=read_test_image_file("img.png"),
+            content_type="image/gif",
+            status=200,
+        )
+
+        output_dir = tempfile.mkdtemp()
+        try:
+            for emoji_data in zerver_realmemoji:
+                emoji_name = emoji_data["name"]
+                assert isinstance(emoji_name, str)
+
+                emoji_id = emoji_data["id"]
+                emoji_url = emoji_url_map[emoji_name]
+                assert isinstance(emoji_url, str)
+                assert isinstance(emoji_id, int)
+
+                emoji_file_name = get_emojis(
+                    output_dir,
+                    emoji_url,
+                    emoji_name,
+                    emoji_id,
+                    realm_id,
+                )
+
+                assert emoji_file_name is not None
+                self.assertFalse(emoji_file_name.startswith(emoji_name))
+                self.assertRegex(emoji_file_name, r"[a-zA-Z0-9]")
+                expected_file_type = emoji_file_name.split(".")[-1]
+                self.assertTrue(emoji_file_name.endswith(expected_file_type))
+            emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+            emoji_files = os.listdir(emoji_dir)
+            self.assert_length(emoji_files, 2)
+        finally:
+            shutil.rmtree(output_dir)
+
+    @responses.activate
+    def test_slack_get_emojis_unknown_content_type(self) -> None:
+        emoji_data = {
+            "id": 0,
+            "name": "bowtie",
+            "file_name": None,
+            "is_animated": False,
+            "deactivated": False,
+            "author": None,
+            "realm": 0,
+        }
+        emoji_url_map = {
+            "bowtie": "https://emoji.slack-edge.com/T06NRA6HM3P/bowtie/f3ec6f2bb0.png",
+        }
+        realm_id = 0
+        unknown_image_type = "image/unknown"
+
+        self.assertTrue(
+            unknown_image_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES
+            or unknown_image_type not in INLINE_MIME_TYPES
+        )
+
+        responses.add(
+            responses.GET,
+            re.compile(r"https://.*\.slack-edge\.com/.*\.png"),
+            body=read_test_image_file("img.png"),
+            content_type=unknown_image_type,
+            status=200,
+        )
+
+        emoji_name = emoji_data["name"]
+        assert isinstance(emoji_name, str)
+
+        emoji_id = emoji_data["id"]
+        emoji_url = emoji_url_map[emoji_name]
+        assert isinstance(emoji_url, str)
+        assert isinstance(emoji_id, int)
+
+        output_dir = tempfile.mkdtemp()
+
+        with self.assertRaises(BadImageError) as e:
+            get_emojis(
+                output_dir,
+                emoji_url,
+                emoji_name,
+                emoji_id,
+                realm_id,
+            )
+        self.assertEqual(
+            f"Emoji {emoji_name} is not an image file. Content type: {unknown_image_type}",
+            str(e.exception),
+        )
+        emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+        self.assertFalse(os.path.exists(emoji_dir))
+
+    @responses.activate
+    def test_slack_get_emojis_guess_content_type(self) -> None:
+        zerver_realmemoji = [
+            {
+                "id": 0,
+                "name": "unknown_content_type",
+                "file_name": None,
+                "is_animated": False,
+                "deactivated": False,
+                "author": None,
+                "realm": 0,
+            },
+            {
+                "id": 10,
+                "name": "unknown_content_type_and_not_guessable",
+                "file_name": None,
+                "is_animated": False,
+                "deactivated": False,
+                "author": None,
+                "realm": 0,
+            },
+        ]
+        emoji_url_map = {
+            "unknown_content_type": "https://emoji.slack-edge.com/T06NRA6HM3P/slack_zulip/3d93d672c2ba4dfc.gif",
+            "unknown_content_type_and_not_guessable": "https://emoji.slack-edge.com/T06NRA6HM3P/bowtie/f3ec6f2bb0.unknown",
+        }
+        realm_id = 0
+
+        responses.add(
+            responses.GET,
+            "https://emoji.slack-edge.com/T06NRA6HM3P/slack_zulip/3d93d672c2ba4dfc.gif",
+            body=read_test_image_file("img.png"),
+            content_type=None,
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            "https://emoji.slack-edge.com/T06NRA6HM3P/bowtie/f3ec6f2bb0.unknown",
+            body=read_test_image_file("img.png"),
+            content_type=None,
+            status=200,
+        )
+
+        output_dir = tempfile.mkdtemp()
+        try:
+            for emoji_data in zerver_realmemoji:
+                emoji_name = emoji_data["name"]
+                assert isinstance(emoji_name, str)
+
+                emoji_id = emoji_data["id"]
+                emoji_url = emoji_url_map[emoji_name]
+                assert isinstance(emoji_url, str)
+                assert isinstance(emoji_id, int)
+
+                ctx = (
+                    self.assertRaises(BadImageError)
+                    if emoji_name == "unknown_content_type_and_not_guessable"
+                    else nullcontext()
+                )
+                with self.assertLogs(level="WARN") as logs, ctx as e:
+                    emoji_file_name = get_emojis(
+                        output_dir,
+                        emoji_url,
+                        emoji_name,
+                        emoji_id,
+                        realm_id,
+                    )
+
+                self.assertIn(
+                    f"WARNING:root:Emoji {emoji_name} has an unspecified content type. Guessing the file extension.",
+                    logs.output,
+                )
+
+                if emoji_name == "unknown_content_type_and_not_guessable":
+                    assert e is not None
+                    self.assertIn(
+                        f"Unknown content type for: {emoji_name}",
+                        str(e.exception),
+                    )
+                    continue
+
+                assert emoji_file_name is not None
+                self.assertFalse(emoji_file_name.startswith(emoji_name))
+                self.assertRegex(emoji_file_name, r"[a-zA-Z0-9]")
+                expected_file_type = emoji_file_name.split(".")[-1]
+                self.assertTrue(emoji_file_name.endswith(expected_file_type))
+            emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+            emoji_files = os.listdir(emoji_dir)
+            self.assert_length(emoji_files, 1)
+        finally:
+            shutil.rmtree(output_dir)
