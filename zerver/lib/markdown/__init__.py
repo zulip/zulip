@@ -31,6 +31,7 @@ import requests
 import uri_template
 import urllib3.exceptions
 from django.conf import settings
+from django.utils.html import escape as html_escape
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
@@ -41,7 +42,6 @@ from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
 from zerver.lib.emoji_utils import emoji_to_hex_codepoint, unqualify_emoji
 from zerver.lib.exceptions import MarkdownRenderingError
-from django.utils.html import escape as html_escape
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
