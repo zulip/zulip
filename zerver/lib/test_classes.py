@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
+import logging
 
 import aioapns
 import firebase_admin.messaging as firebase_messaging
@@ -2343,6 +2344,51 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         return self.build_streams_subscriber_count(
             streams=Stream.objects.exclude(id__in=stream_ids)
         )
+    
+    @contextmanager
+    def assertNoLogs(self, logger_name: str = "", level: int = logging.DEBUG):
+        """
+        Context manager to assert that no logs are emitted inside the block.
+
+        :param logger_name: The name of the logger to monitor. Defaults to 
+                            the root logger ("") if not specified.
+        :param level: The minimum logging level to capture. Logs below this 
+                      level will be ignored. Defaults to logging.DEBUG.
+
+        Usage:
+            with self.assertNoLogs("zulip.auth"):
+                some_function()   # Should not log anything
+        """
+        logger = logging.getLogger(logger_name)
+        # Store the original level to restore it later
+        old_level = logger.level
+
+        # Capture logs temporarily
+        records = []
+
+        class ListHandler(logging.Handler):
+            def emit(self, record):
+                records.append(record)
+
+        handler = ListHandler()
+        logger.addHandler(handler)
+        # Set the logger level to capture all logs at or above the requested level
+        logger.setLevel(level)
+
+        try:
+            yield
+        finally:
+            # Clean up: remove handler and restore old level
+            logger.removeHandler(handler)
+            logger.setLevel(old_level)
+
+            if records:
+                # Format the error message clearly
+                formatted = [f"{r.levelname}: {r.getMessage()}" for r in records]
+                raise AssertionError(
+                    "Expected no logs, but some were emitted:\n" +
+                    "\n".join(formatted)
+                )
 
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
