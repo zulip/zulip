@@ -490,7 +490,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         content = "@**FooBot** foo bar!!!"
         recipient = "Denmark"
         trigger = "mention"
-        recipient_type = Recipient._type_names[Recipient.STREAM]
+        recipient_type = "stream"
 
         def check_values_passed(
             queue_name: Any,

@@ -5,7 +5,7 @@
     {% if hot_conversations %}
         {% for convo in hot_conversations %}
         <div class='messages'>
-            {% for recipient_block in convo.first_few_messages %}
+            {% with recipient_block=convo.first_few_messages %}
                 <div class='hot_convo_recipient_block'>
                     <div class='hot_convo_recipient_header'>{{ recipient_block.header.html|safe }}</div>
                     <div class='hot_convo_message_content'>
@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 {% if convo.count > 0 %}<p class="digest_paragraph">+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
-            {% endfor %}
+            {% endwith %}
         </div>
         {% endfor %}
     {% endif %}

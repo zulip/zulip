@@ -55,13 +55,6 @@ class Recipient(models.Model):
     class Meta:
         unique_together = ("type", "type_id")
 
-    # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _type_names = {
-        PERSONAL: "personal",
-        STREAM: "stream",
-        DIRECT_MESSAGE_GROUP: "direct_message_group",
-    }
-
     @override
     def __str__(self) -> str:
         return f"{self.label()} ({self.type_id}, {self.type})"
@@ -73,10 +66,6 @@ class Recipient(models.Model):
             return Stream.objects.get(id=self.type_id).name
         else:
             return str(get_display_recipient(self))
-
-    def type_name(self) -> str:
-        # Raises KeyError if invalid
-        return self._type_names[self.type]
 
 
 def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
