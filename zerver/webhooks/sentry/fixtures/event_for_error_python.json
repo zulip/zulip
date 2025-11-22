@@ -1,0 +1,16 @@
+{
+  "action": "triggered",
+  "data": {
+    "event": {
+      "event_id": "abc123def456789",
+      "project": 5216640,
+      "platform": "python",
+      "datetime": "2024-01-15T10:30:45.123456Z",
+      "level": "error",
+      "title": "Database connection timeout",
+      "type": "error",
+      "version": "7",
+      "web_url": "https://sentry.io/organizations/example-org/issues/12345/events/abc123/"
+    }
+  }
+}
