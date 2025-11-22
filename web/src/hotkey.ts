@@ -761,6 +761,22 @@ export function process_tab_key(): boolean {
         return true;
     }
 
+    if (document.activeElement && $(document.activeElement).hasClass("message_edit_cancel")) {
+        const $form = $(document.activeElement).closest("form");
+        const $markdown_btns = $form.find(".markdown_preview, .undo_markdown_preview");
+
+        const $preview_btn = $markdown_btns
+            .filter(function () {
+                return this.offsetParent !== null;
+            })
+            .first();
+
+        if ($preview_btn.length > 0) {
+            $preview_btn.trigger("focus");
+            return true;
+        }
+    }
+
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("tab");
     }
@@ -777,6 +793,12 @@ export function process_shift_tab_key(): boolean {
         // Shift-Tab: go back to content textarea and restore
         // cursor position.
         compose_textarea.restore_compose_cursor();
+        return true;
+    }
+
+    // Shift-Tabbing from the preview button takes you to cancel
+    if ($(".markdown_preview:focus").length > 0) {
+        $(".message_edit_cancel").trigger("focus");
         return true;
     }
 
