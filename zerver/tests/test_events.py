@@ -685,6 +685,7 @@ class NormalActionsTest(BaseAction):
         content = "new content"
         rendering_result = render_message_markdown(pm, content)
         prior_mention_user_ids: set[int] = set()
+        prior_alert_word_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -709,6 +710,7 @@ class NormalActionsTest(BaseAction):
                 False,
                 rendering_result,
                 prior_mention_user_ids,
+                prior_alert_word_user_ids,
                 mention_data,
             )
         check_update_message(
@@ -1010,6 +1012,7 @@ class NormalActionsTest(BaseAction):
         content = "new content"
         rendering_result = render_message_markdown(message, content)
         prior_mention_user_ids: set[int] = set()
+        prior_alert_word_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -1034,6 +1037,7 @@ class NormalActionsTest(BaseAction):
                 False,
                 rendering_result,
                 prior_mention_user_ids,
+                prior_alert_word_user_ids,
                 mention_data,
             )
         check_update_message(
@@ -1068,6 +1072,7 @@ class NormalActionsTest(BaseAction):
                 False,
                 None,
                 prior_mention_user_ids,
+                prior_alert_word_user_ids,
                 mention_data,
             )
         check_update_message(
@@ -1115,6 +1120,7 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
+        prior_alert_word_user_ids = set()
 
         message_edit_request = build_message_edit_request(
             message=message,
@@ -1139,6 +1145,7 @@ class NormalActionsTest(BaseAction):
                 True,
                 None,
                 set(),
+                set(),
                 None,
             )
         check_update_message(
@@ -1161,6 +1168,7 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
+        prior_alert_word_user_ids = set()
 
         message_edit_request = build_message_edit_request(
             message=message,
@@ -1187,6 +1195,7 @@ class NormalActionsTest(BaseAction):
                 True,
                 True,
                 None,
+                set(),
                 set(),
                 None,
             )
@@ -1242,7 +1251,7 @@ class NormalActionsTest(BaseAction):
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
         user_profile = self.example_user("hamlet")
         mention = "@**" + user_profile.full_name + "**"
-        
+
         # Add alert word for testing
         do_add_alert_words(user_profile, ["alertword"])
 
