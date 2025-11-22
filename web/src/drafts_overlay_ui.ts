@@ -314,12 +314,15 @@ function setup_event_handlers(): void {
         "click",
         ".user-group-mention",
         function (this: HTMLElement, e) {
+            // We stop the event from propagating because that is what
+            // the main `.messagebox .user-group-mention` click handler
+            // expects us to do for drafts.
+            e.stopPropagation();
             if (mouse_drag.is_drag(e)) {
                 return;
             }
 
             user_group_popover.toggle_user_group_info_popover(this, undefined);
-            e.stopPropagation();
         },
     );
 
