@@ -217,6 +217,14 @@ def add_quote_prefix_in_text(content: str) -> str:
     return "\n".join(output)
 
 
+def get_stream_prefix(stream: Stream) -> str:
+    """
+    Return the prefix used for displaying a stream name in emails.
+    """
+    # TODO: Add support for emoji icons (🔒, 🌍).
+    return "#"
+
+
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
@@ -334,9 +342,10 @@ def build_message_list(
             header = f"{stream.name} > {message.topic_name()}"
             stream_link = stream_narrow_url(user.realm, stream)
             header_html = Markup(
-                "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+                "<a href='{stream_link}'>{stream_prefix}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
             ).format(
                 stream_link=stream_link,
+                stream_prefix=get_stream_prefix(stream),
                 stream_name=stream.name,
                 narrow_link=narrow_link,
                 topic_name=message.topic_name(),
