@@ -1,0 +1,20 @@
+<div class="micromodal" id="{{modal_id}}" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="{{modal_id}}-title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading" id="{{modal_id}}-title">{{t "Edit choice" }}</h1>
+            </header>
+            <main class="modal__content">
+                <p>
+                    {{t "Making changes to this choice will modify the profile of the users who've selected it." }}
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <button type="button" class="modal__button dialog_exit_button" data-micromodal-close>{{t "Cancel" }}</button>
+                <button type="button" class="modal__button dialog_submit_button">
+                    <span>{{t "Proceed" }}</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>

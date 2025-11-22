@@ -1719,6 +1719,10 @@ label.preferences-radio-choice-label {
     margin: 12px 0 0;
 }
 
+#edit-choice-confirmation-modal .modal__container {
+    width: 30em;
+}
+
 .custom_user_field,
 .bot_owner_user_field {
     .pill-container {

@@ -3,6 +3,16 @@
         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
     </span>
-    <input type='text' class="modal_text_input" placeholder='{{t "New option" }}' value="{{ text }}" />
+    <input
+      type='text'
+      class="modal_text_input"
+      placeholder='{{t "New option" }}'
+      value="{{ text }}"
+      {{#if disable_choice_input}}disabled{{/if}}
+      />
+    {{#if disable_choice_input}}
+        {{> ../components/icon_button intent="brand" custom_classes="edit-choice-button tippy-zulip-tooltip" icon="edit" aria-label=(t "Edit choice") data-tippy-content=(t "Edit choice") }}
+        {{> ../components/icon_button intent="success" custom_classes="finish-edit-choice-button tippy-zulip-tooltip" icon="check" aria-label=(t "Done editing choice") data-tippy-content=(t "Done editing choice") hidden=true }}
+    {{/if}}
     {{> ../components/icon_button intent="danger" custom_classes="delete-choice tippy-zulip-tooltip" hidden=new_empty_choice_row icon="trash" data-tippy-content=(t "Delete") aria-label=(t "Delete") }}
 </div>

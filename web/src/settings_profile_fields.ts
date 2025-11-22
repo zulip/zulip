@@ -1,4 +1,5 @@
 import $ from "jquery";
+import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 
@@ -7,6 +8,7 @@ import render_confirm_delete_profile_field_option from "../templates/confirm_dia
 import render_add_new_custom_profile_field_form from "../templates/settings/add_new_custom_profile_field_form.hbs";
 import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.hbs";
 import render_edit_custom_profile_field_form from "../templates/settings/edit_custom_profile_field_form.hbs";
+import render_edit_select_choice_confirmation_dialog from "../templates/settings/edit_select_choice_confirmation_dialog.hbs";
 import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.hbs";
 
 import * as channel from "./channel.ts";
@@ -30,6 +32,7 @@ type FieldChoice = {
     value: string;
     text: string;
     order: string;
+    disable_choice_input?: boolean;
 };
 
 const meta: {
@@ -57,6 +60,8 @@ export function maybe_disable_widgets(): void {
 
 let display_in_profile_summary_fields_limit_reached = false;
 let order: number[] = [];
+const edit_choice_confirmation_modal_id = "edit-choice-confirmation-modal";
+let is_choice_confirmation_open = false;
 
 export function field_type_id_to_string(type_id: number): string | undefined {
     for (const field_type of Object.values(realm.custom_profile_field_types)) {
@@ -137,9 +142,41 @@ function create_choice_row(container: JQuery): void {
         text: "",
         value: get_value_for_new_option(container),
         new_empty_choice_row: true,
+        disable_choice_input: false,
     };
     const row_html = render_settings_profile_field_choice(context);
     $(container).append($(row_html));
+}
+
+function open_choice_edit_confirmation_dialog(on_proceed: () => void): void {
+    if (is_choice_confirmation_open) {
+        return;
+    }
+
+    const $modal = $(
+        render_edit_select_choice_confirmation_dialog({
+            modal_id: edit_choice_confirmation_modal_id,
+        }),
+    );
+    $("body").append($modal);
+    $modal.one("click", ".dialog_submit_button", () => {
+        is_choice_confirmation_open = false;
+        Micromodal.close(edit_choice_confirmation_modal_id);
+        on_proceed();
+    });
+
+    Micromodal.show(edit_choice_confirmation_modal_id, {
+        disableScroll: true,
+        disableFocus: false,
+        openClass: "modal--open",
+        onShow() {
+            is_choice_confirmation_open = true;
+        },
+        onClose() {
+            is_choice_confirmation_open = false;
+            $modal.remove();
+        },
+    });
 }
 
 function clear_form_data(): void {
@@ -454,6 +491,7 @@ function set_up_select_field_edit_form(
                 render_settings_profile_field_choice({
                     text: choice.text,
                     value: choice.value,
+                    disable_choice_input: true,
                 }),
             ),
         );
@@ -474,6 +512,24 @@ function set_up_select_field_edit_form(
     });
 }
 
+function set_choice_row_edit_mode($choice_row: JQuery, is_editing: boolean): void {
+    const $input = $choice_row.find("input");
+    const $edit_choice_button = $choice_row.find(".edit-choice-button");
+    const $finish_edit_choice_button = $choice_row.find(".finish-edit-choice-button");
+
+    if (is_editing) {
+        $edit_choice_button.addClass("hide");
+        $finish_edit_choice_button.removeClass("hide");
+        $input.prop("disabled", false);
+        $input.trigger("focus");
+        return;
+    }
+
+    $input.prop("disabled", true);
+    $finish_edit_choice_button.addClass("hide");
+    $edit_choice_button.removeClass("hide");
+}
+
 function open_edit_form_modal(this: HTMLElement): void {
     const field_types = realm.custom_profile_field_types;
 
@@ -487,7 +543,10 @@ function open_edit_form_modal(this: HTMLElement): void {
     let choices: FieldChoice[] = [];
     if (field.type === field_types.SELECT.id) {
         const select_field_data = settings_components.select_field_data_schema.parse(field_data);
-        choices = parse_field_choices_from_field_data(select_field_data);
+        choices = parse_field_choices_from_field_data(select_field_data).map((choice) => ({
+            ...choice,
+            disable_choice_input: true,
+        }));
     }
 
     const html_body = render_edit_custom_profile_field_form({
@@ -550,6 +609,25 @@ function open_edit_form_modal(this: HTMLElement): void {
             "button.delete-choice",
             function (this: HTMLElement) {
                 delete_choice_row_for_edit(this, $profile_field_form, field);
+            },
+        );
+        $edit_profile_field_choices_container.on(
+            "click",
+            ".edit-choice-button",
+            function (this: HTMLElement) {
+                const $choice_row = $(this).closest(".choice-row");
+
+                open_choice_edit_confirmation_dialog(() => {
+                    set_choice_row_edit_mode($choice_row, true);
+                });
+            },
+        );
+        $edit_profile_field_choices_container.on(
+            "click",
+            ".finish-edit-choice-button",
+            function (this: HTMLElement) {
+                const $choice_row = $(this).closest(".choice-row");
+                set_choice_row_edit_mode($choice_row, false);
             },
         );
         $profile_field_form.on(
