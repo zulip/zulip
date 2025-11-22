@@ -276,7 +276,7 @@ def serve_file(
 
     if attachment is None:
         if request.get_preferred_type(["text/html", "image/png"]) == "image/png":
-            response = serve_image_error(404, "images/errors/image-not-exist.png")
+            response = serve_image_error(404, "images/errors/file-not-exist.png")
         else:
             response = HttpResponseNotFound(
                 _("<p>This file does not exist or has been deleted.</p>")
@@ -301,12 +301,12 @@ def serve_file(
         try:
             image_attachment = ImageAttachment.objects.get(path_id=path_id)
         except ImageAttachment.DoesNotExist:
-            return serve_image_error(404, "images/errors/image-not-exist.png")
+            return serve_image_error(404, "images/errors/file-not-exist.png")
 
         # Validate that this is a potential thumbnail format
         requested_format = BaseThumbnailFormat.from_string(thumbnail_format)
         if requested_format is None:
-            return serve_image_error(404, "images/errors/image-not-exist.png")
+            return serve_image_error(404, "images/errors/file-not-exist.png")
 
         rendered_formats = [StoredThumbnailFormat(**f) for f in image_attachment.thumbnail_metadata]
 
@@ -324,7 +324,7 @@ def serve_file(
             if rendered_formats == []:
                 # We haven't rendered anything, and they requested
                 # something we don't support.
-                return serve_image_error(404, "images/errors/image-not-exist.png")
+                return serve_image_error(404, "images/errors/file-not-exist.png")
             elif requested_format in rendered_formats:
                 # Not a _current_ format, but we did render it at the
                 # time, so fine to serve.  We also end up here for
