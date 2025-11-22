@@ -926,7 +926,8 @@ h4.user_group_setting_subsection_title {
 
 .org-permissions-form,
 .group-permissions,
-.advanced-configurations-container {
+.advanced-configurations-container,
+.channel-permissions {
     .group_setting_disabled {
         cursor: not-allowed;
         /* This ensures that we do not see the not allowed cursor in the
@@ -1292,9 +1293,10 @@ div.settings-radio-input-parent {
     }
 }
 
-.stream-permissions,
-.advanced-configurations-container,
-.group-permissions {
+.new-stream-configuration,
+.channel-permissions,
+.group-permissions,
+.stream_details_box {
     .input-group {
         margin-bottom: 0.625em; /* 10px at 16px/em */
 
@@ -1328,7 +1330,8 @@ div.settings-radio-input-parent {
 }
 
 .group-permissions .pill-container,
-.advanced-configurations-container .pill-container {
+.advanced-configurations-container .pill-container,
+.channel-permissions .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
@@ -1338,7 +1341,8 @@ div.settings-radio-input-parent {
     }
 }
 
-.advanced-configurations-container .pill-container {
+.advanced-configurations-container .pill-container,
+.channel-permissions .pill-container {
     margin-bottom: 10px;
 }
 
@@ -1358,13 +1362,14 @@ div.settings-radio-input-parent {
     box-sizing: border-box;
 }
 
-.advanced-configurations-container
-    .stream-message-retention-days-input
-    input[type="text"] {
-    border-radius: 5px;
-    box-shadow: none;
-    margin: 0;
-    height: inherit;
+.advanced-configurations-container,
+.channel-permissions {
+    .stream-message-retention-days-input input[type="text"] {
+        border-radius: 5px;
+        box-shadow: none;
+        margin: 0;
+        height: inherit;
+    }
 }
 
 .group-setting-label {

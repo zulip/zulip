@@ -334,27 +334,24 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    const $general_settings_container = $stream_settings.find(".stream-permissions");
-    $general_settings_container
-        .find("input, button")
+    const $default_stream_container = $stream_settings.find(".default-stream");
+    $default_stream_container
+        .find("input")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
-    const $advanced_configurations_container = $stream_settings.find(
-        $(".advanced-configurations-container"),
-    );
-    $advanced_configurations_container
-        .find("input, select, button")
+    const $permissions_container = $stream_settings.find($(".channel-permissions"));
+    $permissions_container
+        .find("input, select")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
-    const $permission_pill_container_elements =
-        $advanced_configurations_container.find(".pill-container");
+    const $permission_pill_container_elements = $permissions_container.find(".pill-container");
 
     $stream_settings
         .find(".channel-folder-widget-container button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
-        $general_settings_container.find(".default-stream").addClass("control-label-disabled");
+        $default_stream_container.addClass("control-label-disabled");
         settings_components.disable_group_permission_setting($permission_pill_container_elements);
         return;
     }
@@ -383,7 +380,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         $stream_privacy_values.prop("disabled", true);
 
         for (const setting_name of settings_config.stream_group_permission_settings_requiring_content_access) {
-            const $setting_element = $advanced_configurations_container.find("#id_" + setting_name);
+            const $setting_element = $permissions_container.find("#id_" + setting_name);
             settings_components.disable_group_permission_setting($setting_element);
         }
     }
