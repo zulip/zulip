@@ -402,9 +402,24 @@ export function update_status_emoji_info(
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
     const message_data = stored_messages.get(old_id);
     if (message_data !== undefined) {
-        message_data.message.id = new_id;
-        message_data.message.locally_echoed = false;
-        stored_messages.set(new_id, {type: "server_message", message: message_data.message});
+        // `message_data.message` might be a LocalMessage, which is just a Message
+        // with more properties. If that's the case, we delete those properties here.
+        const server_message: Message = message_data.message;
+        if (message_data.type === "local_message") {
+            // @ts-expect-error: had this property as a LocalMessage
+            delete server_message.queue_id;
+            // @ts-expect-error: had this property as a LocalMessage
+            delete server_message.draft_id;
+            // @ts-expect-error: had this property as a LocalMessage
+            delete server_message.to;
+            if (server_message.type === "private") {
+                // @ts-expect-error: had this property as a LocalMessage
+                delete server_message.topic;
+            }
+        }
+        server_message.id = new_id;
+        server_message.locally_echoed = false;
+        stored_messages.set(new_id, {type: "server_message", message: server_message});
         stored_messages.delete(old_id);
     }
 }
