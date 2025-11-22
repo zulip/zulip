@@ -290,6 +290,8 @@ export const update_elements = ($content: JQuery): void => {
         }
     });
 
+    // Maintains backward compatibility for legacy 'timestamp-error' spans.
+    // The server no longer generates this markup, but older records may still contain it.
     $content.find("span.timestamp-error").each(function (): void {
         const match_array = /^Invalid time format: (.*)$/.exec($(this).text());
         assert(match_array !== null);

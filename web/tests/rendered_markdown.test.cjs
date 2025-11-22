@@ -146,8 +146,8 @@ const get_content_element = () => {
     $content.set_find_results("a.stream", $array([]));
     $content.set_find_results("a.stream-topic, a.message-link", $array([]));
     $content.set_find_results("time", $array([]));
-    $content.set_find_results("span.timestamp-error", $array([]));
     $content.set_find_results(".emoji", $array([]));
+    $content.set_find_results("span.timestamp-error", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
