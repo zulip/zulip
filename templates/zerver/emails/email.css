@@ -32,7 +32,7 @@ table.layout {
     width: 100%;
 }
 
-table.layout > tbody > tr > td {
+table.layout>tbody>tr>td {
     font-family: sans-serif;
     font-size: 14px;
     vertical-align: top;
@@ -308,6 +308,7 @@ p.digest_paragraph,
 }
 
 @media all {
+
     /* See https://templates.mailchimp.com/development/css/client-specific-styles/;
        ExternalClass is something Microsoft Outlook adds to emails. */
     .ExternalClass {
@@ -349,4 +350,89 @@ p.digest_paragraph,
     .float-right-image {
         max-width: 200px;
     }
+}
+
+/* Digest card custom styles for new UI */
+.digest-card {
+    border: none;
+    background: transparent;
+    margin-bottom: 24px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 0;
+}
+
+.digest-header {
+    background: #A9CCFF;
+    color: #0055CC;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 7px 12px 7px 12px;
+
+    border: 1px solid #252525;
+
+    display: flex;
+}
+
+.digest-header .arrow {
+    margin-left: 10px;
+    color: black;
+    font-weight: 400;
+}
+
+.digest-content {
+    border: 1px solid #252525;
+    border-top: none;
+    padding: 10px 14px 10px 14px;
+    background: #fff;
+    color: #222;
+    font-size: 15px;
+
+}
+
+.digest-channel-list {
+    color: #222;
+    font-size: 15px;
+    margin-bottom: 0;
+}
+
+.digest-footer {
+    margin: 9px 0 0 3px;
+    font-size: 14px;
+    color: #444;
+}
+
+.digest-preferences {
+    margin-top: 18px;
+    margin-bottom: 8px;
+}
+
+
+.digest-channel-title {
+    margin: 10px 0 18px 8px;
+    font-size: 14px;
+    color: #222;
+}
+
+.digest-channel-title b {
+    color: #000509;
+}
+
+.digest-channel-list {
+    margin: 10px 0 18px 8px;
+    font-size: 14px;
+    color: #222;
+}
+
+.digest-summary {
+    margin: 10px 0 18px 8px;
+    font-size: 14px;
+    color: #222;
+}
+
+.digest-login-link {
+    margin: 18px 0 10px 8px;
+    font-size: 14px;
+    color: #000204;
 }
