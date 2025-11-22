@@ -1,5 +1,4 @@
 import logging
-from typing import cast, Iterator # Added Iterator import for completeness, though it might not be strictly needed here.
 
 # Assuming ZulipTestCase is imported from test_classes, as per the Zulip codebase.
 from zerver.lib.test_classes import ZulipTestCase
@@ -17,7 +16,6 @@ class TestAssertNoLogs(ZulipTestCase):
         with self.assertNoLogs("zulip.testlogger.success"):
             logger.debug("A debug message")
             logger.info("An info message")
-            # Removed: x = 10 + 20 (Fixes F841 unused variable error)
 
     def test_logs_fail(self) -> None:
         """
