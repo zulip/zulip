@@ -223,13 +223,13 @@ p.digest_paragraph,
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000;
+    border: 1px solid #060404;
     margin-bottom: 4px;
 }
 
 .hot_convo_recipient_header {
     background-color: #9ec9ff;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #030101;
     font-weight: bold;
     padding: 2px;
 }
@@ -353,7 +353,6 @@ p.digest_paragraph,
 }
 
 /* Digest card custom styles for new UI */
-/* stylelint-disable color-no-hex, media-feature-range-notation */
 
 /* Hex color codes are used instead of our standard of hsl colors,
    because hex color codes are rendered by all email clients
@@ -361,7 +360,6 @@ p.digest_paragraph,
 
 /* ... (keep the base Zulip styles above unchanged) ... */
 
-/* Digest card custom styles for new UI */
 .digest-card {
     border: none;
     background: transparent;
@@ -389,8 +387,9 @@ p.digest_paragraph,
     font-weight: 400;
 }
 
+
 .digest-content {
-    border: 1px solid #252525;
+    border: 1px solid #110808;
     border-top: none;
     padding: 10px 14px;
     background: #fff;
@@ -436,7 +435,5 @@ p.digest_paragraph,
 .digest-login-link {
     margin: 18px 0 10px 8px;
     font-size: 14px;
-    color: #000204;
+    color: #00070e;
 }
-
-
