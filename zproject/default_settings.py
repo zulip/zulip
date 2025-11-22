@@ -275,8 +275,6 @@ DEFAULT_RATE_LIMITING_RULES = {
     "api_by_user": [
         # 200 requests per minute
         (60, 200),
-        # 2000 requests per hour
-        (3600, 2000),
     ],
     # Limits total number of unauthenticated API requests (primarily
     # used by the public access option). Since these are
