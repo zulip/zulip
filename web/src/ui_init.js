@@ -51,8 +51,8 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
 import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
+import * as gif_state from "./gif_state.ts";
 import * as giphy from "./giphy.ts";
-import * as giphy_state from "./giphy_state.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.ts";
@@ -149,6 +149,7 @@ import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
+import * as tenor from "./tenor.ts";
 import * as theme from "./theme.ts";
 import * as thumbnail from "./thumbnail.ts";
 import * as timerender from "./timerender.ts";
@@ -208,8 +209,9 @@ function initialize_compose_box() {
             render_compose({
                 embedded: $("#compose").attr("data-embedded") === "",
                 file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
-                giphy_enabled: giphy_state.is_giphy_enabled(),
+                giphy_enabled: gif_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
+                tenor_enabled: gif_state.is_tenor_enabled(),
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
@@ -664,6 +666,7 @@ export async function initialize_everything(state_data) {
     gear_menu.initialize();
     navbar_help_menu.initialize();
     giphy.initialize();
+    tenor.initialize();
     presence.initialize(state_data.presence);
     settings_preferences.initialize();
     settings_notifications.initialize();
