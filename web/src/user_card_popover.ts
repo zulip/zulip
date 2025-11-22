@@ -557,11 +557,14 @@ export function unsaved_message_user_mention_event_handler(
     this: HTMLElement,
     e: JQuery.ClickEvent,
 ): void {
+    // We stop propagation because, if this event was fired from drafts,
+    // it would otherwise trigger this handler twice: once from the
+    // `.user-mention` listener for drafts and again from the
+    // `.messagebox .user-mention` listener.
+    e.stopPropagation();
     if (mouse_drag.is_drag(e)) {
         return;
     }
-
-    e.stopPropagation();
 
     const id_string = $(this).attr("data-user-id")!;
     // Do not open popover for @all mention
