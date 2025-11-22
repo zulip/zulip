@@ -23,6 +23,54 @@ for syntax highlighting. This field is used in the
 mentions][help-global-time] to supported Markdown message formatting
 features.
 
+**Changes**: In Zulip 12.0 (feature level 437), invalid timestamp formats
+are now rendered as escaped literal text instead of a `<span>` element with
+an error message. This change affects how clients should handle unparsable
+timestamp syntax.
+
+### Valid timestamp format
+
+When a valid timestamp is provided using the `<time:...>` syntax, it is
+rendered as an HTML5 `<time>` element:
+
+```html
+<!-- Input: <time:2017-11-05 13:15:00> -->
+<time datetime="2017-11-05T13:15:00Z">2017-11-05 13:15:00</time>
+```
+
+### Invalid timestamp format (feature level 437+)
+
+**Since feature level 437**, when an invalid or unparsable timestamp is
+provided, the server returns the input as escaped literal text:
+
+```html
+<!-- Input: <time:invalid date> -->
+&lt;time:invalid date&gt;
+
+<!-- Input: <time:2017-13-45> (invalid date) -->
+&lt;time:2017-13-45&gt;
+```
+
+### Invalid timestamp format (before feature level 437)
+
+**Before feature level 437**, invalid timestamps were wrapped in a `<span>`
+element with the `timestamp-error` class and displayed an error message:
+
+```html
+<!-- Input: <time:invalid date> (before feature level 437) -->
+<span class="timestamp-error">Invalid time format: invalid date</span>
+
+<!-- Input: <time:2017-13-45> (before feature level 437) -->
+<span class="timestamp-error">Invalid time format: 2017-13-45</span>
+```
+
+**Note for client developers**: If your client needs to support both old
+and new servers, check the server's `feature_level` (available in the
+[`POST /register`](/api/register-queue) response) to determine which
+format to expect. For backward compatibility, clients that previously
+handled `<span class="timestamp-error">` elements can safely display
+escaped literal text for newer servers.
+
 ## Links to channels, topics, and messages
 
 Zulip's markup supports special readable Markdown syntax for [linking

@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 437**
+
+* [Message formatting](/api/message-formatting#global-times): Invalid
+  timestamp formats in `<time:...>` syntax are now rendered as escaped
+  literal text (e.g., `&lt;time:invalid date&gt;`) instead of a `<span>`
+  element with class `timestamp-error` containing an error message.
+  This affects the HTML returned by [`POST /messages`](/api/send-message),
+  [`GET /messages`](/api/get-messages), and
+  [`POST /messages/render`](/api/render-message).
+
 **Feature level 436**
 
 * [Message formatting](/api/message-formatting): Added new
