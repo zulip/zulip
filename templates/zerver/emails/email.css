@@ -353,6 +353,15 @@ p.digest_paragraph,
 }
 
 /* Digest card custom styles for new UI */
+/* stylelint-disable color-no-hex, media-feature-range-notation */
+
+/* Hex color codes are used instead of our standard of hsl colors,
+   because hex color codes are rendered by all email clients
+   consistently; HSL colors aren't supported by Hotmail. */
+
+/* ... (keep the base Zulip styles above unchanged) ... */
+
+/* Digest card custom styles for new UI */
 .digest-card {
     border: none;
     background: transparent;
@@ -365,36 +374,36 @@ p.digest_paragraph,
 
 .digest-header {
     background: #A9CCFF;
-    color: #0055CC;
+    color: #0055cc;
     font-weight: 600;
     font-size: 15px;
-    padding: 7px 12px 7px 12px;
-
+    padding: 7px 12px;
     border: 1px solid #252525;
-
     display: flex;
+    border-radius: 8px 8px 0 0;
 }
 
 .digest-header .arrow {
     margin-left: 10px;
-    color: black;
+    color: #000;
     font-weight: 400;
 }
 
 .digest-content {
     border: 1px solid #252525;
     border-top: none;
-    padding: 10px 14px 10px 14px;
+    padding: 10px 14px;
     background: #fff;
     color: #222;
     font-size: 15px;
-
+    border-radius: 0 0 8px 8px;
 }
 
 .digest-channel-list {
     color: #222;
     font-size: 15px;
     margin-bottom: 0;
+    margin: 10px 0 18px 8px;
 }
 
 .digest-footer {
@@ -408,7 +417,6 @@ p.digest_paragraph,
     margin-bottom: 8px;
 }
 
-
 .digest-channel-title {
     margin: 10px 0 18px 8px;
     font-size: 14px;
@@ -417,12 +425,6 @@ p.digest_paragraph,
 
 .digest-channel-title b {
     color: #000509;
-}
-
-.digest-channel-list {
-    margin: 10px 0 18px 8px;
-    font-size: 14px;
-    color: #222;
 }
 
 .digest-summary {
@@ -436,3 +438,5 @@ p.digest_paragraph,
     font-size: 14px;
     color: #000204;
 }
+
+

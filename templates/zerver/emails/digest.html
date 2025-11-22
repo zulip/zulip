@@ -2,78 +2,82 @@
 
 {% block content %}
 {% if show_message_content %}
-{% if hot_conversations %}
-{% for convo in hot_conversations %}
-<div class="digest-card">
-    {% for recipient_block in convo.first_few_messages %}
-    <div>
-        <div class="digest-header">
-            {{ recipient_block.header.html|safe }}
-            <span class="arrow">&gt;</span>
-        </div>
-        <div class="digest-content">
-            {% for sender_block in recipient_block.senders %}
-            {% for message_block in sender_block.content %}
-            <div class="digest-message">
-                {{ message_block.html|safe }}
+    {% if hot_conversations %}
+        {% for convo in hot_conversations %}
+            <div class="digest-card">
+                {% for recipient_block in convo.first_few_messages %}
+                    <div>
+                        <div class="digest-header">
+                            {{ recipient_block.header.html|safe }}
+                            <span class="arrow">&gt;</span>
+                        </div>
+                        <div class="digest-content">
+                            {% for sender_block in recipient_block.senders %}
+                                {% for message_block in sender_block.content %}
+                                    <div class="digest-message">
+                                        {{ message_block.html|safe }}
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if convo.count > 0 %}
+                        <div class="digest-footer">
+                            + {{ convo.count }} more messages by {{ convo.participants|display_list(4) }}.
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
-            {% endfor %}
-            {% endfor %}
-        </div>
-    </div>
-    {% if convo.count > 0 %}
-    <div class="digest-footer">
-        + {{ convo.count }} more messages by {{ convo.participants|display_list(4) }}.
-    </div>
+        {% endfor %}
     {% endif %}
-    {% endfor %}
-</div>
-{% endfor %}
-{% endif %}
 
-{% if new_channels.html %}
-<div class="digest-card">
-
-    <div class="digest-header">
-        <b>{% trans %}new channels{% endtrans %}</b>
-        <span class="arrow">&gt;</span>
-    </div>
-    <div class="digest-content">
-        <div class="digest-channel-list">{{ new_channels.html|display_list(1000)|safe }}</div>
-    </div>
-</div>
-{% endif %}
+    {% if new_channels.html %}
+        <div class="digest-card">
+            <div class="digest-header">
+                <b>{% trans %}new channels{% endtrans %}</b>
+                <span class="arrow">&gt;</span>
+            </div>
+            <div class="digest-content">
+                <div class="digest-channel-list">{{ new_channels.html|display_list(1000)|safe }}</div>
+            </div>
+        </div>
+    {% endif %}
 {% else %}
-<div class="digest-card">
-    <div class="digest-content">
-        <div class="digest-summary">
-            {% if new_messages_count > 0 and new_streams_count > 0 %}
-            {% trans %}You have {{ new_messages_count }} new messages, and there are {{ new_streams_count }} new
-            channels in <a href="{{ realm_url }}">{{ realm_name }}</a>.{% endtrans %}
-            {% elif new_messages_count > 0 and new_streams_count == 0 %}
-            {% trans %}You have {{ new_messages_count }} new messages in <a href="{{ realm_url }}">{{ realm_name
-                }}</a>.{% endtrans %}
-            {% else %}
-            {% trans %}There are {{ new_streams_count }} new channels in <a href="{{ realm_url }}">{{ realm_name
-                }}</a>.{% endtrans %}
-            {% endif %}
-        </div>
-        <div class="digest-summary">
-            {% if message_content_disabled_by_realm %}
-            {% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}This email does not include message
-            content because your organization <a class="content_disabled_help_link" href="{{ help_url }}">hides message
-                content</a> in email notifications.{% endtrans %}
-            {% elif message_content_disabled_by_user %}
-            {% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}This email does not include
-            message content because you have chosen to <a class="content_disabled_help_link" href="{{ help_url }}">hide
-                message content</a> in email notifications.{% endtrans %}
-            {% endif %}
-        </div>
-        <div class="digest-login-link">
-            {% trans %}<a href="{{ realm_url }}">Log in</a> to Zulip to catch up.{% endtrans %}
+    <div class="digest-card">
+        <div class="digest-content">
+            <div class="digest-summary">
+                {% if new_messages_count > 0 and new_streams_count > 0 %}
+{% trans %}
+You have {{ new_messages_count }} new messages, and there are {{ new_streams_count }} new channels in <a href="{{ realm_url }}">{{ realm_name }}</a>.
+{% endtrans %}
+                {% elif new_messages_count > 0 and new_streams_count == 0 %}
+{% trans %}
+You have {{ new_messages_count }} new messages in <a href="{{ realm_url }}">{{ realm_name }}</a>.
+{% endtrans %}
+                {% else %}
+{% trans %}
+There are {{ new_streams_count }} new channels in <a href="{{ realm_url }}">{{ realm_name }}</a>.
+{% endtrans %}
+                {% endif %}
+            </div>
+            <div class="digest-summary">
+                {% if message_content_disabled_by_realm %}
+{% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}
+This email does not include message content because your organization <a class="content_disabled_help_link" href="{{ help_url }}">hides message content</a> in email notifications.
+{% endtrans %}
+                {% elif message_content_disabled_by_user %}
+{% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}
+This email does not include message content because you have chosen to <a class="content_disabled_help_link" href="{{ help_url }}">hide message content</a> in email notifications.
+{% endtrans %}
+                {% endif %}
+            </div>
+            <div class="digest-login-link">
+{% trans %}
+<a href="{{ realm_url }}">Log in</a> to Zulip to catch up.
+{% endtrans %}
+            </div>
         </div>
     </div>
-</div>
 {% endif %}
 {% endblock %}
 
