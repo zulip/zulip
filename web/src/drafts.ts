@@ -444,10 +444,12 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
 
     if (draft === undefined) {
         // The user cleared the compose box, which means
-        // there is nothing to save here but delete the
-        // draft if exists.
+        // there is nothing to save here. Delete any existing draft
+        // and reset the draft id so the next attempt will create
+        // a fresh draft.
         if (draft_id) {
             draft_model.deleteDrafts([draft_id]);
+            compose_draft_id = undefined;
         }
         return undefined;
     }
