@@ -600,12 +600,7 @@ export async function select_item_via_typeahead(
     );
     assert.ok(entry);
     await entry.hover();
-    await page.evaluate((entry) => {
-        if (!(entry instanceof HTMLElement)) {
-            throw new TypeError("expected HTMLElement");
-        }
-        entry.click();
-    }, entry);
+    await entry.click();
 }
 
 export async function wait_for_modal_to_close(page: Page): Promise<void> {
