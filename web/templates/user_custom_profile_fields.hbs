@@ -20,9 +20,7 @@
                 {{this.value}}
             </a>
         {{else if this.is_user_field}}
-            <div class="pill-container not-editable" data-field-id="{{this.id}}">
-                <div class="input" contenteditable="false" style="display: none;"></div>
-            </div>
+            <div class="view-only-pill" data-field-id="{{this.id}}"></div>
         {{else}}
             {{#if this.rendered_value}}
             <span class="value rendered_markdown {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>

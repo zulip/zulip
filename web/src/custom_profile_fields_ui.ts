@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as z from "zod/mini";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
+import render_user_display_only_pill from "../templates/user_display_only_pill.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
@@ -139,20 +140,45 @@ export function initialize_custom_user_type_fields(
     for (const field of realm.custom_profile_fields) {
         const field_value_raw = people.get_custom_profile_data(user_id, field.id)?.value;
 
-        // If we are not editing the field and field value is null, we don't expect
-        // pill container for that field and proceed further
+        // If the field is a USER type and either has a value or we're editing,
+        // initialize either view-only pills or interactive pills.
         if (
             field.type === field_types.USER.id &&
             (field_value_raw !== undefined || is_target_element_editable)
         ) {
-            const $pill_container = $(element_id)
-                .find(
-                    `.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"] .pill-container`,
-                )
-                .expectOne();
+            const selector = `.custom_user_field[data-field-id="${CSS.escape(field.id.toString())}"]`;
+            const $pill_container = is_target_element_editable
+                ? $(element_id).find(`${selector} .pill-container.person_picker`).expectOne()
+                : $(element_id).find(`${selector} .view-only-pill`).expectOne();
+
+            if (!is_target_element_editable) {
+                $pill_container.empty();
+
+                if (field_value_raw !== undefined) {
+                    const field_value = user_value_schema.parse(JSON.parse(field_value_raw));
+
+                    for (const pill_user_id of field_value) {
+                        const user = people.get_user_by_id_assert_valid(pill_user_id);
+
+                        const pill_html = render_user_display_only_pill({
+                            display_value: user.full_name,
+                            user_id: user.user_id,
+                            img_src: people.small_avatar_url_for_person(user),
+                            is_active: people.is_person_active(user.user_id),
+                            is_current_user: people.is_my_user_id(user.user_id),
+                            is_bot: user.is_bot,
+                        });
+
+                        $pill_container.append($(pill_html));
+                    }
+                }
+                continue;
+            }
+
             const pill_config = {
                 exclude_inaccessible_users: is_target_element_editable,
             };
+
             const pills = user_pill.create_pills($pill_container, pill_config);
 
             if (field_value_raw !== undefined) {
@@ -267,7 +293,7 @@ export function initialize_custom_date_type_fields(
             return;
         }
 
-        const fields = [];
+        const fields: CustomProfileFieldData[] = [];
         if (date_str) {
             fields.push({id: field_id, value: date_str});
             update_user_custom_profile_fields(fields, channel.patch);

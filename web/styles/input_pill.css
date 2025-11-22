@@ -1,4 +1,5 @@
-.pill-container {
+.pill-container,
+.view-only-pill {
     display: inline-flex;
     gap: var(--vertical-spacing-input-pill) var(--horizontal-spacing-input-pill);
     flex-wrap: wrap;
@@ -239,6 +240,22 @@
     &.invalid {
         border-color: var(--color-invalid-input-border);
         box-shadow: var(--invalid-input-box-shadow);
+    }
+}
+
+.view-only-pill {
+    background: transparent;
+    padding: 0;
+    border: none;
+
+    .pill-container {
+        &:focus-within {
+            box-shadow: none;
+        }
+    }
+
+    a {
+        text-decoration: none;
     }
 }
 
