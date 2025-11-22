@@ -1251,16 +1251,14 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             except (ValueError, OverflowError):
                 error_element = Element("span")
                 error_element.set("class", "timestamp-error")
-                error_element.text = markdown.util.AtomicString(
-                    markdown.util.AtomicString(html_escape(time_input_string))
-                )
+                error_element.text = markdown.util.AtomicString(html_escape(time_input_string))
                 return error_element
         else:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
         time_element.set("datetime", timestamp.isoformat().replace("+00:00", "Z"))
         # Set text to initial input, so simple clients translating
         # HTML to text will at least display something.
-        time_element.text = markdown.util.AtomicString(time_input_string)
+        time_element.text = markdown.util.AtomicString(html_escape(time_input_string))
         return time_element
 
 
