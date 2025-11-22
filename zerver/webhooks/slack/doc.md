@@ -28,10 +28,8 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 1. {!generate-webhook-url-basic.md!}
 
     To send messages from each Slack channel into a **matching Zulip channel**,
-    enable the **Send all notifications to a single topic** option, and add
-    `&channels_map_to_topics=0` to the generated URL. For each public channel in
-    your Slack workspace, be sure to [create][2] a Zulip channel with the same
-    name.
+    open the **Where to send notifications** dropdown and select **Matching
+    Zulip channel**.
 
     To send messages from each Slack channel into a **matching Zulip topic**,
     disable the **Send all notifications to a single topic** option when

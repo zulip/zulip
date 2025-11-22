@@ -35,7 +35,7 @@ const url_options_schema = z.array(url_option_schema);
 
 const PresetUrlOption = {
     BRANCHES: "branches",
-    MAPPING: "mapping",
+    CHANNEL_MAPPING: "mapping",
 };
 
 export function show_generate_integration_url_modal(api_key: string): void {
@@ -129,7 +129,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     $config_element.find("#integration-url-all-branches").on("change", () => {
                         show_branch_filtering_ui();
                     });
-                } else if (option.key === PresetUrlOption.MAPPING) {
+                } else if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
                     continue;
                 } else if (option.validator === "check_bool") {
                     const config_html = render_generate_integration_url_config_checkbox_modal({
@@ -247,11 +247,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
             if (url_options) {
                 for (const option of url_options) {
                     let $input_element;
-                    if (option.key === PresetUrlOption.MAPPING) {
+                    if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
                         const stream_input = stream_input_dropdown_widget.value();
                         if (stream_input === map_channels_option?.unique_id) {
                             params.delete("stream");
-                            params.set(PresetUrlOption.MAPPING, "channels");
+                            params.set(PresetUrlOption.CHANNEL_MAPPING, "channels");
                         }
                     } else if (option.key === PresetUrlOption.BRANCHES) {
                         if ($("#integration-url-all-branches").prop("checked")) {
@@ -369,7 +369,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const mapping_option = url_options?.find(
-                (option) => option.key === PresetUrlOption.MAPPING,
+                (option) => option.key === PresetUrlOption.CHANNEL_MAPPING,
             );
 
             if (mapping_option) {
