@@ -1,17 +1,28 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
+import * as z from "zod/mini";
 
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
+import render_message_link_tooltip from "../templates/message_link_tooltip.hbs";
 import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
 
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as message_helper from "./message_helper.ts";
 import * as message_lists from "./message_lists.ts";
+import {raw_message_schema} from "./message_store.ts";
+import * as message_store from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
@@ -475,6 +486,60 @@ export function initialize(): void {
         },
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_content a.message-link", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const href = $elem.attr("href");
+            assert(href);
+            const channel_topic = hash_util.decode_stream_topic_from_url(href);
+            if (!channel_topic?.message_id || page_params.is_spectator) {
+                return false;
+            }
+
+            const message_id = Number(channel_topic.message_id);
+            const message = message_store.get(message_id);
+            instance.setProps({maxWidth: "600px"});
+
+            if (message === undefined) {
+                void channel.get({
+                    url: "/json/messages/" + message_id,
+                    data: {allow_empty_topic_name: true},
+                    success(raw_data) {
+                        const data = z
+                            .object({
+                                message: raw_message_schema,
+                            })
+                            .parse(raw_data);
+                        message_helper.process_new_server_message(data.message);
+                        instance.show();
+                    },
+                    error() {
+                        blueslip.info("Failed to fetch message for message link tooltip");
+                    },
+                });
+                return false;
+            }
+
+            const $tooltip_content = $(
+                render_message_link_tooltip({
+                    avatar_url: people.small_avatar_url(message),
+                    username: message.sender_full_name,
+                    raw_content: message.content,
+                }),
+            );
+
+            const $message_content = $tooltip_content.find(".message_content");
+            rendered_markdown.update_elements($message_content);
+
+            const $elt = $("<div>");
+            $elt.append($tooltip_content);
+
+            instance.setContent(parse_html($elt.html()));
+            return undefined;
         },
     });
 }
