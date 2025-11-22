@@ -4,10 +4,12 @@
     border-radius: 5px;
     box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     .image-block {
         background-size: contain;
-        height: 100%;
     }
 
     .image-hover-background {
