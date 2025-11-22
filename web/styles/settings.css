@@ -1633,6 +1633,11 @@ label.preferences-radio-choice-label {
         }
     }
 
+    #edit-user-form-error:has(.banner),
+    #bot-edit-form-error:has(.banner) {
+        margin-bottom: 10px;
+    }
+
     & input,
     input[type="url"],
     & textarea,
