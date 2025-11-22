@@ -74,6 +74,7 @@ export function confirm_mark_messages_as_read(): void {
     const modal_id = confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
         html_body,
+        id: "confirm_mark_messages_as_read_modal",
         on_click() {
             handle_mark_messages_as_read(modal_id);
         },
@@ -467,7 +468,7 @@ export function mark_as_unread_from_here(message_id: number): void {
             // If the number is sufficiently small, we proceed without
             // a confirmation dialog.
             do_mark_unread(locally_available_matching_message_ids);
-            return;
+            // return;
         }
 
         display_count = locally_available_message_count.toString();
@@ -505,7 +506,7 @@ export function mark_as_unread_from_here(message_id: number): void {
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
-        html_body: render_confirm_mark_as_unread_from_here(context),
+        html_subheader: render_confirm_mark_as_unread_from_here(context),
         on_click() {
             if (prefer_local_ids) {
                 do_mark_unread(locally_available_matching_message_ids);

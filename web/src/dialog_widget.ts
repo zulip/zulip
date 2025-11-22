@@ -63,7 +63,9 @@ function current_dialog_widget_selector(): string {
 export type DialogWidgetConfig = {
     html_heading?: string;
     text_heading?: string;
-    html_body: string;
+    html_subheader?: string;
+    text_subheader?: string;
+    html_body?: string;
     on_click: (e: JQuery.ClickEvent) => void;
     html_submit_button?: string;
     html_exit_button?: string;
@@ -162,13 +164,16 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
 export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
     // * html_heading | text_heading
-    // * html_body
     // * on_click
     // The html_ fields should be safe HTML. If callers
     // interpolate user data into strings, they should use
     // templates.
 
     // Optional parameters:
+    // * html_subheader | text_subheader: Provides additional context
+    //   below the heading.
+    // * html_body: Content of the modal. Optional when the subheading
+    //   provides enough context.
     // * html_submit_button: Submit button text.
     // * html_exit_button: Exit button text.
     // * close_on_submit: Whether to close modal on clicking submit.
@@ -200,6 +205,8 @@ export function launch(conf: DialogWidgetConfig): string {
         modal_unique_id,
         heading_html: conf.html_heading,
         text_heading: conf.text_heading,
+        subheader_html: conf.html_subheader,
+        text_subheader: conf.text_subheader,
         link: conf.help_link,
         submit_button_html,
         exit_button_html,
