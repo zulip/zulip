@@ -1238,9 +1238,12 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         if not timestamp:
             error_element = Element("span")
             error_element.set("class", "timestamp-error")
-            error_element.text = markdown.util.AtomicString(
-                markdown.util.AtomicString(html_escape(time_input_string))
-            )
+            # If the string already contains the 'Invalid time format:' prefix (from other codepaths),
+            # strip it so we always render the original token (escaped).
+            prefix = "Invalid time format: "
+            if time_input_string.startswith(prefix):
+                time_input_string = time_input_string[len(prefix) :]
+            error_element.text = markdown.util.AtomicString(html_escape(time_input_string))
             return error_element
 
         # Use HTML5 <time> element for valid timestamps.
