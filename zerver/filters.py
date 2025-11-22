@@ -14,8 +14,8 @@ class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
 
     @override
     def get_post_parameters(self, request: HttpRequest | None) -> dict[str, Any]:
-        post_data = SafeExceptionReporterFilter.get_post_parameters(self, request)
-        assert isinstance(post_data, dict)
+        post_data = super().get_post_parameters(request)
+
         filtered_post = post_data.copy()
         filtered_vars = [
             "content",
@@ -37,3 +37,7 @@ class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
             if var in filtered_post:
                 filtered_post[var] = "**********"
         return filtered_post
+
+    @override
+    def get_safe_settings(self) -> dict[str, Any]:
+        return {}
