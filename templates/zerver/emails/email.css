@@ -138,6 +138,11 @@ p.digest_paragraph,
     margin: 10px 0;
 }
 
+.messages p.digest_paragraph {
+    line-height: normal;
+    margin: 0;
+}
+
 .body p li,
 .content ul li,
 .content ol li {
@@ -220,11 +225,11 @@ p.digest_paragraph,
     font-size: 12px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     overflow-y: auto;
+    margin-bottom: 12px;
 }
 
 .hot_convo_recipient_block {
     border: 1px solid #000;
-    margin-bottom: 4px;
 }
 
 .hot_convo_recipient_header {
