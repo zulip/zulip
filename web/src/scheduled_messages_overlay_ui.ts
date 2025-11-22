@@ -6,6 +6,7 @@ import render_scheduled_messages_overlay from "../templates/scheduled_messages_o
 
 import * as browser_history from "./browser_history.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -172,7 +173,7 @@ export function remove_scheduled_message_id(scheduled_msg_id: number): void {
 
 export function initialize(): void {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
 

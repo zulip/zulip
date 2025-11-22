@@ -165,7 +165,7 @@ export function initialize(): void {
         return false;
     }
 
-    const select_message_function = function (this: HTMLElement, e: JQuery.TriggeredEvent): void {
+    const select_message_function = function (this: HTMLElement, e: JQuery.ClickEvent): void {
         assert(e.target instanceof Element);
         if (is_clickable_message_element($(e.target))) {
             // If this click came from a hyperlink, don't trigger the
@@ -180,8 +180,10 @@ export function initialize(): void {
             return;
         }
 
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             // Drags on the message (to copy message text) shouldn't trigger a reply.
+            // This also prevents triggering a reply when you click and drag through
+            // an area that doesn't contain text.
             return;
         }
 
@@ -411,7 +413,7 @@ export function initialize(): void {
             return;
         }
         e.preventDefault();
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
         const row_id = get_row_id_for_narrowing(this);
@@ -437,7 +439,7 @@ export function initialize(): void {
         if ($(e.target).parents(".user-profile-picture").length === 1) {
             return;
         }
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             // To avoid the click behavior if a user name or status text is
             // selected.
             e.preventDefault();
