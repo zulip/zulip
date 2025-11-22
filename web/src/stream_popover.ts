@@ -121,12 +121,24 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
+
+    // Admin can change any stream's name & description either stream is public or
+    // private, subscribed or unsubscribed.
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+    const can_change_stream_permissions =
+        stream_data.can_change_permissions_requiring_metadata_access(sub);
+    let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
+    if (!can_change_stream_permissions) {
+        stream_edit_hash = hash_util.channels_settings_edit_url(sub, "personal");
+    }
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
             ...sub_store.get(stream_id),
             url: browser_history.get_full_url(stream_hash),
             list_of_topics_view_url: hash_util.by_channel_topic_list_url(stream_id),
         },
+        stream_edit_hash,
         has_unread_messages,
         show_go_to_channel_feed,
         show_go_to_list_of_topics,
@@ -168,22 +180,6 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             $popper.on("click", ".stream-popover-go-to-list-of-topics", (e) => {
                 e.stopPropagation();
                 hide_stream_popover(instance);
-            });
-
-            // Stream settings
-            $popper.on("click", ".open_stream_settings", (e) => {
-                const sub = stream_popover_sub(e);
-                hide_stream_popover(instance);
-
-                // Admin can change any stream's name & description either stream is public or
-                // private, subscribed or unsubscribed.
-                const can_change_stream_permissions =
-                    stream_data.can_change_permissions_requiring_metadata_access(sub);
-                let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
-                if (!can_change_stream_permissions) {
-                    stream_edit_hash = hash_util.channels_settings_edit_url(sub, "personal");
-                }
-                browser_history.go_to_location(stream_edit_hash);
             });
 
             // Pin/unpin
