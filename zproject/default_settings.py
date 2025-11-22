@@ -342,6 +342,13 @@ DEFAULT_RATE_LIMITING_RULES = {
         # 10 emails per day
         (86400, 10),
     ],
+    # Limits how many demo organizations can be created per IP
+    # address. This is important to prevent abuse of the demo
+    # organization feature.
+    "demo_realm_creation_by_ip": [
+        # 10 demos per day
+        (86400, 10),
+    ],
 }
 # Rate limiting defaults can be individually overridden by adding
 # entries in this object, which is merged with
@@ -429,7 +436,7 @@ WEB_PUBLIC_STREAMS_ENABLED = False
 SYSTEM_ONLY_REALMS = {"zulip"}
 
 # Default deadline for demo organizations
-DEMO_ORG_DEADLINE_DAYS = 30
+DEMO_ORG_DEADLINE_DAYS: int | None = None
 
 # Alternate hostnames to serve particular realms on, in addition to
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),
