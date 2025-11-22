@@ -124,27 +124,35 @@ run_test("language_list", () => {
             name: "Bahasa Indonesia",
             percent_translated: 32,
         },
+        {
+            code: "zh-hans",
+            locale: "zh_Hans",
+            name: "简体中文",
+            percent_translated: 86,
+        },
     ];
     initialize({language_list});
     assert.equal(get_language_name("en"), "English");
 
     const successful_formatted_list = [
         {
-            name: "English",
             code: "en",
-            name_with_percent: "English",
+            name_with_percent: "English (United States)",
             selected: true,
         },
         {
-            name: "British English",
             code: "en-gb",
-            name_with_percent: "British English (99%)",
+            name_with_percent: "English (United Kingdom) (99%)",
             selected: false,
         },
         {
-            name: "Bahasa Indonesia",
             code: "id",
-            name_with_percent: "Bahasa Indonesia (32%)",
+            name_with_percent: "Indonesia (32%)",
+            selected: false,
+        },
+        {
+            code: "zh-hans",
+            name_with_percent: "中文 (简体) (86%)",
             selected: false,
         },
     ];
@@ -152,7 +160,6 @@ run_test("language_list", () => {
     const formatted_list = get_language_list_columns("en");
 
     for (const element of _.range(0, formatted_list.length)) {
-        assert.equal(formatted_list[element].name, successful_formatted_list[element].name);
         assert.equal(formatted_list[element].code, successful_formatted_list[element].code);
         assert.equal(
             formatted_list[element].name_with_percent,
