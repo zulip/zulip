@@ -33,6 +33,13 @@ const buddy_list = mock_esm("../src/buddy_list", {
     },
 });
 
+const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
+    update_user_pill_active_status() {},
+});
+const pm_list = mock_esm("../src/pm_list", {
+    update_private_messages() {},
+});
+
 const buddy_data = new buddy_list.BuddyList();
 buddy_list.buddy_list = buddy_data;
 
@@ -41,9 +48,6 @@ mock_esm("../src/activity_ui", {
 });
 mock_esm("../src/compose_state", {
     update_email() {},
-});
-mock_esm("../src/pm_list", {
-    update_private_messages() {},
 });
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
@@ -273,21 +277,53 @@ run_test("updates", ({override}) => {
     assert.equal(person.bot_owner_id, me.user_id);
 
     buddy_list.BuddyList.insert_or_move = noop;
+
+    // Test that UI elements are updated when a user is deactivated/reactivated
+    let pm_list_updated = false;
+    let compose_pill_updated = false;
+    let expected_user_id = isaac.user_id;
+    let expected_is_active;
+
+    pm_list.update_private_messages = () => {
+        pm_list_updated = true;
+    };
+    compose_pm_pill.update_user_pill_active_status = (user, is_active) => {
+        compose_pill_updated = true;
+        assert.equal(user.user_id, expected_user_id);
+        assert.equal(is_active, expected_is_active);
+    };
+
+    // Deactivate a user and verify UI updates are triggered
+    expected_is_active = false;
     user_events.update_person({user_id: isaac.user_id, is_active: false});
     assert.ok(!people.is_person_active(isaac.user_id));
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
+    // Reset flags and test reactivation
+    pm_list_updated = false;
+    compose_pill_updated = false;
+
+    // Reactivate the user and verify UI updates are triggered again
+    expected_is_active = true;
     user_events.update_person({user_id: isaac.user_id, is_active: true});
     assert.ok(people.is_person_active(isaac.user_id));
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
     let bot_data_updated = false;
     settings_bots.update_bot_data = (user_id) => {
         assert.equal(user_id, test_bot.user_id);
         bot_data_updated = true;
     };
+
+    expected_is_active = false;
+    expected_user_id = test_bot.user_id;
     user_events.update_person({user_id: test_bot.user_id, is_active: false});
     assert.equal(bot_data_updated, true);
 
     bot_data_updated = false;
+    expected_is_active = true;
     user_events.update_person({user_id: test_bot.user_id, is_active: true});
     assert.ok(bot_data_updated);
 });

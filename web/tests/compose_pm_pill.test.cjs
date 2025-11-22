@@ -197,3 +197,100 @@ run_test("has_unconverted_data", ({override}) => {
     // we have some unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
 });
+
+run_test("update_user_pill_active_status", ({override_rewire}) => {
+    const othello = {
+        user_id: 1,
+        email: "othello@example.com",
+        full_name: "Othello",
+        is_active: true,
+        is_bot: false,
+    };
+
+    const inaccessible_user = {
+        user_id: 2,
+        email: "iago@zulip.com",
+        full_name: "Iago",
+        is_active: false,
+        is_inaccessible_user: true,
+        is_bot: false,
+    };
+
+    // Test with uninitialized widget - should return early without error
+    override_rewire(compose_pm_pill, "widget", undefined);
+    compose_pm_pill.update_user_pill_active_status(othello, false);
+    // No assertions needed - we're just checking it doesn't throw
+
+    // Set up test data for normal widget tests
+    const pills_data = [
+        {
+            item: {user_id: othello.user_id, full_name: othello.full_name},
+            $element: {0: {id: "pill_1"}},
+        },
+        {
+            item: {user_id: inaccessible_user.user_id, full_name: inaccessible_user.full_name},
+            $element: {0: {id: "pill_2"}},
+        },
+    ];
+
+    let pill_updated = false;
+
+    const widget = {
+        getPillByPredicate(predicate) {
+            return pills_data.find((p) => predicate(p.item));
+        },
+        updatePill(element, item) {
+            const pill = pills_data.find((p) => p.$element[0] === element);
+            pill.item = item;
+            pill_updated = true;
+        },
+    };
+    override_rewire(compose_pm_pill, "widget", widget);
+
+    // Test deactivating a user - should set deactivated to true
+    compose_pm_pill.update_user_pill_active_status(othello, false);
+
+    assert.deepEqual(pills_data[0].item, {
+        user_id: othello.user_id,
+        full_name: othello.full_name,
+        deactivated: true,
+    });
+    assert.ok(pill_updated);
+
+    // Reset for next test
+    pill_updated = false;
+
+    // Test reactivating a user - should set deactivated to false
+    compose_pm_pill.update_user_pill_active_status(othello, true);
+
+    assert.deepEqual(pills_data[0].item, {
+        user_id: othello.user_id,
+        full_name: othello.full_name,
+        deactivated: false,
+    });
+    assert.ok(pill_updated);
+
+    // Reset for next test
+    pill_updated = false;
+
+    // Test deactivating an inaccessible user - should keep deactivated as false
+    // We consider inaccessible users as active to avoid falsely showing them as deactivated,
+    // since we don't have information about their activity status.
+    compose_pm_pill.update_user_pill_active_status(inaccessible_user, false);
+
+    assert.deepEqual(pills_data[1].item, {
+        user_id: inaccessible_user.user_id,
+        full_name: inaccessible_user.full_name,
+        deactivated: false,
+    });
+    assert.ok(pill_updated);
+
+    // Reset for next test
+    pill_updated = false;
+
+    // Test updating a user that doesn't have a pill - should be a no-op
+    const hamlet = {user_id: 3, email: "hamlet@example.com", full_name: "Hamlet"};
+    compose_pm_pill.update_user_pill_active_status(hamlet, true);
+
+    assert.ok(!pill_updated);
+});

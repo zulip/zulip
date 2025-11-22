@@ -111,3 +111,31 @@ export function get_emails(): string {
 export function filter_taken_users(persons: User[]): User[] {
     return user_pill.filter_taken_users(persons, widget);
 }
+
+export function update_user_pill_active_status(user: User, is_active: boolean): void {
+    if (!widget) {
+        // The widget might not be initialized yet if a user event arrives very early.
+        // So we return early in that case.
+        return;
+    }
+    const pill = widget.getPillByPredicate((item) => item.user_id === user.user_id);
+    if (!pill) {
+        return;
+    }
+
+    const updated_pill: UserPill = {
+        ...pill.item,
+        // Sets pill's deactivated status using is_active from event.
+        //
+        // We consider inaccessible users as active to avoid
+        // falsely showing them as deactivated, since we don't
+        // have information about their activity status.
+        deactivated: !is_active && !user.is_inaccessible_user,
+    };
+
+    widget.updatePill(pill.$element[0]!, updated_pill);
+}
+
+export function rewire_widget(value: UserPillWidget): void {
+    widget = value;
+}
