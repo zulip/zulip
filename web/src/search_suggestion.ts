@@ -59,6 +59,13 @@ const incompatible_patterns: Record<string, TermPattern[]> = {
         {operator: "is", operand: "resolved"},
     ],
     "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    mentions: [
+        {operator: "dm"},
+        {operator: "pm-with"},
+        {operator: "dm-including"},
+        {operator: "is", operand: "dm"},
+        {operator: "is", operand: "resolved"},
+    ],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
@@ -806,6 +813,7 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
             "topic",
             "dm",
             "dm-including",
+            "mentions",
             "sender",
             "near",
             "from",
@@ -999,7 +1007,7 @@ export function get_search_result(
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
+    const person_suggestion_ops = ["sender", "dm", "dm-including", "mentions", "from", "pm-with"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1073,6 +1081,7 @@ export function get_search_result(
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
+        get_people("mentions"),
         get_people("from"),
         get_topic_suggestions,
         get_has_filter_suggestions,
