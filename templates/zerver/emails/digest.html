@@ -47,34 +47,34 @@
         <div class="digest-content">
             <div class="digest-summary">
                 {% if new_messages_count > 0 and new_streams_count > 0 %}
-{% trans %}
+                    {% trans %}
 You have {{ new_messages_count }} new messages, and there are {{ new_streams_count }} new channels in <a href="{{ realm_url }}">{{ realm_name }}</a>.
-{% endtrans %}
+                    {% endtrans %}
                 {% elif new_messages_count > 0 and new_streams_count == 0 %}
-{% trans %}
+                    {% trans %}
 You have {{ new_messages_count }} new messages in <a href="{{ realm_url }}">{{ realm_name }}</a>.
-{% endtrans %}
+                    {% endtrans %}
                 {% else %}
-{% trans %}
+                    {% trans %}
 There are {{ new_streams_count }} new channels in <a href="{{ realm_url }}">{{ realm_name }}</a>.
-{% endtrans %}
+                    {% endtrans %}
                 {% endif %}
             </div>
             <div class="digest-summary">
                 {% if message_content_disabled_by_realm %}
-{% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}
+                    {% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}
 This email does not include message content because your organization <a class="content_disabled_help_link" href="{{ help_url }}">hides message content</a> in email notifications.
-{% endtrans %}
+                    {% endtrans %}
                 {% elif message_content_disabled_by_user %}
-{% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}
+                    {% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}
 This email does not include message content because you have chosen to <a class="content_disabled_help_link" href="{{ help_url }}">hide message content</a> in email notifications.
-{% endtrans %}
+                    {% endtrans %}
                 {% endif %}
             </div>
             <div class="digest-login-link">
-{% trans %}
+                {% trans %}
 <a href="{{ realm_url }}">Log in</a> to Zulip to catch up.
-{% endtrans %}
+                {% endtrans %}
             </div>
         </div>
     </div>
@@ -87,3 +87,4 @@ This email does not include message content because you have chosen to <a class=
     <a href="{{ unsubscribe_link }}">{% trans %}Unsubscribe from digest emails{% endtrans %}</a>
 </div>
 {% endblock %}
+
