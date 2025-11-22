@@ -144,6 +144,8 @@ export const user_schema = z.intersection(
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
         is_inaccessible_user: z.optional(z.boolean()),
+        is_unknown_user: z.optional(z.boolean()),
+        // used for unknown users
         is_system_bot: z.optional(z.literal(true)),
     }),
     z.discriminatedUnion("is_bot", [

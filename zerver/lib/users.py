@@ -584,6 +584,7 @@ class APIUserDict(TypedDict):
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
     is_imported_stub: bool
+    is_unknown_user: NotRequired[bool]
 
 
 def format_user_row(
@@ -1044,6 +1045,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        is_unknown_user=True,
         is_imported_stub=False,
     )
     return user_dict
