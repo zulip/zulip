@@ -708,6 +708,11 @@
     --input-button-width: 1.5em; /* 24px at 16px/1em */
     --input-button-ending-offset: 0.125em; /* 2px at 16px/1em */
 
+    /* Input padding and border variables */
+    --input-horizontal-padding: 6px;
+    --input-vertical-padding: 4px;
+    --input-border-width: 1px;
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(
@@ -859,6 +864,22 @@
     --background-color-readonly-modal-input: light-dark(
         hsl(240deg 7% 93%),
         hsl(240deg 7% 17%)
+    );
+    --background-color-textarea: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --background-color-disabled-textarea: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --border-color-textarea: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 60%)
+    );
+    --focus-border-color-textarea: light-dark(
+        hsl(206.5deg 80% 62% / 80%),
+        hsl(0deg 0% 0% / 90%)
     );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),

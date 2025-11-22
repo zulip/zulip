@@ -1144,9 +1144,9 @@ div.overlay .flex.overlay-content > .overlay-container,
 }
 
 .filter_text_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
