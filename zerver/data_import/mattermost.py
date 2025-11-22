@@ -9,7 +9,6 @@ import random
 import re
 import secrets
 import shutil
-import subprocess
 from collections.abc import Callable
 from typing import Any
 
@@ -33,6 +32,7 @@ from zerver.data_import.import_util import (
     build_stream_subscriptions,
     build_user_profile,
     build_zerver_realm,
+    convert_html_to_text,
     create_converted_data_files,
     make_subscriber_map,
     make_user_messages,
@@ -419,11 +419,6 @@ def process_message_attachments(
     content = "\n".join(markdown_links)
 
     return content, has_image
-
-
-def convert_html_to_text(content: str) -> str:
-    # html2text is GPL licensed, so run it as a subprocess.
-    return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
 
 
 def process_raw_message_batch(
