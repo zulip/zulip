@@ -47,7 +47,11 @@ type NarrowSearchOptions = {
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
 
-function full_search_query_in_terms(): NarrowTerm[] {
+function full_search_query_in_terms(): {
+    operator: string;
+    operand: string;
+    negated?: boolean | undefined;
+}[] {
     assert(search_pill_widget !== null);
     return [
         ...search_pill.get_current_search_pill_terms(search_pill_widget),

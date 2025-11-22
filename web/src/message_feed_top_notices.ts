@@ -31,8 +31,7 @@ function show_end_of_results_notice(): void {
     // Note that element we adjust is not visible to spectators.
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
-    const terms = narrow_filter.terms();
-    const update_hash = hash_util.search_public_streams_notice_url(terms);
+    const update_hash = hash_util.search_public_streams_notice_url(narrow_filter.terms());
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 }
 
@@ -59,7 +58,7 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
             !filter.is_personal_filter() &&
             !(
                 _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
-                filter.operands("sender")[0] === people.my_current_email()
+                filter.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
             )
         ) {
             show_end_of_results_notice();

@@ -804,6 +804,19 @@ export function emails_to_slug(emails_string: string): string | undefined {
     return slug;
 }
 
+export function user_ids_to_slug(user_ids: number[]): string | undefined {
+    let slug = String(user_ids);
+    slug += "-";
+    if (user_ids.length === 1 && user_ids[0] !== undefined) {
+        const person = get_by_user_id(user_ids[0]);
+        assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
+        slug += get_slug_from_full_name(person.full_name);
+    } else {
+        slug += "group";
+    }
+    return slug;
+}
+
 export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
     let slug = user_ids_string;
     slug += "-";
@@ -1074,6 +1087,16 @@ export function is_valid_bulk_emails_for_compose(emails: string[]): boolean {
     // Returns false if at least one of the emails is invalid.
     return emails.every((email) => {
         if (!is_valid_email_for_compose(email)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+export function is_valid_bulk_user_ids_for_compose(user_ids: number[]): boolean {
+    // Returns false if at least one of the user_ids is invalid.
+    return user_ids.every((user_id) => {
+        if (!is_valid_user_id_for_compose(user_id)) {
             return false;
         }
         return true;
