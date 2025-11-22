@@ -711,6 +711,10 @@
         }
     }
 
+    &:has(.zoomed-new-topic):hover {
+        background: var(--color-background-sidebar-action-heading-hover);
+    }
+
     &:has(.sidebar-topic-action-heading):hover {
         background-color: var(--color-background-sidebar-action-heading-hover);
     }
@@ -1855,6 +1859,52 @@ li.active-sub-filter {
     align-self: baseline;
 }
 
+.zoomed-new-topic {
+    display: grid;
+    grid-template:
+        "starting-offset starting-anchor-element icon-content-gap row-content ending-offset"
+        var(--line-height-sidebar-row-prominent)
+        ".               .                       .                row-content ."
+        auto
+        / var(--input-icon-starting-offset) var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap)
+        minmax(0, 1fr)
+        0;
+    color: var(--color-text-sidebar-action-heading);
+
+    .topic-list-new-topic-icon {
+        grid-area: starting-anchor-element;
+        place-self: center end;
+    }
+
+    .new-topic-label {
+        grid-area: row-content;
+        margin-top: -0.06em;
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        font-feature-settings: var(
+            --font-feature-settings-sidebar-action-heading
+        );
+        text-transform: var(--text-transform-sidebar-action-heading);
+    }
+
+    &:not(:active):focus {
+        text-decoration: none;
+        border: none;
+        outline: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--color-text-sidebar-action-heading);
+    }
+}
+
 .channel-new-topic-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
@@ -2035,7 +2085,10 @@ ul.topic-list:has(.show-more-topics)::after {
 #stream_filters
     .narrow-filter
     .topic-list
-    .bottom_left_row:has(a.sidebar-topic-action-heading:focus-visible) {
+    .bottom_left_row:has(
+        a.sidebar-topic-action-heading:focus-visible,
+        a.zoomed-new-topic:focus-visible
+    ) {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);
@@ -2052,6 +2105,15 @@ li.topic-list-item {
     position: relative;
     padding-right: 5px;
     margin-left: var(--left-sidebar-toggle-width-offset);
+
+    &:has(.zoomed-new-topic) {
+        /* We set a margin equal to starting-offset of filter-input to match
+           its alignment */
+        margin-left: calc(
+            var(--left-sidebar-toggle-width-offset) -
+                var(--input-icon-starting-offset)
+        );
+    }
 }
 
 .dm-box {
