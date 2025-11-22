@@ -1238,6 +1238,10 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         if not timestamp:
             error_element = Element("span")
             error_element.set("class", "timestamp-error")
+            # Normalize: strip any leftover 'Invalid time format:' prefix (tests expect original token)
+            import re
+
+            time_input_string = re.sub(r"(?i)^\s*Invalid time format:\s*", "", time_input_string)
             # If the string already contains the 'Invalid time format:' prefix (from other codepaths),
             # strip it so we always render the original token (escaped).
             prefix = "Invalid time format: "
