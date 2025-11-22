@@ -70,8 +70,7 @@ HTTP headers in all API responses:
 and can vary by server and over time. The default configuration
 currently limits:
 
-* Every user is limited to 200 total API requests per minute, and 2000
-  total API requests per hour.
+* Every user is limited to 200 total API requests per minute.
 * Separate, much lower limits for authentication/login attempts.
 
 When the Zulip server has configured multiple rate limits that apply
