@@ -79,6 +79,7 @@ export const custom_profile_field_schema = z.object({
     name: z.string(),
     order: z.number(),
     required: z.boolean(),
+    use_in_mentions: z.optional(z.boolean()),
     type: z.number(),
 });
 
