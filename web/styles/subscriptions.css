@@ -1599,14 +1599,14 @@ div.settings-radio-input-parent {
 }
 
 .stream-creation-input {
-  max-width: 100%;
-  width: 28rem;        /* comfortable default */
-  min-width: 14rem;    /* preserves layout on small screens */
-  box-sizing: border-box;
+    max-width: 100%;
+    width: 28rem; /* comfortable default */
+    min-width: 14rem; /* preserves layout on small screens */
+    box-sizing: border-box;
 }
 
-@media (min-width: 1024px) {
-  .stream-creation-input {
-    width: 36rem;      /* wider on large screens */
-  }
+@media (width >= 1024px) {
+    .stream-creation-input {
+        width: 36rem; /* wider on large screens */
+    }
 }
