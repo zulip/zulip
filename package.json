@@ -6,6 +6,7 @@
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-typescript": "^7.15.0",
+    "@date-fns/tz": "^1.4.1",
     "@fontsource-variable/open-sans": "^5.0.9",
     "@formatjs/intl": "^3.0.1",
     "@gfx/zopfli": "^1.0.15",
