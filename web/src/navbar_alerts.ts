@@ -425,7 +425,7 @@ export function initialize(): void {
         if (should_show_server_upgrade_banner(ls)) {
             open_navbar_banner_and_resize(SERVER_NEEDS_UPGRADE_BANNER);
         }
-    } else if (page_params.warn_no_email === true && current_user.is_admin) {
+    } else if (page_params.warn_no_email && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
         open_navbar_banner_and_resize(CONFIGURE_OUTGOING_MAIL_BANNER);
