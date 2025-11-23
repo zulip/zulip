@@ -400,15 +400,21 @@ function maybe_change_focused_emoji(
     if ($next_emoji) {
         current_section = next_section;
         current_index = next_index;
-        if (!preserve_scroll) {
-            $next_emoji.trigger("focus");
-        } else {
-            const start = scroll_util.get_scroll_element($emoji_map).scrollTop()!;
-            $next_emoji.trigger("focus");
-            if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
-                scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+        const emoji_element = util.the($next_emoji);
+
+        // Use requestAnimationFrame to ensure focus is applied after DOM updates
+        requestAnimationFrame(() => {
+            if (!preserve_scroll) {
+                emoji_element.focus();
+            } else {
+                const start = scroll_util.get_scroll_element($emoji_map).scrollTop()!;
+                emoji_element.focus();
+                if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
+                    scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+                }
             }
-        }
+        });
+
         update_emoji_showcase($next_emoji);
         return true;
     }
@@ -520,7 +526,8 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
         return false;
     } else if (
         (current_section === 0 && current_index < 6 && event_name === "up_arrow") ||
-        (current_section === 0 && current_index === 0 && event_name === "left_arrow")
+        (current_section === 0 && current_index === 0 && event_name === "left_arrow") ||
+        (current_section === 0 && current_index === 0 && event_name === "shift_tab")
     ) {
         if ($selected_emoji) {
             // In this case, we're move up into the reaction
@@ -543,8 +550,10 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
 
     switch (event_name) {
         case "tab":
-        case "shift_tab":
-            return false;
+        case "shift_tab": {
+            const next_coord = get_next_emoji_coordinates({tab: 1, shift_tab: -1}[event_name]);
+            return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
+        }
         case "page_up":
             maybe_change_active_section(current_section - 1);
             return true;
