@@ -1,0 +1,226 @@
+analytics/management/commands/populate_analytics_db.py[36m:[m25[36m:[mfrom zerver.lib.stream_subscription import [1;31mcreate_stream[m_subscription
+analytics/management/commands/populate_analytics_db.py[36m:[m129[36m:[m        [1;31mcreate_stream[m_subscription(
+analytics/tests/test_counts.py[36m:[m156[36m:[m    def [1;31mcreate_stream[m_with_recipient(self, **kwargs: Any) -> tuple[Stream, Recipient]:
+analytics/tests/test_counts.py[36m:[m337[36m:[m        stream = self.[1;31mcreate_stream[m_with_recipient()[0]
+analytics/tests/test_counts.py[36m:[m507[36m:[m            recipient = self.[1;31mcreate_stream[m_with_recipient(
+analytics/tests/test_counts.py[36m:[m523[36m:[m        self.[1;31mcreate_stream[m_with_recipient(realm=self.no_message_realm)
+analytics/tests/test_counts.py[36m:[m571[36m:[m        recipient_stream = self.[1;31mcreate_stream[m_with_recipient()[1]
+analytics/tests/test_counts.py[36m:[m612[36m:[m        recipient_stream = self.[1;31mcreate_stream[m_with_recipient()[1]
+analytics/tests/test_counts.py[36m:[m656[36m:[m        recipient_stream1 = self.[1;31mcreate_stream[m_with_recipient(invite_only=True)[1]
+analytics/tests/test_counts.py[36m:[m657[36m:[m        recipient_stream2 = self.[1;31mcreate_stream[m_with_recipient(invite_only=True)[1]
+analytics/tests/test_counts.py[36m:[m663[36m:[m        recipient_stream3 = self.[1;31mcreate_stream[m_with_recipient()[1]
+analytics/tests/test_counts.py[36m:[m664[36m:[m        recipient_stream4 = self.[1;31mcreate_stream[m_with_recipient()[1]
+analytics/tests/test_counts.py[36m:[m784[36m:[m        private_stream_recipient = self.[1;31mcreate_stream[m_with_recipient(invite_only=True)[1]
+analytics/tests/test_counts.py[36m:[m785[36m:[m        stream_recipient = self.[1;31mcreate_stream[m_with_recipient()[1]
+analytics/tests/test_counts.py[36m:[m832[36m:[m        stream_recipient = self.[1;31mcreate_stream[m_with_recipient(id=1000)[1]
+analytics/tests/test_counts.py[36m:[m861[36m:[m        recipient_stream = self.[1;31mcreate_stream[m_with_recipient()[1]
+analytics/tests/test_counts.py[36m:[m945[36m:[m        stream1, recipient_stream1 = self.[1;31mcreate_stream[m_with_recipient()
+analytics/tests/test_counts.py[36m:[m946[36m:[m        stream2, recipient_stream2 = self.[1;31mcreate_stream[m_with_recipient()
+analytics/tests/test_counts.py[36m:[m994[36m:[m        stream1, recipient_stream1 = self.[1;31mcreate_stream[m_with_recipient()
+analytics/tests/test_counts.py[36m:[m995[36m:[m        _stream2, recipient_stream2 = self.[1;31mcreate_stream[m_with_recipient(**realm)
+analytics/tests/test_counts.py[36m:[m1304[36m:[m        stream1 = self.[1;31mcreate_stream[m_with_recipient()[0]
+analytics/tests/test_counts.py[36m:[m1305[36m:[m        stream2 = self.[1;31mcreate_stream[m_with_recipient()[0]
+analytics/tests/test_counts.py[36m:[m1390[36m:[m        stream = self.[1;31mcreate_stream[m_with_recipient()[0]
+analytics/tests/test_counts.py[36m:[m1691[36m:[m        stream, _ = self.[1;31mcreate_stream[m_with_recipient()
+analytics/tests/test_counts.py[36m:[m1756[36m:[m        stream, _recipient = self.[1;31mcreate_stream[m_with_recipient()
+analytics/tests/test_counts.py[36m:[m1810[36m:[m        stream = self.[1;31mcreate_stream[m_with_recipient()[0]
+analytics/tests/test_counts.py[36m:[m1829[36m:[m        stream = self.[1;31mcreate_stream[m_with_recipient()[0]
+api_docs/changelog.md[36m:[m3132[36m:[m  `[1;31mcreate_stream[m_policy` setting was split into two settings for
+api_docs/changelog.md[36m:[m3135[36m:[m* [`POST /register`](/api/register-queue): The `[1;31mcreate_stream[m_policy`
+api_docs/changelog.md[36m:[m4007[36m:[m  `[1;31mcreate_stream[m_policy`, `digest_emails_enabled`, `digest_weekday`,
+docs/overview/changelog.md[36m:[m4906[36m:[m- Fixed broken [1;31mcreate_stream[m and rename_stream management commands.
+tools/screenshots/generate-integration-docs-screenshot[36m:[m55[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+tools/screenshots/generate-integration-docs-screenshot[36m:[m102[36m:[m    channel, _created = [1;31mcreate_stream[m_if_needed(realm, channel_name)
+web/e2e-tests/drafts.test.ts[36m:[m34[36m:[masync function [1;31mcreate_stream[m_message_draft(page: Page): Promise<void> {
+web/e2e-tests/drafts.test.ts[36m:[m301[36m:[m    await [1;31mcreate_stream[m_message_draft(page);
+web/e2e-tests/stream_create.test.ts[36m:[m38[36m:[m    await page.click("#add_new_subscription .[1;31mcreate_stream[m_button");
+web/e2e-tests/stream_create.test.ts[36m:[m39[36m:[m    await page.type("#[1;31mcreate_stream[m_name", "Test Stream 1");
+web/e2e-tests/stream_create.test.ts[36m:[m41[36m:[m    await page.waitForSelector(".finalize_[1;31mcreate_stream[m", {visible: true});
+web/e2e-tests/stream_create.test.ts[36m:[m62[36m:[m    await page.waitForSelector("#[1;31mcreate_stream[m_subscribers", {visible: true});
+web/e2e-tests/stream_create.test.ts[36m:[m66[36m:[m            document.querySelectorAll("#[1;31mcreate_stream[m_subscribers .remove_potential_subscriber")
+web/e2e-tests/stream_create.test.ts[36m:[m82[36m:[masync function [1;31mcreate_stream[m(page: Page): Promise<void> {
+web/e2e-tests/stream_create.test.ts[36m:[m93[36m:[m    await page.type("#[1;31mcreate_stream[m_name", "Test Stream 2");
+web/e2e-tests/stream_create.test.ts[36m:[m94[36m:[m    await page.click("form#stream_creation_form .finalize_[1;31mcreate_stream[m");
+web/e2e-tests/stream_create.test.ts[36m:[m129[36m:[m    await page.click("#add_new_subscription .[1;31mcreate_stream[m_button");
+web/e2e-tests/stream_create.test.ts[36m:[m141[36m:[m    const cancel_button_selector = "form#stream_creation_form button.[1;31mcreate_stream[m_cancel";
+web/e2e-tests/stream_create.test.ts[36m:[m148[36m:[m    await [1;31mcreate_stream[m(page);
+web/src/add_stream_options_popover.ts[36m:[m15[36m:[m            const can_[1;31mcreate_stream[ms =
+web/src/add_stream_options_popover.ts[36m:[m20[36m:[m            if (!can_[1;31mcreate_stream[ms) {
+web/src/hash_util.ts[36m:[m294[36m:[m    const can_[1;31mcreate_stream[ms =
+web/src/hash_util.ts[36m:[m298[36m:[m    if (section === "new" && !can_[1;31mcreate_stream[ms) {
+web/src/hotkey.ts[36m:[m1127[36m:[m            stream_settings_ui.open_[1;31mcreate_stream[m();
+web/src/left_sidebar_tooltips.ts[36m:[m148[36m:[m            const can_[1;31mcreate_stream[ms =
+web/src/left_sidebar_tooltips.ts[36m:[m152[36m:[m            const tooltip_text = can_[1;31mcreate_stream[ms
+web/src/server_events_dispatch.js[36m:[m732[36m:[m                    stream_data.[1;31mcreate_stream[ms(event.streams);
+web/src/settings_components.ts[36m:[m1793[36m:[mexport function [1;31mcreate_stream[m_group_setting_widget({
+web/src/state_data.ts[36m:[m284[36m:[m    can_[1;31mcreate_stream[ms: z.boolean(),
+web/src/stream_create.ts[36m:[m71[36m:[m    const stream_name = $<HTMLInputElement>("input#[1;31mcreate_stream[m_name").val()!.trim();
+web/src/stream_create.ts[36m:[m120[36m:[m        $("#[1;31mcreate_stream[m_name").trigger("focus").trigger("select");
+web/src/stream_create.ts[36m:[m201[36m:[m    const stream_name = $<HTMLInputElement>("input#[1;31mcreate_stream[m_name").val()!.trim();
+web/src/stream_create.ts[36m:[m235[36m:[m        stream_settings_components.show_subs_pane.[1;31mcreate_stream[m("subscribers_container", sub);
+web/src/stream_create.ts[36m:[m245[36m:[m        stream_settings_components.show_subs_pane.[1;31mcreate_stream[m("configure_channel_settings");
+web/src/stream_create.ts[36m:[m297[36m:[mfunction [1;31mcreate_stream[m(): void {
+web/src/stream_create.ts[36m:[m298[36m:[m    const stream_name = $<HTMLInputElement>("input#[1;31mcreate_stream[m_name").val()!.trim();
+web/src/stream_create.ts[36m:[m299[36m:[m    const description = $<HTMLInputElement>("input#[1;31mcreate_stream[m_description").val()!.trim();
+web/src/stream_create.ts[36m:[m422[36m:[m            $("#[1;31mcreate_stream[m_name").val("");
+web/src/stream_create.ts[36m:[m423[36m:[m            $("#[1;31mcreate_stream[m_description").val("");
+web/src/stream_create.ts[36m:[m461[36m:[m    stream_settings_components.show_subs_pane.[1;31mcreate_stream[m();
+web/src/stream_create.ts[36m:[m465[36m:[m        $("#[1;31mcreate_stream[m_name").val(stream_name);
+web/src/stream_create.ts[36m:[m474[36m:[m    $("#[1;31mcreate_stream[m_name").trigger("focus");
+web/src/stream_create.ts[36m:[m570[36m:[m            settings_components.[1;31mcreate_stream[m_group_setting_widget({
+web/src/stream_create.ts[36m:[m598[36m:[m    $container.on("click", ".finalize_[1;31mcreate_stream[m", (e) => {
+web/src/stream_create.ts[36m:[m602[36m:[m        const stream_name = $<HTMLInputElement>("input#[1;31mcreate_stream[m_name").val()!.trim();
+web/src/stream_create.ts[36m:[m606[36m:[m            stream_settings_components.show_subs_pane.[1;31mcreate_stream[m("configure_channel_settings");
+web/src/stream_create.ts[36m:[m638[36m:[m                    [1;31mcreate_stream[m();
+web/src/stream_create.ts[36m:[m642[36m:[m            [1;31mcreate_stream[m();
+web/src/stream_create.ts[36m:[m646[36m:[m    $container.on("input", "#[1;31mcreate_stream[m_name", () => {
+web/src/stream_create.ts[36m:[m647[36m:[m        const stream_name = $<HTMLInputElement>("input#[1;31mcreate_stream[m_name").val()!.trim();
+web/src/stream_create.ts[36m:[m655[36m:[m    $container.on("keydown", "#[1;31mcreate_stream[m_description", (e) => {
+web/src/stream_create_subscribers.ts[36m:[m102[36m:[m    all_users_list_widget = ListWidget.create($("#[1;31mcreate_stream[m_subscribers"), [current_user_id], {
+web/src/stream_data.ts[36m:[m170[36m:[m    // We use [1;31mcreate_stream[ms for new streams in live-update events.
+web/src/stream_data.ts[36m:[m1041[36m:[mexport function [1;31mcreate_stream[ms(streams: APIStream[]): void {
+web/src/stream_edit.ts[36m:[m228[36m:[m        settings_components.[1;31mcreate_stream[m_group_setting_widget({
+web/src/stream_list.ts[36m:[m262[36m:[m    can_[1;31mcreate_stream[ms: boolean,
+web/src/stream_list.ts[36m:[m267[36m:[m        plus_icon_url: can_[1;31mcreate_stream[ms ? get_section_channel_plus_icon_url(section) : undefined,
+web/src/stream_list.ts[36m:[m339[36m:[m    const can_[1;31mcreate_stream[ms =
+web/src/stream_list.ts[36m:[m345[36m:[m            $(stream_list_section_container_html(section, can_[1;31mcreate_stream[ms)),
+web/src/stream_list.ts[36m:[m580[36m:[m    const can_[1;31mcreate_stream[ms =
+web/src/stream_list.ts[36m:[m588[36m:[m            can_[1;31mcreate_stream[ms,
+web/src/stream_settings_components.ts[36m:[m60[36m:[m    [1;31mcreate_stream[m(
+web/src/stream_settings_components.ts[36m:[m96[36m:[m        $(".finalize_[1;31mcreate_stream[m").show();
+web/src/stream_settings_components.ts[36m:[m101[36m:[m        $(".finalize_[1;31mcreate_stream[m").hide();
+web/src/stream_settings_components.ts[36m:[m169[36m:[m                $("#[1;31mcreate_stream[m_name").val("");
+web/src/stream_settings_ui.ts[36m:[m936[36m:[m            can_[1;31mcreate_stream[ms:
+web/src/stream_settings_ui.ts[36m:[m989[36m:[m        // streams via user_can_[1;31mcreate_stream[ms.
+web/src/stream_settings_ui.ts[36m:[m1000[36m:[m                open_[1;31mcreate_stream[m();
+web/src/stream_settings_ui.ts[36m:[m1045[36m:[m        do_open_[1;31mcreate_stream[m(folder_id);
+web/src/stream_settings_ui.ts[36m:[m1119[36m:[m                    $("#[1;31mcreate_stream[m_name").trigger("focus");
+web/src/stream_settings_ui.ts[36m:[m1218[36m:[mexport function do_open_[1;31mcreate_stream[m(folder_id?: number): void {
+web/src/stream_settings_ui.ts[36m:[m1220[36m:[m    // Prefer open_[1;31mcreate_stream[m().
+web/src/stream_settings_ui.ts[36m:[m1226[36m:[mexport function open_[1;31mcreate_stream[m(): void {
+web/src/stream_settings_ui.ts[36m:[m1227[36m:[m    do_open_[1;31mcreate_stream[m();
+web/src/stream_settings_ui.ts[36m:[m1232[36m:[m    $("#channels_overlay_container").on("click", ".[1;31mcreate_stream[m_button", (e) => {
+web/src/stream_settings_ui.ts[36m:[m1234[36m:[m        open_[1;31mcreate_stream[m();
+web/src/stream_settings_ui.ts[36m:[m1239[36m:[m        "#stream_creation_form .[1;31mcreate_stream[m_cancel",
+web/src/stream_settings_ui.ts[36m:[m1257[36m:[m        ".stream-row, .[1;31mcreate_stream[m_button",
+web/styles/subscriptions.css[36m:[m107[36m:[m#[1;31mcreate_stream[m_description {
+web/styles/subscriptions.css[36m:[m597[36m:[m        .nothing-selected .[1;31mcreate_stream[m_button,
+web/styles/subscriptions.css[36m:[m998[36m:[m        .[1;31mcreate_stream[m_subscriber_list_header {
+web/styles/zulip.css[36m:[m1384[36m:[m#[1;31mcreate_stream[m_subscribers {
+web/templates/stream_settings/new_stream_users.hbs[36m:[m8[36m:[m<div class="[1;31mcreate_stream[m_subscriber_list_header">
+web/templates/stream_settings/new_stream_users.hbs[36m:[m30[36m:[m            <tbody id="[1;31mcreate_stream[m_subscribers" class="subscriber_table" data-empty="{{t 'This channel has no subscribers.' }}" data-search-results-empty="{{t 'No channel subscribers match your current filter.'}}"></tbody>
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m9[36m:[m                    <section id="[1;31mcreate_stream[m_title_container">
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m10[36m:[m                        <label for="[1;31mcreate_stream[m_name">
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m13[36m:[m                        <input type="text" name="stream_name" id="[1;31mcreate_stream[m_name" class="settings_text_input"
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m18[36m:[m                    <section id="[1;31mcreate_stream[m_description_container">
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m19[36m:[m                        <label for="[1;31mcreate_stream[m_description" class="settings-field-label">
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m23[36m:[m                        <input type="text" name="stream_description" id="[1;31mcreate_stream[m_description" class="settings_text_input"
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m59[36m:[m                  custom_classes="[1;31mcreate_stream[m_cancel inline-block"
+web/templates/stream_settings/stream_creation_form.hbs[36m:[m65[36m:[m                  custom_classes="finalize_[1;31mcreate_stream[m hide"
+web/templates/stream_settings/stream_settings_overlay.hbs[36m:[m16[36m:[m                                {{#if can_[1;31mcreate_stream[ms}}
+web/templates/stream_settings/stream_settings_overlay.hbs[36m:[m17[36m:[m                                <button class="[1;31mcreate_stream[m_button two-pane-settings-plus-button tippy-zulip-delayed-tooltip" data-tooltip-template-id="create-new-stream-tooltip-template" data-tippy-placement="bottom">
+web/templates/stream_settings/stream_settings_overlay.hbs[36m:[m59[36m:[m                                    {{#if can_[1;31mcreate_stream[ms}}
+web/templates/stream_settings/stream_settings_overlay.hbs[36m:[m79[36m:[m                                <button type="button" class="[1;31mcreate_stream[m_button animated-purple-button" {{#unless can_[1;31mcreate_stream[ms}}disabled{{/unless}}>{{t 'Create channel' }}</button>
+web/templates/stream_settings/stream_settings_overlay.hbs[36m:[m80[36m:[m                                {{#unless can_[1;31mcreate_stream[ms}}
+web/templates/subscribe_to_more_streams.hbs[36m:[m11[36m:[m{{else if can_[1;31mcreate_stream[ms}}
+web/tests/hotkey.test.cjs[36m:[m398[36m:[m    assert_mapping("n", stream_settings_ui, "open_[1;31mcreate_stream[m");
+web/tests/typeahead_helper.test.cjs[36m:[m143[36m:[mstream_data.[1;31mcreate_stream[ms([dev_sub, linux_sub]);
+zerver/lib/bulk_create.py[36m:[m203[36m:[mdef bulk_[1;31mcreate_stream[ms(realm: Realm, stream_dict: dict[str, dict[str, Any]]) -> None:  # nocoverage
+zerver/lib/events.py[36m:[m715[36m:[m        state["can_[1;31mcreate_stream[ms"] = (
+zerver/lib/events.py[36m:[m1190[36m:[m                    state["can_[1;31mcreate_stream[ms"] = (
+zerver/lib/events.py[36m:[m1576[36m:[m                    state["can_[1;31mcreate_stream[ms"] = (
+zerver/lib/migration_status.py[36m:[m41[36m:[m    ("zerver", "0016_realm_[1;31mcreate_stream[m_by_admins_only"),
+zerver/lib/stream_subscription.py[36m:[m377[36m:[mdef [1;31mcreate_stream[m_subscription(
+zerver/lib/stream_subscription.py[36m:[m404[36m:[mdef bulk_[1;31mcreate_stream[m_subscriptions(  # nocoverage
+zerver/lib/streams.py[36m:[m338[36m:[mdef [1;31mcreate_stream[m_if_needed(
+zerver/lib/streams.py[36m:[m456[36m:[mdef [1;31mcreate_stream[ms_if_needed(
+zerver/lib/streams.py[36m:[m468[36m:[m        stream, created = [1;31mcreate_stream[m_if_needed(
+zerver/lib/streams.py[36m:[m1655[36m:[m        created_streams, dup_streams = [1;31mcreate_stream[ms_if_needed(
+zerver/lib/streams.py[36m:[m1695[36m:[m    return [1;31mcreate_stream[m_if_needed(
+zerver/lib/test_classes.py[36m:[m67[36m:[m    [1;31mcreate_stream[m_if_needed,
+zerver/lib/test_classes.py[36m:[m1574[36m:[m            stream, _from_stream_creation = [1;31mcreate_stream[m_if_needed(
+zerver/management/commands/create_stream.py[36m:[m7[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zerver/management/commands/create_stream.py[36m:[m27[36m:[m        [1;31mcreate_stream[m_if_needed(realm, stream_name, acting_user=None)
+zerver/migrations/0001_initial.py[36m:[m105[36m:[m                ("[1;31mcreate_stream[m_by_admins_only", models.BooleanField(default=False)),
+zerver/migrations/0001_squashed_0569.py[36m:[m284[36m:[m        ("zerver", "0216_add_[1;31mcreate_stream[m_policy"),
+zerver/migrations/0001_squashed_0569.py[36m:[m285[36m:[m        ("zerver", "0217_migrate_[1;31mcreate_stream[m_policy"),
+zerver/migrations/0001_squashed_0569.py[36m:[m286[36m:[m        ("zerver", "0218_remove_[1;31mcreate_stream[m_by_admins_only"),
+zerver/migrations/0001_squashed_0569.py[36m:[m429[36m:[m        ("zerver", "0358_split_[1;31mcreate_stream[m_policy"),
+zerver/migrations/0216_add_create_stream_policy.py[36m:[m14[36m:[m            name="[1;31mcreate_stream[m_policy",
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m8[36m:[mdef upgrade_[1;31mcreate_stream[m_policy(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m14[36m:[m        [1;31mcreate_stream[m_by_admins_only=False
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m15[36m:[m    ).update([1;31mcreate_stream[m_policy=Realm.CREATE_STREAM_POLICY_MEMBERS)
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m16[36m:[m    Realm.objects.filter([1;31mcreate_stream[m_by_admins_only=True).update(
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m17[36m:[m        [1;31mcreate_stream[m_policy=Realm.CREATE_STREAM_POLICY_ADMINS
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m20[36m:[m        [1;31mcreate_stream[m_by_admins_only=False
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m21[36m:[m    ).update([1;31mcreate_stream[m_policy=Realm.CREATE_STREAM_POLICY_WAITING_PERIOD)
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m26[36m:[m        ("zerver", "0216_add_[1;31mcreate_stream[m_policy"),
+zerver/migrations/0217_migrate_create_stream_policy.py[36m:[m31[36m:[m            upgrade_[1;31mcreate_stream[m_policy, reverse_code=migrations.RunPython.noop, elidable=True
+zerver/migrations/0218_remove_create_stream_by_admins_only.py[36m:[m8[36m:[m        ("zerver", "0217_migrate_[1;31mcreate_stream[m_policy"),
+zerver/migrations/0218_remove_create_stream_by_admins_only.py[36m:[m14[36m:[m            name="[1;31mcreate_stream[m_by_admins_only",
+zerver/migrations/0219_toggle_realm_digest_emails_enabled_default.py[36m:[m18[36m:[m        ("zerver", "0218_remove_[1;31mcreate_stream[m_by_admins_only"),
+zerver/migrations/0358_split_create_stream_policy.py[36m:[m9[36m:[m    Realm.objects.all().update(create_public_stream_policy=F("[1;31mcreate_stream[m_policy"))
+zerver/migrations/0358_split_create_stream_policy.py[36m:[m10[36m:[m    Realm.objects.all().update(create_private_stream_policy=F("[1;31mcreate_stream[m_policy"))
+zerver/migrations/0358_split_create_stream_policy.py[36m:[m20[36m:[m    Realm.objects.all().update([1;31mcreate_stream[m_policy=F("create_public_stream_policy"))
+zerver/migrations/0358_split_create_stream_policy.py[36m:[m44[36m:[m            name="[1;31mcreate_stream[m_policy",
+zerver/migrations/0360_merge_0358_0359.py[36m:[m8[36m:[m        ("zerver", "0358_split_[1;31mcreate_stream[m_policy"),
+zerver/openapi/zulip.yaml[36m:[m19372[36m:[m                          channels was controlled by the `realm_[1;31mcreate_stream[m_policy` setting.
+zerver/openapi/zulip.yaml[36m:[m19401[36m:[m                          create channels was controlled by the `realm_[1;31mcreate_stream[m_policy` setting.
+zerver/openapi/zulip.yaml[36m:[m21220[36m:[m                      can_[1;31mcreate_stream[ms:
+zerver/openapi/zulip.yaml[36m:[m21246[36m:[m                          versions, the deprecated `can_[1;31mcreate_stream[ms` property should be
+zerver/openapi/zulip.yaml[36m:[m21257[36m:[m                          versions, the deprecated `can_[1;31mcreate_stream[ms` property should be
+zerver/tests/test_audit_log.py[36m:[m89[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zerver/tests/test_audit_log.py[36m:[m484[36m:[m    def test_[1;31mcreate_stream[m_if_needed(self) -> None:
+zerver/tests/test_audit_log.py[36m:[m488[36m:[m        stream = [1;31mcreate_stream[m_if_needed(
+zerver/tests/test_channel_creation.py[36m:[m16[36m:[m    [1;31mcreate_stream[m_if_needed,
+zerver/tests/test_channel_creation.py[36m:[m17[36m:[m    [1;31mcreate_stream[ms_if_needed,
+zerver/tests/test_channel_creation.py[36m:[m68[36m:[m            [1;31mcreate_stream[m_if_needed(
+zerver/tests/test_channel_creation.py[36m:[m97[36m:[m        new_streams, existing_streams = [1;31mcreate_stream[ms_if_needed(
+zerver/tests/test_channel_creation.py[36m:[m127[36m:[m        new_streams, existing_streams = [1;31mcreate_stream[ms_if_needed(
+zerver/tests/test_channel_creation.py[36m:[m217[36m:[m        created, existing = [1;31mcreate_stream[ms_if_needed(realm, stream_dicts)
+zerver/tests/test_channel_creation.py[36m:[m274[36m:[m    def test_[1;31mcreate_stream[m_using_add_channel(self) -> None:
+zerver/tests/test_channel_creation.py[36m:[m685[36m:[m        stream, _created = [1;31mcreate_stream[m_if_needed(
+zerver/tests/test_channel_creation.py[36m:[m690[36m:[m        stream, _created = [1;31mcreate_stream[m_if_needed(
+zerver/tests/test_channel_creation.py[36m:[m961[36m:[m        new_streams, _ = [1;31mcreate_stream[ms_if_needed(
+zerver/tests/test_digest.py[36m:[m27[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zerver/tests/test_digest.py[36m:[m175[36m:[m        [1;31mcreate_stream[m_if_needed(cordelia.realm, "web_public_stream", is_web_public=True)
+zerver/tests/test_digest.py[36m:[m518[36m:[m        stream = [1;31mcreate_stream[m_if_needed(cordelia.realm, "New stream")[0]
+zerver/tests/test_digest.py[36m:[m586[36m:[m        stream = [1;31mcreate_stream[m_if_needed(realm, "New stream")[0]
+zerver/tests/test_drafts.py[36m:[m232[36m:[m    def test_[1;31mcreate_stream[m_draft_with_no_recipient(self) -> None:
+zerver/tests/test_drafts.py[36m:[m246[36m:[m    def test_[1;31mcreate_stream[m_draft_for_inaccessible_stream(self) -> None:
+zerver/tests/test_home.py[36m:[m76[36m:[m        "can_[1;31mcreate_stream[ms",
+zerver/tests/test_import_export.py[36m:[m60[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zerver/tests/test_import_export.py[36m:[m895[36m:[m        [1;31mcreate_stream[m_if_needed(realm, "Private A", invite_only=True)
+zerver/tests/test_import_export.py[36m:[m900[36m:[m        [1;31mcreate_stream[m_if_needed(realm, "Private B", invite_only=True)
+zerver/tests/test_import_export.py[36m:[m912[36m:[m        [1;31mcreate_stream[m_if_needed(realm, "Private C", invite_only=True)
+zerver/tests/test_import_export.py[36m:[m919[36m:[m        [1;31mcreate_stream[m_if_needed(
+zerver/tests/test_import_export.py[36m:[m3124[36m:[m        [1;31mcreate_stream[m_if_needed(realm, "bogus")
+zerver/tests/test_message_fetch.py[36m:[m48[36m:[mfrom zerver.lib.streams import StreamDict, [1;31mcreate_stream[ms_if_needed, get_public_streams_queryset
+zerver/tests/test_message_fetch.py[36m:[m177[36m:[m        created, existing = [1;31mcreate_stream[ms_if_needed(realm, channel_dicts)
+zerver/tests/test_message_fetch.py[36m:[m213[36m:[m        created, existing = [1;31mcreate_stream[ms_if_needed(realm, channel_dicts)
+zerver/tests/test_message_fetch.py[36m:[m2271[36m:[m        [1;31mcreate_stream[ms_if_needed(realm, channel_dicts)
+zerver/tests/test_message_send.py[36m:[m53[36m:[mfrom zerver.lib.stream_subscription import [1;31mcreate_stream[m_subscription
+zerver/tests/test_message_send.py[36m:[m54[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zerver/tests/test_message_send.py[36m:[m183[36m:[m        stream = [1;31mcreate_stream[m_if_needed(realm, "Acropolis")[0]
+zerver/tests/test_message_send.py[36m:[m218[36m:[m        stream = [1;31mcreate_stream[m_if_needed(realm, "Acropolis")[0]
+zerver/tests/test_message_send.py[36m:[m1507[36m:[m            [1;31mcreate_stream[m_subscription(user_profile=user, recipient=recipient, stream=stream)
+zerver/tests/test_populate_db.py[36m:[m40[36m:[m    def test_bulk_[1;31mcreate_stream[m_subscriptions(self) -> None:
+zerver/tests/test_populate_db.py[36m:[m42[36m:[m        This insures bulk_[1;31mcreate_stream[m_subscriptions() ran successfully when test data is loaded via populate_db.py
+zerver/tests/test_realm.py[36m:[m48[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zerver/tests/test_realm.py[36m:[m749[36m:[m        [1;31mcreate_stream[m_if_needed(realm, "Atlantis")
+zerver/tests/test_realm.py[36m:[m2816[36m:[m        [1;31mcreate_stream[m_if_needed(lear, "Shakespeare")
+zerver/tests/test_signup.py[36m:[m56[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zerver/tests/test_signup.py[36m:[m1379[36m:[m        signups_stream, _ = [1;31mcreate_stream[m_if_needed(notification_bot.realm, "signups")
+zerver/views/streams.py[36m:[m80[36m:[m    [1;31mcreate_stream[m_if_needed,
+zerver/views/streams.py[36m:[m724[36m:[m    new_channel, created = [1;31mcreate_stream[m_if_needed(
+zerver/views/streams.py[36m:[m856[36m:[m    # can_[1;31mcreate_stream[ms policy and check_stream_name policy is inside
+zilencer/management/commands/populate_billing_realms.py[36m:[m31[36m:[mfrom zerver.lib.streams import [1;31mcreate_stream[m_if_needed
+zilencer/management/commands/populate_billing_realms.py[36m:[m382[36m:[m    stream, _ = [1;31mcreate_stream[m_if_needed(
+zilencer/management/commands/populate_db.py[36m:[m43[36m:[mfrom zerver.lib.bulk_create import bulk_[1;31mcreate_stream[ms
+zilencer/management/commands/populate_db.py[36m:[m53[36m:[mfrom zerver.lib.stream_subscription import bulk_[1;31mcreate_stream[m_subscriptions
+zilencer/management/commands/populate_db.py[36m:[m190[36m:[m    bulk_[1;31mcreate_stream[m_subscriptions(subs=subscriptions_to_add, streams=subscriber_count_changes)
+zilencer/management/commands/populate_db.py[36m:[m665[36m:[m            bulk_[1;31mcreate_stream[ms(zulip_realm, stream_dict)
+zilencer/management/commands/populate_db.py[36m:[m767[36m:[m            bulk_[1;31mcreate_stream[m_subscriptions(
+zilencer/management/commands/populate_db.py[36m:[m998[36m:[m                bulk_[1;31mcreate_stream[ms(
+zilencer/management/commands/populate_db.py[36m:[m1020[36m:[m                bulk_[1;31mcreate_stream[ms(
+zilencer/management/commands/populate_db.py[36m:[m1143[36m:[m                bulk_[1;31mcreate_stream[ms(zulip_realm, zulip_stream_dict)
