@@ -83,8 +83,10 @@ export let update_dom_with_unread_counts = function (
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
     if (!skip_animations) {
-        animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+        animate_unread_changes($mentioned_li, counts.mentioned_message_count, last_mention_count);
     }
+
+    last_mention_count = counts.mentioned_message_count;
 };
 
 export function rewire_update_dom_with_unread_counts(
@@ -173,11 +175,14 @@ function toggle_condensed_navigation_area(): void {
     resize.resize_stream_filters_container();
 }
 
-export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
-    if (new_mention_count > last_mention_count) {
+export function animate_unread_changes(
+    $li: JQuery,
+    new_count: number,
+    previous_count: number,
+): void {
+    if (new_count > previous_count) {
         ui_util.do_new_unread_animation($li);
     }
-    last_mention_count = new_mention_count;
 }
 
 export function highlight_inbox_view(): void {
