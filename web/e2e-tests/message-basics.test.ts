@@ -340,7 +340,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
 
     // Navigate through suggestions using arrow keys
     // Reach core team
-    for (let i = 0; i < 12; i += 1) {
+    for (let i = 0; i < 13; i += 1) {
         await arrow(page, "Down");
     }
     await arrow(page, "Down"); // core team -> Denmark
