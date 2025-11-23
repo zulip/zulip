@@ -96,7 +96,7 @@ const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
     update_announce_stream_option() {},
 });
 const submessage = mock_esm("../src/submessage");
-mock_esm("../src/left_sidebar_navigation_area", {
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
     update_reminders_row() {},
@@ -198,12 +198,15 @@ run_test("alert_words", ({override}) => {
     assert.ok(!alert_words.has_alert_word("lunch"));
 
     override(alert_words_ui, "rerender_alert_words_ui", noop);
+    const stub = make_stub();
+    override(left_sidebar_navigation_area, "update_alert_words_row", stub.f);
     const event = event_fixtures.alert_words;
     dispatch(event);
 
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+    assert.equal(stub.num_calls, 1);
 });
 
 run_test("navigation_views", ({override}) => {
