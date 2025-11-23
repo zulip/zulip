@@ -429,7 +429,11 @@ async function update_guest_visible_users_count_and_stream_ids(): Promise<void> 
     loading.destroy_indicator($(".guest_visible_users_loading"));
 }
 
-function generate_invite_tips_data(): Record<string, boolean> {
+function generate_invite_tips_data(): {
+    realm_has_description: boolean;
+    realm_has_user_set_icon: boolean;
+    realm_has_custom_profile_fields: boolean;
+} {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
     return {
