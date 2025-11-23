@@ -23,11 +23,12 @@ type Message = Record<string, string | boolean> & {
     recipient?: string;
     content: string;
     stream_name?: string;
+    topic?: string;
 };
 
 let browser: Browser | null = null;
 let screenshot_id = 0;
-export const is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
+export const is_firefox = process.env["PUPPETEER_PRODUCT"] === "firefox";
 let realm_url = "http://zulip.zulipdev.com:9981/";
 const gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
 
@@ -227,7 +228,7 @@ export async function check_compose_state(
         );
     }
     if (params.topic) {
-        form_params.stream_message_recipient_topic = params.topic;
+        form_params["stream_message_recipient_topic"] = params.topic;
     }
     await check_form_contents(page, "form#send_message_form", form_params);
 }
@@ -440,7 +441,7 @@ export async function send_message(
     }
 
     if (params.topic) {
-        params.stream_message_recipient_topic = params.topic;
+        params["stream_message_recipient_topic"] = params.topic;
         delete params.topic;
     }
 

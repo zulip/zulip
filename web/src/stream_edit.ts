@@ -924,7 +924,7 @@ export function initialize(): void {
 
             const url = "/json/streams/" + stream_id;
             if (
-                data.is_private === undefined ||
+                data["is_private"] === undefined ||
                 stream_data.get_stream_privacy_policy(stream_id) !== "invite-only"
             ) {
                 settings_org.save_organization_settings(data, $save_button, url);

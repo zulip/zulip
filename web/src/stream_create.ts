@@ -411,7 +411,7 @@ function create_stream(): void {
     if (folder_id !== settings_config.no_folder_selected) {
         // We do not include "folder_id" in request data if
         // new stream will not be added to any folder.
-        data.folder_id = JSON.stringify(folder_id);
+        data["folder_id"] = JSON.stringify(folder_id);
     }
 
     // Subscribe yourself and possible other people to a new stream.

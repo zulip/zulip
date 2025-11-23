@@ -2067,7 +2067,7 @@ export function initialize(): void {
                             parsed.data.code === "CANNOT_DEACTIVATE_GROUP_IN_USE"
                         ) {
                             const subgroup_objections = parsed.data.objections.filter(
-                                (objection) => objection.type === "subgroup",
+                                (objection) => objection["type"] === "subgroup",
                             );
                             let group_used_for_permissions = true;
                             let supergroups;
@@ -2077,7 +2077,7 @@ export function initialize(): void {
                                 // message.
                                 const supergroup_ids = z
                                     .array(z.number())
-                                    .parse(subgroup_objections[0]!.supergroup_ids);
+                                    .parse(subgroup_objections[0]!["supergroup_ids"]);
                                 supergroups = supergroup_ids.map((group_id) => {
                                     const group = user_groups.get_user_group_from_id(group_id);
                                     const group_name = user_groups.get_display_group_name(

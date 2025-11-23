@@ -22,22 +22,22 @@ function hide_submit_loading_indicator(): void {
 
 function validate_data(data: helpers.FormDataObject): boolean {
     let found_error = false;
-    assert(data.description !== undefined);
-    if (data.description.trim() === "") {
+    assert(data["description"] !== undefined);
+    if (data["description"].trim() === "") {
         $("#sponsorship-description-error").text("Organization description cannot be blank.");
         hide_submit_loading_indicator();
         found_error = true;
     }
 
-    assert(data.paid_users_count !== undefined);
-    if (data.paid_users_count.trim() === "") {
+    assert(data["paid_users_count"] !== undefined);
+    if (data["paid_users_count"].trim() === "") {
         $("#sponsorship-paid-users-count-error").text("Number of paid staff cannot be blank.");
         hide_submit_loading_indicator();
         found_error = true;
     }
 
-    assert(data.expected_total_users !== undefined);
-    if (data.expected_total_users.trim() === "") {
+    assert(data["expected_total_users"] !== undefined);
+    if (data["expected_total_users"].trim() === "") {
         $("#sponsorship-expected-total-users-error").text(
             "Expected number of users cannot be blank.",
         );
@@ -45,8 +45,8 @@ function validate_data(data: helpers.FormDataObject): boolean {
         found_error = true;
     }
 
-    assert(data.plan_to_use_zulip !== undefined);
-    if (data.plan_to_use_zulip.trim() === "") {
+    assert(data["plan_to_use_zulip"] !== undefined);
+    if (data["plan_to_use_zulip"].trim() === "") {
         $("#sponsorship-plan-to-use-zulip-error").text(
             "Description of how you plan to use Zulip cannot be blank.",
         );
