@@ -16,7 +16,8 @@ from requests.models import PreparedRequest
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, get_object_from_key
-from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_realm import do_create_realm, get_email_address_visibility_default
+from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
     ZerverFieldsT,
@@ -36,7 +37,7 @@ from zerver.data_import.slack import (
     SlackBotNotFoundError,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
-    check_token_access,
+    check_slack_token_access,
     convert_slack_workspace_messages,
     do_convert_zipfile,
     fetch_shared_channel_users,
@@ -164,6 +165,73 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
 
 
 class SlackImporter(ZulipTestCase):
+    def run_channel_message_to_zerver_message_with_fixtures(
+        self, fixture_names: list[str], **kwargs: dict[str, Any]
+    ) -> tuple[
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+        list[ZerverFieldsT],
+    ]:
+        """
+        This is a wrapper for `channel_message_to_zerver_message`, it
+        comes with default values for most of the method's parameters.
+
+        The `fixture_names` parameter specifies which Slack exported
+        messages fixture(s) in the `slack_fixtures/exported_messages_fixtures`
+        directory will be used as input for conversion.
+        """
+        slack_message_fixture_directory = "slack_fixtures/exported_messages_fixtures"
+
+        user_data = kwargs.get(
+            "user_data",
+            orjson.loads(self.fixture_data("users.json", type=slack_message_fixture_directory)),
+        )
+
+        slack_user_id_to_zulip_user_id = kwargs.get(
+            "slack_user_id_to_zulip_user_id", {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
+        )
+
+        slack_recipient_name_to_zulip_recipient_id = kwargs.get(
+            "slack_recipient_name_to_zulip_recipient_id",
+            {
+                "random": 2,
+                "general": 1,
+            },
+        )
+
+        all_messages = []
+        for filename in fixture_names:
+            all_messages.extend(
+                orjson.loads(
+                    self.fixture_data(f"{filename}.json", type=slack_message_fixture_directory)
+                )
+            )
+
+        added_channels: dict[str, tuple[str, int]] = kwargs.get(
+            "added_channels", {"random": ("c5", 1), "general": ("c6", 2)}
+        )
+
+        convert_slack_threads = kwargs.get("convert_slack_threads", True)
+        assert isinstance(convert_slack_threads, bool)
+
+        with mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4)):
+            return channel_message_to_zerver_message(
+                realm_id=1,
+                users=user_data,
+                slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
+                slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+                all_messages=all_messages,
+                zerver_realmemoji=[],
+                subscriber_map={},
+                added_channels=added_channels,
+                dm_members={},
+                domain_name="domain",
+                long_term_idle=set(),
+                convert_slack_threads=convert_slack_threads,
+            )
+
     @responses.activate
     def test_get_slack_api_data_with_pagination(self) -> None:
         token = "xoxb-valid-token"
@@ -319,7 +387,7 @@ class SlackImporter(ZulipTestCase):
         self.assertNotIn("uuid_owner_secret", test_zerver_realm_dict)
 
     @responses.activate
-    def test_check_token_access(self) -> None:
+    def test_check_slack_token_access(self) -> None:
         def token_request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], bytes]:
             auth = request.headers.get("Authorization")
             if auth == "Bearer xoxb-broken-request":
@@ -362,7 +430,7 @@ class SlackImporter(ZulipTestCase):
 
         def exception_for(token: str, required_scopes: set[str] = SLACK_IMPORT_TOKEN_SCOPES) -> str:
             with self.assertRaises(Exception) as invalid:
-                check_token_access(token, required_scopes)
+                check_slack_token_access(token, required_scopes)
             return invalid.exception.args[0]
 
         self.assertEqual(
@@ -390,7 +458,12 @@ class SlackImporter(ZulipTestCase):
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
-        check_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
+        self.assertEqual(
+            exception_for("xoxb-valid-token", set()),
+            "required_scopes shouldn't be empty!",
+        )
+
+        check_slack_token_access("xoxb-valid-token", required_scopes=SLACK_IMPORT_TOKEN_SCOPES)
 
     def test_get_owner(self) -> None:
         user_data = [
@@ -764,6 +837,9 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[0]["enable_desktop_notifications"], True)
         self.assertEqual(zerver_userprofile[0]["email"], "jon@gmail.com")
         self.assertEqual(zerver_userprofile[0]["full_name"], "John Doe")
+        self.assertEqual(zerver_userprofile[0]["is_imported_stub"], True)
+        self.assertEqual(zerver_userprofile[0]["short_name"], "john")
+        self.assertEqual(zerver_userprofile[0]["last_login"], None)
 
         self.assertEqual(
             zerver_userprofile[1]["id"], test_slack_user_id_to_zulip_user_id["U0CBK5KAT"]
@@ -772,6 +848,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[1]["is_staff"], False)
         self.assertEqual(zerver_userprofile[1]["is_active"], True)
         self.assertEqual(zerver_userprofile[0]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[1]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[2]["id"], test_slack_user_id_to_zulip_user_id["U09TYF5Sk"]
@@ -782,6 +859,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[2]["email"], "bot1@zulipchat.com")
         self.assertEqual(zerver_userprofile[2]["bot_type"], 1)
         self.assertEqual(zerver_userprofile[2]["avatar_source"], "U")
+        self.assertEqual(zerver_userprofile[2]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[3]["id"], test_slack_user_id_to_zulip_user_id["UHSG7OPQN"]
@@ -794,6 +872,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[3]["full_name"], "Matt Perry")
         self.assertEqual(zerver_userprofile[3]["is_mirror_dummy"], True)
         self.assertEqual(zerver_userprofile[3]["can_forge_sender"], False)
+        self.assertEqual(zerver_userprofile[3]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[4]["id"], test_slack_user_id_to_zulip_user_id["U8VAHEVUY"]
@@ -802,6 +881,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[4]["is_staff"], False)
         self.assertEqual(zerver_userprofile[4]["is_active"], True)
         self.assertEqual(zerver_userprofile[4]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[4]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[5]["id"], test_slack_user_id_to_zulip_user_id["U8X25EBAB"]
@@ -810,6 +890,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[5]["is_staff"], False)
         self.assertEqual(zerver_userprofile[5]["is_active"], True)
         self.assertEqual(zerver_userprofile[5]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[5]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[6]["id"], test_slack_user_id_to_zulip_user_id["U015J7JSE"]
@@ -818,6 +899,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[6]["is_staff"], False)
         self.assertEqual(zerver_userprofile[6]["is_active"], True)
         self.assertEqual(zerver_userprofile[6]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[6]["is_imported_stub"], True)
 
         self.assertEqual(
             zerver_userprofile[7]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC80"]
@@ -826,6 +908,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[7]["is_staff"], False)
         self.assertEqual(zerver_userprofile[7]["is_active"], True)
         self.assertEqual(zerver_userprofile[7]["is_mirror_dummy"], False)
+        self.assertEqual(zerver_userprofile[7]["is_imported_stub"], True)
 
         # Importer should raise error when user emails are malformed
         bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"
@@ -1364,198 +1447,35 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[9]["has_attachment"], True)
         self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
 
-    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
-    def test_channel_message_to_zerver_message_with_threads(
-        self, mock_build_usermessage: mock.Mock
-    ) -> None:
-        user_data = [
-            {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
-            {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
-            {
-                "id": "U061A1R2R",
-                "name": "jon",
-                "deleted": False,
-                "real_name": "Jon",
-                "profile": {"email": "jon@example.com"},
-            },
-        ]
-
-        slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
-
-        all_messages: list[dict[str, Any]] = [
-            {
-                "text": "<@U066MTL5U> has joined the channel",
-                "subtype": "channel_join",
-                "user": "U066MTL5U",
-                "ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "<@U061A5N1G>: hey!",
-                "user": "U061A1R2R",
-                "ts": "1437868294.000006",
-                "has_image": True,
-                "channel_name": "random",
-            },
-            {
-                "text": "message body text",
-                "user": "U061A5N1G",
-                "ts": "1434139102.000002",
-                # Start of thread 1!
-                "thread_ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "random",
-                "user": "U061A5N1G",
-                "ts": "1439868294.000007",
-                # A reply to thread 1
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139102.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "random message but it's too long for the thread topic name",
-                "user": "U061A5N1G",
-                "ts": "1439868294.000008",
-                # Start of thread 2!
-                "thread_ts": "1439868294.000008",
-                "channel_name": "random",
-            },
-            {
-                "text": "replying to the second thread :)",
-                "user": "U061A1R2R",
-                "ts": "1439869294.000008",
-                # A reply to thread 2
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1439868294.000008",
-                "channel_name": "random",
-            },
-            {
-                "text": "message body text",
-                "user": "U061A5N1G",
-                "ts": "1434139200.000002",
-                # Start of thread 3!
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "The first reply to the third thread",
-                "user": "U061A1R2R",
-                "ts": "1439869295.000008",
-                # A reply to thread 3!
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "<@U061A1R2R> please reply to this message",
-                "user": "U061A5N1G",
-                "ts": "1437139200.000002",
-                # Start of thread 4!
-                "thread_ts": "1437139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Yes?",
-                "user": "U061A1R2R",
-                "ts": "1440869295.000008",
-                # A reply to thread 4!
-                "parent_user_id": "U061A5N1G",
-                "thread_ts": "1434139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Look!",
-                "user": "U061A1R2R",
-                "ts": "1537139200.000002",
-                # Start of thread 5!
-                "thread_ts": "1537139200.000002",
-                "has_image": True,
-                "channel_name": "random",
-                "files": [
-                    {
-                        "url_private": "https://files.slack.com/apple.png",
-                        "title": "Apple",
-                        "name": "apple.png",
-                        "mimetype": "image/png",
-                        "timestamp": 9999,
-                        "created": 8888,
-                        "size": 3000000,
-                    }
-                ],
-            },
-            {
-                "text": "Delicious",
-                "user": "U061A5N1G",
-                "ts": "1637139200.000002",
-                # A reply to thread 5!
-                "parent_user_id": "U061A1R2R",
-                "thread_ts": "1537139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "*foo* _bar_ ~baz~ [qux](https://chat.zulip.org)",
-                "user": "U061A1R2R",
-                "ts": "1547139200.000002",
-                # Start of thread 6!
-                "thread_ts": "1547139200.000002",
-                "channel_name": "random",
-            },
-            {
-                "text": "Delicious",
-                "user": "U061A5N1G",
-                "ts": "1637139200.000002",
-                # A reply to thread 6!
-                "parent_user_id": "U061A1R2R",
-                "thread_ts": "1547139200.000002",
-                "channel_name": "random",
-            },
-        ]
-
+    def test_channel_message_to_zerver_message_with_threads(self) -> None:
         slack_recipient_name_to_zulip_recipient_id = {
             "random": 2,
             "general": 1,
         }
-        dm_members: DMMembersT = {}
-
-        zerver_usermessage: list[dict[str, Any]] = []
-        subscriber_map: dict[int, set[int]] = {}
-        added_channels: dict[str, tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
-
         (
             zerver_message,
             zerver_usermessage,
             attachment,
             uploads,
             _reaction,
-        ) = channel_message_to_zerver_message(
-            1,
-            user_data,
-            slack_user_id_to_zulip_user_id,
-            slack_recipient_name_to_zulip_recipient_id,
-            all_messages,
-            [],
-            subscriber_map,
-            added_channels,
-            dm_members,
-            "domain",
-            set(),
-            convert_slack_threads=True,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["normal_messages", "normal_thread"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 13)
+        self.assert_length(zerver_message, 3)
 
-        self.assert_length(uploads, 1)
-        self.assert_length(attachment, 1)
+        self.assert_length(uploads, 0)
+        self.assert_length(attachment, 0)
 
         # Message conversion already tested in tests.test_slack_message_conversion
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
         self.assertEqual(
-            zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
+            zerver_message[1]["recipient"],
+            slack_recipient_name_to_zulip_recipient_id["random"],
         )
 
         ### THREAD 1 CONVERSATION ###
@@ -1569,56 +1489,126 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]["content"], "random")
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
+    def test_convert_thread_topic_name_cut_off(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_long_topic_name"]
+        )
+        self.assert_length(zerver_message, 4)
+        # Test thread topic name cut off.
+        expected_thread_1_message_1_content = (
+            "random message but it is too long for the thread topic name"
+        )
+        expected_thread_1_topic_name = (
+            "2015-08-18 random message but it is too long for the thread…"
+        )
+        self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        # Record that truncation should use the full maximum topic length.
+        self.assert_length(zerver_message[0][EXPORT_TOPIC_NAME], 60)
+
         ### THREAD 2 CONVERSATION ###
-        # Test thread topic name cut off
+        # Test that two different thread topics, despite having unique
+        # original topic names, will collide if their truncated names
+        # are identical.
         expected_thread_2_message_1_content = (
-            "random message but it's too long for the thread topic name"
+            "random message but it is too long for the thread two electric boogaloo"
         )
         expected_thread_2_topic_name = (
-            "2015-08-18 random message but it's too long for the thread …"
+            "2015-08-18 random message but it is too long for the th… (2)"
         )
-        self.assertEqual(zerver_message[3]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
         # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[3][EXPORT_TOPIC_NAME], 60)
+        self.assert_length(zerver_message[2][EXPORT_TOPIC_NAME], 60)
 
-        expected_thread_2_reply_1_message = "replying to the second thread :)"
-        self.assertEqual(zerver_message[4]["content"], expected_thread_2_reply_1_message)
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+    def test_convert_colliding_thread_topic_names(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["threads_with_colliding_topic_names"]
+        )
+        self.assert_length(zerver_message, 6)
+        ### THREAD 1 CONVERSATION ###
+        expected_thread_1_message_1_content = "message body text"
+        expected_thread_1_topic_name = "2015-06-12 message body text"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+
+        ### THREAD 2 CONVERSATION ###
+        # Test thread topic name collision.
+        expected_thread_2_message_1_content = "message body text"
+        expected_thread_2_topic_name = "2015-06-12 message body text (2)"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
         ### THREAD 3 CONVERSATION ###
-        # Test thread topic name collision
-        expected_thread_3_message_1_content = "message body text"
-        expected_thread_3_topic_name = "2015-06-12 message body text (2)"
-        self.assertEqual(zerver_message[5]["content"], expected_thread_3_message_1_content)
-        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
+        # Test two thread topic names with the same message
+        # snippet don't collide if they're on different days.
+        expected_thread_3_topic_name = "1974-07-27 message body text"
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
 
-        ### THREAD 4 CONVERSATION ###
-        # Test mention syntax in thread topic name
-        expected_thread_4_message_1_content = "@**Jon** please reply to this message"
-        expected_thread_4_topic_name = "2015-07-17 @**Jon** please reply to this message"
-        self.assertEqual(zerver_message[7]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[7][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+    def test_convert_thread_topic_name_with_mention_syntax(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_mention_syntax_in_topic_name"]
+        )
+        self.assert_length(zerver_message, 2)
+        # Test mention syntax in thread topic name.
+        expected_thread_message_1_content = "@**Jon** please reply to this message"
+        expected_thread_topic_name = "2015-07-17 @**Jon** please reply to this message"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
-        ### THREAD 5 CONVERSATION ###
-        # Test file link in thread topic name
-        expected_thread_4_message_1_content = "Look!\n[Apple](/user_uploads/"
-        expected_thread_4_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
-        self.assertTrue(
-            zerver_message[9]["content"].startswith(expected_thread_4_message_1_content)
+    def test_convert_thread_topic_name_with_file_link_formatting(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            attachment,
+            uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_file_link_formatting_in_topic_name"]
         )
-        self.assertTrue(
-            zerver_message[9][EXPORT_TOPIC_NAME].startswith(expected_thread_4_topic_name)
-        )
+        self.assert_length(zerver_message, 2)
+        self.assert_length(uploads, 1)
+        self.assert_length(attachment, 1)
+        # Test file link in thread topic name.
+        expected_thread_message_1_content = "Look!\n[Apple](/user_uploads/"
+        expected_thread_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
+        self.assertTrue(zerver_message[0]["content"].startswith(expected_thread_message_1_content))
+        self.assertTrue(zerver_message[0][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
 
-        ### THREAD 6 CONVERSATION ###
-        # Test various formatting syntaxes in thread topic name
-        expected_thread_4_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
-        expected_thread_4_topic_name = (
-            "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+    def test_convert_thread_topic_name_with_text_formattings(self) -> None:
+        (
+            zerver_message,
+            _zerver_usermessage,
+            _attachment,
+            _uploads,
+            _reaction,
+        ) = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_text_formattings_in_topic_name"]
         )
-        self.assertEqual(zerver_message[11]["content"], expected_thread_4_message_1_content)
-        self.assertEqual(zerver_message[11][EXPORT_TOPIC_NAME], expected_thread_4_topic_name)
+        self.assert_length(zerver_message, 2)
+        # Test various formatting syntaxes in thread topic name.
+        expected_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
+        expected_thread_topic_name = "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+        self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
@@ -1882,10 +1872,10 @@ by Pieter
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
-    @mock.patch("zerver.data_import.slack.check_token_access")
+    @mock.patch("zerver.data_import.slack.check_slack_token_access")
     def test_slack_import_to_existing_database(
         self,
-        mock_check_token_access: mock.Mock,
+        mock_check_slack_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -1923,7 +1913,7 @@ by Pieter
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_zipfile(test_slack_zip_file, output_dir, token)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
 
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + "/realm.json"))
@@ -2041,7 +2031,7 @@ by Pieter
 
         self.assertEqual(uploads_list[0]["s3_path"], image_path)
         self.assertEqual(uploads_list[0]["realm_id"], realm_id)
-        self.assertEqual(uploads_list[0]["user_profile_email"], "alice@example.com")
+        self.assertEqual(uploads_list[0]["user_profile_id"], alice_id)
 
     def test_bot_duplicates(self) -> None:
         self.assertEqual(
@@ -2090,10 +2080,10 @@ by Pieter
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
-    @mock.patch("zerver.data_import.slack.check_token_access")
+    @mock.patch("zerver.data_import.slack.check_slack_token_access")
     def test_slack_import_unicode_filenames(
         self,
-        mock_check_token_access: mock.Mock,
+        mock_check_slack_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -2132,13 +2122,13 @@ by Pieter
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
-            do_convert_zipfile(test_slack_zip_file, output_dir, token)
+            do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
 
-    @mock.patch("zerver.data_import.slack.check_token_access")
+    @mock.patch("zerver.data_import.slack.check_slack_token_access")
     @responses.activate
     def test_end_to_end_slack_import(
         self,
-        mock_check_token_access: mock.Mock,
+        mock_check_slack_token_access: mock.Mock,
     ) -> None:
         # Choose import from slack
         email = "ete-slack-import@zulip.com"
@@ -2172,7 +2162,7 @@ by Pieter
         assert confirmation_key is not None
 
         # Check that the we show an error message if the token is invalid.
-        mock_check_token_access.side_effect = ValueError("Invalid slack token")
+        mock_check_slack_token_access.side_effect = ValueError("Invalid slack token")
         result = self.client_post(
             "/new/import/slack/",
             {
@@ -2181,7 +2171,7 @@ by Pieter
             },
         )
         self.assert_in_response("Invalid slack token", result)
-        mock_check_token_access.side_effect = None
+        mock_check_slack_token_access.side_effect = None
 
         # Mock slack API response and mark token as valid
         access_token = "xoxb-valid-token"
@@ -2212,6 +2202,8 @@ by Pieter
         prereg_realm.data_import_metadata["uploaded_import_file_name"] = "test_slack_importer.zip"
         prereg_realm.save()
 
+        # Set by the user performing the import.
+        importer_set_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         # Check that deferred_work for import is queued.
         with mock.patch("zerver.views.registration.queue_json_publish_rollback_unsafe") as m:
             result = self.client_post(
@@ -2219,11 +2211,16 @@ by Pieter
                 {
                     "key": confirmation_key,
                     "start_slack_import": "true",
+                    "email_address_visibility": importer_set_email_address_visibility,
                 },
             )
             self.assert_in_success_response(["Import progress"], result)
             prereg_realm.refresh_from_db()
             self.assertTrue(prereg_realm.data_import_metadata["is_import_work_queued"])
+            self.assertTrue(
+                prereg_realm.data_import_metadata["email_address_visibility"],
+                importer_set_email_address_visibility,
+            )
 
         m.assert_called_once_with(
             "deferred_work",
@@ -2235,12 +2232,45 @@ by Pieter
             },
         )
 
+        # Test that clicking on the confirmation link redirects to status page
+        # which helps user resume the import process if they closed the tab.
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+        result = self.client_post(
+            "/new/import/slack/",
+            {
+                "key": confirmation_key,
+                "slack_access_token": access_token,
+            },
+        )
+        self.assert_in_success_response(["Import progress"], result)
+
         # We don't want to test to whole realm import process here but only that
         # realm import calls are made with correct arguments and different cases
         # are handled well.
         realm = do_create_realm(
             string_id=prereg_realm.string_id,
             name=prereg_realm.name,
+        )
+
+        test_user = do_create_user("email1", "password", realm, "full_name", acting_user=None)
+        test_bot_user = do_create_user(
+            "bot_email",
+            "password",
+            realm,
+            "bot_full_name",
+            bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
+        )
+        self.assertEqual(
+            get_email_address_visibility_default(realm.org_type),
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        )
+        self.assertEqual(
+            test_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
+        self.assertEqual(
+            test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
         )
         with (
             mock.patch(
@@ -2270,6 +2300,18 @@ by Pieter
         self.assertEqual(realm.default_language, prereg_realm.default_language)
         prereg_realm.refresh_from_db()
         self.assertTrue(prereg_realm.data_import_metadata["need_select_realm_owner"])
+
+        # Check that imported users have user provided email visibility setting.
+        test_user.refresh_from_db()
+        self.assertEqual(
+            test_user.email_address_visibility,
+            importer_set_email_address_visibility,
+        )
+        # Check that bots were not impacted by this setting.
+        test_bot_user.refresh_from_db()
+        self.assertEqual(
+            test_bot_user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
 
         # Confirmation key at this point is marked, used but since we
         # are mocking the process, we need to do it manually here.
@@ -2398,6 +2440,111 @@ by Pieter
         # Check that the importing user was made the realm owner
         importing_user.refresh_from_db()
         self.assertEqual(importing_user.role, UserProfile.ROLE_REALM_OWNER)
+
+    @mock.patch("zerver.actions.data_import.do_import_realm")
+    @mock.patch("zerver.actions.data_import.do_convert_zipfile")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_create_new_user_for_importer(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_do_convert_zipfile: mock.Mock,
+        mock_do_import_realm: mock.Mock,
+    ) -> None:
+        # Choose import from slack
+        email = "ete-slack-import@zulip.com"
+        string_id = "ete-slack-import"
+        result = self.submit_realm_creation_form(
+            email,
+            realm_subdomain=string_id,
+            realm_name="Slack import create new user",
+            import_from="slack",
+        )
+
+        # Redirect to slack data import form
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+
+        confirmation_key = find_key_by_email(email)
+        assert confirmation_key is not None
+        prereg_realm = PreregistrationRealm.objects.get(email=email)
+        mock_realm = do_create_realm(
+            string_id=prereg_realm.string_id,
+            name=prereg_realm.name,
+        )
+        mock_do_import_realm.return_value = mock_realm
+
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+
+        import_slack_data(event)
+
+        mock_save_attachment_contents.assert_called_once()
+        mock_do_convert_zipfile.assert_called_once_with(
+            mock.ANY, mock.ANY, event["slack_access_token"]
+        )
+        mock_do_import_realm.assert_called_once_with(mock.ANY, prereg_realm.string_id)
+
+        prereg_realm.refresh_from_db()
+        self.assertTrue(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+
+        confirmation_key = find_key_by_email(prereg_realm.email)
+        result = self.client_get(f"/realm/import/post_process/{confirmation_key}")
+        self.assert_in_success_response(["Select your account"], result)
+
+        # Choose to create new account for the importer.
+        result = self.client_post(
+            f"/realm/import/post_process/{confirmation_key}",
+            {
+                "user_id": "",
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        prereg_realm.refresh_from_db()
+        self.assertIsNotNone(prereg_realm.data_import_metadata["user_activation_url"])
+        self.assertEqual(
+            result["Location"], prereg_realm.data_import_metadata["user_activation_url"]
+        )
+
+        # Test that importer can reach the user registration page from realm creation email
+        # confirmation link.
+        result = self.client_get(confirmation_url)
+        self.assert_in_success_response(["new/import/slack"], result)
+        result = self.client_post(
+            "/new/import/slack/",
+            {
+                "key": confirmation_key,
+                "from_confirmation": "1",
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"], prereg_realm.data_import_metadata["user_activation_url"]
+        )
+
+        # Get key from activation url.
+        key = urlsplit(prereg_realm.data_import_metadata["user_activation_url"]).path.split("/")[-1]
+        self.client_post(
+            "/accounts/register/",
+            {
+                "password": "testpassword",
+                "key": key,
+                "terms": True,
+                "full_name": "Realm importer",
+                "email": prereg_realm.email,
+            },
+            subdomain=prereg_realm.string_id,
+        )
+
+        prereg_realm.refresh_from_db()
+        self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
+        self.assertEqual(prereg_realm.created_realm, mock_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        self.assertFalse(prereg_realm.data_import_metadata.get("need_select_realm_owner"))
+        self.assertIsNone(prereg_realm.data_import_metadata.get("user_activation_url"))
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")

@@ -425,6 +425,18 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
         )
 
+    def test_add_term_using_dm_operator_the_same_user_as_operand_when_direct_message_group_exists(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Make the direct message group for self messages
+        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        term = NarrowParameter(operator="dm", operand=hamlet.email)
+        params = {"recipient_id_1": direct_message_group.recipient_id}
+        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
+
     def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
         myself_and_other = (
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
@@ -434,6 +446,19 @@ class NarrowBuilderTest(ZulipTestCase):
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
+
+    def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Make the direct message group for 1:1 messages between hamlet and othello
+        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
+
+        term = NarrowParameter(operator="dm", operand=f"{hamlet.email},{othello.email}")
+        params = {"recipient_id_1": direct_message_group.recipient_id}
+        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group(
         self,
@@ -1161,6 +1186,18 @@ class IncludeHistoryTest(ZulipTestCase):
         # Negated -channels:public searches should not include history.
         narrow = [
             NarrowParameter(operator="channels", operand="public", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # channels:web-public searches should include history for non-guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated -channels:web-public searches should not include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 

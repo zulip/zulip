@@ -6,7 +6,7 @@ from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
-from zerver.data_import.slack import check_token_access, get_slack_api_data
+from zerver.data_import.slack import check_slack_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
     SLACK_USERMENTION_REGEX,
     convert_slack_formatting,
@@ -64,7 +64,7 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         token=token,
         user=user_id,
     )
-    return slack_user_data["name"]
+    return slack_user_data["real_name"]
 
 
 def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
@@ -221,7 +221,7 @@ def api_slack_webhook(
         try:
             if slack_app_token == "":
                 raise ValueError("slack_app_token is missing.")
-            check_token_access(slack_app_token, SLACK_INTEGRATION_TOKEN_SCOPES)
+            check_slack_token_access(slack_app_token, SLACK_INTEGRATION_TOKEN_SCOPES)
         except (ValueError, Exception) as e:
             send_rate_limited_pm_notification_to_bot_owner(
                 user_profile,

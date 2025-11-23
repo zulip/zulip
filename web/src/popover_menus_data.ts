@@ -3,8 +3,6 @@
 
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
-
 import * as buddy_data from "./buddy_data.ts";
 import * as gear_menu_util from "./gear_menu_util.ts";
 import * as hash_util from "./hash_util.ts";
@@ -16,6 +14,7 @@ import * as muted_users from "./muted_users.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as settings_config from "./settings_config.ts";
 import type {ColorSchemeValues} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -47,6 +46,7 @@ type ActionPopoverContext = {
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
     should_display_add_reaction_option: boolean;
+    should_display_message_report_option: boolean;
 };
 
 type TopicPopoverContext = {
@@ -217,6 +217,18 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
     const should_display_remind_me_option = not_spectator;
 
+    const should_display_message_report_option = (): boolean => {
+        if (page_params.is_spectator) {
+            return false;
+        }
+        if (realm.realm_moderation_request_channel_id === -1) {
+            return false;
+        }
+
+        // You can report any message you can access
+        return true;
+    };
+
     function is_add_reaction_icon_visible(): boolean {
         assert(message_lists.current !== undefined);
         const $message_row = message_lists.current.get_row(message_id);
@@ -249,6 +261,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_message,
+        should_display_message_report_option: should_display_message_report_option(),
     };
 }
 

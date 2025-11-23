@@ -69,7 +69,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
     access_default_stream_group_by_id,
-    access_requested_group_permissions,
+    access_requested_group_permissions_for_streams,
     access_stream_by_id,
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
@@ -711,12 +711,16 @@ def create_channel(
         message_retention_days=parsed_message_retention_days,
     )
 
-    group_settings_map, anonymous_group_membership = access_requested_group_permissions(
-        user_profile,
-        realm,
-        request_settings_dict,
+    stream_group_settings_map, anonymous_group_membership = (
+        access_requested_group_permissions_for_streams(
+            [name],
+            user_profile,
+            realm,
+            request_settings_dict,
+        )
     )
 
+    group_settings_map = stream_group_settings_map[name]
     new_channel, created = create_stream_if_needed(
         realm,
         name,
@@ -1068,17 +1072,18 @@ def send_user_subscribed_and_new_channel_notifications(
                     )
 
                 assert new_channel_message is not None
-                notifications.append(
-                    internal_prep_stream_message(
-                        sender=sender,
-                        stream=stream,
-                        topic_name=channel_events_topic_name(stream),
-                        content=new_channel_message.format(
-                            user_name=silent_mention_syntax_for_user(user_profile),
-                        )
-                        + f"\n```` quote\n{stream_description}\n````",
-                    ),
-                )
+                if user_profile.realm.send_channel_events_messages:
+                    notifications.append(
+                        internal_prep_stream_message(
+                            sender=sender,
+                            stream=stream,
+                            topic_name=channel_events_topic_name(stream),
+                            content=new_channel_message.format(
+                                user_name=silent_mention_syntax_for_user(user_profile),
+                            )
+                            + f"\n```` quote\n{stream_description}\n````",
+                        ),
+                    )
 
     if len(notifications) > 0:
         do_send_messages(notifications, mark_as_read=[user_profile.id])
@@ -1143,7 +1148,7 @@ def get_stream_backend(
 ) -> HttpResponse:
     (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
-    recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
+    recent_traffic = get_streams_traffic(user_profile.realm, {stream.id})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
 
     return json_success(

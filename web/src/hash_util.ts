@@ -1,15 +1,15 @@
 import assert from "minimalistic-assert";
-
-import * as internal_url from "../shared/src/internal_url.ts";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {realm} from "./state_data.ts";
+import {narrow_term_schema, realm} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -20,12 +20,12 @@ import type {UserGroup} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
-export function build_reload_url(): string {
+export function get_reload_hash(): string {
     let hash = window.location.hash;
     if (hash.startsWith("#")) {
         hash = hash.slice(1);
     }
-    return "+oldhash=" + encodeURIComponent(hash);
+    return hash;
 }
 
 export function encode_operand(operator: string, operand: string): string {
@@ -198,7 +198,7 @@ export function group_edit_url(group: UserGroup, right_side_tab: string): string
 }
 
 export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
-    const public_operator = {operator: "channels", operand: "public"};
+    const public_operator: NarrowTerm = {operator: "channels", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
@@ -238,9 +238,13 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
         }
 
         const operand = decode_operand(operator, raw_operand);
-        terms.push({negated, operator, operand});
+        terms.push({
+            negated,
+            operator,
+            operand,
+        });
     }
-    return terms;
+    return z.array(narrow_term_schema).parse(terms);
 }
 
 export function channels_settings_edit_url(

@@ -17,6 +17,7 @@ import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
+import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
@@ -215,14 +216,18 @@ export const update_person = function update(event: UserUpdate): void {
             settings_users.update_view_on_reactivate(event.user_id, is_bot_user);
         } else {
             people.deactivate(user);
-            stream_events.remove_deactivated_user_from_all_streams(event.user_id);
+            // We used to remove deactivated users in this code block before. But now,
+            // that should be done by the `peer_remove` event being sent by the server.
+            // This function should be removed altogether if we go through a period of
+            // no blueslip errors raised in the function below.
+            stream_events.report_error_if_user_still_has_subscriptions(event.user_id);
             user_group_edit.remove_deactivated_user_from_all_groups(event.user_id);
             settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
         }
         buddy_list.insert_or_move([event.user_id]);
         settings_account.maybe_update_deactivate_account_button();
         if (is_bot_user) {
-            settings_users.update_bot_data(event.user_id);
+            settings_bots.update_bot_data(event.user_id);
         } else if (!event.is_active) {
             // A human user deactivated, update 'Export permissions' table.
             settings_exports.remove_export_consent_data_and_redraw(event.user_id);

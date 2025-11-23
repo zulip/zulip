@@ -29,8 +29,8 @@ import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
-import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
@@ -40,6 +40,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export function initialize(): void {
@@ -221,22 +222,6 @@ export function initialize(): void {
     // selection function which will open the compose box  and select the message.
     if (!util.is_mobile()) {
         $("#main_div").on("click", ".messagebox", select_message_function);
-        // on the other hand, on mobile it should be done with a long tap.
-    } else {
-        $("#main_div").on("longtap", ".messagebox", function (this: HTMLElement, e) {
-            const sel = window.getSelection();
-            // if one matches, remove the current selections.
-            // after a longtap that is valid, there should be no text selected.
-            if (sel) {
-                if (sel.removeAllRanges) {
-                    sel.removeAllRanges();
-                } else if (sel.empty) {
-                    sel.empty();
-                }
-            }
-
-            select_message_function.call(this, e);
-        });
     }
 
     $("#main_div").on("click", ".star_container", function (e) {
@@ -421,24 +406,6 @@ export function initialize(): void {
         return nearest.id;
     }
 
-    $("#message_feed_container").on(
-        "click",
-        ".narrows_by_recipient",
-        function (this: HTMLElement, e) {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) {
-                return;
-            }
-            e.preventDefault();
-            if (document.getSelection()?.type === "Range") {
-                return;
-            }
-            const row_id = get_row_id_for_narrowing(this);
-            // TODO: Navigate user according to `web_channel_default_view` setting.
-            // Also, update the tooltip hotkey in recipient bar.
-            message_view.narrow_by_recipient(row_id, {trigger: "message header"});
-        },
-    );
-
     $("#message_feed_container").on("click", ".narrows_by_topic", function (this: HTMLElement, e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
@@ -564,8 +531,15 @@ export function initialize(): void {
             e.stopPropagation();
             const $elem = $(this);
 
+            const is_compact_mode =
+                user_settings.user_list_style ===
+                settings_config.user_list_style_values.compact.code;
+            const status_el = is_compact_mode ? null : util.the($elem.find(".status-text"));
+            const is_truncated = status_el ? status_el.scrollWidth > status_el.clientWidth : false;
+            const should_show_status = is_compact_mode || is_truncated;
+
             const user_id_string = $elem.attr("data-user-id")!;
-            const title_data = buddy_data.get_title_data(user_id_string, false);
+            const title_data = buddy_data.get_title_data(user_id_string, false, should_show_status);
 
             // `target_node` is the `ul` element since it stays in DOM even after updates.
             function get_target_node(): HTMLElement {
@@ -624,7 +598,7 @@ export function initialize(): void {
         // This converts from 'true' in the DOM to true.
         const is_group = z.boolean().parse(JSON.parse($elem.attr("data-is-group")!));
 
-        const title_data = buddy_data.get_title_data(user_ids_string, is_group);
+        const title_data = buddy_data.get_title_data(user_ids_string, is_group, true);
 
         // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
         function get_target_node(): HTMLElement {
@@ -683,7 +657,7 @@ export function initialize(): void {
             const $elem = $(this);
             const user_ids_string = $elem.attr("data-user-ids-string");
             // Don't show tooltip for group direct messages.
-            if (!user_ids_string || user_ids_string.split(",").length !== 1) {
+            if (user_ids_string?.split(",").length !== 1) {
                 return;
             }
             const title_data = recent_view_ui.get_pm_tooltip_data(user_ids_string);
@@ -911,12 +885,6 @@ export function initialize(): void {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", function (this: HTMLElement) {
         this.blur();
-    });
-
-    $("body").on("click", ".language_selection_widget button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        settings_preferences.launch_default_language_setting_modal();
     });
 
     $("body").on("click", "#header-container .brand", (e) => {

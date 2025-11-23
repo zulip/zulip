@@ -1,3 +1,5 @@
+// See https://zulip.com/api/update-presence for API documentation.
+
 import * as z from "zod/mini";
 
 import * as people from "./people.ts";

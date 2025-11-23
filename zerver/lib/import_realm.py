@@ -2,17 +2,14 @@ import collections
 import logging
 import os
 import shutil
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from difflib import unified_diff
 from typing import Any, TypeAlias
 
-import bmemcached
 import orjson
 import pyvips
 from bs4 import BeautifulSoup
 from django.conf import settings
-from django.core.cache import cache
 from django.core.management.base import CommandError
 from django.core.validators import validate_email
 from django.db import connection, transaction
@@ -44,6 +41,7 @@ from zerver.lib.onboarding import (
     send_initial_direct_messages_to_user,
     send_initial_realm_messages,
 )
+from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
@@ -56,7 +54,7 @@ from zerver.lib.streams import (
 from zerver.lib.thumbnail import (
     THUMBNAIL_ACCEPT_IMAGE_TYPES,
     BadImageError,
-    get_user_upload_previews,
+    manifest_and_get_user_upload_previews,
     maybe_thumbnail,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -466,7 +464,7 @@ def fix_message_rendered_content(
             # time, and a no-op when those are processed.  The return
             # value will also be out of date -- but that is irrelevant
             # in this use case.
-            get_user_upload_previews(realm.id, message[content_key])
+            manifest_and_get_user_upload_previews(realm.id, message[content_key])
 
             continue
 
@@ -1143,19 +1141,12 @@ def import_uploads(
         # TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
-        if processes == 1:
-            for record in records:
-                process_func(record)
-        else:
-            connection.close()
-            _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
-            assert isinstance(_cache, bmemcached.Client)
-            _cache.disconnect_all()
-            with ProcessPoolExecutor(max_workers=processes) as executor:
-                for future in as_completed(
-                    executor.submit(process_func, record) for record in records
-                ):
-                    future.result()
+        run_parallel(
+            process_func,
+            records,
+            processes if s3_uploads else 1,
+            report=lambda count: logging.info("Processed %s/%s avatars", count, len(records)),
+        )
 
 
 def disable_restricted_authentication_methods(data: ImportedTableData) -> None:

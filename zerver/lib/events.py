@@ -570,6 +570,11 @@ def fetch_initial_state_data(
             )
         state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
 
+        state["server_report_message_types"] = [
+            {"key": type_id, "name": str(type_name)}
+            for type_id, type_name in Realm.REPORT_MESSAGE_REASONS.items()
+        ]
+
         # Presence system parameters for client behavior.
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
         state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS
@@ -1658,7 +1663,8 @@ def apply_event(
                     subscriber_key = (
                         "subscribers" if "subscribers" in sub else "partial_subscribers"
                     )
-                    sub[subscriber_key].remove(user_profile.id)
+                    if user_profile.id in sub[subscriber_key]:
+                        sub[subscriber_key].remove(user_profile.id)
 
             state["unsubscribed"] += removed_subs
 

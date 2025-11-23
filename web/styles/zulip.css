@@ -298,16 +298,23 @@ p.n-margin {
     }
 }
 
-#feedback_container {
-    display: none;
+#feedback-container-content-wrapper {
     position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
     width: 400px;
-    top: 0;
-    left: calc(50vw - 220px);
+    max-width: calc(100% - 20px);
     padding: 15px;
     background-color: var(--color-background-modal);
     border-radius: 5px;
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
+    box-sizing: border-box;
+}
+
+#feedback_container {
+    display: none;
+    position: fixed;
+    width: 100%;
     z-index: 110;
 
     @container app (width < $cq_md_min) {
@@ -666,6 +673,99 @@ body.has-overlay-scrollbar {
     }
 }
 
+.upload-overlay-container {
+    visibility: hidden;
+    position: fixed;
+    display: flex;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    /* Semi-transparent background with a blur effect */
+    background: hsl(238deg 35% 15% / 65%);
+    backdrop-filter: blur(8px);
+    transition:
+        transform 400ms,
+        opacity 400ms;
+    opacity: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.upload-overlay-visible .upload-overlay-container {
+    visibility: visible;
+    z-index: var(--upload-overlay-z-index);
+    opacity: 1;
+    pointer-events: all;
+}
+
+.upload-overlay-svg-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+}
+
+.upload-overlay-svg {
+    /* We have left 80px from both sides of the display. */
+    width: calc(100% - 5em); /* 80px at 16px/1em */
+    height: calc(100% - 5em); /* 80px at 16px/1em */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    @media (width <= $sm_min) {
+        width: calc(100% - 3em); /* 48px at 16px/1em */
+        height: calc(100% - 3em);
+    }
+}
+
+.upload-overlay-svg-rect {
+    /* The border SVG is a square with 3px border. */
+    width: calc(100% - 3px);
+    height: calc(100% - 3px);
+}
+
+.upload-overlay-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    color: hsl(0deg 100% 100%);
+    z-index: 10001;
+    min-width: 17.5em; /* 280px at 16px/1em */
+    max-width: 38.125em; /* 610px at 16px/1em */
+    align-self: stretch;
+    padding: 0.625em; /* 10px at 16px/1em */
+}
+
+.upload-overlay-content-image {
+    margin-bottom: 0.875em; /* 14px at 16px/1em */
+    /* Hide the icon on smaller screens to save space */
+    @media (width <= $sm_min) {
+        display: none;
+    }
+}
+
+.upload-overlay-content-text {
+    font-size: 1.6875em; /* 27px at 16px/1em */
+    font-style: normal;
+    font-weight: 500;
+    line-height: 2em; /* 32px at 16px/1em */
+}
+
 .column-middle,
 #compose-content {
     margin-right: var(--right-sidebar-width);
@@ -763,17 +863,6 @@ li,
     height: 1em;
     backdrop-filter: blur(20px);
     outline: 1px solid var(--color-copy-button-square-bg-active);
-}
-
-#copy_generated_link_container {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-}
-
-#copy_generated_invite_link {
-    position: relative;
-    right: -30px;
 }
 
 /* Classes for hiding and showing controls */
@@ -1049,6 +1138,12 @@ div.focused-message-list.is-conversation-view .recipient_row {
     border-width: 1px;
     border-style: solid;
     background-clip: padding-box;
+}
+
+.topic_edit_save,
+.topic_edit_cancel {
+    /* Adjust top and bottom padding to fit into the recipient row. */
+    padding: 0.125em 0.625em; /* 2px 10px at 16px/em */
 }
 
 .information-settings .user-profile-picture,
@@ -1328,13 +1423,44 @@ div.topic_edit_spinner .loading_indicator_spinner {
     vertical-align: middle;
 }
 
-#multiuse_invite_link {
-    width: 100%;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: bottom;
+.invite-user-modal-banners {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &:has(.banner) {
+        /* Only apply bottom margin if there is a banner present. */
+        margin-bottom: 10px;
+    }
+
+    .banner-wrapper:empty {
+        /* Avoid unnecessary spacing between empty banner
+           wrappers due to the flex gap property. */
+        display: none;
+    }
+}
+
+.copy-invite-link-banner {
+    .banner-content {
+        white-space: nowrap;
+    }
+
+    .banner-label {
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+@container banner (width >= 25em) {
+    #copy_generated_invite_link .action-button-label {
+        display: none;
+    }
+}
+
+.invite-tips-list {
+    /* Override default bottom margin of ul tags in bootstrap. */
+    margin-bottom: 0;
 }
 
 #invite-user-form .loading_indicator_spinner {

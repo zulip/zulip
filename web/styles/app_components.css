@@ -207,21 +207,6 @@ input::placeholder {
         }
     }
 
-    &.sea-green {
-        color: hsl(156deg 41% 40%);
-        border-color: hsl(156deg 28% 70%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(156deg 30% 50%);
-        }
-
-        &:active {
-            border-color: hsl(156deg 30% 40%);
-            color: hsl(156deg 44% 43%);
-        }
-    }
-
     &.button-warning {
         color: hsl(35deg 70% 56%);
         border-color: hsl(35deg 98% 84%);
@@ -489,26 +474,6 @@ input.settings_text_input {
     line-height: 38px;
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip {
-    width: fit-content;
-
-    &::before {
-        content: "\f135";
-        margin-right: 6px;
-    }
-}
-
-.upgrade-tip:hover {
-    color: hsl(0deg 0% 20%);
-    border: 1px solid hsl(49deg 20% 60%);
-    box-shadow: 0 0 4px hsl(199deg 79% 56% / 20%);
-
-    text-decoration: none;
-}
-
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip,
 .invite-stream-notice {
     position: relative;
@@ -530,8 +495,6 @@ input.settings_text_input {
     }
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip {
     margin: 10px 0;
 }
@@ -812,7 +775,6 @@ input.settings_text_input {
             background-color: var(
                 --color-background-table-header-sortable-hover
             );
-            transition: background-color 100ms ease-in-out;
         }
     }
 
@@ -1138,8 +1100,14 @@ div.overlay .flex.overlay-content > .overlay-container,
         background-color: var(
             --color-background-disabled-dropdown-widget-button
         );
+        /* TODO: Should this be 0.5 to match the spectator block below? */
         opacity: 0.7;
     }
+}
+
+.dropdown-widget-disabled-for-spectators .dropdown-widget-button {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 #edit_bot_owner_widget .dropdown_widget_value {
@@ -1477,9 +1445,58 @@ input.invalid-input {
             .zulip-icon {
                 display: flex;
                 align-items: center;
-                color: var(--color-info-denisty-button-icon);
+                color: var(--color-info-density-button-icon);
                 opacity: 0.7;
             }
+        }
+    }
+}
+
+#uppy-editor {
+    .modal__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .loading-placeholder {
+        position: absolute;
+        top: calc(50% - 1.3572em);
+        left: calc(50% - 1.3572em);
+    }
+
+    .modal__content {
+        padding: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    #dialog_error {
+        margin: 0 1.5em 1.5em;
+    }
+
+    .image-cropper-container {
+        height: 550px;
+    }
+
+    .uppy-Root {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .uppy-ImageCropper-controls {
+        /* This is needed to override the top padding set for narrow
+        screens by cropperJS. */
+        padding-top: 0;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
         }
     }
 }

@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -471,10 +471,38 @@ run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 
-    terms = [{operator: "-is", operand: "starred"}];
+    terms = [{operator: "is", operand: "starred", negated: true}];
 
     helper.clear_events();
     message_view.update_hash_to_match_filter(new Filter(terms));
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/-is/starred");
+});
+
+run_test("fail_incorrectly_cased_URL", ({override, override_rewire}) => {
+    browser_history.clear_for_testing();
+    override(popovers, "hide_all", noop);
+    const helper = test_helper({override, override_rewire, change_tab: false});
+
+    // We can receive URLs which contain operators that
+    // are not cased correctly. We don't have to handle them
+    // since this is not a good reason to increase the types
+    // of URLs that are valid on a Zulip realm.
+    window.location.hash = "#narrow/chAnnel/4-Denmark/topic/PLOTS/with/99";
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+        [ui_report, "error"],
+    ]);
+
+    window.location.hash = "#narrow/channel/4-Denmark/tOPic/PLOTS/with/99";
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+        [ui_report, "error"],
+    ]);
 });

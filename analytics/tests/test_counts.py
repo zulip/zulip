@@ -50,7 +50,11 @@ from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
-from zerver.lib.push_notifications import get_message_payload_apns, get_message_payload_gcm
+from zerver.lib.push_notifications import (
+    get_message_payload,
+    get_message_payload_apns,
+    get_message_payload_gcm,
+)
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
@@ -1441,12 +1445,14 @@ class TestLoggingCountStats(AnalyticsTestCase):
             rendered_content="This is test content",
             date_sent=timezone_now(),
             sending_client=get_client("test"),
+            is_channel_message=False,
         )
         message.set_topic_name("Test topic")
         message.save()
-        gcm_payload, gcm_options = get_message_payload_gcm(hamlet, message)
+        message_payload = get_message_payload(hamlet, message)
+        gcm_payload, gcm_options = get_message_payload_gcm(message_payload, hamlet, message)
         apns_payload = get_message_payload_apns(
-            hamlet, message, NotificationTriggers.DIRECT_MESSAGE
+            message_payload, hamlet, message, NotificationTriggers.DIRECT_MESSAGE
         )
 
         # First we'll make a request without providing realm_uuid. That means

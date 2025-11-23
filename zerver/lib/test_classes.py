@@ -922,7 +922,7 @@ Output:
             "source_realm_id": source_realm_id,
             "is_demo_organization": is_demo_organization,
             "how_realm_creator_found_zulip": "other",
-            "how_realm_creator_found_zulip_extra_context": "I found it on the internet.",
+            "how_realm_creator_found_zulip_other_text": "I found it on the internet.",
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
@@ -1521,7 +1521,7 @@ Output:
             realm = get_realm("zulip")
 
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-            realm, invite_only, history_public_to_subscribers
+            invite_only, history_public_to_subscribers
         )
 
         try:
@@ -1927,7 +1927,7 @@ Output:
             push_account_id=10,
             bouncer_device_id=1,
             token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key=base64.b64decode("MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"),
         )
 
     def register_push_device_token(self, user_profile_id: int) -> None:
@@ -2013,7 +2013,7 @@ Output:
         """
         dct = {}
 
-        for realm_emoji in RealmEmoji.objects.all():
+        for realm_emoji in RealmEmoji.objects.all().iterator():
             dct[realm_emoji.id] = realm_emoji
 
         if not dct:
@@ -2912,14 +2912,14 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
             push_account_id=10,
             bouncer_device_id=1,
             token_kind=PushDevice.TokenKind.APNS,
-            push_public_key="9VvW7k59AET0v3+VFCkKTrNm5DJQ7JTKdvUjZInZZ0Y=",
+            push_key=base64.b64decode("MXPC4WK2YfyfCBdK6ElnzSpKJtcpFSZrYiJto4YCETzx"),
         )
         PushDevice.objects.create(
             user=hamlet,
             push_account_id=20,
             bouncer_device_id=2,
             token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key=base64.b64decode("Mc3u6xraEI79aGk6Nd+boqi/ODfT+JcsEIATzG7C/m+V"),
         )
 
         realm_and_remote_realm_fields: dict[str, Realm | RemoteRealm | None] = {

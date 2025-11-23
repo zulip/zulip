@@ -16,7 +16,8 @@ import binascii
 import json
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import Any, TypedDict, TypeVar, cast
@@ -1716,19 +1717,12 @@ def sync_user_profile_custom_fields(
         var_name = "_".join(field.name.lower().split(" "))
         fields_by_var_name[var_name] = field
 
-    existing_values = {}
-    for data in user_profile.profile_data():
-        var_name = "_".join(data["name"].lower().split(" "))
-        existing_values[var_name] = data["value"]
-
     profile_data: list[ProfileDataElementUpdateDict] = []
     for var_name, value in custom_field_name_to_value.items():
         try:
             field = fields_by_var_name[var_name]
         except KeyError:
             raise SyncUserError(f"Custom profile field with name {var_name} not found.")
-        if existing_values.get(var_name) == value:
-            continue
         try:
             validate_user_custom_profile_field(user_profile.realm.id, field, value)
         except ValidationError as error:
@@ -1913,6 +1907,84 @@ class SocialAuthSyncNewUserInfo:
     group_memberships_sync_map: dict[str, bool]
 
 
+@dataclass
+class SocialAuthGroupInfo:
+    syncable_group_names: set[str]
+    intended_group_names: set[str]
+
+
+def process_social_auth_group_sync_info(
+    backend: Any,
+    user_profile: UserProfile | None,
+    attrs_config: dict[str, Any],
+    extra_attrs: dict[str, Any],
+) -> SocialAuthGroupInfo | None:
+    external_group_name_to_zulip_group_name: dict[str, str] = {}
+    groups_config_list = cast(list[str | tuple[str, str]], attrs_config.get("groups", []))
+    if not groups_config_list:
+        return None
+
+    # Group sync is only supported for SAML for the foreseeable time.
+    assert backend.name == "saml"
+
+    for group_name in groups_config_list:
+        match group_name:
+            # the objects in the config are either straight-forward group names
+            # or tuples (<saml group name>, <zulip group name>) indicating the
+            # obvious mapping.
+            case str():
+                external_group_name_to_zulip_group_name[group_name] = group_name
+            case (saml_group_name, zulip_group_name):
+                external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
+            case _:  # nocoverage
+                raise AssertionError(f"Unsupported item in group sync config list: {group_name}")
+
+    syncable_group_names = set(external_group_name_to_zulip_group_name.values())
+
+    # pop zulip_groups from extra_attrs, so that only user attribute sync
+    # values remain there.
+    # zulip_groups being absent should be treated as if no group memberships
+    # are desired. That's because Okta doesn't send the SAML attribute at all
+    # if the user has no group memberships. Thus we treat this absence as
+    # an empty list.
+    all_received_group_names = extra_attrs.pop("zulip_groups", [])
+    external_group_names = [
+        name
+        for name in all_received_group_names
+        # Ignore group names which aren't configured.
+        if name in external_group_name_to_zulip_group_name
+    ]
+    intended_group_names = {
+        external_group_name_to_zulip_group_name[external_name]
+        for external_name in external_group_names
+    }
+
+    # It's important to log the information about what we received in the request and what Zulip groups
+    # that was translated to based on the configuration - otherwise debugging a misconfiguration would be
+    # a very painful process.
+    #
+    # Notably, it's generally expected for the list of received groups to be shorter than the "translated"
+    # list of intended Zulip groups. The expected way for admins to configure what is sent in zulip_groups
+    # is to send *all* the groups the user belongs to in their user directory. That is very likely to contain
+    # some groups that are irrelevant to their Zulip setup and thus shouldn't be translated into any
+    # Zulip group memberships.
+    # For example, Okta sends the Everyone group, which is just a built-in group inside of Okta described
+    # in their documentation as
+    # "catch-all group where every single user in the Okta instance automatically lands".
+    # That obviously will be irrelevant to Zulip group memberships in almost all configurations.
+    user_string = f"<user:{user_profile.id}>" if user_profile is not None else "<new user signup>"
+    backend.logger.info(
+        "social_auth_sync_user_attributes:%s: received group names: %s|intended Zulip groups: %s. group mapping used: %s",
+        user_string,
+        sorted(all_received_group_names),
+        sorted(intended_group_names),
+        external_group_name_to_zulip_group_name,
+    )
+    return SocialAuthGroupInfo(
+        syncable_group_names=syncable_group_names, intended_group_names=intended_group_names
+    )
+
+
 def social_auth_sync_user_attributes(
     realm: Realm, user_profile: UserProfile | None, extra_attrs: dict[str, Any], backend: Any
 ) -> SocialAuthSyncNewUserInfo | None:
@@ -1937,75 +2009,16 @@ def social_auth_sync_user_attributes(
 
     attrs_by_backend = settings.SOCIAL_AUTH_SYNC_ATTRS_DICT.get(realm.subdomain, {})
     attrs_config = attrs_by_backend.get(backend.name, {})
-    external_group_name_to_zulip_group_name: dict[str, str] = {}
-    groups_config_list = cast(list[str | tuple[str, str]], attrs_config.get("groups", []))
-    if groups_config_list:
-        # Group sync is only supported for SAML for the foreseeable time.
-        assert backend.name == "saml"
-
-        for group_name in groups_config_list:
-            # the objects in the config are either straight-forward group names
-            # or tuples (<saml group name>, <zulip group name>) indicating the
-            # obvious mapping.
-            if isinstance(group_name, str):
-                external_group_name_to_zulip_group_name[group_name] = group_name
-            else:
-                saml_group_name, zulip_group_name = group_name
-                external_group_name_to_zulip_group_name[saml_group_name] = zulip_group_name
-
-    should_sync_groups = bool(external_group_name_to_zulip_group_name)
 
     profile_field_name_to_attr_name = cast(
         dict[str, str], {key: value for key, value in attrs_config.items() if key != "groups"}
     )
 
-    if should_sync_groups:
-        syncable_group_names = set(external_group_name_to_zulip_group_name.values())
-
-        # pop zulip_groups from extra_attrs, so that only user attribute sync
-        # values remain there.
-        # zulip_groups being absent should be treated as if no group memberships
-        # are desired. That's because Okta doesn't send the SAML attribute at all
-        # if the user has no group memberships. Thus we treat this absence as
-        # an empty list.
-        all_received_group_names = extra_attrs.pop("zulip_groups", [])
-        external_group_names = [
-            name
-            for name in all_received_group_names
-            # Ignore group names which aren't configured.
-            if name in external_group_name_to_zulip_group_name
-        ]
-        intended_group_names = {
-            external_group_name_to_zulip_group_name[external_name]
-            for external_name in external_group_names
-        }
-
-        # It's important to log the information about what we received in the request and what Zulip groups
-        # that was translated to based on the configuration - otherwise debugging a misconfiguration would be
-        # a very painful process.
-        #
-        # Notably, it's generally expected for the list of received groups to be shorter than the "translated"
-        # list of intended Zulip groups. The expected way for admins to configure what is sent in zulip_groups
-        # is to send *all* the groups the user belongs to in their user directory. That is very likely to contain
-        # some groups that are irrelevant to their Zulip setup and thus shouldn't be translated into any
-        # Zulip group memberships.
-        # For example, Okta sends the Everyone group, which is just a built-in group inside of Okta described
-        # in their documentation as
-        # "catch-all group where every single user in the Okta instance automatically lands".
-        # That obviously will be irrelevant to Zulip group memberships in almost all configurations.
-        user_string = (
-            f"<user:{user_profile.id}>" if user_profile is not None else "<new user signup>"
-        )
-        backend.logger.info(
-            "social_auth_sync_user_attributes:%s: received group names: %s|intended Zulip groups: %s. group mapping used: %s",
-            user_string,
-            sorted(all_received_group_names),
-            sorted(intended_group_names),
-            external_group_name_to_zulip_group_name,
-        )
-
+    group_sync_config = process_social_auth_group_sync_info(
+        backend, user_profile, attrs_config, extra_attrs
+    )
     should_sync_user_attrs = extra_attrs and profile_field_name_to_attr_name
-    if not (should_sync_user_attrs or should_sync_groups):
+    if not (should_sync_user_attrs or group_sync_config is not None):
         return None
 
     user_id = None
@@ -2045,10 +2058,10 @@ def social_auth_sync_user_attributes(
             backend.logger.info(
                 "Returning role %s for user creation", UserProfile.ROLE_ID_TO_API_NAME[new_role]
             )
-        if should_sync_groups:
+        if group_sync_config is not None:
             group_memberships_sync_map = {
-                group_name: (group_name in intended_group_names)
-                for group_name in syncable_group_names
+                group_name: (group_name in group_sync_config.intended_group_names)
+                for group_name in group_sync_config.syncable_group_names
             }
         else:
             group_memberships_sync_map = {}
@@ -2074,10 +2087,10 @@ def social_auth_sync_user_attributes(
             str(e),
         )
 
-    if should_sync_groups:
+    if group_sync_config is not None:
         sync_groups(
-            all_group_names=syncable_group_names,
-            intended_group_names=intended_group_names,
+            all_group_names=group_sync_config.syncable_group_names,
+            intended_group_names=group_sync_config.intended_group_names,
             user_profile=user_profile,
             logger=backend.logger,
         )
@@ -2450,6 +2463,48 @@ def social_auth_finish(
     return redirect_and_log_into_subdomain(result)
 
 
+@dataclass
+class AbortFlag:
+    aborted: bool = False
+
+
+@contextmanager
+def social_auth_exception_guard(logger: logging.Logger) -> Generator[AbortFlag, None, None]:
+    abort_flag = AbortFlag()
+    try:
+        yield abort_flag
+    except (AuthFailed, HTTPError) as e:
+        # When a user's social authentication fails (e.g. because
+        # they did something funny with reloading in the middle of
+        # the flow or the IdP is unreliable and returns a bad http response),
+        # don't throw a 500, just send them back to the
+        # login page and record the event at the info log level.
+        logger.info("%s: %s", type(e).__name__, e)
+        abort_flag.aborted = True
+    except SocialAuthBaseException as e:
+        # Other python-social-auth exceptions are likely
+        # interesting enough that we should log a warning.
+        logger.warning("%s", e)
+        abort_flag.aborted = True
+
+
+# Several backends store information about the parameters of a user's
+# initiated authentication session in redis. Such data lives in redis
+# while the user is redirected to a third party authentication provider,
+# and retrieved when the user returns to the auth completion endpoint
+# appropriate for the backend.
+# Protocol and implementation details vary, but the common idea is that
+# it is transient data which should live just long enough for users to be
+# able to successfully complete their authentication flow even if they're
+# somewhat slow to get through the third party's authentication step
+# (e.g. due to needing to recover their password there, or find 2FA tokens).
+#
+# To be generous, we set this to 15 minutes. An authentication session
+# that takes a user longer than 15 minutes can reasonably be considered
+# stale and allowed to fail.
+DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE = 60 * 15
+
+
 class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # Whether we expect that the full_name value obtained by the
     # social backend is definitely how the user should be referred to
@@ -2463,7 +2518,17 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     # it should be False.
     full_name_validated = False
 
-    standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, "next"]
+    # Several backends need to store information about the parameters of a user's
+    # initiated authentication session, while the user is redirected to a third party
+    # authentication provider.
+    # See also DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE.
+    #
+    # The params of interest in practice overlap with SOCIAL_AUTH_FIELDS_STORED_IN_SESSION,
+    # but the objective of the storage is somewhat different, and the storage is not in
+    # request.session, but instead in redis.
+    # Thus for readability of code, we want to name this standard_relay_params, as a distinct
+    # concept.
+    standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION]
 
     @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
@@ -2473,22 +2538,12 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
         really user errors.  Returning `None` from this function will
         redirect the browser to the login page.
         """
-        try:
-            # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
-            return super().auth_complete(*args, **kwargs)
-        except (AuthFailed, HTTPError) as e:
-            # When a user's social authentication fails (e.g. because
-            # they did something funny with reloading in the middle of
-            # the flow or the IdP is unreliable and returns a bad http response),
-            # don't throw a 500, just send them back to the
-            # login page and record the event at the info log level.
-            self.logger.info("%s: %s", type(e).__name__, e)
+        result = None
+        with social_auth_exception_guard(self.logger) as abort_flag:
+            result = super().auth_complete(*args, **kwargs)
+        if abort_flag.aborted:
             return None
-        except SocialAuthBaseException as e:
-            # Other python-social-auth exceptions are likely
-            # interesting enough that we should log a warning.
-            self.logger.warning("%s", e)
-            return None
+        return result
 
     def should_auto_signup(self) -> bool:
         return False
@@ -2692,7 +2747,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     # But if Apple does send us the user's name, it will be validated,
     # so it's appropriate to set full_name_validated here.
     full_name_validated = True
-    REDIS_EXPIRATION_SECONDS = 60 * 10
+    REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
     SCOPE_SEPARATOR = "%20"  # https://github.com/python-social-auth/social-core/issues/470
 
@@ -3026,7 +3081,7 @@ class SAMLResponse(SAMLDocument):
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
-    REDIS_EXPIRATION_SECONDS = 60 * 15
+    REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
     name = "saml"
     # Organization which go through the trouble of setting up SAML are most likely
@@ -3495,19 +3550,20 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     auth_backend_name = "OpenID Connect"
     sort_order = 100
 
-    # Hack: We don't yet support multiple IdPs, but we want this
-    # module to import if nothing has been configured yet.
-    settings_dict: OIDCIdPConfigDict
-    [settings_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [OIDCIdPConfigDict()]
-
-    display_icon: str | None = settings_dict.get("display_icon", None)
-    display_name: str = settings_dict.get("display_name", "OIDC")
+    REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
-    # Discovery endpoint for the superclass to read all the appropriate
-    # configuration from.
-    OIDC_ENDPOINT = settings_dict.get("oidc_url")
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.server_settings_dict: dict[str, OIDCIdPConfigDict] = (
+            settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS
+        )
+        self.idp_name: str | None = None
+
+        self._cached_oidc_config: Any = None
+        self._cached_jwks_keys: Any = None
+
+        super().__init__(*args, **kwargs)
 
     @override
     def get_key_and_secret(self) -> tuple[str, str]:
@@ -3517,15 +3573,170 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         assert isinstance(secret, str)
         return client_id, secret
 
+    # Discovery endpoint for the superclass to read all the appropriate
+    # configuration from.
+    @property
+    @override
+    def OIDC_ENDPOINT(self) -> str:  # type: ignore[override]  # mypy complains about overriding a writable attr with a @property.
+        return self.settings_dict["oidc_url"]
+
+    @property
+    def settings_dict(self) -> OIDCIdPConfigDict:
+        # This property is the core of the multi-IdP support for this backend.
+        # Returns the correct configuration dict based on which IdP is being used
+        # for the current authentication attempt.
+        idp_name = self.get_idp_name()
+        return self.server_settings_dict[idp_name]
+
+    def get_idp_name(self) -> str:
+        # This should only be accessed after the idp_name has been set:
+        # 1) During auth initiation step: after get_or_create_state() in the auth_url() codepath
+        #    has set this value.
+        # 2) During auth final step at /complete/oidc/: after auth_complete() has fetched, validated
+        #    and set the value.
+        assert self.idp_name is not None
+        return self.idp_name
+
+    @override
+    def get_or_create_state(self) -> str:
+        try:
+            idp_name = self.strategy.request_data()["idp"]
+        except KeyError:
+            # If the above raise KeyError, no idp was specified. This no a valid request
+            # to the /login/oidc/ endpoint and it should be impossible for this request
+            # to happen with normal usage of the login page - only through the user manually
+            # fiddling with the URL.
+            self.logger.info("/login/oidc/: Missing idp param.")
+            raise JsonableError(_("Missing idp param"))
+        self.idp_name = idp_name
+
+        # python-social-auth's implementation first checks if there already is an
+        # oidc_state stored in the session and if so, reuses it.
+        # We want to avoid issues with reuse of a state value across different
+        # IdPs, so we just generate a fresh state token at auth initiation.
+        state = self.state_token()
+        self.strategy.session_set("oidc_state", state)
+
+        params_to_relay = self.standard_relay_params
+        request_data = self.strategy.request_data().dict()
+        data_to_relay = {key: request_data[key] for key in params_to_relay if key in request_data}
+        data_to_relay["idp"] = idp_name
+
+        # Associate the important data, especially the IdP which is being used, with the state token
+        # to ensure we have the right set of values for this auth session.
+        # This is more robust than relying on storing variables in request.session.
+        self.put_data_in_redis(state, data_to_relay)
+
+        return state
+
+    @override
+    def oidc_config(self) -> dict[Any, Any]:
+        # Overridden from superclass to remove class-level caching, which is incompatible
+        # with our multi-IdP support implementation.
+        # TODO: We should add our own caching, to avoid unnecessary requests on every
+        # auth attempt.
+        # A simple instance-level caching is necessary to avoid making a new request every time
+        # a property from /openid-configuration needs to be ready (which can be multiple times during
+        # the processing of a single authentication attempt).
+        if self._cached_oidc_config is None:
+            self._cached_oidc_config = self.get_json(
+                self.oidc_endpoint() + "/.well-known/openid-configuration"
+            )
+
+        return self._cached_oidc_config
+
+    @override
+    def get_jwks_keys(self) -> Any:  # nocoverage
+        # Overridden from superclass to remove class-level caching, which is incompatible
+        # with our multi-IdP support implementation.
+        if self._cached_jwks_keys is None:
+            self._cached_jwks_keys = self.get_remote_jwks_keys()
+        return self._cached_jwks_keys
+
+    @classmethod
+    def put_data_in_redis(cls, state: str, data_to_relay: dict[str, Any]) -> str:
+        return put_dict_in_redis(
+            redis_client,
+            "oidc_state_{token}",
+            data_to_store=data_to_relay,
+            expiration_seconds=cls.REDIS_EXPIRATION_SECONDS,
+            token=state,
+        )
+
+    @classmethod
+    def get_data_from_redis(cls, state: str) -> dict[str, Any] | None:
+        data = get_dict_from_redis(
+            redis_client, key_format="oidc_state_{token}", key=f"oidc_state_{state}"
+        )
+
+        return data
+
+    @override
+    def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
+        """
+        Overridden in order to support multiple IdPs being enabled on the server.
+        Needs to safely determine:
+        1) Which IdP is handling this authentication attempt
+        2) Which subdomain we're logging into
+        3) Validate that the IdP is allowed for authentication users for this subdomain.
+        """
+        with social_auth_exception_guard(self.logger) as abort_flag:
+            self.process_error(self.data)
+            state = self.validate_state()
+        if abort_flag.aborted:
+            return None
+        assert state
+
+        relayed_params = self.get_data_from_redis(state)
+        assert relayed_params is not None
+        for param in self.standard_relay_params:
+            relayed_value = relayed_params.get(param)
+            session_value = self.strategy.session_get(param)
+            # A hardening measure. These params are automatically saved in the
+            # user's Zulip session by python-social-auth when auth is initiated.
+            # More robustly, we associate these values with the "state" token
+            # generated for this OIDC authentication attempt and store that in
+            # redis.
+            # It's this latter storage that we want to rely on for fetching
+            # these values here in auth_complete, after the user has been
+            # redirected back to us from the IdP.  However, if all is right,
+            # then the values in the session should match what we retrieve from
+            # redis.
+            assert relayed_value == session_value
+
+        idp_name = relayed_params["idp"]
+        assert idp_name
+        subdomain = relayed_params["subdomain"]
+        assert subdomain is not None
+        idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
+        if not idp_valid:
+            error_msg = (
+                "/complete/oidc/: Authentication request with IdP %s but this provider is not"
+                " enabled for this subdomain %s."
+            )
+            self.logger.info(error_msg, idp_name, subdomain)
+            return None
+        self.idp_name = idp_name
+
+        # We've identified the IdP and ensured it's allowed for the target subdomain.
+        # Now we can hand off the rest of the auth flow to the superclass' implementation.
+        return super().auth_complete(*args, **kwargs)
+
     @classmethod
     def check_config(cls) -> bool:
-        if len(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.keys()) != 1:
-            # Only one IdP supported for now.
-            return False
-
         mandatory_config_keys = ["oidc_url", "client_id", "secret"]
-        [idp_config_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values()
-        if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
+        for idp_config_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values():
+            if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
+                return False
+
+        return True
+
+    @classmethod
+    def validate_idp_for_subdomain(cls, idp_name: str, subdomain: str) -> bool:
+        idp_dict = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.get(idp_name)
+        if idp_dict is None:
+            raise AssertionError(f"IdP: {idp_name} not found")
+        if "limit_to_subdomains" in idp_dict and subdomain not in idp_dict["limit_to_subdomains"]:
             return False
 
         return True
@@ -3533,15 +3744,24 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     @classmethod
     @override
     def dict_representation(cls, realm: Realm | None = None) -> list[ExternalAuthMethodDictT]:
-        return [
-            dict(
-                name=f"oidc:{cls.name}",
-                display_name=cls.display_name,
-                display_icon=cls.display_icon,
-                login_url=reverse("login-social", args=(cls.name,)),
-                signup_url=reverse("signup-social", args=(cls.name,)),
+        result: list[ExternalAuthMethodDictT] = []
+        for idp_name, idp_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.items():
+            if realm and not cls.validate_idp_for_subdomain(idp_name, realm.subdomain):
+                continue
+            if realm is None and "limit_to_subdomains" in idp_dict:
+                # If queried without a realm, only return IdPs that can be used on all realms.
+                continue
+
+            auth_dict: ExternalAuthMethodDictT = dict(
+                name=f"oidc:{idp_name}",
+                display_name=idp_dict.get("display_name", cls.auth_backend_name),
+                display_icon=idp_dict.get("display_icon", cls.display_icon),
+                login_url=reverse("login-social", args=("oidc", idp_name)),
+                signup_url=reverse("signup-social", args=("oidc", idp_name)),
             )
-        ]
+            result.append(auth_dict)
+
+        return result
 
     @override
     def should_auto_signup(self) -> bool:

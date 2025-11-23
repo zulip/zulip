@@ -2,8 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-import type {Emoji, EmojiSuggestion} from "../shared/src/typeahead.ts";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
@@ -33,7 +31,10 @@ import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import type * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as tippyjs from "./tippyjs.ts";
 import * as topic_link_util from "./topic_link_util.ts";
+import type {Emoji, EmojiSuggestion} from "./typeahead.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import type {UserOrMentionPillData} from "./typeahead_helper.ts";
 import type {UserGroupPillData} from "./user_group_pill.ts";
@@ -138,6 +139,10 @@ export let emoji_collection: Emoji[] = [];
 // get rid of it altogether.
 let completing: string | null;
 let token: string;
+
+export let private_message_recipient_typeahead: Typeahead<
+    UserGroupPillData | user_pill.UserPillData
+>;
 
 export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
@@ -1253,8 +1258,7 @@ export function content_typeahead_selected(
             const sub = stream_data.get_sub_by_name(item.name);
             const is_empty_topic_only_channel =
                 sub && stream_data.is_empty_topic_only_channel(sub.stream_id);
-            const is_greater_than_key_pressed =
-                event && event.type === "keydown" && event.key === ">";
+            const is_greater_than_key_pressed = event?.type === "keydown" && event.key === ">";
 
             // For empty topic only channel, skip showing topic typeahead and
             // insert direct channel link.
@@ -1513,6 +1517,9 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
                     ? "topic-typeahead-link"
                     : "";
             },
+            clear_typeahead_tooltip() {
+                tippyjs.typeahead_status_emoji_tooltip?.hide();
+            },
         }),
     );
 }
@@ -1578,7 +1585,7 @@ export function initialize({
         $element: $("#private_message_recipient"),
         type: "contenteditable",
     };
-    new Typeahead(private_message_typeahead_input, {
+    private_message_recipient_typeahead = new Typeahead(private_message_typeahead_input, {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,

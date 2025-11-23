@@ -583,6 +583,7 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[dict[str, Any] | None]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    is_imported_stub: bool
 
 
 def format_user_row(
@@ -627,6 +628,7 @@ def format_user_row(
         if acting_user is None
         else row["date_joined"].isoformat(timespec="minutes"),
         delivery_email=delivery_email,
+        is_imported_stub=row["is_imported_stub"],
     )
 
     if acting_user is None:
@@ -684,11 +686,19 @@ def all_users_accessible_by_everyone_in_realm(realm: Realm) -> bool:
     return False
 
 
-def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
+def user_access_restricted_in_realm(
+    target_user: UserProfile,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
+) -> bool:
     if target_user.is_bot:
         return False
 
-    if all_users_accessible_by_everyone_in_realm(target_user.realm):
+    if realm is None:
+        realm = target_user.realm
+
+    if all_users_accessible_by_everyone_in_realm(realm):
         return False
 
     return True
@@ -715,9 +725,13 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
 
 
 def check_can_access_user(
-    target_user: UserProfile, user_profile: UserProfile | None = None
+    target_user: UserProfile,
+    user_profile: UserProfile | None = None,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
 ) -> bool:
-    if not user_access_restricted_in_realm(target_user):
+    if not user_access_restricted_in_realm(target_user, realm):
         return True
 
     if check_user_can_access_all_users(user_profile):
@@ -976,6 +990,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         bot_type=user_profile.bot_type,
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
+        is_imported_stub=user_profile.is_imported_stub,
     )
 
 
@@ -1029,6 +1044,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        is_imported_stub=False,
     )
     return user_dict
 

@@ -12,6 +12,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_report from "./message_report.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -227,6 +228,17 @@ export function initialize({
             $popper.one("click", ".delete_message", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 message_delete.delete_message(message_id);
+                e.preventDefault();
+                e.stopPropagation();
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".popover_report_message", (e) => {
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
+                const message = message_lists.current.get(message_id);
+                assert(message !== undefined);
+                message_report.show_message_report_modal(message);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);

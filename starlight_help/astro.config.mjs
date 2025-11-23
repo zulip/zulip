@@ -48,17 +48,27 @@ function createRedirectPlugin() {
                             req.url = "/help";
                         }
 
-                        // Help center dev server always runs on a port different than
+                        // Help center dev server often runs on a port different than
                         // the web app. We have relative URLs pointing to the web app
                         // in the help center, but they are not on the port help center
                         // is running on. We redirect here to our web app proxy port.
-                        if (req.url && !req.url.startsWith("/help")) {
+                        // We skip redirect for non-document requests since astro assets
+                        // don't have the /help prefix.
+                        if (
+                            req.url &&
+                            !req.url.startsWith("/help") &&
+                            req.headers.accept?.includes("text/html")
+                        ) {
                             const host = req.headers.host || "localhost";
                             const redirectUrl = new URL(req.url, `http://${host}`);
-                            redirectUrl.port = proxyPort;
-                            res.writeHead(302, {Location: redirectUrl.toString()});
-                            res.end();
-                            return;
+                            // We run help center on the proxy port in case of
+                            // run-dev being run with `--only-help-center` flag.
+                            if (redirectUrl.port !== proxyPort) {
+                                redirectUrl.port = proxyPort;
+                                res.writeHead(302, {Location: redirectUrl.toString()});
+                                res.end();
+                                return;
+                            }
                         }
 
                         next();
@@ -84,13 +94,10 @@ export default defineConfig({
                     // a single set of icons. We should start using that loader
                     // if they add support for multiple paths in the future.
                     async "zulip-icon"(iconName) {
-                        const sharedIconsPath = `../web/shared/icons/${iconName}.svg`;
-                        const webOnlyIconsPath = `../web/images/icons/${iconName}.svg`;
+                        const iconsPath = `../web/icons/${iconName}.svg`;
 
-                        if (fs.existsSync(sharedIconsPath)) {
-                            return await fs.promises.readFile(sharedIconsPath, "utf8");
-                        } else if (fs.existsSync(webOnlyIconsPath)) {
-                            return await fs.promises.readFile(webOnlyIconsPath, "utf8");
+                        if (fs.existsSync(iconsPath)) {
+                            return await fs.promises.readFile(iconsPath, "utf8");
                         }
                         throw new Error("Zulip icon not found.");
                     },
@@ -197,10 +204,19 @@ export default defineConfig({
                             label: "Zulip Cloud or self-hosting?",
                             link: "/zulip-cloud-or-self-hosting",
                         },
-                        "moving-to-zulip",
                         "moderating-open-organizations",
                         "setting-up-zulip-for-a-class",
                         "using-zulip-for-a-class",
+                    ],
+                },
+                {
+                    label: "Guides for moving from another app",
+                    items: [
+                        "migrating-from-other-chat-tools",
+                        "moving-to-zulip",
+                        "moving-from-slack",
+                        "moving-from-teams",
+                        "moving-from-discord",
                     ],
                 },
                 {
@@ -224,14 +240,16 @@ export default defineConfig({
                 {
                     label: "Setting up your organization",
                     items: [
-                        "migrating-from-other-chat-tools",
                         "create-your-organization-profile",
                         "create-user-groups",
                         "customize-organization-settings",
                         "create-channels",
                         "customize-settings-for-new-users",
                         "invite-users-to-join",
-                        "set-up-integrations",
+                        {
+                            label: "Set up integrations",
+                            link: "/integrations-overview",
+                        },
                     ],
                 },
                 {
@@ -375,6 +393,7 @@ export default defineConfig({
                         },
                         "view-a-messages-edit-history",
                         "collapse-a-message",
+                        "report-a-message",
                         "read-receipts",
                     ],
                 },
@@ -499,6 +518,14 @@ export default defineConfig({
                         "import-from-slack",
                         "import-from-rocketchat",
                         "export-your-organization",
+                        {
+                            label: "Zulip Cloud to self-hosting",
+                            link: "/cloud-to-self-hosting",
+                        },
+                        {
+                            label: "Self-hosting to Zulip Cloud",
+                            link: "/self-hosting-to-cloud",
+                        },
                     ],
                 },
                 {
@@ -609,6 +636,7 @@ export default defineConfig({
                         "image-video-and-website-previews",
                         "hide-message-content-in-emails",
                         "message-retention-policy",
+                        "enable-moderation-requests",
                         "digest-emails",
                         "disable-welcome-emails",
                         "configure-a-custom-welcome-message",
@@ -749,5 +777,6 @@ export default defineConfig({
         "disable-message-edit-history": "/help/restrict-message-edit-history-access",
         "edit-a-bot": "/help/manage-a-bot",
         "reading-dms": "/help/direct-messages",
+        "set-up-integrations": "/help/integrations-overview",
     },
 });

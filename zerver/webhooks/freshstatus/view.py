@@ -27,7 +27,7 @@ FRESHSTATUS_TOPIC_TEMPLATE_TEST = "Freshstatus"
 FRESHSTATUS_MESSAGE_TEMPLATE_INCIDENT_OPEN = """
 The following incident has been opened: **{title}**
 **Description:** {description}
-**Start Time:** {start_time}
+**Start Time:** <time:{start_time}>
 **Affected Services:**
 {affected_services}
 """.strip()
@@ -45,8 +45,8 @@ The following note has been added to the incident: **{title}**
 FRESHSTATUS_MESSAGE_TEMPLATE_SCHEDULED_MAINTENANCE_PLANNED = """
 The following scheduled maintenance has been opened: **{title}**
 **Description:** {description}
-**Scheduled Start Time:** {scheduled_start_time}
-**Scheduled End Time:** {scheduled_end_time}
+**Scheduled Start Time:** <time:{scheduled_start_time}>
+**Scheduled End Time:** <time:{scheduled_end_time}>
 **Affected Services:**
 {affected_services}
 """.strip()

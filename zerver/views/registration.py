@@ -18,7 +18,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils.translation import get_language
+from django.utils.translation import get_language, gettext_lazy
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
@@ -31,7 +31,11 @@ from confirmation.models import (
     get_object_from_key,
     render_confirmation_key_error,
 )
-from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_realm import (
+    DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM,
+    do_create_realm,
+    get_email_address_visibility_default,
+)
 from zerver.actions.create_user import do_activate_mirror_dummy_user, do_create_user
 from zerver.actions.default_streams import lookup_default_stream_groups
 from zerver.actions.user_settings import (
@@ -49,6 +53,7 @@ from zerver.context_processors import (
 )
 from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
+    HOW_FOUND_ZULIP_EXTRA_CONTEXT,
     CaptchaRealmCreationForm,
     FindMyTeamForm,
     HomepageForm,
@@ -271,6 +276,9 @@ def registration_helper(
     source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
     start_slack_import: Json[bool] = False,
     timezone: Annotated[str, timezone_or_empty_validator()] = "",
+    email_address_visibility: Annotated[
+        Json[int], check_int_in_validator(RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_TYPES)
+    ] = DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM,
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -326,6 +334,10 @@ def registration_helper(
             assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
             assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
             assert prereg_realm.created_realm is None
+
+            prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
+            prereg_realm.save(update_fields=["data_import_metadata"])
+
             queue_json_publish_rollback_unsafe(
                 "deferred_work",
                 {
@@ -349,15 +361,42 @@ def registration_helper(
             )
 
         elif prereg_realm.data_import_metadata.get("import_from") == "slack":
+            if prereg_realm.data_import_metadata.get("user_activation_url"):
+                assert prereg_realm.data_import_metadata["need_select_realm_owner"] is True
+                return HttpResponseRedirect(
+                    prereg_realm.data_import_metadata["user_activation_url"]
+                )
             if prereg_realm.data_import_metadata.get("need_select_realm_owner"):
                 return HttpResponseRedirect(
                     reverse("realm_import_post_process", kwargs={"confirmation_key": key})
                 )
+            if prereg_realm.data_import_metadata.get("is_import_work_queued"):
+                return TemplateResponse(
+                    request,
+                    "zerver/slack_import.html",
+                    {
+                        "poll_for_import_completion": True,
+                        "key": key,
+                    },
+                )
+
+            # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
+            # select box in the slack import page.
+            email_address_visibility_options = []
+
+            for id, name in RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items():
+                if id == RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+                    name = gettext_lazy("Everyone")
+                email_address_visibility_options.append((id, name))
 
             assert is_realm_import_enabled()
             context: dict[str, Any] = {
                 "key": key,
                 "max_file_size": settings.MAX_WEB_DATA_IMPORT_SIZE_MB,
+                "email_address_visibility_options": email_address_visibility_options,
+                "email_address_visibility_default": get_email_address_visibility_default(
+                    prereg_realm.org_type
+                ),
             }
 
             saved_slack_access_token = prereg_realm.data_import_metadata.get("slack_access_token")
@@ -369,11 +408,11 @@ def registration_helper(
                     # Verify slack token access.
                     from zerver.data_import.slack import (
                         SLACK_IMPORT_TOKEN_SCOPES,
-                        check_token_access,
+                        check_slack_token_access,
                     )
 
                     try:
-                        check_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
+                        check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
                     except Exception as e:
                         context["slack_access_token_validation_error"] = str(e)
                         return TemplateResponse(
@@ -628,24 +667,11 @@ def registration_helper(
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             is_demo_organization = form.cleaned_data["is_demo_organization"]
-            how_realm_creator_found_zulip = RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
-                form.cleaned_data["how_realm_creator_found_zulip"]
-            ]
-            how_realm_creator_found_zulip_extra_context = ""
-            extra_context_options = {
-                "other": "how_realm_creator_found_zulip_other_text",
-                "ad": "how_realm_creator_found_zulip_where_ad",
-                "existing_user": "how_realm_creator_found_zulip_which_organization",
-                "review_site": "how_realm_creator_found_zulip_review_site",
-                "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
-            }
-            for option, field_name in extra_context_options.items():
-                if (
-                    how_realm_creator_found_zulip
-                    == RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[option]
-                ):
-                    how_realm_creator_found_zulip_extra_context = form.cleaned_data[field_name]
-                    break
+            how_found_zulip = form.cleaned_data["how_realm_creator_found_zulip"]
+            how_found_zulip_extra_context = ""
+            if how_found_zulip in HOW_FOUND_ZULIP_EXTRA_CONTEXT:
+                extra_context_field = HOW_FOUND_ZULIP_EXTRA_CONTEXT[how_found_zulip]
+                how_found_zulip_extra_context = form.cleaned_data[extra_context_field]
 
             realm = do_create_realm(
                 string_id,
@@ -654,8 +680,10 @@ def registration_helper(
                 default_language=realm_default_language,
                 is_demo_organization=is_demo_organization,
                 prereg_realm=prereg_realm,
-                how_realm_creator_found_zulip=how_realm_creator_found_zulip,
-                how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
+                how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                    how_found_zulip
+                ],
+                how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
             )
         assert realm is not None
 
@@ -809,6 +837,26 @@ def registration_helper(
                     enable_marketing_emails=enable_marketing_emails,
                     email_address_visibility=email_address_visibility,
                 )
+
+                # Mark the preregistration object as used if the user was
+                # created as part of realm import process.
+                if prereg_user is not None and prereg_user.is_realm_importer:
+                    prereg_realms_for_user = PreregistrationRealm.objects.filter(
+                        created_realm=realm,
+                    )
+                    assert prereg_realms_for_user.count() == 1
+                    if prereg_realms_for_user[0].data_import_metadata.get(
+                        "need_select_realm_owner"
+                    ) and prereg_realms_for_user[0].data_import_metadata.get("user_activation_url"):
+                        prereg_realm_for_user = prereg_realms_for_user[0]
+                        prereg_realm_for_user.status = confirmation_settings.STATUS_USED
+                        prereg_realm_for_user.data_import_metadata["need_select_realm_owner"] = (
+                            False
+                        )
+                        prereg_realm_for_user.data_import_metadata["user_activation_url"] = None
+                        prereg_realm_for_user.created_user = user_profile
+                        prereg_realm_for_user.save()
+
             except IntegrityError:
                 # Race condition making the user, leading to a
                 # duplicate email address.  Redirect them to the login
@@ -925,6 +973,7 @@ def prepare_activation_url(
     streams: Iterable[Stream] | None = None,
     user_groups: Iterable[NamedUserGroup] | None = None,
     welcome_message_custom_text: str | None = None,
+    is_realm_importer: bool = False,
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
@@ -946,6 +995,9 @@ def prepare_activation_url(
 
     if welcome_message_custom_text is not None:
         prereg_user.welcome_message_custom_text = welcome_message_custom_text
+
+    if is_realm_importer:
+        prereg_user.is_realm_importer = True
 
     if invited_as is not None or include_realm_default_subscriptions is not None:
         prereg_user.save()
@@ -1057,7 +1109,14 @@ def realm_import_status(
         # process support writing updates to this for a better progress indicator.
         if preregistration_realm.data_import_metadata.get("is_import_work_queued"):
             return json_success(
-                request, {"status": _("Converting Slack data… This may take a while.")}
+                request,
+                {
+                    "status": _(
+                        "Converting Slack data… This may take a while. If you "
+                        "close this tab, you can return here from the “Complete registration” "
+                        "link in your email."
+                    )
+                },
             )
         elif preregistration_realm.data_import_metadata.get("invalid_file_error_message"):
             # Redirect user the file upload page if we have an error message to display.
@@ -1182,6 +1241,22 @@ def realm_import_post_process(
             # ID of the imported user account that the importing user has
             # selected to become their account.
             user_id = form.cleaned_data["user_id"]
+
+            if user_id is None:
+                # Redirect user to user registration form to create a new user
+                # with the already verified email address.
+                activation_url = prepare_activation_url(
+                    preregistration_realm.email,
+                    request.session,
+                    include_realm_default_subscriptions=True,
+                    invited_as=UserProfile.ROLE_REALM_OWNER,
+                    realm=realm,
+                    is_realm_importer=True,
+                )
+                preregistration_realm.data_import_metadata["user_activation_url"] = activation_url
+                preregistration_realm.save(update_fields=["data_import_metadata"])
+
+                return HttpResponseRedirect(activation_url)
 
             # Validate that a normal user account that can login was selected.
             importing_user = get_user_profile_by_id_in_realm(user_id, realm)

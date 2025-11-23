@@ -422,10 +422,10 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             name: string;
             unique_id: number;
         }[] {
-            const senders: (User | CurrentUser | Bot)[] = [people.EMAIL_GATEWAY_BOT];
-            senders.push(
+            const senders = [
+                people.EMAIL_GATEWAY_BOT,
                 ...stream_data.get_current_user_and_their_bots_with_post_messages_permission(sub),
-            );
+            ];
             return senders.map((sender) => ({
                 name: update_option_label(sender),
                 unique_id: sender.user_id,
@@ -710,6 +710,8 @@ export function initialize(): void {
 
         const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
 
+        const is_moderation_request_channel =
+            stream_id === realm.realm_moderation_request_channel_id;
         const is_new_stream_announcements_stream =
             stream_id === realm.realm_new_stream_announcements_stream_id;
         const is_signup_announcements_stream =
@@ -719,10 +721,12 @@ export function initialize(): void {
         const is_announcement_stream =
             is_new_stream_announcements_stream ||
             is_signup_announcements_stream ||
-            is_zulip_update_announcements_stream;
+            is_zulip_update_announcements_stream ||
+            is_moderation_request_channel;
 
         const html_body = render_settings_deactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
+            is_moderation_request_channel,
             is_new_stream_announcements_stream,
             is_signup_announcements_stream,
             is_zulip_update_announcements_stream,
@@ -834,9 +838,8 @@ export function initialize(): void {
                 sub,
             );
             if (sub && $subsection.hasClass("stream-permissions")) {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state(
-                    $("#stream_settings"),
-                );
+                stream_ui_updates.update_default_stream_option_state($("#stream_settings"));
+                stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
@@ -900,9 +903,8 @@ export function initialize(): void {
             const $subsection = $(this).closest(".settings-subsection-parent");
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             if ($subsection.hasClass("stream-permissions")) {
-                stream_ui_updates.update_default_stream_and_stream_privacy_state(
-                    $("#stream_settings"),
-                );
+                stream_ui_updates.update_default_stream_option_state($("#stream_settings"));
+                stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }

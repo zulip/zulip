@@ -92,6 +92,8 @@ tippy.default.setDefaultProps({
     content: get_tooltip_content,
 });
 
+export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
+
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
     appendTo: () => document.body,
@@ -184,17 +186,17 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#subscription_overlay .subscription_settings .sub-stream-name",
+        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "top",
         onShow(instance) {
-            const stream_name_element = instance.reference;
-            assert(stream_name_element instanceof HTMLElement);
-            // Only show tooltip if the stream name is truncated.
+            const name_element = instance.reference;
+            assert(name_element instanceof HTMLElement);
+            // Only show tooltip if the stream or group name is truncated.
             // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
             // for more details.
-            if (stream_name_element.offsetWidth >= stream_name_element.scrollWidth) {
+            if (name_element.offsetWidth >= name_element.scrollWidth) {
                 return false;
             }
 
@@ -305,7 +307,6 @@ export function initialize(): void {
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",
-            "#copy_generated_invite_link",
             ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
@@ -479,6 +480,21 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#copy_generated_invite_link",
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage: "Copy link",
+                }),
+            );
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: [
             "#user_email_address_dropdown_container.disabled_setting_tooltip",
             "#realm_invite_required_container.disabled_setting_tooltip",
@@ -614,7 +630,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".status-emoji-name",
+        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
         appendTo: () => document.body,
@@ -629,6 +645,26 @@ export function initialize(): void {
 
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".typeahead-item .status-emoji-name",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for emojis inside typeahead to
+            separately handle emoji instance.
+        */
+
+        onShow(instance) {
+            typeahead_status_emoji_tooltip = instance;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            typeahead_status_emoji_tooltip = undefined;
         },
     });
 

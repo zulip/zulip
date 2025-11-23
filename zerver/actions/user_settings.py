@@ -290,6 +290,7 @@ def check_change_bot_full_name(
 
 @transaction.atomic(durable=True)
 def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) -> None:
+    old_value = user_profile.tos_version
     user_profile.tos_version = tos_version
     user_profile.save(update_fields=["tos_version"])
     event_time = timezone_now()
@@ -299,6 +300,10 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
         modified_user=user_profile,
         event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
         event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: tos_version,
+        },
     )
 
 

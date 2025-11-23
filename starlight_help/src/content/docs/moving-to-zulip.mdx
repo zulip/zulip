@@ -4,13 +4,27 @@ title: Moving to Zulip
 
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
-import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import CommunicationPoliciesIntro from "../include/_CommunicationPoliciesIntro.mdx";
+import CommunicationPoliciesList from "../include/_CommunicationPoliciesList.mdx";
+import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
+import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
+import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
+import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
+import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
+import SignUpForAPlan from "../include/_SignUpForAPlan.mdx";
 
-Welcome to Zulip! This page will guide you through the process of transitioning
-your organization to Zulip. It assumes that you have [completed your initial
-evaluation](/help/trying-out-zulip) of Zulip, decided [whether to use Zulip
-Cloud or self-host](/help/zulip-cloud-or-self-hosting), and are ready to
-introduce Zulip to your organization.
+<ZulipNote>
+  Check out the dedicated guides for moving to Zulip from
+  [Slack](/help/moving-from-slack), [Microsoft Teams](/help/moving-from-teams),
+  [Discord](/help/moving-from-discord), and
+  [more](/help/migrating-from-other-chat-tools).
+</ZulipNote>
+
+<MovingToZulipIntro />
 
 The following steps are described in more detail below:
 
@@ -18,9 +32,9 @@ The following steps are described in more detail below:
   1. [Create your organization](#create-your-organization).
   1. [Sign up for a plan](#sign-up-for-a-plan).
   1. [Configure your organization](#configure-your-organization).
+  1. [Review and update communication policies](#review-and-update-communication-policies).
   1. [Prepare users for the transition](#prepare-users-for-the-transition).
   1. [Invite users to join](#invite-users-to-join).
-  1. [Update your guidelines](#update-your-guidelines).
 </Steps>
 
 Each organization is unique, but we hope these common practices will help you
@@ -78,105 +92,53 @@ Zulip.
 
 ## Sign up for a plan
 
-If you require features that are not available on [Zulip Cloud
-Free](https://zulip.com/plans/#cloud) or the [Zulip
-Free](https://zulip.com/plans/#self-hosted) plan for self-hosted organizations,
-you will need to upgrade your plan.
-
-<Tabs>
-  <TabItem label="Zulip Cloud">
-    <Steps>
-      1. Follow the
-         [instructions](/help/zulip-cloud-billing#upgrade-to-a-zulip-cloud-standard-or-plus-plan)
-         to upgrade to a Zulip Cloud Standard or Plus plan. If your organization may
-         be
-         [eligible](/help/zulip-cloud-billing#free-and-discounted-zulip-cloud-standard)
-         for a free or discounted plan, you can [apply for
-         sponsorship](/help/zulip-cloud-billing#apply-for-sponsorship).
-    </Steps>
-  </TabItem>
-
-  <TabItem label="Self hosting">
-    <Steps>
-      1. Follow the [instructions](/help/self-hosted-billing#upgrade-to-a-paid-plan)
-         to upgrade to a Zulip Basic or Zulip Business plan. If your organization may
-         be [eligible](/help/self-hosted-billing#free-community-plan) for a free or
-         discounted plan, you can [apply for
-         sponsorship](/help/self-hosted-billing#apply-for-community-plan). To inquire
-         about Zulip Enterprise, please reach out to
-         [sales@zulip.com](mailto:sales@zulip.com).
-    </Steps>
-  </TabItem>
-</Tabs>
+<SignUpForAPlan />
 
 ## Configure your organization
 
-<Steps>
-  1. [Create your organization profile](/help/create-your-organization-profile),
-     which is displayed on your organization's registration and login pages.
-  1. [Create user groups](/help/create-user-groups), which offer a flexible way to
-     manage permissions.
-  1. Review [organization permissions](/help/manage-permissions), such as who
-     can invite users, create channels, etc.
-  1. If your organization uses an issue tracker (e.g., GitHub, Salesforce,
-     Zendesk, Jira, etc.), configure [linkifiers](/help/add-a-custom-linkifier) to
-     automatically turn issue numbers (e.g., #2468) into links.
-  1. Set up [custom profile fields](/help/custom-profile-fields), which make it
-     easy for users to share information, such as their pronouns, job title, or
-     team.
-  1. Review [default user settings](/help/configure-default-new-user-settings),
-     including language, [default visibility for email
-     addresses](/help/configure-email-visibility), and notification preferences.
+<FlattenedSteps>
+  <ConfigureYourOrganization />
+
   1. [Create channels](/help/create-channels), unless you've imported
      channels from another app. Zulip's [topics](/help/introduction-to-topics)
      give each conversation its own space, so one channel per team should be
      enough to get you started.
-  1. [Set up integrations](/help/set-up-integrations) so that your
-     team can experience all their regular workflows inside the Zulip app. Zulip's
-     [Slack-compatible incoming
-     webhook](https://zulip.com/integrations/doc/slack_incoming) makes it easy to
-     move your integrations when migrating an organization from Slack to Zulip.
-</Steps>
+  1. Set up [integrations](/help/integrations-overview) so that your
+     team can experience all their regular workflows inside the Zulip app.
+</FlattenedSteps>
+
+## Review and update communication policies
+
+<CommunicationPoliciesIntro />
+
+<CommunicationPoliciesList />
 
 ## Prepare users for the transition
 
-<Steps>
-  1. Plan how you will introduce users to Zulip. You may want to:
-     * Share Zulip's [getting started guide](/help/getting-started-with-zulip).
-     * Prepare a live demo / training session. Consider recording it for
-       future use!
-  1. Inform users about the transition, including why you're moving to Zulip, the
-     timeline, and what they'll need to do.
-</Steps>
+Prepare an introduction to Zulip for your organization. It's often effective to
+combine a written announcement with a live presentation. Recommended topics to
+cover include:
+
+<FlattenedSteps>
+  <PrepareForTransition1 />
+
+  1. Pointers to additional resources, such as Zulip's [getting started
+     guide](/help/getting-started-with-zulip).
+
+  <PrepareForTransition2 />
+</FlattenedSteps>
 
 ## Invite users to join
 
-<HowToInviteUsersToJoin />
+<Tabs>
+  <HowToInviteUsersToJoinNoImport />
 
-## Update your guidelines
+  <HowToInviteUsersToJoinImport />
+</Tabs>
 
-<Steps>
-  1. Update any links and login instructions to point to your Zulip organization.
-  1. Share basic instructions for getting started with Zulip. You can refer users
-     to Zulip's [help center](/help), [getting started
-     guide](/help/getting-started-with-zulip), and any onboarding content you've
-     created.
-  1. Consider updating your organization's communication policies and best
-     practice recommendations to take advantage of Zulip's organized
-     conversations:
-     * Many organizations find that with Zulip, there’s no longer a reason to use
-       email for internal communications. You get the organization of an email
-       [inbox](/help/inbox) together with all the features of a modern chat app,
-       like instant delivery of messages, emoji reactions, typing notifications,
-       @-mentions, and more.
-     * Using Zulip, you can discuss complex topics and make decisions with input
-       from all stakeholders, without the overhead of scheduling meeting. Are
-       there standing meetings you might not need?
-     * With conversations organized by topic, you can review prior discussions to
-       understand past work, explanations, and decisions — your chat history
-       becomes a knowledge base. Should it be standard practice to link to Zulip
-       conversations from docs, issue trackers, etc. for additional context?
-</Steps>
+<ZulipTip>
+  Remember to update links and login instructions to point to Zulip.
+</ZulipTip>
 
 Congratulations on making the move! If you have any questions or feedback
 throughout this process, please [reach out](/help/contact-support) to the Zulip
@@ -187,4 +149,5 @@ team.
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
+* [Moving from Slack](/help/moving-from-slack)
 * [Getting started with Zulip](/help/getting-started-with-zulip)

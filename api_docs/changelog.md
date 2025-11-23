@@ -20,6 +20,70 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 436**
+
+* [Message formatting](/api/message-formatting): Added new
+  specification that emoji-only messages should show enlarged emoji.
+
+**Feature level 435**
+
+* [`POST /register`](/api/register-queue): Added `server_report_message_types`
+  field which contains a list of supported report types for the [message
+  report](/help/report-a-message) feature.
+
+**Feature level 434**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added a new `send_channel_events_messages` realm setting indicating
+  whether channel event messages are sent in the organization.
+
+**Feature level 433**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `is_imported_stub` field to
+  returned user objects.
+* [`POST /register`](/api/register-queue): Added `is_imported` field
+  in the user objects returned in the `realm_users` field and in the bot
+  objects returned in `cross_realm_bots` field.
+* [`GET /events`](/api/get-events): Added `is_imported_stub` field to
+  user objects sent in `realm_user` events.
+
+**Feature level 432**
+
+* [`POST /mobile_push/register`](/api/register-push-device): Replaced
+  `push_public_key` parameter with `push_key`.
+
+**Feature level 431**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_inbox_show_channel_folders` display setting,
+  controlling whether any [channel folders](/help/channel-folders)
+  configured by the organization are used to organize how conversations
+  with unread messages are displayed in the web/desktop application's
+  Inbox view.
+
+**Feature level 430**
+
+* [`GET /export/realm/consents`](/api/get-realm-export-consents): Added an
+  integer field `email_address_visibility` to the objects in the
+  `export_consents` array.
+
+**Feature level 429**
+
+* Replaced the `pm_users` field with `recipient_user_ids` in
+[E2EE mobile push notifications payload](/api/mobile-notifications)
+for group direct message. Previously, `pm_users` was included only
+for group DMs; `recipient_user_ids` is present for both 1:1 and
+group DM conversations.
+
+**Feature level 428**
+
+* [`GET /events`](/api/get-events): When a user is deactivated,
+  `peer_remove` events are now sent for archived streams as well,
+  not just unarchived ones.
+
 **Feature level 427**
 
 * [`POST /register`](/api/register-queue): `stream_creator_or_nobody`
@@ -138,7 +202,8 @@ No changes; API feature level used for the Zulip 11.0 release.
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new `web_left_sidebar_show_channel_folders` display setting,
   controlling whether any [channel folders](/help/channel-folders)
-  configured by the organization are displayed in the left sidebar.
+  configured by the organization are used to organize how channels
+  are displayed in the web/desktop application's left sidebar.
 
 **Feature level 410**
 

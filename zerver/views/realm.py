@@ -180,6 +180,7 @@ def update_realm(
     org_type: Json[OrgTypeEnum] | None = None,
     require_e2ee_push_notifications: Json[bool] | None = None,
     require_unique_names: Json[bool] | None = None,
+    send_channel_events_messages: Json[bool] | None = None,
     send_welcome_emails: Json[bool] | None = None,
     signup_announcements_stream_id: Json[int] | None = None,
     string_id: Annotated[
@@ -730,6 +731,7 @@ def update_realm_user_settings_defaults(
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     web_font_size_px: Json[int] | None = None,
     web_home_view: Literal["recent_topics", "inbox", "all_messages"] | None = None,
+    web_inbox_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,

@@ -1,8 +1,6 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-import type {EmojiSuggestion} from "../shared/src/typeahead.ts";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
@@ -26,6 +24,8 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import type {StreamPill, StreamPillData} from "./stream_pill.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import type {EmojiSuggestion} from "./typeahead.ts";
+import * as typeahead from "./typeahead.ts";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";

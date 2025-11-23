@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
@@ -50,6 +49,7 @@ import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
+import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
@@ -106,7 +106,7 @@ import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
-import * as reload_setup from "./reload_setup.js";
+import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
 import * as saved_snippets from "./saved_snippets.ts";
@@ -477,6 +477,16 @@ export async function initialize_everything(state_data) {
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
+
+    // The user_group must be initialized before right sidebar
+    // module, so that we can tell whether user is member of
+    // user_group whose members are allowed to create multiuse
+    // invite. The user_group module must also be initialized
+    // before people module, so that can_access_all_users_group
+    // setting group can be used to check whether the user
+    // has permission to access all other users.
+    user_groups.initialize(state_data.user_groups);
+
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
@@ -486,11 +496,6 @@ export async function initialize_everything(state_data) {
         ...state_data.emoji,
         emoji_codes: generated_emoji_codes,
     });
-
-    // The user_group must be initialized before right sidebar
-    // module, so that we can tell whether user is member of
-    // user_group whose members are allowed to create multiuse invite.
-    user_groups.initialize(state_data.user_groups);
 
     // Channel folders data must be initialized before left sidebar.
     channel_folders.initialize(state_data.channel_folders);
@@ -614,7 +619,7 @@ export async function initialize_everything(state_data) {
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
             compose_recipient.update_compose_area_placeholder_text();
-            compose_recipient.check_posting_policy_for_compose_box();
+            compose_validate.validate_and_update_send_button_status();
         },
     });
     compose_closed_ui.initialize();

@@ -14,7 +14,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");
 
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
@@ -630,6 +630,11 @@ test("basics", () => {
     terms = [{operator: "channel", operand: "foo", negated: false}];
     filter = new Filter(terms);
     assert.ok(filter.is_channel_view());
+
+    // Throw error on invalid operator.
+    assert.throws(() => get_predicate([["bogus", "33"]]), {
+        name: "$ZodError",
+    });
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
@@ -736,7 +741,9 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(channel_term);
     assert_not_mark_read_when_searching(channel_term);
 
-    const channel_negated_operator = [{operator: "channel", operand: foo_stream_id, negated: true}];
+    const channel_negated_operator = [
+        {operator: "channel", operand: foo_stream_id.toString(), negated: true},
+    ];
     filter = new Filter(channel_negated_operator);
     assert.ok(!filter.can_mark_messages_read());
 
@@ -917,13 +924,13 @@ test("public_terms", ({override, override_rewire}) => {
     stream_data.clear_subscriptions();
     const some_channel_id = new_stream_id();
     let terms = [
-        {operator: "channel", operand: some_channel_id},
+        {operator: "channel", operand: some_channel_id.toString()},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
     let filter = new Filter(terms);
     const expected_terms = [
-        {operator: "channel", operand: some_channel_id},
+        {operator: "channel", operand: some_channel_id.toString()},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
     ];
@@ -938,7 +945,7 @@ test("public_terms", ({override, override_rewire}) => {
     assert_same_terms(filter.public_terms(), expected_terms);
     assert.ok(filter.can_bucket_by("channel"));
 
-    terms = [{operator: "channel", operand: some_channel_id}];
+    terms = [{operator: "channel", operand: some_channel_id.toString()}];
     filter = new Filter(terms);
     override(page_params, "narrow_stream", "default");
     assert_same_terms(filter.public_terms(), []);
@@ -964,17 +971,17 @@ test("redundancies", () => {
 });
 
 test("canonicalization", () => {
-    assert.equal(Filter.canonicalize_operator("Is"), "is");
-    assert.equal(Filter.canonicalize_operator("Stream"), "channel");
-    assert.equal(Filter.canonicalize_operator("Subject"), "topic");
-    assert.equal(Filter.canonicalize_operator("FROM"), "sender");
+    assert.equal(Filter.canonicalize_operator("is"), "is");
+    assert.equal(Filter.canonicalize_operator("stream"), "channel");
+    assert.equal(Filter.canonicalize_operator("subject"), "topic");
+    assert.equal(Filter.canonicalize_operator("from"), "sender");
 
     let term;
-    term = Filter.canonicalize_term({operator: "Stream", operand: "Denmark"});
+    term = Filter.canonicalize_term({operator: "stream", operand: "Denmark"});
     assert.equal(term.operator, "channel");
     assert.equal(term.operand, "Denmark");
 
-    term = Filter.canonicalize_term({operator: "Channel", operand: "Denmark"});
+    term = Filter.canonicalize_term({operator: "channel", operand: "Denmark"});
     assert.equal(term.operator, "channel");
     assert.equal(term.operand, "Denmark");
 
@@ -1451,9 +1458,6 @@ test("predicate_edge_cases", () => {
     predicate = get_predicate([["in", "bogus"]]);
     assert.ok(!predicate({}));
 
-    predicate = get_predicate([["bogus", "33"]]);
-    assert.ok(predicate({}));
-
     predicate = get_predicate([["is", "bogus"]]);
     assert.ok(!predicate({}));
 
@@ -1602,6 +1606,10 @@ test("parse", () => {
         {operator: "topic", operand: ""},
         {operator: "is", operand: "starred"},
     ];
+    _test();
+
+    string = "https://www.google.com";
+    terms = [{operator: "search", operand: "https://www.google.com"}];
     _test();
 });
 
@@ -1768,8 +1776,11 @@ test("describe", ({mock_template, override}) => {
     string = "invalid something_we_do_not_support operand for is operator";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-    // this should be unreachable, but just in case
-    narrow = [{operator: "bogus", operand: "foo"}];
+    // All the `is` operands are handled in search_suggestions. This is just
+    // for coverage.
+    assert.equal(Filter.operator_to_prefix("is"), "messages that are");
+
+    narrow = [{operator: "with", operand: 12}];
     string = "unknown operator";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 

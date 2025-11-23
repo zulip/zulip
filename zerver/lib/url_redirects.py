@@ -28,3 +28,34 @@ LANDING_PAGE_REDIRECTS = [
 ]
 
 DOCUMENTATION_REDIRECTS = API_DOCUMENTATION_REDIRECTS + POLICY_DOCUMENTATION_REDIRECTS
+
+# List of category slugs at the time of changing the URL scheme to have
+# `/category` be appended before the category slug. This list does not
+# need to change with changing categories.
+INTEGRATION_CATEGORY_SLUGS = [
+    "bots",
+    "communication",
+    "continuous-integration",
+    "customer-support",
+    "deployment",
+    "entertainment",
+    "financial",
+    "hr",
+    "marketing",
+    "meta-integration",
+    "misc",
+    "monitoring",
+    "productivity",
+    "project-management",
+    "version-control",
+]
+
+
+def get_integration_category_redirects() -> list[URLRedirect]:
+    return [
+        URLRedirect(
+            f"/integrations/{slug}",
+            f"/integrations/category/{slug}",
+        )
+        for slug in INTEGRATION_CATEGORY_SLUGS
+    ]

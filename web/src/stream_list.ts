@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
+import * as z from "zod/mini";
 
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
@@ -19,6 +20,8 @@ import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import {localstorage} from "./localstorage.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
@@ -53,6 +56,11 @@ let has_scrolled = false;
 
 const collapsed_sections = new Set<string>();
 const sections_showing_inactive_or_muted = new Set<string>();
+
+// Persistence for collapsed sections state
+const collapsed_sections_ls_key = "left_sidebar_collapsed_stream_sections";
+const collapsed_sections_ls_schema = z._default(z.array(z.string()), []);
+const ls = localstorage();
 
 export function is_zoomed_in(): boolean {
     return zoomed_in;
@@ -379,6 +387,9 @@ export function build_stream_list(force_rerender: boolean): void {
                 section.id !== "pinned-streams",
             );
         }
+        if (!is_empty && section.streams.length === 0) {
+            collapsed_sections.add(section.id);
+        }
     }
 
     // Rerendering can moving channels between folders and change heading unread counts.
@@ -487,9 +498,34 @@ function toggle_section_collapse($container: JQuery): void {
         collapsed_sections.delete(section_id);
     }
     maybe_hide_topic_bracket(section_id);
+    save_collapsed_sections_state();
 }
 
-function set_sections_states(): void {
+function save_collapsed_sections_state(): void {
+    // Prune any section IDs that no longer exist (e.g., a folder was deleted
+    // in another browser) before saving to localStorage.
+    const valid_section_ids = new Set(stream_list_sort.section_ids());
+    for (const section_id of collapsed_sections) {
+        if (!valid_section_ids.has(section_id)) {
+            collapsed_sections.delete(section_id);
+        }
+    }
+    ls.set(collapsed_sections_ls_key, [...collapsed_sections]);
+}
+
+function restore_collapsed_sections_state(): void {
+    // Note: This code path has no way to know whether all of the
+    // sections we last saved actually exist, because we're running
+    // before the stream_list_sort code path has determined that.
+    // Validation happens in save_collapsed_sections_state() instead.
+    const collapsed_array = collapsed_sections_ls_schema.parse(ls.get(collapsed_sections_ls_key));
+    collapsed_sections.clear();
+    for (const section_id of collapsed_array) {
+        collapsed_sections.add(section_id);
+    }
+}
+
+export let set_sections_states = function (): void {
     if (ui_util.get_left_sidebar_search_term() === "") {
         // Restore the collapsed state of sections.
         for (const section_id of collapsed_sections) {
@@ -504,6 +540,10 @@ function set_sections_states(): void {
     for (const section_id of sections_showing_inactive_or_muted) {
         $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive-or-muted", true);
     }
+};
+
+export function rewire_set_sections_states(value: typeof set_sections_states): void {
+    set_sections_states = value;
 }
 
 export function get_stream_li(stream_id: number): JQuery | undefined {
@@ -530,9 +570,12 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
 }
 
 export function update_subscribe_to_more_streams_link(): void {
+    // Here we filter archived channels, even if you can add yourself to
+    // them as a subscriber from a permissions standpoint, because you
+    // can't add them to your left sidebar.
     const can_subscribe_stream_count = stream_data
         .unsubscribed_subs()
-        .filter((sub) => stream_data.can_toggle_subscription(sub)).length;
+        .filter((sub) => !sub.is_archived && stream_data.can_toggle_subscription(sub)).length;
 
     const can_create_streams =
         settings_data.user_can_create_private_streams() ||
@@ -1092,11 +1135,15 @@ export function initialize({
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
+    restore_collapsed_sections_state();
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     build_stream_list(false);
+    // After building the stream list, prune any invalid section IDs that were
+    // restored from localStorage (e.g., folders that no longer exist).
+    save_collapsed_sections_state();
     update_subscribe_to_more_streams_link();
     initialize_tippy_tooltips();
     set_event_handlers({show_channel_feed});
@@ -1288,12 +1335,12 @@ export function set_event_handlers({
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
-        if (document.getSelection()?.type === "Range") {
+
+        if (mouse_drag.is_drag(e)) {
             // To avoid the click behavior if a channel name is selected.
             e.preventDefault();
             return;
         }
-
         const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
         on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
@@ -1447,4 +1494,24 @@ export function get_current_stream_li(): JQuery | undefined {
     }
 
     return $stream_li;
+}
+
+export function expand_all_stream_sections(): void {
+    for (const section_id of collapsed_sections) {
+        const $container = $(`#stream-list-${section_id}-container`);
+        if ($container.hasClass("collapsed")) {
+            toggle_section_collapse($container);
+        }
+    }
+}
+
+export function collapse_all_stream_sections(): void {
+    for (const section_id of stream_list_sort.section_ids()) {
+        if (!collapsed_sections.has(section_id)) {
+            const $container = $(`#stream-list-${section_id}-container`);
+            if (!$container.hasClass("collapsed")) {
+                toggle_section_collapse($container);
+            }
+        }
+    }
 }

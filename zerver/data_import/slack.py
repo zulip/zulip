@@ -33,6 +33,7 @@ from zerver.data_import.import_util import (
     build_recipient,
     build_stream,
     build_subscription,
+    build_user_profile,
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
@@ -319,7 +320,7 @@ def users_to_zerver_userprofile(
         # ref: https://zulip.com/help/change-your-profile-picture
         avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
         if avatar_source == UserProfile.AVATAR_FROM_USER:
-            build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
+            build_avatar(user_id, realm_id, avatar_url, timestamp, avatar_list)
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
             role = UserProfile.ROLE_REALM_OWNER
@@ -357,24 +358,22 @@ def users_to_zerver_userprofile(
         else:
             bot_type = None
 
-        userprofile = UserProfile(
-            full_name=get_user_full_name(user),
-            is_active=not user.get("deleted", False) and not user["is_mirror_dummy"],
-            is_mirror_dummy=user["is_mirror_dummy"],
-            id=user_id,
-            email=email,
-            delivery_email=email,
+        userprofile_dict = build_user_profile(
             avatar_source=avatar_source,
-            is_bot=is_bot,
-            role=role,
-            bot_type=bot_type,
             date_joined=timestamp,
+            delivery_email=email,
+            email=email,
+            full_name=get_user_full_name(user),
+            id=user_id,
+            is_active=not user.get("deleted", False) and not user["is_mirror_dummy"],
+            role=role,
+            is_mirror_dummy=user["is_mirror_dummy"],
+            realm_id=realm_id,
+            short_name=user["name"],
             timezone=timezone,
-            last_login=timestamp,
+            is_bot=is_bot,
+            bot_type=bot_type,
         )
-        userprofile_dict = model_to_dict(userprofile)
-        # Set realm id separately as the corresponding realm is not yet a Realm model instance
-        userprofile_dict["realm"] = realm_id
 
         zerver_userprofile.append(userprofile_dict)
         slack_user_id_to_zulip_user_id[slack_user_id] = user_id
@@ -1261,18 +1260,12 @@ def process_message_files(
             has_link = True
             has_image = "image" in fileinfo["mimetype"]
 
-            file_user = [
-                iterate_user for iterate_user in users if message["user"] == iterate_user["id"]
-            ]
-            file_user_email = get_user_email(file_user[0], domain_name)
-
             s3_path, content_for_link = get_attachment_path_and_content(fileinfo, realm_id)
             markdown_links.append(content_for_link)
 
             build_uploads(
                 slack_user_id_to_zulip_user_id[slack_user_id],
                 realm_id,
-                file_user_email,
                 fileinfo,
                 s3_path,
                 uploads_list,
@@ -1401,7 +1394,6 @@ def build_reactions(
 def build_uploads(
     user_id: int,
     realm_id: int,
-    email: str,
     fileinfo: ZerverFieldsT,
     s3_path: str,
     uploads_list: list[ZerverFieldsT],
@@ -1412,7 +1404,6 @@ def build_uploads(
         content_type=None,
         user_profile_id=user_id,
         last_modified=fileinfo["timestamp"],
-        user_profile_email=email,
         s3_path=s3_path,
         size=fileinfo["size"],
     )
@@ -1618,7 +1609,7 @@ def do_convert_zipfile(
     original_path: str,
     output_dir: str,
     token: str,
-    threads: int = 6,
+    processes: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
     assert original_path.endswith(".zip")
@@ -1661,23 +1652,35 @@ def do_convert_zipfile(
 
             zipObj.extractall(slack_data_dir)
 
-        do_convert_directory(slack_data_dir, output_dir, token, threads, convert_slack_threads)
+        do_convert_directory(slack_data_dir, output_dir, token, processes, convert_slack_threads)
     finally:
         # Always clean up the uncompressed directory
         rm_tree(slack_data_dir)
 
 
-SLACK_IMPORT_TOKEN_SCOPES = {"emoji:read", "users:read", "users:read.email", "team:read"}
+SLACK_IMPORT_TOKEN_SCOPES = {
+    # For Slack's emoji.list endpoint: https://docs.slack.dev/reference/methods/emoji.list/
+    "emoji:read",
+    # For Slack's team.info endpoint: https://docs.slack.dev/reference/methods/team.info/
+    "team:read",
+    # Required by the following endpoints:
+    # - bots.info: https://docs.slack.dev/reference/methods/bots.info/
+    # - users.info: https://docs.slack.dev/reference/methods/users.info/
+    # - users.list: https://docs.slack.dev/reference/methods/users.list/
+    "users:read",
+    # For Slack's users.info endpoint: https://docs.slack.dev/reference/methods/users.info/
+    "users:read.email",
+}
 
 
 def do_convert_directory(
     slack_data_dir: str,
     output_dir: str,
     token: str,
-    threads: int = 6,
+    processes: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
-    check_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
+    check_slack_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
 
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):
@@ -1740,18 +1743,20 @@ def do_convert_directory(
 
     emoji_folder = os.path.join(output_dir, "emoji")
     os.makedirs(emoji_folder, exist_ok=True)
-    emoji_records = process_emojis(realm["zerver_realmemoji"], emoji_folder, emoji_url_map, threads)
+    emoji_records = process_emojis(
+        realm["zerver_realmemoji"], emoji_folder, emoji_url_map, processes
+    )
 
     avatar_folder = os.path.join(output_dir, "avatars")
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
     avatar_records = process_avatars(
-        avatar_list, avatar_folder, realm_id, threads, size_url_suffix="-512"
+        avatar_list, avatar_folder, realm_id, processes, size_url_suffix="-512"
     )
 
     uploads_folder = os.path.join(output_dir, "uploads")
     os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
-    uploads_records = process_uploads(uploads_list, uploads_folder, threads)
+    uploads_records = process_uploads(uploads_list, uploads_folder, processes)
     attachment = {"zerver_attachment": zerver_attachment}
 
     team_info_dict = get_slack_api_data("https://slack.com/api/team.info", "team", token=token)
@@ -1778,9 +1783,11 @@ def get_data_file(path: str) -> Any:
         return data
 
 
-def check_token_access(token: str, required_scopes: set[str]) -> None:
+def check_slack_token_access(token: str, required_scopes: set[str]) -> None:
     if token.startswith("xoxp-"):
         logging.info("This is a Slack user token, which grants all rights the user has!")
+    elif not required_scopes:
+        raise ValueError("required_scopes shouldn't be empty!")
     elif token.startswith("xoxb-"):
         data = requests.get(
             "https://slack.com/api/api.test", headers={"Authorization": f"Bearer {token}"}

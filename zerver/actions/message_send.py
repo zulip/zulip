@@ -69,13 +69,14 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
+    channel_events_topic_name,
     ensure_stream,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
     subscribed_to_stream,
 )
 from zerver.lib.string_validation import check_stream_name
-from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
+from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
@@ -935,7 +936,7 @@ def do_send_messages(
             # does not support this yet: (https://code.djangoproject.com/ticket/10088)
             assert send_request.message.rendered_content is not None
             if send_request.rendering_result.thumbnail_spinners:
-                previews = get_user_upload_previews(
+                previews = manifest_and_get_user_upload_previews(
                     send_request.message.realm_id,
                     send_request.message.content,
                     lock=True,
@@ -2060,12 +2061,14 @@ def internal_send_private_message(
     content: str,
     *,
     disable_external_notifications: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> int | None:
     message = internal_prep_private_message(
         sender,
         recipient_user,
         content,
         disable_external_notifications=disable_external_notifications,
+        acting_user=acting_user,
     )
     if message is None:
         return None
@@ -2169,3 +2172,32 @@ def internal_send_group_direct_message(
 
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
+
+
+def maybe_send_channel_events_notice(
+    sender: UserProfile,
+    stream: Stream,
+    content: str,
+    *,
+    email_gateway: bool = False,
+    message_type: int = Message.MessageType.NORMAL,
+    limit_unread_user_ids: set[int] | None = None,
+    mark_as_read_for_acting_user: bool = False,
+    archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
+) -> int | None:
+    if not stream.realm.send_channel_events_messages:
+        return None
+
+    return internal_send_stream_message(
+        sender,
+        stream,
+        channel_events_topic_name(stream),
+        content,
+        email_gateway=email_gateway,
+        message_type=message_type,
+        limit_unread_user_ids=limit_unread_user_ids,
+        mark_as_read_for_acting_user=mark_as_read_for_acting_user,
+        archived_channel_notice=archived_channel_notice,
+        acting_user=acting_user,
+    )

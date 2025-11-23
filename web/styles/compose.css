@@ -281,7 +281,23 @@
         flex-grow: 1;
         display: grid;
         grid-template-columns: 1fr;
+        position: relative;
         align-items: stretch;
+
+        .compose-new-recipient-button {
+            /* Takes up vertical space in pill container excluding 1px
+               container outline and 1px padding */
+            height: 1.75em;
+            width: 1.75em;
+            position: absolute;
+            right: 0.0625em;
+            top: 0.0625em;
+        }
+
+        .pill-container {
+            /* recipient button width and 1px container width */
+            padding-right: 1.8125em;
+        }
     }
 
     .message_header {
@@ -629,7 +645,13 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 4;
+    z-index: var(--compose-default-z-index);
+}
+
+@media (width > $sm_min) {
+    .upload-overlay-visible #compose {
+        z-index: var(--compose-with-upload-overlay-z-index);
+    }
 }
 
 #compose-container {
@@ -999,6 +1021,10 @@
             }
         }
     }
+
+    .secondary-button {
+        margin-left: 10px;
+    }
 }
 
 .upload_banner {
@@ -1101,17 +1127,6 @@ textarea.new_message_textarea {
         border-color: var(--color-compose-recipient-box-has-focus);
     }
 
-    #stream_message_recipient_topic,
-    #recipient_box_clear_topic_button {
-        background: none;
-        border: none;
-
-        &:disabled {
-            cursor: default;
-            opacity: 1;
-        }
-    }
-
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
         grid-area: topic;
@@ -1155,37 +1170,16 @@ textarea.new_message_textarea {
     }
 
     /* Styles for new conversation button in the recipient_box */
-    #recipient_box_clear_topic_button {
+    .compose-new-recipient-button {
         grid-area: topic-clear-button;
-        /* Set the border radius smaller, relative to the parent */
-        border-radius: 2px;
-        padding: 6px;
-        margin: 1px;
-        color: var(--color-compose-embedded-button-text-color);
-
-        .zulip-icon {
-            display: block;
-        }
-
-        &:hover {
-            background-color: var(
-                --color-compose-embedded-button-background-hover
-            );
-            color: var(--color-compose-embedded-button-text-color-hover);
-        }
-
-        &:focus {
-            outline: 0;
-        }
     }
 
     #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
-        ~ #recipient_box_clear_topic_button {
+        ~ .compose-new-recipient-button {
         visibility: hidden;
     }
 
-    #stream_message_recipient_topic:disabled
-        ~ #recipient_box_clear_topic_button {
+    #stream_message_recipient_topic:disabled ~ .compose-new-recipient-button {
         visibility: hidden;
     }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
@@ -1247,9 +1241,10 @@ textarea.new_message_textarea {
    interactions (e.g., Shift-Tabbing from the compose textarea
    to the topic box) show instant changes, so we don't need to
    accommodate them here, which we prevent by applying the
-   transitions only when focus isn't within the recipient row. */
+   transitions only when focus isn't within the recipient row,
+   or hasn't recently been within the topic box. */
 #compose.compose-box-open {
-    .low-attention-recipient-row:hover:not(:focus-within) {
+    .low-attention-recipient-row:not(.recently-focused, :focus-within) {
         #compose_select_recipient_widget,
         #compose_recipient_box,
         #compose-direct-recipient .pill-container {
@@ -1264,7 +1259,7 @@ textarea.new_message_textarea {
             transition-property: color;
         }
 
-        #recipient_box_clear_topic_button {
+        .compose-new-recipient-button {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color, background-color, opacity;
@@ -1342,7 +1337,7 @@ textarea.new_message_textarea {
             }
         }
 
-        #recipient_box_clear_topic_button:hover {
+        .compose-new-recipient-button:hover {
             opacity: 1;
         }
     }
@@ -1568,6 +1563,40 @@ textarea.new_message_textarea {
       themselves, where necessary. */
     min-height: var(--compose-recipient-box-min-height);
     min-width: 0;
+
+    .compose-new-recipient-button {
+        /* Set the border radius smaller, relative to the parent */
+        border-radius: 2px;
+        padding: 6px;
+        margin: 1px;
+        color: var(--color-compose-embedded-button-text-color);
+
+        .zulip-icon {
+            display: block;
+        }
+
+        &:hover {
+            background-color: var(
+                --color-compose-embedded-button-background-hover
+            );
+            color: var(--color-compose-embedded-button-text-color-hover);
+        }
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    #stream_message_recipient_topic,
+    .compose-new-recipient-button {
+        background: none;
+        border: none;
+
+        &:disabled {
+            cursor: default;
+            opacity: 1;
+        }
+    }
 }
 
 .compose-control-buttons-container {

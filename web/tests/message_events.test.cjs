@@ -60,13 +60,11 @@ function test_helper(side_effects) {
         };
     }
 
-    const self = {};
-
-    self.verify = () => {
-        assert.deepEqual(side_effects, events);
+    return {
+        verify() {
+            assert.deepEqual(side_effects, events);
+        },
     };
-
-    return self;
 }
 
 run_test("update_messages", ({override, override_rewire}) => {

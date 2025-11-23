@@ -433,7 +433,13 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
     const no_notify = opts.no_notify ?? false;
-    const force_save = opts.force_save ?? false;
+    // When message content is <= MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT,
+    // we usually don't save it, but if there's some content and the
+    // draft was already saved, we should save the shorter version
+    // and shouldn't delete it below.
+    const existing_draft_has_become_short =
+        draft_id !== undefined && compose_state.message_content().length > 0;
+    const force_save = opts.force_save ?? existing_draft_has_become_short;
     const draft = snapshot_message(force_save);
 
     if (draft === undefined) {

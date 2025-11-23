@@ -1,10 +1,9 @@
 import type * as z from "zod/mini";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-
 import {$t} from "./i18n.ts";
 import * as pygments_data from "./pygments_data.ts";
 import type {realm_playground_schema} from "./state_data.ts";
+import * as typeahead from "./typeahead.ts";
 import * as util from "./util.ts";
 
 export type RealmPlayground = z.output<typeof realm_playground_schema>;

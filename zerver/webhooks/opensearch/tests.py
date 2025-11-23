@@ -28,12 +28,12 @@ class OpensearchHookTests(WebhookTestCase):
             "Monitor Storage size monitor just entered alert status. Please investigate the issue.\n"
             "- Trigger: Storage size over 1TB\n"
             "- Severity: 1\n"
-            "- Period start: 2025-02-25T00:58:39.607Z UTC\n"
-            "- Period end: 2025-02-25T00:59:39.607Z UTC"
+            "- Period start: <time:2025-02-25T00:58:39.607Z>\n"
+            "- Period end: <time:2025-02-25T00:59:39.607Z>"
         )
         self.check_webhook("default_template", self.TOPIC_NAME, message, content_type="text/plain")
 
     def test_example_template_notification(self) -> None:
-        message = "Alert of severity **3** triggered by **Insufficient memory** at 2025-03-04T15:52:59.372Z UTC."
+        message = "Alert of severity **3** triggered by **Insufficient memory** at <time:2025-03-04T15:52:59.372Z>."
         expected_topic = "Resource Monitor"
         self.check_webhook("example_template", expected_topic, message, content_type="text/plain")

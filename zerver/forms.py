@@ -141,7 +141,10 @@ class RealmDetailsForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["realm_default_language"] = forms.ChoiceField(
             choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
+            required=self.realm_creation,
         )
+        self.fields["realm_type"].required = self.realm_creation
+        self.fields["realm_name"].required = self.realm_creation
 
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
@@ -156,7 +159,32 @@ class RealmDetailsForm(forms.Form):
         return subdomain
 
 
-class RegistrationForm(RealmDetailsForm):
+# These are the matching field names for the options in
+# RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS that
+# ask for more context when creating a new organization.
+HOW_FOUND_ZULIP_EXTRA_CONTEXT = {
+    "other": "how_realm_creator_found_zulip_other_text",
+    "ad": "how_realm_creator_found_zulip_where_ad",
+    "existing_user": "how_realm_creator_found_zulip_which_organization",
+    "review_site": "how_realm_creator_found_zulip_review_site",
+    "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
+}
+
+
+class HowFoundZulipFormMixin(forms.Form):
+    how_realm_creator_found_zulip = forms.ChoiceField(
+        choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items()
+    )
+    how_realm_creator_found_zulip_other_text = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_where_ad = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_which_organization = forms.CharField(
+        max_length=100, required=False
+    )
+    how_realm_creator_found_zulip_review_site = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_which_ai_chatbot = forms.CharField(max_length=100, required=False)
+
+
+class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
     MAX_PASSWORD_LENGTH = 100
     full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # The required-ness of the password field gets overridden if it isn't
@@ -179,37 +207,7 @@ class RegistrationForm(RealmDetailsForm):
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
-        self.fields["realm_name"] = forms.CharField(
-            max_length=Realm.MAX_REALM_NAME_LENGTH, required=self.realm_creation
-        )
-        self.fields["realm_type"] = forms.TypedChoiceField(
-            coerce=int,
-            choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
-            required=self.realm_creation,
-        )
-        self.fields["realm_default_language"] = forms.ChoiceField(
-            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
-            required=self.realm_creation,
-        )
-        self.fields["how_realm_creator_found_zulip"] = forms.ChoiceField(
-            choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
-            required=self.realm_creation,
-        )
-        self.fields["how_realm_creator_found_zulip_other_text"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_where_ad"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_review_site"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_which_ai_chatbot"] = forms.CharField(
-            max_length=100, required=False
-        )
+        self.fields["how_realm_creator_found_zulip"].required = self.realm_creation
 
     def clean_full_name(self) -> str:
         try:
@@ -320,7 +318,7 @@ class HomepageForm(forms.Form):
 
 
 class ImportRealmOwnerSelectionForm(forms.Form):
-    user_id = forms.IntegerField()
+    user_id = forms.IntegerField(required=False)
 
 
 class RealmCreationForm(RealmDetailsForm):
@@ -358,7 +356,6 @@ class AltchaWidget(forms.TextInput):
                 '  challengeurl="/json/antispam_challenge"'
                 "  hidelogo"
                 "  hidefooter"
-                '  floating="bottom"'
                 "  refetchonexpire"
                 '  style="{}"'
                 '  strings="{}"'

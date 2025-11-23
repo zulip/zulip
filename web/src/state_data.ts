@@ -20,11 +20,54 @@ const group_permission_setting_schema = z.object({
 });
 export type GroupPermissionSetting = z.output<typeof group_permission_setting_schema>;
 
-export const narrow_term_schema = z.object({
+export const narrow_canonical_operator_schema = z.enum([
+    "", // Used for search suggestions.
+    "channel",
+    "channels",
+    "dm",
+    "dm-including",
+    "has",
+    "id",
+    "in",
+    "is",
+    "near",
+    "search",
+    "sender",
+    "topic",
+    "with",
+]);
+export type NarrowCanonicalOperator = z.output<typeof narrow_canonical_operator_schema>;
+
+const narrow_legacy_operator_schema = z.enum([
+    "pm-with",
+    "group-pm-with",
+    "from",
+    "stream",
+    "streams",
+    "subject",
+]);
+
+export const narrow_operator_schema = z.union([
+    narrow_canonical_operator_schema,
+    narrow_legacy_operator_schema,
+]);
+export type NarrowOperator = z.output<typeof narrow_operator_schema>;
+
+export const narrow_canonical_term_schema = z.object({
     negated: z.optional(z.boolean()),
-    operator: z.string(),
+    operator: narrow_canonical_operator_schema,
     operand: z.string(),
 });
+export type NarrowCanonicalTerm = z.output<typeof narrow_canonical_term_schema>;
+
+export const narrow_term_schema = z.union([
+    narrow_canonical_term_schema,
+    z.object({
+        negated: z.optional(z.boolean()),
+        operator: narrow_legacy_operator_schema,
+        operand: z.string(),
+    }),
+]);
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
 
 export const custom_profile_field_schema = z.object({
@@ -283,6 +326,11 @@ export const realm_linkifier_schema = z.object({
     id: z.number(),
 });
 
+export const realm_report_message_types = z.object({
+    key: z.string(),
+    name: z.string(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
@@ -421,6 +469,7 @@ export const realm_schema = z.object({
     realm_message_content_delete_limit_seconds: z.nullable(z.number()),
     realm_message_edit_history_visibility_policy: z.enum(["all", "moves", "none"]),
     realm_message_retention_days: z.number(),
+    realm_moderation_request_channel_id: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.nullable(z.number()),
     realm_move_messages_within_stream_limit_seconds: z.nullable(z.number()),
     realm_name_changes_disabled: z.boolean(),
@@ -437,6 +486,7 @@ export const realm_schema = z.object({
     realm_push_notifications_enabled_end_timestamp: z.nullable(z.number()),
     realm_require_e2ee_push_notifications: z.boolean(),
     realm_require_unique_names: z.boolean(),
+    realm_send_channel_events_messages: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
     realm_topics_policy: z.enum(["allow_empty_topic", "disable_empty_topic"]),
@@ -459,6 +509,7 @@ export const realm_schema = z.object({
     server_needs_upgrade: z.boolean(),
     server_presence_offline_threshold_seconds: z.number(),
     server_presence_ping_interval_seconds: z.number(),
+    server_report_message_types: z.array(realm_report_message_types),
     server_supported_permission_settings: z.object({
         realm: z.record(z.string(), group_permission_setting_schema),
         stream: z.record(z.string(), group_permission_setting_schema),

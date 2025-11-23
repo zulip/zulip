@@ -404,6 +404,28 @@ export function activate({
         callback(data);
     }
 
+    function add_task(): void {
+        $elem.find(".widget-error").text("");
+        const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+        if (task === "") {
+            return;
+        }
+
+        $elem.find("input.add-task").val("").trigger("focus");
+        $elem.find("input.add-desc").val("");
+
+        // This case should not generally occur.
+        const task_exists = task_data.name_in_use(task);
+        if (task_exists) {
+            $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+            return;
+        }
+
+        const data = task_data.handle.new_task.outbound(task, desc);
+        callback(data);
+    }
+
     function build_widget(): void {
         const html = render_widgets_todo_widget();
         $elem.html(html);
@@ -451,22 +473,15 @@ export function activate({
 
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
-            $elem.find(".widget-error").text("");
-            const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
-            const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+            add_task();
+        });
 
-            $elem.find("input.add-task").val("").trigger("focus");
-            $elem.find("input.add-desc").val("");
-
-            // This case should not generally occur.
-            const task_exists = task_data.name_in_use(task);
-            if (task_exists) {
-                $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
-                return;
+        $elem.find("input.add-task, input.add-desc").on("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.stopPropagation();
+                e.preventDefault();
+                add_task();
             }
-
-            const data = task_data.handle.new_task.outbound(task, desc);
-            callback(data);
         });
     }
 

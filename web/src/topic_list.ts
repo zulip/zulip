@@ -10,6 +10,7 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -34,13 +35,17 @@ export let topic_state_typeahead: Typeahead<TopicFilterPill> | undefined;
 // We know whether we're zoomed or not.
 let zoomed = false;
 
+// Scroll position before user started searching.
+let pre_search_scroll_position = 0;
+let previous_search_term = "";
+
 export function update(): void {
     for (const widget of active_widgets.values()) {
         widget.build();
     }
 }
 
-function update_widget_for_stream(stream_id: number): void {
+export function update_widget_for_stream(stream_id: number): void {
     const widget = active_widgets.get(stream_id);
     if (widget === undefined) {
         blueslip.warn("User re-narrowed before topic history was returned.");
@@ -51,6 +56,7 @@ function update_widget_for_stream(stream_id: number): void {
 
 export function clear(): void {
     popover_menus.get_topic_menu_popover()?.hide();
+    topic_filter_pill_widget?.clear(true);
 
     for (const widget of active_widgets.values()) {
         widget.remove();
@@ -80,6 +86,10 @@ export function zoom_out(): void {
     const widget = active_widgets.get(stream_id);
     assert(widget !== undefined);
     const parent_widget = widget.get_parent();
+
+    // Reset the resolved topic filter since we moved away
+    // from the view.
+    topic_filter_pill_widget?.clear(true);
 
     rebuild_left_sidebar(parent_widget, stream_id);
 }
@@ -430,6 +440,8 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
 // handle hiding/showing the non-narrowed streams
 export function zoom_in(): void {
     zoomed = true;
+    previous_search_term = "";
+    pre_search_scroll_position = 0;
     ui_util.disable_left_sidebar_search();
 
     const stream_id = active_stream_id();
@@ -596,44 +608,63 @@ export function initialize({
 }: {
     on_topic_click: (stream_id: number, topic: string) => void;
 }): void {
-    $("#stream_filters").on(
-        "click",
-        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-unreads",
-        (e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) {
-                return;
-            }
-            if ($(e.target).closest(".show-more-topics").length > 0) {
-                return;
-            }
+    $("#stream_filters").on("click", ".topic-box", (e) => {
+        const $target = $(e.target);
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
 
-            if ($(e.target).hasClass("visibility-policy-icon")) {
-                return;
-            }
+        // We avoid navigating to the topic if the click happens within elements
+        // that are supposed to have their unique behavior on click without triggering
+        // navigation.
+        if ($(e.target).closest(".show-more-topics").length > 0) {
+            return;
+        }
 
-            if (document.getSelection()?.type === "Range") {
-                // To avoid the click behavior if a topic link is selected.
-                e.preventDefault();
-                return;
-            }
-            const $stream_row = $(e.target).parents(".narrow-filter");
-            const stream_id_string = $stream_row.attr("data-stream-id");
-            assert(stream_id_string !== undefined);
-            const stream_id = Number.parseInt(stream_id_string, 10);
-            const topic = $(e.target).parents("li").attr("data-topic-name")!;
-            on_topic_click(stream_id, topic);
+        if (
+            $target.closest(".visibility-policy-icon").get(0) ||
+            $target.closest(".topic-sidebar-menu-icon").get(0)
+        ) {
+            return;
+        }
 
+        // The remaining elements are the topic name, unread counter, and resolved topic
+        // marker, as well as empty space. Clicking any of these elements should navigate
+        // to the topic, being careful to avoid accidentally triggering click handlers when
+        // dragging.
+        if (mouse_drag.is_drag(e)) {
+            // To avoid the click behavior if a topic link is selected.
             e.preventDefault();
-            e.stopPropagation();
-        },
-    );
+            return;
+        }
+        const $stream_row = $(e.target).parents(".narrow-filter");
+        const stream_id_string = $stream_row.attr("data-stream-id");
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
+        const topic = $(e.target).parents("li").attr("data-topic-name")!;
+        on_topic_click(stream_id, topic);
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
 
     $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
-        active_widgets.get(stream_id)?.build();
 
-        if (get_left_sidebar_topic_search_term() === "") {
+        const search_term = get_left_sidebar_topic_search_term();
+        const is_previous_search_term_empty = previous_search_term === "";
+        previous_search_term = search_term;
+
+        const widget = active_widgets.get(stream_id)!;
+        const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+        if (search_term === "") {
+            requestAnimationFrame(() => {
+                widget.build();
+                // Restore previous scroll position.
+                left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
+            });
+
             // When the contenteditable div is empty, the browser
             // adds a <br> element to it, which interferes with
             // the ":empty" selector in the CSS. Hence, we detect
@@ -646,6 +677,16 @@ export function initialize({
             // doesn't work in this particular case.
             // See: https://stackoverflow.com/questions/14638887/br-is-inserted-into-contenteditable-html-element-if-left-empty
             $("#topic_filter_query").empty();
+        } else {
+            if (is_previous_search_term_empty) {
+                // Store original scroll position to be restored later.
+                pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
+            }
+            requestAnimationFrame(() => {
+                widget.build();
+                // Always scroll to top when there is a search term present.
+                left_sidebar_scroll_container.scrollTop(0);
+            });
         }
     });
 }

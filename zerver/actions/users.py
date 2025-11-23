@@ -387,6 +387,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         user_profile,
         include_public=False,
         include_subscribed=True,
+        exclude_archived=False,
     )
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     streams: list[Stream] = []
@@ -564,7 +565,7 @@ def send_stream_events_for_role_update(
 
     now_accessible_stream_ids = current_accessible_stream_ids - old_accessible_stream_ids
     if now_accessible_stream_ids:
-        recent_traffic = get_streams_traffic(now_accessible_stream_ids, user_profile.realm)
+        recent_traffic = get_streams_traffic(user_profile.realm, now_accessible_stream_ids)
 
         now_accessible_streams = [
             stream
@@ -1000,3 +1001,22 @@ def do_send_password_reset_email(
             realm=realm,
             request=request,
         )
+
+
+@transaction.atomic(durable=True)
+def do_change_is_imported_stub(user_profile: UserProfile) -> None:
+    user_profile.is_imported_stub = False
+    user_profile.save(update_fields=["is_imported_stub"])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        acting_user=user_profile,
+        event_type=AuditLogEventType.USER_IS_IMPORTED_STUB_CHANGED,
+        event_time=timezone_now(),
+    )
+
+    event = dict(
+        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_imported_stub=False)
+    )
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))

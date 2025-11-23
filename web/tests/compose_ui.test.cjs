@@ -51,12 +51,7 @@ people.add_active_user(bob);
 
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
-    const $widget = {};
-
-    $widget.s = s;
-    $widget.length = 1;
-    $widget[0] = "textarea";
-    $widget.focused = false;
+    const $widget = {s, length: 1, [0]: "textarea", focused: false};
 
     $widget.caret = function (arg) {
         if (typeof arg === "number") {

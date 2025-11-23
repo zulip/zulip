@@ -8,8 +8,7 @@ const assert = require("node:assert/strict");
 // like set_global() to override your namespace.
 
 exports.make_stub = function () {
-    const self = {};
-    self.num_calls = 0;
+    const self = {num_calls: 0};
 
     self.f = function (...args) {
         self.last_call_args = args;

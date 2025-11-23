@@ -282,6 +282,9 @@ export function canonicalize_channel_synonyms(text: string): string {
     return text;
 }
 
+export function prefix_match({value, search_term}: {value: string; search_term: string}): boolean {
+    return filter_by_word_prefix_match([value], search_term, (s) => s).length === 1;
+}
 export function filter_by_word_prefix_match<T>(
     items: T[],
     search_term: string,
@@ -573,11 +576,11 @@ export function is_topic_name_considered_empty(topic: string): boolean {
     return false;
 }
 
-export function get_retry_backoff_seconds(
+export let get_retry_backoff_seconds = (
     xhr: JQuery.jqXHR<unknown> | undefined,
     attempts: number,
     tighter_backoff = false,
-): number {
+): number => {
     // We need to respect the server's rate-limiting headers, but beyond
     // that, we also want to avoid contributing to a thundering herd if
     // the server is giving us 500/502 responses.
@@ -607,6 +610,10 @@ export function get_retry_backoff_seconds(
         rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
     }
     return Math.max(backoff_delay_secs, rate_limit_delay_secs);
+};
+
+export function rewire_get_retry_backoff_seconds(value: typeof get_retry_backoff_seconds): void {
+    get_retry_backoff_seconds = value;
 }
 
 export async function sha256_hash(text: string): Promise<string | undefined> {

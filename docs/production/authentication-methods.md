@@ -1176,8 +1176,6 @@ If your server was originally installed from a release in the
 file. You can find instructions on how to do that in a
 [separate doc][update-inline-comments].
 
-Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
-
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
 

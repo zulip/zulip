@@ -195,27 +195,22 @@
 
 /* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
-    font-size: 1.3571em; /* 19px at 14px em */
-    display: inline-block;
-    height: 1.1052em; /* 21px at 19px/1em */
-    width: 1.1052em; /* 21px at 19px/1em */
+    flex: 0 0 auto;
+    height: 1.3125em; /* 21px at 16px/1em */
+    width: 1.3125em; /* 21px at 16px/1em */
     border-radius: 4px;
 
-    text-align: center;
-
-    &.zulip-icon-user-group {
-        font-size: 1.3571em; /* 19px at 14px em */
-    }
-
     &.no-presence-circle {
-        /* 0.6875 * var(--base-font-size) is the width of presence
-        circle, no margin (-2px left margin + 2px right margin = 0px)
-        of the presence circle and 0.3571 * var(--base-font-size-px)
-        is gap between the presence circle and avatar.
-        Cannot directly use 0.6875em or 0.3571em
-        since font-size for user group icon is different from the
-        font size used to calculate presence circle width and gap. */
-        margin-left: calc((0.6875 + 0.3571) * var(--base-font-size-px));
+        /* 0.6875em at 16px/1em is the width of presence circle,
+           no margin (-2px left margin + 2px right margin = 0px),
+           and 0.3571  is the gap between the presence circle and
+           image avatars. */
+        margin-left: calc(0.6875em + 0.3571em);
+        /* To properly align icons within the 21px square box
+           defined on .typeahead-image, we establish a flexbox: */
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 

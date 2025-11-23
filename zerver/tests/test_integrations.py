@@ -1,9 +1,21 @@
 import os
 
 from zerver.lib.integrations import (
-    DOC_SCREENSHOT_CONFIG,
+    BOT_INTEGRATIONS,
+    EMBEDDED_INTEGRATIONS,
+    HUBOT_INTEGRATIONS,
     INTEGRATIONS,
     NO_SCREENSHOT_CONFIG,
+    PLUGIN_INTEGRATIONS,
+    PYTHON_API_INTEGRATIONS,
+    STANDALONE_REPO_INTEGRATIONS,
+    VIDEO_CALL_INTEGRATIONS,
+    WEBHOOK_INTEGRATIONS,
+    ZAPIER_INTEGRATIONS,
+    BotIntegration,
+    HubotIntegration,
+    Integration,
+    PythonAPIIntegration,
     WebhookIntegration,
     WebhookScreenshotConfig,
     get_fixture_path,
@@ -41,7 +53,11 @@ class IntegrationsTestCase(ZulipTestCase):
 
     def test_no_missing_doc_screenshot_config(self) -> None:
         integration_names = {integration.name for integration in INTEGRATIONS.values()}
-        integrations_with_screenshot_configs = set(DOC_SCREENSHOT_CONFIG.keys())
+        integrations_with_screenshot_configs = {
+            integration_name
+            for integration_name, integration in INTEGRATIONS.items()
+            if integration.screenshot_configs
+        }
 
         missing_integration_screenshots = (
             integration_names - integrations_with_screenshot_configs - NO_SCREENSHOT_CONFIG
@@ -60,12 +76,12 @@ class IntegrationsTestCase(ZulipTestCase):
             construct_message(
                 "The following integrations are missing their example screenshot configuration:",
                 missing_integration_screenshots,
-                "Add them to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG",
+                "Add them to zerver.lib.integrations.INTEGRATIONS",
             )
             + construct_message(
                 "The following integrations have a screenshot configuration but no longer exist:",
                 extra_integration_configs,
-                "Remove them from zerver.lib.integrations.DOC_SCREENSHOT_CONFIG",
+                "Remove them from zerver.lib.integrations.INTEGRATIONS",
             )
             + construct_message(
                 "The following integrations are listed in NO_SCREENSHOT_CONFIG but no longer exist:",
@@ -76,12 +92,13 @@ class IntegrationsTestCase(ZulipTestCase):
 
     def test_no_missing_screenshot_path(self) -> None:
         message = '"{path}" does not exist for integration {integration_name}.\n'
-        tip = '\nConsider updating zerver.lib.integrations.DOC_SCREENSHOT_CONFIG\n and running "tools/screenshots/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
+        tip = '\nConsider updating screenshot configs in zerver.lib.integrations.INTEGRATIONS\n and running "tools/screenshots/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
         error_message = ""
 
-        for integration_name, screenshot_configs in DOC_SCREENSHOT_CONFIG.items():
-            for screenshot_config in screenshot_configs:
-                integration = INTEGRATIONS[integration_name]
+        for integration in INTEGRATIONS.values():
+            if integration.screenshot_configs is None:
+                continue
+            for screenshot_config in integration.screenshot_configs:
                 if isinstance(integration, WebhookIntegration):
                     assert isinstance(screenshot_config, WebhookScreenshotConfig)
                     if screenshot_config.fixture_name == "":
@@ -90,15 +107,47 @@ class IntegrationsTestCase(ZulipTestCase):
                     fixture_path = get_fixture_path(integration, screenshot_config)
                     error_message = (
                         error_message
-                        + message.format(path=fixture_path, integration_name=integration_name)
+                        + message.format(path=fixture_path, integration_name=integration.name)
                         if not os.path.isfile(fixture_path)
                         else error_message
                     )
                 image_path = get_image_path(integration, screenshot_config)
                 error_message = (
                     error_message
-                    + message.format(path=image_path, integration_name=integration_name)
+                    + message.format(path=image_path, integration_name=integration.name)
                     if not os.path.isfile(image_path)
                     else error_message
                 )
         self.assertEqual(error_message, "", tip)
+
+    def test_sorting(self) -> None:
+        integration_lists: dict[
+            str,
+            list[Integration]
+            | list[WebhookIntegration]
+            | list[BotIntegration]
+            | list[HubotIntegration]
+            | list[PythonAPIIntegration],
+        ] = {
+            "WEBHOOK_INTEGRATIONS": WEBHOOK_INTEGRATIONS,
+            "PYTHON_API_INTEGRATIONS": PYTHON_API_INTEGRATIONS,
+            "BOT_INTEGRATIONS": BOT_INTEGRATIONS,
+            "HUBOT_INTEGRATIONS": HUBOT_INTEGRATIONS,
+            "VIDEO_CALL_INTEGRATIONS": VIDEO_CALL_INTEGRATIONS,
+            "EMBEDDED_INTEGRATIONS": EMBEDDED_INTEGRATIONS,
+            "ZAPIER_INTEGRATIONS": ZAPIER_INTEGRATIONS,
+            "PLUGIN_INTEGRATIONS": PLUGIN_INTEGRATIONS,
+            "STANDALONE_REPO_INTEGRATIONS": STANDALONE_REPO_INTEGRATIONS,
+        }
+
+        errors: list[str] = []
+
+        for list_name, integration_list in integration_lists.items():
+            names = [integration.name for integration in integration_list]
+            errors.extend(
+                f"{list_name} is not sorted: '{names[i]}' > '{names[i + 1]}'"
+                for i in range(len(names) - 1)
+                if names[i] > names[i + 1]
+            )
+
+        assert not errors, "\n".join(errors)

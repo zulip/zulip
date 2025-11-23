@@ -204,7 +204,7 @@ class UserMessageNotificationsData:
     # (or edited a message) triggering the event for which we need to
     # determine notifiability.
     def trivially_should_not_notify(self, acting_user_id: int) -> bool:
-        """Common check for reasons not to trigger a notification that arex
+        """Common check for reasons not to trigger a notification that are
         independent of users' notification settings and thus don't
         depend on what type of notification (email/push) it is.
         """

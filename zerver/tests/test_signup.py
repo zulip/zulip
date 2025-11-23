@@ -1464,14 +1464,22 @@ class RealmCreationTest(ZulipTestCase):
         # Check organization name, subdomain and organization type are in message content
         self.assertIn("Zulip Test", messages[0].content)
         self.assertIn("custom-test", messages[0].content)
-        self.assertIn("Organization type: Business", messages[0].content)
-        self.assertEqual("new organizations", messages[0].topic_name())
+        self.assertEqual("business signups", messages[0].topic_name())
 
         realm_creation_audit_log = RealmAuditLog.objects.get(
             realm=realm, event_type=AuditLogEventType.REALM_CREATED
         )
         self.assertEqual(realm_creation_audit_log.acting_user, user)
         self.assertEqual(realm_creation_audit_log.event_time, realm.date_created)
+        audit_log_extra_data = realm_creation_audit_log.extra_data
+        self.assertEqual(
+            audit_log_extra_data["how_realm_creator_found_zulip"],
+            RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS["other"],
+        )
+        self.assertEqual(
+            audit_log_extra_data["how_realm_creator_found_zulip_extra_context"],
+            "I found it on the internet.",
+        )
 
         # Piggyback a little check for how we handle
         # empty string_ids.

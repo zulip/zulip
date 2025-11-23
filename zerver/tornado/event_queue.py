@@ -1287,13 +1287,14 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         # since presence events are pretty ephemeral in nature.
         logging.warning("Dropping some obsolete presence events after upgrade.")
 
+    # See https://zulip.com/api/get-events#presence for more context
+    # on these various event formats.
     slim_event = dict(
         type="presence",
         user_id=event["user_id"],
         server_timestamp=event["server_timestamp"],
         presence=event["legacy_presence"],
     )
-
     legacy_event = dict(
         type="presence",
         user_id=event["user_id"],
@@ -1301,7 +1302,6 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         server_timestamp=event["server_timestamp"],
         presence=event["legacy_presence"],
     )
-
     modern_event = dict(
         type="presence",
         presences={str(event["user_id"]): event["modern_presence"]},

@@ -14,6 +14,7 @@ import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
 
 const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
+const MINIMUM_PASTE_SIZE_TO_AVOID_DIRECT_PASTE = 5000;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -44,8 +45,13 @@ function image_to_zulip_markdown(
     return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
-// Returns 2 or more if there are multiple valid text nodes in the tree.
-function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
+// Returns the count of valid text nodes in the tree.
+// We return the count as soon as we find at least `cutoff` valid nodes
+// to avoid walking the whole tree.
+function count_valid_text_nodes_upto(child_nodes: ChildNode[], cutoff: number): number {
+    if (cutoff <= 0) {
+        return 0;
+    }
     let textful_nodes = 0;
 
     for (const child of child_nodes) {
@@ -57,14 +63,14 @@ function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
 
         if (child.nodeValue && child.nodeType === Node.TEXT_NODE) {
             textful_nodes += 1;
-            if (textful_nodes >= 2) {
+            if (textful_nodes >= cutoff) {
                 return textful_nodes;
             }
         }
 
-        textful_nodes += check_multiple_text_nodes([...child.childNodes]);
+        textful_nodes += count_valid_text_nodes_upto([...child.childNodes], cutoff - textful_nodes);
 
-        if (textful_nodes >= 2) {
+        if (textful_nodes >= cutoff) {
             return textful_nodes;
         }
     }
@@ -85,7 +91,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
     let textful_nodes = 0;
-    textful_nodes = check_multiple_text_nodes([...html_fragment.childNodes]);
+    textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
     if (textful_nodes >= 2) {
         return false;
     }
@@ -127,7 +133,7 @@ export function is_white_space_pre(paste_html: string): boolean {
 
 function is_from_excel(html_fragment: HTMLBodyElement): boolean {
     const html_tag = html_fragment.parentElement;
-    if (!html_tag || html_tag.nodeName !== "HTML") {
+    if (html_tag?.nodeName !== "HTML") {
         return false;
     }
 
@@ -166,7 +172,7 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
 // something like LibreOffice Writer.
 function is_from_libreoffice_calc(body_tag: HTMLBodyElement): boolean {
     const html_tag = body_tag.parentElement;
-    if (!html_tag || html_tag.nodeName !== "HTML") {
+    if (html_tag?.nodeName !== "HTML") {
         return false;
     }
 
@@ -202,10 +208,27 @@ export function is_single_image(paste_html: string): boolean {
     return (
         is_from_excel(html_fragment) ||
         is_from_libreoffice_calc(html_fragment) ||
-        (html_fragment.childNodes.length === 1 &&
-            html_fragment.firstElementChild !== null &&
-            html_fragment.firstElementChild.nodeName === "IMG")
+        (html_fragment.querySelectorAll("img").length === 1 &&
+            count_valid_text_nodes_upto([...html_fragment.childNodes], 1) === 0)
     );
+}
+
+function get_code_block_language(
+    pre_element: HTMLElement,
+    code_element_class_name: string,
+): string {
+    let language = "";
+    const parent_contains_lang_metadata =
+        pre_element.parentElement?.classList.contains("zulip-code-block");
+
+    if (parent_contains_lang_metadata) {
+        const codehilite_element = pre_element.closest<HTMLElement>(".codehilite");
+        // eslint-disable-next-line unicorn/prefer-dom-node-dataset
+        language = codehilite_element?.getAttribute("data-code-language") ?? "";
+    } else {
+        language = (/language-(\S+)/.exec(code_element_class_name) ?? [null, ""])[1];
+    }
+    return language;
 }
 
 export function paste_handler_converter(
@@ -461,7 +484,8 @@ export function paste_handler_converter(
 
     // We override the original upstream implementation of this rule to make
     // several tweaks:
-    // - We turn any single line code blocks into inline markdown code.
+    // - We turn any single line code blocks into inline markdown code, if they don't
+    // have associated language metadata.
     // - We generalise the filter condition to allow a `pre` element with a
     // `code` element as its only non-empty child, which applies to Zulip code
     // blocks too.
@@ -491,9 +515,11 @@ export function paste_handler_converter(
             const code = codeElement.textContent;
             assert(code !== null);
 
-            // We convert single line code inside a code block to inline markdown code,
-            // and the code for this is taken from upstream's `code` rule.
-            if (!code.includes("\n")) {
+            const className = codeElement.getAttribute("class") ?? "";
+            const language = get_code_block_language(node, className);
+            // We convert single line code inside a code block which does not have language metadata
+            // to inline markdown code, and the code for this is taken from upstream's `code` rule.
+            if (!code.includes("\n") && language === "") {
                 // If the cursor is just after a backtick, then we don't add extra backticks.
                 if (
                     $textarea &&
@@ -517,11 +543,6 @@ export function paste_handler_converter(
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
-
-            const className = codeElement.getAttribute("class") ?? "";
-            const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
-                : (/language-(\S+)/.exec(className) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);
@@ -645,6 +666,27 @@ function create_text_file(text: string, filename: string): File {
     return new File([blob], filename, {type: "text/plain"});
 }
 
+function do_paste_text(
+    paste_html: string,
+    paste_text: string,
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
+    if (paste_html) {
+        const text = paste_handler_converter(paste_html, $textarea);
+        const trimmed_paste_text = paste_text.trim();
+        if (trimmed_paste_text !== text) {
+            // Pasting formatted text is a two-step process: First
+            // we paste unformatted text, then overwrite it with
+            // formatted text, so that undo restores the
+            // pre-formatting syntax.
+            add_text_and_select(trimmed_paste_text, $textarea);
+        }
+        compose_ui.insert_and_scroll_into_view(text, $textarea);
+    } else {
+        compose_ui.insert_and_scroll_into_view(paste_text, $textarea);
+    }
+}
+
 export function paste_handler(
     this: HTMLTextAreaElement,
     event: JQuery.TriggeredEvent,
@@ -661,6 +703,7 @@ export function paste_handler(
         return;
     }
 
+    let avoid_direct_paste = false;
     if (clipboardData.getData) {
         const $textarea = $(this);
         const existing_text = $textarea.val() ?? "";
@@ -675,18 +718,24 @@ export function paste_handler(
         // putting the content into the compose box.
         const is_paste_large_enough_for_file =
             pasted_text_length >= MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT;
-
+        avoid_direct_paste = pasted_text_length >= MINIMUM_PASTE_SIZE_TO_AVOID_DIRECT_PASTE;
         // If the pasted or combined text is too large, present a
         // banner offering to upload as a file.
         if (is_paste_large_enough_for_file) {
             const filename = `${$t({defaultMessage: "PastedText"})}.txt`;
             const pasted_file = create_text_file(paste_text, filename);
-            const $banner = compose_banner.show_convert_pasted_text_to_file_banner(() => {
-                // Important: This undo mechanism is only correct if
-                // the compose area hasn't changed since the banner
-                // was created.
-                $textarea.val(existing_text);
-                upload_pasted_file(this, pasted_file);
+            const $banner = compose_banner.show_convert_pasted_text_to_file_banner({
+                show_paste_button: avoid_direct_paste,
+                convert_to_file_cb: () => {
+                    // Important: This undo mechanism is only correct if
+                    // the compose area hasn't changed since the banner
+                    // was created.
+                    $textarea.val(existing_text);
+                    upload_pasted_file(this, pasted_file);
+                },
+                paste_to_compose_cb() {
+                    do_paste_text(paste_html, paste_text, $textarea);
+                },
             });
             setTimeout(() => {
                 $("textarea#compose-textarea").one("input", () => {
@@ -746,16 +795,14 @@ export function paste_handler(
             }
             event.preventDefault();
             event.stopPropagation();
-            paste_html = maybe_transform_html(paste_html, paste_text);
-            const text = paste_handler_converter(paste_html, $textarea);
-            if (trimmed_paste_text !== text) {
-                // Pasting formatted text is a two-step process: First
-                // we paste unformatted text, then overwrite it with
-                // formatted text, so that undo restores the
-                // pre-formatting syntax.
-                add_text_and_select(trimmed_paste_text, $textarea);
+            if (!avoid_direct_paste) {
+                paste_html = maybe_transform_html(paste_html, paste_text);
+                do_paste_text(paste_html, paste_text, $textarea);
             }
-            compose_ui.insert_and_scroll_into_view(text, $textarea);
+        }
+        if (avoid_direct_paste) {
+            event.preventDefault();
+            event.stopPropagation();
         }
     }
 }

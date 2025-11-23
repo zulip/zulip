@@ -261,12 +261,15 @@ def render_block(block: WildValue) -> str:
                 "actions",
                 "context",
                 "call",
+                "contact_card",
                 "condition",
                 "divider",
+                "file",
                 "header",
                 "image",
                 "input",
                 "section",
+                "table",
                 "rich_text",
             ]
         )
@@ -280,6 +283,9 @@ def render_block(block: WildValue) -> str:
         # probably it would be worth replacing with a string indicating a Slack
         # call occurred.
         "call",
+        "contact_card",
+        "file",
+        "table",
         # The "actions" block is used to format literal in-message clickable
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block

@@ -12,6 +12,8 @@ export function postprocess_content(html: string): string {
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 
+    process_emoji_only_message(template.content);
+
     for (const ol of template.content.querySelectorAll("ol")) {
         const list_start = Number(ol.getAttribute("start") ?? 1);
         // We don't count the first item in the list, as it
@@ -303,4 +305,45 @@ export function postprocess_content(html: string): string {
     }
 
     return template.innerHTML;
+}
+
+// Process single-paragraph messages that contain only emoji.
+function process_emoji_only_message(content: DocumentFragment): void {
+    // Exit as quickly as possible when more than one child element
+    // exists or the first child element is not a paragraph.
+    if (content.childElementCount !== 1 || content.firstElementChild?.tagName !== "P") {
+        return;
+    }
+
+    // Now we look at the collection of child nodes on the single
+    // paragraph to make sure there is no text in the paragraph's
+    // text nodes.
+    const paragraph_child_nodes = content.firstElementChild?.childNodes;
+    assert(paragraph_child_nodes !== undefined);
+    for (const node of paragraph_child_nodes) {
+        if (node.nodeName === "#text" && node.textContent?.trim() !== "") {
+            // If we find a #text node that doesn't trim down
+            // to the empty string, then the message has text
+            // content, so we should exit swiftly.
+            return;
+        }
+    }
+
+    // Having gotten this far, we check the child elements to make
+    // sure there are none other than spans for system emoji or
+    // img tags for realm emoji--both of which take the .emoji class.
+    const paragraph_child_elements = content.firstElementChild?.children;
+    assert(paragraph_child_elements !== undefined);
+    for (const element of paragraph_child_elements) {
+        if (!element.classList.contains("emoji")) {
+            // Any element without the .emoji class is obviously not
+            // emoji, so we again exit swiftly.
+            return;
+        }
+    }
+
+    // If we haven't returned by now, this is an emoji-only message,
+    // so we add .emoji-only to the paragraph element for styling
+    // the emoji in CSS.
+    content.firstElementChild?.classList.add("emoji-only");
 }

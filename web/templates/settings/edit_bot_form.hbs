@@ -22,6 +22,10 @@
                 {{> dropdown_options_widget option_values=user_role_values}}
             </select>
         </div>
+        <div class="input-group">
+            <label for="bot-type" class="modal-field-label">{{t "Bot type"}}</label>
+            <input type="text" autocomplete="off" name="bot-type" class="modal_text_input" value="{{ bot_type }}" readonly/>
+        </div>
         {{> ../dropdown_widget_with_label
           widget_name="edit_bot_owner"
           label=(t 'Owner')}}
@@ -37,28 +41,99 @@
             <div class="edit_bot_avatar_preview_text">
                 <img class="edit_bot_avatar_preview_image" />
             </div>
-            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Change avatar" }}</button>
-            <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
+            {{> ../components/action_button
+              label=(t "Change avatar")
+              attention="quiet"
+              intent="neutral"
+              custom_classes="edit_bot_avatar_upload_button"
+              }}
+            {{> ../components/action_button
+              label=(t "Clear profile picture")
+              attention="quiet"
+              intent="danger"
+              custom_classes="edit_bot_avatar_clear_button"
+              hidden=true
+              }}
             <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
         </div>
     </form>
     {{#if is_incoming_webhook_bot}}
     <div class="input-group">
-        <button class="button rounded generate_url_for_integration">
-            {{t 'Generate URL for an integration' }}
-        </button>
+        {{> ../components/action_button
+          label=(t "Generate URL for an integration")
+          attention="quiet"
+          intent="neutral"
+          custom_classes="generate_url_for_integration"
+          }}
+    </div>
+    {{/if}}
+    {{#if (and is_active is_bot_owner_current_user)}}
+    <div id="zuliprc-section" class="input-group">
+        <div class="zuliprc-container">
+            <label class="modal-field-label">{{t "Zuliprc configuration" }} {{> ../help_link_widget link="/api/configuring-python-bindings" }}</label>
+            <div class="buttons-container">
+                <span>
+                    <a type="submit" download="{{zuliprc}}" data-email="{{email}}" data-user-id="{{user_id}}" class="hidden-zuliprc-download" hidden></a>
+                    {{> ../components/icon_button
+                      custom_classes="download-bot-zuliprc tippy-zulip-delayed-tooltip"
+                      icon="download"
+                      intent="brand"
+                      data-tippy-content=(t 'Download zuliprc')
+                      }}
+                </span>
+                {{> ../components/icon_button
+                  icon="copy"
+                  intent="success"
+                  id="copy-zuliprc-config"
+                  custom_classes="copy-zuliprc tippy-zulip-delayed-tooltip"
+                  data-tippy-content=(t "Copy zuliprc")
+                  }}
+            </div>
+        </div>
+    </div>
+    <div class="input-group">
+        <label for="api-key" class="modal-field-label">{{t "API key"}}</label>
+        <div class="api-key-details-container">
+            <input type="text" autocomplete="off" name="api-key" class="modal_text_input api-key inline-block" value="{{ api_key }}" readonly/>
+            <div class="buttons-container">
+                <span data-user-id="{{user_id}}">
+                    {{> ../components/icon_button
+                      icon="refresh-cw"
+                      intent="brand"
+                      custom_classes="bot-modal-regenerate-bot-api-key tippy-zulip-delayed-tooltip"
+                      data-tippy-content=(t "Generate new API key")
+                      }}
+                </span>
+                <span data-api-key="{{api_key}}">
+                    {{> ../components/icon_button
+                      icon="copy"
+                      intent="success"
+                      id="copy-api-key-button"
+                      custom_classes="copy-api-key tippy-zulip-delayed-tooltip"
+                      data-tippy-content=(t "Copy API key")
+                      }}
+                </span>
+            </div>
+        </div>
+        <div class="bot-modal-api-key-error text-error"></div>
     </div>
     {{/if}}
     <div class="input-group">
         {{#if is_active}}
-        <button class="button rounded button-danger deactivate-bot-button">
-            {{t 'Deactivate bot' }}
-        </button>
+        {{> ../components/action_button
+          label=(t "Deactivate bot")
+          attention="quiet"
+          intent="danger"
+          custom_classes="deactivate-bot-button"
+          }}
         {{else}}
         <span>
-            <button class="button rounded reactivate-user-button">
-                {{t 'Reactivate bot' }}
-            </button>
+            {{> ../components/action_button
+              label=(t "Reactivate bot")
+              attention="quiet"
+              intent="success"
+              custom_classes="reactivate-user-button"
+              }}
         </span>
         {{/if}}
     </div>

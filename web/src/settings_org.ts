@@ -18,7 +18,7 @@ import {
     type RealmGroupSettingNameSupportingAnonymousGroups,
     realm_group_setting_name_supporting_anonymous_groups_schema,
 } from "./group_permission_settings.ts";
-import {$t, $t_html, get_language_name} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -84,7 +84,7 @@ export function maybe_disable_widgets(): void {
     }
 
     $(".organization-box [data-name='organization-profile']")
-        .find("input, textarea, button, select")
+        .find("input, textarea, .deactivate_realm_button, select")
         .prop("disabled", true);
 
     $(".organization-box [data-name='organization-profile']").find(".image_upload_button").hide();
@@ -122,13 +122,7 @@ export function enable_or_disable_group_permission_settings(): void {
         const $permission_pill_container_elements = $("#organization-permissions").find(
             ".pill-container",
         );
-        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
-        $permission_pill_container_elements
-            .closest(".input-group")
-            .removeClass("group_setting_disabled");
-        settings_components.enable_opening_typeahead_on_clicking_label(
-            $("#organization-permissions"),
-        );
+        settings_components.enable_group_permission_setting($permission_pill_container_elements);
         return;
     }
 
@@ -136,13 +130,7 @@ export function enable_or_disable_group_permission_settings(): void {
         const $permission_pill_container_elements = $("#organization-permissions").find(
             ".pill-container",
         );
-        $permission_pill_container_elements.find(".input").prop("contenteditable", true);
-        $permission_pill_container_elements
-            .closest(".input-group")
-            .removeClass("group_setting_disabled");
-        settings_components.enable_opening_typeahead_on_clicking_label(
-            $("#organization-permissions"),
-        );
+        settings_components.enable_group_permission_setting($permission_pill_container_elements);
 
         // Admins are not allowed to update organization joining and group
         // related settings.
@@ -475,12 +463,8 @@ export function check_disable_direct_message_initiator_group_widget(): void {
             $("#id_realm_direct_message_initiator_group"),
         );
     } else if (current_user.is_admin) {
-        $("#id_realm_direct_message_initiator_group").find(".input").prop("contenteditable", true);
-        $("#id_realm_direct_message_initiator_group")
-            .closest(".input-group")
-            .removeClass("group_setting_disabled");
-        settings_components.enable_opening_typeahead_on_clicking_label(
-            $("#id_realm_direct_message_initiator_group").closest(".input-group"),
+        settings_components.enable_group_permission_setting(
+            $("#id_realm_direct_message_initiator_group"),
         );
     }
 }
@@ -594,10 +578,12 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
                 settings_components.realm_authentication_methods_to_boolean_dict(),
             );
             break;
+        case "realm_moderation_request_channel_id":
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
+        case "realm_default_language":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             assert(typeof property_value === "string" || typeof property_value === "number");
@@ -636,18 +622,6 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             );
             break;
         }
-        case "realm_default_language":
-            assert(typeof property_value === "string");
-            $("#org-notifications .language_selection_widget").attr(
-                "data-language-code",
-                property_value,
-            );
-            $("#org-notifications .language_selection_widget .language_selection_button").text(
-                // We know this is defined, since we got the `property_value` from a dropdown
-                // of valid language options.
-                get_language_name(property_value)!,
-            );
-            break;
         case "realm_org_type":
             assert(typeof property_value === "number");
             settings_components.set_input_element_value($elem, property_value);
@@ -1229,6 +1203,14 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
 }
 
 export let init_dropdown_widgets = (): void => {
+    const disabled_option = {
+        is_setting_disabled: true,
+        show_disabled_icon: true,
+        show_disabled_option_name: false,
+        unique_id: DISABLED_STATE_ID,
+        name: $t({defaultMessage: "Disabled"}),
+    };
+
     const notification_stream_options = (): dropdown_widget.Option[] => {
         const streams = stream_settings_data.get_streams_for_settings_page();
         const options: dropdown_widget.Option[] = streams.map((stream) => ({
@@ -1237,18 +1219,29 @@ export let init_dropdown_widgets = (): void => {
             stream,
         }));
 
-        const disabled_option = {
-            is_setting_disabled: true,
-            show_disabled_icon: true,
-            show_disabled_option_name: false,
-            unique_id: DISABLED_STATE_ID,
-            name: $t({defaultMessage: "Disabled"}),
-        };
+        options.unshift(disabled_option);
+        return options;
+    };
+
+    const moderation_request_channel_options = (): dropdown_widget.Option[] => {
+        const streams = stream_settings_data.get_streams_for_settings_page();
+        const options: dropdown_widget.Option[] = streams
+            .filter((stream) => stream.invite_only)
+            .map((stream) => ({
+                name: stream.name,
+                unique_id: stream.stream_id,
+                stream,
+            }));
 
         options.unshift(disabled_option);
         return options;
     };
 
+    set_up_dropdown_widget(
+        "realm_moderation_request_channel_id",
+        moderation_request_channel_options,
+        "channel",
+    );
     set_up_dropdown_widget(
         "realm_new_stream_announcements_stream_id",
         notification_stream_options,
@@ -1268,6 +1261,11 @@ export let init_dropdown_widgets = (): void => {
     set_up_dropdown_widget(
         "realm_default_code_block_language",
         combined_code_language_options,
+        "language",
+    );
+    set_up_dropdown_widget(
+        "realm_default_language",
+        settings_components.language_options,
         "language",
     );
 
@@ -1622,42 +1620,15 @@ export function build_page(): void {
         });
     });
 
-    function realm_icon_logo_upload_complete(
-        $spinner: JQuery,
-        $upload_text: JQuery,
-        $delete_button: JQuery,
-    ): void {
-        $spinner.css({visibility: "hidden"});
-        $upload_text.show();
-        $delete_button.show();
-    }
-
-    function realm_icon_logo_upload_start(
-        $spinner: JQuery,
-        $upload_text: JQuery,
-        $delete_button: JQuery,
-    ): void {
-        $spinner.css({visibility: "visible"});
-        $upload_text.hide();
-        $delete_button.hide();
-    }
-
-    function upload_realm_logo_or_icon(
-        $file_input: JQuery<HTMLInputElement>,
-        night: boolean | null,
-        icon: boolean,
-    ): void {
+    function upload_realm_logo_or_icon(file: File, night: boolean | null, icon: boolean): void {
         const form_data = new FormData();
         let widget;
         let url;
 
         assert(csrf_token !== undefined);
         form_data.append("csrfmiddlewaretoken", csrf_token);
-        const files = util.the($file_input).files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            form_data.append("file-" + i, file);
-        }
+        form_data.append("file", file);
+
         if (icon) {
             url = "/json/realm/icon";
             widget = "#realm-icon-upload-widget";
@@ -1670,11 +1641,7 @@ export function build_page(): void {
             url = "/json/realm/logo";
             form_data.append("night", JSON.stringify(night));
         }
-        const $spinner = $(`${widget} .upload-spinner-background`).expectOne();
-        const $upload_text = $(`${widget}  .image-upload-text`).expectOne();
-        const $delete_button = $(`${widget}  .image-delete-button`).expectOne();
-        const $error_field = $(`${widget}  .image_file_input_error`).expectOne();
-        realm_icon_logo_upload_start($spinner, $upload_text, $delete_button);
+        const $error_field = $(`${widget}-error`).expectOne();
         $error_field.hide();
         channel.post({
             url,
@@ -1683,11 +1650,11 @@ export function build_page(): void {
             processData: false,
             contentType: false,
             success() {
-                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
+                dialog_widget.close();
             },
             error(xhr) {
-                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
-                ui_report.error("", xhr, $error_field);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                dialog_widget.hide_dialog_spinner();
             },
         });
     }

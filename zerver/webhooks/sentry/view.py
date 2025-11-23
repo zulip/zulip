@@ -24,7 +24,7 @@ MESSAGE_EVENT_TEMPLATE = """
 **New message event:** [{title}]({web_link})
 ```quote
 **level:** {level}
-**timestamp:** {datetime}
+**timestamp:** <time:{datetime}>
 ```
 """
 
@@ -32,7 +32,7 @@ EXCEPTION_EVENT_TEMPLATE = """
 **New exception:** [{title}]({web_link})
 ```quote
 **level:** {level}
-**timestamp:** {datetime}
+**timestamp:** <time:{datetime}>
 **filename:** {filename}
 ```
 """
@@ -53,7 +53,7 @@ ISSUE_CREATED_MESSAGE_TEMPLATE = """
 **New issue created:** {title}
 ```quote
 **level:** {level}
-**timestamp:** {datetime}
+**timestamp:** <time:{datetime}>
 **assignee:** {assignee}
 ```
 """

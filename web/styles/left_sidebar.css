@@ -15,7 +15,9 @@
     white-space: nowrap;
 }
 
-#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section) {
+#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section),
+#user-profile-modal .stream-list-container .input-element-wrapper,
+#user-profile-modal .group-list-container .input-element-wrapper {
     /* We normalize this based on Firefox's 31px-tall input,
        raising Chrome's (28px) and Safari's (30px) to all
        match, so that `top:` and other offset values are
@@ -58,27 +60,25 @@
     /* 2px right margin here to match the new topic margin-right */
     margin: 2px 1px 2px 0;
     border-radius: 3px;
+    color: var(--color-sidebar-action);
+
+    &:hover {
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
+        cursor: pointer;
+    }
 
     .add_stream_icon {
         /* We display as flex to center the icon while
            keeping the entire highlighted area clickable. */
         display: flex;
         place-items: center center;
-        color: var(--color-left-sidebar-heads-up-icon);
 
         &::before {
             /* To horizontally center the icon within the
                flex, though, we need this margin adjustment. */
             margin: 0 auto;
         }
-    }
-
-    &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
-        cursor: pointer;
     }
 }
 
@@ -307,7 +307,7 @@
 
     #compose-new-direct-message,
     #show-all-direct-messages {
-        color: var(--color-left-sidebar-heads-up-icon);
+        color: var(--color-sidebar-action);
         display: none;
         align-items: center;
         justify-content: center;
@@ -317,10 +317,8 @@
         grid-row: 1 / 1;
 
         &:hover {
-            color: var(--color-left-sidebar-heads-up-icon-hover);
-            background-color: var(
-                --background-color-left-sidebar-heads-up-icon-hover
-            );
+            color: var(--color-sidebar-action-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
 
         @media (hover: none) {
@@ -1471,6 +1469,13 @@ li.active-sub-filter {
     }
 }
 
+#left-sidebar-navigation-area:has(.selected-home-view.top-left-active-filter)
+    .top_left_condensed_unread_marker {
+    /* Hide the condensed unread marker when the home view is active,
+       since the home view row already shows the unread count. */
+    display: none;
+}
+
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
@@ -1527,18 +1532,6 @@ li.active-sub-filter {
                 /* In the absence of auto rows in the condensed state,
                    we set an explicit height on the active filter. */
                 height: var(--line-height-sidebar-row);
-            }
-        }
-
-        /* When unread counts display in the condensed-view
-           row for users who do not prefer to mask their unread
-           counts, we suppress the count on the highlighted
-           home-view row. */
-        &:not(:has(.hide-unread-messages-count)) {
-            + #left-sidebar-navigation-list {
-                .selected-home-view .unread_count {
-                    display: none;
-                }
             }
         }
     }
@@ -1868,15 +1861,13 @@ li.active-sub-filter {
     display: none;
     align-items: center;
     justify-content: center;
-    color: var(--color-left-sidebar-heads-up-icon);
+    color: var(--color-sidebar-action);
     margin: 2px 0;
     border-radius: 3px;
 
     &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
     }
 }
 

@@ -6,7 +6,7 @@ import render_settings_organization_settings_tip from "../templates/settings/org
 
 import * as bot_data from "./bot_data.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
-import {$t, get_language_name, language_list} from "./i18n.ts";
+import {$t, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -36,6 +36,7 @@ const admin_settings_label = {
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
+    realm_moderation_request_channel: $t({defaultMessage: "Moderation requests"}),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
     }),
@@ -49,6 +50,9 @@ const admin_settings_label = {
     }),
     realm_enable_spectator_access: $t({
         defaultMessage: "Allow creating web-public channels (visible to anyone on the Internet)",
+    }),
+    realm_send_channel_events_messages: $t({
+        defaultMessage: "Send automated messages for channel events",
     }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
@@ -181,9 +185,9 @@ export function build_page(): void {
             realm.realm_message_edit_history_visibility_policy,
         realm_allow_message_editing: realm.realm_allow_message_editing,
         language_list,
-        realm_default_language_name: get_language_name(realm.realm_default_language),
         realm_default_language_code: realm.realm_default_language,
         realm_waiting_period_threshold: realm.realm_waiting_period_threshold,
+        realm_moderation_request_channel_id: realm.realm_moderation_request_channel_id,
         realm_new_stream_announcements_stream_id: realm.realm_new_stream_announcements_stream_id,
         realm_signup_announcements_stream_id: realm.realm_signup_announcements_stream_id,
         realm_zulip_update_announcements_stream_id:
@@ -210,6 +214,7 @@ export function build_page(): void {
             realm.realm_message_content_allowed_in_email_notifications,
         realm_enable_spectator_access: realm.realm_enable_spectator_access,
         settings_send_digest_emails: realm.settings_send_digest_emails,
+        realm_send_channel_events_messages: realm.realm_send_channel_events_messages,
         realm_digest_emails_enabled: realm.realm_digest_emails_enabled,
         realm_digest_weekday: realm.realm_digest_weekday,
         development: page_params.development_environment,
@@ -280,6 +285,8 @@ export function build_page(): void {
             settings_users.deactivated_user_list_dropdown_widget_name,
         giphy_help_link,
         ...get_realm_level_notification_settings(),
+        all_bots_list_dropdown_widget_name: settings_bots.all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name: settings_bots.your_bots_list_dropdown_widget_name,
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
         is_plan_self_hosted:
@@ -327,7 +334,7 @@ export function build_page(): void {
     }
 }
 
-export function launch(section: string, user_settings_tab: string | undefined): void {
+export function launch(section: string, settings_tab: string | undefined): void {
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
@@ -335,7 +342,10 @@ export function launch(section: string, user_settings_tab: string | undefined): 
         settings_panel_menu.org_settings.set_current_tab(section);
     }
     if (section === "users") {
-        settings_panel_menu.org_settings.set_user_settings_tab(user_settings_tab);
+        settings_panel_menu.org_settings.set_user_settings_tab(settings_tab);
+    }
+    if (section === "bots") {
+        settings_panel_menu.org_settings.set_bot_settings_tab(settings_tab);
     }
     settings_toggle.goto("organization");
 }

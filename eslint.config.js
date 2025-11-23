@@ -16,8 +16,7 @@ import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
-/** @type {import("eslint").Linter.Config[]} */
-export const config = defineConfig(
+export default defineConfig(
     {
         // This is intended for generated files and vendored third-party files.
         // For our source code, instead of adding files here, consider using
@@ -238,7 +237,7 @@ export const config = defineConfig(
         },
     },
     {
-        ignores: ["web/shared/**", "web/src/**"],
+        ignores: ["web/src/**"],
         languageOptions: {
             globals: globals.node,
         },
@@ -267,7 +266,7 @@ export const config = defineConfig(
         },
     },
     {
-        files: ["web/shared/**", "web/src/**"],
+        files: ["web/src/**"],
         settings: {
             "import/resolver": {
                 webpack: {
@@ -302,27 +301,6 @@ export const config = defineConfig(
             sourceType: "script",
         },
     },
-    {
-        files: ["web/shared/**"],
-        languageOptions: {
-            globals: globals["shared-node-browser"],
-        },
-        rules: {
-            "import/no-restricted-paths": [
-                "error",
-                {
-                    zones: [
-                        {
-                            target: "./web/shared",
-                            from: ".",
-                            except: ["./node_modules", "./web/shared"],
-                        },
-                    ],
-                },
-            ],
-            "unicorn/prefer-string-replace-all": "off",
-        },
-    },
     astroConfigs.recommended,
     {
         files: ["starlight_help/src/components/ZulipNote.astro"],
@@ -340,4 +318,3 @@ export const config = defineConfig(
         },
     },
 );
-export default config;

@@ -45,7 +45,7 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-const typeahead = zrequire("../shared/src/typeahead");
+const typeahead = zrequire("typeahead");
 const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
@@ -453,7 +453,7 @@ const hamletcharacters = user_group_item(
         description: "Characters of Hamlet",
         members: new Set([100, 104]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -493,7 +493,7 @@ const call_center = user_group_item(
         description: "folks working in support",
         members: new Set([102]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -511,9 +511,9 @@ const support = user_group_item(
         creator_id: null,
         date_created: 1596710000,
         description: "Support team",
-        members: new Set([]),
+        members: new Set(),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -532,7 +532,7 @@ const admins = user_group_item(
         description: "Administrators",
         members: new Set([102, 103]),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
