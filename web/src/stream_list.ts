@@ -1348,7 +1348,7 @@ export function set_event_handlers({
     $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
         e.stopPropagation();
         e.preventDefault();
-        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
+        const stream_id = Number.parseInt(this.getAttribute("data-stream-id")!, 10);
         compose_actions.start({
             message_type: "stream",
             stream_id,

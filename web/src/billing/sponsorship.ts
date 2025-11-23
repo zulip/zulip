@@ -109,8 +109,9 @@ export function initialize(): void {
 
     function update_discount_details(): void {
         const selected_org_type =
-            the($<HTMLSelectElement>("select#organization-type")).selectedOptions[0]?.dataset
-                .stringValue ?? "";
+            the($<HTMLSelectElement>("select#organization-type")).selectedOptions[0]?.getAttribute(
+                "data-string-value",
+            ) ?? "";
         helpers.update_discount_details(selected_org_type, is_remotely_hosted);
     }
 

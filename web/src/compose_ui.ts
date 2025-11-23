@@ -175,10 +175,6 @@ export function maybe_show_scrolling_formatting_buttons(container_selector: stri
 
     // Set these values as data attributes for ready access by
     // other scrolling logic
-    //
-    // TODO: Modify eslint config, if we wish to avoid dataset
-    //
-    /* eslint unicorn/prefer-dom-node-dataset: "off" */
     button_container.setAttribute("data-button-container-width", button_container_width.toString());
     button_container.setAttribute("data-button-bar-width", button_bar_width.toString());
     button_container.setAttribute(

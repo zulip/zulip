@@ -14,7 +14,7 @@ function register_tabbed_section($tabbed_section: JQuery): void {
     const $blocks = $tabbed_section.find(".blocks div");
 
     $li.on("click", function () {
-        const tab_key = this.dataset.tabKey;
+        const tab_key = this.getAttribute("data-tab-key");
 
         $li.removeClass("active");
         $li.filter("[data-tab-key=" + tab_key + "]").addClass("active");

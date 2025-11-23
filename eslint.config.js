@@ -174,6 +174,7 @@ export default defineConfig(
             "unicorn/no-process-exit": "off",
             "unicorn/no-useless-undefined": "off",
             "unicorn/numeric-separators-style": "off",
+            "unicorn/prefer-dom-node-dataset": "off",
             "unicorn/prefer-global-this": "off",
             "unicorn/prefer-string-raw": "off",
             "unicorn/prefer-ternary": "off",

@@ -1913,18 +1913,17 @@ export function initialize({
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
-    $("body").on("click", ".button-recent-filters", (e) => {
+    $("body").on("click", ".button-recent-filters", function (this: HTMLElement, e) {
         e.stopPropagation();
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.
             return;
         }
 
-        assert(e.target instanceof HTMLElement);
-        change_focused_element($(e.target), "click");
-        assert(e.currentTarget instanceof HTMLElement);
-        assert(e.currentTarget.dataset.filter !== undefined);
-        set_filter(e.currentTarget.dataset.filter);
+        change_focused_element($(this), "click");
+        const filter = this.getAttribute("data-filter");
+        assert(filter !== null);
+        set_filter(filter);
         update_filters_view();
         revive_current_focus();
     });

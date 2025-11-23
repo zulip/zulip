@@ -114,11 +114,12 @@ function take_params(): string {
     if (page_params_div === null) {
         throw new Error("Missing #page-params");
     }
-    if (page_params_div.dataset.params === undefined) {
+    const params = page_params_div.getAttribute("data-params");
+    if (params === null) {
         throw new Error("Missing #page_params[data-params]");
     }
     page_params_div.remove();
-    return page_params_div.dataset.params;
+    return params;
 }
 
 export const page_params = page_params_schema.parse(JSON.parse(take_params()));

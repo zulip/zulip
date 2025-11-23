@@ -2182,7 +2182,6 @@ export class MessageListView {
 
     show_messages_as_unread(message_ids: number[]): void {
         const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
-            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
             const message_id = Number.parseFloat($row.getAttribute("data-message-id")!);
             return message_ids.includes(message_id);
         });
