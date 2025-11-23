@@ -1,4 +1,5 @@
 import autosize from "autosize";
+import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -40,7 +41,6 @@ import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
-import {is_same_day} from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
@@ -138,11 +138,9 @@ function same_day(earlier_msg: Message | undefined, later_msg: Message | undefin
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    return is_same_day(
-        earlier_msg.timestamp * 1000,
-        later_msg.timestamp * 1000,
-        timerender.display_time_zone,
-    );
+    return isSameDay(earlier_msg.timestamp * 1000, later_msg.timestamp * 1000, {
+        in: timerender.display_tz,
+    });
 }
 
 function same_year(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {

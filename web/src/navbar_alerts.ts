@@ -1,4 +1,4 @@
-import {addDays} from "date-fns";
+import {addDays, differenceInCalendarDays} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -18,7 +18,6 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as time_zone_util from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
@@ -131,11 +130,7 @@ export function should_show_organization_profile_incomplete_banner(timestamp: nu
 
     const today = new Date(Date.now());
     const time = new Date(timestamp * 1000);
-    const days_old = time_zone_util.difference_in_calendar_days(
-        today,
-        time,
-        timerender.display_time_zone,
-    );
+    const days_old = differenceInCalendarDays(today, time, {in: timerender.display_tz});
 
     if (days_old >= 15) {
         return true;

@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 
+require("@date-fns/tz"); // To prevent mockdate from interfering with it
 require("css.escape");
 require("handlebars/runtime.js");
 const {JSDOM} = require("jsdom");
