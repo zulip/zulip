@@ -142,7 +142,7 @@ function create_choice_row(container: JQuery): void {
     $(container).append($(row_html));
 }
 
-function clear_form_data(): void {
+function initialize_form_to_defaults(): void {
     const field_types = realm.custom_profile_field_types;
 
     $("#profile_field_name").val("").closest(".input-group").show();
@@ -164,7 +164,7 @@ function clear_form_data(): void {
     );
 }
 
-function set_up_create_field_form(): void {
+function update_form_for_field_type_selection(): void {
     const field_types = realm.custom_profile_field_types;
     // Hide error on field type change.
     $("#dialog_error").hide();
@@ -221,7 +221,7 @@ function set_up_create_field_form(): void {
     }
 }
 
-function open_custom_profile_field_form_modal(): void {
+function open_custom_profile_field_creation_form_modal(): void {
     const html_body = render_add_new_custom_profile_field_form({
         realm_default_external_accounts: realm.realm_default_external_accounts,
         custom_profile_field_types: realm.custom_profile_field_types,
@@ -257,14 +257,14 @@ function open_custom_profile_field_form_modal(): void {
         dialog_widget.submit_api_request(channel.post, url, data, opts);
     }
 
-    function set_up_form_fields(): void {
+    function initialize_custom_profile_field_form(): void {
         set_up_select_field();
 
         $("#profile_field_type, #profile_field_external_accounts_type").on("change", () => {
-            set_up_create_field_form();
+            update_form_for_field_type_selection();
         });
 
-        clear_form_data();
+        initialize_form_to_defaults();
 
         // If we already have 2 custom profile fields configured to be
         // displayed on the user card, disable the input to change it.
@@ -289,7 +289,7 @@ function open_custom_profile_field_form_modal(): void {
         html_body,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         on_click: create_profile_field,
-        post_render: set_up_form_fields,
+        post_render: initialize_custom_profile_field_form,
         loading_spinner: true,
         on_shown() {
             $("#profile_field_type").trigger("focus");
@@ -478,7 +478,7 @@ function set_up_select_field_edit_form(
     });
 }
 
-function open_edit_form_modal(this: HTMLElement): void {
+function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
     const field_types = realm.custom_profile_field_types;
 
     const field_id = Number.parseInt($(this).closest("tr").attr("data-profile-field-id")!, 10);
@@ -862,8 +862,15 @@ export function build_page(): void {
     meta.loaded = true;
 
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);
-    $("#add-custom-profile-field-button").on("click", open_custom_profile_field_form_modal);
-    $("#admin_profile_fields_table").on("click", ".open-edit-form-modal", open_edit_form_modal);
+    $("#add-custom-profile-field-button").on(
+        "click",
+        open_custom_profile_field_creation_form_modal,
+    );
+    $("#admin_profile_fields_table").on(
+        "click",
+        ".open-edit-form-modal",
+        open_custom_profile_field_edit_form_modal,
+    );
     $("#admin_profile_fields_table").on(
         "click",
         "input.display_in_profile_summary",
