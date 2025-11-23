@@ -259,7 +259,11 @@ function open_custom_profile_field_form_modal(): void {
 
     function set_up_form_fields(): void {
         set_up_select_field();
-        set_up_external_account_field();
+
+        $("#profile_field_type, #profile_field_external_accounts_type").on("change", () => {
+            set_up_create_field_form();
+        });
+
         clear_form_data();
 
         // If we already have 2 custom profile fields configured to be
@@ -824,16 +828,6 @@ function set_up_select_field(): void {
     });
     $("#profile_field_choices_row").on("click", "button.alphabetize-choices-button", () => {
         alphabetize_profile_field_choices($profile_field_choices);
-    });
-}
-
-function set_up_external_account_field(): void {
-    $("#profile_field_type").on("change", () => {
-        set_up_create_field_form();
-    });
-
-    $("#profile_field_external_accounts_type").on("change", () => {
-        set_up_create_field_form();
     });
 }
 
