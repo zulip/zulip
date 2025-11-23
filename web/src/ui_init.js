@@ -562,6 +562,7 @@ export async function initialize_everything(state_data) {
         hide_other_views: recent_view_ui.hide,
     });
     alert_words.initialize(state_data.alert_words);
+    left_sidebar_navigation_area.update_alert_words_row();
     saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize(user_settings.emojiset);
     scroll_bar.initialize();
