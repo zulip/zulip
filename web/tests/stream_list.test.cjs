@@ -401,10 +401,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
         children: [elem($stream_li1), elem($stream_li2)],
     });
 
-    $("#stream-filters-container")[0] = {
-        dataset: {},
-    };
-
     mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
     $stream_li1.children = () => ({

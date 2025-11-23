@@ -180,7 +180,6 @@ export function postprocess_content(html: string): string {
                 image_url.pathname.startsWith("/user_uploads/thumbnail/")
             ) {
                 let thumbnail_name = thumbnail.preferred_format.name;
-                // eslint-disable-next-line unicorn/prefer-dom-node-dataset
                 if (message_media_image.getAttribute("data-animated") === "true") {
                     if (
                         user_settings.web_animate_image_previews === "always" ||
@@ -211,7 +210,6 @@ export function postprocess_content(html: string): string {
         // set those values as `height` and `width` attributes on the
         // image source.
         if (message_media_image?.hasAttribute("data-original-dimensions")) {
-            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
             const original_dimensions_attribute = message_media_image.getAttribute(
                 "data-original-dimensions",
             );

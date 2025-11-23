@@ -151,7 +151,7 @@ export function initialize(): void {
             compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
             if (is_edit_input) {
                 void message_edit.save_message_row_edit($row);
-            } else if (event.target.dataset.validationTrigger === "schedule") {
+            } else if (event.target.getAttribute("data-validation-trigger") === "schedule") {
                 compose_send_menu_popover.open_schedule_message_menu(
                     undefined,
                     util.the($("#send_later i")),

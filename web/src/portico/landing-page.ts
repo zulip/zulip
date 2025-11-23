@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import {page_params} from "../base_page_params.ts";
-import * as util from "../util.ts";
 
 import type {UserOS} from "./tabbed-instructions.ts";
 import {detect_user_os} from "./tabbed-instructions.ts";
@@ -284,7 +283,7 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: 
 
     const tab_label = z
         .enum(["tab-cloud", "tab-hosted", "tab-all"])
-        .parse(util.the($(this)).dataset.label);
+        .parse(this.getAttribute("data-label"));
     const plans_columns_count = plans_columns_counts[tab_label];
     const visible_plans_id = `showing-${tab_label}`;
 
