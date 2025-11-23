@@ -53,6 +53,18 @@ export function initialize(): void {
                         ),
                     );
                     break;
+                case "alert_words":
+                    display_count = unread.unread_alert_words_counter.size;
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no unread alert word messages} one {# unread alert word message} other {# unread alert word messages}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
                 case "starred_message":
                     display_count = starred_messages.get_count();
                     $container.find(".views-message-count").text(
