@@ -6,6 +6,8 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+const alert_words = mock_esm("../src/alert_words");
+
 mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
@@ -22,6 +24,7 @@ run_test("narrowing", ({override_rewire}) => {
         (narrow_to_activate) => {
             const targets = [
                 ".top_left_mentions",
+                ".top_left_alert_words",
                 ".top_left_starred_messages",
                 ".top_left_all_messages",
                 ".top_left_recent_view",
@@ -47,6 +50,10 @@ run_test("narrowing", ({override_rewire}) => {
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     assert.ok($(".top_left_starred_messages").hasClass("top-left-active-filter"));
 
+    filter = new Filter([{operator: "is", operand: "alerted"}]);
+    left_sidebar_navigation_area.handle_narrow_activated(filter);
+    assert.ok($(".top_left_alert_words").hasClass("top-left-active-filter"));
+
     filter = new Filter([{operator: "in", operand: "home"}]);
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
@@ -57,6 +64,7 @@ run_test("narrowing", ({override_rewire}) => {
 
     assert.ok(!$(".top_left_all_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alert_words").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_inbox").hasClass("top-left-active-filter"));
@@ -67,6 +75,7 @@ run_test("narrowing", ({override_rewire}) => {
     left_sidebar_navigation_area.highlight_recent_view();
     assert.ok(!$(".top_left_all_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alert_words").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_inbox").hasClass("top-left-active-filter"));
     assert.ok($(".top_left_recent_view").hasClass("top-left-active-filter"));
@@ -75,12 +84,14 @@ run_test("narrowing", ({override_rewire}) => {
     left_sidebar_navigation_area.highlight_inbox_view();
     assert.ok(!$(".top_left_all_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alert_words").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("top-left-active-filter"));
     assert.ok($(".top_left_inbox").hasClass("top-left-active-filter"));
 
     left_sidebar_navigation_area.highlight_all_messages_view();
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alert_words").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_inbox").hasClass("top-left-active-filter"));
@@ -88,6 +99,9 @@ run_test("narrowing", ({override_rewire}) => {
 });
 
 run_test("update_count_in_dom", () => {
+    // Mock has_alert_words_configured for initialize() call
+    alert_words.has_alert_words_configured = () => true;
+
     function make_elem($elem, count_selector) {
         const $count = $(count_selector);
         $elem.set_find_results(".unread_count", $count);
@@ -98,6 +112,7 @@ run_test("update_count_in_dom", () => {
 
     const counts = {
         mentioned_message_count: 222,
+        alert_word_message_count: 111,
         home_unread_messages: 333,
         stream_unread_messages: 666,
         stream_count: new Map(),
@@ -113,6 +128,8 @@ run_test("update_count_in_dom", () => {
     $(".selected-home-view").set_find_results(".sidebar-menu-icon", $("<menu-icon>"));
 
     make_elem($(".top_left_mentions"), "<mentioned-count>");
+
+    make_elem($(".top_left_alert_words"), "<alert-words-count>");
 
     make_elem($(".top_left_inbox"), "<home-count>");
 
@@ -134,6 +151,7 @@ run_test("update_count_in_dom", () => {
     left_sidebar_navigation_area.update_reminders_row();
 
     assert.equal($("<mentioned-count>").text(), "222");
+    assert.equal($("<alert-words-count>").text(), "111");
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<condensed-unread-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
@@ -144,6 +162,7 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<topics-count>").text(), "666");
 
     counts.mentioned_message_count = 0;
+    counts.alert_word_message_count = 0;
     message_reminder.set_reminders_by_id_for_testing(new Map());
     scheduled_messages.set_scheduled_messages_by_id_for_testing(new Map());
 
@@ -152,9 +171,15 @@ run_test("update_count_in_dom", () => {
     left_sidebar_navigation_area.update_starred_count(444, true);
     left_sidebar_navigation_area.update_scheduled_messages_row();
     left_sidebar_navigation_area.update_reminders_row();
+    left_sidebar_navigation_area.update_alert_words_row();
 
     assert.ok(!$("<mentioned-count>").visible());
     assert.equal($("<mentioned-count>").text(), "");
+    assert.ok(!$("<alert-words-count>").visible());
+    assert.equal($("<alert-words-count>").text(), "");
+    assert.ok(!$(".top_left_scheduled_messages").visible());
+    assert.ok(!$(".top_left_reminders").visible());
+    assert.ok(!$(".top_left_alert_words").hasClass("hidden-by-filters"));
     assert.equal($("<starred-count>").text(), "444");
     assert.ok($(".top_left_starred_messages").hasClass("hide_starred_message_count"));
     assert.ok($(".top_left_scheduled_messages").hasClass("hidden-by-filters"));

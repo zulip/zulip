@@ -32,6 +32,10 @@ export function has_alert_word(word: string): boolean {
     return my_alert_words.includes(word);
 }
 
+export function has_alert_words_configured(): boolean {
+    return my_alert_words.length > 0;
+}
+
 const alert_regex_replacements = new Map<string, string>([
     ["&", "&amp;"],
     ["<", "&lt;"],
