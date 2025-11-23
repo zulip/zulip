@@ -35,7 +35,23 @@ const channel_incompatible_patterns: TermPattern[] = [
     {operator: "channels"},
 ];
 
-const incompatible_patterns: Record<string, TermPattern[]> = {
+const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[]>> &
+    Record<
+        | "is:resolved"
+        | "-is:resolved"
+        | "is:dm"
+        | "is:starred"
+        | "is:mentioned"
+        | "is:followed"
+        | "is:alerted"
+        | "is:unread"
+        | "is:muted"
+        | "has:link"
+        | "has:image"
+        | "has:attachment"
+        | "has:reaction",
+        TermPattern[]
+    > = {
     channel: channel_incompatible_patterns,
     stream: channel_incompatible_patterns,
     streams: channel_incompatible_patterns,
@@ -649,12 +665,12 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             {
                 search_string: "is:resolved",
                 description_html: "resolved topics",
-                incompatible_patterns: incompatible_patterns["is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["is:resolved"],
             },
             {
                 search_string: "-is:resolved",
                 description_html: "unresolved topics",
-                incompatible_patterns: incompatible_patterns["-is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["-is:resolved"],
             },
         ];
     } else {
@@ -662,47 +678,47 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             {
                 search_string: "is:dm",
                 description_html: "direct messages",
-                incompatible_patterns: incompatible_patterns["is:dm"]!,
+                incompatible_patterns: incompatible_patterns["is:dm"],
             },
             {
                 search_string: "is:starred",
                 description_html: "starred messages",
-                incompatible_patterns: incompatible_patterns["is:starred"]!,
+                incompatible_patterns: incompatible_patterns["is:starred"],
             },
             {
                 search_string: "is:mentioned",
                 description_html: "messages that mention you",
-                incompatible_patterns: incompatible_patterns["is:mentioned"]!,
+                incompatible_patterns: incompatible_patterns["is:mentioned"],
             },
             {
                 search_string: "is:followed",
                 description_html: "followed topics",
-                incompatible_patterns: incompatible_patterns["is:followed"]!,
+                incompatible_patterns: incompatible_patterns["is:followed"],
             },
             {
                 search_string: "is:alerted",
                 description_html: "alerted messages",
-                incompatible_patterns: incompatible_patterns["is:alerted"]!,
+                incompatible_patterns: incompatible_patterns["is:alerted"],
             },
             {
                 search_string: "is:unread",
                 description_html: "unread messages",
-                incompatible_patterns: incompatible_patterns["is:unread"]!,
+                incompatible_patterns: incompatible_patterns["is:unread"],
             },
             {
                 search_string: "is:muted",
                 description_html: "muted messages",
-                incompatible_patterns: incompatible_patterns["is:muted"]!,
+                incompatible_patterns: incompatible_patterns["is:muted"],
             },
             {
                 search_string: "is:resolved",
                 description_html: "resolved topics",
-                incompatible_patterns: incompatible_patterns["is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["is:resolved"],
             },
             {
                 search_string: "-is:resolved",
                 description_html: "unresolved topics",
-                incompatible_patterns: incompatible_patterns["-is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["-is:resolved"],
             },
         ];
     }
@@ -728,22 +744,22 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         {
             search_string: "has:link",
             description_html: "messages with links",
-            incompatible_patterns: incompatible_patterns["has:link"]!,
+            incompatible_patterns: incompatible_patterns["has:link"],
         },
         {
             search_string: "has:image",
             description_html: "messages with images",
-            incompatible_patterns: incompatible_patterns["has:image"]!,
+            incompatible_patterns: incompatible_patterns["has:image"],
         },
         {
             search_string: "has:attachment",
             description_html: "messages with attachments",
-            incompatible_patterns: incompatible_patterns["has:attachment"]!,
+            incompatible_patterns: incompatible_patterns["has:attachment"],
         },
         {
             search_string: "has:reaction",
             description_html: "messages with reactions",
-            incompatible_patterns: incompatible_patterns["has:reaction"]!,
+            incompatible_patterns: incompatible_patterns["has:reaction"],
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
