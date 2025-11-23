@@ -1069,9 +1069,10 @@ def channel_message_to_zerver_message(
         # Leave it as is if formatted_block is an empty string, it's likely
         # one of the unhandled_types.
         if formatted_block != "":
-            # For most cases, the value of message["text"] will be just an
-            # empty string.
-            message["text"] = formatted_block
+            if original_text := message["text"]:
+                message["text"] = f"{original_text}\n{formatted_block}"
+            else:
+                message["text"] = formatted_block
 
         try:
             content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
