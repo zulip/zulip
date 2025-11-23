@@ -81,7 +81,6 @@ not_yet_fully_covered = [
     "zerver/worker/queue_processors.py",
     "zerver/worker/test.py",
     # Other lib files that ideally would coverage, but aren't sorted
-    "zerver/filters.py",
     "zerver/middleware.py",
     "zerver/lib/bot_lib.py",
     "zerver/lib/camo.py",
