@@ -1,83 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-11-17.clover",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "amount": 40000,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
-          },
-          "amount_received": 40000,
-          "application": null,
-          "application_fee_amount": null,
-          "automatic_payment_methods": null,
-          "canceled_at": null,
-          "cancellation_reason": null,
-          "capture_method": "automatic",
-          "client_secret": "NORMALIZED",
-          "confirmation_method": "automatic",
-          "created": 1000000000,
-          "currency": "usd",
-          "customer": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Customer.create.1.json",
-          "description": "Payment for Invoice",
-          "excluded_payment_method_types": null,
-          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
-          "last_payment_error": null,
-          "latest_charge": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Charge.list.1.json",
-          "livemode": false,
-          "metadata": {},
-          "next_action": null,
-          "object": "payment_intent",
-          "on_behalf_of": null,
-          "payment_details": {
-            "customer_reference": null,
-            "order_reference": "in_1SVWr2DwzgQ85STg1g7Z3Q"
-          },
-          "payment_method": "pm_NORMALIZED",
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "installments": null,
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            },
-            "link": {
-              "persistent_token": null
-            }
-          },
-          "payment_method_types": [
-            "card",
-            "link"
-          ],
-          "processing": null,
-          "receipt_email": "hamlet@zulip.com",
-          "review": null,
-          "setup_future_usage": null,
-          "shipping": null,
-          "source": null,
-          "statement_descriptor": "Zulip Cloud Standard",
-          "statement_descriptor_suffix": null,
-          "status": "succeeded",
-          "transfer_data": null,
-          "transfer_group": null
-        }
-      },
-      "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "payment_intent.succeeded"
-    },
-    {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -138,7 +62,7 @@
           "payment_method_details": {
             "card": {
               "amount_authorized": 40000,
-              "authorization_code": "192510",
+              "authorization_code": "032655",
               "brand": "visa",
               "checks": {
                 "address_line1_check": "pass",
@@ -166,7 +90,7 @@
               "network_token": {
                 "used": false
               },
-              "network_transaction_id": "749857738210088",
+              "network_transaction_id": "100110997670110",
               "overcapture": {
                 "maximum_amount_capturable": 40000,
                 "status": "unavailable"
@@ -204,7 +128,7 @@
       "type": "charge.succeeded"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -244,7 +168,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -373,7 +297,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -413,7 +337,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -558,7 +482,42 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount_paid": 48000,
+          "amount_requested": 48000,
+          "created": 1000000000,
+          "currency": "usd",
+          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+          "invoice": "in_NORMALIZED",
+          "is_default": true,
+          "livemode": false,
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "pi_NORMALIZED",
+            "type": "payment_intent"
+          },
+          "status": "paid",
+          "status_transitions": {
+            "canceled_at": null,
+            "paid_at": 1000000000
+          }
+        }
+      },
+      "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": null
+      },
+      "type": "invoice_payment.paid"
+    },
+    {
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -630,7 +589,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -670,7 +629,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -811,7 +770,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -858,7 +817,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -898,7 +857,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
+          "description": null,
           "discounts": [],
           "due_date": null,
           "effective_at": null,
@@ -986,7 +945,7 @@
       "type": "invoice.created"
     },
     {
-      "api_version": "2025-11-17.clover",
+      "api_version": "2025-10-29.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1034,9 +993,44 @@
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
       "type": "customer.updated"
+    },
+    {
+      "api_version": "2025-10-29.clover",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount_paid": 48000,
+          "amount_requested": 48000,
+          "created": 1000000000,
+          "currency": "usd",
+          "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+          "invoice": "in_NORMALIZED",
+          "is_default": true,
+          "livemode": false,
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "pi_NORMALIZED",
+            "type": "payment_intent"
+          },
+          "status": "paid",
+          "status_transitions": {
+            "canceled_at": null,
+            "paid_at": 1000000000
+          }
+        }
+      },
+      "id": "upgrade_by_card_with_outdated_seat_count_and_minimum_for_plan_tier--Event.list.2.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": null
+      },
+      "type": "invoice_payment.paid"
     }
   ],
-  "has_more": false,
+  "has_more": true,
   "object": "list",
   "url": "/v1/events"
 }

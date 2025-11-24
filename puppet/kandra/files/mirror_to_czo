@@ -6,8 +6,6 @@ import time
 from contextlib import suppress
 from typing import Any
 
-# This import (and its dependencies) come from the production venv,
-# because we use `uv run` to execute this script.
 import zulip
 
 config_file = configparser.RawConfigParser()
