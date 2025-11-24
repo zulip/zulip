@@ -55,6 +55,7 @@ export function set_update_inbox_channel_view_callback(value: (channel_id: numbe
 let has_scrolled = false;
 
 const collapsed_sections = new Set<string>();
+const sections_with_only_inactive_or_muted = new Set<string>();
 const sections_showing_inactive_or_muted = new Set<string>();
 
 // Persistence for collapsed sections state
@@ -389,6 +390,9 @@ export function build_stream_list(force_rerender: boolean): void {
         }
         if (!is_empty && section.streams.length === 0) {
             collapsed_sections.add(section.id);
+            sections_with_only_inactive_or_muted.add(section.id);
+        } else {
+            sections_with_only_inactive_or_muted.delete(section.id);
         }
     }
 
@@ -499,6 +503,13 @@ function toggle_section_collapse($container: JQuery): void {
     }
     maybe_hide_topic_bracket(section_id);
     save_collapsed_sections_state();
+
+    if (
+        sections_with_only_inactive_or_muted.has(section_id) &&
+        !sections_showing_inactive_or_muted.has(section_id)
+    ) {
+        toggle_inactive_or_muted_channels($container);
+    }
 }
 
 function save_collapsed_sections_state(): void {
