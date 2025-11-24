@@ -144,10 +144,12 @@ export function get_unmatched_streams_for_notification_settings(): ({
 }
 
 export function get_streams_for_settings_page(): SettingsSubscription[] {
-    // Build up our list of subscribed and unsubscribed streams from the
-    // data we already have.
-    const subscribed_rows = stream_data.subscribed_subs();
-    const unsubscribed_rows = stream_data.unsubscribed_subs();
+    // Build up our list of non-archived subscribed and unsubscribed
+    // streams from the data we already have.
+    const subscribed_rows = stream_data.subscribed_subs().filter((stream) => !stream.is_archived);
+    const unsubscribed_rows = stream_data
+        .unsubscribed_subs()
+        .filter((stream) => !stream.is_archived);
 
     // Sort and combine all our streams.
     function by_name(a: StreamSubscription, b: StreamSubscription): number {
@@ -155,9 +157,7 @@ export function get_streams_for_settings_page(): SettingsSubscription[] {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    const all_subs = [...unsubscribed_rows, ...subscribed_rows].filter(
-        (stream) => !stream.is_archived,
-    );
+    const all_subs = [...unsubscribed_rows, ...subscribed_rows];
 
     return get_subs_for_settings(all_subs);
 }
