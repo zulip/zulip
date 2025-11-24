@@ -165,32 +165,31 @@ function initialize_form_to_defaults(): void {
 }
 
 function update_form_for_field_type_selection(): void {
-    const field_types = realm.custom_profile_field_types;
     // Hide error on field type change.
     $("#dialog_error").hide();
-    const $field_elem = $("#profile_field_external_accounts");
-    const $field_url_pattern_elem = $("#custom_external_account_url_pattern");
+
+    $("#profile_field_name").val("").prop("disabled", false);
+    $("#profile_field_hint").val("").prop("disabled", false);
+    $("#profile_field_external_accounts").hide();
+    $("#profile_field_choices_row").hide();
+    $("#custom_external_account_url_pattern").hide();
+
+    const field_types = realm.custom_profile_field_types;
     const profile_field_type = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#profile_field_type").val()!,
         10,
     );
 
-    $("#profile_field_name").val("").prop("disabled", false);
-    $("#profile_field_hint").val("").prop("disabled", false);
-    $("#profile_field_choices_row").hide();
-    $field_url_pattern_elem.hide();
-    $field_elem.hide();
-
     switch (profile_field_type) {
         case field_types.EXTERNAL_ACCOUNT.id: {
-            $field_elem.show();
+            $("#profile_field_external_accounts").show();
             const profile_field_external_account_type = $<HTMLSelectOneElement>(
                 "select:not([multiple])#profile_field_external_accounts_type",
             ).val()!;
             if (profile_field_external_account_type === "custom") {
-                $field_url_pattern_elem.show();
+                $("#custom_external_account_url_pattern").show();
             } else {
-                $field_url_pattern_elem.hide();
+                $("#custom_external_account_url_pattern").hide();
                 const external_account =
                     realm.realm_default_external_accounts[profile_field_external_account_type];
                 assert(external_account !== undefined);
