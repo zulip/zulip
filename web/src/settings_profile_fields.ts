@@ -177,6 +177,7 @@ function update_form_for_field_type_selection(): void {
 
     $("#profile_field_name").val("").prop("disabled", false);
     $("#profile_field_hint").val("").prop("disabled", false);
+    $("#profile_field_choices_row").hide();
     $field_url_pattern_elem.hide();
     $field_elem.hide();
 
@@ -207,6 +208,9 @@ function update_form_for_field_type_selection(): void {
             $("#profile_field_name").val(default_label);
             $("#profile_field_hint").val(default_hint);
             break;
+        }
+        case field_types.SELECT.id: {
+            $("#profile_field_choices_row").show();
         }
     }
 
@@ -791,7 +795,6 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
 }
 
 function set_up_select_field(): void {
-    const field_types = realm.custom_profile_field_types;
     const $profile_field_choices = $("#profile_field_choices");
 
     create_choice_row($profile_field_choices);
@@ -807,25 +810,6 @@ function set_up_select_field(): void {
             dataIdAttr: "data-value",
         });
     }
-
-    const field_type = $<HTMLSelectOneElement>("select:not([multiple])#profile_field_type").val()!;
-    if (Number.parseInt(field_type, 10) !== field_types.SELECT.id) {
-        // If 'Select' type is already selected, show choice row.
-        $("#profile_field_choices_row").hide();
-    }
-
-    $<HTMLSelectOneElement>("select:not([multiple])#profile_field_type").on(
-        "change",
-        function (this: HTMLSelectOneElement) {
-            $("#dialog_error").hide();
-            const selected_field_id = Number.parseInt($<HTMLSelectOneElement>(this).val()!, 10);
-            if (selected_field_id === field_types.SELECT.id) {
-                $("#profile_field_choices_row").show();
-            } else {
-                $("#profile_field_choices_row").hide();
-            }
-        },
-    );
 
     $profile_field_choices.on("input", ".choice-row input", add_choice_row);
     $profile_field_choices.on("click", "button.delete-choice", function (this: HTMLElement) {
