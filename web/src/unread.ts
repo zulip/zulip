@@ -330,8 +330,10 @@ class UnreadTopicCounter {
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
             // so that callers have a view of the **current** world.
+            // Similarly we ignore unreads for archived channels, since
+            // they don't show up in the left sidebar either.
             const sub = sub_store.get(stream_id);
-            if (!sub || !stream_data.is_subscribed(stream_id)) {
+            if (!sub || !stream_data.is_subscribed(stream_id) || sub.is_archived) {
                 continue;
             }
 
