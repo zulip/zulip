@@ -180,29 +180,34 @@ function update_form_for_field_type_selection(): void {
     $field_url_pattern_elem.hide();
     $field_elem.hide();
 
-    if (profile_field_type === field_types.EXTERNAL_ACCOUNT.id) {
-        $field_elem.show();
-        const profile_field_external_account_type = $<HTMLSelectOneElement>(
-            "select:not([multiple])#profile_field_external_accounts_type",
-        ).val()!;
-        if (profile_field_external_account_type === "custom") {
-            $field_url_pattern_elem.show();
-        } else {
-            $field_url_pattern_elem.hide();
-            const external_account =
-                realm.realm_default_external_accounts[profile_field_external_account_type];
-            assert(external_account !== undefined);
-            const profile_field_name = external_account.name;
-            $("#profile_field_name").val(profile_field_name).prop("disabled", true);
-            $("#profile_field_hint").val("").prop("disabled", true);
+    switch (profile_field_type) {
+        case field_types.EXTERNAL_ACCOUNT.id: {
+            $field_elem.show();
+            const profile_field_external_account_type = $<HTMLSelectOneElement>(
+                "select:not([multiple])#profile_field_external_accounts_type",
+            ).val()!;
+            if (profile_field_external_account_type === "custom") {
+                $field_url_pattern_elem.show();
+            } else {
+                $field_url_pattern_elem.hide();
+                const external_account =
+                    realm.realm_default_external_accounts[profile_field_external_account_type];
+                assert(external_account !== undefined);
+                const profile_field_name = external_account.name;
+                $("#profile_field_name").val(profile_field_name).prop("disabled", true);
+                $("#profile_field_hint").val("").prop("disabled", true);
+            }
+            break;
         }
-    } else if (profile_field_type === field_types.PRONOUNS.id) {
-        const default_label = $t({defaultMessage: "Pronouns"});
-        const default_hint = $t({
-            defaultMessage: "What pronouns should people use to refer to you?",
-        });
-        $("#profile_field_name").val(default_label);
-        $("#profile_field_hint").val(default_hint);
+        case field_types.PRONOUNS.id: {
+            const default_label = $t({defaultMessage: "Pronouns"});
+            const default_hint = $t({
+                defaultMessage: "What pronouns should people use to refer to you?",
+            });
+            $("#profile_field_name").val(default_label);
+            $("#profile_field_hint").val(default_hint);
+            break;
+        }
     }
 
     // Not showing "display on user card" option for long text/user profile field.
