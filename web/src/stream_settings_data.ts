@@ -144,12 +144,8 @@ export function get_unmatched_streams_for_notification_settings(): ({
 }
 
 export function get_streams_for_settings_page(): SettingsSubscription[] {
-    // TODO: This function is only used for copy-from-stream, so
-    //       the current name is slightly misleading now, plus
-    //       it's not entirely clear we need unsubscribed streams
-    //       for that.  Also we may be revisiting that UI.
-
-    // Build up our list of subscribed streams from the data we already have.
+    // Build up our list of subscribed and unsubscribed streams from the
+    // data we already have.
     const subscribed_rows = stream_data.subscribed_subs();
     const unsubscribed_rows = stream_data.unsubscribed_subs();
 
