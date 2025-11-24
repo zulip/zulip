@@ -51,7 +51,7 @@ export type DisplayObject = {
 
 export function get_conversations(search_string = ""): DisplayObject[] {
     const conversations = pm_conversations.recent.get();
-    const display_objects = [];
+    const display_objects: DisplayObject[] = [];
 
     // The user_ids_string for the current view, if any.
     const active_user_ids_string = get_active_user_ids_string();
@@ -87,8 +87,8 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             (id) => !people.is_active_user_for_popover(id),
         );
 
-        let user_circle_class;
-        let status_emoji_info;
+        let user_circle_class: string | undefined;
+        let status_emoji_info: UserStatusEmojiInfo | undefined;
         let is_bot = false;
         let is_current_user = false;
 
@@ -101,7 +101,6 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             const recipient_user_obj = people.get_by_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
-                // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
                 is_current_user = people.is_my_user_id(user_id);
@@ -109,7 +108,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             }
         }
 
-        const display_object = {
+        const display_object: DisplayObject = {
             recipients: recipients_string,
             user_ids_string,
             unread: num_unread,
@@ -160,7 +159,7 @@ export function get_list_info(
         }
 
         // We don't need to filter muted users here, because
-        // pm_conversations.js takes care of this for us.
+        // pm_conversations.ts takes care of this for us.
 
         // Conversations that include any deactivated users should
         // only be visible in the unzoomed view.
