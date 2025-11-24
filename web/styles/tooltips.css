@@ -116,4 +116,51 @@
     [data-reference-hidden]:not(.show-when-reference-hidden) {
         display: none;
     }
+
+    /* Emoji tooltip styles */
+    .emoji-tooltip-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .emoji-tooltip-large {
+        flex-shrink: 0;
+    }
+
+    img.emoji-tooltip-large {
+        width: 48px;
+        height: 48px;
+        /* Maintain aspect ratio and prevent distortion */
+        object-fit: contain;
+    }
+
+    span.emoji-tooltip-large {
+        /* Hide any text content/fallback that might show */
+        font-size: 0 !important;
+        overflow: hidden;
+        text-indent: -9999px;
+
+        /* Scale up the 25px emoji to ~48px */
+        transform: scale(1.92);
+        /* Add margin to compensate for the scale not affecting layout flow */
+        margin: 12px;
+    }
+
+    .emoji-tooltip-large-unicode {
+        font-size: 48px;
+        line-height: 1;
+        flex-shrink: 0;
+        /* Ensure emoji renders with proper font */
+        font-family:
+            "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+            "Noto Color Emoji", sans-serif;
+    }
+
+    .emoji-tooltip-name {
+        font-size: 1em; /* 14px at 14px/1em */
+        font-weight: 500;
+        color: hsl(0deg 0% 100%);
+        overflow-wrap: break-word;
+    }
 }
