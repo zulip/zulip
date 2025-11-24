@@ -68,13 +68,13 @@
             <div class="or"><span>{{ _('OR') }}</span></div>
             <div class="inline-block relative">
                 <input id="id_team_subdomain"
-                  class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
-                  placeholder="acme"
+                  class="subdomain {% if root_domain_landing_page %}required{% endif %}"
+                  type="text"
+                  name="realm_subdomain"
+                  maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
+                  placeholder="{% trans 'acme' %}"
                   value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                  name="realm_subdomain" maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
                   {% if root_domain_landing_page %}required{% endif %} />
-                <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
-                <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
             </div>
             {% if form.realm_subdomain.errors %}
                 {% for error in form.realm_subdomain.errors %}

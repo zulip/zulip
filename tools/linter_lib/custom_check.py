@@ -577,7 +577,6 @@ html_rules: list["Rule"] = [
         "pattern": r'placeholder="[^{#](?:(?!\.com).)+$',
         "description": "`placeholder` value should be translatable.",
         "exclude_line": {
-            ("templates/zerver/realm_creation_form.html", 'placeholder="acme"'),
             ("templates/zerver/slack_import.html", 'placeholder="xoxb-…"'),
         },
         "exclude": {
