@@ -442,12 +442,29 @@ export const external_account_field_schema = z.object({
 
 export type ExternalAccountFieldData = z.output<typeof external_account_field_schema>;
 
-function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
-    const field_data: ExternalAccountFieldData = {
-        subtype: $profile_field_form
-            .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
-            .val()!,
-    };
+function read_external_account_field_data(
+    $profile_field_form: JQuery,
+    old_field_data: unknown,
+): ExternalAccountFieldData {
+    let field_data: ExternalAccountFieldData;
+
+    // Create new external account field - form uses dropdown widget
+    if (old_field_data === undefined) {
+        field_data = {
+            subtype: $profile_field_form
+                .find("#external_accounts_type_widget .dropdown_widget_value")
+                .text()
+                .toLowerCase(),
+        };
+    } // Edit existing external account field - form uses select widget
+    else {
+        field_data = {
+            subtype: $profile_field_form
+                .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
+                .val()!,
+        };
+    }
+
     if (field_data.subtype === "custom") {
         const url_pattern = $profile_field_form
             .find<HTMLInputElement>("input[name=url_pattern]")
@@ -472,7 +489,7 @@ export function read_field_data_from_form(
     if (field_type_id === field_types.SELECT.id) {
         return read_select_field_data_from_form($profile_field_form, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
-        return read_external_account_field_data($profile_field_form);
+        return read_external_account_field_data($profile_field_form, old_field_data);
     }
     return undefined;
 }

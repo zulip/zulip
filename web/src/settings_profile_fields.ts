@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
+import type * as tippy from "tippy.js";
 
 import render_confirm_delete_profile_field from "../templates/confirm_dialog/confirm_delete_profile_field.hbs";
 import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.hbs";
@@ -12,6 +13,8 @@ import render_settings_profile_field_choice from "../templates/settings/profile_
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import type {DropdownWidget, Option} from "./dropdown_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
@@ -37,6 +40,44 @@ const meta: {
 } = {
     loaded: false,
 };
+
+let external_accounts_dropdown_widget: DropdownWidget;
+
+function setup_external_accounts_dropdown_widget(): void {
+    const default_option = {
+        name: $t_html({defaultMessage: "Select an account type"}),
+        unique_id: "default",
+    };
+
+    function get_options_for_external_accounts_dropdown_widget(): Option[] {
+        const options = [
+            default_option,
+            ...Object.entries(realm.realm_default_external_accounts)
+                .toSorted(([, a], [, b]) => util.strcmp(a.text, b.text))
+                .map(([key, account]) => ({
+                    name: account.text,
+                    unique_id: key,
+                })),
+        ];
+        return options;
+    }
+
+    external_accounts_dropdown_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "external_accounts_type",
+        get_options: get_options_for_external_accounts_dropdown_widget,
+        item_click_callback: external_account_item_click_callback,
+        $events_container: $("#profile_field_external_accounts"),
+        default_id: "default",
+        unique_id_type: "string",
+        on_show_callback(_dropdown: tippy.Instance, widget: dropdown_widget.DropdownWidget) {
+            external_accounts_dropdown_widget = widget;
+        },
+        sticky_bottom_option: $t_html({
+            defaultMessage: "Custom",
+        }),
+    });
+    external_accounts_dropdown_widget.setup();
+}
 
 function display_success_status(): void {
     const $spinner = $("#admin-profile-field-status").expectOne();
@@ -157,11 +198,46 @@ function initialize_form_to_defaults(): void {
     $("#custom_field_url_pattern").val("");
     $("#custom_external_account_url_pattern").hide();
     $("#profile_field_external_accounts").hide();
-    $("#profile_field_external_accounts_type").val(
-        $<HTMLSelectOneElement>(
-            "select:not([multiple])#profile_field_external_accounts_type option:first-child",
-        ).val()!,
-    );
+
+    external_accounts_dropdown_widget.render("default");
+}
+
+function external_account_item_click_callback(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+    is_sticky_bottom_option_clicked: boolean,
+): void {
+    $("#dialog_error").hide();
+
+    if (is_sticky_bottom_option_clicked) {
+        $("#custom_external_account_url_pattern").show();
+        $("#profile_field_name").val("").prop("disabled", false);
+        $("#profile_field_hint").val("").prop("disabled", false);
+        widget.render("Custom");
+    } else if (external_accounts_dropdown_widget.value() === "default") {
+        $("#custom_external_account_url_pattern").hide();
+        $("#profile_field_name").val("").prop("disabled", true);
+        $("#profile_field_hint").val("").prop("disabled", true);
+        widget.render("default");
+    } else {
+        $("#custom_external_account_url_pattern").hide();
+
+        const external_account_type = external_accounts_dropdown_widget.value();
+        assert(external_account_type !== undefined);
+        if (external_account_type !== "default") {
+            const external_account = realm.realm_default_external_accounts[external_account_type];
+            assert(external_account !== undefined);
+            $("#profile_field_name").val(external_account.name).prop("disabled", true);
+            $("#profile_field_hint").val("").prop("disabled", true);
+        }
+
+        widget.render(external_account_type);
+    }
+
+    dropdown.hide();
+    event.preventDefault();
+    event.stopPropagation();
 }
 
 function update_form_for_field_type_selection(): void {
@@ -183,20 +259,9 @@ function update_form_for_field_type_selection(): void {
     switch (profile_field_type) {
         case field_types.EXTERNAL_ACCOUNT.id: {
             $("#profile_field_external_accounts").show();
-            const profile_field_external_account_type = $<HTMLSelectOneElement>(
-                "select:not([multiple])#profile_field_external_accounts_type",
-            ).val()!;
-            if (profile_field_external_account_type === "custom") {
-                $("#custom_external_account_url_pattern").show();
-            } else {
-                $("#custom_external_account_url_pattern").hide();
-                const external_account =
-                    realm.realm_default_external_accounts[profile_field_external_account_type];
-                assert(external_account !== undefined);
-                const profile_field_name = external_account.name;
-                $("#profile_field_name").val(profile_field_name).prop("disabled", true);
-                $("#profile_field_hint").val("").prop("disabled", true);
-            }
+            external_accounts_dropdown_widget.render("default");
+            $("#profile_field_name").val("").prop("disabled", true);
+            $("#profile_field_hint").val("").prop("disabled", true);
             break;
         }
         case field_types.PRONOUNS.id: {
@@ -267,8 +332,9 @@ function open_custom_profile_field_creation_form_modal(): void {
 
     function initialize_custom_profile_field_form(): void {
         set_up_select_field();
+        setup_external_accounts_dropdown_widget();
 
-        $("#profile_field_type, #profile_field_external_accounts_type").on("change", () => {
+        $("#profile_field_type").on("change", () => {
             update_form_for_field_type_selection();
         });
 
