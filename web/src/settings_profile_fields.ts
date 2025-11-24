@@ -50,10 +50,25 @@ function setup_external_accounts_dropdown_widget(): void {
     };
 
     function get_options_for_external_accounts_dropdown_widget(): Option[] {
+        const existing_default_external_accounts_fields = new Set(
+            realm.custom_profile_fields
+                .filter(
+                    (field) => field.type === realm.custom_profile_field_types.EXTERNAL_ACCOUNT.id,
+                )
+                .map((field) =>
+                    settings_components.external_account_field_schema.parse(
+                        JSON.parse(field.field_data),
+                    ),
+                )
+                .filter((fieldData) => fieldData.subtype && fieldData.subtype !== "custom")
+                .map((fieldData) => fieldData.subtype),
+        );
+
         const options = [
             custom_option,
             ...Object.entries(realm.realm_default_external_accounts)
                 .toSorted(([, a], [, b]) => util.strcmp(a.text, b.text))
+                .filter(([key]) => !existing_default_external_accounts_fields.has(key))
                 .map(([key, account]) => ({
                     name: account.text,
                     unique_id: key,
