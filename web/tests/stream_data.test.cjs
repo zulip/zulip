@@ -806,22 +806,43 @@ test("stream_settings", ({override}) => {
         creator_id: null,
         is_archived: true,
     };
+
+    const red = {
+        stream_id: 4,
+        name: "r",
+        color: "red",
+        subscribed: true,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        message_retention_days: 10,
+        can_remove_subscribers_group: admins_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
+        is_archived: false,
+    };
     stream_data.add_sub_for_tests(cinnamon);
     stream_data.add_sub_for_tests(amber);
     stream_data.add_sub_for_tests(blue);
+    stream_data.add_sub_for_tests(red);
 
     let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
     /* Archived channel "ambed" is skipped, since it is archived. */
     assert.equal(sub_rows[1].color, "cinnamon");
+    assert.equal(sub_rows[2].color, "red");
 
     sub_rows = stream_data.get_streams_for_admin();
     assert.equal(sub_rows[0].name, "a");
     assert.equal(sub_rows[1].name, "b");
     assert.equal(sub_rows[2].name, "c");
+    assert.equal(sub_rows[3].name, "r");
     assert.equal(sub_rows[0].invite_only, true);
     assert.equal(sub_rows[1].invite_only, false);
     assert.equal(sub_rows[2].invite_only, false);
+    assert.equal(sub_rows[3].invite_only, false);
 
     assert.equal(sub_rows[0].history_public_to_subscribers, true);
     assert.equal(sub_rows[0].message_retention_days, 10);
@@ -854,12 +875,13 @@ test("stream_settings", ({override}) => {
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
-    assert.equal(sub_rows.length, 3);
+    assert.equal(sub_rows.length, 4);
     override(current_user, "is_guest", true);
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
-    assert.equal(sub_rows.length, 2);
+    assert.equal(sub_rows[2].name, "r");
+    assert.equal(sub_rows.length, 3);
 
     sub = stream_data.get_sub("b");
     stream_data.update_stream_privacy(sub, {
