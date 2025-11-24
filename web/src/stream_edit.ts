@@ -8,7 +8,6 @@ import render_settings_deactivation_stream_modal from "../templates/confirm_dial
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
-import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -876,7 +875,10 @@ export function initialize(): void {
             }
             dialog_widget.launch({
                 html_heading: $t_html({defaultMessage: "Confirm changing access permissions"}),
-                html_body: render_confirm_stream_privacy_change_modal(),
+                text_subheader: $t({
+                    defaultMessage:
+                        "This change will make this channel's entire message history accessible according to the new configuration.",
+                }),
                 id: "confirm_stream_privacy_change",
                 html_submit_button: $t_html({defaultMessage: "Confirm"}),
                 on_click() {
