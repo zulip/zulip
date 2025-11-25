@@ -742,15 +742,14 @@ export class Filter {
         }
 
         const more_parts = terms.map((term): Part => {
-            const operand = term.operand;
-            const canonicalized_operator = Filter.canonicalize_operator(term.operator);
-            if (canonicalized_operator === "is") {
+            term = Filter.canonicalize_term(term);
+            if (term.operator === "is") {
                 // Some operands have their own negative words, like
                 // unresolved, rather than the default "exclude " prefix.
                 const custom_negated_operand_phrases: Record<string, string> = {
                     resolved: "unresolved",
                 };
-                const negated_phrase = custom_negated_operand_phrases[operand];
+                const negated_phrase = custom_negated_operand_phrases[term.operand];
                 if (term.negated && negated_phrase !== undefined) {
                     return {
                         type: "is_operator",
@@ -763,10 +762,10 @@ export class Filter {
                 return {
                     type: "is_operator",
                     verb,
-                    operand,
+                    operand: term.operand,
                 };
             }
-            if (canonicalized_operator === "has") {
+            if (term.operator === "has") {
                 // search_suggestion.get_suggestions takes care that this message will
                 // only be shown if the `has` operator is not at the last.
                 const valid_has_operands = [
@@ -779,25 +778,26 @@ export class Filter {
                     "reaction",
                     "reactions",
                 ];
-                if (!valid_has_operands.includes(operand)) {
+                if (!valid_has_operands.includes(term.operand)) {
                     return {
                         type: "invalid_has",
-                        operand,
+                        operand: term.operand,
                     };
                 }
             }
-            if (canonicalized_operator === "channels" && channels_operands.has(operand)) {
+            if (term.operator === "channels" && channels_operands.has(term.operand)) {
                 return {
                     type: "plain_text",
-                    content: this.describe_channels_operator(term.negated ?? false, operand),
+                    content: this.describe_channels_operator(term.negated ?? false, term.operand),
                 };
             }
-            const prefix_for_operator = Filter.operator_to_prefix(
-                canonicalized_operator,
-                term.negated,
-            );
-            if (USER_OPERATORS.has(canonicalized_operator)) {
-                const user_emails = operand.split(",");
+            const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
+            if (
+                term.operator === "sender" ||
+                term.operator === "dm" ||
+                term.operator === "dm-including"
+            ) {
+                const user_emails = term.operand.split(",");
                 const users: ValidOrInvalidUser[] = user_emails.map((email) => {
                     const person = people.get_by_email(email);
                     if (person === undefined) {
@@ -818,8 +818,8 @@ export class Filter {
                 };
             }
             if (prefix_for_operator !== "") {
-                if (canonicalized_operator === "channel") {
-                    const stream = stream_data.get_sub_by_id_string(operand);
+                if (term.operator === "channel") {
+                    const stream = stream_data.get_sub_by_id_string(term.operand);
                     const verb = term.negated ? "exclude " : "";
                     if (stream) {
                         return {
@@ -831,18 +831,18 @@ export class Filter {
                     // Assume the operand is a partially formed name and return
                     // the operator as the channel name in the next block.
                 }
-                if (canonicalized_operator === "topic" && !is_operator_suggestion) {
+                if (term.operator === "topic" && !is_operator_suggestion) {
                     return {
                         type: "prefix_for_operator",
                         prefix_for_operator,
-                        operand: util.get_final_topic_display_name(operand),
-                        is_empty_string_topic: operand === "",
+                        operand: util.get_final_topic_display_name(term.operand),
+                        is_empty_string_topic: term.operand === "",
                     };
                 }
                 return {
                     type: "prefix_for_operator",
                     prefix_for_operator,
-                    operand,
+                    operand: term.operand,
                 };
             }
             return {

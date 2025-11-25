@@ -1757,7 +1757,7 @@ test("describe", ({mock_template, override}) => {
     string = "direct messages, search for lunch";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-    narrow = [{operator: "id", operand: 99}];
+    narrow = [{operator: "id", operand: "99"}];
     string = "message ID 99";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
@@ -1798,7 +1798,7 @@ test("describe", ({mock_template, override}) => {
     // for coverage.
     assert.equal(Filter.operator_to_prefix("is"), "messages that are");
 
-    narrow = [{operator: "with", operand: 12}];
+    narrow = [{operator: "with", operand: "12"}];
     string = "unknown operator";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
