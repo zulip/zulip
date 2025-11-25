@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 442**
+
+* [`GET /events`](/api/get-events): `giphy_rating` is now used to denote
+  the common rating configured for both Tenor and GIPHY integrations.
+* [`POST /register`](/api/register-queue): Added new `tenor_api_key`
+  field, which is required to fetch GIFs using the Tenor API.
+* [`POST /register`](/api/register-queue): Renamed
+  `giphy_rating_options` to `gif_rating_options` to generalize the
+  ratings for both GIPHY and Tenor integrations. `realm_giphy_rating`
+  is now used for both the Tenor and GIPHY integrations.
+
 **Feature level 441**
 
 * [`GET /users/me/subscriptions`](/api/get-subscriptions),
