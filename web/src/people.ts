@@ -360,7 +360,11 @@ export function user_ids_to_emails_string(user_ids: number[]): string | undefine
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
     const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
-    const ids = user_ids.map(Number);
+    const ids = user_ids.map((user_id_string) => {
+        const user_id = Number(user_id_string);
+        assert(!Number.isNaN(user_id));
+        return user_id;
+    });
     return ids;
 }
 
