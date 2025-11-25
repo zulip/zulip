@@ -1,3 +1,4 @@
+from typing import Any
 from unittest import mock
 
 import responses
@@ -23,6 +24,7 @@ from zerver.lib.test_classes import PushNotificationTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.models import PushDeviceToken, Recipient, UserMessage, UserTopic
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 from zilencer.views import DevicesToCleanUpDict
@@ -547,68 +549,119 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             )
 
     def test_non_bouncer_push(self) -> None:
+        iago = self.example_user("iago")
+        zoe = self.example_user("ZOE")
+        realm = self.user_profile.realm
+
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
+        android_tokens = list(
+            PushDeviceToken.objects.filter(
+                user=self.user_profile, kind=PushDeviceToken.FCM
+            ).values_list("token", flat=True)
+        )
+        apple_tokens = list(
+            PushDeviceToken.objects.filter(
+                user=self.user_profile, kind=PushDeviceToken.APNS
+            ).values_list("token", flat=True)
+        )
+
+        def test_end_to_end(missed_message: dict[str, Any], db_query_count: int) -> None:
+            with (
+                mock.patch(
+                    "zerver.lib.push_notifications.push_notifications_configured", return_value=True
+                ),
+                self.mock_fcm() as (
+                    _mock_fcm_app,
+                    mock_fcm_messaging,
+                ),
+                self.mock_apns() as (_apns_context, send_notification),
+                self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
+            ):
+                mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response(
+                    android_tokens
+                )
+                send_notification.return_value.is_successful = True
+
+                with self.assert_database_query_count(db_query_count):
+                    handle_push_notification(self.user_profile.id, missed_message)
+
+                self.assertIn(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"Sending mobile push notifications for local user {self.user_profile.id}: "
+                    f"{len(android_tokens)} via FCM devices, {len(apple_tokens)} via APNs devices",
+                    logger.output,
+                )
+
+                remote_realm_count = RealmCount.objects.values(
+                    "property", "subgroup", "value"
+                ).last()
+                self.assertEqual(
+                    remote_realm_count,
+                    dict(
+                        property="mobile_pushes_sent::day",
+                        subgroup=None,
+                        value=len(android_tokens) + len(apple_tokens),
+                    ),
+                )
+                # Reset
+                RealmCount.objects.all().delete()
+
+        # 1:1 DM
+        # query count : source
+        # * 1 : `get_user_profile_by_id`
+        # * 2 : `access_message_and_usermessage` (Fetch Message + UserMessage)
+        # * 1 : update fetched user_message flag
+        # * 1 : fetch `realm` in `get_message_payload_gcm` (TODO: avoid this)
+        # * 3 : fetch PushDeviceToken, update RealmCount, fetch PushDevice
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
+            realm_id=realm.id,
         )
-        UserMessage.objects.create(
-            user_profile=self.user_profile,
-            message=message,
-        )
+        UserMessage.objects.create(user_profile=self.user_profile, message=message)
+        missed_message = {"message_id": message.id, "trigger": NotificationTriggers.DIRECT_MESSAGE}
+        test_end_to_end(missed_message, 8)
 
-        android_devices = list(
-            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.FCM)
+        # Group DM
+        # 1 extra query than prev for `get_display_recipient` in `get_message_payload`.
+        # Note: We've caching to avoid this query.
+        group_dm = get_or_create_direct_message_group(
+            id_list=[self.user_profile.id, iago.id, zoe.id]
         )
-
-        apple_devices = list(
-            PushDeviceToken.objects.filter(user=self.user_profile, kind=PushDeviceToken.APNS)
+        message = self.get_message(
+            Recipient.DIRECT_MESSAGE_GROUP, type_id=group_dm.id, realm_id=realm.id
         )
+        UserMessage.objects.create(user_profile=self.user_profile, message=message)
+        missed_message = {"message_id": message.id, "trigger": NotificationTriggers.DIRECT_MESSAGE}
+        test_end_to_end(missed_message, 9)
 
+        # Channel message
+        # 3 extra queries than 1:1 DM
+        # 1 : fetch Stream in `access_message_and_usermessage` codepath
+        # 1 : query NamedUserGroup in `check_can_access_user` codepath
+        # 1 : fetch Stream in `get_message_payload` (TODO: we can avoid this)
+        channel = get_stream("Denmark", realm)
+        message = self.get_message(Recipient.STREAM, channel.id, realm.id)
+        UserMessage.objects.create(user_profile=self.user_profile, message=message)
+        missed_message = {"message_id": message.id, "trigger": NotificationTriggers.STREAM_PUSH}
+        test_end_to_end(missed_message, 11)
+
+        # Channel message: private channel + user-group mention
+        # 3 extra queries than prev:
+        # 1 : query Subscription in `access_message_and_usermessage` codepath (needed for private channel)
+        # 2 : `get_mentioned_user_group` b/c content includes user-group mention.
+        channel = get_stream("core team", realm)
+        user_group = check_add_user_group(
+            realm, "test_group", [iago, zoe, self.user_profile], acting_user=iago
+        )
+        message_id = self.send_stream_message(iago, channel.name, f"@*{user_group.name}*")
         missed_message = {
-            "message_id": message.id,
-            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+            "message_id": message_id,
+            "trigger": NotificationTriggers.MENTION,
+            "mentioned_user_group_id": user_group.id,
         }
-        with (
-            mock.patch(
-                "zerver.lib.push_notifications.get_message_payload_apns",
-                return_value={"apns": True},
-            ),
-            mock.patch(
-                "zerver.lib.push_notifications.get_message_payload_gcm",
-                return_value=({"gcm": True}, {}),
-            ),
-            mock.patch(
-                # Simulate the send...push_notification functions returning a number of successes
-                # lesser than the number of devices, so that we can verify correct CountStat counting.
-                "zerver.lib.push_notifications.send_apple_push_notification",
-                return_value=len(apple_devices) - 1,
-            ) as mock_send_apple,
-            mock.patch(
-                "zerver.lib.push_notifications.send_android_push_notification",
-                return_value=len(android_devices) - 1,
-            ) as mock_send_android,
-            mock.patch(
-                "zerver.lib.push_notifications.push_notifications_configured", return_value=True
-            ) as mock_push_notifications,
-        ):
-            handle_push_notification(self.user_profile.id, missed_message)
-            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
-            mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
-            mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
-            mock_push_notifications.assert_called_once()
-
-        remote_realm_count = RealmCount.objects.values("property", "subgroup", "value").last()
-        self.assertEqual(
-            remote_realm_count,
-            dict(
-                property="mobile_pushes_sent::day",
-                subgroup=None,
-                value=len(android_devices) + len(apple_devices) - 2,
-            ),
-        )
+        test_end_to_end(missed_message, 14)
 
     def test_send_remove_notifications_to_bouncer(self) -> None:
         self.setup_apns_tokens()
