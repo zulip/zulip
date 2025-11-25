@@ -258,6 +258,7 @@ python_rules = RuleList(
                     "zerver/lib/message_cache.py",
                     'obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME',
                 ),
+                ("zerver/lib/push_notifications.py", '"subject",'),
             },
             "include_only": {
                 "zerver/data_import/",
