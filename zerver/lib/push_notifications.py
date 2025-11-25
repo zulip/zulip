@@ -1205,7 +1205,7 @@ def get_message_payload_gcm(
         sender_avatar_url = get_avatar_for_inaccessible_user()
         sender_name = str(UserProfile.INACCESSIBLE_USER_NAME)
     else:
-        sender_avatar_url = absolute_avatar_url(message.sender)
+        sender_avatar_url = absolute_avatar_url(message.sender, message.realm.url)
         sender_name = message.sender.full_name
 
     message_payload = dict(copy.deepcopy(message_payload))
