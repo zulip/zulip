@@ -53,7 +53,7 @@ class IntegrationsTestCase(ZulipTestCase):
             ["misc"],
             logo="images/integrations/logos/prometheus.svg",
         )
-        self.assertIsNone(integration.get_bot_avatar_path())
+        self.assertEqual(integration.get_bot_avatar_path(), "images/integrations/bot_avatars/prometheus.png")
 
     def test_no_missing_doc_screenshot_config(self) -> None:
         integration_names = {integration.name for integration in INTEGRATIONS.values()}
