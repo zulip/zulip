@@ -406,7 +406,7 @@ export const realm_schema = z.object({
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
-    giphy_rating_options: z.intersection(
+    gif_rating_options: z.intersection(
         z.record(z.string(), z.object({id: z.number(), name: z.string()})),
         z.object({disabled: z.object({id: z.number(), name: z.string()})}),
     ),

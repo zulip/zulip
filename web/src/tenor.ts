@@ -9,12 +9,21 @@ import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {get_rating} from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+
+const tenor_rating_map = {
+    // Source: https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
+    pg: "medium",
+    g: "high",
+    r: "off",
+    "pg-13": "low",
+};
 
 const tenor_result_schema = z.object({
     results: z.array(
@@ -62,11 +71,7 @@ function get_base_payload(): TenorPayload {
         // for what gets actually uploaded.
         media_filter: "tinygif,mediumgif",
         locale: user_settings.default_language,
-        // TODO: This must be configurable, preferably via admin settings
-        // just like GIPHY. For that we would first have to figure out
-        // how to map the GIPHY and Tenor ratings, since they don't have
-        // a 1:1 alignment based on the current `realm_giphy_rating` configuration.
-        contentfilter: "high",
+        contentfilter: tenor_rating_map[get_rating()],
     };
 }
 
