@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 
 import render_search_description from "../templates/search_description.hbs";
 
-import * as blueslip from "./blueslip.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
@@ -521,6 +520,14 @@ export class Filter {
     }
 
     static is_valid_search_term(term: NarrowTerm): boolean {
+        // We don't want to raise exceptions in this function; just
+        // return false for invalid terms.
+        try {
+            term = Filter.canonicalize_term(term);
+        } catch {
+            return false;
+        }
+
         switch (term.operator) {
             case "has":
                 return ["image", "link", "attachment", "reaction"].includes(term.operand);
@@ -543,28 +550,23 @@ export class Filter {
             case "with":
                 return Number.isInteger(Number(term.operand));
             case "channel":
-            case "stream":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
-            case "streams":
                 return channels_operands.has(term.operand);
             case "topic":
                 return true;
             case "sender":
-            case "from":
             case "dm":
-            case "pm-with":
             case "dm-including":
-                if (term.operand === "me") {
-                    return true;
-                }
                 return term.operand
                     .split(",")
                     .every((email) => people.get_by_email(email) !== undefined);
             case "search":
+            case "":
                 return true;
             default:
-                blueslip.error("Unexpected search term operator: " + term.operator);
+                // istanbul ignore next
+                // It should never reach here because of operator validation.
                 return false;
         }
     }
