@@ -173,7 +173,7 @@
         border-radius: 5px;
 
         .message_row:last-of-type {
-            border-radius: 0 0 7px 7px;
+            border-radius: var(--last-message-row-border-radius);
             border-bottom: 1px solid var(--color-message-list-border);
 
             .unread-marker-fill {
