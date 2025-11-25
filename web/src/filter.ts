@@ -1614,13 +1614,13 @@ export class Filter {
         return true;
     }
 
-    fix_terms(terms: NarrowTerm[]): NarrowTerm[] {
-        terms = this._canonicalize_terms(terms);
-        terms = this._fix_redundant_is_private(terms);
-        return terms;
+    fix_terms(terms: NarrowTerm[]): NarrowCanonicalTerm[] {
+        let canonical_terms = this._canonicalize_terms(terms);
+        canonical_terms = this._fix_redundant_is_private(canonical_terms);
+        return canonical_terms;
     }
 
-    _fix_redundant_is_private(terms: NarrowTerm[]): NarrowTerm[] {
+    _fix_redundant_is_private(terms: NarrowCanonicalTerm[]): NarrowCanonicalTerm[] {
         // Every DM is a DM, so drop `is:dm` if on a DM conversation.
         if (!terms.some((term) => Filter.term_type(term) === "dm")) {
             return terms;
@@ -1629,7 +1629,7 @@ export class Filter {
         return terms.filter((term) => Filter.term_type(term) !== "is-dm");
     }
 
-    _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
+    _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowCanonicalTerm[] {
         const terms = terms_mixed_case.map((term: NarrowTerm) => Filter.canonicalize_term(term));
         return terms;
     }
