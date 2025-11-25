@@ -717,14 +717,19 @@ export class Filter {
         }
 
         if (terms[0] !== undefined && terms[1] !== undefined) {
-            const is = (term: NarrowTerm, expected: string): boolean =>
-                Filter.canonicalize_operator(term.operator) === expected && !term.negated;
+            const term_0 = Filter.canonicalize_term(terms[0]);
+            const term_1 = Filter.canonicalize_term(terms[1]);
 
-            if (is(terms[0], "channel") && is(terms[1], "topic")) {
+            if (
+                term_0.operator === "channel" &&
+                !term_0.negated &&
+                term_1.operator === "topic" &&
+                !term_1.negated
+            ) {
                 // `channel` might be undefined if it's coming from a text query
-                const channel = stream_data.get_sub_by_id_string(terms[0].operand)?.name;
+                const channel = stream_data.get_sub_by_id_string(term_0.operand)?.name;
                 if (channel) {
-                    const topic = terms[1].operand;
+                    const topic = term_1.operand;
                     parts.push({
                         type: "channel_topic",
                         channel,
