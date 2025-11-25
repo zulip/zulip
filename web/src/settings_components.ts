@@ -446,16 +446,22 @@ function read_external_account_field_data(
     $profile_field_form: JQuery,
     old_field_data: ExternalAccountFieldData | undefined,
 ): ExternalAccountFieldData {
-    const field_data: ExternalAccountFieldData = {
-        subtype:
-            // Use existing subtype in "edit field form".
-            old_field_data?.subtype ??
-            // Use dropdown widget value in "create field form".
-            $profile_field_form
-                .find("#external_accounts_type_widget .dropdown_widget_value")
-                .text()
-                .toLowerCase(),
-    };
+    let field_data: ExternalAccountFieldData;
+    // Use dropdown widget value in "create field form".
+    if (old_field_data === undefined) {
+        const widget = get_widget_for_dropdown_list_settings("external_accounts_type");
+        assert(widget !== null);
+        const value = widget.value();
+        assert(typeof value === "string");
+        field_data = {
+            subtype: value,
+        };
+    } // Use existing subtype in "edit field form".
+    else {
+        field_data = {
+            subtype: old_field_data.subtype,
+        };
+    }
     if (field_data.subtype === "custom") {
         field_data.url_pattern = $profile_field_form
             .find<HTMLInputElement>("input[name=url_pattern]")
