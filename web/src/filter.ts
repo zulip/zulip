@@ -103,10 +103,10 @@ function message_in_home(message: Message): boolean {
     return user_topics.is_topic_visible_in_home(message.stream_id, message.topic);
 }
 
-function message_matches_search_term(message: Message, operator: string, operand: string): boolean {
-    switch (operator) {
+function message_matches_search_term(message: Message, term: NarrowTerm): boolean {
+    switch (term.operator) {
         case "has":
-            switch (operand) {
+            switch (term.operand) {
                 case "image":
                     return message_parser.message_has_image(message.content);
                 case "link":
@@ -120,7 +120,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
         case "is":
-            switch (operand) {
+            switch (term.operand) {
                 case "dm":
                     return message.type === "private";
                 case "starred":
@@ -145,7 +145,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
         case "in":
-            switch (operand) {
+            switch (term.operand) {
                 case "home":
                     return message_in_home(message);
                 case "all":
@@ -159,14 +159,14 @@ function message_matches_search_term(message: Message, operator: string, operand
             return true;
 
         case "id":
-            return message.id.toString() === operand;
+            return message.id.toString() === term.operand;
 
         case "channel": {
             if (message.type !== "stream") {
                 return false;
             }
 
-            return message.stream_id.toString() === operand;
+            return message.stream_id.toString() === term.operand;
         }
 
         case "channels": {
@@ -174,7 +174,7 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
             const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
-            switch (operand) {
+            switch (term.operand) {
                 case "public":
                     return ["public", "web-public"].includes(stream_privacy_policy);
                 case "web-public":
@@ -189,18 +189,17 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            operand = operand.toLowerCase();
-            return message.topic.toLowerCase() === operand;
+            return message.topic.toLowerCase() === term.operand.toLowerCase();
 
         case "sender":
-            return people.id_matches_email_operand(message.sender_id, operand);
+            return people.id_matches_email_operand(message.sender_id, term.operand);
 
         case "dm": {
             // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
             }
-            const operand_ids = people.pm_with_operand_ids(operand);
+            const operand_ids = people.pm_with_operand_ids(term.operand);
             if (!operand_ids) {
                 return false;
             }
@@ -213,7 +212,7 @@ function message_matches_search_term(message: Message, operator: string, operand
         }
 
         case "dm-including": {
-            const operand_ids = people.pm_with_operand_ids(operand);
+            const operand_ids = people.pm_with_operand_ids(term.operand);
             if (!operand_ids) {
                 return false;
             }
@@ -1744,7 +1743,7 @@ export class Filter {
 
         return (message: Message) =>
             terms.every((term) => {
-                let ok = message_matches_search_term(message, term.operator, term.operand);
+                let ok = message_matches_search_term(message, term);
                 if (term.negated) {
                     ok = !ok;
                 }
