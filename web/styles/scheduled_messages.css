@@ -26,7 +26,8 @@
     width: 100%;
     min-width: 10em;
     padding: 3px;
-    min-height: 2em;
+    /* We set the minimum height of textarea to be enough for two lines of text. */
+    min-height: calc(2em * var(--base-line-height-unitless));
 
     background-color: var(--background-color-textarea);
 
