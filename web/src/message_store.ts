@@ -409,8 +409,7 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
             // the LocalMessage object for this message. So we must
             // convert the LocalMessage into a Message by dropping the
             // extra local echo/drafts fields, not by constructing a
-            // new object with the new type. This requires overriding
-            // some TypeScript errors.
+            // new object with the new type.
 
             delete server_message.queue_id;
             delete server_message.draft_id;
