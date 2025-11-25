@@ -148,37 +148,37 @@ run_test("language_list", () => {
 
     const successful_formatted_list = [
         {
-            name: "English",
+            name: "English (US)",
             code: "en",
             name_with_percent: "English (US)",
             selected: true,
         },
         {
-            name: "British English",
+            name: "English (UK)",
             code: "en-gb",
             name_with_percent: "English (UK) (99%)",
             selected: false,
         },
         {
-            name: "Bahasa Indonesia",
+            name: "Indonesia",
             code: "id",
             name_with_percent: "Indonesia (32%)",
             selected: false,
         },
         {
-            name: "Mongolian",
+            name: "Монгол",
             code: "mn",
             name_with_percent: "Монгол (53%)",
             selected: false,
         },
         {
-            name: "Luri (Bakhtiari)",
+            name: "Bakhtiari",
             code: "bqi",
             name_with_percent: "Bakhtiari (5%)",
             selected: false,
         },
         {
-            name: "简体中文",
+            name: "中文 (简体)",
             code: "zh-hans",
             name_with_percent: "中文 (简体) (86%)",
             selected: false,

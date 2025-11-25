@@ -138,7 +138,7 @@ export function get_language_list_columns(default_language: string): Language[] 
         const selected = default_language === language.code || default_language === language.locale;
         formatted_list.push({
             code: language.code,
-            name: language.name,
+            name: language.display_name,
             name_with_percent,
             selected,
         });
