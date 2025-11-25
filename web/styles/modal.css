@@ -312,9 +312,7 @@
     margin-top: 10px;
 
     .email_field_textarea {
-        resize: vertical;
         margin-bottom: 10px;
-        min-height: 2em;
     }
 
     .border-top {
@@ -504,6 +502,8 @@
 .modal-textarea {
     width: 100%;
     box-sizing: border-box;
+    resize: vertical;
+    min-height: 2em;
 }
 
 #add-realm-domain-widget {

@@ -1371,8 +1371,6 @@ div.settings-radio-input-parent {
 #edit_channel_folder_description {
     height: 80px;
     margin-bottom: 4px;
-    min-height: 2em;
-    resize: vertical;
 }
 
 .advanced-configurations-container

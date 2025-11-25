@@ -921,11 +921,6 @@ ul.popover-group-menu-member-list {
         width: 100%;
     }
 
-    #message-report-description {
-        min-height: 2em;
-        resize: vertical;
-    }
-
     #move_messages_count {
         /* Disabled pending fixes to the logic. */
         display: none;
