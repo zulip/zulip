@@ -204,8 +204,8 @@ class Integration:
         self.categories = [CATEGORIES[c] for c in categories]
 
         self.logo_path = logo if logo is not None else self.get_logo_path()
-        # TODO: Enforce that all integrations have logo_url with an assertion.
         self.logo_url = self.get_logo_url()
+        assert self.logo_url is not None
 
         if display_name is None:
             display_name = name.title()
