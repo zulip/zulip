@@ -35,6 +35,17 @@ class zulip::profile::app_frontend {
     # This was renumbered
     ensure => absent,
   }
+  file { '/etc/letsencrypt/renewal-hooks/deploy/020-symlink.sh':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    source  => 'puppet:///modules/zulip/letsencrypt/020-symlink.sh',
+    require => [
+      Package[certbot],
+      File['/etc/letsencrypt/renewal-hooks/deploy'],
+    ]
+  }
   file { '/etc/letsencrypt/renewal-hooks/deploy/050-nginx.sh':
     ensure => file,
     owner  => 'root',
