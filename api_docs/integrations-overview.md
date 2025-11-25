@@ -103,7 +103,7 @@ Sales](mailto:sales@zulip.com).
 ### Sending content into Zulip
 
 * If the third-party service supports outgoing webhooks, you likely want to
-  build an [incoming webhook integration](/api/incoming-webhooks-overview).
+  build an [incoming webhook integration][incoming-webhooks-overview].
 * If it doesn't, you may want to write a
   [script or plugin integration](/api/non-webhook-integrations).
 * The [`zulip-send` tool](/api/send-message) makes it easy to send Zulip
@@ -130,3 +130,5 @@ Sales](mailto:sales@zulip.com).
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Generate integration URL](/help/generate-integration-url)
 * [Request an integration](/help/request-an-integration)
+
+[incoming-webhooks-overview]: https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html

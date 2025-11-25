@@ -10,6 +10,14 @@ class URLRedirect:
 API_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     # Add URL redirects for REST API documentation here:
     URLRedirect("/api/delete-stream", "/api/archive-stream"),
+    URLRedirect(
+        "/api/incoming-webhooks-overview",
+        "https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html",
+    ),
+    URLRedirect(
+        "/api/incoming-webhooks-walkthrough",
+        "https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-walkthrough.html",
+    ),
 ]
 
 POLICY_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
