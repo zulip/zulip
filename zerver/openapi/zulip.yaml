@@ -5081,9 +5081,10 @@ paths:
                                     giphy_rating:
                                       type: integer
                                       description: |
-                                        Maximum rating of the GIFs that will be retrieved from GIPHY.
+                                        Maximum rating of the GIFs that will be retrieved from GIPHY or Tenor.
 
-                                        **Changes**: New in Zulip 4.0 (feature level 55).
+                                        **Changes**: In Zulip 12.0 (feature level ZF-35b8e6), now used to denote
+                                        the common rating configured for both Tenor and GIPHY integrations.
                                     icon_source:
                                       type: string
                                       description: |
@@ -19096,9 +19097,10 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The configured GIPHY rating for the organization.
+                          The configured GIF rating for the organization.
 
-                          **Changes**: New in Zulip 4.0 (feature level 55).
+                          **Changes**: In Zulip 12.0 (feature level ZF-35b8e6), now used to denote
+                          the common rating configured for both Tenor and GIPHY integrations.
                       realm_waiting_period_threshold:
                         type: integer
                         description: |
@@ -19692,7 +19694,7 @@ paths:
                           This Zulip server's configured minimum `zxcvbn` minimum guesses.
                           Necessary for password change UI to show whether the password
                           will be accepted.
-                      giphy_rating_options:
+                      gif_rating_options:
                         type: object
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -19703,6 +19705,10 @@ paths:
 
                           Useful for administrative settings UI that allows changing the
                           allowed rating of GIFs.
+
+                          **Changes**: In Zulip 12.0 (feature level ZF-35b8e6), renamed
+                          `giphy_rating_options` to `gif_rating_options` to generalize the
+                          rating options for both GIPHY and Tenor integrations.
                         additionalProperties:
                           description: |
                             `{rating_name}`: Dictionary containing the details of the

@@ -663,13 +663,15 @@ class Realm(models.Model):
     JITSI_SERVER_SPECIAL_VALUES_MAP = {"default": None}
     jitsi_server_url = models.URLField(null=True, default=None)
 
-    # Please access this via get_giphy_rating_options.
-    GIPHY_RATING_OPTIONS = {
+    # Please access this via get_gif_rating_options.
+    GIF_RATING_OPTIONS = {
         "disabled": {
-            "name": gettext_lazy("GIPHY integration disabled"),
+            "name": gettext_lazy("GIF integration disabled"),
             "id": 0,
         },
-        # Source: https://developers.giphy.com/docs/optional-settings/#rating
+        # Source:
+        # 1. https://developers.giphy.com/docs/optional-settings/#rating
+        # 2. https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
         "g": {
             "name": gettext_lazy("Allow GIFs rated G (General audience)"),
             "id": 1,
@@ -688,8 +690,9 @@ class Realm(models.Model):
         },
     }
 
-    # maximum rating of the GIFs that will be retrieved from GIPHY
-    giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
+    # maximum rating of the GIFs that will be retrieved.
+    # This is now used as a common rating for both Tenor and GIPHY.
+    giphy_rating = models.PositiveSmallIntegerField(default=GIF_RATING_OPTIONS["g"]["id"])
 
     default_code_block_language = models.TextField(default="")
 
@@ -920,12 +923,12 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
-    def get_giphy_rating_options(self) -> dict[str, dict[str, object]]:
-        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
+    def get_gif_rating_options(self) -> dict[str, dict[str, object]]:
+        """Wrapper function for GIF_RATING_OPTIONS that ensures evaluation
         of the lazily evaluated `name` field without modifying the original."""
         return {
             rating_type: {"name": str(rating["name"]), "id": rating["id"]}
-            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
+            for rating_type, rating in self.GIF_RATING_OPTIONS.items()
         }
 
     def authentication_methods_dict(self) -> dict[str, bool]:
