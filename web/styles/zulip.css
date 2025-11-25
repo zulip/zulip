@@ -2119,24 +2119,29 @@ body:not(.spectator-view) {
         justify-content: center;
         cursor: pointer;
 
-        &:hover #scroll-to-bottom-button {
-            background: hsl(240deg 96% 68%);
+        #scroll-to-bottom-button,
+        #scroll-to-bottom-button-underlay {
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
+            border-radius: 50%;
         }
 
         #scroll-to-bottom-button {
-            text-align: center;
-            width: 2.5em; /* 40px at 16px em */
-            height: 2.5em; /* 40px at 16px em */
-            background: hsl(240deg 96% 68% / 50%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-
-            & .scroll-to-bottom-icon {
-                color: hsl(0deg 0% 100%);
-                margin: 0 auto;
-                font-size: 1.3125em; /* 21px at 16px em */
+            > .zulip-icon {
+                /* We increase the icon size for better visibility */
+                font-size: 1.5em; /* 24px at 16px em */
             }
+
+            &:active {
+                clip-path: none;
+            }
+        }
+
+        #scroll-to-bottom-button-underlay {
+            position: absolute;
+            background-color: var(--color-background-stream-message-content);
+            opacity: 0.7;
+            z-index: -1;
         }
     }
 }
