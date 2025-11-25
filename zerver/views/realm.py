@@ -239,7 +239,7 @@ def update_realm(
             )
         )
     if giphy_rating is not None and giphy_rating not in {
-        p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
+        p["id"] for p in Realm.GIF_RATING_OPTIONS.values()
     }:
         raise JsonableError(
             _("Invalid giphy_rating {giphy_rating}").format(giphy_rating=giphy_rating)
