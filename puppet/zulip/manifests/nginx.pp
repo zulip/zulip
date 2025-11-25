@@ -1,4 +1,5 @@
 class zulip::nginx {
+  include zulip::certbot
   $web_packages = [
     # Needed to run nginx with the modules we use
     $zulip::common::nginx,
@@ -96,9 +97,6 @@ class zulip::nginx {
     group   => 'root',
     mode    => '0644',
     content => template('zulip/logrotate/nginx.template.erb'),
-  }
-  package { 'certbot':
-    ensure => installed,
   }
   file { ['/var/lib/zulip', '/var/lib/zulip/certbot-webroot']:
     ensure => directory,

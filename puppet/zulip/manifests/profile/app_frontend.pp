@@ -31,24 +31,16 @@ class zulip::profile::app_frontend {
   }
 
   # Reload nginx after deploying a new cert.
-  file { ['/etc/letsencrypt/renewal-hooks', '/etc/letsencrypt/renewal-hooks/deploy']:
-    ensure  => directory,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    require => Package[certbot],
-  }
   file { '/etc/letsencrypt/renewal-hooks/deploy/001-nginx.sh':
     # This was renumbered
     ensure => absent,
   }
   file { '/etc/letsencrypt/renewal-hooks/deploy/050-nginx.sh':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/zulip/letsencrypt/050-nginx.sh',
-    require => Package[certbot],
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zulip/letsencrypt/050-nginx.sh',
   }
 
   # Restart the server regularly to avoid potential memory leak problems.
