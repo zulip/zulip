@@ -1080,6 +1080,16 @@ export function is_valid_bulk_emails_for_compose(emails: string[]): boolean {
     });
 }
 
+export function is_valid_bulk_user_ids_for_compose(user_ids: number[]): boolean {
+    // Returns false if at least one of the user_ids is invalid.
+    return user_ids.every((user_id) => {
+        if (!is_valid_user_id_for_compose(user_id)) {
+            return false;
+        }
+        return true;
+    });
+}
+
 export function is_active_user_for_popover(user_id: number): boolean {
     // For popover menus, we include cross-realm bots as active
     // users.

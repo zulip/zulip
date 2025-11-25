@@ -1426,6 +1426,10 @@ run_test("initialize", () => {
     assert.ok(!people.is_valid_user_id_for_compose(9999));
     assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
     assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
+    assert.ok(people.is_valid_bulk_user_ids_for_compose([17, 16, 15]));
+    blueslip.reset();
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.ok(!people.is_valid_bulk_user_ids_for_compose([17, 9999, 15]));
     assert.ok(people.is_my_user_id(42));
 
     const fetched_retiree = people.get_by_user_id(15);
