@@ -45,7 +45,8 @@ function narrow_via_edit_scheduled_message(compose_args: ScheduledMessageCompose
             {trigger: "edit scheduled message"},
         );
     } else {
-        message_view.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
+        const user_ids = people.emails_string_to_user_ids(compose_args.private_message_recipient);
+        message_view.show([{operator: "dm", operand: user_ids}], {
             trigger: "edit scheduled message",
         });
     }
