@@ -157,8 +157,6 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
     const first_term = current_filter.terms()[0]!;
     const current_terms_types = current_filter.sorted_term_types();
-    const first_operator = first_term.operator;
-    const first_operand = first_term.operand;
     const num_terms = current_filter.terms().length;
 
     if (num_terms !== 1) {
@@ -204,8 +202,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
         if (
             page_params.is_spectator &&
-            first_operator === "channel" &&
-            !stream_data.is_web_public_by_stream_id(Number.parseInt(first_operand, 10))
+            first_term.operator === "channel" &&
+            !stream_data.is_web_public_by_stream_id(Number.parseInt(first_term.operand, 10))
         ) {
             // For non web-public streams, show `login_to_access` modal.
             spectators.login_to_access(true);
@@ -257,9 +255,9 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         };
     }
 
-    switch (first_operator) {
+    switch (first_term.operator) {
         case "is":
-            switch (first_operand) {
+            switch (first_term.operand) {
                 case "starred":
                     return STARRED_MESSAGES_VIEW_EMPTY_BANNER;
                 case "mentioned":
@@ -306,7 +304,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             // fallthrough to default case if no match is found
             break;
         case "channel": {
-            const stream_sub = stream_data.get_sub_by_id_string(first_operand);
+            const stream_sub = stream_data.get_sub_by_id_string(first_term.operand);
             if (!stream_sub?.subscribed) {
                 // You are narrowed to a channel that either does not exist,
                 // is private, or a channel you're not currently subscribed to.
@@ -351,8 +349,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             return empty_search_query_banner(current_filter);
         }
         case "dm": {
-            if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
-                if (!first_operand.includes(",")) {
+            if (!people.is_valid_bulk_emails_for_compose(first_term.operand.split(","))) {
+                if (!first_term.operand.includes(",")) {
                     return {
                         title: $t({defaultMessage: "This user does not exist!"}),
                     };
@@ -361,7 +359,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     title: $t({defaultMessage: "One or more of these users do not exist!"}),
                 };
             }
-            const user_ids = people.emails_strings_to_user_ids_array(first_operand);
+            const user_ids = people.emails_strings_to_user_ids_array(first_term.operand);
             assert(user_ids?.[0] !== undefined);
             const user_ids_string = util.sorted_ids(user_ids).join(",");
             const direct_message_error_string =
@@ -380,7 +378,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     ),
                 };
             }
-            if (!first_operand.includes(",")) {
+            if (!first_term.operand.includes(",")) {
                 const recipient_user = people.get_by_user_id(user_ids[0]);
                 // You have no direct messages with this person
                 if (people.is_my_user_id(recipient_user.user_id)) {
@@ -446,7 +444,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         case "sender": {
-            const sender = people.get_by_email(first_operand);
+            const sender = people.get_by_email(first_term.operand);
             if (sender) {
                 return {
                     title: $t(
@@ -466,7 +464,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             };
         }
         case "dm-including": {
-            const people_in_dms = first_operand
+            const people_in_dms = first_term.operand
                 .split(",")
                 .map((email) => people.get_by_email(email));
             if (people_in_dms.length === 1 && !people_in_dms[0]) {
