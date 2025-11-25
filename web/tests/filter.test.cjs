@@ -2104,7 +2104,6 @@ test("is_valid_search_term", () => {
         );
     }
 
-    blueslip.expect("error", "Unexpected search term operator: foo");
     assert.equal(
         Filter.is_valid_search_term({
             operator: "foo",
