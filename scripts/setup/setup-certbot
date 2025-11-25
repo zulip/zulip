@@ -101,14 +101,19 @@ case " $os_id $os_id_like " in
         ;;
 esac
 
-# We don't use --no-interactive, because certbot needs to ask the user
-# to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
-# Passing --force-interactive suppresses a warning, but also brings up
-# an annoying prompt we stifle with --no-eff-email.
+# If we aren't being run interactively, default to keeping the
+# existing certificate (rather than burning through a renewal)
+# If run interactively, certbot will prompt.
+default_keep=()
+if [ ! -t 0 ]; then
+    default_keep=(--keep-until-expiring)
+fi
+
 certbot certonly "${method_args[@]}" \
     "${HOSTNAMES[@]}" -m "$EMAIL" \
     "${agree_tos[@]}" \
-    --force-interactive --no-eff-email
+    "${default_keep[@]}" \
+    --no-eff-email
 
 symlink_with_backup() {
     if [ -e "$2" ]; then
