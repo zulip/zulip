@@ -939,17 +939,17 @@ export class Filter {
         }
 
         for (const term of raw_terms) {
-            const adjusted_term = {...term};
+            const adjusted_term = Filter.canonicalize_term(term);
             if (
-                Filter.canonicalize_operator(term.operator) === "channel" &&
+                adjusted_term.operator === "channel" &&
                 term.operand !== message.stream_id.toString()
             ) {
                 adjusted_term.operand = message.stream_id.toString();
                 terms_changed = true;
             }
             if (
-                Filter.canonicalize_operator(term.operator) === "topic" &&
-                !util.lower_same(term.operand, message.topic)
+                adjusted_term.operator === "topic" &&
+                !util.lower_same(adjusted_term.operand, message.topic)
             ) {
                 adjusted_term.operand = message.topic;
                 terms_changed = true;
