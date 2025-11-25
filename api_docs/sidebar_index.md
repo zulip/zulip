@@ -1,8 +1,6 @@
 ## Integrations
 
 * [Overview](/api/integrations-overview)
-* [Incoming webhook integrations](/api/incoming-webhooks-overview)
-* [Hello world walkthrough](/api/incoming-webhooks-walkthrough)
 * [Non-webhook integrations](/api/non-webhook-integrations)
 
 ## Interactive bots
