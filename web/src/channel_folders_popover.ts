@@ -84,11 +84,17 @@ export function initialize(): void {
         },
         onShow(instance) {
             const show_channel_folders = user_settings.web_left_sidebar_show_channel_folders;
+            const show_collapse_expand_all_options = true;
             // Assuming that the instance can be shown, track and
             // prep the instance for showing
             popover_menus.popover_instances.show_folders_sidebar = instance;
             instance.setContent(
-                parse_html(render_channel_folder_setting_popover({show_channel_folders})),
+                parse_html(
+                    render_channel_folder_setting_popover({
+                        show_channel_folders,
+                        show_collapse_expand_all_options,
+                    }),
+                ),
             );
             popover_menus.on_show_prep(instance);
 
@@ -112,11 +118,17 @@ export function initialize(): void {
         },
         onShow(instance) {
             const show_channel_folders = user_settings.web_inbox_show_channel_folders;
+            const show_collapse_expand_all_options = false;
             // Assuming that the instance can be shown, track and
             // prep the instance for showing
             popover_menus.popover_instances.show_folders_inbox = instance;
             instance.setContent(
-                parse_html(render_channel_folder_setting_popover({show_channel_folders})),
+                parse_html(
+                    render_channel_folder_setting_popover({
+                        show_channel_folders,
+                        show_collapse_expand_all_options,
+                    }),
+                ),
             );
             popover_menus.on_show_prep(instance);
 
