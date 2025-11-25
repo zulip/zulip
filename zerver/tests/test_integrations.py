@@ -48,7 +48,7 @@ class IntegrationsTestCase(ZulipTestCase):
         )
 
         # New instance with logo parameter not set
-        integration = WebhookIntegration("alertmanager", ["misc"])
+        integration = WebhookIntegration("alertmanager", ["misc"], logo="images/integrations/logos/prometheus.svg")
         self.assertIsNone(integration.get_bot_avatar_path())
 
     def test_no_missing_doc_screenshot_config(self) -> None:
