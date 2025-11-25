@@ -262,8 +262,10 @@ def get_web_link_regex() -> Pattern[str]:
                     (?:{tlds})        # TLDs
                 )
             )
-            (?:/             # A path, beginning with /
-                {nested_paren_chunk}           # zero-to-6 sets of paired parens
+            (?:
+                (?:/ {nested_paren_chunk} )      # A path, beginning with /; zero-to-6 sets of paired parens
+                |
+                (?: \? (?![)\"\s]|\Z) {nested_paren_chunk} ) # Query starting with ? (must not be trailing punctuation)
             )?)              # Path is optional
             | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
             {file_links}               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
