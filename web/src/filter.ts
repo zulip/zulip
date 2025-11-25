@@ -989,13 +989,13 @@ export class Filter {
             );
         }
 
-        const sorted_simplified_terms = filter_terms.map((term) => {
-            let operand = term.operand;
+        const sorted_simplified_terms = filter_terms.map((filter_term) => {
+            const term = {...filter_term};
             if (term.operator === "channel" || term.operator === "topic") {
-                operand = operand.toLowerCase();
+                term.operand = term.operand.toLowerCase();
             }
 
-            return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
+            return `${term.negated ? "0" : "1"}-${term.operator}-${term.operand}`;
         });
         sorted_simplified_terms.sort(util.strcmp);
 
