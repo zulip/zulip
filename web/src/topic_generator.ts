@@ -26,7 +26,7 @@ export function next_topic(
     if (curr_stream_index >= 0) {
         const {channel_id} = sorted_channels_info[curr_stream_index]!;
         const topics = get_topics(channel_id);
-        const curr_topic_index = curr_topic ? topics.indexOf(curr_topic) : -1; // -1 if not found
+        const curr_topic_index = curr_topic !== undefined ? topics.indexOf(curr_topic) : -1; // -1 if not found
 
         for (let i = curr_topic_index + 1; i < topics.length; i += 1) {
             const topic = topics[i]!;
