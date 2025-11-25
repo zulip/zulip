@@ -92,6 +92,7 @@ export function initialize(): void {
                 parse_html(
                     render_channel_folder_setting_popover({
                         show_channel_folders,
+                        channel_folders_id: "left_sidebar_channel_folders",
                         show_collapse_expand_all_options,
                     }),
                 ),
@@ -112,7 +113,7 @@ export function initialize(): void {
         onMount(instance) {
             const $popper = $(instance.popper);
             assert(instance.reference instanceof HTMLElement);
-            $popper.one("click", "#left_sidebar_channel_folders", () => {
+            $popper.one("click", "#inbox_channel_folders", () => {
                 do_change_show_channel_folders_inbox(instance);
             });
         },
@@ -126,6 +127,7 @@ export function initialize(): void {
                 parse_html(
                     render_channel_folder_setting_popover({
                         show_channel_folders,
+                        channel_folders_id: "inbox_channel_folders",
                         show_collapse_expand_all_options,
                     }),
                 ),
