@@ -134,7 +134,13 @@ h3,
 
 .admin-realm-description,
 .admin-realm-welcome-message-custom-text {
-    min-height: 2em;
+    /* We set the minimum height of textarea to be enough for two lines
+    of text. Since box-sizing is set to "border-box", we also add
+    2 * var(--input-vertical-padding) + 2 * var(--input-border-width). */
+    min-height: calc(
+        2em * var(--base-line-height-unitless) + 2 *
+            var(--input-vertical-padding) + 2 * var(--input-border-width)
+    );
     width: 500px;
     max-width: 80%;
     min-width: 500px;
@@ -1569,7 +1575,8 @@ label.preferences-radio-choice-label {
         .settings-textarea,
         .modal-textarea {
             height: 80px;
-            min-height: 2em;
+            /* We set the minimum height of textarea to be enough for two lines of text. */
+            min-height: calc(2em * var(--base-line-height-unitless));
             resize: vertical;
         }
 

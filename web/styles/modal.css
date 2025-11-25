@@ -503,7 +503,13 @@
     width: 100%;
     box-sizing: border-box;
     resize: vertical;
-    min-height: 2em;
+    /* We set the minimum height of textarea to be enough for two lines
+    of text. Since box-sizing is set to "border-box", we also add
+    2 * var(--input-vertical-padding) + 2 * var(--input-border-width). */
+    min-height: calc(
+        2em * var(--base-line-height-unitless) + 2 *
+            var(--input-vertical-padding) + 2 * var(--input-border-width)
+    );
 }
 
 #add-realm-domain-widget {
