@@ -1041,7 +1041,10 @@ export class Filter {
         );
     }
 
-    has_operand_case_insensitive(operator: string, operand: string): boolean {
+    has_operand_case_insensitive(
+        operator: NarrowTerm["operator"],
+        operand: NarrowTerm["operand"],
+    ): boolean {
         return this._terms.some(
             (term) =>
                 !term.negated &&
@@ -1050,7 +1053,7 @@ export class Filter {
         );
     }
 
-    has_operand(operator: string, operand: string): boolean {
+    has_operand(operator: NarrowTerm["operator"], operand: NarrowTerm["operand"]): boolean {
         return this._terms.some(
             (term) => !term.negated && term.operator === operator && term.operand === operand,
         );
