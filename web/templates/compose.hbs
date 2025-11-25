@@ -5,9 +5,11 @@
     it changing compose box layout in any way. --}}
     <div id="scroll-to-bottom-button-container" aria-hidden="true">
         <div id="scroll-to-bottom-button-clickable-area" data-tooltip-template-id="scroll-to-bottom-button-tooltip-template">
-            <div id="scroll-to-bottom-button">
-                <i class="scroll-to-bottom-icon fa fa-chevron-down"></i>
-            </div>
+            {{!-- We add a semi-transparent underlay to the scroll to bottom
+            button with the same background color as those of the stream
+            messages for better visibility against the message timestamps. --}}
+            <div id="scroll-to-bottom-button-underlay"></div>
+            {{> components/action_button id="scroll-to-bottom-button" icon="chevron-down" variant="subtle" intent="brand" }}
         </div>
     </div>
     <div id="closed-compose-controls">
