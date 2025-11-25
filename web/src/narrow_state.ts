@@ -5,7 +5,7 @@ import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as unread from "./unread.ts";
@@ -26,7 +26,7 @@ export function filter(): Filter | undefined {
     return message_lists.current?.data.filter;
 }
 
-export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
+export function search_terms(current_filter: Filter | undefined = filter()): NarrowCanonicalTerm[] {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
             current_filter = new Filter(page_params.narrow);
