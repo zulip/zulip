@@ -804,6 +804,19 @@ export function emails_to_slug(emails_string: string): string | undefined {
     return slug;
 }
 
+export function user_ids_to_slug(user_ids: number[]): string | undefined {
+    let slug = String(user_ids);
+    slug += "-";
+    if (user_ids.length === 1 && user_ids[0] !== undefined) {
+        const person = get_by_user_id(user_ids[0]);
+        assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
+        slug += get_slug_from_full_name(person.full_name);
+    } else {
+        slug += "group";
+    }
+    return slug;
+}
+
 export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
     let slug = user_ids_string;
     slug += "-";
