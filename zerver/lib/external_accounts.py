@@ -102,8 +102,8 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
     "mastodon": ExternalAccount(
         text="Mastodon",
         url_pattern="%(username)s",
-        name=gettext_lazy("Mastodon profile URL"),
-        hint="",
+        name=gettext_lazy("Mastodon profile"),
+        hint="The full URL to your profile",
     ),
     "medium": ExternalAccount(
         text="Medium",

@@ -246,7 +246,7 @@ function external_account_item_click_callback(
     const external_account = realm.realm_default_external_accounts[external_account_type];
     assert(external_account !== undefined);
     $("#profile_field_name").val(external_account.name).prop("disabled", true);
-    $("#profile_field_hint").val("").prop("disabled", true);
+    $("#profile_field_hint").val(external_account.hint).prop("disabled", true);
     widget.render();
 }
 
