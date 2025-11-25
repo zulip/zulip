@@ -4,19 +4,19 @@ An incoming webhook allows a third-party service to push data to Zulip when
 something happens. There are several ways to set up an incoming webhook in
 Zulip:
 
-* Use our [REST API](/api/rest) endpoint for [sending
-  messages](/api/send-message).  This works great for internal tools
+* Use our [REST API](https://zulip.com/api/rest) endpoint for [sending
+  messages](https://zulip.com/api/send-message).  This works great for internal tools
   or cases where the third-party tool wants to control the formatting
   of the messages in Zulip.
 * Use one of our supported [integration
-  frameworks](/integrations/category/meta-integration), such as the
-  [Slack-compatible incoming webhook](/integrations/slack_incoming),
-  [Zapier integration](/integrations/zapier), or
-  [IFTTT integration](/integrations/ifttt).
+  frameworks](https://zulip.com/integrations/category/meta-integration), such as the
+  [Slack-compatible incoming webhook](https://zulip.com/integrations/slack_incoming),
+  [Zapier integration](https://zulip.com/integrations/zapier), or
+  [IFTTT integration](https://zulip.com/integrations/ifttt).
 * Implementing an incoming webhook integration (detailed on this page),
   where all the logic for formatting the Zulip messages lives in the
   Zulip server.  This is how most of [Zulip's official
-  integrations](/integrations/) work, because they enable Zulip to
+  integrations](https://zulip.com/integrations/) work, because they enable Zulip to
   support third-party services that just have an "outgoing webhook"
   feature (without the third party needing to do any work specific to
   Zulip).
@@ -36,7 +36,7 @@ process.
 * Set up the
   [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html).
 
-* Use [Zulip's JSON integration](/integrations/json),
+* Use [Zulip's JSON integration](https://zulip.com/integrations/json),
   <https://webhook.site/>, or a similar site to capture an example
   webhook payload from the third-party service. Create a
   `zerver/webhooks/<mywebhook>/fixtures/` directory, and add the
@@ -165,7 +165,7 @@ integration, is:
 ```
 
 The list of existing webhook integrations can be found by browsing the
-[Integrations documentation](/integrations/) or in
+[Integrations documentation](https://zulip.com/integrations/) or in
 `zerver/lib/integrations.py` at `WEBHOOK_INTEGRATIONS`.
 
 Parameters accepted in the URL include:
@@ -173,7 +173,7 @@ Parameters accepted in the URL include:
 ### api_key *(required)*
 
 The API key of the bot created by the user for the integration. To get a
-bot's API key, see the [API keys](/api/api-keys) documentation.
+bot's API key, see the [API keys](https://zulip.com/api/api-keys) documentation.
 
 ### stream
 
@@ -209,12 +209,12 @@ For example, `test*` matches every event that starts with `test`.
     For a list of supported events, see a specific [integration's
     documentation](/integrations) page.
 
-[browse-channels]: /help/introduction-to-channels#browse-and-subscribe-to-channels
-[add-bot]: /help/add-a-bot-or-integration
+[browse-channels]: https://zulip.com/help/introduction-to-channels#browse-and-subscribe-to-channels
+[add-bot]: https://zulip.com/help/add-a-bot-or-integration
 [url-encoder]: https://www.urlencoder.org/
 
 ## Related articles
 
-* [Integrations overview](/api/integrations-overview)
-* [Incoming webhook walkthrough](/api/incoming-webhooks-walkthrough)
-* [Non-webhook integrations](/api/non-webhook-integrations)
+* [Integrations overview](https://zulip.com/api/integrations-overview)
+* [Incoming webhook walkthrough](incoming-webhooks-walkthrough)
+* [Non-webhook integrations](https://zulip.com/api/non-webhook-integrations)
