@@ -204,6 +204,7 @@ class Integration:
         self.categories = [CATEGORIES[c] for c in categories]
 
         self.logo_path = logo if logo is not None else self.get_logo_path()
+        # NOTE: This assertion enforces that all integrations have a logo.
         self.logo_url = self.get_logo_url()
         assert self.logo_url is not None
 
@@ -461,10 +462,17 @@ class EmbeddedBotIntegration(Integration):
     """
 
     DEFAULT_CLIENT_NAME = "Zulip{name}EmbeddedBot"
+    # Use the standard Zulip icon as a fallback for embedded bots
+    DEFAULT_LOGO = "images/logo/zulip-icon-128x128.png"
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         assert kwargs.get("client_name") is None
         kwargs["client_name"] = self.DEFAULT_CLIENT_NAME.format(name=name.title())
+
+        # Check if a logo is provided; if not, use the default.
+        if "logo" not in kwargs:
+            kwargs["logo"] = self.DEFAULT_LOGO
+
         super().__init__(name, *args, **kwargs)
 
 
