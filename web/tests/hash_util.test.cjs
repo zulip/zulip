@@ -44,7 +44,7 @@ run_test("hash_util", () => {
 
     encode_decode_operand(operator, operand, "15-Hamlet");
 
-    operator = "stream";
+    operator = "channel";
     operand = frontend_id.toString();
 
     encode_decode_operand(operator, operand, "99-frontend");
@@ -176,11 +176,11 @@ run_test("test_is_in_specified_hash_category", () => {
 
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
-        {negated: false, operator: "stream", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend_id.toString()},
     ]);
 
     assert.deepEqual(hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]), [
-        {negated: true, operator: "stream", operand: frontend_id.toString()},
+        {negated: true, operator: "channel", operand: frontend_id.toString()},
     ]);
 
     assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);
@@ -188,12 +188,12 @@ run_test("test_parse_narrow", () => {
     // For unknown channel IDs, we still parse it; it could be a valid channel we do
     // not have access to. We'll end up showing "Invalid stream" in the navbar.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "42-bogus"]), [
-        {negated: false, operator: "stream", operand: "42"},
+        {negated: false, operator: "channel", operand: "42"},
     ]);
 
     // Empty string as a topic name is valid.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", ""]), [
-        {negated: false, operator: "stream", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend_id.toString()},
         {negated: false, operator: "topic", operand: ""},
     ]);
 

@@ -185,7 +185,7 @@ run_test("people_slugs", () => {
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/pm-with/42-Alice-Smith");
     narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "pm-with", operand: "alice@example.com", negated: false}]);
+    assert.deepEqual(narrow, [{operator: "dm", operand: "alice@example.com", negated: false}]);
 });
 
 function test_helper({override, override_rewire, change_tab}) {
