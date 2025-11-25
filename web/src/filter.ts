@@ -252,7 +252,7 @@ const USER_OPERATORS = new Set([
 ]);
 
 export class Filter {
-    _terms: NarrowTerm[];
+    _terms: NarrowCanonicalTerm[];
     _sorted_term_types?: string[] = undefined;
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
@@ -261,7 +261,8 @@ export class Filter {
     cached_sorted_terms_for_comparison?: string[] | undefined = undefined;
 
     constructor(terms: NarrowTerm[]) {
-        this._terms = terms;
+        // `_terms` will be set in `setup_filter`.
+        this._terms = [];
         this.setup_filter(terms);
         this.requires_adjustment_for_moved_with_target = this.has_operator("with");
         this.narrow_requires_hash_change = false;
@@ -1001,7 +1002,7 @@ export class Filter {
         return this._predicate;
     }
 
-    terms(): NarrowTerm[] {
+    terms(): NarrowCanonicalTerm[] {
         return this._terms;
     }
 
@@ -1715,11 +1716,8 @@ export class Filter {
         for (const term of this._terms) {
             switch (term.operator) {
                 case "dm-including":
-                case "group-pm-with":
                 case "dm":
-                case "pm-with":
                 case "sender":
-                case "from":
                     term.operand = people.update_email_in_reply_to(
                         term.operand,
                         user_id,
