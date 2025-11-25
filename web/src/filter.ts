@@ -598,16 +598,18 @@ export class Filter {
     }
 
     static term_type(term: NarrowTerm): string {
-        const operator = term.operator;
-        const operand = term.operand;
-        const negated = term.negated;
+        let result = term.negated ? "not-" : "";
 
-        let result = negated ? "not-" : "";
+        result += term.operator;
 
-        result += operator;
-
-        if (["is", "has", "in", "channels"].includes(operator)) {
-            result += "-" + operand;
+        // Using `||` instead of `array.includes` to help with type checking.
+        if (
+            term.operator === "is" ||
+            term.operator === "has" ||
+            term.operator === "in" ||
+            term.operator === "channels"
+        ) {
+            result += "-" + term.operand;
         }
 
         return result;
