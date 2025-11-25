@@ -1,6 +1,6 @@
 # Non-webhook integrations
 
-[Incoming webhook integrations](/api/incoming-webhooks-overview) are the
+[Incoming webhook integrations][incoming-webhooks-overview] are the
 fastest to write, but sometimes a third-party product just doesn't support
 them. Zulip supports several other types of integrations.
 
@@ -49,11 +49,13 @@ examples of ideal UAs are:
     ZulipMobile/0.5.4 (Android; 4.2; maguro)
     ```
 
-* The [general advice](/api/incoming-webhooks-overview#general-advice) for
-  webhook integrations applies here as well.
+* The [general advice][webhooks-general-advice] for webhook integrations applies here as well.
 
 ## Related articles
 
 * [Running bots](/api/running-bots)
 * [Deploying bots](/api/deploying-bots)
 * [Writing bots](/api/writing-bots)
+
+[incoming-webhooks-overview]: https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html
+[webhooks-general-advice]: https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html#general-advice

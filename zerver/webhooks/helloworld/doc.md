@@ -3,7 +3,7 @@
 Learn how Zulip integrations work with this simple Hello World example!
 
 This webhook is Zulip's official [example
-integration](/api/incoming-webhooks-walkthrough).
+integration](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-walkthrough.html).
 
 {start_tabs}
 
