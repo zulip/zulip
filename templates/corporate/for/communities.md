@@ -177,8 +177,8 @@ features.
 For full control over your data, follow our simple [installation
 instructions](https://zulip.readthedocs.io/en/stable/production/install.html) to
 host Zulip yourself. If you like, you can develop [custom
-integrations](/api/incoming-webhooks-overview) and
-[features](https://zulip.readthedocs.io/en/stable/production/modify.html). If
+integrations](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html)
+and [features](https://zulip.readthedocs.io/en/stable/production/modify.html). If
 your needs change, you can always move [from self-hosting to Zulip
 Cloud](/help/move-to-zulip-cloud) or [the other
 way](https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server).
