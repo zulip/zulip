@@ -187,6 +187,12 @@ class SendMessageRequest:
     reminder_note: str | None = None
 
 
+@dataclass
+class OnlyMessageFields:
+    select_related: list[str]
+    fields: list[str]
+
+
 # We won't try to fetch more unread message IDs from the database than
 # this limit.  The limit is super high, in large part because it means
 # client-side code mostly doesn't need to think about the case that a
@@ -420,10 +426,18 @@ def access_message_and_usermessage(
     lock_message: bool = False,
     *,
     is_modifying_message: bool,
+    # Fetches only specified fields from Message and related models.
+    # Use for performance-critical paths.
+    only_message_fields: OnlyMessageFields | None = None,
 ) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:
-        base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
+        if only_message_fields is None:
+            base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
+        else:
+            base_query = Message.objects.select_related(*only_message_fields.select_related).only(
+                *only_message_fields.fields
+            )
         if lock_message:
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.

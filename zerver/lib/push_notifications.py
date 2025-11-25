@@ -41,7 +41,11 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingRemoteRealmError
-from zerver.lib.message import access_message_and_usermessage, direct_message_group_users
+from zerver.lib.message import (
+    OnlyMessageFields,
+    access_message_and_usermessage,
+    direct_message_group_users,
+)
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
@@ -1693,6 +1697,29 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
+    required_message_fields = OnlyMessageFields(
+        select_related=["sender", "realm", "recipient"],
+        fields=[
+            "sender_id",
+            "realm_id",
+            "recipient_id",
+            "is_channel_message",
+            "subject",
+            "rendered_content",
+            "date_sent",
+            "sender__recipient_id",
+            "sender__realm_id",
+            "sender__is_bot",
+            "sender__email",
+            "sender__full_name",
+            "sender__delivery_email",
+            "sender__avatar_source",
+            "sender__avatar_version",
+            "realm__string_id",
+            "realm__can_access_all_users_group_id",
+        ],
+    )
+
     with transaction.atomic(durable=True):
         try:
             (message, user_message) = access_message_and_usermessage(
@@ -1700,6 +1727,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
                 missed_message["message_id"],
                 lock_message=True,
                 is_modifying_message=False,
+                only_message_fields=required_message_fields,
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
