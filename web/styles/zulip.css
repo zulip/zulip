@@ -1476,7 +1476,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invite_welcome_custom_message_text {
-    resize: vertical;
     height: 8em;
 }
 
