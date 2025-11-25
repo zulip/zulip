@@ -2024,7 +2024,9 @@ export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): nu
 }
 
 export const language_options = (): Option[] => {
-    const languages = get_language_list_columns(realm.realm_default_language);
+    const languages = get_language_list_columns(realm.realm_default_language).toSorted((a, b) =>
+        util.strcmp(a.name_with_percent, b.name_with_percent),
+    );
     return languages.map((language) => ({
         name: language.name_with_percent,
         unique_id: language.code,
