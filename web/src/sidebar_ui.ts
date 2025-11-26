@@ -604,7 +604,7 @@ function actually_update_left_sidebar_for_search(): void {
     }
 
     // Update left sidebar DM list.
-    pm_list.update_private_messages(is_left_sidebar_search_active);
+    pm_list.update_private_messages();
 
     // Update left sidebar channel list.
     stream_list.update_streams_sidebar();
