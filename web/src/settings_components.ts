@@ -679,6 +679,7 @@ export function get_input_type($input_elem: JQuery, input_type?: string): string
 export let get_input_element_value = (
     input_elem: HTMLElement,
     input_type?: string,
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 ): boolean | number | string | null | undefined | GroupSettingValue => {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b",
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -166,7 +166,7 @@
     "svgo": "^4.0.0",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.13.0",
-    "vnu-jar": "^24.10.17",
+    "vnu-jar": "^25.11.25",
     "webpack-dev-server": "^5.0.2",
     "xvfb": "^0.4.0",
     "yaml": "^2.0.0-8",
