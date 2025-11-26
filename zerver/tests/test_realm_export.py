@@ -311,7 +311,7 @@ class RealmExportTest(ZulipTestCase):
             result = self.client_post("/json/export/realm")
         self.assert_json_error(
             result,
-            f"Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.",
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
         )
 
         # Message limit is set as 250000
@@ -320,7 +320,7 @@ class RealmExportTest(ZulipTestCase):
         result = self.client_post("/json/export/realm")
         self.assert_json_error(
             result,
-            f"Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.",
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
         )
 
     def test_get_users_export_consents(self) -> None:
