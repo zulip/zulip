@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 437
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (359, 1)  # bumped 2025-11-22 to add @date-fns/tz
+PROVISION_VERSION = (359, 2)  # bumped 2025-11-25 to upgrade uv

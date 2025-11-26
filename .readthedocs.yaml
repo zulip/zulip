@@ -6,10 +6,11 @@ build:
   tools:
     python: "3.10"
   jobs:
-    create_environment:
+    pre_create_environment:
       - asdf plugin add uv
-      - asdf install uv 0.6.6
-      - asdf global uv 0.6.6
+      - asdf install uv 0.9.12
+      - asdf global uv 0.9.12
+    create_environment:
       - UV_PROJECT_ENVIRONMENT=$READTHEDOCS_VIRTUALENV_PATH uv venv
     install:
       - UV_PROJECT_ENVIRONMENT=$READTHEDOCS_VIRTUALENV_PATH uv sync --frozen --only-group=docs
