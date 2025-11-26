@@ -19,12 +19,6 @@ language](/help/change-your-language).
 
 ## Notices about channels
 
-Notices about channel settings changes, such as [name](/help/rename-a-channel),
-[description](/help/change-the-channel-description),
-[privacy](/help/change-the-privacy-of-a-channel) and
-[policy](/help/channel-posting-policy) updates are sent to the
-“channel events” topic in the channel that was modified.
-
 ### New channel announcements
 
 <AdminOnly />
@@ -43,6 +37,25 @@ announced.
 
   1. Under **Automated messages and emails**, configure **New channel
      announcements**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+### Channel events
+
+You can configure whether Zulip will send an automated message when a channel's
+settings are updated. If enabled, Notification Bot will send messages about
+updates to settings such as the channel [name](/help/rename-a-channel),
+[description](/help/change-the-channel-description),
+[privacy](/help/change-the-privacy-of-a-channel) and [posting
+policy](/help/channel-posting-policy). Messages will be sent to the “channel
+events” topic in the modified channel.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Automated messages and emails**, configure **Send automated
+     messages for channel events**.
 
   <SaveChanges />
 </FlattenedSteps>
