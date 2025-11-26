@@ -34,8 +34,12 @@
                   help_link="/help/communities-directory"}}
                 <div class="input-group admin-realm">
                     <label for="id_realm_description" class="settings-field-label">{{t "Organization description" }}</label>
+                    {{#if current_user.is_admin}}
                     <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element settings_textarea"
                       maxlength="1000" data-setting-widget-type="string">{{ realm_description }}</textarea>
+                    {{else}}
+                    <div class="rendered-description">{{{ realm_rendered_description }}}</div>
+                    {{/if}}
                 </div>
             </div>
         </div>

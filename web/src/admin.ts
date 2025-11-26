@@ -8,6 +8,7 @@ import * as bot_data from "./bot_data.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import {$t, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
+import * as markdown from "./markdown.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
@@ -153,6 +154,7 @@ export function build_page(): void {
         giphy_rating_options: realm.giphy_rating_options,
         giphy_api_key_empty: realm.giphy_api_key === "",
         realm_description: realm.realm_description,
+        realm_rendered_description: markdown.render(realm.realm_description || "").content,
         realm_inline_image_preview: realm.realm_inline_image_preview,
         server_inline_image_preview: realm.server_inline_image_preview,
         realm_inline_url_embed_preview: realm.realm_inline_url_embed_preview,

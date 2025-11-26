@@ -141,6 +141,22 @@ h3,
     box-sizing: border-box;
 }
 
+.rendered-description {
+    min-height: 2em;
+    width: 500px;
+    max-width: 80%;
+    min-width: 500px;
+    box-sizing: border-box;
+    padding: 0.5em;
+    border: 1px solid hsl(0deg 0% 87%);
+    border-radius: 4px;
+    background-color: hsl(0deg 0% 98%);
+    color: hsl(0deg 0% 20%);
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.5;
+}
+
 .admin-realm-welcome-message-custom-text {
     margin-bottom: 10px;
 }
