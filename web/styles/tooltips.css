@@ -129,26 +129,28 @@
     }
 
     img.emoji-tooltip-large {
-        width: 48px;
-        height: 48px;
+        /* Scale with tooltip font-size so it respects user font settings */
+        width: 3.4286em; /* ~48px / 14px */
+        height: 3.4286em; /* ~48px / 14px */
         /* Maintain aspect ratio and prevent distortion */
         object-fit: contain;
     }
 
     span.emoji-tooltip-large {
         /* Hide any text content/fallback that might show */
-        font-size: 0 !important;
         overflow: hidden;
         text-indent: -9999px;
 
-        /* Scale up the 25px emoji to ~48px */
+        /* Scale up the 25px emoji to ~48px visually; keep layout sizing stable */
         transform: scale(1.92);
-        /* Add margin to compensate for the scale not affecting layout flow */
-        margin: 12px;
+        transform-origin: center;
+        /* Add margin to compensate for the scale not affecting layout flow (in ems) */
+        margin: 0 0.857em; /* ~12px / 14px */
     }
 
     .emoji-tooltip-large-unicode {
-        font-size: 48px;
+        /* Use em units so the emoji scales with tooltip font-size/user settings */
+        font-size: 3.4286em; /* ~48px / 14px */
         line-height: 1;
         flex-shrink: 0;
         /* Ensure emoji renders with proper font */

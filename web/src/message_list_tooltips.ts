@@ -23,7 +23,7 @@ import {
     LONG_HOVER_DELAY,
     topic_visibility_policy_tooltip_props,
 } from "./tippyjs.ts";
-import {parse_html} from "./ui_util.ts";
+import {convert_emoji_element_to_unicode, parse_html} from "./ui_util.ts";
 
 type Config = {
     attributes: boolean;
@@ -484,22 +484,30 @@ export function initialize(): void {
         delay: INSTANT_HOVER_DELAY,
         onShow(instance) {
             const $elem = $(instance.reference);
+            // Remove native `title` attribute so the browser doesn't show
+            // the default tooltip in addition to our Tippy tooltip.
+            $elem.removeAttr("title");
 
             // Get emoji information from the element
-            let emoji_name: string | undefined;
+            let emoji_name: string | undefined = $elem.attr("data-emoji-name");
             let emoji_url: string | undefined;
             let emoji_code: string | undefined;
+            let emoji_unicode: string | undefined;
+
+            if (!emoji_name) {
+                const title = $elem.attr("title");
+                emoji_name = title?.replaceAll(" ", "_");
+                if (emoji_name) {
+                    $elem.attr("data-emoji-name", emoji_name);
+                    $elem.removeAttr("title");
+                }
+            }
 
             if ($elem.is("img")) {
                 // Realm/custom emoji
                 emoji_url = $elem.attr("src");
-                const title = $elem.attr("title");
-                emoji_name = title?.replaceAll(" ", "_");
             } else {
                 // Unicode emoji (uses CSS sprite)
-                const title = $elem.attr("title");
-                emoji_name = title?.replaceAll(" ", "_");
-
                 // Extract emoji code from class name (e.g., "emoji-1f604")
                 const classes = $elem.attr("class")?.split(/\s+/) ?? [];
                 for (const cls of classes) {
@@ -507,6 +515,10 @@ export function initialize(): void {
                         emoji_code = cls.slice(6); // Remove "emoji-" prefix
                         break;
                     }
+                }
+
+                if (instance.reference instanceof HTMLElement) {
+                    emoji_unicode = convert_emoji_element_to_unicode($(instance.reference));
                 }
             }
 
@@ -520,6 +532,7 @@ export function initialize(): void {
                         emoji_name: emoji_name.replaceAll("_", " "),
                         url: emoji_url,
                         emoji_code,
+                        emoji_unicode,
                     }),
                 ),
             );

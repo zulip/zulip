@@ -649,6 +649,9 @@ export function initialize(): void {
 
         onShow(instance) {
             const $elem = $(instance.reference);
+            // Remove native `title` attribute so the browser doesn't show
+            // the default tooltip in addition to our Tippy tooltip.
+            $elem.removeAttr("title");
             const emoji_name = $elem.attr("data-emoji-name");
 
             if (!emoji_name) {
@@ -694,6 +697,9 @@ export function initialize(): void {
 
         onShow(instance) {
             const $elem = $(instance.reference);
+            // Remove native `title` attribute so the browser doesn't show
+            // the default tooltip in addition to our Tippy tooltip.
+            $elem.removeAttr("title");
             const emoji_name = $elem.attr("data-emoji-name");
 
             if (!emoji_name) {

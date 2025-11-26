@@ -1741,7 +1741,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         # An emoji.
         test_data = (
             '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8"'
-            ' role="img" title="cloud with lightning and'
+            ' role="img" data-emoji-name="cloud with lightning and'
             ' rain">:cloud_with_lightning_and_rain:</span>.</p>'
         )
         fragment = lxml.html.fromstring(test_data)
