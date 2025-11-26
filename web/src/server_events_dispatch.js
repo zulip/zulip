@@ -293,6 +293,7 @@ export function dispatch_normal_event(event) {
                 can_set_delete_message_policy_group: noop,
                 can_set_topics_policy_group: noop,
                 can_summarize_topics_group: noop,
+                can_unsubscribe_group: noop,
                 create_multiuse_invite_group: noop,
                 default_code_block_language: noop,
                 default_language: noop,

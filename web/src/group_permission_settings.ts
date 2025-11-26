@@ -61,6 +61,7 @@ const realm_group_setting_names_supporting_anonymous_groups = [
     "can_set_delete_message_policy_group",
     "can_set_topics_policy_group",
     "can_summarize_topics_group",
+    "can_unsubscribe_group",
     "create_multiuse_invite_group",
     "direct_message_initiator_group",
     "direct_message_permission_group",
@@ -90,6 +91,7 @@ export const stream_group_setting_name_schema = z.enum([
     "can_remove_subscribers_group",
     "can_send_message_group",
     "can_subscribe_group",
+    "can_unsubscribe_group",
     "can_resolve_topics_group",
 ]);
 export type StreamGroupSettingName = z.infer<typeof stream_group_setting_name_schema>;

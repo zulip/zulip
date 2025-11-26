@@ -146,6 +146,9 @@ class Stream(models.Model):
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
     can_subscribe_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
+    can_unsubscribe_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_resolve_topics_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
@@ -206,6 +209,11 @@ class Stream(models.Model):
         "can_subscribe_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_unsubscribe_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
         ),
         "can_resolve_topics_group": GroupPermissionSetting(
@@ -279,6 +287,7 @@ class Stream(models.Model):
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",
+        "can_unsubscribe_group_id",
         "can_resolve_topics_group_id",
         "is_recently_active",
         "topics_policy",

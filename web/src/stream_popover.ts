@@ -121,12 +121,15 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
+    const stream_subscription = sub_store.get(stream_id);
+    assert(stream_subscription !== undefined);
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
-            ...sub_store.get(stream_id),
+            ...stream_subscription,
             url: browser_history.get_full_url(stream_hash),
             list_of_topics_view_url: hash_util.by_channel_topic_list_url(stream_id),
         },
+        should_display_unsubscribe_button: stream_data.can_unsubscribe(stream_subscription),
         has_unread_messages,
         show_go_to_channel_feed,
         show_go_to_list_of_topics,

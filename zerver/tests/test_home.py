@@ -149,6 +149,7 @@ class HomeTest(ZulipTestCase):
         "realm_can_set_delete_message_policy_group",
         "realm_can_set_topics_policy_group",
         "realm_can_summarize_topics_group",
+        "realm_can_unsubscribe_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
