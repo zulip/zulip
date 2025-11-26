@@ -112,6 +112,20 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
     const pronouns = pronouns_list?.[0]?.value;
 
+    // Find the first custom profile field marked for mention suggestions to display
+    let custom_field_secondary: string | undefined;
+    if (person.user.profile_data !== undefined) {
+        for (const field of realm.custom_profile_fields) {
+            if (field.use_in_mention_suggestions && person.user.profile_data[field.id]) {
+                const field_value = person.user.profile_data[field.id]!.value;
+                if (field_value) {
+                    custom_field_secondary = `${field.name}: ${field_value}`;
+                    break;
+                }
+            }
+        }
+    }
+
     const typeahead_arguments = {
         primary: person.user.full_name,
         img_src: avatar_url,
@@ -123,7 +137,7 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
             person.user.user_id,
         ),
         pronouns,
-        secondary: person.user.delivery_email,
+        secondary: custom_field_secondary ?? person.user.delivery_email,
     };
 
     return render_typeahead_item(typeahead_arguments);
@@ -1063,11 +1077,29 @@ export function query_matches_person(
         }
 
         if (person.user.delivery_email) {
-            return typeahead.query_matches_string_in_order(
-                query,
-                people.get_visible_email(person.user),
-                " ",
-            );
+            if (
+                typeahead.query_matches_string_in_order(
+                    query,
+                    people.get_visible_email(person.user),
+                    " ",
+                )
+            ) {
+                return true;
+            }
+        }
+
+        // Search custom profile fields marked with use_in_mention_suggestions
+        if (person.user.profile_data !== undefined) {
+            for (const field of realm.custom_profile_fields) {
+                if (field.use_in_mention_suggestions && person.user.profile_data[field.id]) {
+                    const field_value = person.user.profile_data[field.id]!.value;
+                    if (
+                        typeahead.query_matches_string_in_order(query, field_value.toLowerCase(), " ")
+                    ) {
+                        return true;
+                    }
+                }
+            }
         }
     }
     return false;

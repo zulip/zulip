@@ -80,6 +80,7 @@ export const custom_profile_field_schema = z.object({
     order: z.number(),
     required: z.boolean(),
     type: z.number(),
+    use_in_mention_suggestions: z.optional(z.boolean()),
 });
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
