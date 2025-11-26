@@ -43,7 +43,6 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
-import * as user_topics from "./user_topics.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -1286,15 +1285,16 @@ export function on_sidebar_channel_click(
     let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
     const navigate_to_stream = (): void => {
+        // Muted topics are not included in the unzoomed topic list
+        // information.
         const topic_list_info = topic_list_data.get_list_info(
             stream_id,
             false,
             (topic_names: string[]) => topic_names,
         );
-        // This initial value handles both the
-        // top_topic_in_channel mode as well as the
-        // top_unread_topic_in_channel fallback when there are no
-        // (unmuted) unreads in the channel.
+        // This initial value handles both the top_topic_in_channel
+        // mode as well as the top_unread_topic_in_channel fallback
+        // when there are no (unmuted) unreads in the channel.
         let topic_item = topic_list_info.items[0];
 
         if (
@@ -1302,10 +1302,7 @@ export function on_sidebar_channel_click(
             web_channel_default_view_values.top_unread_topic_in_channel.code
         ) {
             for (const topic_list_item of topic_list_info.items) {
-                if (
-                    unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
-                    !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
-                ) {
+                if (topic_list_item.unread > 0) {
                     topic_item = topic_list_item;
                     break;
                 }
@@ -1313,11 +1310,7 @@ export function on_sidebar_channel_click(
         }
 
         if (topic_item !== undefined) {
-            const destination_url = hash_util.by_channel_topic_permalink(
-                stream_id,
-                topic_item.topic_name,
-            );
-            browser_history.go_to_location(destination_url);
+            browser_history.go_to_location(topic_item.url);
         } else {
             show_channel_feed(stream_id, "sidebar");
             return;
