@@ -34,7 +34,6 @@ import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
-const LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE = $t({defaultMessage: "DIRECT MESSAGES"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
 
@@ -353,7 +352,7 @@ export function initialize_left_sidebar(): void {
         primary_condensed_views,
         expanded_views,
         LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
-        LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
+        LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE: pm_list.LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
@@ -605,10 +604,7 @@ function actually_update_left_sidebar_for_search(): void {
     }
 
     // Update left sidebar DM list.
-    pm_list.update_private_messages(
-        is_left_sidebar_search_active,
-        LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
-    );
+    pm_list.update_private_messages(is_left_sidebar_search_active);
 
     // Update left sidebar channel list.
     stream_list.update_streams_sidebar();
