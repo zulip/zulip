@@ -91,7 +91,8 @@ function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
     prior_dom = new_dom;
 }
 
-export function update_private_messages(is_left_sidebar_search_active = false): void {
+export function update_private_messages(): void {
+    const is_left_sidebar_search_active = ui_util.get_left_sidebar_search_term() !== "";
     const is_dm_section_expanded = is_left_sidebar_search_active || !private_messages_collapsed;
     $("#toggle-direct-messages-section-icon").toggleClass(
         "rotate-icon-down",
