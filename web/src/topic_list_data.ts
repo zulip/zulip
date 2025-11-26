@@ -182,12 +182,31 @@ export function filter_topics_by_search_term(
     return topic_names;
 }
 
+export function get_filtered_topic_names(
+    stream_id: number,
+    filter_topics: (topic_names: string[]) => string[],
+): string[] {
+    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+    const narrowed_topic = narrow_state.topic();
+
+    // If the user is viewing a topic with no messages, include
+    // the topic name to the beginning of the list of topics.
+    if (
+        stream_id === narrow_state.stream_id() &&
+        narrowed_topic !== undefined &&
+        !contains_topic(topic_names, narrowed_topic)
+    ) {
+        topic_names.unshift(narrowed_topic);
+    }
+
+    return filter_topics(topic_names);
+}
+
 export function get_list_info(
     stream_id: number,
     zoomed: boolean,
     filter_topics: (topic_names: string[]) => string[],
 ): TopicListInfo {
-    const narrowed_topic = narrow_state.topic();
     const topic_choice_state: TopicChoiceState = {
         items: [],
         topics_selected: 0,
@@ -203,17 +222,7 @@ export function get_list_info(
     assert(sub !== undefined);
     const stream_muted = sub.is_muted;
 
-    let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
-
-    if (
-        stream_id === narrow_state.stream_id() &&
-        narrowed_topic !== undefined &&
-        !contains_topic(topic_names, narrowed_topic)
-    ) {
-        topic_names.unshift(narrowed_topic);
-    }
-
-    topic_names = filter_topics(topic_names);
+    const topic_names = get_filtered_topic_names(stream_id, filter_topics);
 
     if (stream_muted && !zoomed) {
         const unmuted_or_followed_topics = topic_names.filter((topic) =>
