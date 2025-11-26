@@ -809,6 +809,10 @@ export function emails_to_slug(emails_string: string): string | undefined {
 }
 
 export function user_ids_to_slug(user_ids: number[]): string | undefined {
+    if (user_ids.length === 0) {
+        return undefined;
+    }
+
     let slug = String(user_ids);
     slug += "-";
     if (user_ids.length === 1 && user_ids[0] !== undefined) {
