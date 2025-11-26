@@ -2041,3 +2041,14 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
     assert.equal(user2.full_name, "Alice");
     assert.equal(user3.full_name, "Third user");
 });
+
+run_test("fetch inaccessible user", async ({override, override_rewire}) => {
+    initialize();
+    override_rewire(people, "fetch_users_from_ids_internal", noop);
+    people.add_valid_user_id(1);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    const [inaccessible_user] = await people.get_or_fetch_users_from_ids([1]);
+    assert.equal(inaccessible_user.user_id, 1);
+    assert.equal(inaccessible_user.is_inaccessible_user, true);
+});

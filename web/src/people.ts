@@ -2102,7 +2102,7 @@ function start_fetch_for_requested_users(): void {
     fetch_request_with_retry();
 }
 
-export async function fetch_users_from_ids_internal(user_ids: number[]): Promise<unknown> {
+export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<unknown> => {
     // NOTE: NEVER USE THIS FUNCTION DIRECTLY.
     // Call get_or_fetch_users_from_ids instead.
     const unknown_user_ids = new Set(
@@ -2149,11 +2149,34 @@ export async function fetch_users_from_ids_internal(user_ids: number[]): Promise
         }
     }, 0);
     return promise;
+};
+
+export function rewire_fetch_users_from_ids_internal(
+    value: typeof fetch_users_from_ids_internal,
+): void {
+    fetch_users_from_ids_internal = value;
 }
 
 export async function get_or_fetch_users_from_ids(user_ids: number[]): Promise<User[]> {
     await fetch_users_from_ids_internal(user_ids);
-    return get_users_from_ids(user_ids);
+    // In case `valid_user_ids` got updated while we were fetching,
+    // re-filter the user_ids to only return valid ones.
+    const user_ids_valid = valid_user_ids.intersection(new Set(user_ids));
+    // Server doesn't return data for inaccessible users, so we need to
+    // make fake user objects for them if needed.
+    const ignore_missing = !settings_data.user_can_access_all_other_users();
+    const users: User[] = [];
+    for (const user_id of user_ids_valid) {
+        const person = maybe_get_user_by_id(user_id, ignore_missing);
+        if (person) {
+            users.push(person);
+        } else {
+            // maybe_get_user_by_id will throw an error if ignore_missing is false.
+            // User is inaccessible, create a fake user object.
+            users.push(add_inaccessible_user(user_id));
+        }
+    }
+    return users;
 }
 
 export function fetch_users_from_server(opts: FetchUserDataParams): void {
@@ -2257,14 +2280,8 @@ export async function initialize(
         user_ids_to_fetch.delete(person.user_id);
     }
 
-    // This check is a hack to avoid us from showing inaccessible users
-    // as `Unknown users` to the guest user.
-    // TODO: Find a way to identify inaccessible users and remove them
-    // from this fetch.
-    if (settings_data.user_can_access_all_other_users()) {
-        // Fetch all the missing users. This code path is temporary: We
-        // plan to move to a model where the web app expects to have an
-        // incomplete users dataset in large organizations.
-        await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
-    }
+    // Fetch all the missing users. This code path is temporary: We
+    // plan to move to a model where the web app expects to have an
+    // incomplete users dataset in large organizations.
+    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
 }
