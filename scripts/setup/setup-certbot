@@ -73,30 +73,6 @@ case "$method" in
         ;;
 esac
 
-# Check for a supported OS release.
-if [ -f /etc/os-release ]; then
-    os_info="$(
-        . /etc/os-release
-        printf '%s\n' "$ID" "$ID_LIKE"
-    )"
-    {
-        read -r os_id
-        read -r os_id_like || true
-    } <<<"$os_info"
-fi
-
-set -x
-
-case " $os_id $os_id_like " in
-    *' debian '*)
-        apt-get update
-        apt-get install -y certbot
-        ;;
-    *' rhel '*)
-        yum install -y certbot
-        ;;
-esac
-
 # If we aren't being run interactively, default to keeping the
 # existing certificate (rather than burning through a renewal)
 # If run interactively, certbot will prompt.
