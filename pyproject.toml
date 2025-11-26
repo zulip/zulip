@@ -423,7 +423,6 @@ module = [
     "pyuca.*",
     "pyvips.*",
     "scim2_filter_parser.attr_paths",
-    "social_django.*",
     "talon_core.*",
     "tlds.*",
     "two_factor.*",
