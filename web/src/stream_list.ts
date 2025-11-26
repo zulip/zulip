@@ -389,11 +389,16 @@ export function build_stream_list(force_rerender: boolean): void {
                 section.id !== "pinned-streams",
             );
         }
-        if (!is_empty && section.streams.length === 0) {
-            collapsed_sections.add(section.id);
-            sections_with_only_inactive_or_muted.add(section.id);
-        } else {
-            sections_with_only_inactive_or_muted.delete(section.id);
+        // If a section appears empty, due to only having inactive or muted channels,
+        // we collapse it, since there's nothing to easily see. But don't do this during
+        // search, since sections can enter that state temporarily.
+        if (!searching()) {
+            if (!is_empty && section.streams.length === 0) {
+                collapsed_sections.add(section.id);
+                sections_with_only_inactive_or_muted.add(section.id);
+            } else {
+                sections_with_only_inactive_or_muted.delete(section.id);
+            }
         }
     }
 
