@@ -50,10 +50,8 @@
     button:disabled:not(.action-button, .icon-button, .info-density-button),
     option:disabled,
     select:disabled,
-    textarea:disabled,
     input:disabled:not(.modal_text_input),
     input:not([type="radio"], .modal_text_input):read-only,
-    textarea:read-only,
     #organization-permissions .dropdown-widget-button:disabled,
     #organization-settings .dropdown-widget-button:disabled {
         color: inherit;
@@ -65,7 +63,6 @@
         opacity: 0.4;
     }
 
-    textarea,
     select,
     .user-status-content-wrapper,
     .custom-time-input-value,
@@ -101,8 +98,7 @@
         }
     }
 
-    textarea:focus,
-    textarea.new_message_textarea:focus,
+    textarea.schedule-reminder-note:focus,
     #compose_recipient_box:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }

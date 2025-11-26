@@ -221,13 +221,11 @@ def build_message_list(
     user: UserProfile,
     messages: list[Message],
     stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
-) -> list[dict[str, Any]]:
+) -> dict[str, Any]:
     """
-    Builds the message list object for the message notification email template.
-    The messages are collapsed into per-recipient and per-sender blocks, like
-    our web interface
+    Builds the message list object for the message notification email and
+    digest email template. All `messages` share the same recipient (and topic).
     """
-    messages_to_render: list[dict[str, Any]] = []
 
     def sender_string(message: Message) -> str:
         if message.recipient.type == Recipient.STREAM:
@@ -292,111 +290,66 @@ def build_message_list(
         sender = sender_string(message)
         return {"sender": sender, "content": [build_message_payload(message, sender)]}
 
-    def message_header(message: Message) -> dict[str, Any]:
-        if message.recipient.type == Recipient.PERSONAL:
-            grouping: dict[str, Any] = {"user": message.sender_id}
-            narrow_link = personal_narrow_url(
-                realm=user.realm,
-                sender_id=message.sender.id,
-                sender_full_name=message.sender.full_name,
-            )
-            header = f"You and {message.sender.full_name}"
-            header_html = Markup(
-                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
-            ).format(narrow_link=narrow_link, header=header)
-        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-            grouping = {"huddle": message.recipient_id}
-            display_recipient = get_display_recipient(message.recipient)
-            narrow_link = direct_message_group_narrow_url(
-                user=user,
-                display_recipient=display_recipient,
-            )
-            other_recipients = [r["full_name"] for r in display_recipient if r["id"] != user.id]
-            header = "You and {}".format(", ".join(other_recipients))
-            header_html = Markup(
-                "<a style='color: #ffffff;' href='{narrow_link}'>{header}</a>"
-            ).format(narrow_link=narrow_link, header=header)
-        else:
-            assert message.recipient.type == Recipient.STREAM
-            grouping = {"stream": message.recipient_id, "topic": message.topic_name().lower()}
-            stream_id = message.recipient.type_id
-            if stream_id_map is not None and stream_id in stream_id_map:
-                stream = stream_id_map[stream_id]
-            else:
-                # Some of our callers don't populate stream_map, so
-                # we just populate the stream from the database.
-                stream = Stream.objects.only("id", "name").get(id=stream_id)
-            narrow_link = topic_narrow_url(
-                realm=user.realm,
-                stream=stream,
-                topic_name=message.topic_name(),
-            )
-            header = f"{stream.name} > {message.topic_name()}"
-            stream_link = stream_narrow_url(user.realm, stream)
-            header_html = Markup(
-                "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
-            ).format(
-                stream_link=stream_link,
-                stream_name=stream.name,
-                narrow_link=narrow_link,
-                topic_name=message.topic_name(),
-            )
+    def digest_block_header(message: Message) -> dict[str, Any]:
+        assert message.recipient.type == Recipient.STREAM
+        stream_id = message.recipient.type_id
+        assert stream_id_map is not None
+        assert stream_id in stream_id_map
+        stream = stream_id_map[stream_id]
+        narrow_link = topic_narrow_url(
+            realm=user.realm,
+            stream=stream,
+            topic_name=message.topic_name(),
+        )
+        header = f"{stream.name} > {message.topic_name()}"
+        stream_link = stream_narrow_url(user.realm, stream)
+        header_html = Markup(
+            "<a href='{stream_link}'>{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+        ).format(
+            stream_link=stream_link,
+            stream_name=stream.name,
+            narrow_link=narrow_link,
+            topic_name=message.topic_name(),
+        )
         return {
-            "grouping": grouping,
             "plain": header,
             "html": header_html,
-            "stream_message": message.recipient.type_name() == "stream",
         }
 
-    # # Collapse message list to
-    # [
-    #    {
-    #       "header": {
-    #                   "plain":"header",
-    #                   "html":"htmlheader"
-    #                 }
-    #       "senders":[
-    #          {
-    #             "sender":"sender_name",
-    #             "content":[
-    #                {
-    #                   "plain":"content",
-    #                   "html":"htmlcontent"
-    #                }
-    #                {
-    #                   "plain":"content",
-    #                   "html":"htmlcontent"
-    #                }
-    #             ]
-    #          }
-    #       ]
-    #    },
-    # ]
+    # Collapse message list to:
+    # {
+    #     "header": {"plain": "header", "html": "htmlheader"},
+    #     "senders": [
+    #         {
+    #             "sender": "sender_name",
+    #             "content": [
+    #                 {"plain": "content", "html": "htmlcontent"},
+    #                 {"plain": "content", "html": "htmlcontent"},
+    #             ],
+    #         }
+    #     ],
+    # }
 
+    assert len(messages) > 0
+    recipients = {(message.recipient_id, message.topic_name().lower()) for message in messages}
+    assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
     messages.sort(key=lambda message: message.date_sent)
 
-    for message in messages:
-        header = message_header(message)
+    sender_block = [build_sender_payload(messages[0])]
+    messages_to_render: dict[str, Any] = {"senders": sender_block}
+    if stream_id_map:
+        # Needed only for digest emails
+        header = digest_block_header(messages[0])
+        messages_to_render["header"] = header
 
-        # If we want to collapse into the previous recipient block
-        if (
-            len(messages_to_render) > 0
-            and messages_to_render[-1]["header"]["grouping"] == header["grouping"]
-        ):
-            sender = sender_string(message)
-            sender_block = messages_to_render[-1]["senders"]
-
-            # Same message sender, collapse again
-            if sender_block[-1]["sender"] == sender:
-                sender_block[-1]["content"].append(build_message_payload(message))
-            else:
-                # Start a new sender block
-                sender_block.append(build_sender_payload(message))
+    for message in messages[1:]:
+        sender = sender_string(message)
+        # Same message sender, collapse again
+        if sender_block[-1]["sender"] == sender:
+            sender_block[-1]["content"].append(build_message_payload(message))
         else:
-            # New recipient and sender block
-            recipient_block = {"header": header, "senders": [build_sender_payload(message)]}
-
-            messages_to_render.append(recipient_block)
+            # Start a new sender block
+            sender_block.append(build_sender_payload(message))
 
     return messages_to_render
 

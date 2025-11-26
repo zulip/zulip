@@ -915,7 +915,7 @@ def categorize_channels_and_map_with_id(
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
-            if len(channel["uids"]) > 2:
+            if len(channel["uids"]) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
                 direct_message_group_members = frozenset(channel["uids"])
                 logging.info("Direct message group channel found. UIDs: %r", channel["uids"])
 

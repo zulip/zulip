@@ -161,9 +161,11 @@ export function build_page(): void {
         server_inline_url_embed_preview: realm.server_inline_url_embed_preview,
         realm_authentication_methods: realm.realm_authentication_methods,
         realm_name_changes_disabled: realm.realm_name_changes_disabled,
+        server_name_changes_disabled: realm.server_name_changes_disabled,
         realm_require_unique_names: realm.realm_require_unique_names,
         realm_email_changes_disabled: realm.realm_email_changes_disabled,
         realm_avatar_changes_disabled: realm.realm_avatar_changes_disabled,
+        server_avatar_changes_disabled: realm.server_avatar_changes_disabled,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         realm_message_content_edit_limit_minutes:

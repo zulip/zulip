@@ -18,7 +18,10 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
@@ -76,7 +79,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.custom_profile_fields import check_valid_user_ids
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import InvalidFakeEmailDomainError, get_fake_email_domain, get_realm
@@ -590,6 +593,29 @@ class PermissionTest(ZulipTestCase):
             self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
         )
 
+    def test_access_user_by_id_when_personal_recipient_is_none(self) -> None:
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+
+        # Removing the personal recipient to ensure a new direct message group is used for 1:1 dms.
+        polonius.recipient = None
+        polonius.save()
+
+        # Restricting the "Members" system group to not allow access to all users.
+        realm = get_realm("zulip")
+        members_system_group = NamedUserGroup.objects.get(name=SystemGroups.MEMBERS, realm=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_system_group, acting_user=None
+        )
+
+        aaron = self.example_user("aaron")
+        target_user = access_user_by_id(polonius, aaron.id, for_admin=False)
+        self.assertEqual(target_user, aaron)
+
+        othello = self.example_user("othello")
+        with self.assertRaises(JsonableError):
+            access_user_by_id(polonius, othello.id, for_admin=False)
+
     def check_property_for_role(self, user_profile: UserProfile, role: int) -> bool:
         if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
             return (
@@ -1000,7 +1026,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(88),
+            self.assert_database_query_count(86),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -2994,9 +3020,6 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
     def test_restricted_access_to_users(self) -> None:
-        othello = self.example_user("othello")
-        cordelia = self.example_user("cordelia")
-        desdemona = self.example_user("desdemona")
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         prospero = self.example_user("prospero")
@@ -3010,11 +3033,7 @@ class GetProfileTest(ZulipTestCase):
         self.login("polonius")
         with self.assert_database_query_count(9):
             result = orjson.loads(self.client_get("/json/users").content)
-        accessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
-        ]
+        accessible_users = result["members"]
         # The user can access 3 bot users and 7 human users.
         self.assert_length(accessible_users, 10)
         accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
@@ -3033,22 +3052,11 @@ class GetProfileTest(ZulipTestCase):
             {polonius.id, hamlet.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id},
         )
 
-        inaccessible_user_ids = {
-            user["user_id"]
-            for user in result["members"]
-            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        }
-        self.assertEqual(inaccessible_user_ids, {cordelia.id, desdemona.id, othello.id})
-
         do_deactivate_user(hamlet, acting_user=None)
         do_deactivate_user(aaron, acting_user=None)
         do_deactivate_user(shiva, acting_user=None)
         result = orjson.loads(self.client_get("/json/users").content)
-        accessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
-        ]
+        accessible_users = result["members"]
         self.assert_length(accessible_users, 9)
         # Guests can only access those deactivated users who were involved in
         # DMs and not those who were subscribed to some common streams.
@@ -3058,13 +3066,6 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(
             accessible_user_ids, {polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id}
         )
-
-        inaccessible_user_ids = {
-            user["user_id"]
-            for user in result["members"]
-            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        }
-        self.assertEqual(inaccessible_user_ids, {cordelia.id, desdemona.id, othello.id, hamlet.id})
 
     def test_get_user_dicts_with_ids(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -3091,11 +3092,7 @@ class GetProfileTest(ZulipTestCase):
                     "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
                 ).content
             )
-        accessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
-        ]
+        accessible_users = result["members"]
         self.assert_length(accessible_users, len(accessible_user_ids_subset))
         accessible_user_ids = [user["user_id"] for user in accessible_users]
         self.assertCountEqual(
@@ -3104,13 +3101,6 @@ class GetProfileTest(ZulipTestCase):
         )
         accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
         self.assert_length(accessible_human_users, 4)
-        inaccessible_users = [
-            user
-            for user in result["members"]
-            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
-        ]
-        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
-        self.assertCountEqual(inaccessible_user_ids, inaccessible_user_ids_subset)
 
         # Desdemona can access all users since she is an admin.
         self.login("desdemona")
@@ -3204,6 +3194,26 @@ class GetProfileTest(ZulipTestCase):
         inaccessible_user_ids = get_inaccessible_user_ids(
             [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
         )
+        self.assertEqual(inaccessible_user_ids, {othello.id})
+
+    def test_get_inaccessible_user_ids_when_personal_recipient_is_none(self) -> None:
+        polonius = self.example_user("polonius")
+
+        # Removing the personal recipient to ensure we use direct message group.
+        polonius.recipient = None
+        polonius.save()
+
+        bot = self.example_user("default_bot")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
+        self.assert_length(inaccessible_user_ids, 0)
+
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+
+        inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
         self.assertEqual(inaccessible_user_ids, {othello.id})
 
     def test_get_users_for_spectators(self) -> None:

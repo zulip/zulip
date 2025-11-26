@@ -10409,7 +10409,13 @@ paths:
 
         You can also [fetch details on a single user](/api/get-user).
 
-        **Changes**: This endpoint did not support unauthenticated
+        **Changes**: In Zulip 12.0 (feature level 437), fixed a bug
+        dating to feature level 232, which caused guest users to
+        receive fake backwards-compatibility users in the format
+        intended for clients using `POST /register` without the
+        `user_list_incomplete` client capability.
+
+        This endpoint did not support unauthenticated
         access in organizations using the [public access
         option](/help/public-access-option) prior to Zulip 11.0
         (feature level 387).
@@ -14815,7 +14821,13 @@ paths:
         either of which could change the client's ability to look them up by that
         email address.
 
-        **Changes**: Starting with Zulip 10.0 (feature level 302), the real email
+        **Changes**: In Zulip 12.0 (feature level 437), fixed a bug
+        dating to feature level 232, which caused guest users to
+        receive fake backwards-compatibility users in the format
+        intended for clients using `POST /register` without the
+        `user_list_incomplete` client capability.
+
+        Starting with Zulip 10.0 (feature level 302), the real email
         address can be used in the `email` parameter and will fetch the target user's
         data if and only if the target's email visibility setting permits the requester
         to see the email address.
@@ -14981,7 +14993,13 @@ paths:
         You can also fetch details on [all users in the organization](/api/get-users)
         or [by a user's Zulip API email](/api/get-user-by-email).
 
-        **Changes**: New in Zulip 3.0 (feature level 1).
+        **Changes**: In Zulip 12.0 (feature level 437), fixed a bug
+        dating to feature level 232, which caused guest users to
+        receive fake backwards-compatibility users in the format
+        intended for clients using `POST /register` without the
+        `user_list_incomplete` client capability.
+
+        New in Zulip 3.0 (feature level 1).
       x-curl-examples-parameters:
         oneOf:
           - type: include

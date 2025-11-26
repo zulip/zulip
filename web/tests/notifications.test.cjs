@@ -12,6 +12,7 @@ mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
 
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
+const people = zrequire("people");
 
 const desktop_notifications = zrequire("desktop_notifications");
 const message_notifications = zrequire("message_notifications");
@@ -379,12 +380,32 @@ test("basic_notifications", () => {
 
     desktop_notifications.set_notification_api(StubNotification);
 
-    const message_1 = {
+    const jesse = {
+        email: "jesse@example.com",
+        full_name: "Jesse Pinkman",
+        user_id: 1,
+    };
+    const gus = {
+        email: "gus@example.com",
+        full_name: "Gus Fring",
+        user_id: 2,
+    };
+    const walter = {
+        email: "walter@example.com",
+        full_name: "Walter White",
+        user_id: 3,
+    };
+    people.add_active_user(jesse);
+    people.add_active_user(gus);
+    people.add_active_user(walter);
+
+    const stream_message_1 = {
         id: 1000,
         content: "@-mentions the user",
         avatar_url: "url",
         sent_by_me: false,
-        sender_full_name: "Jesse Pinkman",
+        sender_id: jesse.user_id,
+        sender_full_name: jesse.full_name,
         notification_sent: false,
         mentioned_me_directly: true,
         type: "stream",
@@ -392,12 +413,13 @@ test("basic_notifications", () => {
         topic: "whatever",
     };
 
-    const message_2 = {
+    const stream_message_2 = {
         id: 1500,
         avatar_url: "url",
         content: "@-mentions the user",
         sent_by_me: false,
-        sender_full_name: "Gus Fring",
+        sender_id: gus.user_id,
+        sender_full_name: gus.full_name,
         notification_sent: false,
         mentioned_me_directly: true,
         type: "stream",
@@ -405,49 +427,91 @@ test("basic_notifications", () => {
         topic: "lunch",
     };
 
+    const direct_message = {
+        id: 2000,
+        content: "direct message",
+        avatar_url: "url",
+        sent_by_me: false,
+        sender_id: gus.user_id,
+        sender_full_name: gus.full_name,
+        notification_sent: false,
+        type: "private",
+        to_user_ids: `${gus.user_id},${walter.user_id}`,
+        display_recipient: [
+            {id: gus.user_id, full_name: gus.full_name, email: gus.email},
+            {id: walter.user_id, full_name: walter.full_name, email: walter.email},
+        ],
+        display_reply_to: `${gus.full_name}, ${walter.full_name}`,
+    };
+
+    const test_notification_message = {
+        id: 3000,
+        type: "test-notification",
+        sender_email: "notification-bot@zulip.com",
+        sender_full_name: "Notification Bot",
+        display_reply_to: "Notification Bot",
+        content: "test notification",
+        unread: true,
+    };
+
     // Send notification.
-    message_notifications.process_notification({message: message_1, desktop_notify: true});
+    message_notifications.process_notification({message: stream_message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has("channel:1:10:whatever"), true);
     assert.equal(n.size, 1);
-    assert.equal(last_shown_message_id, message_1.id.toString());
+    assert.equal(last_shown_message_id, stream_message_1.id.toString());
 
     // Remove notification.
-    desktop_notifications.close_notification(message_1);
+    desktop_notifications.close_notification(stream_message_1);
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
+    assert.equal(n.has("channel:1:10:whatever"), false);
     assert.equal(n.size, 0);
-    assert.equal(last_closed_message_id, message_1.id.toString());
+    assert.equal(last_closed_message_id, stream_message_1.id.toString());
 
     // Send notification.
-    message_1.id = 1001;
-    message_notifications.process_notification({message: message_1, desktop_notify: true});
+    stream_message_1.id = 1001;
+    message_notifications.process_notification({message: stream_message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has("channel:1:10:whatever"), true);
     assert.equal(n.size, 1);
-    assert.equal(last_shown_message_id, message_1.id.toString());
+    assert.equal(last_shown_message_id, stream_message_1.id.toString());
 
     // Process same message again. Notification count shouldn't increase.
-    message_1.id = 1002;
-    message_notifications.process_notification({message: message_1, desktop_notify: true});
+    stream_message_1.id = 1002;
+    message_notifications.process_notification({message: stream_message_1, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has("channel:1:10:whatever"), true);
     assert.equal(n.size, 1);
-    assert.equal(last_shown_message_id, message_1.id.toString());
+    assert.equal(last_shown_message_id, stream_message_1.id.toString());
 
     // Send another message. Notification count should increase.
-    message_notifications.process_notification({message: message_2, desktop_notify: true});
+    message_notifications.process_notification({message: stream_message_2, desktop_notify: true});
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Gus Fring to general > lunch"), true);
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), true);
+    assert.equal(n.has("channel:2:10:lunch"), true);
+    assert.equal(n.has("channel:1:10:whatever"), true);
     assert.equal(n.size, 2);
-    assert.equal(last_shown_message_id, message_2.id.toString());
+    assert.equal(last_shown_message_id, stream_message_2.id.toString());
 
     // Remove notifications.
-    desktop_notifications.close_notification(message_1);
-    desktop_notifications.close_notification(message_2);
+    desktop_notifications.close_notification(stream_message_1);
+    desktop_notifications.close_notification(stream_message_2);
     n = desktop_notifications.get_notifications();
-    assert.equal(n.has("Jesse Pinkman to general > whatever"), false);
+    assert.equal(n.has("channel:1:10:whatever"), false);
     assert.equal(n.size, 0);
-    assert.equal(last_closed_message_id, message_2.id.toString());
+    assert.equal(last_closed_message_id, stream_message_2.id.toString());
+
+    message_notifications.process_notification({message: direct_message, desktop_notify: true});
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has("dm:2,3"), true);
+    assert.equal(n.size, 1);
+    desktop_notifications.close_notification(direct_message);
+
+    message_notifications.process_notification({
+        message: test_notification_message,
+        desktop_notify: true,
+    });
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.has("test:Notification Bot"), true);
+    assert.equal(n.size, 1);
+    desktop_notifications.close_notification(test_notification_message);
 });

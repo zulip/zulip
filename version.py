@@ -35,7 +35,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 436
+API_FEATURE_LEVEL = 437
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 436
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (359, 1)  # bumped 2025-11-22 to add @date-fns/tz
+PROVISION_VERSION = (361, 0)  # bumped 2025-11-25 to upgrade JavaScript dependencies

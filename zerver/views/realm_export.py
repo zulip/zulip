@@ -77,7 +77,9 @@ def export_realm(
         or user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA
     ):
         raise JsonableError(
-            _("Please request a manual export from {email}.").format(
+            _(
+                "The export you requested is too large for automatic processing. Please request a manual export by contacting {email}."
+            ).format(
                 email=FromAddress.SUPPORT,
             )
         )

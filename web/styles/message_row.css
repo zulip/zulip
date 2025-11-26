@@ -851,8 +851,10 @@
        (which even has a background color of its own!). */
     resize: none !important;
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 3px;
+    background-color: var(--background-color-textarea);
+    /* Flatten the bottom edge of the textarea to
+    merge with the flat top edge of the buttons row */
+    border-radius: 3px 3px 0 0;
     vertical-align: middle;
     border: none;
     /* Match textarea padding to compose box and
@@ -862,6 +864,10 @@
 
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
         outline: 0;
     }
@@ -870,12 +876,6 @@
     &:disabled {
         cursor: not-allowed;
     }
-}
-
-/* The selector needs to be written this way to override the specificity
-of the base style defined for a read-only textarea in dark mode. */
-.message_edit_form .edit-controls textarea.message_edit_content:read-only {
-    opacity: 1;
 }
 
 .message-editing-animation {

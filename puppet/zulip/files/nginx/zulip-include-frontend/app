@@ -7,6 +7,9 @@ include /etc/nginx/zulip-include/headers;
 error_page 502 503 504 /static/webpack-bundles/5xx.html;
 
 # Serve static files directly
+location /local-static {
+    alias /home/zulip/local-static;
+}
 location /static/ {
     alias /home/zulip/prod-static/;
     gzip_static on;

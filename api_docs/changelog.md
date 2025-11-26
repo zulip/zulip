@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 437**
+
+* [`GET /users`](/api/get-users), [`GET
+  /users/{user_id}`](/api/get-user), [`GET
+  /users/{email}`](/api/get-user-by-email): Fixed a bug dating to
+  feature level 232, where guest users might incorrectly receive fake
+  backwards-compatibility users in the format intended for clients
+  using `POST /register` without the `user_list_incomplete` client
+  capability.
+
 **Feature level 436**
 
 * [Message formatting](/api/message-formatting): Added new

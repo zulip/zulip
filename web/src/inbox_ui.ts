@@ -1196,7 +1196,7 @@ function render_channel_view(channel_id: number): void {
             normal_view: false,
             search_val: search_keyword,
             INBOX_SEARCH_ID,
-            show_channel_folder_toggle: channel_folders.user_has_folders(),
+            show_channel_folder_toggle: false,
         }),
     );
     // Hide any empty inbox text by default.
@@ -1237,7 +1237,7 @@ export function complete_rerender(coming_from_other_views = false): void {
                     $("#inbox-pane").html(
                         render_inbox_view({
                             unknown_channel: true,
-                            show_channel_folder_toggle: channel_folders.user_has_folders(),
+                            show_channel_folder_toggle: false,
                         }),
                     );
                     return;
@@ -1386,11 +1386,14 @@ export function collapse_or_expand(container_id: string): void {
 
 // We show the note "All of your unread conversations are hidden.
 // Click on a section, folder, or channel to see what's inside" for
-// the following situations:
+// the following situations in the non-channel inbox view:
 //   - All folders collapsed.
 //   - If all folders are not collapsed, all visible channels are collapsed.
 // For all other cases, the note is hidden.
 function should_show_all_folders_collapsed_note(): boolean {
+    if (inbox_util.is_channel_view()) {
+        return false;
+    }
     // TODO: Ideally this would read from internal structures, not the DOM.
     const has_visible_dm_folder = !$("#inbox-dm-header").hasClass("hidden_by_filters");
     if (has_visible_dm_folder && !collapsed_containers.has("inbox-dm-header")) {
