@@ -52,17 +52,6 @@
                 outline: 0;
             }
 
-            .user-circle {
-                /* 11px at 16px/1em */
-                font-size: 0.6875em;
-                align-self: center;
-                /* TODO: A grid rewrite of typeahead rows
-                   should help to obviate these kinds of
-                   fiddly spacing hacks. */
-                margin-right: 2px;
-                margin-left: -2px;
-            }
-
             &.topic-typeahead-link {
                 gap: 5px;
             }
@@ -196,21 +185,44 @@
 /* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
     flex: 0 0 auto;
+    position: relative;
     height: 1.3125em; /* 21px at 16px/1em */
     width: 1.3125em; /* 21px at 16px/1em */
     border-radius: 4px;
 
-    &.no-presence-circle {
-        /* 0.6875em at 16px/1em is the width of presence circle,
-           no margin (-2px left margin + 2px right margin = 0px),
-           and 0.3571  is the gap between the presence circle and
-           image avatars. */
-        margin-left: calc(0.6875em + 0.3571em);
-        /* To properly align icons within the 21px square box
-           defined on .typeahead-image, we establish a flexbox: */
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .typeahead-image-avatar {
+        border-radius: 4px;
+        /* Override bootstrap img */
+        vertical-align: baseline;
+    }
+
+    .user-circle {
+        position: absolute;
+        /* This is smaller than the sidebar because avatars here are smaller */
+        font-size: 0.4375em; /* 7px at 16px/1em */
+        line-height: 1;
+        bottom: -0.5px;
+        right: -0.5px;
+        background-color: var(--color-background-dropdown-widget);
+        padding: 1px;
+        border-radius: 50%;
+
+        &.user-circle-offline {
+            display: none;
+        }
+    }
+
+    /* Move the background styles onto the :before element so that the 1px padding
+       outline still works. */
+    .user-circle-idle {
+        background: var(--color-background-dropdown-widget);
+    }
+
+    .user-circle-idle::before {
+        background: var(--gradient-user-circle-idle);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        border-radius: 50%;
     }
 }
 
