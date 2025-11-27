@@ -121,6 +121,7 @@ class NarrowParameter(BaseModel):
             "sender",
             "group-pm-with",
             "dm-including",
+            "mentions",
             "with",
         ]
         operators_supporting_ids = ["pm-with", "dm"]
@@ -302,6 +303,7 @@ class NarrowBuilder:
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
             "dm-including": self.by_dm_including,
+            "mentions": self.by_mention,
             # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
@@ -690,6 +692,31 @@ class NarrowBuilder:
             # If the user does not have a recipient_id, then they only rely on
             # direct group message for their conversations.
             cond = and_(private_flag, realm_match, direct_message_group_cond)
+        return query.where(maybe_negate(cond))
+
+    def by_mention(
+        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
+    ) -> Select:
+        assert self.user_profile is not None
+
+        try:
+            if isinstance(operand, str):
+                target_user = get_user_including_cross_realm(operand, self.realm)
+            else:
+                target_user = get_user_by_id_in_realm_including_cross_realm(operand, self.realm)
+        except (JsonableError, UserProfile.DoesNotExist):
+            raise BadNarrowOperatorError("unknown user " + str(operand))
+
+        # Only check for direct (visible) personal mentions here. We
+        # intentionally do not consider other mention-related flags
+        # (group_mentioned, stream_wildcard_mentioned,
+        # topic_wildcard_mentioned) or silent mentions, since this
+        # operator is defined to only match explicit @-mentions
+        # directed at notifying this user individually.
+        cond = (column("user_profile_id", Integer) == target_user.id) & (
+            column("flags", Integer).op("&")(literal(UserMessage.flags.mentioned.mask)) != 0
+        )
+
         return query.where(maybe_negate(cond))
 
     def by_group_pm_with(
