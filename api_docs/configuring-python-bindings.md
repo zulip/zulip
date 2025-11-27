@@ -30,8 +30,15 @@ achieve that:
 
 {settings_tab|your-bots}
 
-1. Click the **download** (<i class="fa fa-download"></i>) icon on the profile
-   card of the desired bot to download the bot's `zuliprc` file.
+1. In the **Actions** column, click the **manage bot**
+   (<i class="zulip-icon zulip-icon-user-cog"></i>) icon,
+   and scroll down to **Zuliprc configuration**.
+
+1. Click the **download**
+   (<i class="zulip-icon zulip-icon-download"></i>) icon
+   to download the bot's `zuliprc` file, or the **copy**
+   (<i class="zulip-icon zulip-icon-copy"></i>) icon to
+   copy the file's content to your clipboard.
 
 !!! warn ""
 
