@@ -1046,3 +1046,11 @@
         padding-left: 0.3em;
     }
 }
+
+/* This is required to align the time-example output in the "?" menu. */
+#markdown-instructions p:has(time) {
+    display: flex;
+    align-items: center;
+    margin: calc(var(--markdown-interelement-space-px) / 2) 0;
+    padding: calc(var(--message-box-link-focus-ring-block-padding) / 2) 0;
+}
