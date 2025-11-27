@@ -183,6 +183,7 @@ export function show_error_message(
     classname: string,
     $container: JQuery,
     $bad_input?: JQuery,
+    action_button_text: string | null = null,
 ): void {
     // Important: This API intentionally does not support passing an
     // HTML message; doing so creates unnecessary XSS risk. If you
@@ -201,6 +202,7 @@ export function show_error_message(
         banner_text: message,
         button_text: null,
         classname,
+        action_button_text,
     });
     append_compose_banner_to_banner_list($(new_row_html), $container);
 
