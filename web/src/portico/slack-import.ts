@@ -5,10 +5,14 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import {$t} from "../i18n.ts";
+import {$t, $t_html} from "../i18n.ts";
 
 $(() => {
     if ($("#slack-import-dashboard").length > 0) {
+        const max_file_upload_size_mib = Number(
+            $("#slack-import-dashboard").attr("data-max-file-size"),
+        );
+        const support_email = $("#slack-import-dashboard").attr("data-support-email");
         const key = $<HTMLInputElement>("#auth_key_for_file_upload").val();
         const uppy = new Uppy({
             autoProceed: true,
@@ -16,6 +20,7 @@ $(() => {
                 maxNumberOfFiles: 1,
                 minNumberOfFiles: 1,
                 allowedFileTypes: [".zip", "application/zip"],
+                maxFileSize: max_file_upload_size_mib * 1024 * 1024,
             },
             meta: {
                 key,
@@ -25,6 +30,14 @@ $(() => {
                     youCanOnlyUploadFileTypes: $t({
                         defaultMessage: "Upload your Slack export zip file.",
                     }),
+                    exceedsSize: $t(
+                        {
+                            defaultMessage: "File exceeds maximum allowed size of {size} MiB.",
+                        },
+                        {
+                            size: max_file_upload_size_mib,
+                        },
+                    ),
                 },
                 // Copied from
                 // https://github.com/transloadit/uppy/blob/d1a3345263b3421a06389aa2e84c66e894b3f29d/packages/%40uppy/utils/src/Translator.ts#L122
@@ -40,6 +53,8 @@ $(() => {
         });
         uppy.use(Dashboard, {
             target: "#slack-import-dashboard",
+            // This will be replace by an HTML note after being mounted.
+            note: "...",
         });
         uppy.use(Tus, {
             endpoint: "/api/v1/tus/",
@@ -60,6 +75,19 @@ $(() => {
             $("#slack-import-uploaded-file-name").text(file.name);
             $("#slack-import-file-upload-error").text("");
             $("#realm-creation-form-slack-import .register-button").prop("disabled", false);
+        });
+        uppy.on("dashboard:modal-open", () => {
+            // Replace the note with the actual content after the dashboard is mounted.
+            const $note = $(".uppy-Dashboard-note");
+            $note.html(
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Upload the zip file you obtained from Slack. The maximum allowed file size is {size} MiB. Contact {support_email} if you need a larger size limit.",
+                    },
+                    {size: max_file_upload_size_mib, support_email},
+                ),
+            );
         });
 
         $(".slack-import-upload-file").on("click", (e) => {
