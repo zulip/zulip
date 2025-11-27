@@ -60,6 +60,7 @@ class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
     MAPPING = "mapping"
+    INCLUDE_REPOSITORY_NAME = "include_repository_name"
 
 
 @dataclass
@@ -95,6 +96,12 @@ class WebhookUrlOption:
                 return cls(
                     name=config.value,
                     label="Exclude notifications from private repositories",
+                    validator=check_bool,
+                )
+            case PresetUrlOption.INCLUDE_REPOSITORY_NAME:
+                return cls(
+                    name=config.value,
+                    label="Include repository name in the message",
                     validator=check_bool,
                 )
             case PresetUrlOption.MAPPING:  # nocoverage # Not used yet
