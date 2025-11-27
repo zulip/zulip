@@ -6,14 +6,15 @@ nixPkgs = ["python312", "nginx", "supervisor", "postgresql"]
 
 [phases.install]
 cmds = [
-    "pip install -r requirements.txt",
-    "python manage.py collectstatic --noinput",
+    "pip install uv",
+    "uv sync --frozen --group prod",
+    "uv run python manage.py collectstatic --noinput",
 ]
 
 [phases.build]
 cmds = [
-    "python manage.py migrate --noinput",
+    "uv run python manage.py migrate --noinput",
 ]
 
 [start]
-cmd = "supervisord -c /app/supervisord.conf"
+cmd = "uv run supervisord -c /app/supervisord.conf"
