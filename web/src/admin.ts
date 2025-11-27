@@ -10,6 +10,7 @@ import {$t, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as settings from "./settings.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -142,6 +143,10 @@ export function build_page(): void {
             "https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html";
     }
 
+    const realm_description = current_user.is_admin
+        ? realm.realm_description
+        : postprocess_content(page_params.realm_rendered_description);
+
     const options = {
         custom_profile_field_types: realm.custom_profile_field_types,
         full_name: current_user.full_name,
@@ -152,7 +157,7 @@ export function build_page(): void {
         server_jitsi_server_url: realm.server_jitsi_server_url,
         giphy_rating_options: realm.giphy_rating_options,
         giphy_api_key_empty: realm.giphy_api_key === "",
-        realm_description: realm.realm_description,
+        realm_description,
         realm_inline_image_preview: realm.realm_inline_image_preview,
         server_inline_image_preview: realm.server_inline_image_preview,
         realm_inline_url_embed_preview: realm.realm_inline_url_embed_preview,

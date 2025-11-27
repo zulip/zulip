@@ -205,10 +205,11 @@ def build_page_params_for_home_page_load(
 
     page_params["translation_data"] = get_language_translation_data(request_language)
 
+    # This is used by `admin.ts` to display realm description for non-administrator
+    # logged-in users.
+    page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
+
     if user_profile is None:
-        # Get rendered version of realm description which is displayed in right
-        # sidebar for spectator.
-        page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
         page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
 
     return queue_id, page_params
