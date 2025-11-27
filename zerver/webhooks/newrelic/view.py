@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
@@ -77,8 +77,7 @@ EXPECTED_FIELDS = [
 
 def get_timestamp_string(payload: WildValue, field: str) -> str:
     unix_time = payload[field].tame(check_int)
-    timestamp = timestamp_to_datetime(unix_time / 1000)
-    return f"<time: {timestamp} >"
+    return datetime_to_global_time(timestamp_to_datetime(unix_time / 1000))
 
 
 def parse_payload(payload: WildValue) -> dict[str, str]:

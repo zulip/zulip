@@ -14,7 +14,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: CRITICAL
 **State**: ACTIVATED
-**Updated at**: <time: 2024-04-22 07:08:28.699000+00:00 >
+**Updated at**: <time:2024-04-22T07:08:28+00:00>
 
 ```
 
@@ -23,7 +23,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `Zulip Server Low Storage`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 03:05:31.352000+00:00 >
+- **Incident created at**: <time:2024-04-22T03:05:31+00:00>
 
 ```
 """.strip()
@@ -43,7 +43,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: HIGH
 **State**: ACTIVATED
-**Updated at**: <time: 2024-04-22 07:12:29.494000+00:00 >
+**Updated at**: <time:2024-04-22T07:12:29+00:00>
 
 ```
 
@@ -52,7 +52,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `Storage on Host Exceeded Threshold`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 07:12:29.493000+00:00 >
+- **Incident created at**: <time:2024-04-22T07:12:29+00:00>
 - **Your custom payload**: somedata123
 
 ```
@@ -73,7 +73,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: CRITICAL
 **State**: CLOSED
-**Updated at**: <time: 2024-04-22 06:17:37.383000+00:00 >
+**Updated at**: <time:2024-04-22T06:17:37+00:00>
 
 ```
 
@@ -82,7 +82,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `High CPU`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 06:16:30.228000+00:00 >
+- **Incident created at**: <time:2024-04-22T06:16:30+00:00>
 
 ```
 """.strip()
@@ -102,7 +102,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: HIGH
 **State**: CLOSED
-**Updated at**: <time: 2024-04-22 07:15:35.419000+00:00 >
+**Updated at**: <time:2024-04-22T07:15:35+00:00>
 **Acknowledged by**: Pieter Cardillo Kwok
 ```
 
@@ -111,7 +111,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `Storage on Host Exceeded Threshold`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 07:12:29.493000+00:00 >
+- **Incident created at**: <time:2024-04-22T07:12:29+00:00>
 - **Your custom payload**: somedata123
 
 ```
@@ -132,7 +132,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: HIGH
 **State**: ACTIVATED
-**Updated at**: <time: 2024-04-22 07:14:37.412000+00:00 >
+**Updated at**: <time:2024-04-22T07:14:37+00:00>
 
 ```
 
@@ -141,7 +141,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `Storage on Host Exceeded Threshold`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 07:12:29.493000+00:00 >
+- **Incident created at**: <time:2024-04-22T07:12:29+00:00>
 
 ```
 """.strip()
@@ -161,7 +161,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: HIGH
 **State**: ACTIVATED
-**Updated at**: <time: 2024-04-22 07:14:37.412000+00:00 >
+**Updated at**: <time:2024-04-22T07:14:37+00:00>
 **Acknowledged by**: Pieter Cardillo Kwok
 ```
 
@@ -170,7 +170,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `Storage on Host Exceeded Threshold`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 07:12:29.493000+00:00 >
+- **Incident created at**: <time:2024-04-22T07:12:29+00:00>
 
 ```
 """.strip()
@@ -190,7 +190,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: CRITICAL
 **State**: CREATED
-**Updated at**: <time: 2024-04-22 06:36:29.495000+00:00 >
+**Updated at**: <time:2024-04-22T06:36:29+00:00>
 
 ```
 
@@ -199,7 +199,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `High CPU`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 06:36:29.495000+00:00 >
+- **Incident created at**: <time:2024-04-22T06:36:29+00:00>
 
 ```
 """.strip()
@@ -219,7 +219,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: CRITICAL
 **State**: CREATED
-**Updated at**: <time: 2024-04-22 06:36:29.495000+00:00 >
+**Updated at**: <time:2024-04-22T06:36:29+00:00>
 **Acknowledged by**: John Doe
 ```
 
@@ -228,7 +228,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `High CPU`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 06:36:29.495000+00:00 >
+- **Incident created at**: <time:2024-04-22T06:36:29+00:00>
 
 ```
 """.strip()
@@ -248,7 +248,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: HIGH
 **State**: ACTIVATED
-**Updated at**: <time: 2024-04-22 07:12:29.494000+00:00 >
+**Updated at**: <time:2024-04-22T07:12:29+00:00>
 
 ```
 
@@ -257,7 +257,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `Storage on Host Exceeded Threshold`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 07:12:29.493000+00:00 >
+- **Incident created at**: <time:2024-04-22T07:12:29+00:00>
 - **Your custom payload**: somedata123
 - **Custom status 1**: True
 - **Custom list 1**: SSD, 2000, False, None, 13.33
@@ -282,7 +282,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: CRITICAL
 **State**: CLOSED
-**Updated at**: <time: 2024-04-22 06:17:37.383000+00:00 >
+**Updated at**: <time:2024-04-22T06:17:37+00:00>
 
 ```
 
@@ -291,7 +291,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `High CPU`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 06:16:30.228000+00:00 >
+- **Incident created at**: <time:2024-04-22T06:16:30+00:00>
 - **Your custom payload**: somedata123
 - **Custom status 1**: True
 - **Custom list 1**: SSD, 2000, False, None, 13.33
@@ -316,7 +316,7 @@ class NewRelicHookTests(WebhookTestCase):
 ```quote
 **Priority**: HIGH
 **State**: ACTIVATED
-**Updated at**: <time: 2024-04-22 07:12:29.494000+00:00 >
+**Updated at**: <time:2024-04-22T07:12:29+00:00>
 
 ```
 
@@ -325,7 +325,7 @@ class NewRelicHookTests(WebhookTestCase):
 - **Alert policies**: `Golden Signals`
 - **Conditions**: `Storage on Host Exceeded Threshold`
 - **Total incidents**: 1
-- **Incident created at**: <time: 2024-04-22 07:12:29.493000+00:00 >
+- **Incident created at**: <time:2024-04-22T07:12:29+00:00>
 - **Invalid fields 1**: *Value is not a supported data type*
 - **Invalid field 2**: *Value is not a supported data type*
 - **Is valid**: True
