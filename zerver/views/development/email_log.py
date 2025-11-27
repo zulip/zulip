@@ -119,10 +119,12 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     assert result.status_code == 200
 
     # Verification for new email
+    # Internal client should be designate via HTTP_USER_AGENT to ensure proper client parsing in the middleware.
     result = client.patch(
         "/json/settings",
         urlencode({"email": "hamlets-new@zulip.com"}),
         content_type="application/x-www-form-urlencoded",
+        HTTP_USER_AGENT="internal",
         HTTP_HOST=realm.host,
     )
     assert result.status_code == 200
