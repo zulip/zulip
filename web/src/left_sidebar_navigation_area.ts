@@ -11,6 +11,7 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import type {NarrowTerm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 
@@ -107,21 +108,21 @@ export function rewire_select_top_left_corner_item(
 }
 
 export function handle_narrow_activated(filter: Filter): void {
-    let ops: string[];
+    let terms: NarrowTerm[];
     let filter_name: string;
 
     // TODO: handle confused filters like "in:all stream:foo"
-    ops = filter.operands("in");
-    if (ops[0] !== undefined) {
-        filter_name = ops[0];
+    terms = filter.terms_with_operator("in");
+    if (terms[0] !== undefined) {
+        filter_name = terms[0].operand;
         if (filter_name === "home") {
             highlight_all_messages_view();
             return;
         }
     }
-    ops = filter.operands("is");
-    if (ops[0] !== undefined) {
-        filter_name = ops[0];
+    terms = filter.terms_with_operator("is");
+    if (terms[0] !== undefined) {
+        filter_name = terms[0].operand;
         if (filter_name === "starred") {
             select_top_left_corner_item(".top_left_starred_messages");
             return;
@@ -133,7 +134,7 @@ export function handle_narrow_activated(filter: Filter): void {
     const term_types = filter.sorted_term_types();
     if (
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
-        filter.operands("sender")[0] === people.my_current_email()
+        filter.terms_with_operator("sender")[0]!.operand === people.my_current_email()
     ) {
         select_top_left_corner_item(".top_left_my_reactions");
         return;

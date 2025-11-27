@@ -1044,12 +1044,12 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
         topic_selected: false,
     };
 
-    const op_stream = filter.operands("channel");
-    if (op_stream[0] === undefined) {
+    const channel_terms = filter.terms_with_operator("channel");
+    if (channel_terms.length === 0) {
         return result;
     }
 
-    const stream_id = Number.parseInt(op_stream[0], 10);
+    const stream_id = Number.parseInt(channel_terms[0]!.operand, 10);
 
     if (!stream_id) {
         return result;
@@ -1061,8 +1061,8 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
 
     result.stream_id = stream_id;
 
-    const op_topic = filter.operands("topic");
-    result.topic_selected = op_topic.length === 1;
+    const topic_terms = filter.terms_with_operator("topic");
+    result.topic_selected = topic_terms.length === 1;
 
     return result;
 }

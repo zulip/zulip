@@ -3,13 +3,19 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
+import {Filter} from "./filter.ts";
 import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {current_user, narrow_term_schema, realm} from "./state_data.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import {
+    current_user,
+    narrow_canonical_term_schema,
+    narrow_operator_schema,
+    realm,
+} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
@@ -57,14 +63,11 @@ export function encode_stream_id(stream_id: number): string {
     return internal_url.encodeHashComponent(slug);
 }
 
-export function decode_operand(operator: string, operand: string): string {
-    if (
-        operator === "group-pm-with" ||
-        operator === "dm-including" ||
-        operator === "dm" ||
-        operator === "sender" ||
-        operator === "pm-with"
-    ) {
+export function decode_operand(
+    operator: NarrowCanonicalTerm["operator"],
+    operand: NarrowCanonicalTerm["operand"],
+): string {
+    if (operator === "dm-including" || operator === "dm" || operator === "sender") {
         const emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;
@@ -73,7 +76,7 @@ export function decode_operand(operator: string, operand: string): string {
 
     operand = internal_url.decodeHashComponent(operand);
 
-    if (util.canonicalize_channel_synonyms(operator) === "channel") {
+    if (operator === "channel") {
         return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
     }
 
@@ -201,7 +204,7 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined {
     // There's a Python copy of this function in `zerver/lib/url_decoding.py`
     // called `parse_narrow_url`, the two should be kept roughly in sync.
 
@@ -236,14 +239,17 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
             return undefined;
         }
 
-        const operand = decode_operand(operator, raw_operand);
+        const canonical_operator = Filter.canonicalize_operator(
+            narrow_operator_schema.parse(operator),
+        );
+        const operand = decode_operand(canonical_operator, raw_operand);
         terms.push({
             negated,
-            operator,
+            operator: canonical_operator,
             operand,
         });
     }
-    return z.array(narrow_term_schema).parse(terms);
+    return z.array(narrow_canonical_term_schema).parse(terms);
 }
 
 export function channels_settings_edit_url(
@@ -422,7 +428,7 @@ export function decode_stream_topic_from_url(
         }
         // This check is important as a malformed url
         // may have `stream` / `channel`, `topic` or `near:` in a wrong order
-        if (terms[0]?.operator !== "stream" && terms[0]?.operator !== "channel") {
+        if (terms[0]?.operator !== "channel") {
             return null;
         }
         const stream_id = Number.parseInt(terms[0].operand, 10);
