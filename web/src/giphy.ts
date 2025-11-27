@@ -170,6 +170,11 @@ function toggle_giphy_popover(target: HTMLElement): void {
 
                 $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
                 $popper.on("keydown", ".compose-gif-icon-giphy", ui_util.convert_enter_to_click);
+                $popper.on("click", "#gif-search-clear", (e) => {
+                    e.stopPropagation();
+                    $("#gif-search-query").val("");
+                    void update_grid_with_search_term();
+                });
 
                 void (async () => {
                     gifs_grid = await renderGIPHYGrid(the($popper.find(".giphy-content")));
