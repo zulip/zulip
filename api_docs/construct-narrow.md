@@ -58,6 +58,10 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 12.0 (feature level 446), support was added for new filter,
+  `mentions`. The `mentions` operator filters messages that contain
+  a direct, visible personal mention of the specified user.
+
 * In Zulip 10.0 (feature level 366), support was added for a new
   `is:muted` operator combination, matching messages in topics and
   channels that the user has [muted](/help/mute-a-topic).
