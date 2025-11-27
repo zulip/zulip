@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from typing import TypedDict
 
+from zerver.lib.timestamp import datetime_to_global_time
+
 # For integrations that don't have example webhook fixtures/payloads,
 # we create an Zulip notification message content and topic here in
 # order to generate an example screenshot to include in the documentation
@@ -50,7 +52,7 @@ TICKET_NUMBER = THREE_DIGIT_NUMBER
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
 
-DATETIME_GLOBAL = f"<time:{_DT}>"
+DATETIME_GLOBAL = datetime_to_global_time(_DT)
 
 DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
 DATE_LONG = _DT.strftime("%A, %B %d, %Y")
