@@ -826,9 +826,8 @@
     {
       "name": "timestamp_invalid_input",
       "input": "<time:<alert(1)>>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: &lt;alert(1)</span>&gt;</p>",
-      "marked_expected_output": "<p><span>&lt;alert(1)</span>&gt;</p>",
-      "text_content": "Invalid time format: <alert(1)>"
+      "expected_output": "<p>&lt;time:&lt;alert(1)&gt;&gt;</p>",
+      "text_content": "<time:<alert(1)>>"
     },
     {
       "name": "timestamp_timezone",
@@ -840,23 +839,20 @@
     {
       "name": "timestamp_incorrect",
       "input": "<time:**hello world**>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: **hello world**</span></p>",
-      "marked_expected_output": "<p><span>**hello world**</span></p>",
-      "text_content": "Invalid time format: **hello world**"
+      "expected_output": "<p>&lt;time:**hello world**&gt;</p>",
+      "text_content": "<time:**hello world**>"
     },
     {
       "name": "timestamp_invalid_timezone",
       "input": "<time:1969-12-31T00:00:00+32:00>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 1969-12-31T00:00:00+32:00</span></p>",
-      "marked_expected_output": "<p><span>1969-12-31T00:00:00+32:00</span></p>",
-      "text_content": "Invalid time format: 1969-12-31T00:00:00+32:00"
+      "expected_output": "<p>&lt;time:1969-12-31T00:00:00+32:00&gt;</p>",
+      "text_content": "<time:1969-12-31T00:00:00+32:00>"
     },
     {
       "name": "timestamp_overflow",
       "input": "<time:0001-01-01T01:00:00+02:00>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 0001-01-01T01:00:00+02:00</span></p>",
-      "marked_expected_output": "<p><span>0001-01-01T01:00:00+02:00</span></p>",
-      "text_content": "Invalid time format: 0001-01-01T01:00:00+02:00"
+      "expected_output": "<p>&lt;time:0001-01-01T01:00:00+02:00&gt;</p>",
+      "text_content": "<time:0001-01-01T01:00:00+02:00>"
     },
     {
       "name": "timestamp_unix",
@@ -867,9 +863,9 @@
     {
       "name": "timestamp_unix_overflow",
       "input": "Let's meet at <time:1234567890123>.",
-      "expected_output": "<p>Let's meet at <span class=\"timestamp-error\">Invalid time format: 1234567890123</span>.</p>",
+      "expected_output": "<p>Let's meet at &lt;time:1234567890123&gt;.</p>",
       "marked_expected_output": "<p>Let's meet at <time datetime=\"+041091-11-25T05:02:03Z\">1234567890123</time>.</p>",
-      "text_content": "Let's meet at Invalid time format: 1234567890123."
+      "text_content": "Let's meet at <time:1234567890123>."
     },
     {
       "name": "tex_inline",
