@@ -178,12 +178,22 @@ def create_realm_custom_profile_field(
     hint: str = "",
     name: Annotated[str, StringConstraints(strip_whitespace=True)] = "",
     required: Json[bool] = False,
+    use_in_mention_suggestions: Json[bool] = False,
 ) -> HttpResponse:
     if field_data is None:
         field_data = {}
     if display_in_profile_summary and display_in_profile_summary_limit_reached(user_profile.realm):
         raise JsonableError(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
+        )
+
+    # Validate that use_in_mention_suggestions is only used with compatible field types
+    if use_in_mention_suggestions and field_type not in (
+        CustomProfileField.SHORT_TEXT,
+        CustomProfileField.EXTERNAL_ACCOUNT,
+    ):
+        raise JsonableError(
+            _("Field type not supported for use in @-mention suggestions.")
         )
 
     validate_custom_profile_field(name, hint, field_type, field_data, display_in_profile_summary)
@@ -197,6 +207,7 @@ def create_realm_custom_profile_field(
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
                 editable_by_user=editable_by_user,
+                use_in_mention_suggestions=use_in_mention_suggestions,
             )
             return json_success(request, data={"id": field.id})
         else:
@@ -209,6 +220,7 @@ def create_realm_custom_profile_field(
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
                 editable_by_user=editable_by_user,
+                use_in_mention_suggestions=use_in_mention_suggestions,
             )
             return json_success(request, data={"id": field.id})
     except IntegrityError:
@@ -241,6 +253,7 @@ def update_realm_custom_profile_field(
     hint: str | None = None,
     name: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None,
     required: Json[bool] | None = None,
+    use_in_mention_suggestions: Json[bool] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -253,6 +266,15 @@ def update_realm_custom_profile_field(
     ):
         raise JsonableError(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
+        )
+
+    # Validate that use_in_mention_suggestions is only used with compatible field types
+    if use_in_mention_suggestions and field.field_type not in (
+        CustomProfileField.SHORT_TEXT,
+        CustomProfileField.EXTERNAL_ACCOUNT,
+    ):
+        raise JsonableError(
+            _("Field type not supported for use in @-mention suggestions.")
         )
 
     if (
@@ -281,6 +303,7 @@ def update_realm_custom_profile_field(
             display_in_profile_summary=display_in_profile_summary,
             required=required,
             editable_by_user=editable_by_user,
+            use_in_mention_suggestions=use_in_mention_suggestions,
         )
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))

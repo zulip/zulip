@@ -89,6 +89,27 @@ of the failure, you can just rerun the script. For more information, see
 [installer details](deployment.md#zulip-installer-details) and
 [troubleshooting](troubleshooting.md#troubleshooting-the-zulip-installer).
 
+:::{warning}
+**Installing on a server with existing services**: If you're installing Zulip on a server
+that already has other web services (like ownCloud, Nextcloud, or other nginx sites),
+please note that:
+
+- **Zulip does NOT modify `/etc/nginx/nginx.conf`** - The default nginx user (typically
+  `www-data`) is preserved, so other sites will continue to work.
+- **Zulip configuration is site-specific** - Zulip creates its configuration in
+  `/etc/nginx/sites-available/zulip-enterprise` and links it to `sites-enabled`, so it
+  won't interfere with other site configurations.
+- **Files that ARE modified**:
+  - `/etc/nginx/zulip-include/` - Zulip-specific include files
+  - `/etc/nginx/sites-enabled/default` - Removed (if present)
+  - `/var/log/nginx` - Permissions adjusted (owner: www-data, group: adm)
+  - `/etc/nginx/dhparam.pem` - Zulip's DH parameters file
+  - `/etc/nginx/uwsgi_params` - uWSGI parameters (if not already present)
+
+If you need to uninstall Zulip, you can remove the site configuration and Zulip-specific
+files, but the nginx main configuration will remain unchanged.
+:::
+
 #### Installer options
 
 - `--email=it-team@example.com`: A **real email address for the person
