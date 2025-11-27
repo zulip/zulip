@@ -1,6 +1,8 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import type {ReferenceElement} from "tippy.js";
+import type * as z from "zod/mini";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import render_compose from "../templates/compose.hbs";
@@ -116,7 +118,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
-import * as server_events from "./server_events.js";
+import * as server_events from "./server_events.ts";
 import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
 import * as settings_notifications from "./settings_notifications.ts";
@@ -184,11 +186,11 @@ import * as widgets from "./widgets.ts";
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
-function initialize_bottom_whitespace() {
+function initialize_bottom_whitespace(): void {
     $("#bottom_whitespace").html(render_view_bottom_loading_indicator());
 }
 
-function initialize_navbar() {
+function initialize_navbar(): void {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
@@ -202,7 +204,7 @@ function initialize_navbar() {
     });
 }
 
-function initialize_compose_box() {
+function initialize_compose_box(): void {
     $("#compose-container").append(
         $(
             render_compose({
@@ -219,7 +221,7 @@ function initialize_compose_box() {
     common.adjust_mac_kbd_tags(".open_enter_sends_dialog kbd");
 }
 
-function initialize_message_feed_errors() {
+function initialize_message_feed_errors(): void {
     $("#message_feed_errors_container").html(
         render_message_feed_errors({
             is_guest: current_user.is_guest,
@@ -227,14 +229,14 @@ function initialize_message_feed_errors() {
     );
 }
 
-export function initialize_kitchen_sink_stuff() {
+export function initialize_kitchen_sink_stuff(): void {
     // TODO:
     //      This function is a historical dumping ground
     //      for lots of miscellaneous setup.  Almost all of
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.ts.
 
-    const throttled_mousewheelhandler = _.throttle((_e, delta) => {
+    const throttled_mousewheelhandler = _.throttle((_e, delta: number) => {
         if (!narrow_state.is_message_feed_visible()) {
             // Since this function is called with a delay, it's
             // possible that message list was hidden before we reached here.
@@ -255,6 +257,7 @@ export function initialize_kitchen_sink_stuff() {
     }, 50);
 
     message_viewport.$scroll_container.on("wheel", (e) => {
+        assert(e.originalEvent instanceof WheelEvent);
         const delta = e.originalEvent.deltaY;
         if (
             !popovers.any_active() &&
@@ -278,12 +281,13 @@ export function initialize_kitchen_sink_stuff() {
     // new scroll event on the parent (?).
     $(".overlay-scroll-container, .scrolling_list, input, textarea").on("wheel", function (e) {
         const $self = scroll_util.get_scroll_element($(this));
-        const scroll = $self.scrollTop();
+        const scroll = $self.scrollTop()!;
+        assert(e.originalEvent instanceof WheelEvent);
         const delta = e.originalEvent.deltaY;
 
         // The -1 fudge factor is important here due to rounding errors.  Better
         // to err on the side of not scrolling.
-        const max_scroll = $self.prop("scrollHeight") - $self.innerHeight() - 1;
+        const max_scroll = $self.prop("scrollHeight") - $self.innerHeight()! - 1;
 
         e.stopPropagation();
         if ((delta < 0 && scroll <= 0) || (delta > 0 && scroll >= max_scroll)) {
@@ -346,10 +350,10 @@ export function initialize_kitchen_sink_stuff() {
                     previously_selected_id: event.previously_selected_id,
                     selected_id: event.id,
                     selected_idx: event.msg_list.selected_idx(),
-                    selected_idx_exact: messages.indexOf(event.msg_list.get(event.id)),
+                    selected_idx_exact: messages.indexOf(event.msg_list.get(event.id)!),
                     render_start: event.msg_list.view._render_win_start,
                     render_end: event.msg_list.view._render_win_end,
-                    selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
+                    selected_id_from_idx: messages[event.msg_list.selected_idx()]!.id,
                     msg_list_sorted: _.isEqual(
                         messages.map((message) => message.id),
                         message_lists.current
@@ -386,29 +390,32 @@ export function initialize_kitchen_sink_stuff() {
     }
 }
 
-function initialize_unread_ui() {
-    unread_ui.register_update_unread_counts_hook((counts) =>
-        activity_ui.update_dom_with_unread_counts(counts),
-    );
-    unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
-        left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations),
-    );
-    unread_ui.register_update_unread_counts_hook((counts) =>
-        stream_list.update_dom_with_unread_counts(counts),
-    );
-    unread_ui.register_update_unread_counts_hook((counts) =>
-        pm_list.update_dom_with_unread_counts(counts),
-    );
-    unread_ui.register_update_unread_counts_hook(() => topic_list.update());
-    unread_ui.register_update_unread_counts_hook((counts) =>
-        narrow_title.update_unread_counts(counts),
-    );
+function initialize_unread_ui(): void {
+    unread_ui.register_update_unread_counts_hook((counts) => {
+        activity_ui.update_dom_with_unread_counts(counts);
+    });
+    unread_ui.register_update_unread_counts_hook((counts, skip_animations) => {
+        left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations);
+    });
+    unread_ui.register_update_unread_counts_hook((counts) => {
+        stream_list.update_dom_with_unread_counts(counts);
+    });
+    unread_ui.register_update_unread_counts_hook((counts) => {
+        pm_list.update_dom_with_unread_counts(counts);
+    });
+    unread_ui.register_update_unread_counts_hook(() => {
+        topic_list.update();
+    });
+    unread_ui.register_update_unread_counts_hook((counts) => {
+        narrow_title.update_unread_counts(counts);
+    });
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
-export async function initialize_everything(state_data) {
+type StateData = z.infer<typeof state_data_schema>;
+async function initialize_everything(state_data: StateData): Promise<void> {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -470,7 +477,10 @@ export async function initialize_everything(state_data) {
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
-    const message_reminder_click_handler = (remind_message_id, target) => {
+    const message_reminder_click_handler = (
+        remind_message_id: number,
+        target: ReferenceElement,
+    ): void => {
         compose_send_menu_popover.open_schedule_message_menu(remind_message_id, target);
     };
     message_actions_popover.initialize({message_reminder_click_handler});
@@ -577,6 +587,7 @@ export async function initialize_everything(state_data) {
     stream_list.initialize({
         show_channel_feed(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
+            assert(sub !== undefined);
             sidebar_ui.hide_all();
             popovers.hide_all();
             message_view.show(
@@ -711,6 +722,7 @@ export async function initialize_everything(state_data) {
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);
+            assert(sub !== undefined);
             const latest_msg_id = stream_topic_history.get_latest_known_message_id_in_topic(
                 stream_id,
                 topic,
@@ -757,7 +769,7 @@ export async function initialize_everything(state_data) {
     $("#app-loading").addClass("loaded");
 }
 
-function show_try_zulip_modal() {
+function show_try_zulip_modal(): void {
     const html_body = render_try_zulip_modal();
     dialog_widget.launch({
         text_heading: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
@@ -799,7 +811,7 @@ $(() => {
             data,
             success(response_data) {
                 const state_data = state_data_schema.parse(response_data);
-                initialize_everything(state_data);
+                void initialize_everything(state_data);
                 if (page_params.show_try_zulip_modal) {
                     show_try_zulip_modal();
                 }
@@ -815,6 +827,6 @@ $(() => {
         const state_data = page_params.state_data;
         assert(state_data !== null);
         page_params.state_data = null;
-        initialize_everything(state_data);
+        void initialize_everything(state_data);
     }
 });

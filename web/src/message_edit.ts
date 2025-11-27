@@ -1617,7 +1617,7 @@ export function move_topic_containing_message_to_stream(
         data: request,
         success(): void {
             // The main UI will update via receiving the event
-            // from server_events.js.
+            // from server_events.ts.
             reset_modal_ui();
             dialog_widget.close();
             if (toast_params) {
