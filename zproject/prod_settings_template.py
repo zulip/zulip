@@ -718,7 +718,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 #################
 ## Animated GIF integration powered by GIPHY.  See:
-## https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
+## https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
 # GIPHY_API_KEY = "<Your API key from GIPHY>"
 
 ################
