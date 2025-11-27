@@ -9,6 +9,13 @@
     }
 }
 
+#reminders-overlay.overlay,
+#scheduled_messages_overlay.overlay {
+    .overlay-container {
+        margin: 2.5vh auto;
+    }
+}
+
 #scheduled_message_indicator {
     display: block;
     margin-left: 10px;
