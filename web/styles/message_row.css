@@ -1126,6 +1126,10 @@
     padding-bottom: 10px;
     text-align: center;
 
+    .zulip-icon {
+        margin-left: 0.15em; /* 2.1px at 14px / em */
+    }
+
     .stream-status {
         opacity: 0.6;
 
@@ -1187,4 +1191,8 @@
 .date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
+}
+
+.not-subscribed-banner .banner-content {
+    align-items: center;
 }
