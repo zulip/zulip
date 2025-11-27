@@ -5,3 +5,5 @@
 /generated/pygments_data.json
 # From passing time zone data to the frontend
 /generated/timezones.json
+# From browserslist
+/generated/supported_browser_regex.ts
