@@ -48,10 +48,7 @@ RUN chown -R zulip:zulip /app
 # Create necessary directories with proper permissions
 RUN mkdir -p /var/log/zulip /home/zulip && chown -R zulip:zulip /var/log/zulip /home/zulip
 
-# Collect static files as zulip user
-USER zulip
-RUN /app/.venv/bin/python manage.py collectstatic --noinput
-USER root
+# NOTE: collectstatic runs at container startup (supervisord) since it needs env vars
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
