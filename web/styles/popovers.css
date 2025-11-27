@@ -756,10 +756,10 @@ ul.popover-group-menu-member-list {
 
     .giphy-gif:focus,
     .tenor-gif:focus {
-        /* Red outline for clear visibility
+        /* Blue outline for clear visibility
          * of which image is in focus.
          */
-        outline: 1px solid hsl(0deg 100% 50%);
+        outline: 2px solid var(--color-selected-gif-in-grid-picker);
     }
 
     .gif-scrolling-container {
