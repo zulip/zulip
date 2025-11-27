@@ -79,6 +79,6 @@
     {{> message_reactions . }}
 {{/if}}
 
-{{#if (and (not is_hidden) msg.reminders)}}
+{{#if msg.reminders}}
     {{> message_reminders . }}
 {{/if}}
