@@ -1,0 +1,12 @@
+# Ruff configuration for nodl-chat
+# See: https://docs.astral.sh/ruff/configuration/
+
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

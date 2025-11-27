@@ -759,3 +759,20 @@ MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
 # Whether to prefer direct message group over personal recipient
 # for 1:1 or self messages.
 PREFER_DIRECT_MESSAGE_GROUP = False
+
+########################################################################
+# NODL MODIFICATION START - Supabase JWT Authentication Settings
+# Reason: Configure JWT validation for Supabase authentication
+# Date: 2024-11-27
+########################################################################
+
+# Supabase JWT secret for validating tokens from nodl-frontend.
+# This should be set via the 'supabase_jwt_secret' secret in zulip-secrets.conf
+SUPABASE_JWT_SECRET: str | None = get_secret("supabase_jwt_secret")
+
+# Service key for internal API authentication between nodl services.
+# This should be set via the 'chat_service_key' secret in zulip-secrets.conf
+CHAT_SERVICE_KEY: str | None = get_secret("chat_service_key")
+
+# NODL MODIFICATION END
+########################################################################

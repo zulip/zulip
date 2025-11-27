@@ -21,6 +21,12 @@ from .config import (
 )
 from .config import DEVELOPMENT as DEVELOPMENT
 from .config import PRODUCTION as PRODUCTION
+# NODL MODIFICATION START - Import nodl apps
+# Reason: Register nodl Django apps for custom extensions
+# Date: 2024-11-27
+from nodl.apps import NODL_APPS
+# NODL MODIFICATION END
+
 from .configured_settings import (
     ADMINS,
     ALLOWED_HOSTS,
@@ -240,6 +246,13 @@ MIDDLEWARE = [
     "zerver.middleware.SetRemoteAddrFromRealIpHeader",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # NODL MODIFICATION START - Supabase JWT authentication middleware
+    # Reason: Validate Supabase JWT tokens for nodl-frontend users
+    # Date: 2024-11-27
+    # PR: Story 1.2
+    "nodl.auth.middleware.SupabaseJWTMiddleware",
+    "nodl.auth.middleware.ServiceKeyAuthMiddleware",
+    # NODL MODIFICATION END
     # Important: All middleware before LogRequests should be
     # inexpensive, because any time spent in that middleware will not
     # be counted in the LogRequests instrumentation of how time was
@@ -288,6 +301,12 @@ INSTALLED_APPS = [
 if USING_PGROONGA:
     INSTALLED_APPS += ["pgroonga"]
 INSTALLED_APPS += EXTRA_INSTALLED_APPS
+
+# NODL MODIFICATION START - Add nodl apps
+# Reason: Register nodl custom extension apps
+# Date: 2024-11-27
+INSTALLED_APPS += NODL_APPS
+# NODL MODIFICATION END
 
 ZILENCER_ENABLED = "zilencer" in INSTALLED_APPS
 CORPORATE_ENABLED = "corporate" in INSTALLED_APPS

@@ -1,0 +1,19 @@
+# nixpacks.toml - Railway build configuration for nodl-chat
+# See: https://nixpacks.com/docs/configuration/file
+
+[phases.setup]
+nixPkgs = ["python312", "nginx", "supervisor", "postgresql"]
+
+[phases.install]
+cmds = [
+    "pip install -r requirements.txt",
+    "python manage.py collectstatic --noinput",
+]
+
+[phases.build]
+cmds = [
+    "python manage.py migrate --noinput",
+]
+
+[start]
+cmd = "supervisord -c /app/supervisord.conf"

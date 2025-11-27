@@ -1,3 +1,149 @@
+# nodl-chat
+
+nodl-chat is a fork of [Zulip](https://zulip.com) with custom extensions for the nodl platform. It provides real-time team chat with Supabase authentication integration.
+
+## Project Overview
+
+This repository extends Zulip with nodl-specific features:
+- **Supabase JWT Authentication** - Integrate with nodl's auth system
+- **User/Workspace Sync** - Synchronize users and workspaces with nodl-backend
+- **Extension Models** - Custom data models for nodl features
+- **R2 Storage Backend** - Cloudflare R2 integration for file storage
+- **Additional API Endpoints** - REST APIs for nodl-specific operations
+
+All nodl customizations are contained in the `nodl/` directory to minimize merge conflicts with upstream Zulip.
+
+## Prerequisites
+
+- Python 3.12+
+- PostgreSQL 15+
+- Node.js 18+ (for frontend assets)
+- Git
+
+## Quick Start
+
+### 1. Clone the Repository
+
+```bash
+git clone git@github.com:Duatadmin/nodl-chat.git
+cd nodl-chat
+```
+
+### 2. Run Setup Script
+
+```bash
+./scripts/setup-dev.sh
+```
+
+### 3. Activate Virtual Environment
+
+```bash
+source venv/bin/activate
+```
+
+### 4. Run Development Server
+
+```bash
+python manage.py runserver
+```
+
+## Development Workflow
+
+### Project Structure
+
+```
+nodl-chat/
+├── nodl/                    # All nodl customizations
+│   ├── auth/               # Supabase JWT middleware
+│   ├── sync/               # User/workspace sync
+│   ├── extensions/         # Extension models
+│   ├── storage/            # R2 storage backend
+│   ├── api/                # Additional REST endpoints
+│   └── tests/              # nodl-specific tests
+├── zerver/                  # Zulip core (minimal modifications)
+├── zproject/                # Django project settings
+└── scripts/                 # Development scripts
+```
+
+### Making Changes
+
+1. **nodl code**: Add to `nodl/` directory
+2. **Zulip modifications**: Use NODL MODIFICATION markers:
+   ```python
+   # NODL MODIFICATION START - [Description]
+   # Reason: [Why this change is needed]
+   # Date: [Date]
+   [code]
+   # NODL MODIFICATION END
+   ```
+
+### Code Style
+
+| Tool | Purpose |
+|------|---------|
+| Ruff | Linting + formatting |
+| mypy | Type checking (strict mode) |
+
+Configuration in `ruff.toml` and `mypy.ini`.
+
+## Testing
+
+### Run All Tests
+
+```bash
+./scripts/run-tests.sh
+```
+
+### Run Specific Tests
+
+```bash
+# nodl tests only
+pytest nodl/tests/ -v
+
+# Linting
+ruff check nodl/
+
+# Type checking
+mypy nodl/ --ignore-missing-imports
+```
+
+## Deployment
+
+### Railway Deployment
+
+The project is configured for Railway deployment:
+- `nixpacks.toml` - Build configuration
+- `supervisord.conf` - Process management
+- `nginx.conf` - HTTP/WebSocket routing
+
+### Environment Variables
+
+Required environment variables for production:
+- `DATABASE_URL` - PostgreSQL connection string
+- `SECRET_KEY` - Django secret key
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_ANON_KEY` - Supabase anonymous key
+
+## Syncing with Upstream Zulip
+
+```bash
+# Fetch upstream changes
+git fetch upstream
+
+# Merge upstream main
+git merge upstream/main
+
+# Resolve conflicts (prioritize nodl/ changes)
+```
+
+## Fork Information
+
+- **Upstream**: https://github.com/zulip/zulip
+- **Fork Commit**: `cd67aef4aa3a7c42756781d948fe1ebc4d047ef2`
+- **Fork Date**: 2024-11-27
+
+---
+
 # Zulip overview
 
 [Zulip](https://zulip.com) is an open-source team collaboration tool with unique
