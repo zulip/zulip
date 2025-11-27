@@ -178,6 +178,7 @@ def create_realm_custom_profile_field(
     hint: str = "",
     name: Annotated[str, StringConstraints(strip_whitespace=True)] = "",
     required: Json[bool] = False,
+    use_in_mentions: Json[bool] | None = None,
 ) -> HttpResponse:
     if field_data is None:
         field_data = {}
@@ -197,6 +198,7 @@ def create_realm_custom_profile_field(
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
                 editable_by_user=editable_by_user,
+                use_in_mentions=use_in_mentions,
             )
             return json_success(request, data={"id": field.id})
         else:
@@ -209,6 +211,7 @@ def create_realm_custom_profile_field(
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
                 editable_by_user=editable_by_user,
+                use_in_mentions=use_in_mentions,
             )
             return json_success(request, data={"id": field.id})
     except IntegrityError:
@@ -241,6 +244,7 @@ def update_realm_custom_profile_field(
     hint: str | None = None,
     name: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None,
     required: Json[bool] | None = None,
+    use_in_mentions: Json[bool] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -281,6 +285,7 @@ def update_realm_custom_profile_field(
             display_in_profile_summary=display_in_profile_summary,
             required=required,
             editable_by_user=editable_by_user,
+            use_in_mentions=use_in_mentions,
         )
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))

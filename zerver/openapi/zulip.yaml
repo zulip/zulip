@@ -2076,6 +2076,7 @@ paths:
                                         "order": 1,
                                         "required": true,
                                         "editable_by_user": true,
+                                        "use_in_mentions": false,
                                       },
                                       {
                                         "id": 2,
@@ -2086,6 +2087,7 @@ paths:
                                         "order": 2,
                                         "required": true,
                                         "editable_by_user": true,
+                                        "use_in_mentions": false,
                                       },
                                       {
                                         "id": 3,
@@ -2096,6 +2098,7 @@ paths:
                                         "order": 3,
                                         "required": false,
                                         "editable_by_user": true,
+                                        "use_in_mentions": false,
                                       },
                                       {
                                         "id": 4,
@@ -2107,6 +2110,7 @@ paths:
                                         "display_in_profile_summary": true,
                                         "required": true,
                                         "editable_by_user": true,
+                                        "use_in_mentions": false,
                                       },
                                       {
                                         "id": 5,
@@ -2117,6 +2121,7 @@ paths:
                                         "order": 5,
                                         "required": false,
                                         "editable_by_user": false,
+                                        "use_in_mentions": false,
                                       },
                                       {
                                         "id": 6,
@@ -2128,6 +2133,7 @@ paths:
                                         "display_in_profile_summary": true,
                                         "required": false,
                                         "editable_by_user": true,
+                                        "use_in_mentions": false,
                                       },
                                       {
                                         "id": 7,
@@ -2138,6 +2144,7 @@ paths:
                                         "order": 7,
                                         "required": true,
                                         "editable_by_user": false,
+                                        "use_in_mentions": false,
                                       },
                                       {
                                         "id": 8,
@@ -2148,6 +2155,7 @@ paths:
                                         "order": 8,
                                         "required": true,
                                         "editable_by_user": true,
+                                        "use_in_mentions": true,
                                       },
                                     ],
                                   "id": 0,
@@ -13714,6 +13722,7 @@ paths:
                               "order": 1,
                               "required": true,
                               "editable_by_user": false,
+                              "use_in_mentions": false,
                             },
                             {
                               "id": 2,
@@ -13724,6 +13733,7 @@ paths:
                               "order": 2,
                               "required": true,
                               "editable_by_user": true,
+                              "use_in_mentions": false,
                             },
                             {
                               "id": 3,
@@ -13734,6 +13744,7 @@ paths:
                               "order": 3,
                               "required": false,
                               "editable_by_user": true,
+                              "use_in_mentions": false,
                             },
                             {
                               "id": 4,
@@ -13745,6 +13756,7 @@ paths:
                               "display_in_profile_summary": true,
                               "required": true,
                               "editable_by_user": true,
+                              "use_in_mentions": false,
                             },
                             {
                               "id": 5,
@@ -13755,6 +13767,7 @@ paths:
                               "order": 5,
                               "required": false,
                               "editable_by_user": false,
+                              "use_in_mentions": false,
                             },
                             {
                               "id": 6,
@@ -13766,6 +13779,7 @@ paths:
                               "display_in_profile_summary": true,
                               "required": false,
                               "editable_by_user": true,
+                              "use_in_mentions": false,
                             },
                             {
                               "id": 7,
@@ -13776,6 +13790,7 @@ paths:
                               "order": 7,
                               "required": true,
                               "editable_by_user": false,
+                              "use_in_mentions": false,
                             },
                             {
                               "id": 8,
@@ -13786,6 +13801,7 @@ paths:
                               "order": 8,
                               "required": true,
                               "editable_by_user": true,
+                              "use_in_mentions": true,
                             },
                             {
                               "id": 9,
@@ -13795,6 +13811,7 @@ paths:
                               "order": 9,
                               "required": false,
                               "editable_by_user": true,
+                              "use_in_mentions": false,
                             },
                           ],
                       }
@@ -13934,6 +13951,13 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 296).
                   type: boolean
                   example: true
+                use_in_mentions:
+                  description: |
+                    Whether this profile field can be used in mentions.
+                    If true, users can be mentioned by this profile field's value
+
+                  type: boolean
+                  example: false
               required:
                 - field_type
             encoding:
@@ -13946,6 +13970,8 @@ paths:
               required:
                 contentType: application/json
               editable_by_user:
+                contentType: application/json
+              use_in_mentions:
                 contentType: application/json
       responses:
         "200":
@@ -26376,6 +26402,15 @@ components:
 
             **Changes**: New in Zulip 10.0 (feature level 296).
           default: true
+        use_in_mentions:
+          type: boolean
+          description: |
+            Whether this custom profile field can be used in mentions.
+
+            Only applicable to `Person picker` profile field types.
+
+            **Changes**: New in Zulip 11.0 (feature level 378).
+          default: false
       required:
         - id
         - type
@@ -26384,6 +26419,7 @@ components:
         - hint
         - required
         - editable_by_user
+        - use_in_mentions
     OnboardingStep:
       type: object
       additionalProperties: false
