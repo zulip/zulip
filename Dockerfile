@@ -24,17 +24,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set working directory
 WORKDIR /app
 
+# Create virtualenv at /app/.venv (required by Zulip's setup_path.py)
+RUN python -m venv /app/.venv
+
 # Copy requirements first for caching
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies into virtualenv
+RUN /app/.venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Install virtualenv package (provides activate_this.py)
+RUN /app/.venv/bin/pip install virtualenv
 
 # Copy application code
 COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Collect static files using venv python
+RUN /app/.venv/bin/python manage.py collectstatic --noinput
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
