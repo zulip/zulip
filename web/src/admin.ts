@@ -139,7 +139,7 @@ export function build_page(): void {
     let giphy_help_link = "/help/animated-gifs-from-giphy";
     if (realm.giphy_api_key === "") {
         giphy_help_link =
-            "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
+            "https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html";
     }
 
     const options = {
