@@ -1,5 +1,4 @@
 from collections.abc import Callable, Mapping
-from datetime import datetime, timezone
 from typing import Any
 
 import orjson
@@ -10,6 +9,7 @@ from pydantic import Json
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -43,9 +43,7 @@ class LibratoWebhookParser:
 
     def parse_violation(self, violation: dict[str, Any]) -> tuple[str, str]:
         metric_name = violation["metric"]
-        recorded_at = datetime.fromtimestamp(violation["recorded_at"], tz=timezone.utc).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        recorded_at = datetime_to_global_time(timestamp_to_datetime(violation["recorded_at"]))
         return metric_name, recorded_at
 
     def parse_conditions(self) -> list[dict[str, Any]]:
@@ -97,12 +95,8 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         return topic_template.format(alert_name=alert_name)
 
     def handle_alert_clear_message(self) -> str:
-        alert_clear_template = (
-            "Alert [alert_name]({alert_url}) has cleared at <time:{trigger_time} UTC>!"
-        )
-        trigger_time = datetime.fromtimestamp(
-            self.payload["trigger_time"], tz=timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S")
+        alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time}!"
+        trigger_time = datetime_to_global_time(timestamp_to_datetime(self.payload["trigger_time"]))
         _alert_id, alert_name, alert_url, _alert_runbook_url = self.parse_alert()
         content = alert_clear_template.format(
             alert_name=alert_name, alert_url=alert_url, trigger_time=trigger_time
@@ -157,7 +151,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         )
         if duration:
             content += f" by {duration}s"
-        content += f", recorded at <time:{recorded_at} UTC>."
+        content += f", recorded at {recorded_at}."
         return content
 
 
