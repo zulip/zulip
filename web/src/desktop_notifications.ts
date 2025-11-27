@@ -2,7 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
-import type {Message} from "./message_store.ts";
 
 type NoticeMemory = Map<
     string,
@@ -92,9 +91,9 @@ export function permission_state(): string {
     return NotificationAPI.permission;
 }
 
-export function close_notification(message: Message): void {
+export function close_notification(message_id: number): void {
     for (const [key, notice_mem_entry] of notice_memory) {
-        if (notice_mem_entry.message_id === message.id) {
+        if (notice_mem_entry.message_id === message_id) {
             notice_mem_entry.obj.close();
             notice_memory.delete(key);
         }

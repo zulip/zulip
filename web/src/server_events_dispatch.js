@@ -17,6 +17,7 @@ import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as desktop_notifications from "./desktop_notifications.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
@@ -42,6 +43,7 @@ import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
+import * as reaction_notifications from "./reaction_notifications.ts";
 import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
@@ -253,9 +255,11 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     reactions.add_reaction(event);
+                    reaction_notifications.received_reaction(event);
                     break;
                 case "remove":
                     reactions.remove_reaction(event);
+                    desktop_notifications.close_notification(event.message_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type reaction/" + event.op);
