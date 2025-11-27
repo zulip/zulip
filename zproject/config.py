@@ -35,7 +35,13 @@ def get_secret(
 ) -> str | None:
     if development_only and PRODUCTION:  # nocoverage
         return default_value
-    return secrets_file.get("secrets", key, fallback=default_value)
+    # First try the secrets file
+    secret = secrets_file.get("secrets", key, fallback=None)
+    if secret is not None:
+        return secret
+    # Fallback to environment variable (convert key to uppercase)
+    env_key = key.upper()
+    return os.environ.get(env_key, default_value)
 
 
 def get_mandatory_secret(key: str) -> str:
