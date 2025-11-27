@@ -106,7 +106,7 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         # we assert that it does not.
         assert match is not None
         emoji_code = match.group("emoji_code")
-        emoji_name = emoji_span_elem.get("title")
+        emoji_name = emoji_span_elem.get("data-emoji-name") or emoji_span_elem.get("title")
         alt_code = emoji_span_elem.text
         # We intentionally do not use staticfiles_storage.url here, so
         # that we don't get any hashed version -- we want a path which
@@ -119,12 +119,12 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         img_elem = e.IMG(
             alt=alt_code,
             src=image_url,
-            title=emoji_name,
             # We specify dimensions with these attributes, rather than
             # CSS, because Outlook doesn't support these CSS properties.
             height="20",
             width="20",
         )
+        img_elem.set("data-emoji-name", emoji_name)
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
