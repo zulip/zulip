@@ -57,6 +57,7 @@ class HomeTest(ZulipTestCase):
         "page_type",
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
+        "realm_rendered_description",
         "request_language",
         "show_try_zulip_modal",
         "state_data",
@@ -303,7 +304,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(cache_mock.call_args_list, 6)
+        self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode()
 
@@ -606,7 +607,7 @@ class HomeTest(ZulipTestCase):
         ):
             result = self._get_home_page()
             self.check_rendered_logged_in_app(result)
-            self.assert_length(cache_mock.call_args_list, 7)
+            self.assert_length(cache_mock.call_args_list, 8)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")

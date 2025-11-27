@@ -147,6 +147,23 @@ h3,
     box-sizing: border-box;
 }
 
+.admin-realm-description.rendered_markdown {
+    /* 5px at 16px and 10px at 16px */
+    padding: 0.3125em 0.625em;
+    width: fit-content;
+    /* 500px at 16px */
+    max-width: 31.25em;
+    min-width: 0;
+
+    & > p:first-child {
+        padding-top: 0;
+    }
+
+    & > p:last-child {
+        margin-bottom: 0;
+    }
+}
+
 .admin-realm-welcome-message-custom-text {
     margin-bottom: 10px;
 }

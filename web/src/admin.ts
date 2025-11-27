@@ -10,6 +10,7 @@ import {$t, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as settings from "./settings.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -153,6 +154,7 @@ export function build_page(): void {
         gif_rating_options: realm.gif_rating_options,
         gif_api_key_empty: realm.giphy_api_key === "" && realm.tenor_api_key === "",
         realm_description: realm.realm_description,
+        realm_description_html: postprocess_content(page_params.realm_rendered_description),
         realm_inline_image_preview: realm.realm_inline_image_preview,
         server_inline_image_preview: realm.server_inline_image_preview,
         realm_inline_url_embed_preview: realm.realm_inline_url_embed_preview,
