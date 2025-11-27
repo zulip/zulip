@@ -476,6 +476,7 @@
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
+    --last-message-row-border-radius: 0 0 7px 7px;
 
     /* This length is the primary reference for height
        and image width on URL preview embeds. 112px

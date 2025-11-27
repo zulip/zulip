@@ -49,12 +49,23 @@ import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
 
-export type MessageContainer = {
+export type SingleMessageRenderContext = {
+    include_sender: boolean;
+    message_list_id: string;
+    msg: Message;
+    sender_is_bot: boolean;
+    should_add_guest_indicator_for_sender: boolean;
+    small_avatar_url: string;
+    status_message: string | false;
+    timestr: string;
+    want_date_divider: boolean;
+};
+
+export type MessageContainer = SingleMessageRenderContext & {
     background_color?: string;
     date_divider_html: string | undefined;
     year_changed: boolean;
     include_recipient: boolean;
-    include_sender: boolean;
     is_hidden: boolean;
     last_edit_timestamp: number | undefined;
     last_moved_timestamp: number | undefined;
@@ -65,20 +76,13 @@ export type MessageContainer = {
     modified: boolean;
     edited: boolean;
     moved: boolean;
-    msg: Message;
-    sender_is_bot: boolean;
     sender_is_guest: boolean;
     sender_is_deactivated: boolean;
-    should_add_guest_indicator_for_sender: boolean;
-    small_avatar_url: string;
-    status_message: string | false;
     stream_url?: string;
     subscribed?: boolean;
     pm_with_url?: string;
-    timestr: string;
     topic_url?: string;
     unsubscribed?: boolean;
-    want_date_divider: boolean;
 };
 
 export type MessageGroup = {
@@ -231,7 +235,7 @@ function get_message_date_divider_data(opts: {
     };
 }
 
-function get_timestr(message: Message): string {
+export function get_timestr(message: Message): string {
     const time = new Date(message.timestamp * 1000);
     return timerender.stringify_time(time);
 }
@@ -354,7 +358,7 @@ type SubscriptionMarkers = {
     subscribed?: boolean;
     just_unsubscribed?: boolean;
 };
-function populate_group_from_message(
+export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
@@ -837,6 +841,7 @@ export class MessageListView {
             );
             const message_container = {
                 msg: message,
+                message_list_id: this.list.id.toString(),
                 include_recipient,
                 ...(subscribed && {subscribed}),
                 ...(unsubscribed && {unsubscribed}),
@@ -1078,11 +1083,7 @@ export class MessageListView {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
         message_container.msg.reminders = message_reminder.get_reminders(message_container.msg.id);
-        const msg_to_render = {
-            ...message_container,
-            message_list_id: this.list.id,
-        };
-        return render_single_message(msg_to_render);
+        return render_single_message(message_container);
     }
 
     _render_group(opts: {message_groups: MessageGroup[]; use_match_properties: boolean}): JQuery {
