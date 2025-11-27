@@ -10,6 +10,68 @@ html {
     touch-action: manipulation;
 }
 
+.message_link_tooltip {
+    display: grid;
+    align-content: baseline;
+    grid-template:
+        minmax(var(--message-box-sender-line-height), auto) repeat(1, auto) /
+        var(--message-box-avatar-column-width) minmax(0, 1fr);
+
+    grid-template-areas:
+        "avatar sender"
+        "avatar message";
+
+    overflow: hidden;
+    /* margin: 0 2px; */
+    padding: 2px;
+    white-space: nowrap;
+}
+
+.message_link_tooltip .username {
+    grid-area: sender;
+    align-items: end;
+    line-height: calc(var(--message-box-sender-line-height) - 10px);
+    color: var(--color-text-sender-name);
+    font-weight: 700;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.message_link_tooltip .inline_profile_picture {
+    grid-area: avatar;
+    margin-top: calc(var(--message-box-vertical-margin) - 5px);
+    align-self: start;
+}
+
+.message_link_tooltip .message_content {
+    grid-area: message;
+    margin-top: calc(
+        (var(--message-box-markdown-aligned-vertical-space) * 0.5 * -1) -
+            var(--message-box-markdown-aligned-vertical-space) - 5px
+    );
+    max-height: 200px;
+    padding-top: calc(
+        var(--message-box-markdown-aligned-vertical-space) -
+            var(--message-box-link-focus-ring-block-padding)
+    );
+    overflow: hidden;
+
+    .codehilite pre {
+        color: white;
+        background-color: hsl(0deg 0% 100% / 10%);
+    }
+}
+
+.message_link_tooltip .message_content > p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    white-space: normal;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    margin: 0 0 4px;
+}
+
 .column-middle,
 #main_div {
     background-color: var(--color-background);
