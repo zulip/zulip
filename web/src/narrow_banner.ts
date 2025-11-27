@@ -465,6 +465,56 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 }),
             };
         }
+
+        case "dm-with": {
+            const emails = first_operand.split(",");
+            const users = emails.map((email) => people.get_by_email(email));
+
+            if (users.length === 1 && !users[0]) {
+                return {
+                    title: $t({defaultMessage: "This user does not exist!"}),
+                };
+            }
+            if (users.some((u) => u === undefined)) {
+                return {
+                    title: $t({defaultMessage: "One or more of these users do not exist!"}),
+                };
+            }
+
+            const user_ids = users.map((u) => u!.user_id).join(",");
+            const dm_error = compose_validate.check_dm_permissions_and_get_error_string(user_ids);
+
+            if (dm_error) {
+                return {
+                    title: dm_error,
+                    html: $t_html(
+                        {defaultMessage: "<z-link>Learn more.</z-link>"},
+                        {
+                            "z-link": (content_html) =>
+                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
+                        },
+                    ),
+                };
+            }
+
+            if (users.length === 1 && people.is_my_user_id(users[0]!.user_id)) {
+                return {
+                    title: $t({
+                        defaultMessage: "You don't have any direct message conversations yet.",
+                    }),
+                };
+            }
+
+            return {
+                title: $t(
+                    {
+                        defaultMessage: "You have no direct messages with {people} yet.",
+                    },
+                    {people: users.map((u) => u!.full_name).join(", ")},
+                ),
+            };
+        }
+        
         case "dm-including": {
             const people_in_dms = first_operand
                 .split(",")

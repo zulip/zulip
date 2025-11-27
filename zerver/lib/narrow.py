@@ -118,13 +118,17 @@ class NarrowParameter(BaseModel):
             "id",
             "sender",
             "group-pm-with",
-            "dm-including",
+            "dm-with",  # NEW operator
+            "dm-including",  # dm-including is an alias for dm-with for legacy support reasons
             "with",
         ]
         operators_supporting_ids = ["pm-with", "dm"]
         operators_non_empty_operand = {"search"}
 
         operator = self.operator
+        # Backwards compatibility
+        if operator == "dm-including":
+            operator = "dm-with"
         if operator in operators_supporting_id:
             operand_validator: Validator[object] = check_string_or_int
         elif operator in operators_supporting_ids:
@@ -136,7 +140,7 @@ class NarrowParameter(BaseModel):
 
         try:
             self.operand = operand_validator("operand", self.operand)
-            self.operator = check_string("operator", self.operator)
+            self.operator = check_string("operator", operator)
             if self.negated is not None:
                 self.negated = check_bool("negated", self.negated)
         except ValidationError as error:
@@ -291,7 +295,8 @@ class NarrowBuilder:
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
-            "dm-including": self.by_dm_including,
+            "dm-with": self.by_dm_including,
+            "dm-including": self.by_dm_including,  # legacy alias, canonicalized earlier
             # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
@@ -838,7 +843,7 @@ def can_narrow_define_conversation(narrow: list[NarrowParameter]) -> bool:
     contains_topic_term = False
 
     for term in narrow:
-        if term.operator in ["dm", "pm-with"]:
+        if term.operator in ["dm", "pm-with", "dm-with"]:
             return True
 
         elif term.operator in ["stream", "channel"]:
@@ -931,7 +936,7 @@ def update_narrow_terms_containing_with_operator(
     filtered_terms = [
         term
         for term in narrow
-        if term.operator not in ["stream", "channel", "topic", "dm", "pm-with"]
+        if term.operator not in ["stream", "channel", "topic", "dm", "pm-with", "dm-with"]
     ]
 
     if message.recipient.type == Recipient.STREAM:
