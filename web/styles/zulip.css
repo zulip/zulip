@@ -2427,7 +2427,8 @@ body:not(.spectator-view) {
             outline: none;
 
             .dropdown-list-delete,
-            .dropdown-list-edit {
+            .dropdown-list-edit,
+            .dropdown-list-manage-folder {
                 visibility: visible;
             }
         }

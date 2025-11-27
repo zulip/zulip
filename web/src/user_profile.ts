@@ -11,11 +11,11 @@ import render_admin_human_form from "../templates/settings/admin_human_form.hbs"
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
+import render_stream_list_item from "../templates/stream_list_item.hbs";
 import render_user_custom_profile_fields from "../templates/user_custom_profile_fields.hbs";
 import render_user_full_name from "../templates/user_full_name.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
-import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
@@ -284,7 +284,7 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
         people.is_my_user_id(user.user_id) && stream.invite_only;
     const show_last_user_in_private_stream_unsub_tooltip =
         stream.invite_only && peer_data.get_subscriber_count(stream.stream_id) === 1;
-    return render_user_stream_list_item({
+    return render_stream_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
         stream_color: stream.color,
@@ -1318,10 +1318,10 @@ export function initialize(): void {
         );
     });
 
-    $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
+    $("body").on("click", "#user-profile-modal .stream-row .remove-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const $remove_button = $(e.currentTarget).closest(".remove-subscription-button");
+        const $remove_button = $(e.currentTarget).closest(".remove-button");
         buttons.show_button_loading_indicator($remove_button);
         const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id")!, 10);
