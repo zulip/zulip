@@ -753,6 +753,7 @@ export async function initialize_everything(state_data) {
     desktop_integration.initialize();
 
     group_permission_settings.initialize();
+    overlays.trap_focus_for_settings_overlay();
 
     $("#app-loading").addClass("loaded");
 }

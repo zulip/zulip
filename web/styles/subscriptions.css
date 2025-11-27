@@ -1479,6 +1479,8 @@ div.settings-radio-input-parent {
         position: relative;
         overflow: hidden;
 
+        --single-column: yes;
+
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
         }
