@@ -152,9 +152,9 @@ export function is_in_focus(): boolean {
 export function set_default_focus(): void {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
-    const focusAction = should_select_search_text ? "select" : "focus";
+    const focus_action = should_select_search_text ? "select" : "focus";
     $current_focus_elem = $("#recent_view_search");
-    $current_focus_elem.trigger(focusAction);
+    $current_focus_elem.trigger(focus_action);
     compose_closed_ui.set_standard_text_for_reply_button();
 }
 
