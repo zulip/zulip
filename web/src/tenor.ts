@@ -214,7 +214,11 @@ function toggle_tenor_popover(target: HTMLElement): void {
                     assert(e.currentTarget instanceof HTMLElement);
                     handle_gif_click(e.currentTarget);
                 });
-
+                $popper.on("click", "#gif-search-clear", (e) => {
+                    e.stopPropagation();
+                    $("#gif-search-query").val("");
+                    update_grid_with_search_term("");
+                });
                 $popper.on("keydown", ".tenor-gif", (e) => {
                     assert(e.currentTarget instanceof HTMLElement);
                     const key = e.key;
