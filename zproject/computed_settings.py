@@ -7,6 +7,8 @@ from copy import deepcopy
 from typing import Any, Final, Literal
 from urllib.parse import urljoin
 
+from django.conf import settings as _dj
+
 from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
 from zerver.lib.types import AnalyticsDataUploadLevel
@@ -26,9 +28,7 @@ from .configured_settings import (
     ALLOWED_HOSTS,
     AUTH_LDAP_BIND_DN,
     AUTH_LDAP_CONNECTION_OPTIONS,
-    AUTH_LDAP_SERVER_URI,
     AUTHENTICATION_BACKENDS,
-    CAMO_URI,
     CUSTOM_HOME_NOT_LOGGED_IN,
     DEBUG,
     DEBUG_ERROR_REPORTING,
@@ -75,6 +75,55 @@ from .configured_settings import (
     ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS,
     ZULIP_SERVICES_URL,
 )
+
+
+# ---------------------------------------------------------------------
+# Backwards-compatibility for *_URI(S) settings.
+# We standardize on *_URL(S); if only the legacy *_URI(S) is defined,
+# fall back to that. New names take precedence.
+# ---------------------------------------------------------------------
+def _truthy_or(*values: Any, default: Any = None) -> Any:
+    for v in values:
+        if v is None:
+            continue
+        if isinstance(v, str) and v == "":
+            continue
+        if isinstance(v, dict) and len(v) == 0:
+            continue
+        return v
+    return default
+
+
+AUTH_LDAP_SERVER_URL = _truthy_or(
+    getattr(_dj, "AUTH_LDAP_SERVER_URL", None),
+    getattr(_dj, "AUTH_LDAP_SERVER_URI", None),
+    default=None,
+)
+
+CAMO_URL = _truthy_or(
+    getattr(_dj, "CAMO_URL", None),
+    getattr(_dj, "CAMO_URI", None),
+    default="",
+)
+
+REALM_MOBILE_REMAP_URLS = _truthy_or(
+    getattr(_dj, "REALM_MOBILE_REMAP_URLS", None),
+    getattr(_dj, "REALM_MOBILE_REMAP_URIS", None),
+    default={},
+)
+
+DEFAULT_AVATAR_URL = _truthy_or(
+    getattr(_dj, "DEFAULT_AVATAR_URL", None),
+    getattr(_dj, "DEFAULT_AVATAR_URI", None),
+    default=None,
+)
+DEFAULT_LOGO_URL = _truthy_or(
+    getattr(_dj, "DEFAULT_LOGO_URL", None),
+    getattr(_dj, "DEFAULT_LOGO_URI", None),
+    default=None,
+)
+
+del _dj, _truthy_or
 
 ########################################################################
 # INITIAL SETTINGS
@@ -607,7 +656,7 @@ INTERNAL_BOT_DOMAIN = "zulip.com"
 ########################################################################
 
 # This needs to be synced with the Camo installation
-CAMO_KEY = get_secret("camo_key") if CAMO_URI != "" else None
+CAMO_KEY = get_secret("camo_key") if CAMO_URL != "" else None
 
 ########################################################################
 # STATIC CONTENT AND MINIFICATION SETTINGS
@@ -1095,7 +1144,7 @@ else:
 
 AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipDummyBackend",)
 
-POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
+POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URL)
 
 if POPULATE_PROFILE_VIA_LDAP and not USING_LDAP:
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPUserPopulator",)
