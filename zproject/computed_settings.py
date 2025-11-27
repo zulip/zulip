@@ -1258,9 +1258,8 @@ AUTH_LDAP_BIND_PASSWORD = get_secret("auth_ldap_bind_password", "")
 # MISC SETTINGS
 ########################################################################
 
-if PRODUCTION:
-    # Filter out user data
-    DEFAULT_EXCEPTION_REPORTER_FILTER = "zerver.filters.ZulipExceptionReporterFilter"
+# Filter out user data
+DEFAULT_EXCEPTION_REPORTER_FILTER = "zerver.filters.ZulipExceptionReporterFilter"
 
 # This is a debugging option only
 PROFILE_ALL_REQUESTS = False
