@@ -223,15 +223,25 @@ p.digest_paragraph,
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000;
+    border: 1px solid hsl(0deg 0% 0% / 20%);
+    border-radius: 7px 7px 0 0;
     margin-bottom: 4px;
+    overflow: hidden;
 }
 
 .hot_convo_recipient_header {
-    background-color: #9ec9ff;
-    border-bottom: 1px solid #000;
-    font-weight: bold;
-    padding: 2px;
+    background-color: #9ec9ff; /* Fallback color if inline style not applied */
+    border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+    font-weight: 600;
+    font-size: 1.0714em;
+    line-height: 1.2;
+    padding: 5px 6px;
+    color: hsl(0deg 0% 20%);
+}
+
+.hot_convo_recipient_header a {
+    color: hsl(0deg 0% 20%);
+    text-decoration: none;
 }
 
 .hot_convo_message_content {

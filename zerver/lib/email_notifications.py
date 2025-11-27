@@ -43,7 +43,7 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
-from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
 from zerver.models.messages import get_context_for_message
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
@@ -217,6 +217,15 @@ def add_quote_prefix_in_text(content: str) -> str:
     return "\n".join(output)
 
 
+def hex_to_rgba(hex_color: str, opacity: float) -> str:
+    # Remove the "#" if present
+    hex_color = hex_color.lstrip("#")
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return f"rgba({r}, {g}, {b}, {opacity})"
+
+
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
@@ -311,10 +320,22 @@ def build_message_list(
             narrow_link=narrow_link,
             topic_name=message.topic_name(),
         )
-        return {
-            "plain": header,
-            "html": header_html,
-        }
+        # Fetch the user's subscription color for this stream
+        subscription_colors = Subscription.objects.filter(
+            user_profile_id=user.id,
+            recipient=message.recipient,
+            active=True,
+        ).values_list("color", flat=True)
+        color = subscription_colors[0] if subscription_colors else "#c2c2c2"
+        # We render the stream color with reduced opacity (0.3) to mimic the
+        # "color mixing" effect used in the web app.
+        # The web app mixes the stream color with the background to ensure
+        # contrast, but that logic relies on knowing the user's theme (light vs. dark).
+        # Since we cannot statically detect the recipient's theme in an email,
+        # we use transparency to soften the raw stream color. This ensures the
+        # header text remains readable without requiring complex theme detection.
+        recipient_bar_color = hex_to_rgba(color, 0.3)
+        return {"plain": header, "html": header_html, "recipient_bar_color": recipient_bar_color}
 
     # Collapse message list to:
     # {
