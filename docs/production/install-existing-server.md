@@ -23,34 +23,29 @@ zulip.com](https://zulip.com)).
 
 ### nginx
 
-Copy your existing nginx configuration to a backup and then merge the
-one created by Zulip into it:
+**Good news**: As of recent versions, Zulip no longer modifies
+`/etc/nginx/nginx.conf`, so your existing nginx configuration will be preserved.
+Zulip creates its configuration as a site-specific file in
+`/etc/nginx/sites-available/zulip-enterprise`, which is linked to `sites-enabled`.
+This means:
 
-```bash
-sudo cp /etc/nginx/nginx.conf /etc/nginx.conf.before-zulip-install
-sudo curl -fL -o /etc/nginx/nginx.conf.zulip \
-    https://raw.githubusercontent.com/zulip/zulip/main/puppet/zulip/templates/nginx.conf.template.erb
-sudo meld /etc/nginx/nginx.conf /etc/nginx/nginx.conf.zulip  # be sure to merge to the right
-```
+- The nginx user remains as your system default (typically `www-data`)
+- Your existing nginx.conf is not modified
+- Other sites should continue to work without issues
 
-Since the file in Zulip is an [ERB Puppet
-template](https://puppet.com/docs/puppet/7/lang_template_erb.html),
-you will also need to replace any `<%= ... %>` sections with
-appropriate content. For instance `<%= @ca_crt %>` should be replaced
-with `/etc/ssl/certs/ca-certificates.crt` on Debian and Ubuntu
-installs.
+Zulip's Puppet configuration will:
 
-After the Zulip installation completes, then you can overwrite (or
-merge) your new nginx.conf with the installed one:
+- Create `/etc/nginx/sites-available/zulip-enterprise` with Zulip's site
+  configuration
+- Add the `zulip` user to the `adm` group to read nginx logs
+- Set `/var/log/nginx` ownership to `www-data:adm` (so nginx can write, zulip
+  can read)
+- Create Zulip-specific include files in `/etc/nginx/zulip-include/`
+- Remove `/etc/nginx/sites-enabled/default` if it exists
 
-```console
-$ sudo meld /etc/nginx/nginx.conf.zulip /etc/nginx/nginx.conf  # be sure to merge to the right
-$ sudo service nginx restart
-```
-
-Zulip's Puppet configuration will change the ownership of
-`/var/log/nginx` so that the `zulip` user can access it. Depending on
-your configuration, this may or may not cause problems.
+If you have a custom nginx configuration that conflicts with Zulip's site
+configuration, you may need to adjust server names or ports in Zulip's site
+config.
 
 Depending on how you have configured `nginx` for your other services,
 you may need to add a `server_name` for the Zulip `server` block in

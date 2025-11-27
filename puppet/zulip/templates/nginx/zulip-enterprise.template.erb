@@ -1,3 +1,8 @@
+map $host $help_alias {
+    zulip.com /home/zulip/deployments/current/starlight_help/dist_no_relative_links/;
+    default   /home/zulip/deployments/current/starlight_help/dist/;
+}
+
 # For local IPC -- tusd to Django, or Django to Tornado
 server {
 <% if @nginx_http_only -%>

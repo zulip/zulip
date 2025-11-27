@@ -44,16 +44,6 @@ class zulip::nginx {
   } else {
       $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
   }
-  $worker_connections = zulipconf('application_server', 'nginx_worker_connections', 10000)
-  file { '/etc/nginx/nginx.conf':
-    ensure  => file,
-    require => Package[$zulip::common::nginx, 'ca-certificates'],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    notify  => Service['nginx'],
-    content => template('zulip/nginx.conf.template.erb'),
-  }
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   $lb_rejects_http_requests = zulipconf('loadbalancer', 'rejects_http_requests', false)
@@ -82,9 +72,18 @@ class zulip::nginx {
     notify => Service['nginx'],
   }
 
+  exec { 'add-zulip-to-adm-group':
+    command => '/usr/sbin/usermod -a -G adm zulip',
+    unless  => '/usr/bin/id zulip >/dev/null 2>&1 && /usr/bin/groups zulip 2>/dev/null | /bin/grep -q "\\badm\\b"',
+  }
+  $nginx_user = $facts['os']['family'] ? {
+    'Debian' => 'www-data',
+    'RedHat' => 'nginx',
+    default  => 'www-data',
+  }
   file { '/var/log/nginx':
     ensure => directory,
-    owner  => 'zulip',
+    owner  => $nginx_user,
     group  => 'adm',
     mode   => '0750',
   }
