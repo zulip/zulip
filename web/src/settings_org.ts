@@ -75,16 +75,17 @@ export function maybe_disable_widgets(): void {
         .prop("disabled", true);
 
     if (current_user.is_admin) {
-        $(".deactivate_realm_button").prop("disabled", true);
-        $("#deactivate_realm_button_container").addClass("disabled_setting_tooltip");
+        $(".deactivate-realm-section").hide();
         $("#org-message-retention").find("input, select").prop("disabled", true);
         $("#org-join-settings").find("input, select, button").prop("disabled", true);
         $("#id_realm_invite_required_label").parent().addClass("control-label-disabled");
         return;
     }
 
+    $(".deactivate-realm-section").hide();
+
     $(".organization-box [data-name='organization-profile']")
-        .find("input, textarea, .deactivate_realm_button, select")
+        .find("input, textarea, select")
         .prop("disabled", true);
 
     $(".organization-box [data-name='organization-profile']").find(".image_upload_button").hide();

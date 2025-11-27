@@ -425,17 +425,6 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#deactivate_realm_button_container.disabled_setting_tooltip",
-        content: $t({
-            defaultMessage: "Only organization owners may deactivate an organization.",
-        }),
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
         target: ".settings-radio-input-parent.default_stream_private_tooltip",
         content: $t({
             defaultMessage: "Default channels for new users cannot be made private.",
