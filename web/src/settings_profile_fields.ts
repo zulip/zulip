@@ -74,13 +74,17 @@ export function field_type_id_to_string(type_id: number): string | undefined {
     return undefined;
 }
 
-// Checking custom profile field type is valid for showing display on user card checkbox field.
 function is_valid_to_display_in_summary(field_type: number): boolean {
     const field_types = realm.custom_profile_field_types;
-    if (field_type === field_types.LONG_TEXT.id || field_type === field_types.USER.id) {
+    if (field_type === field_types.USER.id || field_type === field_types.LONG_TEXT.id) {
         return false;
     }
     return true;
+}
+
+function is_long_text_field(field_type: number): boolean {
+    const field_types = realm.custom_profile_field_types;
+    return field_type === field_types.LONG_TEXT.id;
 }
 
 function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
@@ -205,9 +209,15 @@ function set_up_create_field_form(): void {
         $("#profile_field_hint").val(default_hint);
     }
 
-    // Not showing "display on user card" option for long text/user profile field.
-    if (is_valid_to_display_in_summary(profile_field_type)) {
+    if (is_long_text_field(profile_field_type)) {
+        $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
+        $("#profile_field_display_in_profile_summary").prop("checked", false);
+        $("#profile_field_display_on_user_card").closest(".input-group").show();
+        $("#profile_field_display_on_user_card").prop("checked", false);
+    } else if (is_valid_to_display_in_summary(profile_field_type)) {
         $("#profile_field_display_in_profile_summary").closest(".input-group").show();
+        $("#profile_field_display_on_user_card").closest(".input-group").hide();
+        $("#profile_field_display_on_user_card").prop("checked", false);
         const check_display_in_profile_summary_by_default =
             profile_field_type === field_types.PRONOUNS.id &&
             !display_in_profile_summary_fields_limit_reached;
@@ -218,6 +228,8 @@ function set_up_create_field_form(): void {
     } else {
         $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
         $("#profile_field_display_in_profile_summary").prop("checked", false);
+        $("#profile_field_display_on_user_card").closest(".input-group").hide();
+        $("#profile_field_display_on_user_card").prop("checked", false);
     }
 }
 
@@ -228,23 +240,36 @@ function open_custom_profile_field_form_modal(): void {
     });
 
     function create_profile_field(): void {
+        const field_types = realm.custom_profile_field_types;
+        const field_type = Number.parseInt(
+            $<HTMLSelectOneElement>("select:not([multiple])#profile_field_type").val()!,
+            10,
+        );
         let field_data: FieldData | undefined = {};
-        const field_type = $<HTMLSelectOneElement>(
-            "select:not([multiple])#profile_field_type",
-        ).val()!;
         field_data = settings_components.read_field_data_from_form(
-            Number.parseInt(field_type, 10),
+            field_type,
             $(".new-profile-field-form"),
             undefined,
         );
-        const data = {
-            name: $("#profile_field_name").val(),
-            hint: $("#profile_field_hint").val(),
-            field_type,
-            field_data: JSON.stringify(field_data),
-            display_in_profile_summary: $("#profile_field_display_in_profile_summary").is(
-                ":checked",
-            ),
+        const is_long_text = field_type === field_types.LONG_TEXT.id;
+        let field_data_str: string;
+        if (is_long_text) {
+            if (field_data && Object.keys(field_data).length > 0) {
+                field_data_str = JSON.stringify(field_data);
+            } else {
+                field_data_str = "{}";
+            }
+        } else {
+            field_data_str = JSON.stringify(field_data ?? {});
+        }
+        const data: Record<string, string | boolean> = {
+            name: String($("#profile_field_name").val() ?? ""),
+            hint: String($("#profile_field_hint").val() ?? ""),
+            field_type: field_type.toString(),
+            field_data: field_data_str,
+            display_in_profile_summary: is_long_text
+                ? false
+                : $("#profile_field_display_in_profile_summary").is(":checked"),
             required: $("#profile-field-required").is(":checked"),
             editable_by_user: $("#profile_field_editable_by_user").is(":checked"),
         };
@@ -490,6 +515,17 @@ function open_edit_form_modal(this: HTMLElement): void {
         choices = parse_field_choices_from_field_data(select_field_data);
     }
 
+    let display_on_user_card = false;
+    if (field.type === field_types.LONG_TEXT.id && field.field_data) {
+        try {
+            const long_text_data =
+                settings_components.long_text_field_data_schema.parse(field_data);
+            display_on_user_card = long_text_data.display_on_user_card === "true";
+        } catch {
+            display_on_user_card = false;
+        }
+    }
+
     const html_body = render_edit_custom_profile_field_form({
         profile_field_info: {
             id: field.id,
@@ -497,10 +533,12 @@ function open_edit_form_modal(this: HTMLElement): void {
             hint: field.hint,
             choices,
             display_in_profile_summary: field.display_in_profile_summary === true,
+            display_on_user_card,
             required: field.required,
             editable_by_user: field.editable_by_user,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
+            is_long_text_field: field.type === field_types.LONG_TEXT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
         },
         realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -535,6 +573,20 @@ function open_edit_form_modal(this: HTMLElement): void {
                 $profile_field_form,
                 external_account_data.url_pattern!,
             );
+        }
+
+        if (field.type === field_types.LONG_TEXT.id) {
+            try {
+                const long_text_data =
+                    settings_components.long_text_field_data_schema.parse(field_data);
+                $profile_field_form
+                    .find('input[name="display_on_user_card"]')
+                    .prop("checked", long_text_data.display_on_user_card === "true");
+            } catch {
+                $profile_field_form
+                    .find('input[name="display_on_user_card"]')
+                    .prop("checked", false);
+            }
         }
 
         // Set initial value in edit form
@@ -577,6 +629,38 @@ function open_edit_form_modal(this: HTMLElement): void {
             $profile_field_form,
             field,
         );
+
+        if (field.type === field_types.LONG_TEXT.id) {
+            delete data.display_in_profile_summary;
+            data.display_in_profile_summary = false;
+            const display_on_user_card = $profile_field_form
+                .find<HTMLInputElement>('input[name="display_on_user_card"]')
+                .is(":checked");
+            if (display_on_user_card) {
+                const field_data: settings_components.LongTextFieldData = {
+                    display_on_user_card: "true",
+                };
+                data.field_data = JSON.stringify(field_data);
+            } else {
+                let existing_field_data: settings_components.LongTextFieldData = {};
+                if (field.field_data && field.field_data.trim() !== "") {
+                    try {
+                        existing_field_data = {
+                            ...settings_components.long_text_field_data_schema.parse(
+                                JSON.parse(field.field_data),
+                            ),
+                        };
+                    } catch {
+                        existing_field_data = {};
+                    }
+                }
+                delete existing_field_data.display_on_user_card;
+                data.field_data =
+                    Object.keys(existing_field_data).length > 0
+                        ? JSON.stringify(existing_field_data)
+                        : "{}";
+            }
+        }
 
         function update_profile_field(): void {
             const url = "/json/realm/profile_fields/" + field_id;
@@ -665,6 +749,58 @@ function toggle_display_in_profile_summary_profile_field(
     );
 }
 
+function toggle_display_on_user_card(this: HTMLInputElement, _event: JQuery.Event): void {
+    const field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
+    const field = get_profile_field(field_id)!;
+    const field_types = realm.custom_profile_field_types;
+
+    if (field.type !== field_types.LONG_TEXT.id) {
+        return;
+    }
+
+    let field_data: settings_components.LongTextFieldData = {};
+    if (field.field_data && field.field_data.trim() !== "") {
+        try {
+            field_data = {
+                ...settings_components.long_text_field_data_schema.parse(
+                    JSON.parse(field.field_data),
+                ),
+            };
+        } catch {
+            field_data = {};
+        }
+    }
+
+    if (this.checked) {
+        field_data.display_on_user_card = "true";
+    } else {
+        delete field_data.display_on_user_card;
+    }
+
+    const field_data_str = Object.keys(field_data).length > 0 ? JSON.stringify(field_data) : "{}";
+
+    field.field_data = field_data_str;
+
+    const data: Record<string, string | boolean> = {
+        display_in_profile_summary: false,
+        field_data: field_data_str,
+    };
+
+    const $profile_field_status = $("#admin-profile-field-status").expectOne();
+
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/realm/profile_fields/" + field_id,
+        data,
+        $profile_field_status,
+        {
+            success_continuation() {
+                do_populate_profile_fields(realm.custom_profile_fields);
+            },
+        },
+    );
+}
+
 function toggle_required(this: HTMLInputElement, _event: JQuery.Event): void {
     const field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
 
@@ -743,20 +879,38 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
             const display_in_profile_summary = profile_field.display_in_profile_summary === true;
             const required = profile_field.required;
 
+            let display_on_user_card = false;
+            if (profile_field.type === field_types.LONG_TEXT.id && profile_field.field_data) {
+                try {
+                    const long_text_data = settings_components.long_text_field_data_schema.parse(
+                        JSON.parse(profile_field.field_data),
+                    );
+                    display_on_user_card = long_text_data.display_on_user_card === "true";
+                } catch {
+                    display_on_user_card = false;
+                }
+            }
+
+            const profile_field_data: Record<string, unknown> = {
+                id: profile_field.id,
+                name: profile_field.name,
+                hint: profile_field.hint,
+                type: field_type_id_to_string(profile_field.type),
+                choices,
+                is_select_field: profile_field.type === field_types.SELECT.id,
+                is_external_account_field: profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
+                display_in_profile_summary,
+                valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
+                required,
+            };
+
+            if (profile_field.type === field_types.LONG_TEXT.id) {
+                profile_field_data.display_on_user_card = display_on_user_card;
+                profile_field_data.is_long_text_field = true;
+            }
+
             return render_admin_profile_field_list({
-                profile_field: {
-                    id: profile_field.id,
-                    name: profile_field.name,
-                    hint: profile_field.hint,
-                    type: field_type_id_to_string(profile_field.type),
-                    choices,
-                    is_select_field: profile_field.type === field_types.SELECT.id,
-                    is_external_account_field:
-                        profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
-                    display_in_profile_summary,
-                    valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
-                    required,
-                },
+                profile_field: profile_field_data,
                 can_modify: current_user.is_admin,
                 realm_default_external_accounts: realm.realm_default_external_accounts,
             });
@@ -874,6 +1028,11 @@ export function build_page(): void {
         "click",
         "input.display_in_profile_summary",
         toggle_display_in_profile_summary_profile_field,
+    );
+    $("#admin_profile_fields_table").on(
+        "click",
+        "input.display_on_user_card",
+        toggle_display_on_user_card,
     );
     $("#admin_profile_fields_table").on("click", ".required-field-toggle", toggle_required);
 }

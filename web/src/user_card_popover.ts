@@ -332,11 +332,25 @@ function get_user_card_popover_data(
             "dayofyear_year",
         );
     }
-    // Filtering out only those profile fields that can be display in the popover and are not empty.
     const field_types = realm.custom_profile_field_types;
     const display_profile_fields = realm.custom_profile_fields
         .flatMap((f) => user_profile.get_custom_profile_field_data(user, f, field_types) ?? [])
-        .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
+        .filter((f) => {
+            if (f.type === field_types.LONG_TEXT.id) {
+                return (
+                    f.display_on_user_card === true &&
+                    f.value !== undefined &&
+                    f.value !== null &&
+                    f.value !== ""
+                );
+            }
+            return (
+                f.display_in_profile_summary &&
+                f.value !== undefined &&
+                f.value !== null &&
+                f.value !== ""
+            );
+        });
 
     const user_id_string = user.user_id.toString();
     const can_send_private_message =
@@ -969,6 +983,27 @@ function register_click_handlers(): void {
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
         });
+    });
+
+    $("body").on("click", ".copy-custom-profile-field-long-text", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $trigger = $(this);
+        const field_value = $trigger.attr("data-field-value")!;
+        void navigator.clipboard
+            .writeText(field_value)
+            .then(() => {
+                const trigger_element = $trigger.get(0);
+                if (!trigger_element) {
+                    return;
+                }
+                show_copied_confirmation(trigger_element, {
+                    show_check_icon: true,
+                });
+            })
+            .catch((error: unknown) => {
+                blueslip.error("Failed to copy custom profile field", {error});
+            });
     });
 }
 
