@@ -35,7 +35,7 @@ const url_options_schema = z.array(url_option_schema);
 
 const PresetUrlOption = {
     BRANCHES: "branches",
-    MAPPING: "mapping",
+    CHANNEL_MAPPING: "mapping",
 };
 
 export function show_generate_integration_url_modal(api_key: string): void {
@@ -59,19 +59,37 @@ export function show_generate_integration_url_modal(api_key: string): void {
         max_topic_length: realm.max_topic_length,
     });
 
+    const default_topics_to_use_option: Option = {
+        name: $t_html({defaultMessage: "Select notification topics"}),
+        unique_id: "",
+    };
+
+    const topics_named_after_slack_channels_option: Option = {
+        name: $t_html({defaultMessage: "Topics named after Slack channels"}),
+        unique_id: "map_topics_to_slack_channels",
+    };
+
+    const send_all_to_single_topic_option: Option = {
+        name: $t_html({defaultMessage: "Send all notifications to a single topic"}),
+        unique_id: "send_all_to_a_topic",
+    };
+
     function generate_integration_url_post_render(): void {
         let selected_integration = "";
         let stream_input_dropdown_widget: DropdownWidget;
         let integration_input_dropdown_widget: DropdownWidget;
+        let topics_to_use_dropdown_widget: DropdownWidget;
         let previous_selected_integration = "";
         let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
 
+        const topics_to_use_widget_id = "topics-to-use";
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
         const $show_integration_events = $("#show-integration-events");
         const $config_container = $("#integration-url-config-options-container");
+        const $topics_to_use_widget = $(`#${topics_to_use_widget_id}_widget`);
 
         $dialog_submit_button.prop("disabled", true);
         $("#integration-url-stream_widget").prop("disabled", true);
@@ -115,6 +133,13 @@ export function show_generate_integration_url_modal(api_key: string): void {
             update_url();
         }
 
+        function set_input_disabled_state($checkbox: JQuery, disable: boolean): void {
+            $checkbox
+                .prop("disabled", disable)
+                .closest(".input-group")
+                .toggleClass("control-label-disabled", disable);
+        }
+
         function render_url_options(config: UrlOption[]): void {
             const validated_config = url_options_schema.parse(config);
             $config_container.empty();
@@ -129,7 +154,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     $config_element.find("#integration-url-all-branches").on("change", () => {
                         show_branch_filtering_ui();
                     });
-                } else if (option.key === PresetUrlOption.MAPPING) {
+                } else if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
                     continue;
                 } else if (option.validator === "check_bool") {
                     const config_html = render_generate_integration_url_config_checkbox_modal({
@@ -235,10 +260,21 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const params = new URLSearchParams({api_key});
+            const selected_topic_option = topics_to_use_dropdown_widget.value();
             if (stream_id !== -1) {
                 params.set("stream", stream_id!.toString());
-                if ($override_topic.prop("checked") && topic_name !== "") {
+                if (
+                    ($override_topic.prop("checked") ||
+                        selected_topic_option === send_all_to_single_topic_option.unique_id) &&
+                    topic_name !== ""
+                ) {
                     params.set("topic", topic_name);
+                } else if (
+                    selected_topic_option === topics_named_after_slack_channels_option.unique_id
+                ) {
+                    params.delete("topic");
+                    // This setting is from the Slack webhook integration.
+                    params.set("channels_map_to_topics", "1");
                 }
             }
 
@@ -247,11 +283,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
             if (url_options) {
                 for (const option of url_options) {
                     let $input_element;
-                    if (option.key === PresetUrlOption.MAPPING) {
+                    if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
                         const stream_input = stream_input_dropdown_widget.value();
                         if (stream_input === map_channels_option?.unique_id) {
                             params.delete("stream");
-                            params.set(PresetUrlOption.MAPPING, "channels");
+                            params.set(PresetUrlOption.CHANNEL_MAPPING, "channels");
                         }
                     } else if (option.key === PresetUrlOption.BRANCHES) {
                         if ($("#integration-url-all-branches").prop("checked")) {
@@ -332,7 +368,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 (bot) => bot.name === selected_integration,
             );
             const url_options = selected_integration_data?.url_options;
-
+            if (selected_integration === "slack") {
+                $override_topic.closest(".input-group").toggleClass("hide", true);
+                topics_to_use_dropdown_widget.setup();
+                set_input_disabled_state($topics_to_use_widget, true);
+                $topics_to_use_widget.closest(".input-group").toggleClass("hide", false);
+            }
             if (url_options) {
                 render_url_options(url_options);
             }
@@ -352,6 +393,42 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
         stream_input_dropdown_widget.setup();
 
+        $topics_to_use_widget.closest(".input-group").toggleClass("hide", true);
+        topics_to_use_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: topics_to_use_widget_id,
+            get_options() {
+                return [
+                    default_topics_to_use_option,
+                    topics_named_after_slack_channels_option,
+                    send_all_to_single_topic_option,
+                ];
+            },
+            item_click_callback: topics_to_use_click_callback,
+            $events_container: $("#generate-integration-url-modal"),
+            default_id: default_topics_to_use_option.unique_id,
+            unique_id_type: "string",
+        });
+
+        function topics_to_use_click_callback(
+            event: JQuery.ClickEvent,
+            dropdown: tippy.Instance,
+        ): void {
+            topics_to_use_dropdown_widget.render();
+            $topics_to_use_widget.trigger("input");
+
+            const selected_topic_option = topics_to_use_dropdown_widget.value();
+            $topic_input
+                .parent()
+                .toggleClass(
+                    "hide",
+                    selected_topic_option !== send_all_to_single_topic_option.unique_id,
+                );
+
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
         function get_additional_stream_dropdown_options(): Option[] {
             const additional_options: Option[] = [];
 
@@ -369,7 +446,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const mapping_option = url_options?.find(
-                (option) => option.key === PresetUrlOption.MAPPING,
+                (option) => option.key === PresetUrlOption.CHANNEL_MAPPING,
             );
 
             if (mapping_option) {
@@ -403,17 +480,21 @@ export function show_generate_integration_url_modal(api_key: string): void {
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
             if (user_selected_option === direct_messages_option.unique_id) {
-                $override_topic.prop("checked", false).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $override_topic.prop("checked", false);
+                set_input_disabled_state($override_topic, true);
                 $topic_input.val("");
+                set_input_disabled_state($topics_to_use_widget, true);
+                topics_to_use_dropdown_widget.render(default_topics_to_use_option.unique_id);
             } else if (user_selected_option === map_channels_option.unique_id) {
-                $override_topic.prop("checked", true).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $override_topic.prop("checked", true);
+                set_input_disabled_state($override_topic, true);
                 $topic_input.val("");
                 $topic_input.parent().removeClass("hide");
+                set_input_disabled_state($topics_to_use_widget, true);
+                topics_to_use_dropdown_widget.render(send_all_to_single_topic_option.unique_id);
             } else {
-                $override_topic.prop("disabled", false);
-                $override_topic.closest(".input-group").removeClass("control-label-disabled");
+                set_input_disabled_state($override_topic, false);
+                set_input_disabled_state($topics_to_use_widget, false);
             }
             $override_topic.trigger("change");
             event.preventDefault();
@@ -447,12 +528,15 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $("#integrations-event-container .integration-event").prop("checked", false);
             $show_integration_events.prop("checked", false);
 
-            $override_topic.prop("checked", false).prop("disabled", true);
-            $override_topic.closest(".input-group").addClass("control-label-disabled");
+            $topics_to_use_widget.closest(".input-group").toggleClass("hide", true);
+            $override_topic.closest(".input-group").toggleClass("hide", false);
+            $("#integration-url-override-topic").toggleClass("hide", false);
+            set_input_disabled_state($override_topic, true);
             $topic_input.val("");
             $topic_input.parent().addClass("hide");
 
             stream_input_dropdown_widget.render(direct_messages_option.unique_id);
+            topics_to_use_dropdown_widget.render(default_topics_to_use_option.unique_id);
             $config_container.empty();
             branch_pill_widget = undefined;
         }

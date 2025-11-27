@@ -863,7 +863,13 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration(
         "sentry", ["monitoring"], [WebhookScreenshotConfig("event_for_exception_python.json")]
     ),
-    WebhookIntegration("slack", ["communication"]),
+    WebhookIntegration(
+        "slack",
+        ["communication"],
+        url_options=[
+            WebhookUrlOption.build_preset_config(PresetUrlOption.CHANNEL_MAPPING),
+        ],
+    ),
     WebhookIntegration(
         "slack_incoming",
         ["communication", "meta-integration"],

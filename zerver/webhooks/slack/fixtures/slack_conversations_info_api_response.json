@@ -2,7 +2,7 @@
   "ok": true,
   "channel": {
     "id": "C012AB3CD",
-    "name": "general",
+    "name": "Slack general",
     "is_channel": true,
     "is_group": false,
     "is_im": false,
@@ -12,7 +12,7 @@
     "is_archived": false,
     "is_general": true,
     "unlinked": 0,
-    "name_normalized": "general",
+    "name_normalized": "Slack general",
     "is_shared": false,
     "is_frozen": false,
     "is_org_shared": false,
