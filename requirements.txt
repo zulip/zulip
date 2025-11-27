@@ -855,3 +855,5 @@ zulip @ https://github.com/zulip/python-zulip-api/archive/b7fbf1b4299bf225597e45
     # via zulip-bots
 zulip-bots @ https://github.com/zulip/python-zulip-api/archive/b7fbf1b4299bf225597e45b567e058387d5feee1.zip#subdirectory=zulip_bots
 zxcvbn==4.5.0
+# Railway deployment
+gunicorn==23.0.0

@@ -56,6 +56,10 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy supervisor config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Fix nginx permissions
 RUN touch /var/run/nginx.pid && \
     chown -R zulip:zulip /var/run/nginx.pid /var/log/nginx /var/lib/nginx
@@ -64,5 +68,5 @@ RUN touch /var/run/nginx.pid && \
 ENV PORT=8080
 EXPOSE 8080
 
-# Run supervisor to manage all processes
-CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Run entrypoint script (creates secrets file, then starts supervisord)
+CMD ["/app/entrypoint.sh"]
