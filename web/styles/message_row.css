@@ -55,6 +55,16 @@
         }
     }
 
+    &.muted-message-sender {
+        .sender_info_hover {
+            pointer-events: none;
+        }
+
+        .inline-profile-picture-wrapper {
+            pointer-events: none;
+        }
+    }
+
     &.sender_info_hovered {
         .sender_name {
             cursor: pointer;
@@ -83,6 +93,25 @@
             opacity: 1;
             visibility: visible;
         }
+    }
+
+    &:hover .reveal_hidden_message {
+        opacity: 1;
+    }
+}
+
+.reveal_hidden_message {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 0.1em;
+    /* This is meant to offset the vertical padding of 0.125rem introduced
+    by the action button, which otherwise makes this button look at a
+    slightly lower height than the muted message notice. */
+    margin-top: -0.125em;
+    /* Source : https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/hover */
+    @media (hover: none) {
+        opacity: 1;
+        transition: none;
     }
 }
 
@@ -202,6 +231,17 @@
             max-height: 0;
             min-height: 0;
             overflow: hidden;
+        }
+    }
+
+    .muted-message-notice-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.2em;
+
+        > .muted-message-notice {
+            opacity: 0.5;
+            user-select: none;
         }
     }
 
@@ -411,6 +451,10 @@
                    grid. */
                 margin-top: var(--message-box-vertical-margin);
             }
+
+            .muted-sender-avatar {
+                opacity: 0.5;
+            }
         }
 
         .status-message {
@@ -492,6 +536,12 @@
                     .user-name {
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .muted {
+                        opacity: 0.5;
+                        user-select: none;
+                        cursor: default;
                     }
                 }
             }
@@ -1187,4 +1237,27 @@
 .date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
+}
+
+@container message-lists (width < $cq_ml_min) {
+    .muted-message-notice {
+        display: none;
+    }
+
+    .muted-sender-avatar {
+        margin-bottom: 4px;
+    }
+}
+
+/* Fallback for hiding the muted message notice. */
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .muted-message-notice {
+            display: none;
+        }
+
+        .muted-sender-avatar {
+            margin-bottom: 4px;
+        }
+    }
 }

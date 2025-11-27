@@ -162,6 +162,11 @@ export function initialize(): void {
             return true;
         }
 
+        // Reveal button for a hidden message
+        if ($target.closest(".reveal_hidden_message").length > 0) {
+            return true;
+        }
+
         return false;
     }
 
