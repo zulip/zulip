@@ -2,7 +2,7 @@
 # See: https://nixpacks.com/docs/configuration/file
 
 [phases.setup]
-nixPkgs = ["python312", "nginx", "supervisor", "postgresql"]
+nixPkgs = ["python312", "nginx", "supervisor", "postgresql", "openldap"]
 
 [phases.install]
 cmds = [
