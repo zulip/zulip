@@ -233,6 +233,11 @@ class Realm(models.Model):
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
 
+    # Whether the organization's security policy allows owners to take
+    # actions like full data exports that grant access to all private
+    # content in this organization.
+    owner_full_content_access = models.BooleanField(default=False, db_default=False)
+
     topics_policy = models.PositiveSmallIntegerField(
         default=RealmTopicsPolicyEnum.allow_empty_topic.value
     )
