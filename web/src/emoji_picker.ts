@@ -568,6 +568,39 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
 function process_keydown(e: JQuery.KeyDownEvent): void {
     const is_filter_focused = $("#emoji-popover-filter").is(":focus");
     const pressed_key = e.key;
+
+    // Handle Tab/Shift+Tab only for status emoji picker
+    if (pressed_key === "Tab" && user_status_ui.user_status_picker_open()) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $popover = $(".emoji-picker-popover");
+        const emojis = $popover.find(".emoji-popover-emoji").toArray();
+        if (emojis.length === 0) {
+            return;
+        }
+
+        let currentIndex = -1;
+        if (document.activeElement instanceof HTMLElement) {
+            currentIndex = emojis.indexOf(document.activeElement);
+        }
+        const nextIndex = (currentIndex + (e.shiftKey ? -1 : 1) + emojis.length) % emojis.length;
+        const next_emoji = emojis[nextIndex];
+
+        if (next_emoji) {
+            next_emoji.focus();
+
+            const emoji_id = $(next_emoji).attr("data-emoji-id");
+            if (emoji_id) {
+                const coords = get_emoji_coordinates(emoji_id);
+                current_section = coords.section;
+                current_index = coords.index;
+                update_emoji_showcase($(next_emoji));
+            }
+        }
+        return;
+    }
+
     if (
         !is_filter_focused &&
         // ":" is a hotkey for toggling reactions popover.
