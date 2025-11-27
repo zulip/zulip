@@ -221,7 +221,8 @@
             height: 1.6667em; /* 25px at 15px/em */
             width: 1.6667em; /* 25px at 15px/em */
 
-            &:focus {
+            &:focus,
+            &:focus-visible {
                 background-color: var(
                     --color-background-emoji-picker-emoji-focus
                 );
@@ -239,7 +240,8 @@
                 border-color: var(--color-border-emoji-picker-emoji-reacted);
             }
 
-            &.reacted:focus {
+            &.reacted:focus,
+            &.reacted:focus-visible {
                 background-color: var(
                     --color-background-emoji-picker-emoji-reacted-focus
                 );
