@@ -1,9 +1,8 @@
 import logging
 import os
-import random
-import secrets
 import uuid
 from collections import defaultdict
+from dataclasses import asdict
 from typing import Any
 
 import bson
@@ -12,6 +11,7 @@ from django.forms.models import model_to_dict
 
 from zerver.data_import.import_util import (
     SubscriberHandler,
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_direct_message_group,
@@ -26,6 +26,7 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
+    get_attachment_path_and_content,
     make_subscriber_map,
     make_user_messages,
 )
@@ -385,7 +386,7 @@ def process_message_attachment(
     message_id: int,
     user_id: int,
     zerver_attachment: list[ZerverFieldsT],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     upload_id_to_upload_data_map: dict[str, dict[str, Any]],
     output_dir: str,
 ) -> tuple[str, bool]:
@@ -415,23 +416,18 @@ def process_message_attachment(
         logging.info("Replacing too long attachment name with random uuid: %s", file_name)
         sanitized_name = uuid.uuid4().hex
 
-    s3_path = "/".join(
-        [
-            str(realm_id),
-            format(random.randint(0, 255), "x"),
-            secrets.token_urlsafe(18),
-            sanitized_name,
-        ]
+    attachment_data = get_attachment_path_and_content(
+        link_name=file_name, filename=file_name, realm_id=realm_id
     )
 
     # Build the attachment from chunks and save it to s3_path.
-    file_out_path = os.path.join(output_dir, "uploads", s3_path)
+    file_out_path = os.path.join(output_dir, "uploads", attachment_data.url)
     os.makedirs(os.path.dirname(file_out_path), exist_ok=True)
     with open(file_out_path, "wb") as upload_file:
         upload_file.write(b"".join(upload_file_data["chunk"]))
 
     attachment_content = (
-        f"{upload_file_data.get('description', '')}\n\n[{file_name}](/user_uploads/{s3_path})"
+        f"{upload_file_data.get('description', '')}\n\n{attachment_data.markdown_link}"
     )
 
     fileinfo = {
@@ -440,23 +436,24 @@ def process_message_attachment(
         "created": float(upload_file_data["_updatedAt"].timestamp()),
     }
 
-    upload = dict(
-        path=s3_path,
-        realm_id=realm_id,
-        content_type=upload["type"],
-        user_profile_id=user_id,
-        last_modified=fileinfo["created"],
-        s3_path=s3_path,
-        size=fileinfo["size"],
+    uploads_list.append(
+        UploadRecordData(
+            content_type=upload["type"],
+            last_modified=fileinfo["created"],
+            path=attachment_data.url,
+            realm_id=realm_id,
+            s3_path=attachment_data.url,
+            size=fileinfo["size"],
+            user_profile_id=user_id,
+        )
     )
-    uploads_list.append(upload)
 
     build_attachment(
         realm_id=realm_id,
         message_ids={message_id},
         user_id=user_id,
         fileinfo=fileinfo,
-        s3_path=s3_path,
+        s3_path=attachment_data.url,
         zerver_attachment=zerver_attachment,
     )
 
@@ -472,7 +469,7 @@ def process_raw_message_batch(
     output_dir: str,
     zerver_realmemoji: list[ZerverFieldsT],
     total_reactions: list[ZerverFieldsT],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     upload_id_to_upload_data_map: dict[str, dict[str, Any]],
 ) -> None:
@@ -630,7 +627,7 @@ def process_messages(
     direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
     zerver_realmemoji: list[ZerverFieldsT],
     total_reactions: list[ZerverFieldsT],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     upload_id_to_upload_data_map: dict[str, dict[str, Any]],
     output_dir: str,
@@ -1229,7 +1226,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     rocketchat_message_data = []
 
     total_reactions: list[ZerverFieldsT] = []
-    uploads_list: list[ZerverFieldsT] = []
+    uploads_list: list[UploadRecordData] = []
     zerver_attachment: list[ZerverFieldsT] = []
 
     rocketchat_upload_data = rocketchat_data_to_dict(rocketchat_data_dir, ["upload"])["upload"]
@@ -1298,6 +1295,8 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     # Import attachments
     attachment: dict[str, list[Any]] = {"zerver_attachment": zerver_attachment}
     create_converted_data_files(attachment, output_dir, "/attachment.json")
-    create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
+
+    upload_records = [asdict(upload) for upload in uploads_list]
+    create_converted_data_files(upload_records, output_dir, "/uploads/records.json")
 
     do_common_export_processes(output_dir)
