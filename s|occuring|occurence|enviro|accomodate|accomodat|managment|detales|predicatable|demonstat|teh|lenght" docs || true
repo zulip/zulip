@@ -1,0 +1,265 @@
+docs/conf.py[36m:[m14[36m:[mon_rtd = os.[1;31menviro[mn.get("READTHEDOCS") == "True"
+docs/contributing/code-reviewing.md[36m:[m205[36m:[m[1;31menviro[mnment][development-[1;31menviro[mnment] to test any web app changes.
+docs/contributing/code-reviewing.md[36m:[m407[36m:[m[development-[1;31menviro[mnment]: ../development/overview.md
+docs/contributing/commit-discipline.md[36m:[m333[36m:[musing the `EDITOR` [1;31menviro[mnment variable or `git config --global core.editor`,
+docs/contributing/commit-discipline.md[36m:[m341[36m:[m- [A development [1;31menviro[mnment provisioning
+docs/development/authentication.md[36m:[m1[36m:[m# Authentication in the development [1;31menviro[mnment
+docs/development/authentication.md[36m:[m6[36m:[mdevelopment [1;31menviro[mnment.
+docs/development/authentication.md[36m:[m12[36m:[mdevelopment [1;31menviro[mnment is provide secret keys so that you can go
+docs/development/authentication.md[36m:[m20[36m:[mresult, in the development [1;31menviro[mnment, we allow setting certain
+docs/development/authentication.md[36m:[m31[36m:[mpassword for their account. There are two development [1;31menviro[mnment
+docs/development/authentication.md[36m:[m34[36m:[m- All of our authentication flows in the development [1;31menviro[mnment have
+docs/development/authentication.md[36m:[m37[36m:[m  not actually sent by the development [1;31menviro[mnment), to make it
+docs/development/authentication.md[36m:[m41[36m:[m  out **default** passwords for the development [1;31menviro[mnment users.
+docs/development/authentication.md[36m:[m43[36m:[m  [1;31menviro[mnment, those passwords will no longer work. It also prints
+docs/development/authentication.md[36m:[m51[36m:[m  to your dev [1;31menviro[mnment.
+docs/development/authentication.md[36m:[m140[36m:[mdevelopment [1;31menviro[mnment. If you run a
+docs/development/authentication.md[36m:[m158[36m:[mdevelopment [1;31menviro[mnment as well, so that you can go through all the
+docs/development/authentication.md[36m:[m183[36m:[mThe fakeldap LDAP directories we use in the development [1;31menviro[mnment
+docs/development/authentication.md[36m:[m208[36m:[m[1;31menviro[mnment directory without worrying about tests.
+docs/development/authentication.md[36m:[m217[36m:[mfor a one-time-password. In the development [1;31menviro[mnment, this
+docs/development/index.md[36m:[m1[36m:[m# Development [1;31menviro[mnment
+docs/development/index.md[36m:[m8[36m:[mDevelopment [1;31menviro[mnment installation <overview>
+docs/development/index.md[36m:[m11[36m:[mUsing the development [1;31menviro[mnment <using>
+docs/development/index.md[36m:[m13[36m:[mAuthentication in the development [1;31menviro[mnment <authentication>
+docs/development/overview.md[36m:[m1[36m:[m# Development [1;31menviro[mnment installation
+docs/development/overview.md[36m:[m5[36m:[mThe Zulip development [1;31menviro[mnment can be installed on **macOS,
+docs/development/overview.md[36m:[m9[36m:[mInstalling the Zulip development [1;31menviro[mnment requires downloading several hundred
+docs/development/overview.md[36m:[m17[36m:[m[Vagrant development [1;31menviro[mnment][install-vagrant]** on
+docs/development/overview.md[36m:[m25[36m:[mZulip development server, but provides an isolated [1;31menviro[mnment that is
+docs/development/overview.md[36m:[m32[36m:[mdevelopment [1;31menviro[mnment:
+docs/development/overview.md[36m:[m45[36m:[ma cloud server and install the Zulip development [1;31menviro[mnment for
+docs/development/overview.md[36m:[m50[36m:[mThe Zulip development [1;31menviro[mnment works well on remote virtual
+docs/development/overview.md[36m:[m55[36m:[mWe recommend giving the Zulip development [1;31menviro[mnment its **own
+docs/development/overview.md[36m:[m60[36m:[mIf the Zulip development [1;31menviro[mnment will be the only thing running on
+docs/development/overview.md[36m:[m68[36m:[mOnce you've installed the Zulip development [1;31menviro[mnment, you'll want
+docs/development/overview.md[36m:[m71[36m:[m- [Using the development [1;31menviro[mnment][using-dev-env]
+docs/development/overview.md[36m:[m74[36m:[mAnd if you've set up the Zulip development [1;31menviro[mnment on a remote
+docs/development/remote.md[36m:[m3[36m:[mThe Zulip developer [1;31menviro[mnment works well on remote virtual machines. This can
+docs/development/remote.md[36m:[m7[36m:[mWe recommend giving the Zulip development [1;31menviro[mnment its own virtual
+docs/development/remote.md[36m:[m9[36m:[m[1;31menviro[mnment will be the only thing running on the remote virtual
+docs/development/remote.md[36m:[m15[36m:[m## Connecting to the remote [1;31menviro[mnment
+docs/development/remote.md[36m:[m35[36m:[mthe Zulip development [1;31menviro[mnment. If you have one already, continue
+docs/development/remote.md[36m:[m50[36m:[m## Setting up the development [1;31menviro[mnment
+docs/development/remote.md[36m:[m53[36m:[mdevelopment [1;31menviro[mnment.
+docs/development/remote.md[36m:[m55[36m:[mIf the Zulip development [1;31menviro[mnment will be the only thing running on
+docs/development/remote.md[36m:[m62[36m:[mremote development [1;31menviro[mnment, and you're not using our Digital Ocean
+docs/development/remote.md[36m:[m71[36m:[m[1;31menviro[mnment using a browser on another host.
+docs/development/remote.md[36m:[m75[36m:[mOnce you have set up the development [1;31menviro[mnment, you can start up the
+docs/development/remote.md[36m:[m85[36m:[mthis screenshot of the Zulip development [1;31menviro[mnment:
+docs/development/remote.md[36m:[m87[36m:[m![Image of Zulip development [1;31menviro[mnment](../images/zulip-devlogin.png)
+docs/development/remote.md[36m:[m89[36m:[mThe `--interface=''` option makes the Zulip development [1;31menviro[mnment
+docs/development/remote.md[36m:[m94[36m:[mTo properly secure your remote development [1;31menviro[mnment, you can
+docs/development/remote.md[36m:[m96[36m:[musing ssh instead of running the development [1;31menviro[mnment on an exposed
+docs/development/remote.md[36m:[m110[36m:[m[1;31menviro[mnment][rtd-using-dev-env].
+docs/development/remote.md[36m:[m174[36m:[m[1;31menviro[mnment:
+docs/development/remote.md[36m:[m270[36m:[m- [Using the development [1;31menviro[mnment][rtd-using-dev-env]
+docs/development/remote.md[36m:[m317[36m:[m1. Start the Zulip development [1;31menviro[mnment in HTTPS mode with the following command:
+docs/development/request-remote.md[36m:[m9[36m:[mdevelopment [1;31menviro[mnment already set up.
+docs/development/request-remote.md[36m:[m79[36m:[m- [Using the development [1;31menviro[mnment](using.md)
+docs/development/setup-advanced.md[36m:[m14[36m:[mmethod. If you want that, use [the Vagrant [1;31menviro[mnment](setup-recommended.md),
+docs/development/setup-advanced.md[36m:[m15[36m:[mwhere you can just do `vagrant destroy` to clean up the development [1;31menviro[mnment.
+docs/development/setup-advanced.md[36m:[m18[36m:[mOne can install the Zulip development [1;31menviro[mnment directly on a Linux
+docs/development/setup-advanced.md[36m:[m63[36m:[m[1;31menviro[mnment](setup-recommended.md#step-4-developing),
+docs/development/setup-advanced.md[36m:[m88[36m:[merrors in the development [1;31menviro[mnment (such as symlink creation). You
+docs/development/setup-advanced.md[36m:[m142[36m:[mdevelopment [1;31menviro[mnment, because we use symbolic links. For that
+docs/development/setup-advanced.md[36m:[m172[36m:[m   order to use Hyper-V. Then provision the development [1;31menviro[mnment:
+docs/development/setup-advanced.md[36m:[m209[36m:[m   This will ssh you into the bash shell of the Zulip development [1;31menviro[mnment
+docs/development/setup-advanced.md[36m:[m212[36m:[m1. Set the `EXTERNAL_HOST` [1;31menviro[mnment variable.
+docs/development/setup-advanced.md[36m:[m256[36m:[m1. You can stop the development [1;31menviro[mnment using `vagrant halt`, and restart it
+docs/development/setup-advanced.md[36m:[m281[36m:[mto set up the Zulip development [1;31menviro[mnment on current versions of
+docs/development/setup-recommended.md[36m:[m1[36m:[m## Recommended [1;31menviro[mnment setup tutorial
+docs/development/setup-recommended.md[36m:[m4[36m:[mZulip development [1;31menviro[mnment on Windows, macOS, and Linux.
+docs/development/setup-recommended.md[36m:[m6[36m:[mThe recommended method for installing the Zulip development [1;31menviro[mnment is
+docs/development/setup-recommended.md[36m:[m12[36m:[mthe [1;31menviro[mnment to be as reliable and portable as possible. The
+docs/development/setup-recommended.md[36m:[m16[36m:[m[1;31menviro[mnment.
+docs/development/setup-recommended.md[36m:[m24[36m:[m- [Step 3: Start the development [1;31menviro[mnment](#step-3-start-the-development-[1;31menviro[mnment)
+docs/development/setup-recommended.md[36m:[m33[36m:[mInstalling the Zulip development [1;31menviro[mnment requires downloading several
+docs/development/setup-recommended.md[36m:[m103[36m:[mZulip's development [1;31menviro[mnment is most easily set up on Windows using
+docs/development/setup-recommended.md[36m:[m113[36m:[m   2](https://docs.microsoft.com/en-us/windows/wsl/setup/[1;31menviro[mnment),
+docs/development/setup-recommended.md[36m:[m116[36m:[m   distribution](#rebuilding-the-development-[1;31menviro[mnment) is
+docs/development/setup-recommended.md[36m:[m118[36m:[m   [1;31menviro[mnment that might conflict with the Zulip [1;31menviro[mnment.
+docs/development/setup-recommended.md[36m:[m264[36m:[m### Step 3: Start the development [1;31menviro[mnment
+docs/development/setup-recommended.md[36m:[m271[36m:[mRun the following to install the Zulip development [1;31menviro[mnment and
+docs/development/setup-recommended.md[36m:[m276[36m:[m$ # Install/update the Zulip development [1;31menviro[mnment
+docs/development/setup-recommended.md[36m:[m278[36m:[m$ # Enter the Zulip Python [1;31menviro[mnment
+docs/development/setup-recommended.md[36m:[m292[36m:[mdevelopment [1;31menviro[mnment with `vagrant up`:
+docs/development/setup-recommended.md[36m:[m318[36m:[mdevelopment [1;31menviro[mnment with `vagrant up`:
+docs/development/setup-recommended.md[36m:[m350[36m:[mdevelopment [1;31menviro[mnment with `vagrant up`:
+docs/development/setup-recommended.md[36m:[m371[36m:[mdevelopment [1;31menviro[mnment with `vagrant up`:
+docs/development/setup-recommended.md[36m:[m399[36m:[mdevelopment [1;31menviro[mnment on the virtual machine/container.
+docs/development/setup-recommended.md[36m:[m427[36m:[mto open VS Code connected to your WSL [1;31menviro[mnment. See the [Remote development in WSL][remote-wsl] tutorial for more information.
+docs/development/setup-recommended.md[36m:[m486[36m:[m#### Maintaining the development [1;31menviro[mnment
+docs/development/setup-recommended.md[36m:[m497[36m:[m[1;31menviro[mnment provisioning process that you need to apply to your
+docs/development/setup-recommended.md[36m:[m498[36m:[mdevelopment [1;31menviro[mnment. To update your [1;31menviro[mnment, you'll need to
+docs/development/setup-recommended.md[36m:[m503[36m:[m[(re)start the Zulip development server](/development/setup-recommended.md#step-3-start-the-development-[1;31menviro[mnment).
+docs/development/setup-recommended.md[36m:[m551[36m:[m#### Rebuilding the development [1;31menviro[mnment
+docs/development/setup-recommended.md[36m:[m602[36m:[m#### Shutting down the development [1;31menviro[mnment for use later
+docs/development/setup-recommended.md[36m:[m609[36m:[mOn Windows with WSL 2, you do not need to shut down the [1;31menviro[mnment. Simply
+docs/development/setup-recommended.md[36m:[m612[36m:[mAlternatively, you can use a command to terminate/shutdown your WSL2 [1;31menviro[mnment with PowerShell using:
+docs/development/setup-recommended.md[36m:[m615[36m:[m> wsl --terminate <[1;31menviro[mnment_name>
+docs/development/setup-recommended.md[36m:[m658[36m:[m#### Resuming the development [1;31menviro[mnment
+docs/development/setup-recommended.md[36m:[m667[36m:[m[1;31menviro[mnment was properly activated (you should see `(zulip-server)`). If the
+docs/development/setup-recommended.md[36m:[m719[36m:[m- [Using the development [1;31menviro[mnment][rtd-using-dev-env]
+docs/development/setup-recommended.md[36m:[m819[36m:[mBringing up a development [1;31menviro[mnment for the first time involves
+docs/development/setup-recommended.md[36m:[m885[36m:[mIf you'd like to be able to connect to your development [1;31menviro[mnment from other
+docs/development/setup-recommended.md[36m:[m907[36m:[m[1;31menviro[mnment. If your host system has more CPUs, or you have enough
+docs/development/setup-recommended.md[36m:[m909[36m:[mimprove performance of the Zulip development [1;31menviro[mnment by allocating
+docs/development/setup/shared-vagrant-errors.md[36m:[m8[36m:[mESC[94mZulip development [1;31menviro[mnment setup succeeded!ESC[0m
+docs/development/setup/shared-vagrant-errors.md[36m:[m15[36m:[mupdate your [1;31menviro[mnment. Re-provision your Vagrant machine; if the problem
+docs/development/setup/shared-vagrant-errors.md[36m:[m94[36m:[m[1;31menviro[mnment to use it](/development/setup-recommended.md#specifying-a-proxy)).
+docs/development/setup/shared-vagrant-errors.md[36m:[m99[36m:[mZulip development [1;31menviro[mnment setup succeeded!
+docs/development/setup/shared-vagrant-errors.md[36m:[m110[36m:[mdevelopment [1;31menviro[mnment provisioning free of bugs.
+docs/development/setup/vagrant-halt.md[36m:[m1[36m:[mTo shut down but preserve the development [1;31menviro[mnment so you can use
+docs/development/setup/vagrant-halt.md[36m:[m20[36m:[mNow you can suspend the development [1;31menviro[mnment:
+docs/development/setup/vagrant-rebuild.md[36m:[m1[36m:[mIf you ever want to recreate your development [1;31menviro[mnment again from
+docs/development/setup/vagrant-rebuild.md[36m:[m10[36m:[myou may have installed in the development [1;31menviro[mnment will be lost
+docs/development/setup/vagrant-ssh.md[36m:[m1[36m:[mOnce `vagrant up` has completed, connect to the development [1;31menviro[mnment
+docs/development/setup/vagrant-ssh.md[36m:[m14[36m:[mCongrats, you're now inside the Zulip development [1;31menviro[mnment!
+docs/development/setup/vagrant-up.md[36m:[m9[36m:[m  downloads all required dependencies, sets up the Python [1;31menviro[mnment for
+docs/development/setup/vagrant-update.md[36m:[m5[36m:[m[1;31menviro[mnment provisioning process that you need to apply to your
+docs/development/setup/vagrant-update.md[36m:[m6[36m:[mdevelopment [1;31menviro[mnment. To update your [1;31menviro[mnment, you'll need to
+docs/development/setup/vagrant-update.md[36m:[m12[36m:[m[(re)start the Zulip development server](/development/setup-recommended.md#step-3-start-the-development-[1;31menviro[mnment).
+docs/development/setup/vscode-vagrant.md[36m:[m10[36m:[mto open VS Code connected to your Vagrant [1;31menviro[mnment. See the
+docs/development/setup/wsl-rebuild.md[36m:[m1[36m:[mIf you ever want to recreate your development [1;31menviro[mnment again from
+docs/development/setup/wsl-rebuild.md[36m:[m15[36m:[mcontaining your development [1;31menviro[mnment using the command:
+docs/development/setup/wsl-troubleshoot.md[36m:[m75[36m:[m- Ensure that you use a fresh WSL instance to setup the Zulip development [1;31menviro[mnment to avoid dependency conflicts.
+docs/development/test-install.md[36m:[m7[36m:[mthe installation process in a clean [1;31menviro[mnment each time.
+docs/development/using.md[36m:[m1[36m:[m# Using the development [1;31menviro[mnment
+docs/development/using.md[36m:[m4[36m:[mthe Zulip development [1;31menviro[mnment. Generally, the development
+docs/development/using.md[36m:[m5[36m:[m[1;31menviro[mnment will automatically update as soon as you save changes
+docs/development/using.md[36m:[m11[36m:[mthe development [1;31menviro[mnment][authentication-dev-server].
+docs/development/using.md[36m:[m21[36m:[m  [1;31menviro[mnment after switching branches; it will run in under a second
+docs/development/using.md[36m:[m34[36m:[m- If you want to restore your development [1;31menviro[mnment's database to a
+docs/development/using.md[36m:[m40[36m:[m  development [1;31menviro[mnment will automatically detect changes and
+docs/development/using.md[36m:[m84[36m:[m  development [1;31menviro[mnment will be displayed as a large notice, so you
+docs/documentation/api.md[36m:[m391[36m:[mIf you have the Zulip development [1;31menviro[mnment set up, you can manually
+docs/documentation/api.md[36m:[m491[36m:[min the development [1;31menviro[mnment (`tools/test-api`):
+docs/documentation/api.md[36m:[m582[36m:[mdevelopment [1;31menviro[mnment would result in this error:
+docs/documentation/helpcenter.md[36m:[m31[36m:[mthe Zulip development [1;31menviro[mnment). The help center documentation is not hosted
+docs/documentation/helpcenter.md[36m:[m34[36m:[m[1;31menviro[mnment.
+docs/documentation/helpcenter.md[36m:[m39[36m:[m[1;31menviro[mnment set up, you simply need to reload your browser on
+docs/documentation/helpcenter.md[36m:[m205[36m:[mIf you have the Zulip development [1;31menviro[mnment set up, you can manually
+docs/documentation/helpcenter.md[36m:[m264[36m:[mThen when you view your documentation changes in the development [1;31menviro[mnment,
+docs/documentation/openapi.md[36m:[m166[36m:[m[1;31menviro[mnment, it uses an online validator that must be able to access
+docs/documentation/overview.md[36m:[m51[36m:[mZulip development [1;31menviro[mnment provisioning, and you can build the
+docs/git/cloning.md[36m:[m95[36m:[m## Step 2: Set up the Zulip development [1;31menviro[mnment
+docs/git/cloning.md[36m:[m97[36m:[mIf you haven't already, now is a good time to install the Zulip development [1;31menviro[mnment
+docs/git/overview.md[36m:[m49[36m:[mFinally, install the [Zulip developer [1;31menviro[mnment][zulip-rtd-dev-overview], and then
+docs/git/reviewing.md[36m:[m52[36m:[mDisplay changes that have [1;31moccurr[med on `main` branch since `topic` branch was created:
+docs/git/setup.md[36m:[m33[36m:[mIf you are installing the Zulip development [1;31menviro[mnment, now you are ready to
+docs/git/setup.md[36m:[m63[36m:[m[gitbook-other-envs-bash]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-[1;31mEnviro[mnments-Git-in-Bash
+docs/git/setup.md[36m:[m64[36m:[m[gitbook-other-envs-zsh]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-[1;31mEnviro[mnments-Git-in-Zsh
+docs/git/troubleshooting.md[36m:[m19[36m:[mchanges that have [1;31moccurr[med on zulip/upstream since you first started your work,
+docs/git/using.md[36m:[m316[36m:[mtesting in a more production-like [1;31menviro[mnment.
+docs/git/using.md[36m:[m446[36m:[m[gitbook-other-envs-bash]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-[1;31mEnviro[mnments-Git-in-Bash
+docs/git/using.md[36m:[m447[36m:[m[gitbook-other-envs-zsh]: https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-[1;31mEnviro[mnments-Git-in-Zsh
+docs/index.md[36m:[m34[36m:[m- {ref}`Development [1;31menviro[mnment <development-[1;31menviro[mnment>`
+docs/index.md[36m:[m76[36m:[m(development-[1;31menviro[mnment)=
+docs/outreach/apply.md[36m:[m76[36m:[m  [1;31menviro[mnment](../development/overview.md), getting help in [#provision
+docs/outreach/apply.md[36m:[m80[36m:[m  [1;31menviro[mnment](../development/using.md).
+docs/overview/architecture-overview.md[36m:[m145[36m:[mNote that we do not use `nginx` in the development [1;31menviro[mnment, opting
+docs/overview/architecture-overview.md[36m:[m240[36m:[mIn a development [1;31menviro[mnment, configuration of that PostgreSQL
+docs/overview/changelog.md[36m:[m473[36m:[m- Fixed Python virtual [1;31menviro[mnments being incorrectly created
+docs/overview/changelog.md[36m:[m2203[36m:[m  [1;31menviro[mnment and for joining the project as a new contributor.
+docs/overview/changelog.md[36m:[m2358[36m:[m  if Zulip was being run in Docker or in low-memory [1;31menviro[mnments.
+docs/overview/changelog.md[36m:[m3620[36m:[m  development [1;31menviro[mnment. We recommend deleting those lines from
+docs/overview/changelog.md[36m:[m3894[36m:[m- Added support for CentOS 7 in the development [1;31menviro[mnment
+docs/overview/changelog.md[36m:[m4151[36m:[m- Added a new "night mode" theme for dark [1;31menviro[mnments.
+docs/overview/changelog.md[36m:[m4791[36m:[m- Fixed Zulip Tornado service not working with http_proxy set in [1;31menviro[mnment.
+docs/overview/changelog.md[36m:[m4965[36m:[m- Added lots of detailed documentation on the Zulip development [1;31menviro[mnment.
+docs/overview/changelog.md[36m:[m4985[36m:[m- Migrated development [1;31menviro[mnment setup scripts to tools/setup/.
+docs/overview/changelog.md[36m:[m5019[36m:[m  decreasing RAM requirements for a Zulip development [1;31menviro[mnment from
+docs/overview/changelog.md[36m:[m5037[36m:[m- Added support for running Zulip development [1;31menviro[mnment in Docker.
+docs/overview/changelog.md[36m:[m5067[36m:[m- Added a lot of documentation on the development [1;31menviro[mnment and testing.
+docs/overview/changelog.md[36m:[m5088[36m:[m- Fixed several installation issues for both production and development [1;31menviro[mnments.
+docs/overview/directory-structure.md[36m:[m114[36m:[m- `tools/` Scripts used only in a Zulip development [1;31menviro[mnment.
+docs/overview/directory-structure.md[36m:[m121[36m:[m  the development [1;31menviro[mnment setup process.
+docs/overview/directory-structure.md[36m:[m168[36m:[m- `zproject/jinja2/__init__.py` Jinja2 [1;31menviro[mnment.
+docs/production/authentication-methods.md[36m:[m196[36m:[m     your [1;31menviro[mnment.
+docs/production/authentication-methods.md[36m:[m1051[36m:[mit (a) runs inside Apache, and (b) sets the `REMOTE_USER` [1;31menviro[mnment
+docs/production/authentication-methods.md[36m:[m1337[36m:[mpasswordless login as any user in a development [1;31menviro[mnment. It's
+docs/production/export-and-import.md[36m:[m69[36m:[m  as part of a high availability [1;31menviro[mnment.
+docs/production/export-and-import.md[36m:[m301[36m:[m   preferred for [1;31menviro[mnments like Zulip Cloud where you might want to
+docs/production/install.md[36m:[m23[36m:[m[development [1;31menviro[mnment](../development/overview.md).
+docs/production/install.md[36m:[m39[36m:[mhosting [1;31menviro[mnment that satisfies the [installation
+docs/production/modify.md[36m:[m42[36m:[m  the Zulip development [1;31menviro[mnment](../development/overview.md) on
+docs/production/modify.md[36m:[m46[36m:[m  strictly need it; you just need an [1;31menviro[mnment with Git installed.
+docs/production/password-strength.md[36m:[m44[36m:[mthe few [1;31menviro[mnments where users can be expected to work much harder
+docs/production/system-configuration.md[36m:[m147[36m:[mvirtualized [1;31menviro[mnment (e.g., Docker, or Proxmox LXC).
+docs/production/upgrade.md[36m:[m253[36m:[m[1;31menviro[mnment variables as described below. If any of them exit with non-0 exit
+docs/production/upgrade.md[36m:[m256[36m:[mThe hook is run with the following [1;31menviro[mnment variables set:
+docs/production/upgrade.md[36m:[m265[36m:[mthe following [1;31menviro[mnment variables will also be present:
+docs/subsystems/billing.md[36m:[m31[36m:[mdevelopment [1;31menviro[mnment to receive webhook events from Stripe.
+docs/subsystems/billing.md[36m:[m51[36m:[m- Your development [1;31menviro[mnment is now all set to receive webhook events from
+docs/subsystems/billing.md[36m:[m128[36m:[m  value and other settings for your development [1;31menviro[mnment only in
+docs/subsystems/caching.md[36m:[m94[36m:[m  Though in frequently deployed [1;31menviro[mnments like chat.zulip.org,
+docs/subsystems/caching.md[36m:[m211[36m:[mdevelopment [1;31menviro[mnment on the same machine, which also saves a ton of
+docs/subsystems/caching.md[36m:[m222[36m:[mZulip's development [1;31menviro[mnment will automatically flush (delete all
+docs/subsystems/dependencies.md[36m:[m11[36m:[m  to re-provision a working Zulip development [1;31menviro[mnment after
+docs/subsystems/dependencies.md[36m:[m15[36m:[m  production [1;31menviro[mnment is provisioned/installed, it should end up
+docs/subsystems/dependencies.md[36m:[m28[36m:[mconfiguring the dependencies of a Zulip development [1;31menviro[mnment. It's
+docs/subsystems/dependencies.md[36m:[m36[36m:[mIn the Vagrant development [1;31menviro[mnment, `vagrant provision` will run
+docs/subsystems/dependencies.md[36m:[m53[36m:[mdevelopment [1;31menviro[mnment in a good state.)
+docs/subsystems/dependencies.md[36m:[m194[36m:[mIn the development [1;31menviro[mnment, the `tools/setup/install-shellcheck`
+docs/subsystems/dependencies.md[36m:[m223[36m:[m[1;31menviro[mnments where they need to be displayed.
+docs/subsystems/dependencies.md[36m:[m258[36m:[m  used by most developers to maintain their development [1;31menviro[mnment.
+docs/subsystems/email.md[36m:[m51[36m:[mAll the emails sent in the development [1;31menviro[mnment can be accessed by
+docs/subsystems/email.md[36m:[m54[36m:[m`.send()` method in Django) in the development [1;31menviro[mnment to be our
+docs/subsystems/email.md[36m:[m66[36m:[m[1;31menviro[mnment to an email account of your choice by clicking on
+docs/subsystems/emoji.md[36m:[m123[36m:[m  [1;31menviro[mnments, even if the use is common on the internet. For example, we
+docs/subsystems/html-css.md[36m:[m32[36m:[mZulip's development [1;31menviro[mnment has hot code-reloading configured, so
+docs/subsystems/html-css.md[36m:[m151[36m:[mstage. In the development [1;31menviro[mnment, webpack will trigger a browser reload
+docs/subsystems/html-css.md[36m:[m232[36m:[m  a development [1;31menviro[mnment (e.g., `/devlogin`) create a new entry
+docs/subsystems/html-css.md[36m:[m289[36m:[ma version of the `require()` function to the development [1;31menviro[mnment
+docs/subsystems/logging.md[36m:[m188[36m:[m- In order to capture essentially any error [1;31moccurr[ming in the browser, in
+docs/subsystems/management-commands.md[36m:[m19[36m:[m  [1;31menviro[mnment or server, e.g., `makemessages`, `compilemessages`,
+docs/subsystems/management-commands.md[36m:[m64[36m:[mtesting one, even if testing in a Zulip production [1;31menviro[mnment where
+docs/subsystems/pointer.md[36m:[m98[36m:[mIn a Zulip development [1;31menviro[mnment, you can use
+docs/subsystems/queuing.md[36m:[m41[36m:[m  [1;31menviro[mnment (`tools/run-dev` will automatically restart the queue processors
+docs/subsystems/realms.md[36m:[m55[36m:[m### Working with subdomains in development [1;31menviro[mnment
+docs/subsystems/realms.md[36m:[m57[36m:[mZulip's development [1;31menviro[mnment is designed to make it convenient to
+docs/subsystems/realms.md[36m:[m69[36m:[min your local development [1;31menviro[mnment. To solve this problem, we use
+docs/subsystems/settings.md[36m:[m48[36m:[mThe `DJANGO_SETTINGS_MODULE` [1;31menviro[mnment variable is set to
+docs/subsystems/settings.md[36m:[m57[36m:[mIn a production [1;31menviro[mnment, we have:
+docs/subsystems/settings.md[36m:[m92[36m:[m  `zproject/default_settings.py`, then in a prod [1;31menviro[mnment imports
+docs/subsystems/settings.md[36m:[m103[36m:[mIn a development [1;31menviro[mnment, we have `zproject/settings.py`, and
+docs/subsystems/settings.md[36m:[m107[36m:[m  [1;31menviro[mnment; these are set after importing `prod_settings_template.py`.
+docs/subsystems/settings.md[36m:[m111[36m:[m  allows you to configure your development [1;31menviro[mnment to support
+docs/subsystems/settings.md[36m:[m119[36m:[m- If you need to override a setting in your development [1;31menviro[mnment,
+docs/subsystems/settings.md[36m:[m132[36m:[m  top of the development [1;31menviro[mnment settings.
+docs/subsystems/settings.md[36m:[m138[36m:[m  for production [1;31menviro[mnments.
+docs/subsystems/settings.md[36m:[m151[36m:[m  Zulip development and/or test [1;31menviro[mnments is different from the
+docs/subsystems/settings.md[36m:[m154[36m:[mMost settings should be enabled in the development [1;31menviro[mnment, to
+docs/testing/continuous-integration.md[36m:[m32[36m:[m  get this sort of timestamp in a development [1;31menviro[mnment by piping
+docs/testing/continuous-integration.md[36m:[m109[36m:[mdevelopment or production [1;31menviro[mnment. In particular, we cache the
+docs/testing/continuous-integration.md[36m:[m120[36m:[mproduction and the Zulip development [1;31menviro[mnment) to ensure that each
+docs/testing/manual-testing.md[36m:[m553[36m:[m  the development [1;31menviro[mnment).
+docs/testing/mypy.md[36m:[m38[36m:[mmypy is installed by default in the Zulip development [1;31menviro[mnment.
+docs/testing/philosophy.md[36m:[m28[36m:[mLDAP database in both automated tests and the development [1;31menviro[mnment,
+docs/testing/philosophy.md[36m:[m66[36m:[m  Internet might be down or unreliable in the test [1;31menviro[mnment. Where
+docs/testing/testing-with-django.md[36m:[m28[36m:[mthreads in your development [1;31menviro[mnment, and can finish in under 30s
+docs/testing/testing-with-django.md[36m:[m130[36m:[m  run the development [1;31menviro[mnment out of disk) or
+docs/testing/testing-with-django.md[36m:[m483[36m:[m  is exposed in your development [1;31menviro[mnment).
+docs/testing/testing-with-node.md[36m:[m250[36m:[mThese instructions assume you're using the Vagrant development [1;31menviro[mnment.
+docs/testing/testing-with-node.md[36m:[m266[36m:[m   - `[1;31mEnviro[mnment Variables` is not needed.
+docs/testing/testing-with-puppeteer.md[36m:[m72[36m:[m  [1;31menviro[mnment than in the Puppeteer test suite.
+docs/testing/testing-with-puppeteer.md[36m:[m84[36m:[m  [1;31menviro[mnments; this often explains failures in CI that cannot be
+docs/testing/testing-with-puppeteer.md[36m:[m119[36m:[m  development [1;31menviro[mnment. The console output while running the tests
+docs/testing/testing-with-puppeteer.md[36m:[m161[36m:[m  [1;31menviro[mnment; specifically, it uses the same setup as the [backend
+docs/testing/testing-with-puppeteer.md[36m:[m163[36m:[m  the development [1;31menviro[mnment, check out the conditions on
+docs/testing/testing.md[36m:[m10[36m:[m[development [1;31menviro[mnment](../development/overview.md); you may also
+docs/testing/testing.md[36m:[m16[36m:[mon [using the development [1;31menviro[mnment](../development/using.md).
+docs/testing/testing.md[36m:[m20[36m:[mZulip tests must be run inside a Zulip development [1;31menviro[mnment; if
+docs/testing/testing.md[36m:[m83[36m:[m  this helps prevent bugs that break the development [1;31menviro[mnment.
+docs/testing/testing.md[36m:[m95[36m:[mthings to the [1;31menviro[mnment) why they are not part of the handful of
+docs/translating/german.md[36m:[m22[36m:[m- "Das ist die Seite, wo der Quelltext s[1;31mteh[mt." - the "_wo_" is regional,
+docs/translating/german.md[36m:[m23[36m:[m  say _"Das ist die Seite, auf der Quelltext s[1;31mteh[mt."_ instead.
+docs/translating/translating.md[36m:[m116[36m:[m[Zulip development [1;31menviro[mnment](../development/overview.md) set up;
+docs/tutorials/new-feature-tutorial.md[36m:[m606[36m:[mvalues are the UI updating functions to run when an event has [1;31moccurr[med.
+docs/tutorials/new-feature-tutorial.md[36m:[m638[36m:[mapplication if an update event has [1;31moccurr[med on a realm property and runs
+docs/tutorials/shell-tips.md[36m:[m15[36m:[mLinux/macOS [1;31menviro[mnments (Unix shells). You can also use a tool, for example
+docs/tutorials/shell-tips.md[36m:[m28[36m:[m- `(venv)` informs the user that they're currently in a virtual [1;31menviro[mnment
+docs/tutorials/shell-tips.md[36m:[m30[36m:[m  [1;31menviro[mnments](https://docs.python-guide.org/dev/virtualenvs/))
+docs/tutorials/shell-tips.md[36m:[m177[36m:[m[1;31menviro[mnment:
+docs/tutorials/shell-tips.md[36m:[m302[36m:[mthe `python3` program in your current [1;31menviro[mnment, the same one the
