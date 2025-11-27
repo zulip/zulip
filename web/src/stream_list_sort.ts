@@ -9,6 +9,7 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
 let first_render_completed = false;
@@ -155,17 +156,27 @@ export function sort_groups(
           );
 
     const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
+    const current_topic_name = narrow_state.topic()?.toLowerCase();
     if (
         current_channel_id !== undefined &&
         stream_data.is_subscribed(current_channel_id) &&
-        !matching_stream_ids.includes(current_channel_id) &&
-        // If any of the topics of the channel match the search term, we need to
-        // include the channel in the list of streams.
-        topic_list_data.get_list_info(current_channel_id, false, (topic_names) =>
-            topic_list_data.filter_topics_by_search_term(topic_names, search_term),
-        ).items.length > 0
+        !matching_stream_ids.includes(current_channel_id)
     ) {
-        matching_stream_ids.push(current_channel_id);
+        // If any of the unmuted topics of the channel match the search
+        // term, or a muted topic matches the current topic, we include
+        // the channel in the list of matches.
+        const topics = topic_list_data.get_filtered_topic_names(current_channel_id, (topic_names) =>
+            topic_list_data.filter_topics_by_search_term(topic_names, search_term),
+        );
+        if (
+            topics.some(
+                (topic) =>
+                    topic.toLowerCase() === current_topic_name ||
+                    !user_topics.is_topic_muted(current_channel_id, topic),
+            )
+        ) {
+            matching_stream_ids.push(current_channel_id);
+        }
     }
 
     // If the channel folder matches the search term, include all channels
