@@ -155,6 +155,7 @@ export function set_default_focus(): void {
     const focus_action = should_select_search_text ? "select" : "focus";
     $current_focus_elem = $("#recent_view_search");
     $current_focus_elem.trigger(focus_action);
+    should_select_search_text = false;
     compose_closed_ui.set_standard_text_for_reply_button();
 }
 
