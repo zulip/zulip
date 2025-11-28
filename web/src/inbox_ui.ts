@@ -357,6 +357,9 @@ export function show(filter?: Filter): void {
             complete_rerender,
             is_recent_view: false,
         });
+        if (search_keyword !== "") {
+            should_select_inbox_search = true;
+        }
         return;
     }
 
