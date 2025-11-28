@@ -406,6 +406,8 @@ def fetch_initial_state_data(
                 setting_group_id, anonymous_group_membership_data_dict
             )
 
+        state["realm_owner_full_content_access"] = realm.owner_full_content_access
+
         state["realm_create_public_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
                 realm,
