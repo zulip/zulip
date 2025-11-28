@@ -50,6 +50,8 @@ let is_loading_more = false;
 let tenor_popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
 const BASE_URL = "https://tenor.googleapis.com/v2";
+// Stores the index of the last GIF that is part of the grid.
+let last_gif_index = 0;
 
 type TenorPayload = {
     key: string;
@@ -88,6 +90,60 @@ function handle_gif_click(img_element: HTMLElement): void {
     hide_tenor_popover();
 }
 
+function focus_gif_at_index(index: number): void {
+    if (index < 0 || index > last_gif_index) {
+        assert(tenor_popover_instance !== undefined);
+        const $popper = $(tenor_popover_instance.popper);
+        // Just trigger focus on the search input because there are no GIFs
+        // above or below.
+        $popper.find("#gif-search-query").trigger("focus");
+        return;
+    }
+
+    const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
+    $target_gif.trigger("focus");
+}
+
+function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
+    assert(e.currentTarget instanceof HTMLElement);
+    const key = e.key;
+    const is_alpha_numeric = /^[a-zA-Z0-9]$/i.test(key);
+    if (is_alpha_numeric) {
+        // This implies that the user is focused on some GIF
+        // but wants to continue searching.
+        assert(tenor_popover_instance !== undefined);
+        const $popper = $(tenor_popover_instance.popper);
+        $popper.find("#gif-search-query").trigger("focus");
+        return;
+    }
+    if (key === "Enter" || key === " " || key === "Spacebar") {
+        // Meant to avoid page scroll on pressing space.
+        e.preventDefault();
+        handle_gif_click(e.currentTarget);
+        return;
+    }
+
+    const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
+    switch (key) {
+        case "ArrowRight": {
+            focus_gif_at_index(curr_gif_index + 1);
+            break;
+        }
+        case "ArrowLeft": {
+            focus_gif_at_index(curr_gif_index - 1);
+            break;
+        }
+        case "ArrowUp": {
+            focus_gif_at_index(curr_gif_index - 3);
+            break;
+        }
+        case "ArrowDown": {
+            focus_gif_at_index(curr_gif_index + 3);
+            break;
+        }
+    }
+}
+
 function hide_tenor_popover(): boolean {
     // Returns `true` if the popover was open.
     if (tenor_popover_instance) {
@@ -115,11 +171,17 @@ function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): voi
     }));
     next_pos_identifier = parsed_data.next;
     let gif_grid_html = "";
+
+    if (!next_page) {
+        last_gif_index = 0;
+    }
     for (const url of urls) {
         gif_grid_html += render_tenor_gif({
             preview_url: url.preview_url,
             insert_url: url.insert_url,
+            gif_index: last_gif_index,
         });
+        last_gif_index += 1;
     }
     const $popper = $(tenor_popover_instance.popper);
     if (next_page) {
@@ -208,6 +270,12 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 }
                 $popper.on("keyup", "#gif-search-query", (e) => {
                     assert(e.target instanceof HTMLInputElement);
+                    if (e.key === "ArrowDown") {
+                        // Trigger arrow key based navigation on the grid by focusing
+                        // the first grid element.
+                        focus_gif_at_index(0);
+                        return;
+                    }
                     debounced_search(e.target.value);
                 });
                 $popper.on("click", ".tenor-gif", (e) => {
@@ -219,15 +287,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                     $("#gif-search-query").val("");
                     update_grid_with_search_term("");
                 });
-                $popper.on("keydown", ".tenor-gif", (e) => {
-                    assert(e.currentTarget instanceof HTMLElement);
-                    const key = e.key;
-                    if (key === "Enter" || key === " " || key === "Spacebar") {
-                        // Meant to avoid page scroll on pressing space.
-                        e.preventDefault();
-                        handle_gif_click(e.currentTarget);
-                    }
-                });
+                $popper.on("keydown", ".tenor-gif", handle_keyboard_navigation_on_gif);
             },
             onMount(instance) {
                 render_featured_gifs(false);
