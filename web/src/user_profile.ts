@@ -913,9 +913,17 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 $cancel_button.prop("disabled", false);
             },
             error(xhr) {
-                ui_report.error(
+                const error_message = channel.xhr_error_message(
                     $t_html({defaultMessage: "Failed"}),
                     xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
                     $("#bot-edit-form-error"),
                 );
                 // Scrolling modal to top, to make error visible to user.
@@ -1270,9 +1278,17 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $cancel_button.prop("disabled", false);
             },
             error(xhr) {
-                ui_report.error(
+                const error_message = channel.xhr_error_message(
                     $t_html({defaultMessage: "Failed"}),
                     xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
                     $("#edit-user-form-error"),
                 );
                 // Scrolling modal to top, to make error visible to user.
