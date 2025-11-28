@@ -761,6 +761,27 @@ export function process_tab_key(): boolean {
         return true;
     }
 
+    const $focused_message_edit_cancel = $(".message_edit_cancel:focus");
+    if($focused_message_edit_cancel.length > 0) {
+        $message_edit_form = $focused_message_edit_cancel.closest(".message_edit_form");
+        // Tab will move the flow to the markdown_preview
+        $message_edit_form.find(".markdown_preview").trigger("focus");
+        return true;
+    }
+
+
+    const $focused_message_edit_help = $(".compose_help_button:focus");
+    if($focused_message_edit_help.length > 0) {
+        $message_edit_form = $focused_message_edit_help.closest(".message_edit_form");
+        // In message edit: Tab will move the flow to the textarea
+        if($message_edit_form.find(".message_edit_content").length > 0) {
+            $message_edit_form.find(".message_edit_content").trigger("focus");
+            return true;
+        }
+        // In new compose: let browser handle
+        return false;
+    }
+
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("tab");
     }
