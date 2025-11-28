@@ -234,6 +234,7 @@ let filters = new Set([DEFAULT_FILTER]);
 const per_channel_filters = new Map<number, Set<string>>();
 let collapsed_containers = new Set<string>();
 
+let should_select_inbox_search = false;
 let search_keyword = "";
 let inbox_last_search_keyword = "";
 const per_channel_last_search_keyword = new Map<number, string>();
@@ -338,6 +339,9 @@ export function show(filter?: Filter): void {
     const normal_inbox_view_is_visible = inbox_util.is_visible() && !was_inbox_channel_view;
 
     inbox_util.set_filter(filter);
+    if (search_keyword !== "") {
+        should_select_inbox_search = true;
+    }
     if (inbox_util.is_channel_view()) {
         restore_channel_view_state();
         views_util.show({
@@ -1459,6 +1463,12 @@ function focus_inbox_search(): void {
     focus_current_id();
 }
 
+function select_inbox_search(): void {
+    current_focus_id = INBOX_SEARCH_ID;
+    const $search = $(`#${CSS.escape(INBOX_SEARCH_ID)}`);
+    $search.trigger("select");
+}
+
 function is_list_focused(): boolean {
     return (
         current_focus_id === undefined ||
@@ -1510,7 +1520,12 @@ export function revive_current_focus(): void {
     if (is_list_focused()) {
         set_list_focus();
     } else {
-        focus_current_id();
+        if (!should_select_inbox_search) {
+            focus_current_id();
+            return;
+        }
+        select_inbox_search();
+        should_select_inbox_search = false;
     }
 }
 
