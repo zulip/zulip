@@ -233,6 +233,10 @@ class Realm(models.Model):
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
 
+    # Whether the organization's owner will have the ability to access
+    # private content in the organization in the Zulip UI.
+    owner_full_content_access = models.BooleanField(default=False)
+
     topics_policy = models.PositiveSmallIntegerField(
         default=RealmTopicsPolicyEnum.allow_empty_topic.value
     )

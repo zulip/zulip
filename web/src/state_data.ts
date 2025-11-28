@@ -478,6 +478,7 @@ export const realm_schema = z.object({
     realm_night_logo_source: z.string(),
     realm_night_logo_url: z.string(),
     realm_org_type: z.number(),
+    realm_owner_full_content_access: z.boolean(),
     realm_password_auth_enabled: z.boolean(),
     realm_plan_type: z.number(),
     realm_playgrounds: z.array(realm_playground_schema),

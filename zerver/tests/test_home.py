@@ -203,6 +203,7 @@ class HomeTest(ZulipTestCase):
         "realm_night_logo_url",
         "realm_non_active_users",
         "realm_org_type",
+        "realm_owner_full_content_access",
         "realm_password_auth_enabled",
         "realm_plan_type",
         "realm_playgrounds",
