@@ -7,5 +7,6 @@
 /generated/bots/
 # Copied integrations package
 /generated/integrations/
-# From emoji
-/generated/emoji
+# From emoji (except emoji_codes.json which is needed for deployment)
+/generated/emoji/*
+!/generated/emoji/emoji_codes.json
