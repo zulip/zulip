@@ -197,7 +197,10 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
     return (
         member_ids
             .map((m: number) => people.get_user_by_id_assert_valid(m))
-            // Only include users we are allowed to show in popovers.
+
+            // Only include users that the current user is allowed to see in the popover.
+            // Inaccessible or unknown users should not appear in displayed_members.
+
             .filter(
                 (m: User) =>
                     people.is_active_user_for_popover(m.user_id) && !m.is_inaccessible_user,
