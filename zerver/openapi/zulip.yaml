@@ -20198,6 +20198,18 @@ paths:
                           - 1000 = Other
 
                           **Changes**: New in Zulip 6.0 (feature level 128).
+                      realm_owner_full_content_access:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the organization's security model allows owners to access
+                          all private content in this organization.
+
+                          Note that this security model configuration can only be changed
+                          via a command-line management command.
+
+                          **Changes**: New in Zulip 12.0 (feature level 438).
                       realm_plan_type:
                         type: integer
                         description: |
