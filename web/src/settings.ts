@@ -85,6 +85,14 @@ export function build_page(): void {
         ...settings_config.preferences_settings_labels,
     };
 
+    const is_export_without_consent_enabled = realm.realm_owner_full_content_access;
+    const private_data_export_tooltip_text = is_export_without_consent_enabled
+        ? $t({
+              defaultMessage:
+                  "Administrators of this organization are allowed to export private data for all users.",
+          })
+        : undefined;
+
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
         profile_picture: people.small_avatar_url_for_person(
@@ -151,6 +159,10 @@ export function build_page(): void {
                 user_settings.web_line_height_percent,
             ),
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
+        private_data_export_is_checked:
+            user_settings.allow_private_data_export || is_export_without_consent_enabled,
+        private_data_export_is_disabled: is_export_without_consent_enabled,
+        private_data_export_tooltip_text,
     });
 
     $(".settings-box").html(rendered_settings_tab);
