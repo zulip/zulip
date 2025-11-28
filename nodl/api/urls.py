@@ -3,6 +3,13 @@
 from django.urls import path
 
 from nodl.api.views import deactivate_realm, sync_realm, sync_user
+from nodl.api.views.messages import (
+    delete_message,
+    edit_message,
+    get_message,
+    list_messages,
+    send_message,
+)
 from nodl.api.views.streams import (
     archive_stream,
     create_stream,
@@ -29,6 +36,12 @@ urlpatterns = [
     path("api/v1/streams/<int:stream_id>/topics", get_stream_topics, name="nodl_get_stream_topics"),
     path("api/v1/streams/<int:stream_id>/subscribe", subscribe_to_stream, name="nodl_subscribe_stream"),
     path("api/v1/streams/<int:stream_id>/unsubscribe", unsubscribe_from_stream, name="nodl_unsubscribe_stream"),
+    # Message REST API endpoints - authenticated via JWT
+    path("api/v1/messages", list_messages, name="nodl_list_messages"),
+    path("api/v1/messages/send", send_message, name="nodl_send_message"),
+    path("api/v1/messages/<int:message_id>", get_message, name="nodl_get_message"),
+    path("api/v1/messages/<int:message_id>/edit", edit_message, name="nodl_edit_message"),
+    path("api/v1/messages/<int:message_id>/delete", delete_message, name="nodl_delete_message"),
 ]
 
 # i18n URL patterns (empty for API endpoints)
