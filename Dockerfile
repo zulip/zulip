@@ -18,6 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # nginx and supervisor
     nginx \
     supervisor \
+    # File type detection (python-magic)
+    libmagic1 \
     # Cleanup
     && rm -rf /var/lib/apt/lists/*
 
