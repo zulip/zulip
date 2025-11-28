@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 438**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_owner_full_content_access` field indicating whether the
+  organization's security model allows owners to access all private
+  content in this organization.
+
 **Feature level 437**
 
 * [`GET /users`](/api/get-users), [`GET
