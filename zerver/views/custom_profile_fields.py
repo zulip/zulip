@@ -225,6 +225,7 @@ def create_realm_custom_profile_field(
                 required=required,
                 editable_by_user=editable_by_user,
                 use_for_user_matching=use_for_user_matching,
+                acting_user=user_profile,
             )
             return json_success(request, data={"id": field.id})
     except IntegrityError:
@@ -240,7 +241,9 @@ def delete_realm_custom_profile_field(
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
-    do_remove_realm_custom_profile_field(realm=user_profile.realm, field=field)
+    do_remove_realm_custom_profile_field(
+        realm=user_profile.realm, field=field, acting_user=user_profile
+    )
     return json_success(request)
 
 
@@ -301,6 +304,7 @@ def update_realm_custom_profile_field(
             required=required,
             editable_by_user=editable_by_user,
             use_for_user_matching=use_for_user_matching,
+            acting_user=user_profile,
         )
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))
