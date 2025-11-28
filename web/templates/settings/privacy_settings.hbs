@@ -42,7 +42,9 @@
     {{#unless for_realm_settings}}
     {{> settings_checkbox
       setting_name="allow_private_data_export"
-      is_checked=settings_object.allow_private_data_export
+      is_checked=private_data_export_is_checked
+      is_disabled=private_data_export_is_disabled
+      tooltip_message=private_data_export_tooltip_text
       label=settings_label.allow_private_data_export
       help_link="/help/export-your-organization#export-your-organization"
       }}
