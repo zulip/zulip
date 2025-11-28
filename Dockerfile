@@ -20,6 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     supervisor \
     # File type detection (python-magic)
     libmagic1 \
+    # XML/SAML support (xmlsec) - need dev headers to build from source
+    libxml2-dev \
+    libxmlsec1-dev \
+    libxmlsec1-openssl \
     # Cleanup
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,7 +40,9 @@ RUN python -m venv /app/.venv
 COPY requirements.txt .
 
 # Install Python dependencies into virtualenv
-RUN /app/.venv/bin/pip install --no-cache-dir -r requirements.txt
+# Use --no-binary for lxml,xmlsec to force compilation against container's libxml2
+# This fixes "lxml & xmlsec libxml2 library version mismatch" error
+RUN /app/.venv/bin/pip install --no-cache-dir --no-binary lxml,xmlsec -r requirements.txt
 
 # Install virtualenv package (provides activate_this.py)
 RUN /app/.venv/bin/pip install virtualenv
