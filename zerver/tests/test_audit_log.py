@@ -25,6 +25,12 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
+from zerver.actions.custom_profile_fields import (
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_update_realm_custom_profile_field,
+)
 from zerver.actions.navigation_views import (
     do_add_navigation_view,
     do_remove_navigation_view,
@@ -93,6 +99,7 @@ from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
 from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
+    CustomProfileField,
     Message,
     NamedUserGroup,
     RealmAuditLog,
@@ -567,6 +574,212 @@ class TestRealmAuditLog(ZulipTestCase):
         expected_new_value = auth_method_dict
         self.assertEqual(extra_data[RealmAuditLog.OLD_VALUE], expected_old_value)
         self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], expected_new_value)
+
+    def test_realm_custom_profile_field_created(self) -> None:
+        realm = get_realm("zulip")
+        admin = self.example_user("iago")
+
+        field = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="GitHub",
+            field_type=CustomProfileField.ALL_FIELD_TYPES[0][0],
+            acting_user=admin,
+        )
+
+        audit_log = RealmAuditLog.objects.filter(
+            realm=realm,
+            event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_CREATED,
+        ).latest("id")
+
+        self.assertEqual(audit_log.acting_user, admin)
+        expected_extra_data = {
+            "field_id": field.id,
+            "name": "GitHub",
+            "field_type": CustomProfileField.ALL_FIELD_TYPES[0][0],
+        }
+        self.assertEqual(audit_log.extra_data, expected_extra_data)
+
+    def test_realm_custom_profile_field_updated(self) -> None:
+        realm = get_realm("zulip")
+        admin = self.example_user("iago")
+
+        field = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="GitHub",
+            field_type=CustomProfileField.ALL_FIELD_TYPES[0][0],
+            acting_user=admin,
+        )
+
+        try_update_realm_custom_profile_field(
+            realm=realm,
+            field=field,
+            name="GitHub profile",
+            acting_user=admin,
+        )
+
+        audit_log = RealmAuditLog.objects.filter(
+            realm=realm,
+            event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_UPDATED,
+        ).latest("id")
+
+        self.assertEqual(audit_log.acting_user, admin)
+
+        old_value = audit_log.extra_data[RealmAuditLog.OLD_VALUE]
+        new_value = audit_log.extra_data[RealmAuditLog.NEW_VALUE]
+
+        self.assertDictEqual(
+            old_value,
+            {
+                "name": "GitHub",
+                "hint": "",
+                "required": False,
+                "editable_by_user": True,
+                "display_in_profile_summary": False,
+            },
+        )
+
+        self.assertDictEqual(
+            new_value,
+            {
+                "name": "GitHub profile",
+                "hint": "",
+                "required": False,
+                "editable_by_user": True,
+                "display_in_profile_summary": False,
+            },
+        )
+
+    def test_realm_custom_profile_field_deleted(self) -> None:
+        realm = get_realm("zulip")
+        admin = self.example_user("iago")
+
+        field = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Twitter",
+            field_type=CustomProfileField.ALL_FIELD_TYPES[0][0],
+            acting_user=admin,
+        )
+        field_id = field.id
+
+        start_time = timezone_now()
+
+        do_remove_realm_custom_profile_field(
+            realm=realm,
+            field=field,
+            acting_user=admin,
+        )
+
+        audit_logs = RealmAuditLog.objects.filter(
+            realm=realm,
+            event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_DELETED,
+            event_time__gte=start_time,
+        )
+        self.assert_length(audit_logs, 1)
+
+        audit_log = audit_logs[0]
+        self.assertEqual(audit_log.acting_user, admin)
+        expected_extra_data = {
+            "field_id": field_id,
+            "name": "Twitter",
+            "field_type": CustomProfileField.ALL_FIELD_TYPES[0][0],
+        }
+
+        self.assertEqual(audit_log.extra_data, expected_extra_data)
+
+    def test_user_custom_profile_field_value_updated(self) -> None:
+        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+
+        field = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Test Biography",
+            field_type=CustomProfileField.LONG_TEXT,
+            acting_user=self.example_user("iago"),
+        )
+
+        do_update_user_custom_profile_data_if_changed(
+            user,
+            [
+                {
+                    "id": field.id,
+                    "value": "Original Bio",
+                }
+            ],
+            acting_user=user,
+            notify=True,
+        )
+
+        start_time = timezone_now()
+
+        do_update_user_custom_profile_data_if_changed(
+            user,
+            [
+                {
+                    "id": field.id,
+                    "value": "New Updated Bio",
+                }
+            ],
+            acting_user=user,
+            notify=True,
+        )
+
+        audit_logs = RealmAuditLog.objects.filter(
+            realm=realm,
+            event_type=AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED,
+            event_time__gte=start_time,
+        )
+        self.assert_length(audit_logs, 1)
+
+        audit_log = audit_logs[0]
+        self.assertEqual(audit_log.acting_user, user)
+        self.assertEqual(audit_log.modified_user, user)
+        expected_extra_data = {
+            "field_id": field.id,
+            RealmAuditLog.NEW_VALUE: "New Updated Bio",
+            RealmAuditLog.OLD_VALUE: "Original Bio",
+        }
+        self.assertEqual(audit_log.extra_data, expected_extra_data)
+
+    def test_user_custom_profile_field_value_removed(self) -> None:
+        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+
+        field = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Test Biography",
+            field_type=CustomProfileField.LONG_TEXT,
+            acting_user=self.example_user("iago"),
+        )
+
+        do_update_user_custom_profile_data_if_changed(
+            user,
+            [{"id": field.id, "value": "Some Bio"}],
+            acting_user=user,
+            notify=True,
+        )
+
+        start_time = timezone_now()
+
+        do_update_user_custom_profile_data_if_changed(
+            user,
+            [{"id": field.id, "value": ""}],
+            acting_user=user,
+            notify=True,
+        )
+
+        audit_log = RealmAuditLog.objects.get(
+            realm=realm,
+            event_type=AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED,
+            event_time__gte=start_time,
+        )
+
+        expected_extra_data = {
+            "field_id": field.id,
+            RealmAuditLog.OLD_VALUE: "Some Bio",
+            RealmAuditLog.NEW_VALUE: "",
+        }
+
+        self.assertEqual(audit_log.extra_data, expected_extra_data)
 
     def test_get_last_message_id(self) -> None:
         # get_last_message_id is a helper mainly used for RealmAuditLog
