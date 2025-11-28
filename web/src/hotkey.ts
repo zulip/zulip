@@ -817,6 +817,17 @@ export function process_shift_tab_key(): boolean {
         return true;
     }
 
+    // Shift-Tabbing from the markdown_preview takes you back to previous element
+    if($(".markdown_preview:focus").length > 0){
+        // In message edit: go back to cancel button
+        if($(".message_edit_cancel").length > 0) {
+            $(".message_edit_cancel").trigger("focus");
+            return true;
+        }
+        // In new compose: let browser handle 
+        return false;
+    }
+
     // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("shift_tab");
