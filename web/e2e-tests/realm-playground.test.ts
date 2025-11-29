@@ -57,7 +57,7 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
             page,
             ".playground_row span.playground_pygments_language",
         ),
-        "Python",
+        "python",
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, ".playground_row span.playground_name"),
