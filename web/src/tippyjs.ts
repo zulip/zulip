@@ -9,6 +9,7 @@ import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
 
+import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
@@ -439,6 +440,32 @@ export function initialize(): void {
         target: ".settings-radio-input-parent.default_stream_private_tooltip",
         content: $t({
             defaultMessage: "Default channels for new users cannot be made private.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Tooltip in general channel settings for protected history option.
+    tippy.delegate("body", {
+        target: ".settings-radio-input-parent.protected_history_with_new_topics_permission_tooltip",
+        content: $t({
+            defaultMessage:
+                "You must allow everyone to start new topics in this channel in order to turn on protected history.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Tooltip in Advanced configurations panel (existing + new channel) of channel settings.
+    tippy.delegate("body", {
+        target: ".can_create_topic_group_container.can_create_topic_group_disabled_tooltip",
+        content: $t({
+            defaultMessage:
+                "Everyone should be allowed start topics in channels with protected history.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -935,13 +962,24 @@ export function initialize(): void {
         target: ".topic-edit-save-wrapper",
         onShow(instance) {
             const $elem = $(instance.reference);
-            if ($($elem).find(".topic_edit_save").prop("disabled")) {
+            const $save_button = $elem.find(".topic_edit_save");
+            if (!$save_button.prop("disabled")) {
+                return false;
+            }
+
+            if ($save_button.hasClass("topic-required")) {
                 const error_message =
                     compose_validate.get_topics_required_error_tooltip_message_html();
                 instance.setContent(ui_util.parse_html(error_message));
                 return undefined;
             }
-            return false;
+
+            const content = $elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
         },
         appendTo: () => document.body,
         onHidden(instance) {
@@ -987,6 +1025,23 @@ export function initialize(): void {
                 return undefined;
             }
             return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#recipient_box_clear_topic_button",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const stream_id = compose_state.stream_id();
+            let content = $t({defaultMessage: "New topic"});
+            if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                content = $t({defaultMessage: "Clear topic"});
+            }
+            instance.setContent(content);
         },
         appendTo: () => document.body,
         onHidden(instance) {

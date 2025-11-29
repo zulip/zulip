@@ -164,7 +164,9 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
+import * as compose_state from "./compose_state.ts";
 import * as scroll_util from "./scroll_util.ts";
+import * as stream_data from "./stream_data.ts";
 import {get_string_diff, the} from "./util.ts";
 
 export function defaultSorter(items: string[], query: string): string[] {
@@ -805,6 +807,19 @@ export class Typeahead<ItemType extends string | object> {
                     this.openInputFieldOnKeyUp();
                 }
                 if (e.key === "Backspace") {
+                    if (
+                        the(this.input_element.$element).id === "stream_message_recipient_topic" &&
+                        this.input_element.$element.val() === ""
+                    ) {
+                        // For streams without permission to create new topics, open
+                        // the typeahead when topic is cleared using "Backspace" key.
+                        // Typeahead is not shown for empty inputs for other streams.
+                        const stream_id = compose_state.stream_id();
+                        if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                            this.lookup(false, true);
+                            return;
+                        }
+                    }
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
                 }

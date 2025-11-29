@@ -69,6 +69,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
+    access_stream_to_create_new_topic,
     channel_events_topic_name,
     ensure_stream,
     get_stream_topics_policy,
@@ -1795,6 +1796,8 @@ def check_message(
             # is security-sensitive code, it's beneficial to ensure nothing
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
+
+        access_stream_to_create_new_topic(user_profile=sender, stream=stream, topic_name=topic_name)
 
         topics_policy = get_stream_topics_policy(realm, stream)
         empty_topic_display_name = get_topic_display_name("", sender.default_language)

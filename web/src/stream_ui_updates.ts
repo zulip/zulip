@@ -24,6 +24,7 @@ import * as stream_settings_containers from "./stream_settings_containers.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 export function row_for_stream_id(stream_id: number): JQuery {
@@ -127,15 +128,42 @@ export function update_private_stream_privacy_option_state($container: JQuery): 
         $container.find<HTMLInputElement>(".default-stream input"),
     ).checked;
 
-    const disable_private_stream_options =
-        is_default_stream || !settings_data.user_can_create_private_streams();
+    // If a group setting has value "Everyone including guests" along with additional
+    // users or groups, we do not treat it as equivalent to just "Everyone including guests".
+    // For a channel with protected history, everyone must be allowed to create new topics.
+    // As a result, enabling protected history for a channel requires the `can_create_topic_group`
+    // setting to have "Everyone including guests" group configuration only.
+    let can_create_topic_group_widget;
+    if ($container.attr("id") === "stream-creation") {
+        can_create_topic_group_widget =
+            stream_settings_components.get_group_setting_widget_for_new_stream(
+                "can_create_topic_group",
+            )!;
+    } else {
+        can_create_topic_group_widget =
+            settings_components.get_group_setting_widget("can_create_topic_group")!;
+    }
+    const can_create_topic_group = settings_components.get_group_setting_widget_value(
+        can_create_topic_group_widget,
+    );
+    const everyone_can_create_topics_in_stream =
+        can_create_topic_group === user_groups.get_user_group_from_name("role:everyone")!.id;
 
-    $private_stream_elem.prop("disabled", disable_private_stream_options);
-    $private_with_public_history_elem.prop("disabled", disable_private_stream_options);
+    const disable_private_with_public_history_elem =
+        is_default_stream || !settings_data.user_can_create_private_streams();
+    const disable_private_stream_elem =
+        disable_private_with_public_history_elem || !everyone_can_create_topics_in_stream;
+
+    $private_with_public_history_elem.prop("disabled", disable_private_with_public_history_elem);
+    $private_stream_elem.prop("disabled", disable_private_stream_elem);
 
     $private_stream_elem
         .closest("div")
-        .toggleClass("default_stream_private_tooltip", is_default_stream);
+        .toggleClass("default_stream_private_tooltip", is_default_stream)
+        .toggleClass(
+            "protected_history_with_new_topics_permission_tooltip",
+            !everyone_can_create_topics_in_stream,
+        );
     $private_with_public_history_elem
         .closest("div")
         .toggleClass("default_stream_private_tooltip", is_default_stream);
@@ -393,6 +421,13 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     if (!stream_data.user_can_set_delete_message_policy()) {
         settings_components.disable_group_permission_setting($("#id_can_delete_any_message_group"));
         settings_components.disable_group_permission_setting($("#id_can_delete_own_message_group"));
+    }
+
+    if (!sub.history_public_to_subscribers) {
+        settings_components.disable_group_permission_setting($("#id_can_create_topic_group"));
+        $("#id_can_create_topic_group")
+            .closest(".input-group")
+            .addClass("can_create_topic_group_disabled_tooltip");
     }
 }
 
@@ -653,4 +688,22 @@ export function update_folder_dropdown_visibility(): void {
     if (active_stream_id) {
         set_folder_dropdown_visibility($("#stream_settings"));
     }
+}
+
+export function update_can_create_topic_group_setting_state($container: JQuery): void {
+    const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
+    const is_history_protected = privacy_type === "invite-only";
+
+    let $setting_element = $("#id_can_create_topic_group");
+    if (hash_parser.is_create_new_stream_narrow()) {
+        $setting_element = $("#id_new_can_create_topic_group");
+    }
+    if (is_history_protected) {
+        settings_components.disable_group_permission_setting($setting_element);
+    } else {
+        settings_components.enable_group_permission_setting($setting_element);
+    }
+    $setting_element
+        .closest(".input-group")
+        .toggleClass("can_create_topic_group_disabled_tooltip", is_history_protected);
 }
