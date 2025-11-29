@@ -320,7 +320,9 @@ def maybe_send_to_registration(
         if user_groups or group_memberships_sync_map:
             prereg_user.groups.set(user_groups or [])
             if group_memberships_sync_map:
-                sync_groups_for_prereg_user(prereg_user, group_memberships_sync_map)
+                sync_groups_for_prereg_user(
+                    prereg_user, group_memberships_sync_map, create_missing_groups=True
+                )
         if include_realm_default_subscriptions is not None:
             prereg_user.include_realm_default_subscriptions = include_realm_default_subscriptions
 
