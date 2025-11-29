@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {make_realm} = require("./lib/example_realm.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const { make_realm } = require("./lib/example_realm.cjs");
+const { mock_esm, zrequire } = require("./lib/namespace.cjs");
+const { run_test } = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -12,12 +12,12 @@ mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
 
-const {PollData} = zrequire("poll_data");
+const { PollData } = zrequire("poll_data");
 
 const poll_widget = zrequire("poll_widget");
 
 const people = zrequire("people");
-const {set_realm} = zrequire("state_data");
+const { set_realm } = zrequire("state_data");
 
 set_realm(make_realm());
 
@@ -79,15 +79,13 @@ run_test("PollData my question", () => {
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        options: [
-            {
-                option: "release now",
-                names: "",
-                count: 0,
-                key: "99,1",
-                current_user_vote: false,
-            },
-        ],
+        options: [{
+            option: "release now",
+            names: "",
+            count: 0,
+            key: "99,1",
+            current_user_vote: false,
+        }, ],
         question: "best plan?",
     });
 
@@ -101,15 +99,13 @@ run_test("PollData my question", () => {
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        options: [
-            {
-                option: "release now",
-                names: "Me Myself",
-                count: 1,
-                key: "99,1",
-                current_user_vote: true,
-            },
-        ],
+        options: [{
+            option: "release now",
+            names: "Me Myself",
+            count: 1,
+            key: "99,1",
+            current_user_vote: true,
+        }, ],
         question: "best plan?",
     });
 
@@ -123,15 +119,13 @@ run_test("PollData my question", () => {
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        options: [
-            {
-                option: "release now",
-                names: "Me Myself, Alice Lee",
-                count: 2,
-                key: "99,1",
-                current_user_vote: true,
-            },
-        ],
+        options: [{
+            option: "release now",
+            names: "Me Myself, Alice Lee",
+            count: 2,
+            key: "99,1",
+            current_user_vote: true,
+        }, ],
         question: "best plan?",
     });
 
@@ -160,7 +154,7 @@ run_test("PollData my question", () => {
     });
 
     const vote_outbound_event = data_holder.handle.vote.outbound("99,1");
-    assert.deepEqual(vote_outbound_event, {type: "vote", key: "99,1", vote: -1});
+    assert.deepEqual(vote_outbound_event, { type: "vote", key: "99,1", vote: -1 });
 
     vote_event = {
         type: "vote",
@@ -172,15 +166,13 @@ run_test("PollData my question", () => {
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        options: [
-            {
-                option: "release now",
-                names: "Alice Lee",
-                count: 1,
-                key: "99,1",
-                current_user_vote: false,
-            },
-        ],
+        options: [{
+            option: "release now",
+            names: "Alice Lee",
+            count: 1,
+            key: "99,1",
+            current_user_vote: false,
+        }, ],
         question: "best plan?",
     });
 });
@@ -214,13 +206,13 @@ run_test("wrong person editing question", () => {
     });
 });
 
-run_test("activate another person poll", ({mock_template}) => {
+run_test("activate another person poll", ({ mock_template }) => {
     mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
     mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
     const $widget_elem = $("<div>").addClass("widget-content");
 
-    let out_data; // Used to check the event data sent to the server
+    let out_data;
     const callback = (data) => {
         out_data = data;
     };
@@ -257,6 +249,7 @@ run_test("activate another person poll", ({mock_template}) => {
 
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
+    set_widget_find_result(".poll-edited-marker");
 
     const handle_events = poll_widget.activate(opts);
 
@@ -273,11 +266,11 @@ run_test("activate another person poll", ({mock_template}) => {
     assert.equal($poll_question_header.text(), "What do you want?");
 
     {
-        /* Testing data sent to server on adding option */
+
         $poll_option_input.val("cool choice");
         out_data = undefined;
         $poll_option.trigger("click");
-        assert.deepEqual(out_data, {type: "new_option", idx: 1, option: "cool choice"});
+        assert.deepEqual(out_data, { type: "new_option", idx: 1, option: "cool choice" });
 
         $poll_option_input.val("");
         out_data = undefined;
@@ -285,8 +278,7 @@ run_test("activate another person poll", ({mock_template}) => {
         assert.deepEqual(out_data, undefined);
     }
 
-    const vote_events = [
-        {
+    const vote_events = [{
             sender_id: alice.user_id,
             data: {
                 type: "new_option",
@@ -307,27 +299,25 @@ run_test("activate another person poll", ({mock_template}) => {
     handle_events(vote_events);
 
     {
-        /* Testing data sent to server on voting */
+
         $poll_vote_button.attr("data-key", "100,1");
         out_data = undefined;
         $poll_vote_button.trigger("click");
-        assert.deepEqual(out_data, {type: "vote", key: "100,1", vote: 1});
+        assert.deepEqual(out_data, { type: "vote", key: "100,1", vote: 1 });
     }
 
-    const add_question_event = [
-        {
-            sender_id: 100,
-            data: {
-                type: "question",
-                question: "best plan?",
-            },
+    const add_question_event = [{
+        sender_id: 100,
+        data: {
+            type: "question",
+            question: "best plan?",
         },
-    ];
+    }, ];
 
     handle_events(add_question_event);
 });
 
-run_test("activate own poll", ({mock_template}) => {
+run_test("activate own poll", ({ mock_template }) => {
     mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
     mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
@@ -368,6 +358,7 @@ run_test("activate own poll", ({mock_template}) => {
     const $poll_please_wait = set_widget_find_result(".poll-please-wait");
 
     set_widget_find_result("button.poll-question-remove");
+    set_widget_find_result(".poll-edited-marker");
 
     function assert_visibility() {
         assert.ok($poll_option_container.visible());
@@ -387,11 +378,11 @@ run_test("activate own poll", ({mock_template}) => {
     assert.equal($poll_question_header.text(), "Where to go?");
 
     {
-        /* Testing data sent to server on editing question */
+
         $poll_question_input.val("Is it new?");
         out_data = undefined;
         $poll_question_submit.trigger("click");
-        assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
+        assert.deepEqual(out_data, { type: "question", question: "Is it new?" });
 
         assert_visibility();
         assert.ok($poll_question_submit.visible());

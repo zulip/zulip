@@ -46,6 +46,7 @@ export function activate({
     message: Message;
 }): (events: Event[]) => void {
     const is_my_poll = people.is_my_user_id(message.sender_id);
+    
     const parse_result = poll_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.error("invalid poll widget extra data", {issues: parse_result.error.issues});
@@ -82,6 +83,31 @@ export function activate({
         $elem.find(".poll-question-header").toggle(!input_mode);
         $elem.find(".poll-question-header").text(question);
         $elem.find(".poll-edit-question").toggle(can_edit);
+        
+        // Show/hide edited marker
+        const was_edited = message.last_edit_timestamp !== undefined;
+        if (was_edited && message.last_edit_timestamp) {
+            const edit_timestamp = message.last_edit_timestamp * 1000;
+            const edit_date = new Date(edit_timestamp);
+            const now = new Date();
+            
+            let time_str;
+            const is_today = edit_date.toDateString() === now.toDateString();
+            const time_format = edit_date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            
+            if (is_today) {
+                time_str = `Last edited today at ${time_format}`;
+            } else {
+                const date_format = edit_date.toLocaleDateString();
+                time_str = `Last edited on ${date_format} at ${time_format}`;
+            }
+            
+            $elem.find(".poll-edited-marker").show();
+            $elem.find(".poll-edited-marker").attr("title", time_str);
+        } else {
+            $elem.find(".poll-edited-marker").hide();
+        }
+        
         update_edit_controls();
 
         $elem.find(".poll-question-bar").toggle(input_mode);
@@ -109,22 +135,21 @@ export function activate({
         let new_question = $poll_question_input.val()!.trim();
         const old_question = poll_data.get_question();
 
-        // We should disable the button for blank questions,
-        // so this is just defensive code.
         if (new_question.trim() === "") {
             new_question = old_question;
         }
 
-        // Optimistically set the question locally.
         poll_data.set_question(new_question);
         render_question();
 
-        // If there were no actual edits, we can exit now.
         if (new_question === old_question) {
             return;
         }
 
-        // Broadcast the new question to our peers.
+        // Update timestamp when question changes
+        message.last_edit_timestamp = Date.now() / 1000;
+        render_question();
+
         const data = poll_data.handle.question.outbound(new_question);
         if (data) {
             callback(data);
@@ -248,8 +273,6 @@ export function activate({
     }
 
     const handle_events = function (events: Event[]): void {
-        // We don't have to handle events now since we go through
-        // handle_event loop again when we unmute the message.
         if (message_container?.is_hidden) {
             return;
         }
