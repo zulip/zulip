@@ -123,12 +123,15 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         realm_url = settings.ROOT_DOMAIN_URI
         realm_name = None
         realm_icon = None
-        realm_default_emojiset = UserProfile.GOOGLE_EMOJISET
     else:
         realm_url = realm.url
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
-        realm_default_emojiset = RealmUserDefault.objects.get(realm=realm).emojiset
+    if realm is not None and not request.user.is_authenticated:
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_default_emojiset = realm_user_default.emojiset
+    else:
+        realm_default_emojiset = UserProfile.GOOGLE_EMOJISET
 
     skip_footer = False
     register_link_disabled = settings.REGISTER_LINK_DISABLED
