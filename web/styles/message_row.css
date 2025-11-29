@@ -293,6 +293,62 @@
     }
 }
 
+.message_link_tooltip {
+    max-height: 200px;
+    max-width: min(600px, 70vw);
+    overflow: hidden;
+
+    .messagebox-content {
+        padding-left: 5px;
+        grid-template:
+            minmax(var(--message-box-sender-line-height), auto) repeat(1, auto)
+            /
+            var(--message-box-avatar-column-width) minmax(0, 1fr);
+        grid-template-areas:
+            "avatar sender "
+            "avatar message";
+
+        &.is-me-message {
+            grid-template-areas:
+                ".      .     "
+                "avatar sender"
+                "avatar sender";
+            grid-template-rows:
+                var(--message-box-vertical-margin) var(
+                    --message-box-avatar-height
+                )
+                minmax(0, auto);
+        }
+
+        .message_content {
+            color: hsl(0deg 0% 87%);
+        }
+
+        .message_content > p,
+        .message_content > ul {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+            white-space: normal;
+            overflow: hidden;
+            overflow-wrap: break-word;
+        }
+    }
+
+    code {
+        color: hsl(0deg 0% 87%);
+        background-color: hsl(0deg 0% 100% / 8%);
+    }
+
+    .codehilite pre {
+        color: hsl(0deg 0% 100% / 85%);
+        background-color: light-dark(
+            hsl(0deg 0% 70% / 4%),
+            hsl(0deg 0% 100% / 4%)
+        );
+    }
+}
+
 .messagebox-includes-sender {
     .messagebox-content {
         grid-template-areas:
@@ -301,11 +357,6 @@
             ".      more      .        . .   "
             ".      reactions .        . .   "
             ".      reminders .        . .   ";
-
-        .message_edit {
-            /* No top margin when there's a sender row */
-            margin-top: 0;
-        }
 
         &.is-me-message {
             grid-template-areas:
@@ -320,6 +371,19 @@
                     --message-box-avatar-height
                 )
                 minmax(0, auto) repeat(4, auto);
+        }
+    }
+}
+
+.message_link_tooltip,
+.messagebox-includes-sender {
+    .messagebox-content {
+        .message_edit {
+            /* No top margin when there's a sender row */
+            margin-top: 0;
+        }
+
+        &.is-me-message {
             /* We align items to the baseline on me messages,
                and unset the align-content property. */
             align-items: baseline;

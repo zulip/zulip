@@ -1,8 +1,8 @@
-{{#if include_sender}}
+{{#if (or include_sender show_message_body_in_tooltip)}}
     {{> message_avatar . ~}}
 {{/if}}
 <span class="message_sender">
-    {{#if include_sender}}
+    {{#if (or include_sender show_message_body_in_tooltip)}}
         <span class="sender_info_hover sender_name" role="button" tabindex="0">
             <span class="view_user_card_tooltip sender_name_text" data-is-bot="{{sender_is_bot}}">
                 {{> user_full_name name=msg/sender_full_name should_add_guest_user_indicator=should_add_guest_indicator_for_sender}}
@@ -16,27 +16,34 @@
         {{/if}}
         {{#if status_message}}
             <span class="message_content rendered_markdown status-message">{{rendered_markdown status_message}}</span>
+            {{#unless show_message_body_in_tooltip}}
             {{#if message_edit_notices_for_status_message}}
                 {{> edited_notice .}}
             {{/if}}
+            {{/unless}}
         {{/if}}
+        {{#unless show_message_body_in_tooltip}}
         {{#if message_edit_notices_alongside_sender}}
             {{> edited_notice .}}
         {{/if}}
+        {{/unless}}
     {{/if}}
 </span>
 
+{{#unless show_message_body_in_tooltip}}
 <a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message-time">
     {{#unless include_sender}}
     <span class="copy-paste-text">&nbsp;</span>
     {{/unless}}
     {{timestr}}
 </a>
+{{/unless}}
 
 {{#if (and (not msg/failed_request) msg/locally_echoed)}}
     <span data-tooltip-template-id="slow-send-spinner-tooltip-template" class="fa fa-circle-o-notch slow-send-spinner{{#unless msg/show_slow_send_spinner }} hidden{{/unless}}"></span>
 {{/if}}
 
+{{#unless show_message_body_in_tooltip}}
 <div class="message_controls no-select">
     {{#if msg/locally_echoed}}
         {{#if msg/failed_request}}
@@ -48,6 +55,7 @@
         {{> message_controls .}}
     {{/if}}
 </div>
+{{/unless}}
 
 {{#unless status_message}}
     {{#unless is_hidden}}
@@ -59,22 +67,26 @@
         {{/if}}
     </div>
     {{else}}
-    <div class="message_content rendered_markdown">
-        {{> message_hidden_dialog}}
-    </div>
+        {{#unless show_message_body_in_tooltip}}
+        <div class="message_content rendered_markdown">
+            {{> message_hidden_dialog}}
+        </div>
+        {{/unless}}
     {{/unless}}
 {{/unless}}
 
-{{#if message_edit_notices_in_left_col}}
-{{> edited_notice .}}
-{{/if}}
+{{#unless show_message_body_in_tooltip}}
+    {{#if message_edit_notices_in_left_col}}
+    {{> edited_notice .}}
+    {{/if}}
 
-<div class="message_length_controller"></div>
+    <div class="message_length_controller"></div>
 
-{{#if (and (not is_hidden) msg.message_reactions)}}
-    {{> message_reactions . }}
-{{/if}}
+    {{#if (and (not is_hidden) msg.message_reactions)}}
+        {{> message_reactions . }}
+    {{/if}}
 
-{{#if (and (not is_hidden) msg.reminders)}}
-    {{> message_reminders . }}
-{{/if}}
+    {{#if (and (not is_hidden) msg.reminders)}}
+        {{> message_reminders . }}
+    {{/if}}
+{{/unless}}
