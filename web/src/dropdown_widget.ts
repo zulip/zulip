@@ -19,6 +19,9 @@ import * as util from "./util.ts";
 
 /* Sync with max-height set in zulip.css */
 export const DEFAULT_DROPDOWN_HEIGHT = 210;
+/* Default minimum items required to show the search box.
+   Using a named constant makes it easy to find and change later. */
+export const MIN_ITEMS_TO_SHOW_SEARCH_BOX = 3;
 const noop = (): void => {
     // Empty function for default values.
 };
@@ -121,10 +124,10 @@ export class DropdownWidget {
     hide_search_box: boolean;
 
     // Remember caller’s explicit request to hide search.
-    force_hide_search_box: boolean;
+    initial_hide_search_box: boolean;
 
     // Only show the search box if options.length > threshold.
-    min_items_to_show_search_box: number | undefined;
+    min_items_to_show_search_box: number;
 
     disable_for_spectators: boolean;
 
@@ -167,8 +170,11 @@ export class DropdownWidget {
             options.text_if_current_value_not_in_options ?? "";
 
         this.hide_search_box = options.hide_search_box ?? false;
-        this.force_hide_search_box = options.hide_search_box ?? false;
-        this.min_items_to_show_search_box = options.min_items_to_show_search_box ?? 3;
+        // Preserve caller's original request to hide the search box.
+        this.initial_hide_search_box = options.hide_search_box ?? false;
+        // Use constant default if the caller didn't provide a value.
+        this.min_items_to_show_search_box =
+            options.min_items_to_show_search_box ?? MIN_ITEMS_TO_SHOW_SEARCH_BOX;
 
         this.disable_for_spectators = options.disable_for_spectators ?? false;
         this.dropdown_input_visible_selector =
@@ -349,21 +355,39 @@ export class DropdownWidget {
                         }),
                     ),
                 );
-
                 // Determine whether search box should be shown based on number of items.
-                const options_list = this.get_options(this.current_value);
+                // Use list_widget if already available; otherwise fall back to get_options.
+                let options_list: Option[] = [];
+                if (this.list_widget) {
+                    options_list = this.list_widget.get_current_list();
+                } else {
+                    options_list = this.get_options(this.current_value);
+                }
+
+                // If the caller explicitly asked to hide the search box, honor that.
+                // Also, if the search input already has user text, keep it visible.
+                const $search_input = $(instance.popper).find<HTMLInputElement>(
+                    "input.dropdown-list-search-input",
+                );
+
+                const search_input_has_value =
+                    $search_input.val() !== undefined &&
+                    String($search_input.val()).trim().length > 0;
+
+                // Show search only if:
+                //  - caller did not explicitly request to hide it (initial_hide_search_box is false),
+                //  - and the search input is empty (so we don't hide it while user typed),
+                //  - and number of items exceeds the configured threshold.
+                const threshold = this.min_items_to_show_search_box ?? MIN_ITEMS_TO_SHOW_SEARCH_BOX;
                 const should_show_search =
-                    !this.force_hide_search_box &&
-                    options_list.length > (this.min_items_to_show_search_box ?? 3);
+                    !this.initial_hide_search_box &&
+                    !search_input_has_value &&
+                    options_list.length > threshold;
 
                 // Update hide_search_box value dynamically for this session
                 this.hide_search_box = !should_show_search;
 
                 // Update DOM: hide or show search input
-                const $search_input = $(instance.popper).find<HTMLInputElement>(
-                    ".dropdown-list-search-input",
-                );
-
                 if (this.hide_search_box) {
                     $search_input.closest(".dropdown-list-search").hide();
                 } else {
