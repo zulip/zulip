@@ -426,6 +426,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 USING_RABBITMQ = True
 RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 
+# Override RabbitMQ settings from environment (for Railway deployment)
+if os.environ.get("RABBITMQ_HOST"):
+    RABBITMQ_HOST = os.environ["RABBITMQ_HOST"]
+if os.environ.get("RABBITMQ_USERNAME"):
+    RABBITMQ_USERNAME = os.environ["RABBITMQ_USERNAME"]
+
 ########################################################################
 # CACHING CONFIGURATION
 ########################################################################
