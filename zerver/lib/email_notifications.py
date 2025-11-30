@@ -120,12 +120,12 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         img_elem = e.IMG(
             alt=alt_code,
             src=image_url,
-            # We specify dimensions with these attributes, rather than
-            # CSS, because Outlook doesn't support these CSS properties.
-            height="20",
-            width="20",
         )
         img_elem.set("data-emoji-name", emoji_name)
+        # We specify dimensions with these attributes, rather than
+        # CSS, because Outlook doesn't support these CSS properties.
+        img_elem.set("height", "20")
+        img_elem.set("width", "20")
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
