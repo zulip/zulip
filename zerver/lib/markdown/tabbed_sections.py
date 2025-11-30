@@ -53,6 +53,8 @@ TAB_SECTION_LABELS = {
     "for-yourself": "For yourself",
     "grafana-latest": "Grafana 8.3+",
     "grafana-older-version": "Grafana 8.2 and below",
+    "send-channel-message": "Send a channel message",
+    "send-dm": "Send a DM",
 }
 
 
