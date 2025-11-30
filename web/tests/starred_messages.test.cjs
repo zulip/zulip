@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 
 const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
@@ -41,7 +41,9 @@ run_test("remove starred", () => {
     assert.equal(starred_messages.get_count(), 1);
 });
 
-run_test("get starred ids in topic", () => {
+run_test("get starred ids in topic", ({override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
+
     for (const id of [1, 2, 3, 4, 5]) {
         starred_messages.starred_ids.add(id);
     }
