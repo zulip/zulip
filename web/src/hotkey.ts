@@ -739,70 +739,101 @@ export function process_cmd_or_ctrl_enter_key(): boolean {
     return false;
 }
 
+function is_element_visible(el: HTMLElement): boolean {
+    return el.offsetParent !== null && el.offsetWidth > 0 && el.offsetHeight > 0;
+}
+
+function is_element_disabled(el: HTMLElement): boolean {
+    if (
+        el instanceof HTMLButtonElement ||
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement
+    ) {
+        return el.disabled;
+    }
+    return false;
+}
+
 export function process_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_el = document.activeElement;
 
-    const focused_el = document.activeElement as HTMLElement | null;
-    if (!focused_el) {
+    if (!(focused_el instanceof HTMLElement)) {
         return false;
     }
 
     const $focused = $(focused_el);
     const $form = $focused.closest(".message_edit_form");
 
-    if (!$form.length) {
+    if ($form.length === 0) {
         return false;
     }
 
+    const form_el = $form[0];
+    if (!form_el) {
+        return false;
+    }
+
+    // 1. Content -> Save
     if ($focused.hasClass("message_edit_content")) {
         const $save = $form.find(".message_edit_save").first();
-        if ($save.is(":visible")) {
+        if ($save.length > 0 && is_element_visible($save[0]!)) {
             $save.trigger("focus");
             return true;
         }
         const $close = $form.find(".message_edit_close").first();
-        if ($close.is(":visible")) {
+        if ($close.length > 0 && is_element_visible($close[0]!)) {
             $close.trigger("focus");
             return true;
         }
         return false;
     }
 
+    // 2. Save -> Cancel
     if ($focused.hasClass("message_edit_save")) {
         const $cancel = $form.find(".message_edit_cancel");
-        if ($cancel.is(":visible")) {
+        if ($cancel.length > 0 && is_element_visible($cancel[0]!)) {
             $cancel.trigger("focus");
             return true;
         }
     }
 
+    // 3. Cancel -> First Formatting Button
     if ($focused.hasClass("message_edit_cancel")) {
-        const $formatting_btns = $form.find(".compose_control_button").filter(":visible");
+        const $formatting_btns = $form
+            .find(".compose_control_button")
+            .filter((_i, el) => is_element_visible(el));
+
         const $first_btn = $formatting_btns.first();
 
-        if ($first_btn.length) {
+        if ($first_btn.length > 0) {
             $first_btn.trigger("focus");
             return true;
         }
 
-        return focus_next_element_outside_form($form[0] as HTMLElement, focused_el);
+        return focus_next_element_outside_form(form_el, focused_el);
     }
 
+    // 4. Formatting Buttons -> Next Button OR Exit
     if ($focused.hasClass("compose_control_button")) {
-        const $formatting_btns = $form.find(".compose_control_button").filter(":visible");
+        const $formatting_btns = $form
+            .find(".compose_control_button")
+            .filter((_i, el) => is_element_visible(el));
+
         const index = $formatting_btns.index(focused_el);
 
         if (index !== -1) {
             const is_last = index === $formatting_btns.length - 1;
 
             if (is_last) {
-                return focus_next_element_outside_form($form[0] as HTMLElement, focused_el);
+                return focus_next_element_outside_form(form_el, focused_el);
             }
 
             const $next_btn = $formatting_btns.eq(index + 1);
-            if ($next_btn.length) {
+            if ($next_btn.length > 0) {
                 $next_btn.trigger("focus");
                 return true;
             }
@@ -817,38 +848,41 @@ export function process_tab_key(): boolean {
 }
 
 // prevent focus from keep looping inside the message edit form
-function focus_next_element_outside_form(form_container: HTMLElement, current_el: HTMLElement): boolean {
+function focus_next_element_outside_form(
+    form_container: HTMLElement,
+    current_el: HTMLElement,
+): boolean {
     const selector = 'a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])';
     const all_focusable = document.querySelectorAll(selector);
 
-    let found_current = false;
+    // Use Array.from to allow array methods and avoid iteration issues
+    const focusable_array = [...all_focusable].filter(
+        (el): el is HTMLElement => el instanceof HTMLElement,
+    );
+    const current_index = focusable_array.indexOf(current_el);
 
-    for (let i = 0; i < all_focusable.length; i++) {
-        const candidate = all_focusable[i] as HTMLElement;
+    if (current_index === -1) {
+        return false;
+    }
 
-        if (candidate === current_el) {
-            found_current = true;
+    const candidates = focusable_array.slice(current_index + 1);
+
+    for (const candidate of candidates) {
+        if (form_container.contains(candidate)) {
             continue;
         }
 
-        if (found_current) {
-            if (form_container.contains(candidate)) {
-                continue;
-            }
-
-            // SKIP disabled elements
-            if ((candidate as any).disabled) {
-                continue;
-            }
-
-            const rect = candidate.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0 || getComputedStyle(candidate).visibility === 'hidden') {
-                continue;
-            }
-
-            candidate.focus();
-            return true;
+        if (is_element_disabled(candidate)) {
+            continue;
         }
+
+        const style = window.getComputedStyle(candidate);
+        if (!is_element_visible(candidate) || style.visibility === "hidden") {
+            continue;
+        }
+
+        candidate.focus();
+        return true;
     }
 
     return false;
@@ -858,46 +892,61 @@ export function process_shift_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
-
     const focused_el = document.activeElement;
 
-    if (!focused_el) {
+    if (!(focused_el instanceof HTMLElement)) {
         return false;
     }
 
-    // Shift-Tab on send button → go to textarea
+    const $focused = $(focused_el);
+    const $form = $focused.closest(".message_edit_form");
+
     if (focused_el.id === "compose-send-button") {
         compose_textarea.restore_compose_cursor();
         return true;
     }
 
-    // Shift-Tab from the preview button → go to cancel
-    if (focused_el.classList.contains("markdown_preview")) {
-        $(".message_edit_cancel").trigger("focus");
-        return true;
+    // Shift-Tab from the FIRST visible formatting button -> Go to Cancel
+    // (This handles 'Preview', 'Write', or whatever is first)
+    if ($focused.hasClass("compose_control_button")) {
+        const $formatting_btns = $form
+            .find(".compose_control_button")
+            .filter((_i, el) => is_element_visible(el));
+
+        // If we are on the first button, we need to jump back to Cancel
+        if ($formatting_btns.first().is($focused)) {
+            const $cancel = $form.find(".message_edit_cancel");
+            if ($cancel.length > 0 && is_element_visible($cancel[0]!)) {
+                $cancel.trigger("focus");
+                return true;
+            }
+        }
+        // Otherwise, let browser handle Shift+Tab (goes to previous button)
+        return false;
     }
 
-    // Shift-Tab from cancel button → go to save
-    if (focused_el.classList.contains("message_edit_cancel")) {
-        $(".message_edit_save").trigger("focus");
-        return true;
+    // Shift-Tabbing from Cancel -> Go to Save
+    if ($focused.hasClass("message_edit_cancel")) {
+        const $save = $form.find(".message_edit_save");
+        if ($save.length > 0 && is_element_visible($save[0]!)) {
+            $save.trigger("focus");
+            return true;
+        }
     }
 
-    // Shift-Tab from save → go to content textarea
-    if (focused_el.classList.contains("message_edit_save")) {
-        $(focused_el)
-            .closest(".message_edit_form")
-            .find(".message_edit_content")
-            .trigger("focus");
-        return true;
+    // Shift-Tabbing from Save -> Go to Content
+    if ($focused.hasClass("message_edit_save")) {
+        const $content = $form.find(".message_edit_content");
+        if ($content.length > 0) {
+            $content.trigger("focus");
+            return true;
+        }
     }
 
-    // Emoji picker
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("shift_tab");
     }
 
-    // Shift-Tab from topic field
     if (
         focused_el instanceof HTMLInputElement &&
         focused_el.id === "stream_message_recipient_topic"
@@ -908,7 +957,6 @@ export function process_shift_tab_key(): boolean {
 
     return false;
 }
-
 
 // Process a keydown event.
 //
@@ -1585,7 +1633,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
 export function process_keydown(e: JQuery.KeyDownEvent): boolean {
     activity.set_new_user_input(true);
 
-    //prevent the focus from getting lost in the message edit area after pressing enter key
+    // prevent the focus from getting lost in the message edit area after pressing enter key
     if (e.key === "Enter" || e.which === 13) {
         const $target = $(e.target);
         const $form = $target.closest(".message_edit_form");
@@ -1616,7 +1664,6 @@ export function process_keydown(e: JQuery.KeyDownEvent): boolean {
     if (Array.isArray(result)) {
         return result.some((hotkey) => process_hotkey(e, hotkey));
     }
-
     return process_hotkey(e, result);
 }
 
