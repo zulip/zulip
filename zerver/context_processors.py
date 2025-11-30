@@ -22,7 +22,7 @@ from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.models import PreregistrationRealm, Realm, UserProfile
+from zerver.models import PreregistrationRealm, Realm, RealmUserDefault, UserProfile
 from zerver.models.realms import get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -127,6 +127,11 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         realm_url = realm.url
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
+    if realm is not None and not request.user.is_authenticated:
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_default_emojiset = realm_user_default.emojiset
+    else:
+        realm_default_emojiset = UserProfile.GOOGLE_EMOJISET
 
     skip_footer = False
     register_link_disabled = settings.REGISTER_LINK_DISABLED
@@ -168,6 +173,7 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
     default_page_params: dict[str, Any] = {
         **DEFAULT_PAGE_PARAMS,
         "request_language": get_language(),
+        "realm_default_emojiset": realm_default_emojiset,
     }
 
     context = {
