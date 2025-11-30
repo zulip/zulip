@@ -246,6 +246,8 @@ googleapis-common-protos==1.72.0
     #   grpcio-status
 greenlet==3.2.4
     # via sqlalchemy
+gunicorn==23.0.0
+    # via nodl-chat (direct)
 grpcio==1.76.0
     # via
     #   google-api-core

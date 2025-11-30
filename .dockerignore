@@ -37,8 +37,8 @@ build/
 # Puppet/deployment configs not needed in container
 puppet/
 
-# Frontend build (collectstatic generates this)
-static/generated/
+# Note: static/generated/ is NOT excluded - it contains pre-generated
+# emoji data needed at import time before collectstatic runs
 
 # Misc
 *.log

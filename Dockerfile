@@ -77,7 +77,7 @@ COPY . .
 RUN chown -R zulip:zulip /app
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /var/log/zulip /home/zulip && chown -R zulip:zulip /var/log/zulip /home/zulip
+RUN mkdir -p /var/log/zulip /home/zulip /app/static_collected && chown -R zulip:zulip /var/log/zulip /home/zulip /app/static_collected
 
 # NOTE: collectstatic runs at container startup (supervisord) since it needs env vars
 
