@@ -8,10 +8,15 @@
                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
             </span>
         {{else if this.is_external_account}}
-            <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link" data-tippy-content="{{this.name}}" tabindex="0">
+            {{#if this.link}}
+                <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link" data-tippy-content="{{this.name}}" tabindex="0">
+                    {{> ../../default_external_account_icon subtype=this.subtype}}
+                    <span class="custom-profile-field-text">{{this.value}}</span>
+                </a>
+            {{else}}
                 {{> ../../default_external_account_icon subtype=this.subtype}}
                 <span class="custom-profile-field-text">{{this.value}}</span>
-            </a>
+            {{/if}}
         {{else if this.rendered_value}}
             <div class="custom-profile-field-value rendered_markdown" data-tippy-content="{{this.name}}">
                 {{rendered_markdown this.rendered_value}}
