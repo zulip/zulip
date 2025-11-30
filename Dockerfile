@@ -27,11 +27,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Create virtualenv and install dependencies
-# Using pre-built wheels where available (no --no-binary flag)
+# Force lxml and xmlsec to compile from source so they use the same system libxml2
+# (pre-built wheels embed static libxml2 which conflicts with system xmlsec)
 COPY requirements.txt .
 RUN python -m venv /app/.venv && \
     /app/.venv/bin/pip install --upgrade pip && \
-    /app/.venv/bin/pip install --no-cache-dir -r requirements.txt && \
+    /app/.venv/bin/pip install --no-cache-dir --no-binary=lxml,xmlsec -r requirements.txt && \
     /app/.venv/bin/pip install virtualenv
 
 # ==============================================================================
@@ -77,7 +78,8 @@ COPY . .
 RUN chown -R zulip:zulip /app
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /var/log/zulip /home/zulip /app/static_collected && chown -R zulip:zulip /var/log/zulip /home/zulip /app/static_collected
+RUN mkdir -p /var/log/zulip /home/zulip /app/static_collected /app/var/log && \
+    chown -R zulip:zulip /var/log/zulip /home/zulip /app/static_collected /app/var/log
 
 # NOTE: collectstatic runs at container startup (supervisord) since it needs env vars
 
