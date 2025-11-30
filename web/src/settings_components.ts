@@ -449,9 +449,12 @@ function read_external_account_field_data($profile_field_form: JQuery): External
             .val()!,
     };
     if (field_data.subtype === "custom") {
-        field_data.url_pattern = $profile_field_form
+        const url_pattern = $profile_field_form
             .find<HTMLInputElement>("input[name=url_pattern]")
-            .val()!;
+            .val();
+        if (typeof url_pattern === "string") {
+            field_data.url_pattern = url_pattern;
+        }
     }
     return field_data;
 }
