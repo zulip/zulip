@@ -735,10 +735,11 @@ ul.popover-group-menu-member-list {
 }
 
 .giphy-popover,
+.tenor-popover,
 .emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
-           as it is not necessary for the Giphy popover. */
+           as it is not necessary for the Giphy and Tenor popovers. */
         padding: 0;
 
         /* By resetting to the default color from the `body`,
@@ -763,28 +764,73 @@ ul.popover-group-menu-member-list {
     }
 }
 
-#giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 5px is the extra gutter space
-     * + 1px for outline.
+.gif-grid-in-popover {
+    /* 300px of GIF grid + 5px is the extra gutter space
+     * + 1px for outline + 4px padding.
      * between gif columns. */
-    width: 306px;
+    width: 310px;
     border: 0;
     padding: 0;
 
-    .giphy-gif {
+    .clear-search-button {
+        position: absolute;
+        top: 12px;
+        right: 7px;
+        font-size: 16px;
+        outline: none;
+        background: none;
+        border: none;
+        padding: 0;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &:focus {
+            .fa-remove {
+                outline: 2px solid var(--color-outline-focus);
+            }
+        }
+    }
+
+    .tenor-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-auto-rows: auto;
+        gap: 6px;
+    }
+
+    /* Meant to prevent outline overflow when the GIF
+       is focused. */
+    .tenor-content,
+    .giphy-content {
+        padding: 0 2px;
+    }
+
+    .giphy-gif,
+    .tenor-gif {
         cursor: pointer;
     }
 
-    .giphy-gif:focus {
-        /* Red outline for clear visibility
-         * of which image is in focus.
-         */
-        outline: 1px solid hsl(0deg 100% 50%);
+    .tenor-gif {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
     }
 
-    .giphy-scrolling-container {
+    .giphy-gif:focus,
+    .tenor-gif:focus {
+        /* Blue outline for clear visibility
+         * of which image is in focus.
+         */
+        outline: 2px solid var(--color-selected-message-outline);
+    }
+
+    .gif-scrolling-container {
         overflow: hidden auto;
-        height: 200px;
+        height: 300px;
         margin: 2px 3px;
         padding: 5px 0;
     }

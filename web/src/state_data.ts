@@ -337,7 +337,7 @@ export const realm_schema = z.object({
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
-    giphy_rating_options: z.intersection(
+    gif_rating_options: z.intersection(
         z.record(z.string(), z.object({id: z.number(), name: z.string()})),
         z.object({disabled: z.object({id: z.number(), name: z.string()})}),
     ),
@@ -522,6 +522,8 @@ export const realm_schema = z.object({
     server_web_public_streams_enabled: z.boolean(),
     settings_send_digest_emails: z.boolean(),
     stop_words: z.array(z.string()),
+    tenor_api_key: z.string(),
+    tenor_client_key: z.string(),
     upgrade_text_for_wide_organization_logo: z.string(),
     zulip_feature_level: z.number(),
     zulip_merge_base: z.string(),

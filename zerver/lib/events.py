@@ -396,7 +396,7 @@ def fetch_initial_state_data(
         #
         # Other settings, which are just server-level settings or data
         # about the version of Zulip, can be named without prefixes,
-        # e.g. giphy_rating_options or development_environment.
+        # e.g. gif_rating_options or development_environment.
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
@@ -521,7 +521,7 @@ def fetch_initial_state_data(
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
-        state["giphy_rating_options"] = realm.get_giphy_rating_options()
+        state["gif_rating_options"] = realm.get_gif_rating_options()
 
         state["server_emoji_data_url"] = emoji.data_url()
 
@@ -927,6 +927,13 @@ def fetch_initial_state_data(
         # to exist at all so that they can deactivate them in cases of
         # abuse.
         state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+
+    if want("tenor"):
+        # See Giphy comment above; Tenor API keys work similarly.
+        state["tenor_api_key"] = settings.TENOR_API_KEY if settings.TENOR_API_KEY else ""
+        # The client key combined with the API key is meant to
+        # uniquely identify an integration.
+        state["tenor_client_key"] = settings.TENOR_CLIENT_KEY if settings.TENOR_CLIENT_KEY else ""
 
     if want("push_device"):
         state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
