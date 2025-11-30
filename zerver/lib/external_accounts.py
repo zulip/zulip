@@ -29,6 +29,9 @@ class ExternalAccount:
     url_pattern: str  # Field URL linkifier
 
 
+# Set url_pattern as "%(username)s" if there's no common URL pattern,
+# and the user should enter the full URL of their link.
+# Set url_pattern as "" to make the field a text field.
 DEFAULT_EXTERNAL_ACCOUNTS = {
     "twitter": ExternalAccount(
         text="Twitter",
@@ -65,11 +68,7 @@ def validate_external_account_field_data(field_data: ProfileFieldData) -> Profil
     field_validator("field_data", field_data)
 
     field_subtype = field_data.get("subtype")
-    if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS:
-        if field_subtype == "custom":
-            if "url_pattern" not in field_data:
-                raise ValidationError(_("Custom external account must define URL pattern"))
-        else:
-            raise ValidationError(_("Invalid external account type"))
+    if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS and field_subtype != "custom":
+        raise ValidationError(_("Invalid external account type"))
 
     return field_data
