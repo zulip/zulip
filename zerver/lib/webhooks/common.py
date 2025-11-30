@@ -4,7 +4,6 @@ import hmac
 import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
@@ -30,7 +29,6 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
-from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
@@ -291,21 +289,6 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict
         return {http_header_key: event_type}
 
     return fixture_to_headers
-
-
-def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
-    """If an integration requires time input in unix milliseconds, this helper
-    checks to ensure correct type and will catch any errors related to type or
-    value and raise a JsonableError.
-    Returns a datetime representing the time."""
-    try:
-        # timestamps are in milliseconds so divide by 1000
-        seconds = milliseconds / 1000
-        return timestamp_to_datetime(seconds)
-    except (ValueError, TypeError):
-        raise JsonableError(
-            _("The {webhook} webhook expects time in milliseconds.").format(webhook=webhook)
-        )
 
 
 def parse_multipart_string(body: str) -> dict[str, str]:

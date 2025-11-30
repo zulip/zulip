@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -363,6 +363,5 @@ def linkified_id(object_id: str, lower: bool = False) -> str:
 
 def stringify(value: object) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:
-        datetime_value = timestamp_to_datetime(value).strftime("%b %d, %Y, %H:%M:%S %Z")
-        return f"<time:{datetime_value}>"
+        return datetime_to_global_time(timestamp_to_datetime(value))
     return str(value)

@@ -6,9 +6,11 @@ from django.utils.translation import override as override_language
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import (
+    TimeZoneMissingError,
     TimeZoneNotUTCError,
     ceiling_to_hour,
     convert_to_UTC,
+    datetime_to_global_time,
     datetime_to_timestamp,
     floor_to_day,
     floor_to_hour,
@@ -66,3 +68,16 @@ class TestTimestamp(ZulipTestCase):
             self.assertEqual(
                 format_datetime_to_string(dt, False), "2001年2月3日(土) 午前4:05 GMT-8"
             )
+
+    def test_datetime_to_global_time(self) -> None:
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=timezone.utc)
+        self.assertEqual(datetime_to_global_time(dt), "<time:2001-02-03T04:05:06+00:00>")
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=timezone(timedelta(hours=7, minutes=8)))
+        self.assertEqual(datetime_to_global_time(dt), "<time:2001-02-03T04:05:06+07:08>")
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=timezone(-timedelta(hours=7, minutes=8)))
+        self.assertEqual(datetime_to_global_time(dt), "<time:2001-02-03T04:05:06-07:08>")
+        dt = datetime(2001, 2, 3, 4, 5, 6, tzinfo=ZoneInfo("America/Los_Angeles"))
+        self.assertEqual(datetime_to_global_time(dt), "<time:2001-02-03T04:05:06-08:00>")
+        with self.assertRaises(TimeZoneMissingError):
+            dt = datetime(2001, 2, 3, 4, 5, 6)  # noqa: DTZ001
+            datetime_to_global_time(dt)

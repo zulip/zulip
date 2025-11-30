@@ -1,6 +1,8 @@
 from collections.abc import Mapping
+from datetime import datetime, timezone
 
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 
 SUPPORTED_CARD_ACTIONS = [
@@ -57,8 +59,8 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     REMOVE_DESC: "removed description from {card_url_template}.",
     ARCHIVE: "archived {card_url_template}.",
     REOPEN: "reopened {card_url_template}.",
-    SET_DUE_DATE: "set due date for {card_url_template} to <time:{due_date}>.",
-    CHANGE_DUE_DATE: "changed due date for {card_url_template} from <time:{old_due_date}> to <time:{due_date}>.",
+    SET_DUE_DATE: "set due date for {card_url_template} to {due_date}.",
+    CHANGE_DUE_DATE: "changed due date for {card_url_template} from {old_due_date} to {due_date}.",
     REMOVE_DUE_DATE: "removed the due date from {card_url_template}.",
     ADD_LABEL: 'added a {color} label with "{text}" to {card_url_template}.',
     REMOVE_LABEL: 'removed a {color} label with "{text}" from {card_url_template}.',
@@ -72,7 +74,8 @@ ACTIONS_TO_MESSAGE_MAPPER = {
 
 
 def prettify_date(date_string: str) -> str:
-    return date_string.replace("T", " ").replace(".000", "").replace("Z", " UTC")
+    dt = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
+    return datetime_to_global_time(dt)
 
 
 def process_card_action(payload: WildValue, action_type: str) -> tuple[str, str] | None:

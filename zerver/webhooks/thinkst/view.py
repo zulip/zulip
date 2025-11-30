@@ -1,9 +1,13 @@
 # Webhooks for external integrations.
 
+from datetime import timezone
+
+import dateutil.parser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string, check_union
 from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
@@ -75,9 +79,11 @@ def body(message: WildValue) -> str:
     if "Timestamp" in message:
         timestamp = message["Timestamp"].tame(check_string)
         # Thinkst datetime format: https://help.canary.tools/hc/en-gb/articles/360012727777-How-do-I-configure-notifications-for-a-Generic-Webhook#h_01K71QZ806C5D49RYB6RBXSZ1B
-        # Convert "YYYY-MM-DD HH:MM:SS (UTC)" -> "YYYY-MM-DD HH:MM:SSZ"
-        formatted_timestamp = timestamp.replace("(UTC)", "").strip() + "Z"
-        body += f"**Timestamp:** <time:{formatted_timestamp}>\n"
+        # "YYYY-MM-DD HH:MM:SS (UTC)"
+        formatted_timestamp = timestamp.replace("(UTC)", "").strip()
+        dt = dateutil.parser.parse(formatted_timestamp).replace(tzinfo=timezone.utc)
+        global_time = datetime_to_global_time(dt)
+        body += f"**Timestamp:** {global_time}\n"
 
     if "CanaryIP" in message:
         body += f"**Canary IP:** `{message['CanaryIP'].tame(check_string)}`\n"

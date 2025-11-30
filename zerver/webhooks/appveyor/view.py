@@ -1,8 +1,11 @@
+from datetime import datetime, timezone
+
 from django.http import HttpRequest, HttpResponse
 from pydantic.alias_generators import to_snake
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -12,9 +15,15 @@ APPVEYOR_TOPIC_TEMPLATE = "{project_name}"
 APPVEYOR_MESSAGE_TEMPLATE = """
 [Build {project_name} {build_version} {status}]({build_url}):
 * **Commit**: [{commit_id}: {commit_message}]({commit_url}) by {committer_name}
-* **Started**: <time:{started}>
-* **Finished**: <time:{finished}>
+* **Started**: {started}
+* **Finished**: {finished}
 """.strip()
+
+
+def get_global_time(dt_str: str) -> str:
+    return datetime_to_global_time(
+        datetime.strptime(dt_str, "%m/%d/%Y %I:%M %p").replace(tzinfo=timezone.utc)
+    )
 
 
 @webhook_view("Appveyor")
@@ -52,6 +61,9 @@ def get_body(payload: WildValue) -> str:
         "started",
         "finished",
     ]
-    data = {to_snake(field): event_data[field].tame(check_string) for field in fields}
+    data = {
+        to_snake(field): get_global_time(value) if field in ["started", "finished"] else value
+        for field, value in ((field, event_data[field].tame(check_string)) for field in fields)
+    }
 
     return APPVEYOR_MESSAGE_TEMPLATE.format(**data)

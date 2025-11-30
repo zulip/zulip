@@ -1,4 +1,5 @@
-import dateutil.parser
+from datetime import datetime
+
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -8,6 +9,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
@@ -27,7 +29,7 @@ FRESHSTATUS_TOPIC_TEMPLATE_TEST = "Freshstatus"
 FRESHSTATUS_MESSAGE_TEMPLATE_INCIDENT_OPEN = """
 The following incident has been opened: **{title}**
 **Description:** {description}
-**Start Time:** <time:{start_time}>
+**Start Time:** {start_time}
 **Affected Services:**
 {affected_services}
 """.strip()
@@ -45,8 +47,8 @@ The following note has been added to the incident: **{title}**
 FRESHSTATUS_MESSAGE_TEMPLATE_SCHEDULED_MAINTENANCE_PLANNED = """
 The following scheduled maintenance has been opened: **{title}**
 **Description:** {description}
-**Scheduled Start Time:** <time:{scheduled_start_time}>
-**Scheduled End Time:** <time:{scheduled_end_time}>
+**Scheduled Start Time:** {scheduled_start_time}
+**Scheduled End Time:** {scheduled_end_time}
 **Affected Services:**
 {affected_services}
 """.strip()
@@ -74,6 +76,11 @@ ALL_EVENT_TYPES = [
     "MAINTENANCE_PLANNED",
     "INCIDENT_REOPEN",
 ]
+
+
+def get_global_time(dt_str: str) -> str:
+    dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S%z")
+    return datetime_to_global_time(dt)
 
 
 @webhook_view("Freshstatus", all_event_types=ALL_EVENT_TYPES)
@@ -139,12 +146,8 @@ def get_body_for_maintenance_planned_event(payload: WildValue) -> str:
     data = {
         "title": payload["title"].tame(check_string),
         "description": payload["description"].tame(check_string),
-        "scheduled_start_time": dateutil.parser.parse(
-            payload["scheduled_start_time"].tame(check_string)
-        ).strftime("%Y-%m-%d %H:%M %Z"),
-        "scheduled_end_time": dateutil.parser.parse(
-            payload["scheduled_end_time"].tame(check_string)
-        ).strftime("%Y-%m-%d %H:%M %Z"),
+        "scheduled_start_time": get_global_time(payload["scheduled_start_time"].tame(check_string)),
+        "scheduled_end_time": get_global_time(payload["scheduled_end_time"].tame(check_string)),
         "affected_services": get_services_content(services_data),
     }
     return FRESHSTATUS_MESSAGE_TEMPLATE_SCHEDULED_MAINTENANCE_PLANNED.format(**data)
@@ -158,9 +161,7 @@ def get_body_for_incident_open_event(payload: WildValue) -> str:
     data = {
         "title": payload["title"].tame(check_string),
         "description": payload["description"].tame(check_string),
-        "start_time": dateutil.parser.parse(payload["start_time"].tame(check_string)).strftime(
-            "%Y-%m-%d %H:%M %Z"
-        ),
+        "start_time": get_global_time(payload["start_time"].tame(check_string)),
         "affected_services": get_services_content(services_data),
     }
     return FRESHSTATUS_MESSAGE_TEMPLATE_INCIDENT_OPEN.format(**data)

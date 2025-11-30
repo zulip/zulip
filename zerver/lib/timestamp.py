@@ -9,6 +9,10 @@ class TimeZoneNotUTCError(Exception):
     pass
 
 
+class TimeZoneMissingError(Exception):
+    pass
+
+
 def verify_UTC(dt: datetime) -> None:
     if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) != timezone.utc.utcoffset(dt):
         raise TimeZoneNotUTCError(f"Datetime {dt} does not have a UTC time zone.")
@@ -51,6 +55,12 @@ def timestamp_to_datetime(timestamp: float) -> datetime:
 def datetime_to_timestamp(dt: datetime) -> int:
     verify_UTC(dt)
     return int(dt.timestamp())
+
+
+def datetime_to_global_time(dt: datetime) -> str:
+    if dt.tzinfo is None:
+        raise TimeZoneMissingError(f"Datetime {dt} does not have a time zone.")
+    return f"<time:{dt.isoformat(timespec='seconds')}>"
 
 
 @cache

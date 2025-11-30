@@ -1,11 +1,13 @@
 # Webhooks for external integrations.
 import re
+from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -58,10 +60,13 @@ def add_time_part_to_string_date_if_needed(value: int, text_name: str) -> str:
 
 
 def get_body_for_down_event(event: WildValue) -> str:
-    return "Service is `down`. It returned a {} error at <time:{}>.".format(
+    started_at = event["downtime"]["started_at"].tame(check_string)
+    dt = datetime.strptime(started_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    pretty_started_at = datetime_to_global_time(dt)
+    return "Service is `down`. It returned a {} error at {}.".format(
         event["downtime"]["error"].tame(check_none_or(check_string)),
         # started_at is not None in a "down" event.
-        event["downtime"]["started_at"].tame(check_string),
+        pretty_started_at,
     )
 
 
