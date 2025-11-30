@@ -220,7 +220,6 @@ if [ "$RESTORE_NGINX" = true ]; then
     fi
 
     if ls /etc/logrotate.d/nginx.backup-before-zulip-* 1> /dev/null 2>&1; then
-    if ls /etc/logrotate.d/nginx.backup-before-zulip-* 1> /dev/null 2>&1; then
         LATEST_BACKUP=$(ls -t /etc/logrotate.d/nginx.backup-before-zulip-* | head -n1)
         echo -e "${YELLOW}Restoring nginx logrotate config from backup${NC}"
         if confirm "Restore nginx logrotate configuration?"; then
@@ -299,14 +298,14 @@ if [ "$REMOVE_USER" = true ]; then
     if id zulip &>/dev/null; then
         if confirm "Remove 'zulip' user and home directory (/home/zulip)?"; then
             if [ -d /home/zulip/deployments ]; then
-                    echo -e "${YELLOW}  Warning: /home/zulip/deployments contains Zulip code and data.${NC}"
-                    if ! confirm "  This will delete all Zulip deployments. Continue?"; then
-                        echo -e "${YELLOW}  Skipping user removal.${NC}"
-                    else
-                        userdel -r zulip 2>/dev/null || {
-                            rm -rf /home/zulip
-                            userdel zulip 2>/dev/null || true
-                        }
+                echo -e "${YELLOW}  Warning: /home/zulip/deployments contains Zulip code and data.${NC}"
+                if ! confirm "  This will delete all Zulip deployments. Continue?"; then
+                    echo -e "${YELLOW}  Skipping user removal.${NC}"
+                else
+                    userdel -r zulip 2>/dev/null || {
+                        rm -rf /home/zulip
+                        userdel zulip 2>/dev/null || true
+                    }
                     echo -e "${GREEN}✓ Removed 'zulip' user${NC}"
                 fi
             else
