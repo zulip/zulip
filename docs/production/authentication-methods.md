@@ -853,16 +853,19 @@ Your SAML IdP will need to provide the list of SAML group names in the
 `zulip_groups` attribute of the `SAMLResponse`. When a user logs in
 using SAML, groups are synced as follows:
 
-1. If a Zulip group name does not occur in the
-   `SOCIAL_AUTH_SYNC_ATTRS_DICT` groups list, that group's membership
-   is managed entirely in Zulip.
-1. Otherwise, if the group appears in `zulip_groups` in the
+1. Zulip checks `SOCIAL_AUTH_SYNC_ATTRS_DICT` for whether the group is
+   a "SAML synced group": one whose membership should be synced from
+   SAML. The special `"groups": "*",` wildcard syntax means all Zulip
+   groups are SAML synced groups. Otherwise, all groups not explicitly
+   listed in the `groups` list for the organization will have their
+   membership managed entirely in Zulip and will never be synced.
+1. If a SAML synced group appears in `zulip_groups` in the
    `SAMLResponse`, the user is added to that group (if not already a
-   member). If the group doesn't yet exist in Zulip, it will be created.
-   Memberships of groups created in this way will only be editable by
-   organization owners.
-1. Otherwise, the user is removed from that group (if currently a
-   member).
+   member). If the SAML synced group doesn't yet exist in Zulip, it
+   will be created automatically, with a default configuration where
+   only organization owners can manage the group.
+1. Otherwise, the user is removed from the SAML synced group (if
+   currently a member).
 
 Only direct membership of groups is synced through this protocol;
 subgroups of Zulip groups are managed entirely [inside
