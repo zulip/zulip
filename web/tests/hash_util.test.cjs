@@ -271,3 +271,15 @@ run_test("test_current_hash_as_next", () => {
     window.location.hash = "#foo";
     assert.equal(spectators.current_hash_as_next(), "next=/%23foo");
 });
+
+run_test("get_link_hash", () => {
+    assert.equal(
+        hash_util.get_link_hash("/#narrow/channel/9-announce"),
+        "#narrow/channel/9-announce",
+    );
+    assert.equal(
+        hash_util.get_link_hash("https://chat.zulip.org/#narrow/channel/127-integrations/"),
+        "#narrow/channel/127-integrations/",
+    );
+    assert.equal(hash_util.get_link_hash("bad-url"), "");
+});
