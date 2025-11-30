@@ -822,17 +822,23 @@ function set_up_select_field(): void {
 export function get_external_account_link(
     field_data: settings_components.ExternalAccountFieldData,
     value: string,
-): string {
+): string | undefined {
     const field_subtype = field_data.subtype;
     let field_url_pattern: string;
 
     if (field_subtype === "custom") {
-        assert(field_data.url_pattern !== undefined);
+        if (!field_data.url_pattern) {
+            return undefined;
+        }
         field_url_pattern = field_data.url_pattern;
     } else {
         const external_account = realm.realm_default_external_accounts[field_subtype];
         assert(external_account !== undefined);
         field_url_pattern = external_account.url_pattern;
+        // Use as text fields when there is no URL pattern
+        if (!field_url_pattern) {
+            return field_url_pattern;
+        }
     }
     return field_url_pattern.replace("%(username)s", () => value);
 }

@@ -365,6 +365,10 @@ def check_capped_url(max_length: int) -> Validator[str]:
 def check_external_account_url_pattern(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
 
+    # Allow empty URL pattern
+    if not s:
+        return s
+
     if s.count("%(username)s") != 1:
         raise ValidationError(_("URL pattern must contain '%(username)s'."))
     url_val = s.replace("%(username)s", "username")

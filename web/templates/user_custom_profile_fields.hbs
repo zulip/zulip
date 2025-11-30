@@ -11,10 +11,15 @@
                 </span>
             </div>
         {{else if this.is_external_account}}
-            <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
+            {{#if this.link}}
+                <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
+                    {{> default_external_account_icon subtype=this.subtype}}
+                    {{this.value}}
+                </a>
+            {{else}}
                 {{> default_external_account_icon subtype=this.subtype}}
                 {{this.value}}
-            </a>
+            {{/if}}
         {{else if this.is_user_field}}
             <div class="user-type-custom-field-pill-container" data-field-id="{{this.id}}"></div>
         {{else}}
