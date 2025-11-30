@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Development
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+**/tests/
+**/test_*.py
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Puppet/deployment configs not needed in container
+puppet/
+
+# Frontend build (collectstatic generates this)
+static/generated/
+
+# Misc
+*.log
+.env*
+.env.local
+.env.*.local
+
+# UV/pip cache
+.uv/
+uv.lock
+
+# Node (if any frontend build)
+node_modules/
+
+# Docker files (don't need Dockerfile inside the context)
+Dockerfile*
+docker-compose*

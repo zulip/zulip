@@ -1,6 +1,9 @@
-FROM python:3.12-slim-bookworm
+# ==============================================================================
+# Stage 1: Builder - compile dependencies with full toolchain
+# ==============================================================================
+FROM python:3.12-bookworm AS builder
 
-# Install system dependencies for python-ldap, psycopg2, pyvips, etc.
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # LDAP support
     libldap2-dev \
@@ -15,16 +18,47 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Build tools
     gcc \
     g++ \
+    # XML/SAML support (xmlsec)
+    libxml2-dev \
+    libxmlsec1-dev \
+    libxmlsec1-openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create virtualenv and install dependencies
+# Using pre-built wheels where available (no --no-binary flag)
+COPY requirements.txt .
+RUN python -m venv /app/.venv && \
+    /app/.venv/bin/pip install --upgrade pip && \
+    /app/.venv/bin/pip install --no-cache-dir -r requirements.txt && \
+    /app/.venv/bin/pip install virtualenv
+
+# ==============================================================================
+# Stage 2: Runtime - slim image with only runtime dependencies
+# ==============================================================================
+FROM python:3.12-slim-bookworm
+
+# Install ONLY runtime libraries (no -dev packages needed)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # LDAP runtime
+    libldap-2.5-0 \
+    libsasl2-2 \
+    # PostgreSQL runtime
+    libpq5 \
+    # Image processing runtime
+    libvips42 \
+    # ICU runtime
+    libicu72 \
     # nginx and supervisor
     nginx \
     supervisor \
     # File type detection (python-magic)
     libmagic1 \
-    # XML/SAML support (xmlsec) - need dev headers to build from source
-    libxml2-dev \
-    libxmlsec1-dev \
+    # XML/SAML runtime
+    libxml2 \
+    libxmlsec1 \
     libxmlsec1-openssl \
-    # Cleanup
     && rm -rf /var/lib/apt/lists/*
 
 # Create zulip user (required by Zulip's assert_not_running_as_root)
@@ -33,19 +67,8 @@ RUN groupadd -r zulip && useradd -r -g zulip zulip
 # Set working directory
 WORKDIR /app
 
-# Create virtualenv at /app/.venv (required by Zulip's setup_path.py)
-RUN python -m venv /app/.venv
-
-# Copy requirements first for caching
-COPY requirements.txt .
-
-# Install Python dependencies into virtualenv
-# Use --no-binary for lxml,xmlsec to force compilation against container's libxml2
-# This fixes "lxml & xmlsec libxml2 library version mismatch" error
-RUN /app/.venv/bin/pip install --no-cache-dir --no-binary lxml,xmlsec -r requirements.txt
-
-# Install virtualenv package (provides activate_this.py)
-RUN /app/.venv/bin/pip install virtualenv
+# Copy pre-built virtualenv from builder stage
+COPY --from=builder /app/.venv /app/.venv
 
 # Copy application code
 COPY . .
