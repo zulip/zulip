@@ -46,6 +46,12 @@ class zulip::nginx {
     $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
   }
   $worker_connections = zulipconf('application_server', 'nginx_worker_connections', 10000)
+  exec { 'backup-nginx-conf':
+    command => '/bin/sh -c "if ! grep -q \"user zulip\" /etc/nginx/nginx.conf 2>/dev/null; then cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup-before-zulip-$(date +%Y%m%d-%H%M%S); fi"',
+    onlyif  => '/usr/bin/test -f /etc/nginx/nginx.conf',
+    before  => File['/etc/nginx/nginx.conf'],
+    require => Package[$zulip::common::nginx, 'ca-certificates'],
+  }
   file { '/etc/nginx/nginx.conf':
     ensure  => file,
     require => Package[$zulip::common::nginx, 'ca-certificates'],
@@ -90,6 +96,12 @@ class zulip::nginx {
     mode   => '0750',
   }
   $access_log_retention_days = zulipconf('application_server','access_log_retention_days', 14)
+  exec { 'backup-nginx-logrotate':
+    command => '/bin/sh -c "if [ -f /etc/logrotate.d/nginx ] && ! ls /etc/logrotate.d/nginx.backup-before-zulip-* >/dev/null 2>&1; then cp /etc/logrotate.d/nginx /etc/logrotate.d/nginx.backup-before-zulip-$(date +%Y%m%d-%H%M%S); fi"',
+    onlyif  => '/usr/bin/test -f /etc/logrotate.d/nginx',
+    before  => File['/etc/logrotate.d/nginx'],
+    require => Package[$zulip::common::nginx],
+  }
   file { '/etc/logrotate.d/nginx':
     ensure  => file,
     require => Package[$zulip::common::nginx],
