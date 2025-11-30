@@ -865,25 +865,25 @@ export function process_shift_tab_key(): boolean {
         return false;
     }
 
-    // Shift-Tab on send button → go to textarea
+
     if (focused_el.id === "compose-send-button") {
         compose_textarea.restore_compose_cursor();
         return true;
     }
 
-    // Shift-Tab from the preview button → go to cancel
+     // Shift-Tabbing from the edit message cancel button takes you to save.
     if (focused_el.classList.contains("markdown_preview")) {
         $(".message_edit_cancel").trigger("focus");
         return true;
     }
 
-    // Shift-Tab from cancel button → go to save
+    // Shift-Tabbing from the edit message save button takes you to the content.
     if (focused_el.classList.contains("message_edit_cancel")) {
         $(".message_edit_save").trigger("focus");
         return true;
     }
 
-    // Shift-Tab from save → go to content textarea
+    // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
     if (focused_el.classList.contains("message_edit_save")) {
         $(focused_el)
             .closest(".message_edit_form")
@@ -892,12 +892,10 @@ export function process_shift_tab_key(): boolean {
         return true;
     }
 
-    // Emoji picker
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("shift_tab");
     }
 
-    // Shift-Tab from topic field
     if (
         focused_el instanceof HTMLInputElement &&
         focused_el.id === "stream_message_recipient_topic"
@@ -1616,7 +1614,6 @@ export function process_keydown(e: JQuery.KeyDownEvent): boolean {
     if (Array.isArray(result)) {
         return result.some((hotkey) => process_hotkey(e, hotkey));
     }
-
     return process_hotkey(e, result);
 }
 
