@@ -387,6 +387,10 @@ groups. To configure this feature:
    and `group2` will match their membership in LDAP groups with those
    names.
 
+   If a group listed here does not already exist in Zulip, it will be
+   created automatically when syncing a user who should be a member of
+   that group.
+
 1. Test your configuration and restart the server into the new
    configuration as [documented above](#synchronizing-data).
 
