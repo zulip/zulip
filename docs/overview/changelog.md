@@ -15,7 +15,11 @@ _Unreleased_
 
 ### Upgrade notes for 12.0
 
-- None yet.
+- The `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` setting for LDAP group
+  synchronization no longer ignores groups that are configured to be
+  synced but don't exist in the Zulip organization. Starting in 12.0,
+  such groups will be created automatically when syncing the groups
+  for a user who should be a member of that group.
 
 ## Zulip Server 11.x series
 

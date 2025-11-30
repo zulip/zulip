@@ -1031,10 +1031,12 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 intended_group_names=intended_group_names,
                 user_profile=user_profile,
                 logger=ldap_logger,
-                # We don't want to sneakily change LDAP behavior in this commit, we we pass
-                # create_missing_group=False to maintain original behavior of ldap group sync.
-                # TODO: Change this to True in a follow-up commit. Backport with False to 11.x.
-                create_missing_groups=False,
+                # Backward-compatibility note:
+                # For 12.x and forward, we set create_missing_groups to True.
+                # In the backport of this feature to 11.x, this is set to False.
+                # TODO/compatibility: Remove this comment once 11.x is old enough
+                # for this note to no longer be helpful.
+                create_missing_groups=True,
             )
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
