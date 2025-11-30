@@ -33,16 +33,130 @@ class ExternalAccount:
 # and the user should enter the full URL of their link.
 # Set url_pattern as "" to make the field a text field.
 DEFAULT_EXTERNAL_ACCOUNTS = {
-    "twitter": ExternalAccount(
-        text="Twitter",
-        url_pattern="https://twitter.com/%(username)s",
-        name=gettext_lazy("Twitter username"),
+    "behance": ExternalAccount(
+        text="Behance",
+        url_pattern="https://www.behance.net/%(username)s",
+        name=gettext_lazy("Behance username"),
+        hint="",
+    ),
+    "bitbucket": ExternalAccount(
+        text="Bitbucket",
+        url_pattern="https://bitbucket.org/%(username)s",
+        name=gettext_lazy("Bitbucket username"),
+        hint="",
+    ),
+    "bluesky": ExternalAccount(
+        text="Bluesky",
+        url_pattern="https://bsky.app/profile/%(username)s",
+        name=gettext_lazy("Bluesky handle"),
+        hint="",
+    ),
+    "codeberg": ExternalAccount(
+        text="Codeberg",
+        url_pattern="https://codeberg.org/%(username)s",
+        name=gettext_lazy("Codeberg username"),
+        hint="",
+    ),
+    "discord": ExternalAccount(
+        text="Discord",
+        url_pattern="",
+        name=gettext_lazy("Discord tag"),
+        hint="",
+    ),
+    "dribbble": ExternalAccount(
+        text="Dribbble",
+        url_pattern="https://dribbble.com/%(username)s",
+        name=gettext_lazy("Dribbble username"),
+        hint="",
+    ),
+    "facebook": ExternalAccount(
+        text="Facebook",
+        url_pattern="https://www.facebook.com/%(username)s",
+        name=gettext_lazy("Facebook username"),
         hint="",
     ),
     "github": ExternalAccount(
         text="GitHub",
         url_pattern="https://github.com/%(username)s",
         name=gettext_lazy("GitHub username"),
+        hint="",
+    ),
+    "gitlab": ExternalAccount(
+        text="GitLab",
+        url_pattern="https://gitlab.com/%(username)s",
+        name=gettext_lazy("GitLab username"),
+        hint="",
+    ),
+    "instagram": ExternalAccount(
+        text="Instagram",
+        url_pattern="https://www.instagram.com/%(username)s",
+        name=gettext_lazy("Instagram username"),
+        hint="",
+    ),
+    "linkedin": ExternalAccount(
+        text="LinkedIn",
+        url_pattern="https://www.linkedin.com/in/%(username)s",
+        name=gettext_lazy("LinkedIn profile name"),
+        hint="",
+    ),
+    "mastodon": ExternalAccount(
+        text="Mastodon",
+        url_pattern="%(username)s",
+        name=gettext_lazy("Mastodon profile URL"),
+        hint="",
+    ),
+    "medium": ExternalAccount(
+        text="Medium",
+        url_pattern="https://%(username)s.medium.com",
+        name=gettext_lazy("Medium username"),
+        hint="",
+    ),
+    "pinterest": ExternalAccount(
+        text="Pinterest",
+        url_pattern="https://www.pinterest.com/%(username)s",
+        name=gettext_lazy("Pinterest username"),
+        hint="",
+    ),
+    "reddit": ExternalAccount(
+        text="Reddit",
+        url_pattern="https://www.reddit.com/user/%(username)s",
+        name=gettext_lazy("Reddit username"),
+        hint="",
+    ),
+    "snapchat": ExternalAccount(
+        text="Snapchat",
+        url_pattern="https://www.snapchat.com/@%(username)s",
+        name=gettext_lazy("Snapchat username"),
+        hint="",
+    ),
+    "threads": ExternalAccount(
+        text="Threads",
+        url_pattern="https://www.threads.com/@%(username)s",
+        name=gettext_lazy("Threads username"),
+        hint="",
+    ),
+    "tiktok": ExternalAccount(
+        text="TikTok",
+        url_pattern="https://www.tiktok.com/@%(username)s",
+        name=gettext_lazy("TikTok username"),
+        hint="",
+    ),
+    "twitch": ExternalAccount(
+        text="Twitch",
+        url_pattern="https://www.twitch.tv/%(username)s",
+        name=gettext_lazy("Twitch username"),
+        hint="",
+    ),
+    "twitter": ExternalAccount(
+        text="Twitter",
+        url_pattern="https://twitter.com/%(username)s",
+        name=gettext_lazy("Twitter username"),
+        hint="",
+    ),
+    "youtube": ExternalAccount(
+        text="YouTube",
+        url_pattern="https://www.youtube.com/%(username)s",
+        name=gettext_lazy("YouTube handle"),
         hint="",
     ),
 }
