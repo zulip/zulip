@@ -1,0 +1,367 @@
+#!/usr/bin/env bash
+# Uninstall Zulip and restore system configurations.
+# Run with --help for usage information.
+
+set -e
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+usage() {
+    cat <<'EOF'
+Usage:
+  uninstall [options]
+
+Options:
+  --restore-nginx      Restore backed-up nginx.conf if available
+  --remove-packages    Remove Zulip packages (nginx, postgresql, etc.)
+  --remove-user        Remove the 'zulip' user and home directory
+  --force              Skip confirmation prompts (use with caution)
+  --help               Show this help message
+
+Examples:
+  # Safe uninstall (preserves backups and databases)
+  ./scripts/setup/uninstall
+
+  # Restore nginx configuration and remove packages
+  ./scripts/setup/uninstall --restore-nginx --remove-packages
+
+  # Complete removal (requires manual database cleanup)
+  ./scripts/setup/uninstall --restore-nginx --remove-packages --remove-user --force
+EOF
+}
+
+RESTORE_NGINX=false
+REMOVE_PACKAGES=false
+REMOVE_USER=false
+FORCE=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --restore-nginx)
+            RESTORE_NGINX=true
+            shift
+            ;;
+        --remove-packages)
+            REMOVE_PACKAGES=true
+            shift
+            ;;
+        --remove-user)
+            REMOVE_USER=true
+            shift
+            ;;
+        --force)
+            FORCE=true
+            shift
+            ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$EUID" -ne 0 ]; then
+    echo -e "${RED}Error: This script must be run as root.${NC}" >&2
+    exit 1
+fi
+
+confirm() {
+    if [ "$FORCE" = true ]; then
+        return 0
+    fi
+    echo -e "${YELLOW}$1${NC}"
+    read -r -p "Continue? [y/N] " response
+    case "${response,,}" in
+        y|yes)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+echo -e "${RED}Zulip Server Uninstallation${NC}"
+echo ""
+
+if ! confirm "This will stop Zulip services and remove Zulip files. Continue?"; then
+    echo "Uninstallation cancelled."
+    exit 0
+fi
+
+echo ""
+echo "Stopping Zulip services..."
+if systemctl list-units --type=service | grep -q zulip; then
+    systemctl stop zulip* || true
+fi
+
+if [ -f /etc/supervisor/supervisord.conf ] || [ -f /etc/supervisord.conf ]; then
+    if systemctl is-active --quiet supervisord || systemctl is-active --quiet supervisor; then
+        supervisorctl -c /etc/supervisor/supervisord.conf shutdown 2>/dev/null || \
+        supervisorctl -c /etc/supervisord.conf shutdown 2>/dev/null || true
+        systemctl stop supervisor* || true
+    fi
+fi
+
+if systemctl is-active --quiet nginx; then
+    systemctl stop nginx || true
+fi
+
+echo ""
+echo "Files and directories that will be affected:"
+echo ""
+echo "Nginx configuration files:"
+if [ -f /etc/nginx/nginx.conf ]; then
+    echo "  - /etc/nginx/nginx.conf (modified)"
+    # Check for backups
+    if ls /etc/nginx/nginx.conf.backup-before-zulip-* 1> /dev/null 2>&1; then
+        echo "    Backups available:"
+        ls -1 /etc/nginx/nginx.conf.backup-before-zulip-* | sed 's/^/      /'
+    fi
+fi
+
+if [ -d /etc/nginx/zulip-include ]; then
+    echo "  - /etc/nginx/zulip-include/ (created)"
+fi
+
+if [ -f /etc/nginx/dhparam.pem ]; then
+    echo "  - /etc/nginx/dhparam.pem (may be shared with other services)"
+fi
+
+if [ -f /etc/nginx/sites-available/zulip-enterprise ]; then
+    echo "  - /etc/nginx/sites-available/zulip-enterprise (created)"
+fi
+
+if [ -L /etc/nginx/sites-enabled/zulip-enterprise ]; then
+    echo "  - /etc/nginx/sites-enabled/zulip-enterprise (symlink, will be removed)"
+fi
+
+if ls /etc/logrotate.d/nginx.backup-before-zulip-* 1> /dev/null 2>&1; then
+    echo "  - /etc/logrotate.d/nginx (backup available)"
+fi
+
+echo ""
+echo "Zulip configuration files:"
+if [ -d /etc/zulip ]; then
+    echo "  - /etc/zulip/ (entire directory)"
+    if [ "$(ls -A /etc/zulip 2>/dev/null)" ]; then
+        find /etc/zulip -maxdepth 1 -type f | sed 's|^|    |'
+    fi
+fi
+
+echo ""
+echo "Zulip directories:"
+if [ -d /home/zulip ]; then
+    echo "  - /home/zulip/ (Zulip user home directory)"
+fi
+
+if [ -d /var/log/zulip ]; then
+    echo "  - /var/log/zulip/ (Zulip logs - will be preserved)"
+fi
+
+if [ -d /var/lib/zulip ]; then
+    echo "  - /var/lib/zulip/ (Zulip data directory)"
+fi
+
+echo ""
+echo "Supervisor configuration:"
+if [ -f /etc/supervisor/conf.d/zulip*.conf ] || [ -f /etc/supervisord.d/conf.d/zulip*.conf ]; then
+    echo "  - Supervisor config files:"
+    find /etc/supervisor/conf.d /etc/supervisord.d/conf.d -name "zulip*.conf" 2>/dev/null | sed 's|^|    |'
+fi
+
+echo ""
+echo "Systemd services:"
+if systemctl list-unit-files | grep -q "^zulip"; then
+    systemctl list-unit-files | grep "^zulip" | awk '{print "  - " $1}'
+fi
+
+echo ""
+echo "Certbot renewal hooks:"
+if [ -d /etc/letsencrypt/renewal-hooks/deploy ]; then
+    if ls /etc/letsencrypt/renewal-hooks/deploy/*zulip* 1> /dev/null 2>&1; then
+        find /etc/letsencrypt/renewal-hooks/deploy -name "*zulip*" | sed 's|^|  - |'
+    fi
+fi
+
+echo ""
+echo "Cron jobs:"
+if [ -f /etc/cron.d/zulip ]; then
+    echo "  - /etc/cron.d/zulip"
+fi
+
+if [ "$REMOVE_PACKAGES" = true ]; then
+    echo ""
+    echo -e "${YELLOW}Packages that would be removed (if --remove-packages is set):${NC}"
+    echo "  Note: Only Zulip-specific packages. System packages like nginx,"
+    echo "        postgresql will be preserved unless explicitly removed."
+fi
+
+if [ "$RESTORE_NGINX" = true ]; then
+    echo ""
+    if ls /etc/nginx/nginx.conf.backup-before-zulip-* 1> /dev/null 2>&1; then
+        LATEST_BACKUP=$(ls -t /etc/nginx/nginx.conf.backup-before-zulip-* | head -n1)
+        echo -e "${YELLOW}Restoring nginx.conf from backup: $LATEST_BACKUP${NC}"
+        if confirm "Restore nginx configuration from backup?"; then
+            cp "$LATEST_BACKUP" /etc/nginx/nginx.conf
+            echo -e "${GREEN}✓ nginx.conf restored${NC}"
+        fi
+    else
+        echo -e "${YELLOW}No nginx.conf backup found.${NC}"
+    fi
+
+    if ls /etc/logrotate.d/nginx.backup-before-zulip-* 1> /dev/null 2>&1; then
+    if ls /etc/logrotate.d/nginx.backup-before-zulip-* 1> /dev/null 2>&1; then
+        LATEST_BACKUP=$(ls -t /etc/logrotate.d/nginx.backup-before-zulip-* | head -n1)
+        echo -e "${YELLOW}Restoring nginx logrotate config from backup${NC}"
+        if confirm "Restore nginx logrotate configuration?"; then
+            cp "$LATEST_BACKUP" /etc/logrotate.d/nginx
+            echo -e "${GREEN}✓ nginx logrotate config restored${NC}"
+        fi
+    fi
+fi
+
+echo ""
+if confirm "Remove Zulip configuration files and directories?"; then
+    echo "Removing Zulip files..."
+
+    if [ -d /etc/nginx/zulip-include ]; then
+        rm -rf /etc/nginx/zulip-include
+        echo -e "${GREEN}✓ Removed /etc/nginx/zulip-include/${NC}"
+    fi
+
+    if [ -f /etc/nginx/sites-available/zulip-enterprise ]; then
+        rm -f /etc/nginx/sites-available/zulip-enterprise
+        echo -e "${GREEN}✓ Removed /etc/nginx/sites-available/zulip-enterprise${NC}"
+    fi
+
+    if [ -L /etc/nginx/sites-enabled/zulip-enterprise ]; then
+        rm -f /etc/nginx/sites-enabled/zulip-enterprise
+        echo -e "${GREEN}✓ Removed /etc/nginx/sites-enabled/zulip-enterprise${NC}"
+    fi
+
+    if [ -d /etc/supervisor/conf.d ]; then
+        rm -f /etc/supervisor/conf.d/zulip*.conf 2>/dev/null || true
+    fi
+    if [ -d /etc/supervisord.d/conf.d ]; then
+        rm -f /etc/supervisord.d/conf.d/zulip*.conf 2>/dev/null || true
+    fi
+    echo -e "${GREEN}✓ Removed supervisor configuration files${NC}"
+
+    if [ -f /etc/cron.d/zulip ]; then
+        rm -f /etc/cron.d/zulip
+        echo -e "${GREEN}✓ Removed /etc/cron.d/zulip${NC}"
+    fi
+
+    if [ -d /etc/letsencrypt/renewal-hooks/deploy ]; then
+        find /etc/letsencrypt/renewal-hooks/deploy -name "*zulip*" -delete 2>/dev/null || true
+        echo -e "${GREEN}✓ Removed Zulip certbot hooks${NC}"
+    fi
+
+    if systemctl list-unit-files | grep -q "^zulip"; then
+        systemctl list-unit-files | grep "^zulip" | awk '{print $1}' | xargs -r systemctl disable --now 2>/dev/null || true
+        find /etc/systemd/system -name "zulip*.service" -delete 2>/dev/null || true
+        find /usr/lib/systemd/system -name "zulip*.service" -delete 2>/dev/null || true
+        systemctl daemon-reload 2>/dev/null || true
+        echo -e "${GREEN}✓ Removed and disabled Zulip systemd services${NC}"
+    fi
+
+    if [ -d /etc/zulip ]; then
+        echo -e "${YELLOW}  Warning: /etc/zulip contains configuration and secrets.${NC}"
+        if confirm "  Remove /etc/zulip directory? (This cannot be undone)"; then
+            rm -rf /etc/zulip
+            echo -e "${GREEN}✓ Removed /etc/zulip/${NC}"
+        else
+            echo -e "${YELLOW}  Preserved /etc/zulip/ (you may want to remove it manually)${NC}"
+        fi
+    fi
+
+    if [ -d /var/lib/zulip ]; then
+        rm -rf /var/lib/zulip
+        echo -e "${GREEN}✓ Removed /var/lib/zulip/${NC}"
+    fi
+
+    echo ""
+    echo -e "${GREEN}✓ Zulip files removed${NC}"
+fi
+
+if [ "$REMOVE_USER" = true ]; then
+    echo ""
+    if id zulip &>/dev/null; then
+        if confirm "Remove 'zulip' user and home directory (/home/zulip)?"; then
+            if [ -d /home/zulip/deployments ]; then
+                    echo -e "${YELLOW}  Warning: /home/zulip/deployments contains Zulip code and data.${NC}"
+                    if ! confirm "  This will delete all Zulip deployments. Continue?"; then
+                        echo -e "${YELLOW}  Skipping user removal.${NC}"
+                    else
+                        userdel -r zulip 2>/dev/null || {
+                            rm -rf /home/zulip
+                            userdel zulip 2>/dev/null || true
+                        }
+                    echo -e "${GREEN}✓ Removed 'zulip' user${NC}"
+                fi
+            else
+                userdel -r zulip 2>/dev/null || true
+                echo -e "${GREEN}✓ Removed 'zulip' user${NC}"
+            fi
+        fi
+    else
+        echo -e "${YELLOW}'zulip' user does not exist.${NC}"
+    fi
+fi
+
+echo ""
+if [ -d /var/log/nginx ] && [ "$(stat -c '%U' /var/log/nginx 2>/dev/null)" = "zulip" ]; then
+    echo -e "${YELLOW}/var/log/nginx is owned by 'zulip' user.${NC}"
+    if confirm "Restore ownership to 'www-data' (or appropriate default)?"; then
+        if id www-data &>/dev/null; then
+            NGINX_USER=www-data
+        elif id nginx &>/dev/null; then
+            NGINX_USER=nginx
+        else
+            NGINX_USER=root
+        fi
+        chown -R "$NGINX_USER:$(id -gn "$NGINX_USER")" /var/log/nginx 2>/dev/null || true
+        echo -e "${GREEN}✓ Restored /var/log/nginx ownership to $NGINX_USER${NC}"
+    fi
+fi
+
+echo ""
+echo "Uninstallation summary:"
+echo ""
+
+echo "The following items were NOT removed (to prevent data loss):"
+echo "  - PostgreSQL databases (manual cleanup required)"
+echo "  - Zulip log files in /var/log/zulip/ (preserved for troubleshooting)"
+echo "  - Backup files in /etc/nginx/ (in case you need to restore)"
+echo ""
+
+if [ -d /var/log/zulip ]; then
+    echo -e "${YELLOW}Log files preserved at: /var/log/zulip/${NC}"
+fi
+
+if ls /etc/nginx/*.backup-before-zulip-* 1> /dev/null 2>&1; then
+    echo -e "${YELLOW}Nginx backups preserved at: /etc/nginx/*.backup-before-zulip-*${NC}"
+fi
+
+echo ""
+echo "To completely remove Zulip, you may also need to:"
+echo "  1. Remove PostgreSQL databases manually (if you created them)"
+echo "  2. Remove Zulip-specific packages (use --remove-packages flag)"
+echo "  3. Review and clean up any remaining configuration files"
+echo ""
+
+if [ "$RESTORE_NGINX" = false ]; then
+    echo -e "${YELLOW}Note: Use --restore-nginx to restore backed-up nginx configuration.${NC}"
+fi
+
+echo -e "${GREEN}Uninstallation complete!${NC}"

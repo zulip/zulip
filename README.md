@@ -58,6 +58,11 @@ Come find us on the [development community chat](https://zulip.com/development-c
   [Render](https://render.com/docs/deploy-zulip).
   Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
 
+  **Note:** The installer overwrites system configuration files (including
+  `/etc/nginx/nginx.conf`). If you have existing nginx services, they may be
+  affected. See the [installation guide](https://zulip.readthedocs.io/en/latest/production/install.html)
+  for details.
+
 - **Using Zulip without setting up a server**. Learn about [Zulip
   Cloud](https://zulip.com/plans/) hosting options. Zulip sponsors free [Zulip
   Cloud Standard](https://zulip.com/plans/) for hundreds of worthy

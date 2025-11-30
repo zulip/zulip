@@ -94,9 +94,16 @@ configuration we use is pretty basic, but if you're using them for
 something else, you'll want to make sure the configurations are
 compatible.
 
-### No uninstall process
+### Uninstall process
 
-We don't provide a convenient way to uninstall a Zulip server.
+There's an uninstallation script available. Run:
+
+```bash
+sudo ./scripts/setup/uninstall --help
+```
+
+It can restore backed-up configs (like nginx.conf) and remove Zulip files. See
+the [scripts README](../../scripts/README.md#uninstallation) for details.
 
 ## No support, but contributions welcome!
 

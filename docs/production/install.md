@@ -39,6 +39,28 @@ Provision and log in to a fresh Ubuntu or Debian system in your preferred
 hosting environment that satisfies the [installation
 requirements](requirements.md) for your expected usage level.
 
+:::{warning}
+**Important: Zulip modifies system configuration files**
+
+The installer will overwrite several system configuration files, including:
+
+- `/etc/nginx/nginx.conf` - overwrites the main nginx config (changes user from `www-data` to `zulip`)
+- `/etc/nginx/sites-enabled/default` - removed
+- `/etc/logrotate.d/nginx` - overwritten
+- `/var/log/nginx` - ownership changed to `zulip` user
+- Various files in `/etc/nginx/` and `/etc/zulip/`
+
+**If you already have nginx configured for other services (like ownCloud,
+Nextcloud, etc.), installing Zulip will break them.** Existing nginx configs are
+backed up with timestamps, but you'll need to manually restore or merge them.
+
+See [Installing on an existing server](install-existing-server.md) for more
+details. For a list of all files that get modified, see the [uninstallation
+script](../scripts/README.md#uninstallation).
+
+**We recommend installing Zulip on a dedicated server or VM.**
+:::
+
 ## Step 1: Download the latest release
 
 Download and unpack [the latest server
@@ -198,6 +220,8 @@ Learning more:
 - Learn about [Backups, export and import](export-and-import.md)
   and [upgrading](upgrade.md) a production Zulip
   server.
+- If you need to remove Zulip, see the [uninstallation
+  script](../../scripts/README.md#uninstallation).
 
 [realm-admin-docs]: https://zulip.com/help/moving-to-zulip
 [terms]: https://zulip.com/policies/terms
