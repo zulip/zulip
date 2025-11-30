@@ -78,8 +78,9 @@ COPY . .
 RUN chown -R zulip:zulip /app
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /var/log/zulip /home/zulip /app/static_collected /app/var/log && \
-    chown -R zulip:zulip /var/log/zulip /home/zulip /app/static_collected /app/var/log
+# /app/var must be owned by zulip for cache.py to create remote_cache_prefix file
+RUN mkdir -p /var/log/zulip /home/zulip /app/static_collected /app/var && \
+    chown -R zulip:zulip /var/log/zulip /home/zulip /app/static_collected /app/var
 
 # NOTE: collectstatic runs at container startup (supervisord) since it needs env vars
 
