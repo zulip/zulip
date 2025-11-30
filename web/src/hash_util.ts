@@ -427,3 +427,14 @@ export function decode_stream_topic_from_url(
         return null;
     }
 }
+
+export function get_link_hash(link: string): string {
+    if (link.startsWith("/#narrow/")) {
+        return link.slice(1);
+    }
+    try {
+        return new URL(link).hash;
+    } catch {
+        return "";
+    }
+}
