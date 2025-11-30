@@ -19,6 +19,7 @@ export class MessageState {
     server_acked = false;
     saw_event = false;
 
+    idempotency_key: string | undefined = undefined;
     span: Sentry.Span | undefined = undefined;
     event_span: Sentry.Span | undefined = undefined;
 

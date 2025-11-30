@@ -11,6 +11,7 @@ import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import {generate_idempotency_key} from "./util.ts";
 
 type SendMessageData = {
     local_id: string;
@@ -42,9 +43,29 @@ export function send_message(
         });
     }
     sent_messages.wrap_send(request.local_id, () => {
+        const idempotencyKeyManager = {
+            getKey() {
+                const state = sent_messages.get_message_state(request.local_id);
+                if (state === undefined) {
+                    return undefined;
+                }
+                // The same idempotency key is tied to every message,
+                // so the same key can be used again in case that same message is retried on error.
+                // 1- This is important in case a message was posted and created successfully in server
+                // but the server response failed to reach client.
+                // 2- In case of non-transient errors (4xx),
+                // that same idempotency key is used to fetch the cached json error response
+                // (if any) from the server.
+
+                // Generate an initial key
+                state.idempotency_key ??= generate_idempotency_key();
+                return state.idempotency_key;
+            },
+        };
         channel.post({
             url: "/json/messages",
             data: request,
+            idempotencyKeyManager,
             success: function success(data) {
                 // Call back to our callers to do things like closing the compose
                 // box, turning off spinners, reifying locally echoed messages and

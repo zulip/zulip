@@ -10,7 +10,7 @@ from typing import Any, TypedDict, cast
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.db.models import Exists, F, OuterRef, Q, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
@@ -39,12 +39,15 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.idempotent_request import idempotent_work_transaction
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
+    message_response_deserializer,
+    message_response_serializer,
     normalize_body,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
@@ -80,6 +83,7 @@ from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
+from zerver.lib.types import SentMessageResult
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     check_any_user_has_permission_by_role,
@@ -228,12 +232,6 @@ class ActiveUserDict(TypedDict):
 
 class UserProfileAnnotations(TypedDict):
     has_push_device_registered: bool
-
-
-@dataclass
-class SentMessageResult:
-    message_id: int
-    automatic_new_visibility_policy: int | None = None
 
 
 def get_recipient_info(
@@ -896,11 +894,19 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-@transaction.atomic(savepoint=False)
+@idempotent_work_transaction(
+    savepoint=False,
+    cached_result_serializer=message_response_serializer,
+    cached_result_deserializer=message_response_deserializer,
+)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
     *,
     mark_as_read: Sequence[int] = [],
+    # user is not named sender because it's only accessed inside
+    # idempotent_work_transaction which is generic.
+    user: UserProfile | None = None,
+    idempotency_key: str | None = None,
 ) -> list[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1395,9 +1401,9 @@ def check_send_stream_message(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic_name)
-    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
+    message_request = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
     sent_message_result = do_send_messages(
-        [message], mark_as_read=[sender.id] if read_by_sender else []
+        [message_request], mark_as_read=[sender.id] if read_by_sender else []
     )[0]
     return sent_message_result.message_id
 
@@ -1412,8 +1418,8 @@ def check_send_stream_message_by_id(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic_name)
-    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
-    sent_message_result = do_send_messages([message])[0]
+    message_request = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -1425,8 +1431,8 @@ def check_send_private_message(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
-    message = check_message(sender, client, addressee, body, no_previews=no_previews)
-    sent_message_result = do_send_messages([message])[0]
+    message_request = check_message(sender, client, addressee, body, no_previews=no_previews)
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -1449,9 +1455,10 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    idempotency_key: str | None = None,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
-    message = check_message(
+    message_request = check_message(
         sender,
         client,
         addressee,
@@ -1465,7 +1472,12 @@ def check_send_message(
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
     )
-    return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
+    return do_send_messages(
+        [message_request],
+        mark_as_read=[sender.id] if read_by_sender else [],
+        user=sender,
+        idempotency_key=idempotency_key,
+    )[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
@@ -2063,16 +2075,16 @@ def internal_send_private_message(
     disable_external_notifications: bool = False,
     acting_user: UserProfile | None = None,
 ) -> int | None:
-    message = internal_prep_private_message(
+    message_request = internal_prep_private_message(
         sender,
         recipient_user,
         content,
         disable_external_notifications=disable_external_notifications,
         acting_user=acting_user,
     )
-    if message is None:
+    if message_request is None:
         return None
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -2089,7 +2101,7 @@ def internal_send_stream_message(
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
 ) -> int | None:
-    message = internal_prep_stream_message(
+    message_request = internal_prep_stream_message(
         sender,
         stream,
         topic_name,
@@ -2101,14 +2113,14 @@ def internal_send_stream_message(
         acting_user=acting_user,
     )
 
-    if message is None:
+    if message_request is None:
         return None
 
     mark_as_read = []
     if mark_as_read_for_acting_user and acting_user is not None:
         mark_as_read.append(acting_user.id)
 
-    sent_message_result = do_send_messages([message], mark_as_read=mark_as_read)[0]
+    sent_message_result = do_send_messages([message_request], mark_as_read=mark_as_read)[0]
     return sent_message_result.message_id
 
 
@@ -2119,7 +2131,7 @@ def internal_send_stream_message_by_name(
     topic_name: str,
     content: str,
 ) -> int | None:
-    message = internal_prep_stream_message_by_name(
+    message_request = internal_prep_stream_message_by_name(
         realm,
         sender,
         stream_name,
@@ -2127,9 +2139,9 @@ def internal_send_stream_message_by_name(
         content,
     )
 
-    if message is None:
+    if message_request is None:
         return None
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -2163,14 +2175,14 @@ def internal_send_group_direct_message(
     emails: list[str] | None = None,
     recipient_users: list[UserProfile] | None = None,
 ) -> int | None:
-    message = internal_prep_group_direct_message(
+    message_request = internal_prep_group_direct_message(
         realm, sender, content, emails=emails, recipient_users=recipient_users
     )
 
-    if message is None:
+    if message_request is None:
         return None
 
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
