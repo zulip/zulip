@@ -270,7 +270,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Invalid external account type")
 
-        non_default_external_account = "linkedin"
+        non_default_external_account = "gitthub"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": non_default_external_account,
@@ -292,15 +292,26 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(twitter_field.name, "Twitter username")
         self.assertEqual(orjson.loads(twitter_field.field_data)["subtype"], "twitter")
 
-        data["name"] = "Reddit"
+        data["name"] = "Reddit without URL"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": "custom",
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Custom external account must define URL pattern")
+        self.assert_json_success(result)
 
+        data["name"] = "Reddit with empty URL"
+        data["field_data"] = orjson.dumps(
+            {
+                "subtype": "custom",
+                "url_pattern": "",
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        data["name"] = "Reddit"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": "custom",

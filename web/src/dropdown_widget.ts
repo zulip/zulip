@@ -714,6 +714,12 @@ export class DropdownWidget {
             this.current_value = value;
         }
 
+        if (value !== undefined && value === this.sticky_bottom_option) {
+            assert(typeof value === "string");
+            $(this.widget_value_selector).text(value);
+            return;
+        }
+
         const all_options = this.get_options(this.current_value);
         const option = all_options.find((option) => option.unique_id === this.current_value);
 
