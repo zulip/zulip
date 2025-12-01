@@ -757,6 +757,17 @@ i18n_urls = [
 # Make a copy of i18n_urls so that they appear without prefix for english
 urls: list[URLPattern | URLResolver] = list(i18n_urls)
 
+# NODL MODIFICATION START - Include nodl API URLs
+# Reason: Register nodl REST API endpoints before Zulip's built-in patterns
+# Date: 2024-12-01
+# PR: Story 1.8 - Chat integration authentication fix
+# Must be BEFORE path("api/v1/", include(v1_api_and_json_patterns)) so nodl
+# endpoints take precedence for /api/v1/streams, /api/v1/messages, etc.
+from nodl.api.urls import urlpatterns as nodl_api_urls
+
+urls += nodl_api_urls
+# NODL MODIFICATION END
+
 # Include the dual-use patterns twice
 urls += [
     path("api/v1/", include(v1_api_and_json_patterns)),

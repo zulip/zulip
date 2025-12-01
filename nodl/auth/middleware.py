@@ -10,6 +10,8 @@ from django.http import HttpRequest, JsonResponse
 from django.http.response import HttpResponseBase
 from django.utils.crypto import constant_time_compare
 
+from zerver.models import UserProfile
+
 
 class SupabaseJWTMiddleware:
     """Validate Supabase JWT tokens from Authorization header.
@@ -65,6 +67,21 @@ class SupabaseJWTMiddleware:
             request.supabase_user_id = payload["sub"]
             request.supabase_email = payload.get("email")
             request.supabase_role = payload.get("role", "authenticated")
+
+            # Look up the corresponding Zulip UserProfile
+            # This bridges Supabase JWT auth to Zulip's user system
+            email = payload.get("email")
+            if email:
+                try:
+                    user_profile = UserProfile.objects.get(
+                        delivery_email=email,
+                        is_active=True,
+                    )
+                    request.user_profile = user_profile
+                    request.user = user_profile  # Django's auth system expects this
+                except UserProfile.DoesNotExist:
+                    # User not yet synced from Supabase - views will return 401
+                    pass
 
         except jwt.ExpiredSignatureError:
             return self._error_response("Token expired")
