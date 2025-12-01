@@ -509,6 +509,14 @@ RATE_LIMITING_MIRROR_REALM_RULES = [
 
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret("redis_password")
+# NODL MODIFICATION START - Override Redis settings from environment (for Railway deployment)
+if os.environ.get("REDIS_HOST"):
+    REDIS_HOST = os.environ["REDIS_HOST"]
+if os.environ.get("REDIS_PORT"):
+    REDIS_PORT = int(os.environ["REDIS_PORT"])
+if os.environ.get("REDIS_PASSWORD"):
+    REDIS_PASSWORD = os.environ["REDIS_PASSWORD"]
+# NODL MODIFICATION END
 
 # See RATE_LIMIT_TOR_TOGETHER
 if DEVELOPMENT:
