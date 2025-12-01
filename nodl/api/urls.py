@@ -20,6 +20,11 @@ from nodl.api.views.streams import (
     unsubscribe_from_stream,
     update_stream,
 )
+from nodl.api.views.users import (
+    get_current_user,
+    get_user,
+    list_users,
+)
 
 # Internal API endpoints - authenticated via service key
 # These are prefixed with /api/v1/internal/ by convention
@@ -27,6 +32,11 @@ urlpatterns = [
     path("api/v1/internal/users/sync", sync_user, name="nodl_sync_user"),
     path("api/v1/internal/realms/sync", sync_realm, name="nodl_sync_realm"),
     path("api/v1/internal/realms/deactivate", deactivate_realm, name="nodl_deactivate_realm"),
+    # User REST API endpoints - authenticated via JWT
+    # IMPORTANT: /users/me MUST come BEFORE /users to match correctly
+    path("api/v1/users/me", get_current_user, name="nodl_current_user"),
+    path("api/v1/users", list_users, name="nodl_list_users"),
+    path("api/v1/users/<int:user_id>", get_user, name="nodl_get_user"),
     # Stream REST API endpoints - authenticated via JWT
     path("api/v1/streams", list_streams, name="nodl_list_streams"),
     path("api/v1/streams/create", create_stream, name="nodl_create_stream"),

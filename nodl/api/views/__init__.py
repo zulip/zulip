@@ -15,6 +15,11 @@ from nodl.api.views.streams import (
     unsubscribe_from_stream,
     update_stream,
 )
+from nodl.api.views.users import (
+    get_current_user,
+    get_user,
+    list_users,
+)
 
 __all__ = [
     # Internal sync views
@@ -30,4 +35,8 @@ __all__ = [
     "subscribe_to_stream",
     "unsubscribe_from_stream",
     "update_stream",
+    # User views
+    "get_current_user",
+    "get_user",
+    "list_users",
 ]
