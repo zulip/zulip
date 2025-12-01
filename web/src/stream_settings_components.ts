@@ -318,13 +318,18 @@ export function archived_status_filter_includes_channel(sub: StreamSubscription)
 export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
     const folder_options = (): dropdown_widget.Option[] => {
         const folders = channel_folders.get_channel_folders();
+        const can_manage_folder = current_user.is_admin;
+        const manage_folder_icon_label = can_manage_folder
+            ? $t({defaultMessage: "Manage folder"})
+            : $t({defaultMessage: "Preview folder"});
         const options: dropdown_widget.Option[] = folders.map((folder) => ({
             name: folder.name,
             unique_id: folder.id,
             has_delete_icon: true,
+            manage_folder_icon: can_manage_folder ? "folder-cog" : "preview",
             has_manage_folder_icon: true,
             delete_icon_label: $t({defaultMessage: "Delete folder"}),
-            manage_folder_icon_label: $t({defaultMessage: "Manage folder"}),
+            manage_folder_icon_label,
         }));
 
         const disabled_option = {

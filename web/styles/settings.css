@@ -1585,6 +1585,10 @@ label.preferences-radio-choice-label {
             overflow: auto;
 
             background-color: hsl(0deg 0% 0% / 2%);
+
+            #channel-folder-settings .zulip-icon-preview {
+                font-size: 1.25em;
+            }
         }
     }
 }

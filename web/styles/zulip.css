@@ -2206,6 +2206,10 @@ body:not(.spectator-view) {
         .dropdown-list {
             list-style: none;
             margin: 0;
+
+            .zulip-icon-preview {
+                font-size: 1.125em;
+            }
         }
     }
 

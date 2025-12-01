@@ -42,6 +42,7 @@ export type Option = {
     delete_icon_label?: string;
     edit_icon_label?: string;
     manage_folder_icon_label?: string;
+    manage_folder_icon?: string;
 };
 
 export type DropdownWidgetOptions = {
