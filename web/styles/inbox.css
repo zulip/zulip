@@ -404,7 +404,10 @@
 
     .inbox-header-stream-archived {
         color: var(--color-text-message-header-archived);
+
     }
+  
+
 }
 
 #inbox-view {
@@ -786,4 +789,7 @@
             );
         }
     }
+}
+  .inbox-header-stream-archived::before {
+    content: " "; 
 }
