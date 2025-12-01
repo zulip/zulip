@@ -27,5 +27,14 @@
           aria-label=(t "Delete")
           }}
     </td>
+    {{else}}
+    <td class="actions">
+        {{> ../components/icon_button
+          icon="preview"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip edit-channel-folder-button"
+          data-tippy-content=(t "View details")
+          }}
+    </td>
     {{/if}}
 </tr>

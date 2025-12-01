@@ -840,7 +840,12 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: ".folder_id-dropdown-list-container .dropdown-list-manage-folder, .new_channel_folder_id-dropdown-list-container .dropdown-list-manage-folder",
-        content: $t({defaultMessage: "Manage folder"}),
+        content(reference) {
+            if (reference.querySelector(".zulip-icon-preview")) {
+                return $t({defaultMessage: "View details"});
+            }
+            return $t({defaultMessage: "Manage folder"});
+        },
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
