@@ -40,8 +40,24 @@ head -2 /etc/zulip/zulip-secrets.conf
 
 # Create zulip schema if it doesn't exist (required before migrations)
 # Zulip's setup scripts normally do this, but Railway has a fresh PostgreSQL
+# Using Python/psycopg2 since psql client is not installed in the container
 echo "=== Creating zulip schema ==="
-PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB -c 'CREATE SCHEMA IF NOT EXISTS zulip;'
+/app/.venv/bin/python -c "
+import os, psycopg2
+conn = psycopg2.connect(
+    host=os.environ['POSTGRES_HOST'],
+    port=os.environ.get('POSTGRES_PORT', '5432'),
+    user=os.environ['POSTGRES_USER'],
+    password=os.environ['POSTGRES_PASSWORD'],
+    dbname=os.environ['POSTGRES_DB']
+)
+conn.autocommit = True
+cur = conn.cursor()
+cur.execute('CREATE SCHEMA IF NOT EXISTS zulip')
+cur.close()
+conn.close()
+print('zulip schema created/verified')
+"
 
 # Run database migrations (must run as zulip user, not root)
 echo "=== Running database migrations ==="
