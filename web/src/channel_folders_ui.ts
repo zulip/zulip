@@ -22,7 +22,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as modals from "./modals.ts";
 import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
@@ -200,6 +200,7 @@ function format_channel_item_html(stream: StreamSubscription): string {
         is_web_public: stream.is_web_public,
         stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
         show_remove_channel_from_folder: true,
+        is_admin: current_user.is_admin,
     });
 }
 
@@ -427,50 +428,71 @@ export function handle_editing_channel_folder(folder_id: number): void {
         folder_id,
         max_channel_folder_name_length: realm.max_channel_folder_name_length,
         max_channel_folder_description_length: realm.max_channel_folder_description_length,
+        is_admin: current_user.is_admin,
     });
 
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Manage channel folder"}),
-        html_body,
-        id: "edit_channel_folder",
-        on_click() {
-            const url = "/json/channel_folders/" + folder_id.toString();
-            const new_name = $<HTMLInputElement>("input#edit_channel_folder_name").val()!.trim();
-            const new_description = $<HTMLTextAreaElement>(
-                "textarea#edit_channel_folder_description",
-            )
-                .val()!
-                .trim();
-            const data = {
-                name: new_name,
-                description: new_description,
-            };
-            const opts = {
-                success_continuation() {
-                    // Update the channel folders data so that
-                    // the folder dropdown shows updated folder
-                    // names immediately even if client receives
-                    // the update event after some delay.
-                    channel_folders.update_channel_folder(folder_id, "name", new_name);
-                    channel_folders.update_channel_folder(
-                        folder_id,
-                        "description",
-                        new_description,
-                    );
-                },
-            };
-            dialog_widget.submit_api_request(channel.patch, url, data, opts);
-        },
-        loading_spinner: true,
-        on_shown: () => $("#edit_channel_folder_name").trigger("focus"),
-        on_hidden() {
-            stream_list_widget_stream_ids = undefined;
-            add_channel_folder_widget = undefined;
-        },
-        update_submit_disabled_state_on_change: true,
-        post_render() {
-            render_channel_list(subs, folder_id);
-            render_add_channel_folder_widget();
-        },
-    });
+    let config: dialog_widget.DialogWidgetConfig;
+
+    if (current_user.is_admin) {
+        config = {
+            html_heading: $t_html({defaultMessage: "Manage channel folder"}),
+            html_body,
+            id: "edit_channel_folder",
+            on_click() {
+                const url = "/json/channel_folders/" + folder_id.toString();
+                const new_name = $<HTMLInputElement>("input#edit_channel_folder_name")
+                    .val()!
+                    .trim();
+                const new_description = $<HTMLTextAreaElement>(
+                    "textarea#edit_channel_folder_description",
+                )
+                    .val()!
+                    .trim();
+                const data = {
+                    name: new_name,
+                    description: new_description,
+                };
+                const opts = {
+                    success_continuation() {
+                        // Update the channel folders data so that
+                        // the folder dropdown shows updated folder
+                        // names immediately even if client receives
+                        // the update event after some delay.
+                        channel_folders.update_channel_folder(folder_id, "name", new_name);
+                        channel_folders.update_channel_folder(
+                            folder_id,
+                            "description",
+                            new_description,
+                        );
+                    },
+                };
+                dialog_widget.submit_api_request(channel.patch, url, data, opts);
+            },
+            loading_spinner: true,
+            on_shown: () => $("#edit_channel_folder_name").trigger("focus"),
+            on_hidden() {
+                stream_list_widget_stream_ids = undefined;
+                add_channel_folder_widget = undefined;
+            },
+            update_submit_disabled_state_on_change: true,
+            post_render() {
+                render_channel_list(subs, folder_id);
+                render_add_channel_folder_widget();
+            },
+        };
+    } else {
+        config = {
+            html_heading: $t_html({defaultMessage: "Channel folder details"}),
+            html_body,
+            id: "edit_channel_folder",
+            hide_footer: true,
+            on_hidden() {
+                stream_list_widget_stream_ids = undefined;
+            },
+            post_render() {
+                render_channel_list(subs, folder_id);
+            },
+        };
+    }
+    dialog_widget.launch(config);
 }
