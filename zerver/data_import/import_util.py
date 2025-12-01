@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import random
@@ -80,6 +81,17 @@ class UploadFileRequest:
     params: dict[str, Any] | None
     headers: dict[str, Any] | None
     kwargs: dict[str, Any]
+
+
+class AvatarRecordData:
+    avatar_version: int
+    content_type: str | None
+    last_modified: int
+    path: str
+    realm_id: int
+    s3_path: str
+    size: int | None
+    user_profile_id: int
 
 
 class SubscriberHandler:
@@ -170,26 +182,6 @@ def build_user_profile(
     """
     dct["short_name"] = short_name
     return dct
-
-
-def build_avatar(
-    zulip_user_id: int,
-    realm_id: int,
-    avatar_url: str,
-    timestamp: Any,
-    avatar_list: list[ZerverFieldsT],
-) -> None:
-    avatar = dict(
-        path=avatar_url,  # Save original avatar URL here, which is downloaded later
-        realm_id=realm_id,
-        content_type=None,
-        avatar_version=1,
-        user_profile_id=zulip_user_id,
-        last_modified=timestamp,
-        s3_path="",
-        size="",
-    )
-    avatar_list.append(avatar)
 
 
 def make_subscriber_map(zerver_subscription: list[ZerverFieldsT]) -> dict[int, set[int]]:
@@ -618,12 +610,12 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
 
 
 def process_avatars(
-    avatar_list: list[ZerverFieldsT],
+    avatar_list: list[AvatarRecordData],
     avatar_dir: str,
     realm_id: int,
     processes: int,
     size_url_suffix: str = "",
-) -> list[ZerverFieldsT]:
+) -> list[AvatarRecordData]:
     """
     This function gets the avatar of the user and saves it in the
     user's avatar directory with both the extensions '.png' and '.original'
@@ -643,10 +635,10 @@ def process_avatars(
     avatar_upload_list = []
     for avatar in avatar_list:
         avatar_hash = user_avatar_base_path_from_ids(
-            avatar["user_profile_id"], avatar["avatar_version"], realm_id
+            avatar.user_profile_id, avatar.avatar_version, realm_id
         )
-        avatar_url = avatar["path"]
-        avatar_original = dict(avatar)
+        avatar_url = avatar.path
+        avatar_original = copy.deepcopy(avatar)
 
         image_path = f"{avatar_hash}.png"
         original_image_path = f"{avatar_hash}.original"
@@ -655,13 +647,13 @@ def process_avatars(
         # We don't add the size field here in avatar's records.json,
         # since the metadata is not needed on the import end, and we
         # don't have it until we've downloaded the files anyway.
-        avatar["path"] = image_path
-        avatar["s3_path"] = image_path
-        avatar["content_type"] = "image/png"
+        avatar.path = image_path
+        avatar.s3_path = image_path
+        avatar.content_type = "image/png"
 
-        avatar_original["path"] = original_image_path
-        avatar_original["s3_path"] = original_image_path
-        avatar_original["content_type"] = "image/png"
+        avatar_original.path = original_image_path
+        avatar_original.s3_path = original_image_path
+        avatar_original.content_type = "image/png"
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
