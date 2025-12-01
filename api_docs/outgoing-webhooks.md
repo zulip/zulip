@@ -3,7 +3,8 @@
 Outgoing webhooks allow you to build or set up Zulip integrations
 which are notified when certain types of messages are sent in Zulip
 When one of those events is [triggered](#triggering), the Zulip server
-will send an HTTP POST payload to the webhook's configured URL.
+will send an HTTP POST [payload](/api/outgoing-webhook-payload) to the
+webhook's configured URL.
 
 Outgoing webhooks can be used to power a wide range of Zulip
 integrations. For example, the [Zulip Botserver](/api/deploying-bots#zulip-botserver)
@@ -22,8 +23,8 @@ is built on top of this API.
 1. Set **Bot type** to **Outgoing webhook**.
 
 1. Fill out the fields, with **Endpoint URL** set to the URL you'd like
-   Zulip to post to, and the outgoing webhook [format](#formats) you
-   plan on using.
+   Zulip to post to, and the outgoing webhook [format](/api/outgoing-webhook-payload)
+   you plan on using.
 
 1. Click **Add**.
 
@@ -88,110 +89,3 @@ The `content` field should contain [Zulip-flavored Markdown](/help/format-your-m
 Note that an outgoing webhook bot can use the [Zulip REST
 API](/api/rest) with its API key in case your bot needs to do
 something else, like add an emoji reaction or upload a file.
-
-## Formats
-
-Zulip supports outgoing webhooks in a clean, native
-[Zulip format](#zulip-format), as well as in a
-[Slack-compatible format](#slack-compatible-format).
-
-### Zulip format
-
-{generate_code_example|/zulip-outgoing-webhook:post|fixture}
-
-### Fields documentation
-
-{generate_return_values_table|zulip.yaml|/zulip-outgoing-webhook:post}
-
-### Slack-compatible format
-
-This webhook format is compatible with [Slack's outgoing webhook
-API](https://api.slack.com/custom-integrations/outgoing-webhooks),
-which can help with porting an existing Slack integration to work with
-Zulip, and allows immediate integration with many third-party systems
-that already support Slack outgoing webhooks.
-
-The following table details how the Zulip server translates a Zulip
-message into the Slack-compatible webhook format.
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>token</code></td>
-            <td>A string of alphanumeric characters you can use to
-            authenticate the webhook request (each bot user uses a fixed token)</td>
-        </tr>
-        <tr>
-            <td><code>team_id</code></td>
-            <td>ID of the Zulip organization prefixed by "T".</td>
-        </tr>
-        <tr>
-            <td><code>team_domain</code></td>
-            <td>Hostname of the Zulip organization</td>
-        </tr>
-        <tr>
-            <td><code>channel_id</code></td>
-            <td>Channel ID prefixed by "C"</td>
-        </tr>
-        <tr>
-            <td><code>channel_name</code></td>
-            <td>Channel name</td>
-        </tr>
-        <tr>
-            <td><code>thread_ts</code></td>
-            <td>Timestamp for when message was sent</td>
-        </tr>
-        <tr>
-            <td><code>timestamp</code></td>
-            <td>Timestamp for when message was sent</td>
-        </tr>
-        <tr>
-            <td><code>user_id</code></td>
-            <td>ID of the user who sent the message prefixed by "U"</td>
-        </tr>
-        <tr>
-            <td><code>user_name</code></td>
-            <td>Full name of sender</td>
-        </tr>
-        <tr>
-            <td><code>text</code></td>
-            <td>The content of the message (in Markdown)</td>
-        </tr>
-        <tr>
-            <td><code>trigger_word</code></td>
-            <td>Trigger method</td>
-        </tr>
-        <tr>
-            <td><code>service_id</code></td>
-            <td>ID of the bot user</td>
-        </tr>
-    </tbody>
-</table>
-
-The above data is posted as list of tuples (not JSON), here's an example:
-
-```
-[('token', 'v9fpCdldZIej2bco3uoUvGp06PowKFOf'),
- ('team_id', 'T1512'),
- ('team_domain', 'zulip.example.com'),
- ('channel_id', 'C123'),
- ('channel_name', 'integrations'),
- ('thread_ts', 1532078950),
- ('timestamp', 1532078950),
- ('user_id', 'U21'),
- ('user_name', 'Full Name'),
- ('text', '@**test**'),
- ('trigger_word', 'mention'),
- ('service_id', 27)]
-```
-
-* For successful request, if data is returned, it returns that data,
-  else it returns a blank response.
-* For failed request, it returns the reason of failure, as returned by
-  the server, or the exception message.
