@@ -790,6 +790,3 @@
         }
     }
 }
-  .inbox-header-stream-archived::before {
-    content: " "; 
-}
