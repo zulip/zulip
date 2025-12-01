@@ -56,7 +56,7 @@ backed up with timestamps, but you'll need to manually restore or merge them.
 
 See [Installing on an existing server](install-existing-server.md) for more
 details. For a list of all files that get modified, see the [uninstallation
-script](../scripts/README.md#uninstallation).
+script](../../scripts/README.md#uninstallation).
 
 **We recommend installing Zulip on a dedicated server or VM.**
 :::
