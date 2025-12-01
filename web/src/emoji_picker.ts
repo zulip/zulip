@@ -543,8 +543,47 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
 
     switch (event_name) {
         case "tab":
-        case "shift_tab":
-            return false;
+        case "shift_tab": {
+            // [FIX] Prevent default browser tab behavior so we can manage focus manually.
+            // If we don't do this, the browser tries to move focus immediately after
+            // we set it, causing the focus ring to vanish or move to the wrong element.
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // 1. Determine direction (1 for Tab, -1 for Shift+Tab)
+            const move_by = event_name === "tab" ? 1 : -1;
+
+            // 2. Calculate where we SHOULD go next
+            const next_coord = get_next_emoji_coordinates(move_by);
+
+            // 3. Try to move focus there
+            const moved = maybe_change_focused_emoji(
+                $emoji_map,
+                next_coord.section,
+                next_coord.index,
+            );
+
+            // 4. If moved is true, we are good. Return true to stop default Tab behavior.
+            if (moved) {
+                return true;
+            }
+
+            // 5. EDGE CASE: We reached the end (or start) and couldn't move.
+            // We need to loop!
+
+            if (event_name === "tab") {
+                // We were at the End -> Loop to Start (Section 0, Index 0)
+                // OR: You could focus the Search Input here if you prefer.
+                // For now, let's loop to the first emoji as you asked:
+                return maybe_change_focused_emoji($emoji_map, 0, 0);
+            }
+            // We were at the Start (Shift+Tab) -> Loop to the very End
+            const last_section = get_total_sections() - 1;
+            const last_index = get_max_index(last_section)! - 1;
+            return maybe_change_focused_emoji($emoji_map, last_section, last_index);
+        }
         case "page_up":
             maybe_change_active_section(current_section - 1);
             return true;
