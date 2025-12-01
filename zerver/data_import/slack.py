@@ -163,6 +163,19 @@ def rm_tree(path: str) -> None:
         shutil.rmtree(path)
 
 
+@dataclass
+class RealmConversionResult:
+    added_channels: AddedChannelsT
+    added_dms: AddedDMsT
+    added_mpims: AddedMPIMsT
+    avatar_list: list[ZerverFieldsT]
+    dm_members: DMMembersT
+    emoji_url_map: dict[str, Any]
+    realm: ZerverFieldsT
+    slack_recipient_name_to_zulip_recipient_id: SlackToZulipRecipientT
+    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT
+
+
 def slack_workspace_to_realm(
     domain_name: str,
     realm_id: int,
@@ -170,29 +183,7 @@ def slack_workspace_to_realm(
     realm_subdomain: str,
     slack_data_dir: str,
     custom_emoji_list: ZerverFieldsT,
-) -> tuple[
-    ZerverFieldsT,
-    SlackToZulipUserIDT,
-    SlackToZulipRecipientT,
-    AddedChannelsT,
-    AddedMPIMsT,
-    AddedDMsT,
-    DMMembersT,
-    list[ZerverFieldsT],
-    ZerverFieldsT,
-]:
-    """
-    Returns:
-    1. realm, converted realm data
-    2. slack_user_id_to_zulip_user_id, which is a dictionary to map from Slack user id to Zulip user id
-    3. slack_recipient_name_to_zulip_recipient_id, which is a dictionary to map from Slack recipient
-       name(channel names, mpim names, usernames, etc) to Zulip recipient id
-    4. added_channels, which is a dictionary to map from channel name to channel id, Zulip stream_id
-    5. added_mpims, which is a dictionary to map from MPIM name to MPIM id, Zulip direct_message_group_id
-    6. dm_members, which is a dictionary to map from DM id to tuple of DM participants.
-    7. avatars, which is list to map avatars to Zulip avatar records.json
-    8. emoji_url_map, which is maps emoji name to its Slack URL
-    """
+) -> RealmConversionResult:
     NOW = float(timezone_now().timestamp())
 
     zerver_realm: list[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, "Slack")
@@ -226,16 +217,16 @@ def slack_workspace_to_realm(
     realm["zerver_customprofilefield"] = zerver_customprofilefield
     realm["zerver_customprofilefieldvalue"] = zerver_customprofilefield_value
 
-    return (
-        realm,
-        slack_user_id_to_zulip_user_id,
-        slack_recipient_name_to_zulip_recipient_id,
-        added_channels,
-        added_mpims,
-        added_dms,
-        dm_members,
-        avatars,
-        emoji_url_map,
+    return RealmConversionResult(
+        added_channels=added_channels,
+        added_dms=added_dms,
+        added_mpims=added_mpims,
+        avatar_list=avatars,
+        dm_members=dm_members,
+        emoji_url_map=emoji_url_map,
+        realm=realm,
+        slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
     )
 
 
@@ -1758,19 +1749,10 @@ def do_convert_directory(
     domain_name = SplitResult("", settings.EXTERNAL_HOST, "", "", "").hostname
     assert isinstance(domain_name, str)
 
-    (
-        realm,
-        slack_user_id_to_zulip_user_id,
-        slack_recipient_name_to_zulip_recipient_id,
-        added_channels,
-        added_mpims,
-        added_dms,
-        dm_members,
-        avatar_list,
-        emoji_url_map,
-    ) = slack_workspace_to_realm(
+    converted_realm_result = slack_workspace_to_realm(
         domain_name, realm_id, user_list, realm_subdomain, slack_data_dir, custom_emoji_list
     )
+    realm = converted_realm_result.realm
 
     with run_parallel_queue(
         partial(download_and_export_upload_file, output_dir),
@@ -1783,12 +1765,12 @@ def do_convert_directory(
             slack_data_dir,
             user_list,
             realm_id,
-            slack_user_id_to_zulip_user_id,
-            slack_recipient_name_to_zulip_recipient_id,
-            added_channels,
-            added_mpims,
-            added_dms,
-            dm_members,
+            converted_realm_result.slack_user_id_to_zulip_user_id,
+            converted_realm_result.slack_recipient_name_to_zulip_recipient_id,
+            converted_realm_result.added_channels,
+            converted_realm_result.added_mpims,
+            converted_realm_result.added_dms,
+            converted_realm_result.dm_members,
             realm,
             realm["zerver_userprofile"],
             realm["zerver_realmemoji"],
@@ -1804,14 +1786,18 @@ def do_convert_directory(
     emoji_folder = os.path.join(output_dir, "emoji")
     os.makedirs(emoji_folder, exist_ok=True)
     emoji_records = process_emojis(
-        realm["zerver_realmemoji"], emoji_folder, emoji_url_map, processes
+        realm["zerver_realmemoji"], emoji_folder, converted_realm_result.emoji_url_map, processes
     )
 
     avatar_folder = os.path.join(output_dir, "avatars")
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
     avatar_records = process_avatars(
-        avatar_list, avatar_folder, realm_id, processes, size_url_suffix="-512"
+        converted_realm_result.avatar_list,
+        avatar_folder,
+        realm_id,
+        processes,
+        size_url_suffix="-512",
     )
 
     attachment = {"zerver_attachment": zerver_attachment}
