@@ -57,23 +57,25 @@ class WorkspaceSyncService:
         """
         workspace_uuid = uuid.UUID(request.nodl_workspace_id)
 
-        # Get or create extension record
-        extension, created = NodlRealmExtension.objects.select_related("zulip_realm").get_or_create(
-            nodl_workspace_id=workspace_uuid,
-            defaults={"sync_status": SyncStatus.PENDING},
-        )
-
-        # Mark as syncing
-        extension.sync_status = SyncStatus.SYNCING
-        extension.save(update_fields=["sync_status"])
-
         try:
             with transaction.atomic():
-                if hasattr(extension, "zulip_realm") and extension.zulip_realm:
+                # Try to get existing extension
+                try:
+                    extension = NodlRealmExtension.objects.select_related("zulip_realm").get(
+                        nodl_workspace_id=workspace_uuid
+                    )
+                    # Extension exists - update the realm
+                    extension.sync_status = SyncStatus.SYNCING
+                    extension.save(update_fields=["sync_status"])
                     realm = self._update_realm(extension.zulip_realm, request)
-                else:
+                except NodlRealmExtension.DoesNotExist:
+                    # New workspace - create realm FIRST, then extension WITH realm
                     realm = self._create_realm(request)
-                    extension.zulip_realm = realm
+                    extension = NodlRealmExtension.objects.create(
+                        nodl_workspace_id=workspace_uuid,
+                        zulip_realm=realm,
+                        sync_status=SyncStatus.SYNCING,
+                    )
                     self._create_default_stream(realm)
 
                 # Sync members if provided
@@ -103,9 +105,14 @@ class WorkspaceSyncService:
                 request.nodl_workspace_id,
                 str(e),
             )
-            extension.sync_status = SyncStatus.FAILED
-            extension.sync_error = str(e)
-            extension.save(update_fields=["sync_status", "sync_error"])
+            # Try to update extension status if it exists
+            try:
+                extension = NodlRealmExtension.objects.get(nodl_workspace_id=workspace_uuid)
+                extension.sync_status = SyncStatus.FAILED
+                extension.sync_error = str(e)
+                extension.save(update_fields=["sync_status", "sync_error"])
+            except NodlRealmExtension.DoesNotExist:
+                pass  # Extension was never created, nothing to update
 
             return WorkspaceSyncResult(
                 success=False,
