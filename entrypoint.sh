@@ -38,6 +38,11 @@ echo "=== Secrets file created ==="
 echo "File contents (first 2 lines):"
 head -2 /etc/zulip/zulip-secrets.conf
 
+# Run database migrations
+echo "=== Running database migrations ==="
+cd /app
+python manage.py migrate --noinput
+
 echo "=== Starting supervisord ==="
 
 # Start supervisord
