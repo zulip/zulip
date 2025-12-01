@@ -23,6 +23,14 @@ for syntax highlighting. This field is used in the
 mentions][help-global-time] to supported Markdown message formatting
 features.
 
+**Changes**: In Zulip 12.0 (feature level 437), invalid timestamp formats
+are now rendered as escaped literal text instead of a `<span>` element with `timestamp-error` class and an error message.
+
+```html
+<!-- Input: <time:2017-13-45> (invalid date) -->
+&lt;time:2017-13-45&gt;
+```
+
 ## Links to channels, topics, and messages
 
 Zulip's markup supports special readable Markdown syntax for [linking
