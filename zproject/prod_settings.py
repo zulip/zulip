@@ -38,4 +38,13 @@ S3_AUTH_UPLOADS_BUCKET = os.environ.get("S3_AUTH_UPLOADS_BUCKET", "")
 S3_AVATAR_BUCKET = os.environ.get("S3_AVATAR_BUCKET", "")
 S3_REGION = os.environ.get("S3_REGION", "auto")
 S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL")
+
+# R2-specific settings
+S3_SKIP_CHECKSUM = True  # R2 has limited checksum support
+S3_ADDRESSING_STYLE = "path"  # R2 prefers path-style URLs
+
+# Override Zulip's secret-based credentials with env vars
+# (Zulip normally uses get_secret() but we use Railway env vars)
+S3_KEY = os.environ.get("S3_KEY")
+S3_SECRET_KEY = os.environ.get("S3_SECRET_KEY")
 # NODL MODIFICATION END
