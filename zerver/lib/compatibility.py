@@ -12,10 +12,20 @@ from zerver.signals import get_device_browser
 
 # LAST_SERVER_UPGRADE_TIME is the last time the server had a version deployed.
 if settings.PRODUCTION:  # nocoverage
+    # NODL MODIFICATION START - Handle Railway deployment
+    # Railway DEPLOY_ROOT is /app, not a timestamp-named directory like
+    # /home/zulip/deployments/2025-12-01-09-18-00 that standard Zulip expects
+    # Use timezone_now() as fallback when directory name is not a timestamp
+    # Date: 2024-12-01
     timestamp = os.path.basename(os.path.abspath(settings.DEPLOY_ROOT))
-    LAST_SERVER_UPGRADE_TIME = datetime.strptime(timestamp, "%Y-%m-%d-%H-%M-%S").replace(
-        tzinfo=timezone.utc
-    )
+    try:
+        LAST_SERVER_UPGRADE_TIME = datetime.strptime(timestamp, "%Y-%m-%d-%H-%M-%S").replace(
+            tzinfo=timezone.utc
+        )
+    except ValueError:
+        # Fallback for non-standard deployment paths (e.g., Railway /app)
+        LAST_SERVER_UPGRADE_TIME = timezone_now()
+    # NODL MODIFICATION END
 else:
     LAST_SERVER_UPGRADE_TIME = timezone_now()
 
