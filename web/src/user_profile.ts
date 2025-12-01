@@ -1457,8 +1457,8 @@ export function initialize(): void {
      * but we do want to close the modal when you click them. */
 
     $("body").on("click", "#user-profile-modal #name .user-profile-profile-settings-button", () => {
-        browser_history.go_to_location("#settings/profile");
         hide_user_profile();
+        browser_history.go_to_location("#settings/profile");
     });
 
     $("body").on(
