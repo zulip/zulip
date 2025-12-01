@@ -1087,12 +1087,20 @@ class Realm(models.Model):
             return Realm.UPLOAD_QUOTA_LIMITED
         elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
             return Realm.UPLOAD_QUOTA_STANDARD_FREE
-        elif plan_type in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
+        elif plan_type == Realm.PLAN_TYPE_STANDARD:
             from corporate.lib.stripe import get_cached_seat_count
 
             # Paying customers with few users should get a reasonable minimum quota.
             return max(
-                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD,
+                Realm.UPLOAD_QUOTA_STANDARD_FREE,
+            )
+        elif plan_type == Realm.PLAN_TYPE_PLUS:
+            from corporate.lib.stripe import get_cached_seat_count
+
+            # Paying customers with few users should get a reasonable minimum quota.
+            return max(
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_PLUS,
                 Realm.UPLOAD_QUOTA_STANDARD_FREE,
             )
         else:

@@ -174,9 +174,13 @@ LOCAL_UPLOADS_DIR: str | None = None
 LOCAL_AVATARS_DIR: str | None = None
 LOCAL_FILES_DIR: str | None = None
 MAX_FILE_UPLOAD_SIZE = 100
-# How many GB an organization on a paid plan can upload per user,
+# How many GB an organization on a cloud standard plan can upload per user,
 # on zulipchat.com.
-UPLOAD_QUOTA_PER_USER_GB = 5
+UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD = 5
+
+# How many GB an organization on a cloud plus plan can upload per user,
+# on zulipchat.com.
+UPLOAD_QUOTA_PER_USER_GB_FOR_PLUS = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL: str | None = "https://meet.jit.si"
