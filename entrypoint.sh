@@ -24,10 +24,13 @@ EOF
 
 # Write secrets file from environment variables
 # Zulip expects an INI-style file with [secrets] section
+# Include nodl-specific secrets for JWT authentication
 cat > /etc/zulip/zulip-secrets.conf << EOF
 [secrets]
 secret_key = ${SECRET_KEY}
 rabbitmq_password = ${RABBITMQ_PASSWORD}
+supabase_jwt_secret = ${SUPABASE_JWT_SECRET}
+chat_service_key = ${CHAT_SERVICE_KEY}
 EOF
 
 # Set permissions

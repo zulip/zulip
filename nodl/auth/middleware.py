@@ -4,6 +4,8 @@ This module provides Django middleware for validating Supabase JWT tokens
 and attaching user information to requests.
 """
 
+import logging
+
 import jwt
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse
@@ -11,6 +13,8 @@ from django.http.response import HttpResponseBase
 from django.utils.crypto import constant_time_compare
 
 from zerver.models import UserProfile
+
+logger = logging.getLogger(__name__)
 
 
 class SupabaseJWTMiddleware:
@@ -53,7 +57,13 @@ class SupabaseJWTMiddleware:
 
         token = self._extract_token(request)
         if not token:
+            logger.warning(f"[nodl-auth] No token in request to {request.path}")
             return self._error_response("Token required")
+
+        # Check if JWT secret is configured
+        if not settings.SUPABASE_JWT_SECRET:
+            logger.error("[nodl-auth] SUPABASE_JWT_SECRET is not configured!")
+            return self._error_response("Server configuration error")
 
         try:
             payload = jwt.decode(
@@ -79,13 +89,19 @@ class SupabaseJWTMiddleware:
                     )
                     request.user_profile = user_profile
                     request.user = user_profile  # Django's auth system expects this
+                    logger.info(f"[nodl-auth] JWT auth success for {email} (user_id={user_profile.id})")
                 except UserProfile.DoesNotExist:
                     # User not yet synced from Supabase - views will return 401
+                    logger.warning(f"[nodl-auth] JWT valid but UserProfile not found for {email}")
                     pass
+            else:
+                logger.warning("[nodl-auth] JWT valid but no email in payload")
 
         except jwt.ExpiredSignatureError:
+            logger.warning(f"[nodl-auth] Expired token for {request.path}")
             return self._error_response("Token expired")
         except jwt.InvalidTokenError as e:
+            logger.warning(f"[nodl-auth] Invalid token: {e}")
             return self._error_response(str(e))
 
         return self.get_response(request)
