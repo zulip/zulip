@@ -38,6 +38,11 @@ echo "=== Secrets file created ==="
 echo "File contents (first 2 lines):"
 head -2 /etc/zulip/zulip-secrets.conf
 
+# Create zulip schema if it doesn't exist (required before migrations)
+# Zulip's setup scripts normally do this, but Railway has a fresh PostgreSQL
+echo "=== Creating zulip schema ==="
+PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB -c 'CREATE SCHEMA IF NOT EXISTS zulip;'
+
 # Run database migrations (must run as zulip user, not root)
 echo "=== Running database migrations ==="
 cd /app
