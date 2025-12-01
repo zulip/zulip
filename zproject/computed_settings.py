@@ -431,6 +431,11 @@ if os.environ.get("POSTGRES_DB"):
 # NODL MODIFICATION END
 
 POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
+# NODL MODIFICATION START - Allow POSTGRESQL_MISSING_DICTIONARIES via environment
+# Railway PostgreSQL doesn't have custom dictionary files installed
+if os.environ.get("POSTGRESQL_MISSING_DICTIONARIES"):
+    POSTGRESQL_MISSING_DICTIONARIES = True
+# NODL MODIFICATION END
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
