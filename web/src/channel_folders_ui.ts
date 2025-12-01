@@ -22,7 +22,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as modals from "./modals.ts";
 import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
@@ -200,6 +200,7 @@ function format_channel_item_html(stream: StreamSubscription): string {
         is_web_public: stream.is_web_public,
         stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
         show_remove_channel_from_folder: true,
+        is_admin: current_user.is_admin,
     });
 }
 
@@ -417,6 +418,29 @@ export function update_channel_folder_channels_list(
     }
 }
 
+function update_channel_folder(folder_id: number): void {
+    const url = "/json/channel_folders/" + folder_id.toString();
+    const new_name = $<HTMLInputElement>("input#edit_channel_folder_name").val()!.trim();
+    const new_description = $<HTMLTextAreaElement>("textarea#edit_channel_folder_description")
+        .val()!
+        .trim();
+    const data = {
+        name: new_name,
+        description: new_description,
+    };
+    const opts = {
+        success_continuation() {
+            // Update the channel folders data so that
+            // the folder dropdown shows updated folder
+            // names immediately even if client receives
+            // the update event after some delay.
+            channel_folders.update_channel_folder(folder_id, "name", new_name);
+            channel_folders.update_channel_folder(folder_id, "description", new_description);
+        },
+    };
+    dialog_widget.submit_api_request(channel.patch, url, data, opts);
+}
+
 export function handle_editing_channel_folder(folder_id: number): void {
     const folder = channel_folders.get_channel_folder_by_id(folder_id);
     const subs = channel_folders.get_sorted_streams_in_folder(folder_id);
@@ -427,50 +451,46 @@ export function handle_editing_channel_folder(folder_id: number): void {
         folder_id,
         max_channel_folder_name_length: realm.max_channel_folder_name_length,
         max_channel_folder_description_length: realm.max_channel_folder_description_length,
+        is_admin: current_user.is_admin,
     });
 
+    const html_heading = current_user.is_admin
+        ? $t_html({defaultMessage: "Manage channel folder"})
+        : $t_html({defaultMessage: "Channel folder details"});
+
+    function on_shown(): void {
+        if (!current_user.is_admin) {
+            return;
+        }
+
+        $("#edit_channel_folder_name").trigger("focus");
+    }
+
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Manage channel folder"}),
+        html_heading,
         html_body,
         id: "edit_channel_folder",
         on_click() {
-            const url = "/json/channel_folders/" + folder_id.toString();
-            const new_name = $<HTMLInputElement>("input#edit_channel_folder_name").val()!.trim();
-            const new_description = $<HTMLTextAreaElement>(
-                "textarea#edit_channel_folder_description",
-            )
-                .val()!
-                .trim();
-            const data = {
-                name: new_name,
-                description: new_description,
-            };
-            const opts = {
-                success_continuation() {
-                    // Update the channel folders data so that
-                    // the folder dropdown shows updated folder
-                    // names immediately even if client receives
-                    // the update event after some delay.
-                    channel_folders.update_channel_folder(folder_id, "name", new_name);
-                    channel_folders.update_channel_folder(
-                        folder_id,
-                        "description",
-                        new_description,
-                    );
-                },
-            };
-            dialog_widget.submit_api_request(channel.patch, url, data, opts);
+            if (!current_user.is_admin) {
+                // We don't show any submit button for non-admin users
+                // so we don't want to do anything here and return.
+                return;
+            }
+            update_channel_folder(folder_id);
         },
-        loading_spinner: true,
-        on_shown: () => $("#edit_channel_folder_name").trigger("focus"),
+        loading_spinner: current_user.is_admin,
+        on_shown,
         on_hidden() {
             stream_list_widget_stream_ids = undefined;
             add_channel_folder_widget = undefined;
         },
-        update_submit_disabled_state_on_change: true,
+        hide_footer: !current_user.is_admin,
+        update_submit_disabled_state_on_change: current_user.is_admin,
         post_render() {
             render_channel_list(subs, folder_id);
-            render_add_channel_folder_widget();
+            if (current_user.is_admin) {
+                render_add_channel_folder_widget();
+            }
         },
     });
 }
