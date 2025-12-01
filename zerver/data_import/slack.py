@@ -22,11 +22,11 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    AvatarRecordData,
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
     build_attachment,
-    build_avatar,
     build_defaultstream,
     build_direct_message_group,
     build_message,
@@ -168,7 +168,7 @@ class RealmConversionResult:
     added_channels: AddedChannelsT
     added_dms: AddedDMsT
     added_mpims: AddedMPIMsT
-    avatar_list: list[ZerverFieldsT]
+    avatar_list: list[AvatarRecordData]
     dm_members: DMMembersT
     emoji_url_map: dict[str, Any]
     realm: ZerverFieldsT
@@ -264,7 +264,7 @@ def users_to_zerver_userprofile(
     slack_data_dir: str, users: list[ZerverFieldsT], realm_id: int, timestamp: Any, domain_name: str
 ) -> tuple[
     list[ZerverFieldsT],
-    list[ZerverFieldsT],
+    list[AvatarRecordData],
     SlackToZulipUserIDT,
     list[ZerverFieldsT],
     list[ZerverFieldsT],
@@ -282,7 +282,7 @@ def users_to_zerver_userprofile(
     zerver_userprofile = []
     zerver_customprofilefield: list[ZerverFieldsT] = []
     zerver_customprofilefield_values: list[ZerverFieldsT] = []
-    avatar_list: list[ZerverFieldsT] = []
+    avatar_list: list[AvatarRecordData] = []
     slack_user_id_to_zulip_user_id = {}
 
     # The user data we get from the Slack API does not contain custom profile data
@@ -321,8 +321,18 @@ def users_to_zerver_userprofile(
         # ref: https://zulip.com/help/change-your-profile-picture
         avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
         if avatar_source == UserProfile.AVATAR_FROM_USER:
-            assert avatar_url is not None
-            build_avatar(user_id, realm_id, avatar_url, timestamp, avatar_list)
+            avatar_data = AvatarRecordData(
+                avatar_version=1,
+                content_type=None,
+                last_modified=timestamp,
+                # Save original avatar URL here, which is downloaded later
+                path=avatar_url,
+                realm_id=realm_id,
+                s3_path="",
+                size=None,
+                user_profile_id=user_id,
+            )
+            avatar_list.append(avatar_data)
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
             role = UserProfile.ROLE_REALM_OWNER
