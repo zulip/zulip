@@ -15,6 +15,17 @@ ALLOWED_HOSTS = [
 ]
 
 ################################################################
+# Static Files - Use simple storage (no manifest)
+################################################################
+
+# NODL MODIFICATION START - Disable manifest-based static files
+# Reason: OAuth backend classes call staticfiles_storage.url() at import time,
+#         before collectstatic runs. ManifestStaticFilesStorage fails without manifest.
+# Date: 2024-12-01
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# NODL MODIFICATION END
+
+################################################################
 # Authentication - Supabase JWT only (no email/password)
 ################################################################
 
