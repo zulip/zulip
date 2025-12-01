@@ -1,5 +1,10 @@
 """API views for nodl endpoints."""
 
+from nodl.api.views.internal import (
+    deactivate_realm,
+    sync_realm,
+    sync_user,
+)
 from nodl.api.views.streams import (
     archive_stream,
     create_stream,
@@ -12,6 +17,11 @@ from nodl.api.views.streams import (
 )
 
 __all__ = [
+    # Internal sync views
+    "deactivate_realm",
+    "sync_realm",
+    "sync_user",
+    # Stream views
     "archive_stream",
     "create_stream",
     "get_stream",
