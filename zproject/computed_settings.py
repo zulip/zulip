@@ -415,6 +415,21 @@ elif (
         PASSWORD=get_secret("postgres_password"),
         HOST="localhost",
     )
+
+# NODL MODIFICATION START - Override PostgreSQL settings from environment (for Railway deployment)
+if os.environ.get("POSTGRES_HOST"):
+    DATABASES["default"].update(
+        HOST=os.environ["POSTGRES_HOST"],
+        PORT=os.environ.get("POSTGRES_PORT", "5432"),
+    )
+if os.environ.get("POSTGRES_PASSWORD"):
+    DATABASES["default"].update(PASSWORD=os.environ["POSTGRES_PASSWORD"])
+if os.environ.get("POSTGRES_USER"):
+    DATABASES["default"].update(USER=os.environ["POSTGRES_USER"])
+if os.environ.get("POSTGRES_DB"):
+    DATABASES["default"].update(NAME=os.environ["POSTGRES_DB"])
+# NODL MODIFICATION END
+
 POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
