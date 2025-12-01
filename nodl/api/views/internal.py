@@ -1,4 +1,10 @@
-"""API views for nodl internal endpoints."""
+"""API views for nodl internal endpoints.
+
+These endpoints are called by nodl-backend (service-to-service) and use
+Bearer token authentication (CHAT_SERVICE_KEY), not browser sessions.
+CSRF protection is disabled as it's designed for browser-based attacks
+and doesn't apply to API-to-API calls with Authorization headers.
+"""
 
 import json
 import logging
@@ -6,6 +12,7 @@ from functools import wraps
 from typing import Annotated, Optional
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import BaseModel, Field, ValidationError
 
 from nodl.sync.user_sync import UserSyncRequest, UserSyncResult, UserSyncService
@@ -66,6 +73,7 @@ def require_service_auth(view_func):
     return wrapper
 
 
+@csrf_exempt
 @require_service_auth
 def sync_user(request: HttpRequest) -> HttpResponse:
     """Sync a user from nodl to Zulip.
@@ -139,6 +147,7 @@ def sync_user(request: HttpRequest) -> HttpResponse:
         )
 
 
+@csrf_exempt
 @require_service_auth
 def sync_realm(request: HttpRequest) -> HttpResponse:
     """Sync a workspace from nodl to Zulip realm.
@@ -227,6 +236,7 @@ def sync_realm(request: HttpRequest) -> HttpResponse:
         )
 
 
+@csrf_exempt
 @require_service_auth
 def deactivate_realm(request: HttpRequest) -> HttpResponse:
     """Deactivate a realm when workspace is deleted.

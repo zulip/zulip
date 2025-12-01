@@ -1,6 +1,8 @@
 """API views for message endpoints.
 
 Implements REST API for chat messages with JWT authentication.
+CSRF protection is disabled for state-changing endpoints as they use
+Bearer token (JWT) authentication, not browser session cookies.
 """
 
 import json
@@ -11,6 +13,7 @@ from typing import Any, Callable
 
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import ValidationError
 
 from nodl.api.serializers.messages import (
@@ -298,6 +301,7 @@ def list_messages(request: HttpRequest) -> HttpResponse:
     })
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="messages_send", limit=MESSAGES_WRITE_LIMIT)
 def send_message(request: HttpRequest) -> HttpResponse:
@@ -433,6 +437,7 @@ def get_message(request: HttpRequest, message_id: int) -> HttpResponse:
     })
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="messages_write", limit=MESSAGES_WRITE_LIMIT)
 def edit_message(request: HttpRequest, message_id: int) -> HttpResponse:
@@ -538,6 +543,7 @@ def edit_message(request: HttpRequest, message_id: int) -> HttpResponse:
     })
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="messages_write", limit=MESSAGES_WRITE_LIMIT)
 def delete_message(request: HttpRequest, message_id: int) -> HttpResponse:

@@ -1,6 +1,8 @@
 """API views for stream endpoints.
 
 Implements REST API for chat streams with JWT authentication.
+CSRF protection is disabled for state-changing endpoints as they use
+Bearer token (JWT) authentication, not browser session cookies.
 """
 
 import json
@@ -9,6 +11,7 @@ from functools import wraps
 from typing import Any, Callable
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import ValidationError
 
 from nodl.api.serializers.streams import (
@@ -204,6 +207,7 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     })
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
 def create_stream(request: HttpRequest) -> HttpResponse:
@@ -333,6 +337,7 @@ def get_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
     })
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
 def update_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
@@ -419,6 +424,7 @@ def update_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
         )
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
 def archive_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
@@ -522,6 +528,7 @@ def get_stream_topics(request: HttpRequest, stream_id: int) -> HttpResponse:
     })
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
 def subscribe_to_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
@@ -583,6 +590,7 @@ def subscribe_to_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
         )
 
 
+@csrf_exempt
 @require_jwt_auth
 @rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
 def unsubscribe_from_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
