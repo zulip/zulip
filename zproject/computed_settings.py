@@ -656,7 +656,16 @@ LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR 
 # ZulipStorage when not DEBUG.
 
 if not DEBUG:
-    STORAGES = {"staticfiles": {"BACKEND": "zerver.lib.storage.ZulipStorage"}}
+    # NODL MODIFICATION START - Use simple static files storage
+    # Reason: OAuth backend classes (GitHubAuthBackend, etc.) call
+    #         staticfiles_storage.url() at class definition time (import).
+    #         ManifestStaticFilesStorage fails without manifest, but collectstatic
+    #         runs at container startup AFTER Django tries to import.
+    # Date: 2024-12-01
+    STORAGES = {"staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}}
+    # Original Zulip code (uses manifest-based hashing):
+    # STORAGES = {"staticfiles": {"BACKEND": "zerver.lib.storage.ZulipStorage"}}
+    # NODL MODIFICATION END
     if PRODUCTION:
         STATIC_ROOT = "/home/zulip/prod-static"
     else:

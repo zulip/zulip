@@ -15,15 +15,12 @@ ALLOWED_HOSTS = [
 ]
 
 ################################################################
-# Static Files - Use simple storage (no manifest)
+# Static Files
 ################################################################
 
-# NODL MODIFICATION START - Disable manifest-based static files
-# Reason: OAuth backend classes call staticfiles_storage.url() at import time,
-#         before collectstatic runs. ManifestStaticFilesStorage fails without manifest.
-# Date: 2024-12-01
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-# NODL MODIFICATION END
+# NOTE: STATICFILES_STORAGE is deprecated in Django 4.2+.
+# The STORAGES dict in computed_settings.py is used instead.
+# The fix for staticfiles manifest errors is in computed_settings.py:658-668
 
 ################################################################
 # Authentication - Supabase JWT only (no email/password)
