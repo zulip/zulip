@@ -13,3 +13,16 @@ ALLOWED_HOSTS = [
     for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
     if host.strip()
 ]
+
+################################################################
+# Authentication - Supabase JWT only (no email/password)
+################################################################
+
+# NODL MODIFICATION START - Use Supabase auth backend
+# Reason: Replace Zulip's email/password auth with Supabase JWT
+# Date: 2024-12-01
+# See: architecture/chat-architecture.md, Story 1.2
+AUTHENTICATION_BACKENDS: tuple[str, ...] = (
+    "nodl.auth.backends.SupabaseAuthBackend",
+)
+# NODL MODIFICATION END
