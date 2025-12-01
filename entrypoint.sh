@@ -41,7 +41,7 @@ head -2 /etc/zulip/zulip-secrets.conf
 # Run database migrations
 echo "=== Running database migrations ==="
 cd /app
-python manage.py migrate --noinput
+/app/.venv/bin/python manage.py migrate --noinput
 
 echo "=== Starting supervisord ==="
 
