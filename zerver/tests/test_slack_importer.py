@@ -1840,7 +1840,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 3)
+        self.assert_length(zerver_message, 5)
 
         self.assert_length(uploads, 0)
         self.assert_length(attachment, 0)
@@ -1861,8 +1861,21 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
         # Thread reply is in the correct thread topic
-        self.assertEqual(zerver_message[2]["content"], "random")
+        expected_thread_1_message_2_content = "random"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_1_message_2_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+
+        ### THREAD 2 CONVERSATION ###
+        # Test thread topic name contains message snippet
+        expected_thread_2_message_1_content = "message body text"
+        expected_thread_2_topic_name = "2015-06-12 message body text"
+        self.assertEqual(zerver_message[1]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+
+        # Thread reply is in the correct thread topic
+        expected_thread_2_message_2_content = "random"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_2_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
     def test_convert_thread_topic_name_cut_off(self) -> None:
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
@@ -1888,13 +1901,9 @@ class SlackImporter(ZulipTestCase):
         # Test that two different thread topics, despite having unique
         # original topic names, will collide if their truncated names
         # are identical.
-        expected_thread_2_message_1_content = (
-            "random message but it is too long for the thread two electric boogaloo"
-        )
         expected_thread_2_topic_name = (
             "2015-08-18 random message but it is too long for the th… (2)"
         )
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
         # Record that truncation should use the full maximum topic length.
         self.assert_length(zerver_message[2][EXPORT_TOPIC_NAME], 60)
@@ -1915,9 +1924,7 @@ class SlackImporter(ZulipTestCase):
 
         ### THREAD 2 CONVERSATION ###
         # Test thread topic name collision.
-        expected_thread_2_message_1_content = "message body text"
         expected_thread_2_topic_name = "2015-06-12 message body text (2)"
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
         ### THREAD 3 CONVERSATION ###
