@@ -26,3 +26,16 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "nodl.auth.backends.SupabaseAuthBackend",
 )
 # NODL MODIFICATION END
+
+################################################################
+# Cloudflare R2 Storage (S3-compatible)
+################################################################
+
+# NODL MODIFICATION START - Use Cloudflare R2 for file uploads
+# Reason: Railway deployments need external storage for persistence
+# Date: 2024-12-01
+S3_AUTH_UPLOADS_BUCKET = os.environ.get("S3_AUTH_UPLOADS_BUCKET", "")
+S3_AVATAR_BUCKET = os.environ.get("S3_AVATAR_BUCKET", "")
+S3_REGION = os.environ.get("S3_REGION", "auto")
+S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL")
+# NODL MODIFICATION END
