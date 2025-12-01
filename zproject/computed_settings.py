@@ -461,8 +461,9 @@ SESSION_ENGINE = "zerver.lib.safe_session_cached_db"
 MEMCACHED_PASSWORD = get_secret("memcached_password")
 
 # NODL MODIFICATION START - Override Memcached settings from environment (for Railway deployment)
-if os.environ.get("MEMCACHED_HOST"):
-    MEMCACHED_LOCATION = f'{os.environ["MEMCACHED_HOST"]}:{os.environ.get("MEMCACHED_PORT", "11211")}'
+# Use MEMCACHED_LOCATION directly (format: "host:port") to avoid double-port issues
+if os.environ.get("MEMCACHED_LOCATION"):
+    MEMCACHED_LOCATION = os.environ["MEMCACHED_LOCATION"]
 # NODL MODIFICATION END
 
 CACHES: dict[str, dict[str, object]] = {
