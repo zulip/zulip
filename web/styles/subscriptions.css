@@ -1190,7 +1190,7 @@
     }
 }
 
-#settings_page,
+#settings_page .overlay-container,
 .two-pane-settings-overlay {
     container: settings-overlay / inline-size;
 }
