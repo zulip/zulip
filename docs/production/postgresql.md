@@ -36,8 +36,7 @@ arguments:
 ```bash
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
-    --puppet-classes=zulip::profile::standalone_nodb,zulip::process_fts_updates \
-    --postgresql-missing-dictionaries
+    --puppet-classes=zulip::profile::standalone_nodb,zulip::process_fts_updates
 ```
 
 #### Step 2: Create the PostgreSQL database

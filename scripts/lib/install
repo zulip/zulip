@@ -32,9 +32,6 @@ Options:
       Sets the PostgreSQL database user.
   --postgresql-version=17
       Sets the version of PostgreSQL that will be installed.
-  --postgresql-missing-dictionaries
-      Set postgresql.missing_dictionaries, which alters the initial database.  Use with
-      cloud managed databases like RDS.  Conflicts with --no-overwrite-settings.
 
   --no-init-db
       Does not do any database initialization; use when you already have a Zulip
@@ -91,7 +88,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics,agree-to-terms-of-service -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics,agree-to-terms-of-service -n "$0" -- "$@")"
 
 eval "set -- $args"
 while true; do
@@ -133,10 +130,6 @@ while true; do
         --postgresql-version)
             POSTGRESQL_VERSION="$2"
             shift
-            shift
-            ;;
-        --postgresql-missing-dictionaries)
-            POSTGRESQL_MISSING_DICTIONARIES=1
             shift
             ;;
         --no-init-db)
@@ -210,14 +203,6 @@ POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-17}"
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
     echo "error: --self-signed-cert and --certbot are incompatible" >&2
-    echo >&2
-    usage >&2
-    exit 1
-fi
-
-if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ] && [ -n "$NO_OVERWRITE_SETTINGS" ]; then
-    set +x
-    echo "error: --postgresql-missing-dictionaries and --no-overwrite-settings are incompatible" >&2
     echo >&2
     usage >&2
     exit 1
@@ -560,10 +545,6 @@ deploy_type = production
 [postgresql]
 version = $POSTGRESQL_VERSION
 EOF
-
-    if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ]; then
-        crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
-    fi
 
     "$ZULIP_PATH"/scripts/zulip-puppet-apply --noop \
         --write-catalog-summary \
