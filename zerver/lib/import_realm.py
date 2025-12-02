@@ -2,6 +2,8 @@ import collections
 import logging
 import os
 import shutil
+from contextvars import ContextVar
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from difflib import unified_diff
 from typing import Any, TypeAlias
@@ -190,6 +192,16 @@ ID_MAP: dict[str, dict[int, int]] = {
 id_map_to_list: dict[str, dict[int, list[int]]] = {
     "huddle_to_user_list": {},
 }
+
+
+@dataclass
+class MessageImportContext:
+    realm: Realm
+    sender_map: dict[int, Record]
+    import_dir: Path
+
+
+message_import_context: ContextVar[MessageImportContext] = ContextVar("message_import_context")
 
 path_maps: dict[str, dict[str, str]] = {
     # Maps original attachment path pre-import to the final, post-import
@@ -1782,7 +1794,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     map_messages_to_attachments(attachment_data)
 
     # Import zerver_message and zerver_usermessage
-    import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
+    import_message_data(
+        realm=realm, sender_map=sender_map, import_dir=import_dir, processes=processes
+    )
 
     if "zerver_onboardingusermessage" in data:
         fix_bitfield_keys(data, "zerver_onboardingusermessage", "flags")
@@ -2059,61 +2073,97 @@ def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> list[int]:
     return message_ids
 
 
-def import_message_data(realm: Realm, sender_map: dict[int, Record], import_dir: Path) -> None:
+def import_message_data(
+    realm: Realm, sender_map: dict[int, Record], import_dir: Path, processes: int = 1
+) -> None:
     dump_file_id = 1
+    message_files = []
     while True:
         message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
         if not os.path.exists(message_filename):
             break
-
-        with open(message_filename, "rb") as f:
-            data = orjson.loads(f.read())
-
-        logging.info("Importing message dump %s", message_filename)
-        re_map_foreign_keys(data, "zerver_message", "sender", related_table="user_profile")
-        re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
-        re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
-        fix_datetime_fields(data, "zerver_message")
-        # Parser to update message content with the updated attachment URLs
-        fix_upload_links(data, "zerver_message")
-
-        # We already create mappings for zerver_message ids
-        # in update_message_foreign_keys(), so here we simply
-        # apply them.
-        message_id_map = ID_MAP["message"]
-        for row in data["zerver_message"]:
-            del row["realm"]
-            row["realm_id"] = realm.id
-            row["id"] = message_id_map[row["id"]]
-
-        for row in data["zerver_usermessage"]:
-            assert row["message"] in message_id_map
-
-        fix_message_rendered_content(
-            realm=realm,
-            sender_map=sender_map,
-            messages=data["zerver_message"],
-        )
-        logging.info("Successfully rendered Markdown for message batch")
-
-        fix_message_edit_history(
-            realm=realm, sender_map=sender_map, messages=data["zerver_message"]
-        )
-        # A LOT HAPPENS HERE.
-        # This is where we actually import the message data.
-        bulk_import_model(data, Message)
-
-        # Due to the structure of these message chunks, we're
-        # guaranteed to have already imported all the Message objects
-        # for this batch of UserMessage objects.
-        re_map_foreign_keys(data, "zerver_usermessage", "message", related_table="message")
-        re_map_foreign_keys(
-            data, "zerver_usermessage", "user_profile", related_table="user_profile"
-        )
-        fix_bitfield_keys(data, "zerver_usermessage", "flags")
-
-        bulk_import_user_message_data(data, dump_file_id)
+        message_files.append(dump_file_id)
         dump_file_id += 1
+
+    if not message_files:
+        return
+
+    num_processes = min(processes, len(message_files))
+
+    run_parallel(
+        _import_message_file_worker,
+        message_files,
+        num_processes,
+        initializer=_initialize_message_worker,
+        initargs=(ID_MAP, realm.id, sender_map, import_dir),
+    )
+
+
+def _initialize_message_worker(
+    id_map: dict[str, dict[int, int]],
+    realm_id: int,
+    sender_map: dict[int, Record],
+    import_dir: Path,
+) -> None:
+    ID_MAP.update(id_map)
+    ctx = MessageImportContext(
+        realm=Realm.objects.get(id=realm_id),
+        sender_map=sender_map,
+        import_dir=import_dir,
+    )
+    message_import_context.set(ctx)
+
+
+def _import_message_file_worker(dump_file_id: int) -> None:
+    ctx = message_import_context.get()
+    _process_message_file(dump_file_id, ctx.realm, ctx.sender_map, ctx.import_dir)
+
+
+def _process_message_file(
+    dump_file_id: int, realm: Realm, sender_map: dict[int, Record], import_dir: Path
+) -> None:
+    message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
+
+    logging.info("Importing message dump %s", message_filename)
+
+    with open(message_filename, "rb") as f:
+        data = orjson.loads(f.read())
+
+    re_map_foreign_keys(data, "zerver_message", "sender", related_table="user_profile")
+    re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
+    re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
+    fix_datetime_fields(data, "zerver_message")
+    fix_upload_links(data, "zerver_message")
+
+    # We already create mappings for zerver_message ids
+    # in update_message_foreign_keys(), so here we simply
+    # apply them.
+    message_id_map = ID_MAP["message"]
+    for row in data["zerver_message"]:
+        del row["realm"]
+        row["realm_id"] = realm.id
+        row["id"] = message_id_map[row["id"]]
+
+    for row in data["zerver_usermessage"]:
+        assert row["message"] in message_id_map
+
+    fix_message_rendered_content(
+        realm=realm,
+        sender_map=sender_map,
+        messages=data["zerver_message"],
+    )
+
+    fix_message_edit_history(realm=realm, sender_map=sender_map, messages=data["zerver_message"])
+    bulk_import_model(data, Message)
+
+    # Due to the structure of these message chunks, we're
+    # guaranteed to have already imported all the Message objects
+    # for this batch of UserMessage objects.
+    re_map_foreign_keys(data, "zerver_usermessage", "message", related_table="message")
+    re_map_foreign_keys(data, "zerver_usermessage", "user_profile", related_table="user_profile")
+    fix_bitfield_keys(data, "zerver_usermessage", "flags")
+
+    bulk_import_user_message_data(data, dump_file_id)
 
 
 def import_attachments(data: ImportedTableData) -> None:
