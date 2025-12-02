@@ -972,6 +972,10 @@ div.overlay:not(#about-zulip) .overlay-container {
     box-shadow: var(--box-shadow-overlay);
 }
 
+#subscription_overlay.overlay .overlay-container {
+    margin: 2.5vh auto;
+}
+
 .delete-selected-drafts-button-container {
     display: flex;
 }
