@@ -1171,19 +1171,12 @@ h4.user_group_setting_subsection_title {
     .group-description-wrapper,
     .stream-description {
         hyphens: auto;
+        margin-bottom: 10px;
 
         .no-description {
             font-style: italic;
             color: hsl(0deg 0% 67%);
         }
-    }
-
-    .group-description-wrapper {
-        margin-bottom: 5px;
-    }
-
-    .stream-description {
-        margin-bottom: 10px;
     }
 
     .checkmark {
@@ -1232,14 +1225,9 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream_details_box {
-        margin: 0 0 10px; /* mimic paragraph spacing */
-    }
-
+    .stream_details_box,
     .group_detail_box {
-        > .group_details_box_subsection {
-            margin: 0 0 10px; /* mimic paragraph spacing */
-        }
+        margin: 0 0 10px; /* mimic paragraph spacing */
     }
 
     .loading_indicator_text {
