@@ -1,4 +1,4 @@
-# GIPHY GIF integration
+# GIF picker integrations
 
 This page documents the server-level configuration required to enable
 GIPHY integration to [add GIFs in your message][help-center-giphy] on
