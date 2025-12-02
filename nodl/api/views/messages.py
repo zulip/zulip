@@ -57,7 +57,7 @@ class MessagesRateLimitedObject(RateLimitedObject):
     def key(self) -> str:
         return f"{self.key_prefix}:{self.user_id}"
 
-    def get_rules(self) -> list[tuple[int, int]]:
+    def rules(self) -> list[tuple[int, int]]:
         return [(self.window, self.limit)]
 
 
