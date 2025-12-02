@@ -1459,6 +1459,11 @@ export function clear_search(): void {
 
 export let scroll_stream_into_view = function ($stream_li: JQuery | undefined = undefined): void {
     if ($stream_li === undefined) {
+        if (narrow_state.filter()?.terms_with_operator("topic").length === 1) {
+            topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
+            return;
+        }
+
         $stream_li = get_current_stream_li();
         if ($stream_li === undefined) {
             return;
