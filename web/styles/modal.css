@@ -822,7 +822,7 @@
 }
 
 .modal__body,
-.overlay-content {
+.overlay-container {
     .dropdown-widget-button,
     .dropdown_widget_with_label_wrapper {
         width: var(--modal-input-width);
