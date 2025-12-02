@@ -422,6 +422,17 @@ if os.environ.get("POSTGRES_HOST"):
         HOST=os.environ["POSTGRES_HOST"],
         PORT=os.environ.get("POSTGRES_PORT", "5432"),
     )
+    # Add TCP keepalive settings for Railway internal network to prevent connection drops
+    # and disable SSL since internal network doesn't require it (reduces latency)
+    DATABASES["default"]["OPTIONS"].update(
+        {
+            "keepalives": 1,  # Enable TCP keepalives
+            "keepalives_idle": 30,  # Seconds before sending keepalive
+            "keepalives_interval": 10,  # Seconds between keepalive retries
+            "keepalives_count": 5,  # Number of keepalive retries before disconnect
+            "sslmode": "disable",  # Railway internal network doesn't need SSL
+        }
+    )
 if os.environ.get("POSTGRES_PASSWORD"):
     DATABASES["default"].update(PASSWORD=os.environ["POSTGRES_PASSWORD"])
 if os.environ.get("POSTGRES_USER"):
@@ -490,6 +501,23 @@ CACHES: dict[str, dict[str, object]] = {
         },
     },
 }
+
+# NODL MODIFICATION START - Add Redis cache for sessions/presence (Railway deployment)
+# Redis provides faster access than Memcached for frequently accessed data
+if os.environ.get("REDIS_HOST") and os.environ.get("REDIS_PORT"):
+    _redis_password = os.environ.get("REDIS_PASSWORD", "")
+    _redis_host = os.environ["REDIS_HOST"]
+    _redis_port = os.environ["REDIS_PORT"]
+    _redis_url = f"redis://:{_redis_password}@{_redis_host}:{_redis_port}/0" if _redis_password else f"redis://{_redis_host}:{_redis_port}/0"
+    CACHES["redis"] = {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": _redis_url,
+        "OPTIONS": {
+            "socket_connect_timeout": 5,
+            "socket_timeout": 5,
+        },
+    }
+# NODL MODIFICATION END
 
 ########################################################################
 # REDIS-BASED RATE LIMITING CONFIGURATION
