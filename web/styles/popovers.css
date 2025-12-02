@@ -764,10 +764,10 @@ ul.popover-group-menu-member-list {
 }
 
 #giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 5px is the extra gutter space
+    /* 500px of GIPHY grid + 5px is the extra gutter space
      * + 1px for outline.
      * between gif columns. */
-    width: 306px;
+    width: var(--giphy-grid-popover-width);
     border: 0;
     padding: 0;
 
@@ -784,7 +784,7 @@ ul.popover-group-menu-member-list {
 
     .giphy-scrolling-container {
         overflow: hidden auto;
-        height: 200px;
+        height: 300px;
         margin: 2px 3px;
         padding: 5px 0;
     }
@@ -802,6 +802,12 @@ ul.popover-group-menu-member-list {
         & img {
             width: 120px;
         }
+    }
+
+    @media (width < $md_min) {
+        /* Subtract 20px to keep 10px margin on each side */
+        width: calc(100vw - 20px);
+        max-width: var(--giphy-grid-popover-width);
     }
 }
 

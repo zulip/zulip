@@ -9,6 +9,7 @@ import render_giphy_picker from "../templates/giphy_picker.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {media_breakpoints} from "./css_variables.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
@@ -78,14 +79,32 @@ async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => vo
         return giphy_fetch.search(search_term, config);
     }
 
+    const getGridWidth = (): number => {
+        // Get the container element to calculate available width
+        const container = targetEl.closest("#giphy_grid_in_popover");
+        if (container) {
+            const containerWidth = container.clientWidth;
+            return containerWidth;
+        }
+        // Fallback: use viewport width on mobile, fixed width on desktop
+        const isMobile = window.matchMedia(`(width < ${media_breakpoints.md_min})`).matches;
+        if (isMobile) {
+            const viewportWidth = window.innerWidth;
+            // Subtract 20px to keep 10px margin on each side
+            return Math.max(300, viewportWidth - 20);
+        }
+        // Default desktop width
+        return 500;
+    };
+
     const render = (): (() => void) =>
         // See https://github.com/Giphy/giphy-js/blob/master/packages/components/README.md#grid
         // for detailed documentation.
         renderGrid(
             {
-                width: 300,
+                width: getGridWidth(),
                 fetchGifs,
-                columns: 3,
+                columns: 2,
                 gutter: 6,
                 noLink: true,
                 // Hide the creator attribution that appears over a
