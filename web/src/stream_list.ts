@@ -88,30 +88,20 @@ export function zoom_out(): void {
     if (pending_stream_list_rerender) {
         update_streams_sidebar(true);
     }
-    const $stream_li = topic_list.get_stream_li();
-
     popovers.hide_all();
     topic_list.zoom_out();
     zoom_out_topics();
-
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
+    scroll_stream_into_view();
 
     zoomed_in = false;
 }
 
 export function clear_topics(): void {
-    const $stream_li = topic_list.get_stream_li();
-
     topic_list.close();
 
     if (zoomed_in) {
         zoom_out_topics();
-
-        if ($stream_li) {
-            scroll_stream_into_view($stream_li);
-        }
+        scroll_stream_into_view();
     }
 
     zoomed_in = false;
@@ -1012,16 +1002,15 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
         maybe_hide_topic_bracket(section_id);
     }
 
-    // Only scroll pinned topics into view.  If we're unpinning
+    // Only scroll pinned topics into view. If we're unpinning
     // a topic, we may be literally trying to get it out of
     // our sight.
     if (sub.pin_to_top) {
-        const $stream_li = get_stream_li(sub.stream_id);
-        if (!$stream_li) {
+        if (!stream_sidebar.get_row(sub.stream_id)) {
             blueslip.error("passed in bad stream id", {stream_id: sub.stream_id});
             return;
         }
-        scroll_stream_into_view($stream_li);
+        scroll_stream_into_view();
     }
 }
 
@@ -1464,7 +1453,14 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-export let scroll_stream_into_view = function ($stream_li: JQuery): void {
+export let scroll_stream_into_view = function ($stream_li: JQuery | undefined = undefined): void {
+    if ($stream_li === undefined) {
+        $stream_li = get_current_stream_li();
+        if ($stream_li === undefined) {
+            return;
+        }
+    }
+
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
@@ -1496,10 +1492,7 @@ export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean
         return;
     }
 
-    const $stream_li = get_current_stream_li();
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
+    scroll_stream_into_view();
 }
 
 export function get_current_stream_li(): JQuery | undefined {
