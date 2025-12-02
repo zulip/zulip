@@ -572,7 +572,7 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
     }
 
     const $li = row.get_li();
-    if (!$li) {
+    if ($li.length === 0) {
         blueslip.error("Cannot find li", {stream_id});
         return undefined;
     }
