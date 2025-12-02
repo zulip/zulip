@@ -895,7 +895,7 @@ def get_attachment_path_and_content(
 ) -> AttachmentLinkResult:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
     # 'upload_message_attachment'
-    s3_path = "/".join(
+    path_id = "/".join(
         [
             str(realm_id),
             format(random.randint(0, 255), "x"),
@@ -903,7 +903,7 @@ def get_attachment_path_and_content(
             sanitize_name(filename),
         ]
     )
-    attachment_url = f"/user_uploads/{s3_path}"
+    attachment_url = f"/user_uploads/{path_id}"
     markdown_link = get_markdown_link_for_url(link_name, attachment_url)
 
-    return AttachmentLinkResult(path_id=s3_path, markdown_link=markdown_link)
+    return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link)
