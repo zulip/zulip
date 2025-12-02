@@ -611,6 +611,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
     ),
     IncomingWebhookIntegration(
+        "dbt",
+        ["deployment"],
+        [WebhookScreenshotConfig("job_run_completed_errored.json")],
+        display_name="DBT",
+    ),
+    IncomingWebhookIntegration(
         "delighted",
         ["customer-support", "marketing"],
         [WebhookScreenshotConfig("survey_response_updated_promoter.json")],
