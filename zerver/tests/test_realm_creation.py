@@ -277,10 +277,23 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(prereg_realm.created_user, user)
         self.assertEqual(prereg_realm.status, confirmation_settings.STATUS_USED)
 
-        # Check welcome messages
-        for stream_name, text, message_count in [
-            (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), "a great place to say “hi”", 2),
-            (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), "Use this topic to try out", 5),
+        # Check initial realm messages for onboarding
+        greetings_message_content = "a great place to say “hi”"
+        experiments_message_content = "Use this topic to try out"
+
+        for stream_name, topic, text, message_count in [
+            (
+                str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
+                "greetings",
+                greetings_message_content,
+                2,
+            ),
+            (
+                str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+                "experiments",
+                experiments_message_content,
+                5,
+            ),
         ]:
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
@@ -288,6 +301,7 @@ class RealmCreationTest(ZulipTestCase):
                 "date_sent"
             )
             self.assert_length(messages, message_count)
+            self.assertEqual(topic, messages[0].topic_name())
             self.assertIn(text, messages[0].content)
 
         # Check admin organization's signups stream messages
@@ -702,7 +716,7 @@ class RealmCreationTest(ZulipTestCase):
         password = "test"
         string_id = "custom-test"
         realm_name = "Zulip Test"
-        realm_language = "it"
+        realm_language = "de"
 
         # Make sure the realm does not exist
         with self.assertRaises(Realm.DoesNotExist):
@@ -751,23 +765,26 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(realm.string_id, string_id)
         self.assertEqual(realm.default_language, realm_language)
 
-        # TODO: When Italian translated strings are updated for changes
-        # that are part of the stream -> channel rename, uncomment below.
-        # # Check welcome messages
-        # learn_about_new_features_in_italian = "conoscere le nuove funzionalità"
-        # new_conversation_thread_in_italian = "nuovo thread di conversazione"
+        # Check initial realm messages for onboarding
+        greetings_channel = "allgemein"
+        greetings_topic = "Grüße"
+        greetings_message_content = "Thema ist ein toller Ort um “hi”"
+        experiments_channel = "Sandbox"
+        experiments_topic = "Experimente"
+        experiments_message_content = "Verwende dieses Thema um"
 
-        # for stream_name, text, message_count in [
-        #     (str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME), learn_about_new_features_in_italian, 3),
-        #     (str(Realm.ZULIP_SANDBOX_CHANNEL_NAME), new_conversation_thread_in_italian, 5),
-        # ]:
-        #     stream = get_stream(stream_name, realm)
-        #     recipient = stream.recipient
-        #     messages = Message.objects.filter(realm_id=realm.id, recipient=recipient).order_by(
-        #         "date_sent"
-        #     )
-        #     self.assert_length(messages, message_count)
-        #     self.assertIn(text, messages[0].content)
+        for stream_name, topic, text, message_count in [
+            (greetings_channel, greetings_topic, greetings_message_content, 2),
+            (experiments_channel, experiments_topic, experiments_message_content, 5),
+        ]:
+            stream = get_stream(stream_name, realm)
+            recipient = stream.recipient
+            messages = Message.objects.filter(realm_id=realm.id, recipient=recipient).order_by(
+                "date_sent"
+            )
+            self.assert_length(messages, message_count)
+            self.assertEqual(topic, messages[0].topic_name())
+            self.assertIn(text, messages[0].content)
 
     @override_settings(OPEN_REALM_CREATION=True, CLOUD_FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:
