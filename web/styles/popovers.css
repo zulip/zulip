@@ -763,7 +763,7 @@ ul.popover-group-menu-member-list {
     }
 }
 
-#giphy_grid_in_popover {
+.gif-grid-in-popover {
     /* 300px of GIPHY grid + 5px is the extra gutter space
      * + 1px for outline.
      * between gif columns. */
@@ -782,7 +782,7 @@ ul.popover-group-menu-member-list {
         outline: 1px solid hsl(0deg 100% 50%);
     }
 
-    .giphy-scrolling-container {
+    .gif-scrolling-container {
         overflow: hidden auto;
         height: 200px;
         margin: 2px 3px;

@@ -34,7 +34,7 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as echo from "./echo.ts";
 import * as feedback_widget from "./feedback_widget.ts";
-import * as giphy_state from "./giphy_state.ts";
+import * as gif_state from "./gif_state.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -578,7 +578,7 @@ function edit_message($row: JQuery, raw_content: string): void {
             is_editable,
             content: raw_content,
             file_upload_enabled,
-            giphy_enabled: giphy_state.is_giphy_enabled(),
+            giphy_enabled: gif_state.is_giphy_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
         }),
