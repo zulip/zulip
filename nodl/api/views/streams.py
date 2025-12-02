@@ -110,14 +110,32 @@ def require_jwt_auth(view_func: Callable) -> Callable:
     return wrapper
 
 
-def _get_unread_count_for_stream(user: UserProfile, stream: Stream) -> int:
-    """Get unread message count for a stream."""
+def _get_unread_counts_for_streams(user: UserProfile, streams: list[Stream]) -> dict[int, int]:
+    """Get unread message counts for multiple streams in a single query.
+
+    Returns a dict mapping recipient_id -> unread_count.
+    This eliminates N+1 query problem when listing streams.
+    """
+    from django.db.models import Count
     from zerver.models import UserMessage
-    return UserMessage.objects.filter(
-        user_profile=user,
-        message__recipient=stream.recipient,
-        flags__andz=UserMessage.flags.read.mask,  # andz = "and zero" - flag NOT set
-    ).count()
+
+    if not streams:
+        return {}
+
+    recipient_ids = [s.recipient_id for s in streams]
+
+    # Single aggregated query for all streams
+    unread_counts = (
+        UserMessage.objects.filter(
+            user_profile=user,
+            message__recipient_id__in=recipient_ids,
+            flags__andz=UserMessage.flags.read.mask,  # andz = "and zero" - flag NOT set
+        )
+        .values('message__recipient_id')
+        .annotate(count=Count('id'))
+    )
+
+    return {r['message__recipient_id']: r['count'] for r in unread_counts}
 
 
 def _get_subscribers_for_stream(stream: Stream) -> list[int]:
@@ -189,10 +207,13 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     # Apply pagination
     paginated_streams = realm_streams[offset:offset + limit]
 
+    # Get all unread counts in a single query (fixes N+1 problem)
+    unread_by_recipient = _get_unread_counts_for_streams(user, paginated_streams)
+
     # Build response with unread counts
     stream_data = []
     for stream in paginated_streams:
-        unread_count = _get_unread_count_for_stream(user, stream)
+        unread_count = unread_by_recipient.get(stream.recipient_id, 0)
         serializer = StreamListSerializer.from_stream_with_unread(
             stream,
             unread_count=unread_count,

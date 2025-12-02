@@ -277,20 +277,28 @@ def list_messages(request: HttpRequest) -> HttpResponse:
     # Serialize messages
     message_data = [MessageListSerializer.from_message(msg).model_dump() for msg in messages]
 
-    # Determine pagination state
+    # Determine pagination state efficiently
+    # Instead of extra queries, use the count of returned messages vs requested
     found_oldest = False
     found_newest = False
 
     if messages:
-        # Check if we've reached the oldest message
-        oldest_in_stream = messages_query.order_by("id").first()
-        if oldest_in_stream and messages and messages[0].id == oldest_in_stream.id:
-            found_oldest = True
-
-        # Check if we've reached the newest message
-        newest_in_stream = messages_query.order_by("-id").first()
-        if newest_in_stream and messages and messages[-1].id == newest_in_stream.id:
+        # If we got fewer messages than requested, we've hit a boundary
+        if anchor == "newest":
+            # For newest anchor, we're at the newest if we got messages
             found_newest = True
+            # We're at oldest if we got fewer than requested
+            found_oldest = len(messages) < num_before + 1
+        elif anchor == "oldest":
+            # For oldest anchor, we're at the oldest
+            found_oldest = True
+            # We're at newest if we got fewer than requested
+            found_newest = len(messages) < num_after + 1
+        else:
+            # For specific anchor, check both directions
+            # This is an approximation - frontend can refine if needed
+            found_oldest = len(before_messages) < num_before
+            found_newest = len(after_messages) < num_after
 
     return JsonResponse({
         "result": "success",
