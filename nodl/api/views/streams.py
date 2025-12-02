@@ -116,7 +116,7 @@ def _get_unread_count_for_stream(user: UserProfile, stream: Stream) -> int:
     return UserMessage.objects.filter(
         user_profile=user,
         message__recipient=stream.recipient,
-        flags__andnot=UserMessage.flags.read,
+        flags__andz=UserMessage.flags.read.mask,  # andz = "and zero" - flag NOT set
     ).count()
 
 

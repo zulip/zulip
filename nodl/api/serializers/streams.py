@@ -42,8 +42,8 @@ class StreamSerializer(BaseModel):
             name=stream.name,
             description=stream.description,
             is_private=stream.invite_only,
-            is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
-            stream_post_policy=stream.stream_post_policy,
+            is_announcement_only=False,  # Simplified - group permissions not exposed via REST API
+            stream_post_policy=Stream.STREAM_POST_POLICY_EVERYONE,  # Default value
             history_public_to_subscribers=stream.history_public_to_subscribers,
             first_message_id=stream.first_message_id,
             subscribers=subscribers or [],
@@ -72,8 +72,8 @@ class StreamListSerializer(StreamSerializer):
             name=stream.name,
             description=stream.description,
             is_private=stream.invite_only,
-            is_announcement_only=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
-            stream_post_policy=stream.stream_post_policy,
+            is_announcement_only=False,  # Simplified - group permissions not exposed via REST API
+            stream_post_policy=Stream.STREAM_POST_POLICY_EVERYONE,  # Default value
             history_public_to_subscribers=stream.history_public_to_subscribers,
             first_message_id=stream.first_message_id,
             subscribers=subscribers or [],
