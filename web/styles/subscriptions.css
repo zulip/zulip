@@ -511,6 +511,10 @@ h4.user_group_setting_subsection_title {
     max-width: 1200px;
     max-height: var(--overlay-container-max-height);
 
+    /* This variable allows JavaScript to detect whether we are showing both
+    the left sidebar and settings content for the current screen width or not. */
+    --column-count: 2;
+
     .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
         display: flex;
@@ -1474,7 +1478,9 @@ div.settings-radio-input-parent {
         position: relative;
         overflow: hidden;
 
-        --single-column: yes;
+        /* This variable allows JavaScript to detect whether we are showing both
+        the left sidebar and settings content for the current screen width or not. */
+        --column-count: 1;
 
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;

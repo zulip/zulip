@@ -211,7 +211,8 @@ export function trap_focus_for_settings_overlay(): void {
             return;
         }
 
-        const two_column_mode = $("#settings_content").css("--single-column") === undefined;
+        const two_column_mode =
+            Number.parseInt($("#settings_content").css("--column-count"), 10) === 2;
         const $settings_overlay_container = $("#settings_overlay_container");
         let visible_focusable_elements;
         if (two_column_mode) {
@@ -258,7 +259,10 @@ export function trap_focus_for_settings_overlay(): void {
 
         const $overlay = $(e.currentTarget);
         const two_column_mode =
-            $overlay.find(".two-pane-settings-container").css("--single-column") === undefined;
+            Number.parseInt(
+                $overlay.find(".two-pane-settings-container").css("--column-count"),
+                10,
+            ) === 2;
         let visible_focusable_elements;
         if (two_column_mode) {
             visible_focusable_elements =

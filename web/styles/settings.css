@@ -193,6 +193,10 @@ h3,
     & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
     }
+
+    /* This variable allows JavaScript to detect whether we are showing both
+    the left sidebar and settings content for the current screen width or not. */
+    --column-count: 2;
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
@@ -1862,8 +1866,9 @@ label.preferences-radio-choice-label {
     }
 
     #settings_content {
-        /* this variable allows JavaScript to detect this media query */
-        --single-column: yes;
+        /* This variable allows JavaScript to detect whether we are showing both
+        the left sidebar and settings content for the current screen width or not. */
+        --column-count: 1;
     }
 
     #settings_page {
