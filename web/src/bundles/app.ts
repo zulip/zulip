@@ -64,4 +64,4 @@ import "@uppy/core/css/style.min.css";
 import "@uppy/image-editor/css/style.min.css";
 
 // This should be last.
-import "../ui_init.js";
+import "../ui_init.ts";
