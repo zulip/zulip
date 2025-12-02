@@ -367,7 +367,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
             if (sub !== undefined) {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 settings_components.save_discard_stream_settings_widget_status_handler(
-                    $edit_container.find(".channel-folder-subsection"),
+                    $edit_container.find(".stream-settings-subsection"),
                     stream_data.get_sub_by_id(sub.stream_id),
                 );
             }

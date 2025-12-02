@@ -1171,12 +1171,19 @@ h4.user_group_setting_subsection_title {
     .group-description-wrapper,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 5px;
 
         .no-description {
             font-style: italic;
             color: hsl(0deg 0% 67%);
         }
+    }
+
+    .group-description-wrapper {
+        margin-bottom: 5px;
+    }
+
+    .stream-description {
+        margin-bottom: 10px;
     }
 
     .checkmark {
@@ -1225,16 +1232,13 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .stream_details_box,
+    .stream_details_box {
+        margin: 0 0 10px; /* mimic paragraph spacing */
+    }
+
     .group_detail_box {
-        > .stream_details_subsection,
         > .group_details_box_subsection {
             margin: 0 0 10px; /* mimic paragraph spacing */
-        }
-
-        .stream_email_address_error {
-            vertical-align: top;
-            margin-left: 15px;
         }
     }
 
@@ -1335,15 +1339,18 @@ div.settings-radio-input-parent {
         padding-bottom: 4px;
         height: 1.4em;
     }
+}
 
-    .default-stream {
-        margin: 20px 0;
-        width: fit-content;
+#subscription_overlay .default-stream {
+    width: fit-content;
 
-        .inline {
-            display: inline;
-        }
+    .inline {
+        display: inline;
     }
+}
+
+#stream_creation_form .default-stream {
+    margin: 20px 0;
 }
 
 .group-permissions .pill-container,
