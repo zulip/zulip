@@ -1,10 +1,12 @@
 """Serializers for message-related API responses."""
 
+from datetime import datetime
 from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, Field
 
 from zerver.models import Message
+from zerver.models.recipients import Recipient
 
 
 class ReactionSerializer(BaseModel):
@@ -104,6 +106,36 @@ class MessageListSerializer(BaseModel):
             content=message.content,
             rendered_content=message.rendered_content or "",
             timestamp=int(message.date_sent.timestamp()),
+        )
+
+    @classmethod
+    def from_dict(cls, msg_dict: dict[str, Any]) -> "MessageListSerializer":
+        """Create serializer from cached message dict (from messages_for_ids).
+
+        The dict format comes from Zulip's MessageDict after hydration.
+        """
+        # Get stream_id from recipient_type_id if this is a stream message
+        stream_id = None
+        if msg_dict.get("recipient_type") == Recipient.STREAM:
+            stream_id = msg_dict.get("recipient_type_id")
+
+        # Convert date_sent to timestamp
+        date_sent = msg_dict.get("date_sent")
+        if isinstance(date_sent, datetime):
+            timestamp = int(date_sent.timestamp())
+        else:
+            # Already a timestamp or needs conversion
+            timestamp = int(date_sent) if date_sent else 0
+
+        return cls(
+            id=msg_dict["id"],
+            sender_id=msg_dict["sender_id"],
+            sender_full_name=msg_dict.get("sender_full_name", "Unknown"),
+            stream_id=stream_id,
+            topic=msg_dict.get("subject", ""),  # Zulip uses 'subject' for topic
+            content=msg_dict.get("content", ""),
+            rendered_content=msg_dict.get("rendered_content", ""),
+            timestamp=timestamp,
         )
 
 

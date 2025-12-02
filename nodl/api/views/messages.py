@@ -28,7 +28,7 @@ from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_send import check_send_message
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
-from zerver.lib.message import access_message
+from zerver.lib.message import access_message, messages_for_ids
 from zerver.lib.rate_limiter import RateLimitedObject, RedisRateLimiterBackend
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.types import StreamMessageEditRequest
@@ -218,30 +218,32 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             status=404,
         )
 
-    # Build query for messages in this stream
-    # Include recipient in select_related to avoid N+1 queries during serialization
-    messages_query = Message.objects.filter(
+    # Build base query for messages in this stream (IDs only for efficiency)
+    base_query = Message.objects.filter(
         realm_id=user.realm_id,
         recipient_id=stream.recipient_id,
-    ).select_related("sender", "recipient")
+    )
 
     # Filter by topic if specified
     if topic:
-        messages_query = messages_query.filter(subject__iexact=topic)
+        base_query = base_query.filter(subject__iexact=topic)
 
-    # Apply anchor-based pagination
+    # Apply anchor-based pagination to get message IDs
     anchor_message_id = None
     found_anchor = True
+    message_ids: list[int] = []
 
     if anchor == "newest":
-        # Get newest messages
-        messages_query = messages_query.order_by("-id")
-        messages = list(messages_query[:num_before + 1])
-        messages.reverse()  # Put in chronological order
+        # Get newest message IDs
+        message_ids = list(
+            base_query.order_by("-id").values_list("id", flat=True)[:num_before + 1]
+        )
+        message_ids.reverse()  # Put in chronological order
     elif anchor == "oldest":
-        # Get oldest messages
-        messages_query = messages_query.order_by("id")
-        messages = list(messages_query[:num_after + 1])
+        # Get oldest message IDs
+        message_ids = list(
+            base_query.order_by("id").values_list("id", flat=True)[:num_after + 1]
+        )
     else:
         # Anchor is a message ID
         try:
@@ -252,54 +254,69 @@ def list_messages(request: HttpRequest) -> HttpResponse:
                 status=400,
             )
 
-        # Get messages before anchor
-        before_messages = list(
-            messages_query.filter(id__lt=anchor_message_id)
-            .order_by("-id")[:num_before]
+        # Get message IDs before anchor
+        before_ids = list(
+            base_query.filter(id__lt=anchor_message_id)
+            .order_by("-id").values_list("id", flat=True)[:num_before]
         )
-        before_messages.reverse()
+        before_ids.reverse()
 
-        # Get anchor message
-        try:
-            anchor_msg = messages_query.get(id=anchor_message_id)
-            anchor_list = [anchor_msg]
-        except Message.DoesNotExist:
-            anchor_list = []
+        # Check if anchor message exists
+        anchor_exists = base_query.filter(id=anchor_message_id).exists()
+        if anchor_exists:
+            anchor_ids = [anchor_message_id]
+        else:
+            anchor_ids = []
             found_anchor = False
 
-        # Get messages after anchor
-        after_messages = list(
-            messages_query.filter(id__gt=anchor_message_id)
-            .order_by("id")[:num_after]
+        # Get message IDs after anchor
+        after_ids = list(
+            base_query.filter(id__gt=anchor_message_id)
+            .order_by("id").values_list("id", flat=True)[:num_after]
         )
 
-        messages = before_messages + anchor_list + after_messages
+        message_ids = before_ids + anchor_ids + after_ids
 
-    # Serialize messages
-    message_data = [MessageListSerializer.from_message(msg).model_dump() for msg in messages]
+    # Fetch messages from cache using Zulip's cache layer
+    if message_ids:
+        message_dicts = messages_for_ids(
+            message_ids=message_ids,
+            user_message_flags={mid: [] for mid in message_ids},
+            search_fields={},
+            apply_markdown=False,
+            client_gravatar=False,
+            allow_empty_topic_name=False,
+            message_edit_history_visibility_policy=1,  # UserProfile.POLICY_ALLOW_ANYONE
+            user_profile=user,
+            realm=user.realm,
+        )
+        # Serialize messages from cached dicts
+        message_data = [MessageListSerializer.from_dict(msg).model_dump() for msg in message_dicts]
+    else:
+        message_data = []
 
     # Determine pagination state efficiently
     # Instead of extra queries, use the count of returned messages vs requested
     found_oldest = False
     found_newest = False
 
-    if messages:
+    if message_ids:
         # If we got fewer messages than requested, we've hit a boundary
         if anchor == "newest":
             # For newest anchor, we're at the newest if we got messages
             found_newest = True
             # We're at oldest if we got fewer than requested
-            found_oldest = len(messages) < num_before + 1
+            found_oldest = len(message_ids) < num_before + 1
         elif anchor == "oldest":
             # For oldest anchor, we're at the oldest
             found_oldest = True
             # We're at newest if we got fewer than requested
-            found_newest = len(messages) < num_after + 1
+            found_newest = len(message_ids) < num_after + 1
         else:
             # For specific anchor, check both directions
             # This is an approximation - frontend can refine if needed
-            found_oldest = len(before_messages) < num_before
-            found_newest = len(after_messages) < num_after
+            found_oldest = len(before_ids) < num_before
+            found_newest = len(after_ids) < num_after
 
     return JsonResponse({
         "result": "success",
