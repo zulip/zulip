@@ -400,16 +400,23 @@ function maybe_change_focused_emoji(
     if ($next_emoji) {
         current_section = next_section;
         current_index = next_index;
-        if (!preserve_scroll) {
-            $next_emoji.trigger("focus");
-        } else {
-            const start = scroll_util.get_scroll_element($emoji_map).scrollTop()!;
-            $next_emoji.trigger("focus");
-            if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
-                scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+
+        // Use setTimeout to ensure the browser has finished processing the
+        // preventDefault() event from the Tab key before we apply focus.
+        // This ensures the blue focus ring appears correctly.
+        setTimeout(() => {
+            if (!preserve_scroll) {
+                $next_emoji.trigger("focus");
+            } else {
+                const start = scroll_util.get_scroll_element($emoji_map).scrollTop()!;
+                $next_emoji.trigger("focus");
+                if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
+                    scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+                }
             }
-        }
-        update_emoji_showcase($next_emoji);
+            update_emoji_showcase($next_emoji);
+        }, 0);
+
         return true;
     }
     return false;
