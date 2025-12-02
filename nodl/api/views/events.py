@@ -1,24 +1,30 @@
 """Real-time event API views for nodl.
 
-Proxy endpoints that accept JWT auth and forward to Zulip's
-event system functions. The SupabaseJWTMiddleware sets request.user_profile
-after validating the JWT token, so these views can use it directly.
+Proxy endpoints that accept JWT auth and call Zulip's action functions directly.
+We parse request parameters manually because @typed_endpoint decorators only work
+when Django routes requests through URL resolution.
+
+The SupabaseJWTMiddleware sets request.user_profile after validating the JWT token,
+so these views can use it directly.
 
 These endpoints must be registered BEFORE Zulip's patterns in urls.py
 so they take precedence over Zulip's HTTP Basic Auth protected endpoints.
 """
 
+import json
 import logging
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from zerver.actions.typing import do_send_stream_typing_notification
 from zerver.lib.request import RequestNotes
+from zerver.lib.response import json_success
+from zerver.lib.streams import access_stream_by_id_for_message, access_stream_for_send_message
 from zerver.models import UserProfile
 from zerver.models.clients import get_client
 from zerver.tornado.views import cleanup_event_queue, get_events
 from zerver.views.events_register import events_register_backend
-from zerver.views.typing import send_notification_backend
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +64,17 @@ def _setup_client(request: HttpRequest) -> None:
     notes = RequestNotes.get_notes(request)
     if notes.client is None:
         notes.client = get_client("nodl-web")
+
+
+def _get_json_body(request: HttpRequest) -> dict:
+    """Parse JSON body from request.
+
+    Returns empty dict if body is empty or not valid JSON.
+    """
+    try:
+        return json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        return {}
 
 
 @csrf_exempt
@@ -115,8 +132,9 @@ def events_view(request: HttpRequest) -> HttpResponse:
 def send_typing(request: HttpRequest) -> HttpResponse:
     """POST /api/v1/typing - Send typing notification.
 
-    Sends a typing start/stop notification to other users in the
-    same stream/topic or DM conversation.
+    Parses parameters manually and calls do_send_stream_typing_notification
+    directly, since Zulip's @typed_endpoint decorator only works when
+    Django routes requests through URL resolution.
     """
     if request.method != "POST":
         return JsonResponse(
@@ -130,6 +148,62 @@ def send_typing(request: HttpRequest) -> HttpResponse:
 
     _setup_client(request)
 
-    # send_notification_backend expects (request, user_profile, ...)
-    # The Zulip function handles parameter extraction from request
-    return send_notification_backend(request, user_profile)
+    # Parse parameters from JSON body
+    body = _get_json_body(request)
+    op = body.get("op")  # 'start' or 'stop'
+    msg_type = body.get("type", "stream")  # 'stream' or 'direct'
+    stream_id = body.get("stream_id")
+    topic = body.get("topic")
+
+    # Validate required parameters
+    if not op or op not in ("start", "stop"):
+        return JsonResponse(
+            {"result": "error", "msg": "Missing or invalid 'op' argument"},
+            status=400,
+        )
+
+    if msg_type == "stream":
+        if not stream_id:
+            return JsonResponse(
+                {"result": "error", "msg": "Missing 'stream_id' argument"},
+                status=400,
+            )
+        if not topic:
+            return JsonResponse(
+                {"result": "error", "msg": "Missing 'topic' argument"},
+                status=400,
+            )
+
+        # Check if user has typing notifications enabled
+        if not user_profile.send_stream_typing_notifications:
+            return JsonResponse(
+                {"result": "error", "msg": "User has disabled typing notifications"},
+                status=400,
+            )
+
+        try:
+            # Verify user has access to the stream
+            stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
+            access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
+
+            # Send the typing notification
+            do_send_stream_typing_notification(user_profile, op, stream, topic)
+
+            logger.debug(
+                f"[nodl-typing] Sent {op} notification for user {user_profile.id} "
+                f"to stream {stream_id} topic '{topic}'"
+            )
+            return json_success(request)
+
+        except Exception as e:
+            logger.warning(f"[nodl-typing] Error sending typing notification: {e}")
+            return JsonResponse(
+                {"result": "error", "msg": str(e)},
+                status=400,
+            )
+    else:
+        # Direct message typing - not implemented yet
+        return JsonResponse(
+            {"result": "error", "msg": "Direct message typing not yet supported"},
+            status=400,
+        )
