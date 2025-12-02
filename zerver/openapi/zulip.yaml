@@ -445,7 +445,7 @@ paths:
                                           description: |
                                             The new avatar data source type for the user.
 
-                                            Value values are `G` (gravatar) and `U` (uploaded by user).
+                                            Valid values are `G` (gravatar) and `U` (uploaded by user).
                                         avatar_url_medium:
                                           type: string
                                           description: |
@@ -21232,7 +21232,7 @@ paths:
 
                           The avatar data source type for the current user.
 
-                          Value values are `G` (gravatar) and `U` (uploaded by user).
+                          Valid values are `G` (gravatar) and `U` (uploaded by user).
                       avatar_url_medium:
                         type: string
                         description: |
