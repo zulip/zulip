@@ -3,13 +3,14 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";
-import {user_settings} from "./user_settings.ts";
 
-export let native_picker_instance: {
-    element: HTMLInputElement;
-    container: HTMLDivElement;
-    isOpen: boolean;
-} | undefined;
+export let native_picker_instance:
+    | {
+          element: HTMLInputElement;
+          container: HTMLDivElement;
+          isOpen: boolean;
+      }
+    | undefined;
 
 export function is_open(): boolean {
     return Boolean(native_picker_instance?.isOpen);
@@ -25,13 +26,14 @@ function format_datetime_for_input(date: Date): string {
 }
 
 function create_native_picker_html(default_timestamp: Date | string): string {
-    const date = typeof default_timestamp === "string" ? parseISO(default_timestamp) : default_timestamp;
+    const date =
+        typeof default_timestamp === "string" ? parseISO(default_timestamp) : default_timestamp;
     const formatted_value = format_datetime_for_input(date);
-    
+
     return `
         <div class="native-datetime-picker">
-            <input type="datetime-local" 
-                   class="native-datetime-input" 
+            <input type="datetime-local"
+                   class="native-datetime-input"
                    value="${formatted_value}"
                    step="60">
             <div class="native-datetime-actions">
@@ -50,7 +52,7 @@ export function show_flatpickr(
     const $container = $(create_native_picker_html(default_timestamp));
     const container_element = $container[0];
     assert(container_element instanceof HTMLDivElement);
-    
+
     const $input = $container.find<HTMLInputElement>(".native-datetime-input");
     const input_element = $input[0];
     assert(input_element instanceof HTMLInputElement);
@@ -145,9 +147,13 @@ export function show_flatpickr(
     });
 
     $(document).on("click.native-picker", (e) => {
-        if (!$(e.target).closest(".native-datetime-picker").length && 
-            e.target !== element &&
-            !options.ignoredFocusElements?.includes(e.target as HTMLElement)) {
+        const target = e.target;
+        if (
+            target instanceof HTMLElement &&
+            $(target).closest(".native-datetime-picker").length === 0 &&
+            target !== element &&
+            !options.ignoredFocusElements?.includes(target)
+        ) {
             close_picker();
         }
     });

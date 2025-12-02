@@ -104,27 +104,6 @@ export function open_schedule_message_menu(
                         popover_menus.hide_current_popover_if_visible(instance);
                     },
                     new Date(current_time.getTime() + 60 * 60 * 1000),
-                    {
-                        minDate: new Date(
-                            current_time.getTime() +
-                                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
-                        ),
-                        onClose(selectedDates, _dateStr, instance) {
-                            // Return to normal state.
-                            $send_later_options_content.css("pointer-events", "all");
-                            const selected_date = selectedDates[0];
-                            assert(instance.config.minDate !== undefined);
-                            if (selected_date && selected_date < instance.config.minDate) {
-                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
-                                    true,
-                                );
-                            } else {
-                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
-                                    false,
-                                );
-                            }
-                        },
-                    },
                 );
                 // Disable interaction with rest of the options in the popover.
                 $send_later_options_content.css("pointer-events", "none");
