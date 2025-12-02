@@ -147,10 +147,10 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
         name=gettext_lazy("Twitch username"),
         hint="",
     ),
-    "twitter": ExternalAccount(
-        text="Twitter",
-        url_pattern="https://twitter.com/%(username)s",
-        name=gettext_lazy("Twitter username"),
+    "x": ExternalAccount(
+        text="X",
+        url_pattern="https://x.com/%(username)s",
+        name=gettext_lazy("X username"),
         hint="",
     ),
     "youtube": ExternalAccount(
