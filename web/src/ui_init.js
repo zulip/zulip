@@ -51,8 +51,8 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
 import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
+import * as gif_state from "./gif_state.ts";
 import * as giphy from "./giphy.ts";
-import * as giphy_state from "./giphy_state.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.ts";
@@ -208,7 +208,7 @@ function initialize_compose_box() {
             render_compose({
                 embedded: $("#compose").attr("data-embedded") === "",
                 file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
-                giphy_enabled: giphy_state.is_giphy_enabled(),
+                giphy_enabled: gif_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
