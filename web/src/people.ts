@@ -360,7 +360,11 @@ export function user_ids_to_emails_string(user_ids: number[]): string | undefine
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
     const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
-    const ids = user_ids.map(Number);
+    const ids = user_ids.map((user_id_string) => {
+        const user_id = Number(user_id_string);
+        assert(!Number.isNaN(user_id));
+        return user_id;
+    });
     return ids;
 }
 
@@ -804,6 +808,19 @@ export function emails_to_slug(emails_string: string): string | undefined {
     return slug;
 }
 
+export function user_ids_to_slug(user_ids: number[]): string | undefined {
+    let slug = String(user_ids);
+    slug += "-";
+    if (user_ids.length === 1 && user_ids[0] !== undefined) {
+        const person = get_by_user_id(user_ids[0]);
+        assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
+        slug += get_slug_from_full_name(person.full_name);
+    } else {
+        slug += "group";
+    }
+    return slug;
+}
+
 export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
     let slug = user_ids_string;
     slug += "-";
@@ -818,7 +835,7 @@ export function user_ids_string_to_slug(user_ids_string: string): string | undef
     return slug;
 }
 
-export function slug_to_emails(slug: string): string | undefined {
+export function slug_to_user_ids(slug: string): number[] | undefined {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
@@ -833,15 +850,14 @@ export function slug_to_emails(slug: string): string | undefined {
     */
     const m = /^([\d,]+)(-.*)?/.exec(slug);
     if (m) {
-        let user_ids_string = m[1]!;
-        user_ids_string = exclude_me_from_string(user_ids_string);
-        return user_ids_string_to_emails_string(user_ids_string);
+        const user_ids_string = m[1]!;
+        return exclude_me_from_string(user_ids_string);
     }
     /* istanbul ignore next */
     return undefined;
 }
 
-export function exclude_me_from_string(user_ids_string: string): string {
+export function exclude_me_from_string(user_ids_string: string): number[] {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
     let user_ids = split_to_ints(user_ids_string);
@@ -850,12 +866,12 @@ export function exclude_me_from_string(user_ids_string: string): string {
         // We either have a message to ourself, an empty
         // slug, or a message to somebody else where we weren't
         // part of the slug.
-        return user_ids.join(",");
+        return user_ids;
     }
 
     user_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
 
-    return user_ids.join(",");
+    return user_ids;
 }
 
 export function sender_is_bot(message: Message): boolean {
@@ -1074,6 +1090,16 @@ export function is_valid_bulk_emails_for_compose(emails: string[]): boolean {
     // Returns false if at least one of the emails is invalid.
     return emails.every((email) => {
         if (!is_valid_email_for_compose(email)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+export function is_valid_bulk_user_ids_for_compose(user_ids: number[]): boolean {
+    // Returns false if at least one of the user_ids is invalid.
+    return user_ids.every((user_id) => {
+        if (!is_valid_user_id_for_compose(user_id)) {
             return false;
         }
         return true;

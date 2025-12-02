@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 
 import render_search_description from "../templates/search_description.hbs";
 
-import * as blueslip from "./blueslip.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
@@ -21,9 +20,13 @@ import {
     narrow_canonical_operator_schema,
     narrow_canonical_term_schema,
     narrow_operator_schema,
-    narrow_term_schema,
 } from "./state_data.ts";
-import type {NarrowCanonicalOperator, NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
+import type {
+    NarrowCanonicalOperator,
+    NarrowCanonicalTerm,
+    NarrowTerm,
+    NarrowTermSuggestion,
+} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
@@ -103,10 +106,10 @@ function message_in_home(message: Message): boolean {
     return user_topics.is_topic_visible_in_home(message.stream_id, message.topic);
 }
 
-function message_matches_search_term(message: Message, operator: string, operand: string): boolean {
-    switch (operator) {
+function message_matches_search_term(message: Message, term: NarrowTerm): boolean {
+    switch (term.operator) {
         case "has":
-            switch (operand) {
+            switch (term.operand) {
                 case "image":
                     return message_parser.message_has_image(message.content);
                 case "link":
@@ -120,7 +123,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
         case "is":
-            switch (operand) {
+            switch (term.operand) {
                 case "dm":
                     return message.type === "private";
                 case "starred":
@@ -145,7 +148,7 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
         case "in":
-            switch (operand) {
+            switch (term.operand) {
                 case "home":
                     return message_in_home(message);
                 case "all":
@@ -159,14 +162,14 @@ function message_matches_search_term(message: Message, operator: string, operand
             return true;
 
         case "id":
-            return message.id.toString() === operand;
+            return message.id.toString() === term.operand;
 
         case "channel": {
             if (message.type !== "stream") {
                 return false;
             }
 
-            return message.stream_id.toString() === operand;
+            return message.stream_id.toString() === term.operand;
         }
 
         case "channels": {
@@ -174,7 +177,7 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
             const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
-            switch (operand) {
+            switch (term.operand) {
                 case "public":
                     return ["public", "web-public"].includes(stream_privacy_policy);
                 case "web-public":
@@ -189,20 +192,22 @@ function message_matches_search_term(message: Message, operator: string, operand
                 return false;
             }
 
-            operand = operand.toLowerCase();
-            return message.topic.toLowerCase() === operand;
+            return message.topic.toLowerCase() === term.operand.toLowerCase();
 
         case "sender":
-            return people.id_matches_email_operand(message.sender_id, operand);
+            return message.sender_id === term.operand;
 
+        case "dm-including":
         case "dm": {
-            // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
             }
-            const operand_ids = people.pm_with_operand_ids(operand);
-            if (!operand_ids) {
-                return false;
+
+            let operand_ids = term.operand;
+            // If your user_id is included in a group direct message with other people,
+            // then ignore it.
+            if (operand_ids.length > 1) {
+                operand_ids = term.operand.filter((id) => id !== current_user.user_id);
             }
             const user_ids = people.pm_with_user_ids(message);
             if (!user_ids) {
@@ -210,18 +215,6 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
 
             return _.isEqual(operand_ids, user_ids);
-        }
-
-        case "dm-including": {
-            const operand_ids = people.pm_with_operand_ids(operand);
-            if (!operand_ids) {
-                return false;
-            }
-            const user_ids = people.all_user_ids_in_pm(message);
-            if (!user_ids) {
-                return false;
-            }
-            return operand_ids.every((operand_id) => user_ids.includes(operand_id));
         }
     }
 
@@ -253,7 +246,7 @@ const USER_OPERATORS = new Set([
 ]);
 
 export class Filter {
-    _terms: NarrowTerm[];
+    _terms: NarrowCanonicalTerm[];
     _sorted_term_types?: string[] = undefined;
     _predicate?: (message: Message) => boolean;
     _can_mark_messages_read?: boolean;
@@ -262,7 +255,8 @@ export class Filter {
     cached_sorted_terms_for_comparison?: string[] | undefined = undefined;
 
     constructor(terms: NarrowTerm[]) {
-        this._terms = terms;
+        // `_terms` will be set in `setup_filter`.
+        this._terms = [];
         this.setup_filter(terms);
         this.requires_adjustment_for_moved_with_target = this.has_operator("with");
         this.narrow_requires_hash_change = false;
@@ -330,13 +324,7 @@ export class Filter {
                 break;
             case "sender":
             case "dm":
-                narrow_term.operand = narrow_term.operand.toLowerCase();
-                if (narrow_term.operand === "me") {
-                    narrow_term.operand = people.my_current_email();
-                }
-                break;
             case "dm-including":
-                narrow_term.operand = narrow_term.operand.toLowerCase();
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -417,10 +405,12 @@ export class Filter {
        This is just for the search bar, not for saving the
        narrow in the URL fragment.  There we do use full
        URI encoding to avoid problematic characters. */
-    static encodeOperand(operand: string, operator: string): string {
-        if (USER_OPERATORS.has(operator)) {
-            return operand.replaceAll(/[\s"%]/g, (c) => encodeURIComponent(c));
+    static encodeOperand(operand: NarrowTerm["operand"]): string {
+        if (typeof operand !== "string") {
+            return String(operand);
         }
+
+        assert(typeof operand === "string");
         return operand.replaceAll(/[\s"%+]/g, (c) => (c === " " ? "+" : encodeURIComponent(c)));
     }
 
@@ -433,12 +423,12 @@ export class Filter {
     }
 
     // Parse a string into a list of terms (see below).
-    static parse(str: string, for_pills = false): NarrowTerm[] {
-        const terms: NarrowTerm[] = [];
+    static parse(str: string, for_pills = false): NarrowTermSuggestion[] {
+        const terms: NarrowTermSuggestion[] = [];
         let search_term: string[] = [];
         let negated;
         let operand;
-        let term: NarrowTerm;
+        let term: NarrowTermSuggestion;
 
         function maybe_add_search_terms(): void {
             if (search_term.length > 0) {
@@ -490,7 +480,7 @@ export class Filter {
                 }
 
                 if (for_pills && operator === "sender" && operand.toLowerCase() === "me") {
-                    operand = people.my_current_email();
+                    operand = people.my_current_user_id().toString();
                 }
 
                 // Check if the operator is known, if not then we treat
@@ -503,11 +493,11 @@ export class Filter {
                     // terms list. This is done so that the last active filter is correctly
                     // detected by the `get_search_result` function (in search_suggestions.ts).
                     maybe_add_search_terms();
-                    term = narrow_term_schema.parse({
+                    term = {
                         negated,
-                        operator: Filter.canonicalize_operator(parsed_operator.data),
+                        operator: parsed_operator.data,
                         operand,
-                    });
+                    };
                     terms.push(term);
                 } else {
                     // Put it as a search term, to not have duplicate operators
@@ -521,6 +511,14 @@ export class Filter {
     }
 
     static is_valid_search_term(term: NarrowTerm): boolean {
+        // We don't want to raise exceptions in this function; just
+        // return false for invalid terms.
+        try {
+            term = Filter.canonicalize_term(term);
+        } catch {
+            return false;
+        }
+
         switch (term.operator) {
             case "has":
                 return ["image", "link", "attachment", "reaction"].includes(term.operand);
@@ -543,30 +541,77 @@ export class Filter {
             case "with":
                 return Number.isInteger(Number(term.operand));
             case "channel":
-            case "stream":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
-            case "streams":
                 return channels_operands.has(term.operand);
             case "topic":
                 return true;
             case "sender":
-            case "from":
-            case "dm":
-            case "pm-with":
+                return people.is_valid_user_id(term.operand);
             case "dm-including":
-                if (term.operand === "me") {
-                    return true;
-                }
-                return term.operand
-                    .split(",")
-                    .every((email) => people.get_by_email(email) !== undefined);
+            case "dm":
+                return term.operand.every((id) => people.is_valid_user_id(id));
             case "search":
+            case "":
                 return true;
             default:
-                blueslip.error("Unexpected search term operator: " + term.operator);
+                // istanbul ignore next
+                // It should never reach here because of operator validation.
                 return false;
         }
+    }
+
+    static convert_term_to_suggestion(term: NarrowCanonicalTerm): NarrowTermSuggestion {
+        return {
+            operator: term.operator,
+            operand: String(term.operand),
+            negated: term.negated,
+        };
+    }
+
+    static convert_suggestion_to_term(
+        suggestion: NarrowTermSuggestion,
+    ): NarrowCanonicalTerm | undefined {
+        let potential_narrow_term: NarrowCanonicalTerm;
+        const canonical_operator = Filter.canonicalize_operator(suggestion.operator);
+        try {
+            switch (canonical_operator) {
+                case "dm":
+                case "dm-including":
+                    potential_narrow_term = {
+                        operator: canonical_operator,
+                        operand: people.user_ids_string_to_ids_array(suggestion.operand),
+                        negated: suggestion.negated,
+                    };
+                    break;
+                case "sender":
+                    potential_narrow_term = {
+                        operator: canonical_operator,
+                        operand:
+                            suggestion.operand.toLowerCase() === "me"
+                                ? people.my_current_user_id()
+                                : Number(suggestion.operand),
+                        negated: suggestion.negated,
+                    };
+                    // Check that operand is not NaN
+                    assert(!Number.isNaN(potential_narrow_term.operand));
+                    break;
+                default:
+                    potential_narrow_term = {
+                        operator: canonical_operator,
+                        operand: suggestion.operand,
+                        negated: suggestion.negated,
+                    };
+            }
+        } catch {
+            return undefined;
+        }
+
+        if (!Filter.is_valid_search_term(potential_narrow_term)) {
+            return undefined;
+        }
+
+        return potential_narrow_term;
     }
 
     /* Convert a list of search terms to a string.
@@ -577,7 +622,7 @@ export class Filter {
    These are not keys in a JavaScript object, because we
    might need to support multiple terms of the same type.
 */
-    static unparse(search_terms: NarrowTerm[]): string {
+    static unparse(search_terms: NarrowTerm[] | NarrowTermSuggestion[]): string {
         const term_strings = search_terms.map((term) => {
             if (term.operator === "search") {
                 // Search terms are the catch-all case.
@@ -590,22 +635,24 @@ export class Filter {
                 return term.operand;
             }
             const operator = Filter.canonicalize_operator(term.operator);
-            return sign + operator + ":" + Filter.encodeOperand(term.operand, term.operator);
+            return sign + operator + ":" + Filter.encodeOperand(term.operand);
         });
         return term_strings.join(" ");
     }
 
     static term_type(term: NarrowTerm): string {
-        const operator = term.operator;
-        const operand = term.operand;
-        const negated = term.negated;
+        let result = term.negated ? "not-" : "";
 
-        let result = negated ? "not-" : "";
+        result += term.operator;
 
-        result += operator;
-
-        if (["is", "has", "in", "channels"].includes(operator)) {
-            result += "-" + operand;
+        // Using `||` instead of `array.includes` to help with type checking.
+        if (
+            term.operator === "is" ||
+            term.operator === "has" ||
+            term.operator === "in" ||
+            term.operator === "channels"
+        ) {
+            result += "-" + term.operand;
         }
 
         return result;
@@ -713,14 +760,19 @@ export class Filter {
         }
 
         if (terms[0] !== undefined && terms[1] !== undefined) {
-            const is = (term: NarrowTerm, expected: string): boolean =>
-                Filter.canonicalize_operator(term.operator) === expected && !term.negated;
+            const term_0 = Filter.canonicalize_term(terms[0]);
+            const term_1 = Filter.canonicalize_term(terms[1]);
 
-            if (is(terms[0], "channel") && is(terms[1], "topic")) {
+            if (
+                term_0.operator === "channel" &&
+                !term_0.negated &&
+                term_1.operator === "topic" &&
+                !term_1.negated
+            ) {
                 // `channel` might be undefined if it's coming from a text query
-                const channel = stream_data.get_sub_by_id_string(terms[0].operand)?.name;
+                const channel = stream_data.get_sub_by_id_string(term_0.operand)?.name;
                 if (channel) {
-                    const topic = terms[1].operand;
+                    const topic = term_1.operand;
                     parts.push({
                         type: "channel_topic",
                         channel,
@@ -733,15 +785,14 @@ export class Filter {
         }
 
         const more_parts = terms.map((term): Part => {
-            const operand = term.operand;
-            const canonicalized_operator = Filter.canonicalize_operator(term.operator);
-            if (canonicalized_operator === "is") {
+            term = Filter.canonicalize_term(term);
+            if (term.operator === "is") {
                 // Some operands have their own negative words, like
                 // unresolved, rather than the default "exclude " prefix.
                 const custom_negated_operand_phrases: Record<string, string> = {
                     resolved: "unresolved",
                 };
-                const negated_phrase = custom_negated_operand_phrases[operand];
+                const negated_phrase = custom_negated_operand_phrases[term.operand];
                 if (term.negated && negated_phrase !== undefined) {
                     return {
                         type: "is_operator",
@@ -754,10 +805,10 @@ export class Filter {
                 return {
                     type: "is_operator",
                     verb,
-                    operand,
+                    operand: term.operand,
                 };
             }
-            if (canonicalized_operator === "has") {
+            if (term.operator === "has") {
                 // search_suggestion.get_suggestions takes care that this message will
                 // only be shown if the `has` operator is not at the last.
                 const valid_has_operands = [
@@ -770,31 +821,43 @@ export class Filter {
                     "reaction",
                     "reactions",
                 ];
-                if (!valid_has_operands.includes(operand)) {
+                if (!valid_has_operands.includes(term.operand)) {
                     return {
                         type: "invalid_has",
-                        operand,
+                        operand: term.operand,
                     };
                 }
             }
-            if (canonicalized_operator === "channels" && channels_operands.has(operand)) {
+            if (term.operator === "channels" && channels_operands.has(term.operand)) {
                 return {
                     type: "plain_text",
-                    content: this.describe_channels_operator(term.negated ?? false, operand),
+                    content: this.describe_channels_operator(term.negated ?? false, term.operand),
                 };
             }
-            const prefix_for_operator = Filter.operator_to_prefix(
-                canonicalized_operator,
-                term.negated,
-            );
-            if (USER_OPERATORS.has(canonicalized_operator)) {
-                const user_emails = operand.split(",");
-                const users: ValidOrInvalidUser[] = user_emails.map((email) => {
-                    const person = people.get_by_email(email);
+            const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
+            if (
+                term.operator === "sender" ||
+                term.operator === "dm" ||
+                term.operator === "dm-including"
+            ) {
+                let user_ids: number[];
+                if (term.operator === "sender") {
+                    user_ids = [term.operand];
+                } else {
+                    user_ids = term.operand;
+                }
+                const users: ValidOrInvalidUser[] = user_ids.map((user_id) => {
+                    const person = people.get_by_user_id(user_id);
                     if (person === undefined) {
+                        if (is_operator_suggestion) {
+                            return {
+                                valid_user: false,
+                                operand: "",
+                            };
+                        }
                         return {
                             valid_user: false,
-                            operand: email,
+                            operand: String(user_id),
                         };
                     }
                     return {
@@ -809,8 +872,8 @@ export class Filter {
                 };
             }
             if (prefix_for_operator !== "") {
-                if (canonicalized_operator === "channel") {
-                    const stream = stream_data.get_sub_by_id_string(operand);
+                if (term.operator === "channel") {
+                    const stream = stream_data.get_sub_by_id_string(term.operand);
                     const verb = term.negated ? "exclude " : "";
                     if (stream) {
                         return {
@@ -822,18 +885,18 @@ export class Filter {
                     // Assume the operand is a partially formed name and return
                     // the operator as the channel name in the next block.
                 }
-                if (canonicalized_operator === "topic" && !is_operator_suggestion) {
+                if (term.operator === "topic" && !is_operator_suggestion) {
                     return {
                         type: "prefix_for_operator",
                         prefix_for_operator,
-                        operand: util.get_final_topic_display_name(operand),
-                        is_empty_string_topic: operand === "",
+                        operand: util.get_final_topic_display_name(term.operand),
+                        is_empty_string_topic: term.operand === "",
                     };
                 }
                 return {
                     type: "prefix_for_operator",
                     prefix_for_operator,
-                    operand,
+                    operand: term.operand,
                 };
             }
             return {
@@ -900,18 +963,16 @@ export class Filter {
             // We should make sure the current user is not included for
             // the `dm` operand for the narrow.
             const dm_participants = message.display_recipient
-                .map((user) => user.email)
-                .filter((user_email) => user_email !== current_user.email);
+                .map((user) => user.id)
+                .filter((user_id) => user_id !== current_user.user_id);
 
             // However, if the current user is the only recipient of the
             // message, we should include the user in the operand.
             if (dm_participants.length === 0) {
-                dm_participants.push(current_user.email);
+                dm_participants.push(current_user.user_id);
             }
 
-            const dm_operand = dm_participants.join(",");
-
-            return [{operator: "dm", operand: dm_operand, negated: false}, ...filtered_terms];
+            return [{operator: "dm", operand: dm_participants, negated: false}, ...filtered_terms];
         }
 
         assert(typeof message.display_recipient === "string");
@@ -930,17 +991,17 @@ export class Filter {
         }
 
         for (const term of raw_terms) {
-            const adjusted_term = {...term};
+            const adjusted_term = Filter.canonicalize_term({...term});
             if (
-                Filter.canonicalize_operator(term.operator) === "channel" &&
+                adjusted_term.operator === "channel" &&
                 term.operand !== message.stream_id.toString()
             ) {
                 adjusted_term.operand = message.stream_id.toString();
                 terms_changed = true;
             }
             if (
-                Filter.canonicalize_operator(term.operator) === "topic" &&
-                !util.lower_same(term.operand, message.topic)
+                adjusted_term.operator === "topic" &&
+                !util.lower_same(adjusted_term.operand, message.topic)
             ) {
                 adjusted_term.operand = message.topic;
                 terms_changed = true;
@@ -981,12 +1042,11 @@ export class Filter {
         }
 
         const sorted_simplified_terms = filter_terms.map((term) => {
-            let operand = term.operand;
             if (term.operator === "channel" || term.operator === "topic") {
-                operand = operand.toLowerCase();
+                term.operand = term.operand.toLowerCase();
             }
 
-            return `${term.negated ? "0" : "1"}-${term.operator}-${operand}`;
+            return `${term.negated ? "0" : "1"}-${term.operator}-${String(term.operand)}`;
         });
         sorted_simplified_terms.sort(util.strcmp);
 
@@ -1002,7 +1062,7 @@ export class Filter {
         return this._predicate;
     }
 
-    terms(): NarrowTerm[] {
+    terms(): NarrowCanonicalTerm[] {
         return this._terms;
     }
 
@@ -1022,10 +1082,13 @@ export class Filter {
         return safe_to_return;
     }
 
-    operands(operator: string): string[] {
-        return this._terms
-            .filter((term) => !term.negated && term.operator === operator)
-            .map((term) => term.operand);
+    terms_with_operator<T extends NarrowCanonicalTerm["operator"]>(
+        operator: T,
+    ): Extract<NarrowCanonicalTerm, {operator: T}>[] {
+        return this._terms.filter(
+            (term): term is Extract<NarrowCanonicalTerm, {operator: T}> =>
+                term.operator === operator,
+        );
     }
 
     has_negated_operand(operator: string, operand: string): boolean {
@@ -1034,16 +1097,19 @@ export class Filter {
         );
     }
 
-    has_operand_case_insensitive(operator: string, operand: string): boolean {
+    has_operand_case_insensitive(
+        operator: NarrowTerm["operator"],
+        operand: NarrowTerm["operand"],
+    ): boolean {
         return this._terms.some(
             (term) =>
                 !term.negated &&
                 term.operator === operator &&
-                term.operand.toLowerCase() === operand.toLowerCase(),
+                String(term.operand).toLowerCase() === String(operand).toLowerCase(),
         );
     }
 
-    has_operand(operator: string, operand: string): boolean {
+    has_operand(operator: NarrowTerm["operator"], operand: NarrowTerm["operand"]): boolean {
         return this._terms.some(
             (term) => !term.negated && term.operator === operator && term.operand === operand,
         );
@@ -1240,7 +1306,7 @@ export class Filter {
         }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
         ) {
             return true;
         }
@@ -1260,12 +1326,14 @@ export class Filter {
         // this comes first because it has 3 term_types but is not a "complex filter"
         if (
             _.isEqual(term_types, ["sender", "search", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
         ) {
             return "/#narrow/has/reaction/sender/me";
         }
         if (_.isEqual(term_types, ["channel", "topic", "search"])) {
-            const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+            const sub = stream_data.get_sub_by_id_string(
+                this.terms_with_operator("channel")[0]!.operand,
+            );
             // if channel does not exist, redirect to home view
             if (!sub) {
                 return "#";
@@ -1273,7 +1341,7 @@ export class Filter {
 
             return `/${internal_url.by_stream_topic_url(
                 sub.stream_id,
-                this.operands("topic")[0]!,
+                this.terms_with_operator("topic")[0]!.operand,
                 sub_store.maybe_get_stream_name,
             )}`;
         }
@@ -1286,7 +1354,9 @@ export class Filter {
         if (term_types[1] === "search") {
             switch (term_types[0]) {
                 case "channel": {
-                    const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+                    const sub = stream_data.get_sub_by_id_string(
+                        this.terms_with_operator("channel")[0]!.operand,
+                    );
                     // if channel does not exist, redirect to home view
                     if (!sub) {
                         return "#";
@@ -1307,7 +1377,14 @@ export class Filter {
                 case "channels-web-public":
                     return "/#narrow/channels/web-public";
                 case "dm":
-                    return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
+                    return (
+                        "/#narrow/dm/" +
+                        people.emails_to_slug(
+                            this.terms_with_operator("dm")
+                                .map((term) => term.operand)
+                                .join(","),
+                        )
+                    );
                 case "is-resolved":
                     return "/#narrow/topics/is/resolved";
                 case "is-followed":
@@ -1315,7 +1392,10 @@ export class Filter {
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":
-                    return "/#narrow/sender/" + people.emails_to_slug(this.operands("sender")[0]!);
+                    return (
+                        "/#narrow/sender/" +
+                        people.user_ids_to_slug([this.terms_with_operator("sender")[0]!.operand])
+                    );
             }
         }
 
@@ -1336,7 +1416,7 @@ export class Filter {
 
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
         ) {
             zulip_icon = "smile";
             return {...context, zulip_icon};
@@ -1348,7 +1428,9 @@ export class Filter {
                 icon = "home";
                 break;
             case "channel": {
-                const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+                const sub = stream_data.get_sub_by_id_string(
+                    this.terms_with_operator("channel")[0]!.operand,
+                );
                 if (!sub) {
                     icon = "question-circle-o";
                     break;
@@ -1405,7 +1487,9 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["channel", "topic"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["channel"]))
         ) {
-            const sub = stream_data.get_sub_by_id_string(this.operands("channel")[0]!);
+            const sub = stream_data.get_sub_by_id_string(
+                this.terms_with_operator("channel")[0]!.operand,
+            );
             if (!sub) {
                 return $t({defaultMessage: "Unknown channel"});
             }
@@ -1416,17 +1500,17 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["dm", "with"])) ||
             (term_types.length === 1 && _.isEqual(term_types, ["dm"]))
         ) {
-            const emails = this.operands("dm")[0]!.split(",");
-            if (emails.length === 1) {
-                const user = people.get_by_email(emails[0]!);
+            const user_ids = this.terms_with_operator("dm")[0]!.operand;
+            if (user_ids.length === 1) {
+                const user = people.get_by_user_id(user_ids[0]!);
                 if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
                     return $t({defaultMessage: "Messages with yourself"});
                 }
             }
-            const names = emails.map((email) => {
-                const person = people.get_by_email(email);
+            const names = user_ids.map((user_id) => {
+                const person = people.get_by_user_id(user_id);
                 if (!person) {
-                    return email;
+                    return String(user_id);
                 }
                 if (muted_users.is_user_muted(person.user_id)) {
                     if (people.should_add_guest_user_indicator(person.user_id)) {
@@ -1444,8 +1528,8 @@ export class Filter {
             return util.format_array_as_list(names, "long", "conjunction");
         }
         if (term_types.length === 1 && _.isEqual(term_types, ["sender"])) {
-            const email = this.operands("sender")[0]!;
-            const user = people.get_by_email(email);
+            const user_id = this.terms_with_operator("sender")[0]!.operand;
+            const user = people.get_by_user_id(user_id);
             if (user === undefined) {
                 return $t({defaultMessage: "Messages sent by unknown user"});
             }
@@ -1501,7 +1585,7 @@ export class Filter {
         }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
         ) {
             return $t({defaultMessage: "Reactions"});
         }
@@ -1534,7 +1618,7 @@ export class Filter {
         }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
-            this.operands("sender")[0] === people.my_current_email()
+            this.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
         ) {
             return {
                 description: $t({
@@ -1555,7 +1639,7 @@ export class Filter {
 
     contains_only_private_messages(): boolean {
         return (
-            (this.has_operator("is") && this.operands("is")[0] === "dm") ||
+            (this.has_operator("is") && this.terms_with_operator("is")[0]!.operand === "dm") ||
             this.has_operator("dm") ||
             this.has_operator("dm-including")
         );
@@ -1599,13 +1683,13 @@ export class Filter {
         return true;
     }
 
-    fix_terms(terms: NarrowTerm[]): NarrowTerm[] {
-        terms = this._canonicalize_terms(terms);
-        terms = this._fix_redundant_is_private(terms);
-        return terms;
+    fix_terms(terms: NarrowTerm[]): NarrowCanonicalTerm[] {
+        let canonical_terms = this._canonicalize_terms(terms);
+        canonical_terms = this._fix_redundant_is_private(canonical_terms);
+        return canonical_terms;
     }
 
-    _fix_redundant_is_private(terms: NarrowTerm[]): NarrowTerm[] {
+    _fix_redundant_is_private(terms: NarrowCanonicalTerm[]): NarrowCanonicalTerm[] {
         // Every DM is a DM, so drop `is:dm` if on a DM conversation.
         if (!terms.some((term) => Filter.term_type(term) === "dm")) {
             return terms;
@@ -1614,7 +1698,7 @@ export class Filter {
         return terms.filter((term) => Filter.term_type(term) !== "is-dm");
     }
 
-    _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
+    _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowCanonicalTerm[] {
         const terms = terms_mixed_case.map((term: NarrowTerm) => Filter.canonicalize_term(term));
         return terms;
     }
@@ -1696,24 +1780,6 @@ export class Filter {
         return first_id;
     }
 
-    update_email(user_id: number, new_email: string): void {
-        for (const term of this._terms) {
-            switch (term.operator) {
-                case "dm-including":
-                case "group-pm-with":
-                case "dm":
-                case "pm-with":
-                case "sender":
-                case "from":
-                    term.operand = people.update_email_in_reply_to(
-                        term.operand,
-                        user_id,
-                        new_email,
-                    );
-            }
-        }
-    }
-
     // Build a filter function from a list of operators.
     _build_predicate(): (message: Message) => boolean {
         const terms = this._terms;
@@ -1728,7 +1794,7 @@ export class Filter {
 
         return (message: Message) =>
             terms.every((term) => {
-                let ok = message_matches_search_term(message, term.operator, term.operand);
+                let ok = message_matches_search_term(message, term);
                 if (term.negated) {
                     ok = !ok;
                 }
@@ -1826,7 +1892,7 @@ export class Filter {
         }
 
         if (!message) {
-            const message_id = Number.parseInt(this.operands("with")[0]!, 10);
+            const message_id = Number.parseInt(this.terms_with_operator("with")[0]!.operand, 10);
             message = message_store.get(message_id);
         }
 

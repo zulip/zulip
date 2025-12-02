@@ -211,7 +211,7 @@ run_test("urls", () => {
     url = hash_util.direct_message_group_with_url("22,23");
     assert.equal(url, "#narrow/dm/22,23-group");
 
-    url = hash_util.by_sender_url(ray.email);
+    url = hash_util.by_sender_url(ray.user_id);
     assert.equal(url, "#narrow/sender/22-Raymond");
 
     let emails = hash_util.decode_operand("dm", "22,23-group");
@@ -221,17 +221,6 @@ run_test("urls", () => {
     assert.equal(emails, "alice@example.com,ray@example.com");
 
     emails = hash_util.decode_operand("dm", "5-group");
-    assert.equal(emails, "me@example.com");
-
-    // Even though we renamed "pm-with" to "dm", preexisting
-    // links/URLs with "pm-with" operator are decoded correctly.
-    emails = hash_util.decode_operand("pm-with", "22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
-
-    emails = hash_util.decode_operand("pm-with", "5,22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
-
-    emails = hash_util.decode_operand("pm-with", "5-group");
     assert.equal(emails, "me@example.com");
 });
 
