@@ -140,7 +140,7 @@ function build_page(): void {
             }
             const data = {
                 name: $("#playground_name").val(),
-                pygments_language: language_val,
+                pygments_language: language_val.toLowerCase(),
                 url_template: $("#playground_url_template").val(),
             };
             void channel.post({
