@@ -1,11 +1,4 @@
-<div class="channel-folder-subsection {{#if is_stream_edit}}settings-subsection-parent{{/if}}">
-    <div class="channel-folder-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
-        <h3 class="stream_setting_subsection_title">{{t "Folders"}}</h3>
-        {{#if is_stream_edit}}
-            {{> ../settings/settings_save_discard_widget section_name="stream-permissions" }}
-        {{/if}}
-    </div>
-
+<div class="channel-folder-subsection">
     <div class="input-group channel-folder-container">
         {{!-- This is a modified version of dropdown_widget_with_label.hbs
         component so that we can show dropdown button and button to create

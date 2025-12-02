@@ -75,35 +75,35 @@
                   rendered_description=rendered_description
                   }}
             </div>
+            <div class="creator_details stream_details_box">
+                {{> ../creator_details .}}
+            </div>
             {{/with}}
-            <div class="stream_details_box settings-subsection-parent">
-                <div class="stream_details_box_header subsection-header">
+
+            <div class="stream-settings-subsection settings-subsection-parent">
+                <div class="subsection-header">
                     <h3 class="stream_setting_subsection_title">
-                        {{t "Channel details" }}
+                        {{t "Settings" }}
                     </h3>
                     <div class="stream_email_address_error alert-notification"></div>
-                    {{> ../settings/settings_save_discard_widget section_name="channel-details"}}
-                </div>
-                {{#with sub}}
-                <div class="creator_details stream_details_subsection">
-                    {{> ../creator_details .}}
+                    {{> ../settings/settings_save_discard_widget section_name="channel-general-settings"}}
                 </div>
 
                 <div class="default-stream">
                     {{> ../settings/settings_checkbox
                       prefix="id_"
                       setting_name="is_default_stream"
-                      is_checked=../check_default_stream
+                      is_checked=check_default_stream
                       label=(t "Default channel for new users")
                       help_link="/help/set-default-channels-for-new-users"
                       }}
                 </div>
 
-                <div class="stream_details_subsection">
-                    {{t "Channel ID"}}<br/>
-                    {{stream_id}}
-                </div>
-                {{/with}}
+                {{> channel_folder .
+                  is_stream_edit=true
+                  channel_folder_widget_name="folder_id"
+                  }}
+
                 <div class="input-group stream-email-box">
                     <label for="copy_stream_email_button" class="title inline-block">Email address</label>
                     <p class="field-hint">
@@ -123,11 +123,6 @@
                     </span>
                 </div>
             </div>
-
-            {{> channel_folder .
-              is_stream_edit=true
-              channel_folder_widget_name="folder_id"
-              }}
         </div>
 
         <div id="personal-stream-settings" class="stream_section" data-stream-section="personal">
