@@ -393,10 +393,6 @@ h4.user_group_setting_subsection_title {
 
         .input-group {
             margin-bottom: 1.25em; /* 20px at 16px/em */
-
-            &.control-label-disabled {
-                width: fit-content;
-            }
         }
     }
 

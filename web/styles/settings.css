@@ -413,6 +413,10 @@ select.settings_select {
     }
 }
 
+.settings-checkbox-wrapper {
+    width: fit-content;
+}
+
 #bot-edit-form {
     .api-key-details-container,
     .zuliprc-container {
