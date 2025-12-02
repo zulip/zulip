@@ -58,46 +58,52 @@ class WorkspaceSyncService:
         workspace_uuid = uuid.UUID(request.nodl_workspace_id)
 
         try:
-            with transaction.atomic():
-                # Try to get existing extension
-                try:
-                    extension = NodlRealmExtension.objects.select_related("zulip_realm").get(
-                        nodl_workspace_id=workspace_uuid
-                    )
-                    # Extension exists - update the realm
-                    extension.sync_status = SyncStatus.SYNCING
-                    extension.save(update_fields=["sync_status"])
-                    realm = self._update_realm(extension.zulip_realm, request)
-                except NodlRealmExtension.DoesNotExist:
-                    # New workspace - create realm FIRST, then extension WITH realm
-                    realm = self._create_realm(request)
-                    extension = NodlRealmExtension.objects.create(
-                        nodl_workspace_id=workspace_uuid,
-                        zulip_realm=realm,
-                        sync_status=SyncStatus.SYNCING,
-                    )
-                    self._create_default_stream(realm)
-
-                # Sync members if provided
-                if request.members:
-                    self.sync_workspace_members(realm, request.members)
-
-                extension.sync_status = SyncStatus.SYNCED
-                extension.sync_error = None
-                extension.last_synced_at = timezone.now()
-                extension.save()
-
-                logger.info(
-                    "Successfully synced workspace %s to Zulip realm %d",
-                    request.nodl_workspace_id,
-                    realm.id,
+            # Check if extension exists (read-only, no transaction needed)
+            try:
+                extension = NodlRealmExtension.objects.select_related("zulip_realm").get(
+                    nodl_workspace_id=workspace_uuid
                 )
-
-                return WorkspaceSyncResult(
-                    success=True,
-                    zulip_realm_id=realm.id,
-                    error=None,
+                # Extension exists - update the realm
+                extension.sync_status = SyncStatus.SYNCING
+                extension.save(update_fields=["sync_status"])
+                realm = self._update_realm(extension.zulip_realm, request)
+                is_new_realm = False
+            except NodlRealmExtension.DoesNotExist:
+                # New workspace - create realm FIRST (has its own durable transaction)
+                realm = self._create_realm(request)
+                # Then create extension linking to the new realm
+                extension = NodlRealmExtension.objects.create(
+                    nodl_workspace_id=workspace_uuid,
+                    zulip_realm=realm,
+                    sync_status=SyncStatus.SYNCING,
                 )
+                is_new_realm = True
+
+            # Create default stream for new realms
+            if is_new_realm:
+                self._create_default_stream(realm)
+
+            # Sync members if provided
+            if request.members:
+                self.sync_workspace_members(realm, request.members)
+
+            # Mark as synced
+            extension.sync_status = SyncStatus.SYNCED
+            extension.sync_error = None
+            extension.last_synced_at = timezone.now()
+            extension.save()
+
+            logger.info(
+                "Successfully synced workspace %s to Zulip realm %d",
+                request.nodl_workspace_id,
+                realm.id,
+            )
+
+            return WorkspaceSyncResult(
+                success=True,
+                zulip_realm_id=realm.id,
+                error=None,
+            )
 
         except Exception as e:
             logger.exception(
