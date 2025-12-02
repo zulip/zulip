@@ -25,6 +25,7 @@ from zerver.tornado.views import (
     notify,
     web_reload_clients,
 )
+from zerver.views import server_time
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
@@ -997,4 +998,10 @@ urls += [path("health", health)]
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend
 # tests to fail
+
+# Server time endpoint - returns current server timestamp
+urls += [
+    path("server/server_time", server_time.server_time, name="server_time"),
+]
+
 urlpatterns = i18n_patterns(*i18n_urls) + urls
