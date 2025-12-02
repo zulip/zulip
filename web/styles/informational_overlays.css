@@ -1,5 +1,5 @@
 .informational-overlays {
-    .overlay-content {
+    .overlay-container {
         width: var(--informational-overlay-max-width);
         margin: 0 auto;
         position: relative;
@@ -96,7 +96,7 @@
 
 @media only screen and (width < $md_min) {
     .informational-overlays {
-        .overlay-content {
+        .overlay-container {
             width: calc(100% - 20px);
             /* Constrain to same width as in larger viewports. */
             max-width: var(--informational-overlay-max-width);
