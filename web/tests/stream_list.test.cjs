@@ -207,7 +207,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     const $social_li = $("<social-sidebar-row-stub>");
     const stream_id = social.stream_id;
 
-    $social_li.length = 0;
+    $social_li.length = 1;
 
     const $privacy_elem = $.create("privacy-stub");
     $social_li.set_find_results(".stream-privacy", $privacy_elem);
@@ -627,7 +627,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
     stream_data.rename_sub(sub, new_name);
 
     const $li_stub = $.create("li stub");
-    $li_stub.length = 0;
+    $li_stub.length = 1;
 
     mock_template("stream_sidebar_row.hbs", false, (payload) => {
         assert.deepEqual(payload, {
