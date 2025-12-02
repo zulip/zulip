@@ -85,7 +85,6 @@ export function initialize(language_params: {language_list: typeof language_list
 
 type Language = {
     code: string;
-    name: string;
     name_with_percent: string;
     selected: boolean;
 };
@@ -101,7 +100,6 @@ export function get_language_list_columns(default_language: string): Language[] 
         const selected = default_language === language.code || default_language === language.locale;
         formatted_list.push({
             code: language.code,
-            name: language.name,
             name_with_percent,
             selected,
         });

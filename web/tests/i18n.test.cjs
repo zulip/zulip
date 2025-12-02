@@ -130,19 +130,16 @@ run_test("language_list", () => {
 
     const successful_formatted_list = [
         {
-            name: "English",
             code: "en",
             name_with_percent: "English",
             selected: true,
         },
         {
-            name: "British English",
             code: "en-gb",
             name_with_percent: "British English (99%)",
             selected: false,
         },
         {
-            name: "Bahasa Indonesia",
             code: "id",
             name_with_percent: "Bahasa Indonesia (32%)",
             selected: false,
