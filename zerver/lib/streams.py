@@ -1828,8 +1828,9 @@ def get_streams_for_user(
     include_public = include_public and user_profile.can_access_public_streams()
 
     # Start out with all streams in the realm.
+    # Include recipient to avoid N+1 queries during serialization
     query = Stream.objects.select_related(
-        "can_send_message_group", "can_send_message_group__named_user_group"
+        "recipient", "can_send_message_group", "can_send_message_group__named_user_group"
     ).filter(realm=user_profile.realm)
 
     if exclude_archived:

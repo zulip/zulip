@@ -219,10 +219,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
         )
 
     # Build query for messages in this stream
+    # Include recipient in select_related to avoid N+1 queries during serialization
     messages_query = Message.objects.filter(
         realm_id=user.realm_id,
         recipient_id=stream.recipient_id,
-    ).select_related("sender")
+    ).select_related("sender", "recipient")
 
     # Filter by topic if specified
     if topic:
@@ -376,7 +377,8 @@ def send_message(request: HttpRequest) -> HttpResponse:
         )
 
         # Fetch the created message to return full details
-        message = Message.objects.select_related("sender").get(id=result.message_id)
+        # Include recipient to avoid N+1 query during serialization
+        message = Message.objects.select_related("sender", "recipient").get(id=result.message_id)
         serializer = MessageSerializer.from_message(message)
 
         return JsonResponse({
