@@ -160,7 +160,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                         },
                     ],
                 ]),
-                strings: ["zo", "sender:zo", "dm:zo", "dm-including:zo"],
+                strings: ["zo", "sender:zo", "dm:zo", "dm-including:zo", "mentions:zo"],
             };
 
             /* Test source */
@@ -191,6 +191,41 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+        }
+
+        {
+            const search_suggestions = {
+                lookup_table: new Map([
+                    [
+                        "mentions:zo",
+                        {
+                            description_html: "Mentions",
+                            is_people: true,
+                            search_string: "mentions:user7@zulipdev.com",
+                            users: [
+                                {
+                                    user_pill_context: {
+                                        display_value: "<strong>Zo</strong>e",
+                                        has_image: true,
+                                        id: 7,
+                                        img_src:
+                                            "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1",
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                ]),
+                strings: ["mentions:zo"],
+            };
+
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
+            const expected_source_value = search_suggestions.strings;
+            const source = opts.source("zo");
+            assert.deepStrictEqual(source, expected_source_value);
+
+            const expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">mentions:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            assert.equal(opts.item_html(source[0]), expected_value);
         }
 
         {

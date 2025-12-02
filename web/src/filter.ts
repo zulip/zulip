@@ -223,6 +223,21 @@ function message_matches_search_term(message: Message, operator: string, operand
             }
             return operand_ids.every((operand_id) => user_ids.includes(operand_id));
         }
+
+        case "mentions": {
+            const operand_user = people.get_by_email(operand);
+
+            if (!operand_user) {
+                return false;
+            }
+
+            const user_id_str = `data-user-id="${operand_user.user_id}"`;
+
+            return (
+                message.content.includes(user_id_str) &&
+                !message.content.includes("user-mention silent")
+            );
+        }
     }
 
     // We will never get here since operator type validation would fail.
@@ -245,6 +260,7 @@ export function create_user_pill_context(user: User): UserPillItem {
 
 const USER_OPERATORS = new Set([
     "dm-including",
+    "mentions",
     "dm",
     "sender",
     "from",
@@ -337,6 +353,10 @@ export class Filter {
                 break;
             case "dm-including":
                 narrow_term.operand = narrow_term.operand.toLowerCase();
+                break;
+
+            case "mentions":
+                operand = operand.toLowerCase();
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -555,6 +575,7 @@ export class Filter {
             case "dm":
             case "pm-with":
             case "dm-including":
+            case "mentions":
                 if (term.operand === "me") {
                     return true;
                 }
@@ -620,6 +641,7 @@ export class Filter {
             "topic",
             "dm",
             "dm-including",
+            "mentions",
             "with",
             "sender",
             "near",
@@ -692,6 +714,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "mentions":
+                return verb + "Mentions";
 
             case "in":
                 return verb + "messages in";
@@ -1108,6 +1133,7 @@ export class Filter {
             "not-topic",
             "dm",
             "dm-including",
+            "mentions",
             "not-dm-including",
             "is-dm",
             "not-is-dm",
