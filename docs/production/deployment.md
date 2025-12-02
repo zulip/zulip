@@ -87,12 +87,6 @@ as well as those mentioned in the
   default database user will be `zulip`. This setting can only be set
   on the first install.
 
-- `--postgresql-missing-dictionaries`: Set `postgresql.missing_dictionaries`
-  ([docs][missing-dicts]) in the Zulip settings, which omits some configuration
-  needed for full-text indexing. This should be used with [cloud managed
-  databases like RDS][postgresql]. This option conflicts with
-  `--no-overwrite-settings`.
-
 - `--no-init-db`: This option instructs the installer to not do any
   database initialization. This should be used when you already have a
   Zulip database.
