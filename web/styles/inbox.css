@@ -274,6 +274,9 @@
             .inbox-left-part-wrapper {
                 display: flex;
                 width: 80%;
+                /* Prevent long labels from overflowing */
+                overflow: hidden;
+                min-width: 0;
             }
 
             #inbox-direct-messages-container {
@@ -289,6 +292,8 @@
                 width: 100%;
                 display: grid;
                 align-items: center;
+                /* Ensure grid doesn't overflow its container */
+                min-width: 0;
 
                 &:hover {
                     cursor: pointer;
@@ -315,10 +320,23 @@
                     flex-wrap: wrap;
                     column-gap: 10px;
                     grid-area: recipient_info;
+                    /* Ensure long labels don't overflow container */
+                    overflow: hidden;
+                    min-width: 0;
 
                     .user_block {
                         display: flex;
                         align-items: center;
+                        /* Allow text truncation in flex children */
+                        min-width: 0;
+                        max-width: 100%;
+                    }
+
+                    .recipients_name {
+                        /* Truncate long recipient names with ellipsis */
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
                     }
                 }
             }
