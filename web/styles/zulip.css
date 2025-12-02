@@ -1586,43 +1586,77 @@ div.topic_edit_spinner .loading_indicator_spinner {
     user-select: none;
 }
 
-.flatpickr-calendar {
-    /* Hide the up and down arrows in the Flatpickr datepicker year */
-    .flatpickr-months .numInputWrapper span {
-        display: none;
+.native-datetime-picker {
+    background-color: var(--color-background);
+    border: 1px solid var(--color-border-popover);
+    border-radius: 6px;
+    box-shadow: 0 4px 20px hsl(0deg 0% 0% / 35%);
+    padding: 15px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .native-datetime-input {
+        width: 100%;
+        padding: 8px 12px;
+        font-size: 14px;
+        color: var(--color-text-default);
+        background-color: var(--color-background);
+        border: 1px solid hsl(0deg 0% 80%);
+        border-radius: 4px;
+        font-family: inherit;
+
+        &:focus {
+            outline: none;
+            border-color: hsl(206deg 80% 62%);
+            box-shadow: 0 0 0 3px hsl(206deg 80% 62% / 20%);
+        }
+
+        &::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: var(--calendar-picker-filter, none);
+        }
     }
 
-    .flatpickr-time-separator {
-        position: relative;
-        left: 5px;
+    .native-datetime-actions {
+        display: flex;
+        justify-content: flex-end;
     }
 
-    .flatpickr-time input {
-        margin: 0 5px;
-        min-height: 30px;
-    }
-
-    .flatpickr-confirm {
+    .native-datetime-confirm {
         color: hsl(0deg 0% 100%);
         background-color: hsl(213deg 90% 65%);
-        font-size: var(--flatpickr-confirm-button-font-size);
+        font-size: 14px;
         font-weight: 600;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: hsl(213deg 90% 60%);
+        }
+
+        &:active {
+            background-color: hsl(213deg 90% 55%);
+        }
+
+        &:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px hsl(213deg 90% 65% / 30%);
+        }
     }
 
     @media (width < $md_min) {
-        /* Center align flatpickr on mobile
-         * devices so that it doesn't go out of
-         * the viewport. */
-        left: 0 !important;
-        right: 0 !important;
-        margin: auto;
-
-        &::after,
-        &::before {
-            border-top-width: 0 !important;
-        }
+        left: 50% !important;
+        transform: translateX(-50%);
+        min-width: 260px;
+        max-width: calc(100vw - 20px);
     }
 }
+
 
 #about-zulip {
     .exit {

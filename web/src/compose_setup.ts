@@ -22,22 +22,22 @@ import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
-import {$t_html} from "./i18n.ts";
+import { $t_html } from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import {page_params} from "./page_params.ts";
+import { page_params } from "./page_params.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
-import {unresolve_name} from "./resolved_topic.ts";
+import { unresolve_name } from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
-import {get_timestamp_for_flatpickr} from "./timerender.ts";
+import { get_timestamp_for_flatpickr } from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
@@ -134,7 +134,7 @@ export function initialize(): void {
         const $edit_banners_container = $(event.target).closest(".edit_form_banners");
         const is_edit_input = $edit_banners_container.length > 0;
         const $banner_container = is_edit_input ? $edit_banners_container : $("#compose_banners");
-        return {is_edit_input, $banner_container};
+        return { is_edit_input, $banner_container };
     }
 
     $("body").on(
@@ -144,7 +144,7 @@ export function initialize(): void {
         )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            const {$banner_container, is_edit_input} = get_input_info(event);
+            const { $banner_container, is_edit_input } = get_input_info(event);
             assert(event.target instanceof HTMLElement);
             const $row = $(event.target).closest(".message_row");
             compose_validate.clear_stream_wildcard_warnings($banner_container);
@@ -219,8 +219,8 @@ export function initialize(): void {
                     ) {
                         message_view.show(
                             [
-                                {operator: "channel", operand: stream_id_string},
-                                {operator: "topic", operand: new_topic},
+                                { operator: "channel", operand: stream_id_string },
+                                { operator: "topic", operand: new_topic },
                             ],
                             {},
                         );
@@ -293,7 +293,7 @@ export function initialize(): void {
         )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            const {$banner_container} = get_input_info(event);
+            const { $banner_container } = get_input_info(event);
             const $invite_row = $(event.target).parents(".main-view-banner");
 
             const user_id = Number($invite_row.attr("data-user-id"));
@@ -305,7 +305,7 @@ export function initialize(): void {
 
             function xhr_failure(xhr: JQuery.jqXHR<unknown>): void {
                 let error_message = "Failed to subscribe user!";
-                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                const parsed = z.object({ msg: z.string() }).safeParse(xhr.responseJSON);
                 if (parsed.success) {
                     error_message = parsed.data.msg;
                 }
@@ -448,7 +448,7 @@ export function initialize(): void {
                 },
             );
         } else {
-            flatpickr.flatpickr_instance?.close();
+            flatpickr.native_picker_instance?.container.remove();
         }
     });
 
@@ -461,7 +461,7 @@ export function initialize(): void {
 
             if (question === "") {
                 ui_report.error(
-                    $t_html({defaultMessage: "Please enter a question."}),
+                    $t_html({ defaultMessage: "Please enter a question." }),
                     undefined,
                     $("#dialog_error"),
                 );
@@ -471,9 +471,9 @@ export function initialize(): void {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Create a poll"}),
+            html_heading: $t_html({ defaultMessage: "Create a poll" }),
             html_body: render_add_poll_modal(),
-            html_submit_button: $t_html({defaultMessage: "Add poll"}),
+            html_submit_button: $t_html({ defaultMessage: "Add poll" }),
             close_on_submit: true,
             on_click(e) {
                 // frame a message using data input in modal, then populate the compose textarea with it
@@ -522,7 +522,7 @@ export function initialize(): void {
                     const todo_description = $(this).find(".todo-description-input").val();
                     if (!todo_name && todo_description) {
                         ui_report.error(
-                            $t_html({defaultMessage: "Please enter task title."}),
+                            $t_html({ defaultMessage: "Please enter task title." }),
                             undefined,
                             $("#dialog_error"),
                         );
@@ -533,9 +533,9 @@ export function initialize(): void {
             }
 
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Create a collaborative to-do list"}),
+                html_heading: $t_html({ defaultMessage: "Create a collaborative to-do list" }),
                 html_body: render_add_todo_list_modal(),
-                html_submit_button: $t_html({defaultMessage: "Create to-do list"}),
+                html_submit_button: $t_html({ defaultMessage: "Create to-do list" }),
                 close_on_submit: true,
                 on_click(e) {
                     // frame a message using data input in modal, then populate the compose textarea with it
@@ -735,7 +735,7 @@ export function initialize(): void {
                 topic: page_params.narrow_topic,
             });
         } else {
-            compose_actions.start({message_type: "stream"});
+            compose_actions.start({ message_type: "stream" });
         }
     }
 }

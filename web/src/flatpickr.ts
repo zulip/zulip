@@ -1,148 +1,167 @@
-import {formatISO} from "date-fns";
-import flatpickr from "flatpickr";
-import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
+import {formatISO, parseISO} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";
 import {user_settings} from "./user_settings.ts";
-import * as util from "./util.ts";
 
-export let flatpickr_instance: flatpickr.Instance | undefined;
+export let native_picker_instance: {
+    element: HTMLInputElement;
+    container: HTMLDivElement;
+    isOpen: boolean;
+} | undefined;
 
 export function is_open(): boolean {
-    return Boolean(flatpickr_instance?.isOpen);
+    return Boolean(native_picker_instance?.isOpen);
 }
 
-function is_numeric_key(key: string): boolean {
-    return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
+function format_datetime_for_input(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function create_native_picker_html(default_timestamp: Date | string): string {
+    const date = typeof default_timestamp === "string" ? parseISO(default_timestamp) : default_timestamp;
+    const formatted_value = format_datetime_for_input(date);
+    
+    return `
+        <div class="native-datetime-picker">
+            <input type="datetime-local" 
+                   class="native-datetime-input" 
+                   value="${formatted_value}"
+                   step="60">
+            <div class="native-datetime-actions">
+                <button type="button" class="native-datetime-confirm">${$t({defaultMessage: "Confirm"})}</button>
+            </div>
+        </div>
+    `;
 }
 
 export function show_flatpickr(
     element: HTMLElement,
     callback: (time: string) => void,
-    default_timestamp: flatpickr.Options.DateOption,
-    options: flatpickr.Options.Options = {},
-): flatpickr.Instance {
-    const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
+    default_timestamp: Date | string,
+    options: {position?: string; ignoredFocusElements?: HTMLElement[]} = {},
+): typeof native_picker_instance {
+    const $container = $(create_native_picker_html(default_timestamp));
+    const container_element = $container[0];
+    assert(container_element instanceof HTMLDivElement);
+    
+    const $input = $container.find<HTMLInputElement>(".native-datetime-input");
+    const input_element = $input[0];
+    assert(input_element instanceof HTMLInputElement);
 
-    flatpickr_instance = flatpickr(util.the($flatpickr_input), {
-        mode: "single",
-        enableTime: true,
-        clickOpens: false,
-        defaultDate: default_timestamp,
-        plugins: [
-            confirmDatePlugin({
-                showAlways: true,
-                confirmText: $t({defaultMessage: "Confirm"}),
-                confirmIcon: "",
-            }),
-        ],
-        positionElement: element,
-        dateFormat: "Z",
-        formatDate: (date) => formatISO(date),
-        disableMobile: true,
-        time_24hr: user_settings.twenty_four_hour_time,
-        minuteIncrement: 1,
-        onKeyDown(_selectedDates, _dateStr, instance, event: KeyboardEvent) {
-            // See also the keydown handler below.
-            //
-            // TODO: Add a clear explanation of exactly how key
-            // interactions are dispatched; it seems that keyboard
-            // logic from this function, the built-in flatpickr
-            // onKeyDown function, and the below keydown handler are
-            // used, but it's not at all clear in what order they are
-            // called, or what the overall control flow is.
-            if (event.key === "Tab") {
-                // Ensure that tab/shift_tab navigation work to
-                // navigate between the elements in flatpickr itself
-                // and the confirmation button at the bottom of the
-                // popover.
-                const elems = [
-                    instance.selectedDateElem,
-                    instance.hourElement,
-                    instance.minuteElement,
-                    ...(user_settings.twenty_four_hour_time ? [] : [instance.amPM]),
-                    $(".flatpickr-confirm")[0],
-                ];
-                assert(event.target instanceof HTMLElement);
-                const i = elems.indexOf(event.target);
-                const n = elems.length;
-                const remain = (i + (event.shiftKey ? -1 : 1)) % n;
-                const target = elems[Math.floor(remain >= 0 ? remain : remain + n)];
-                event.preventDefault();
-                event.stopPropagation();
-                assert(target !== undefined);
-                target.focus();
-            } else {
-                // Prevent keypresses from propagating to our general hotkey.ts
-                // logic. Without this, `Up` will navigate both in the
-                // flatpickr instance and in the message feed behind
-                // it.
-                event.stopPropagation();
-            }
-        },
-        ...options,
+    native_picker_instance = {
+        element: input_element,
+        container: container_element,
+        isOpen: true,
+    };
+
+    $("body").append($container);
+
+    const position_picker = (): void => {
+        const trigger_rect = element.getBoundingClientRect();
+        const picker_height = container_element.offsetHeight;
+        const picker_width = container_element.offsetWidth;
+        const viewport_height = window.innerHeight;
+        const viewport_width = window.innerWidth;
+
+        let top = trigger_rect.bottom + 5;
+        let left = trigger_rect.left;
+
+        if (top + picker_height > viewport_height) {
+            top = trigger_rect.top - picker_height - 5;
+        }
+
+        if (left + picker_width > viewport_width) {
+            left = viewport_width - picker_width - 10;
+        }
+
+        if (left < 10) {
+            left = 10;
+        }
+
+        container_element.style.position = "fixed";
+        container_element.style.top = `${top}px`;
+        container_element.style.left = `${left}px`;
+        container_element.style.zIndex = "105";
+    };
+
+    position_picker();
+
+    const handle_confirm = (): void => {
+        const value = input_element.value;
+        if (value) {
+            const date = new Date(value);
+            const iso_string = formatISO(date);
+            callback(iso_string);
+        }
+        close_picker();
+    };
+
+    const close_picker = (): void => {
+        if (native_picker_instance) {
+            native_picker_instance.isOpen = false;
+            $container.remove();
+            native_picker_instance = undefined;
+        }
+    };
+
+    $container.on("click", ".native-datetime-confirm", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handle_confirm();
     });
 
-    const $container = $(flatpickr_instance.calendarContainer);
-
     $container.on("keydown", (e) => {
-        // Main keyboard UI implementation.
-
-        if (is_numeric_key(e.key)) {
-            // Let users type numeric values
-            return true;
-        }
-
-        if (e.key === "Backspace" || e.key === "Delete") {
-            // Let backspace or delete be handled normally
-            return true;
-        }
-
         if (e.key === "Enter") {
-            if (e.target.classList[0] === "flatpickr-day") {
-                // use flatpickr's built-in behavior to choose the selected day.
-                return true;
-            }
-            $container.find(".flatpickr-confirm").trigger("click");
+            e.preventDefault();
+            e.stopPropagation();
+            handle_confirm();
         }
 
         if (e.key === "Escape") {
-            flatpickr_instance?.close();
-            flatpickr_instance?.destroy();
+            e.preventDefault();
+            e.stopPropagation();
+            close_picker();
         }
 
         if (e.key === "Tab") {
-            // Use flatpickr's built-in navigation between elements.
-            return true;
-        }
-
-        if (["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(e.key)) {
-            // use flatpickr's built-in navigation of the date grid.
-            return true;
+            const $confirm_button = $container.find(".native-datetime-confirm");
+            if (e.target === input_element && !e.shiftKey) {
+                e.preventDefault();
+                $confirm_button.trigger("focus");
+            } else if (e.target === $confirm_button[0] && e.shiftKey) {
+                e.preventDefault();
+                input_element.focus();
+            }
         }
 
         e.stopPropagation();
-        e.preventDefault();
-
-        return true;
     });
 
-    $container.on("click", ".flatpickr-confirm", () => {
-        const time = $flatpickr_input.val();
-        assert(typeof time === "string");
-        callback(time);
-        flatpickr_instance?.close();
-        flatpickr_instance?.destroy();
+    $(document).on("click.native-picker", (e) => {
+        if (!$(e.target).closest(".native-datetime-picker").length && 
+            e.target !== element &&
+            !options.ignoredFocusElements?.includes(e.target as HTMLElement)) {
+            close_picker();
+        }
     });
-    flatpickr_instance.open();
-    assert(flatpickr_instance.selectedDateElem !== undefined);
-    flatpickr_instance.selectedDateElem.focus();
 
-    return flatpickr_instance;
+    input_element.focus();
+
+    return native_picker_instance;
 }
 
 export function close_all(): void {
-    $(".flatpickr-calendar").removeClass("open");
+    if (native_picker_instance) {
+        native_picker_instance.isOpen = false;
+        $(native_picker_instance.container).remove();
+        native_picker_instance = undefined;
+    }
+    $(document).off("click.native-picker");
 }

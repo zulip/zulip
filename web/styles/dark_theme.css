@@ -1,5 +1,3 @@
-@import url("flatpickr/dist/themes/dark.css");
-
 %dark-theme {
     color-scheme: dark;
 
@@ -29,11 +27,9 @@
 
     .dropdown-list-delete {
         /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
-        color: color-mix(
-            in oklch,
-            hsl(7deg 100% 74%) 70%,
-            transparent
-        ) !important;
+        color: color-mix(in oklch,
+                hsl(7deg 100% 74%) 70%,
+                transparent) !important;
 
         &:hover {
             color: hsl(7deg 100% 74%) !important;
@@ -88,12 +84,11 @@
     }
 
     #searchbox {
+
         /* Light theme shows hover mostly through box-shadow,
           and dark theme shows it mostly through changing color
           of the search button. */
-        .navbar-search:not(.expanded)
-            #searchbox-input-container:hover
-            .search_icon {
+        .navbar-search:not(.expanded) #searchbox-input-container:hover .search_icon {
             opacity: 0.75;
         }
     }
@@ -120,28 +115,22 @@
         }
     }
 
-    #recent_view
-        .change_visibility_policy
-        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+    #recent_view .change_visibility_policy .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
         filter: invert(1);
     }
 
-    .drafts-container .header-body .delete-drafts-group > *:focus {
+    .drafts-container .header-body .delete-drafts-group>*:focus {
         background-color: hsl(228deg 11% 17%);
     }
 
     .table-striped tbody tr:nth-child(even) td {
         border-color: hsl(0deg 0% 0% / 20%);
-        background-color: color-mix(
-            in srgb,
-            hsl(0deg 0% 0%) 20%,
-            var(--color-background-modal)
-        );
+        background-color: color-mix(in srgb,
+                hsl(0deg 0% 0%) 20%,
+                var(--color-background-modal));
     }
 
-    .overlay-message-row
-        .message_header_private_message
-        .message_label_clickable {
+    .overlay-message-row .message_header_private_message .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
     }
@@ -282,13 +271,14 @@
         }
     }
 
-    .panel_user_list > .pill-container,
-    .creator_details > .display_only_pill {
+    .panel_user_list>.pill-container,
+    .creator_details>.display_only_pill {
         &:hover {
             color: inherit;
         }
 
-        > .pill {
+        >.pill {
+
             &:focus,
             &:hover {
                 color: inherit;
@@ -301,6 +291,7 @@
     }
 
     #uppy-editor .uppy-ImageCropper {
+
         /* Uppy cropper canvas has some CSS properties set for the background that
         do not look good for dark theme. When using Uppy Dashboard, this can be
         solved by passing `theme` field with value as true in config options.
@@ -316,11 +307,8 @@
         }
 
         .cropper-view-box {
-            background: repeating-conic-gradient(
-                    hsl(0deg 1.18% 16.67%) 0% 25%,
-                    hsl(0deg 0% 0%) 0% 50%
-                )
-                50%/16px 16px;
+            background: repeating-conic-gradient(hsl(0deg 1.18% 16.67%) 0% 25%,
+                    hsl(0deg 0% 0%) 0% 50%) 50%/16px 16px;
         }
     }
 }
