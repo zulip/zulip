@@ -77,6 +77,15 @@
                 {{> settings_save_discard_widget section_name="onboarding" }}
             </div>
             <div class="organization-settings-parent">
+                {{#if development}}
+                <div class="input-group">
+                    <label for="id_realm_default_avatar_source" class="settings-field-label">{{admin_settings_label.realm_default_avatar_source}}</label>
+                    <select name="realm_default_avatar_source" id="id_realm_default_avatar_source" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                        {{> dropdown_options_widget option_values=default_avatar_source_values}}
+                    </select>
+                </div>
+                {{/if}}
+
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
                   prefix="id_"
