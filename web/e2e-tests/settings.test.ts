@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 
-import type { Page } from "puppeteer";
+import type {Page} from "puppeteer";
 
 import * as common from "./lib/common.ts";
-import { test_credentials } from "./lib/common.ts";
+import {test_credentials} from "./lib/common.ts";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
@@ -18,7 +18,7 @@ async function get_decoded_url_in_selector(page: Page, selector: string): Promis
 
 async function open_manage_bot_tab(page: Page, user_id: number): Promise<void> {
     const manage_button_selector = `#admin_your_bots_table .user_row[data-user-id="${user_id}"] .manage-user-button`;
-    await page.waitForSelector(manage_button_selector, { visible: true });
+    await page.waitForSelector(manage_button_selector, {visible: true});
     await page.click(manage_button_selector);
 
     // Wait for modal, then go to tab
@@ -29,28 +29,28 @@ async function open_settings(page: Page): Promise<void> {
     await common.open_personal_menu(page);
 
     const settings_selector = "#personal-menu-dropdown a[href^='#settings']";
-    await page.waitForSelector(settings_selector, { visible: true });
+    await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 
-    await page.waitForSelector("#settings_content .profile-settings-form", { visible: true });
+    await page.waitForSelector("#settings_content .profile-settings-form", {visible: true});
     const page_url = await common.page_url_with_fragment(page);
     assert.ok(
         page_url.includes("/#settings/"),
         `Page url: ${page_url} does not contain /#settings/`,
     );
     // Wait for settings overlay to open.
-    await page.waitForSelector("#settings_overlay_container", { visible: true });
+    await page.waitForSelector("#settings_overlay_container", {visible: true});
 }
 
 async function test_change_full_name(page: Page): Promise<void> {
-    await page.waitForSelector("#full_name", { visible: true });
+    await page.waitForSelector("#full_name", {visible: true});
     await page.click("#full_name");
 
     const full_name_input_selector = 'input[name="full_name"]';
     await common.clear_and_type(page, full_name_input_selector, "New name");
 
     await page.click("#settings_content .profile-settings-form");
-    await page.waitForSelector(".full-name-change-container .alert-success", { visible: true });
+    await page.waitForSelector(".full-name-change-container .alert-success", {visible: true});
     await page.waitForFunction(
         () => document.querySelector<HTMLInputElement>("#full_name")?.value === "New name",
     );
@@ -60,7 +60,7 @@ async function test_change_password(page: Page): Promise<void> {
     await page.click("#change_password");
 
     const change_password_button_selector = "#change_password_modal .dialog_submit_button";
-    await page.waitForSelector(change_password_button_selector, { visible: true });
+    await page.waitForSelector(change_password_button_selector, {visible: true});
 
     await common.wait_for_micromodal_to_open(page);
     await page.type("#old_password", test_credentials.default_user.password);
@@ -78,7 +78,7 @@ async function test_get_api_key(page: Page): Promise<void> {
     await page.click(show_change_api_key_selector);
 
     const get_api_key_button_selector = "#get_api_key_button";
-    await page.waitForSelector(get_api_key_button_selector, { visible: true });
+    await page.waitForSelector(get_api_key_button_selector, {visible: true});
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
@@ -91,7 +91,7 @@ async function test_get_api_key(page: Page): Promise<void> {
     await page.focus(get_api_key_button_selector);
     await page.click(get_api_key_button_selector);
 
-    await page.waitForSelector("#show_api_key", { visible: true });
+    await page.waitForSelector("#show_api_key", {visible: true});
     const api_key = await common.get_text_from_selector(page, "#api_key_value");
     assert.match(api_key, /[\dA-Za-z]{32}/, "Incorrect API key format.");
 
@@ -134,7 +134,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     const zuliprc_url_selector = `.micromodal .hidden-zuliprc-download`;
     const download_zuliprc_selector = `.download-bot-zuliprc`;
 
-    await page.waitForSelector(download_zuliprc_selector, { visible: true });
+    await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
 
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, zuliprc_url_selector);
@@ -174,7 +174,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     const zuliprc_url_selector = `.micromodal .hidden-zuliprc-download`;
     const download_zuliprc_selector = `.download-bot-zuliprc`;
 
-    await page.waitForSelector(download_zuliprc_selector, { visible: true });
+    await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, zuliprc_url_selector);
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc format for bot.");
@@ -205,18 +205,18 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     await page.click(bot1_edit_button);
 
     const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
-    await page.waitForSelector(edit_form_selector, { visible: true });
+    await page.waitForSelector(edit_form_selector, {visible: true});
     assert.equal(
         await page.$eval(`${edit_form_selector} input[name=full_name]`, (el) => el.value),
         "Bot 1",
     );
 
-    await common.fill_form(page, edit_form_selector, { full_name: "Bot one" });
+    await common.fill_form(page, edit_form_selector, {full_name: "Bot one"});
     const save_button_selector = "#user-profile-modal .dialog_submit_button";
     await page.click(save_button_selector);
 
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
-    await page.waitForSelector("#edit_bot_modal", { hidden: true });
+    await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
     await page.waitForSelector(
         `xpath///*[${common.has_class_x(
@@ -239,19 +239,19 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     await page.click(bot1_edit_button);
 
     const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
-    await page.waitForSelector(edit_form_selector, { visible: true });
+    await page.waitForSelector(edit_form_selector, {visible: true});
     assert.equal(
         await page.$eval(`${edit_form_selector} input[name=full_name]`, (el) => el.value),
         "Bot one",
     );
 
-    await common.fill_form(page, edit_form_selector, { full_name: "Bot 2" });
+    await common.fill_form(page, edit_form_selector, {full_name: "Bot 2"});
     const save_button_selector = "#user-profile-modal .dialog_submit_button";
     await page.click(save_button_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
     await common.wait_for_micromodal_to_open(page);
-    await page.waitForSelector("#dialog_error", { visible: true });
+    await page.waitForSelector("#dialog_error", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "#dialog_error"),
         "Failed: Name is already in use.",
@@ -299,11 +299,11 @@ async function add_alert_word(page: Page, word: string): Promise<void> {
 
 async function check_alert_word_added(page: Page, word: string): Promise<void> {
     const added_alert_word_selector = `.alert-word-item[data-word='${CSS.escape(word)}']`;
-    await page.waitForSelector(added_alert_word_selector, { visible: true });
+    await page.waitForSelector(added_alert_word_selector, {visible: true});
 }
 
 async function get_alert_words_status_text(page: Page): Promise<string> {
-    await page.waitForSelector(alert_word_status_banner_selector, { visible: true });
+    await page.waitForSelector(alert_word_status_banner_selector, {visible: true});
     const status_text = await common.get_text_from_selector(
         page,
         ".alert-word-status-banner .banner-label",
@@ -328,7 +328,7 @@ async function test_duplicate_alert_words_cannot_be_added(
     await page.click("#add-alert-word .dialog_submit_button");
 
     const alert_word_status_selector = "#dialog_error";
-    await page.waitForSelector(alert_word_status_selector, { visible: true });
+    await page.waitForSelector(alert_word_status_selector, {visible: true});
     const status_text = await common.get_text_from_selector(page, alert_word_status_selector);
     assert.strictEqual(status_text, "Alert word already exists!");
 
@@ -339,7 +339,7 @@ async function test_duplicate_alert_words_cannot_be_added(
 async function delete_alert_word(page: Page, word: string): Promise<void> {
     const delete_button_selector = `tr[data-word="${CSS.escape(word)}"] .remove-alert-word`;
     await page.click(delete_button_selector);
-    await page.waitForSelector(delete_button_selector, { hidden: true });
+    await page.waitForSelector(delete_button_selector, {hidden: true});
 }
 
 async function test_alert_word_deletion(page: Page, word: string): Promise<void> {
@@ -363,7 +363,7 @@ async function change_language(page: Page, language_data_code: string): Promise<
         visible: true,
     });
     await page.click("#default_language_widget");
-    await page.waitForSelector(".dropdown-list", { visible: true });
+    await page.waitForSelector(".dropdown-list", {visible: true});
     const language_selector = `li[data-unique-id="${CSS.escape(language_data_code)}"]`;
     await page.click(language_selector);
 }
@@ -389,7 +389,7 @@ async function assert_language_changed_to_chinese(page: Page): Promise<void> {
 async function test_i18n_language_precedence(page: Page): Promise<void> {
     const settings_url_for_german = "http://zulip.zulipdev.com:9981/de/#settings";
     await page.goto(settings_url_for_german);
-    await page.waitForSelector("#settings-change-box", { visible: true });
+    await page.waitForSelector("#settings-change-box", {visible: true});
     const page_language_code = await page.evaluate(() => document.documentElement.lang);
     assert.strictEqual(page_language_code, "de");
 }
@@ -397,9 +397,9 @@ async function test_i18n_language_precedence(page: Page): Promise<void> {
 async function test_default_language_setting(page: Page): Promise<void> {
     // Since the "Bots" section of Personal Settings redirects us to Organization Settings > Bots with the "Your Bots" tab preselected,
     // we need to switch back to the Personal Settings tab to proceed with further testing.
-    await page.waitForSelector('.tab-switcher .ind-tab[data-tab-key="settings"]', { visible: true });
+    await page.waitForSelector('.tab-switcher .ind-tab[data-tab-key="settings"]', {visible: true});
     await page.click('.tab-switcher .ind-tab[data-tab-key="settings"]');
-    await page.waitForSelector("#settings_overlay_container", { visible: true });
+    await page.waitForSelector("#settings_overlay_container", {visible: true});
 
     const preferences_section = '[data-section="preferences"]';
     await page.click(preferences_section);
@@ -414,7 +414,7 @@ async function test_default_language_setting(page: Page): Promise<void> {
     });
     await assert_language_changed_to_chinese(page);
     await test_i18n_language_precedence(page);
-    await page.waitForSelector(preferences_section, { visible: true });
+    await page.waitForSelector(preferences_section, {visible: true});
     await page.click(preferences_section);
 
     // Change the language back to English so that subsequent tests pass.
@@ -423,7 +423,7 @@ async function test_default_language_setting(page: Page): Promise<void> {
     // Check that the saved indicator appears
     await check_language_setting_status(page);
     await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
-    await page.waitForSelector(preferences_section, { visible: true });
+    await page.waitForSelector(preferences_section, {visible: true});
     await page.click(preferences_section);
     await page.waitForSelector("#user-preferences .general-settings-status", {
         visible: true,
@@ -440,13 +440,13 @@ async function test_notifications_section(page: Page): Promise<void> {
 
     const notification_sound_enabled =
         "#user-notification-settings .setting_notification_sound:enabled";
-    await page.waitForSelector(notification_sound_enabled, { visible: true });
+    await page.waitForSelector(notification_sound_enabled, {visible: true});
 
     await common.fill_form(page, "#user-notification-settings .notification-settings-form", {
         enable_stream_audible_notifications: true,
         enable_sounds: false,
     });
-    await page.waitForSelector(notification_sound_enabled, { visible: true });
+    await page.waitForSelector(notification_sound_enabled, {visible: true});
 
     await common.fill_form(page, "#user-notification-settings .notification-settings-form", {
         enable_stream_audible_notifications: true,
