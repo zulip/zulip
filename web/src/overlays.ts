@@ -184,7 +184,7 @@ export function initialize(): void {
 
         // if the target is not the div.overlay element, search up the node tree
         // until it is found.
-        if ($target.is(".exit, .exit-sign, .overlay-content, .exit span")) {
+        if ($target.is(".exit, .exit-sign, .exit span")) {
             $target = $target.closest("[data-overlay]");
         } else if (!$target.is("div.overlay")) {
             // not a valid click target then.
