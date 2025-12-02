@@ -1346,7 +1346,7 @@ export type ExportTypeOption = {
     default: boolean;
 };
 
-export type ExportTypeSlug = "public" | "full_with_consent";
+export type ExportTypeSlug = "public" | "full_with_consent" | "full_without_consent";
 
 export const export_type_values: Record<ExportTypeSlug, ExportTypeOption> = {
     public: {
@@ -1358,6 +1358,11 @@ export const export_type_values: Record<ExportTypeSlug, ExportTypeOption> = {
         value: 2,
         description: $t({defaultMessage: "Standard"}),
         default: true,
+    },
+    full_without_consent: {
+        value: 3,
+        description: $t({defaultMessage: "Standard"}),
+        default: false,
     },
 };
 
