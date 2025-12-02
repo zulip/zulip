@@ -1,5 +1,10 @@
 """API views for nodl endpoints."""
 
+from nodl.api.views.events import (
+    events_view,
+    register_queue,
+    send_typing,
+)
 from nodl.api.views.internal import (
     deactivate_realm,
     sync_realm,
@@ -22,6 +27,10 @@ from nodl.api.views.users import (
 )
 
 __all__ = [
+    # Event/real-time views
+    "events_view",
+    "register_queue",
+    "send_typing",
     # Internal sync views
     "deactivate_realm",
     "sync_realm",

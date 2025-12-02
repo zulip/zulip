@@ -3,6 +3,11 @@
 from django.urls import path
 
 from nodl.api.views import deactivate_realm, sync_realm, sync_user
+from nodl.api.views.events import (
+    events_view,
+    register_queue,
+    send_typing,
+)
 from nodl.api.views.messages import (
     delete_message,
     edit_message,
@@ -26,9 +31,16 @@ from nodl.api.views.users import (
     list_users,
 )
 
-# Internal API endpoints - authenticated via service key
-# These are prefixed with /api/v1/internal/ by convention
+# Real-time API endpoints - authenticated via JWT
+# These MUST come first to intercept before Zulip's HTTP Basic Auth endpoints
 urlpatterns = [
+    # Event queue registration and polling
+    path("api/v1/register", register_queue, name="nodl_register_queue"),
+    path("api/v1/events", events_view, name="nodl_events"),
+    # Typing indicators
+    path("api/v1/typing", send_typing, name="nodl_typing"),
+    # Internal API endpoints - authenticated via service key
+    # These are prefixed with /api/v1/internal/ by convention
     path("api/v1/internal/users/sync", sync_user, name="nodl_sync_user"),
     path("api/v1/internal/realms/sync", sync_realm, name="nodl_sync_realm"),
     path("api/v1/internal/realms/deactivate", deactivate_realm, name="nodl_deactivate_realm"),
