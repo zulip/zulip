@@ -1828,9 +1828,10 @@ def get_streams_for_user(
     include_public = include_public and user_profile.can_access_public_streams()
 
     # Start out with all streams in the realm.
-    # Include recipient to avoid N+1 queries during serialization
+    # Note: Don't select_related("recipient") here because .only() is used later,
+    # which creates a Django conflict (field cannot be both deferred and traversed)
     query = Stream.objects.select_related(
-        "recipient", "can_send_message_group", "can_send_message_group__named_user_group"
+        "can_send_message_group", "can_send_message_group__named_user_group"
     ).filter(realm=user_profile.realm)
 
     if exclude_archived:
