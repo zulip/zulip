@@ -23,6 +23,7 @@ import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
@@ -50,6 +51,14 @@ type RealmExport = z.output<typeof realm_export_schema>;
 const meta = {
     loaded: false,
 };
+
+function get_export_type_options_to_render(): settings_config.ExportTypeOption[] {
+    const standard_option =
+        realm.realm_owner_full_content_access && current_user.is_owner
+            ? settings_config.export_type_values.full_without_consent
+            : settings_config.export_type_values.full_with_consent;
+    return [settings_config.export_type_values.public, standard_option];
+}
 
 let users_consented_for_export_count: number;
 let total_users_count: number;
@@ -95,9 +104,11 @@ export function populate_exports_table(exports: RealmExport[]): void {
             }
 
             let export_type_description = settings_config.export_type_values.public.description;
-            if (data.export_type !== settings_config.export_type_values.public.value) {
-                export_type_description =
-                    settings_config.export_type_values.full_with_consent.description;
+            const export_type_value = Object.values(settings_config.export_type_values).find(
+                (element) => element.value === data.export_type,
+            );
+            if (export_type_value) {
+                export_type_description = export_type_value.description;
             }
 
             return render_admin_export_list({
@@ -361,7 +372,8 @@ function maybe_show_notes_about_unusable_users_if_exported(export_type: number):
 
 function show_start_export_modal(): void {
     const html_body = render_start_export_modal({
-        export_type_values: settings_config.export_type_values,
+        export_type_values: get_export_type_options_to_render(),
+        realm_owner_full_content_access: realm.realm_owner_full_content_access,
     });
 
     function start_export(): void {

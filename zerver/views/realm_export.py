@@ -10,7 +10,7 @@ from pydantic import Json
 from analytics.models import RealmCount
 from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
 from zerver.decorator import require_realm_admin
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.response import json_success
@@ -31,13 +31,32 @@ def export_realm(
         Annotated[
             int,
             check_int_in_validator(
-                [RealmExport.EXPORT_PUBLIC, RealmExport.EXPORT_FULL_WITH_CONSENT]
+                [
+                    RealmExport.EXPORT_PUBLIC,
+                    RealmExport.EXPORT_FULL_WITH_CONSENT,
+                    RealmExport.EXPORT_FULL_WITHOUT_CONSENT,
+                ]
             ),
         ]
     ] = RealmExport.EXPORT_PUBLIC,
 ) -> HttpResponse:
     realm = user.realm
     EXPORT_LIMIT = 5
+
+    if (
+        export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+        and not realm.owner_full_content_access
+    ):
+        raise JsonableError(
+            _("Exports of all public and private data are not enabled for this organization.")
+        )
+
+    if (
+        export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+        and realm.owner_full_content_access
+        and not user.is_realm_owner
+    ):
+        raise OrganizationOwnerRequiredError
 
     # Exporting organizations with a huge amount of history can
     # potentially consume a lot of disk or otherwise have accidental

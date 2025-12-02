@@ -15453,7 +15453,7 @@ paths:
 
         New in Zulip 2.1.
 
-        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
+        [export-data]: /help/export-your-organization#export-data-in-an-importable-format
       responses:
         "200":
           description: Success.
@@ -15511,7 +15511,7 @@ paths:
 
         New in Zulip 2.1.
 
-        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
+        [export-data]: /help/export-your-organization#export-data-in-an-importable-format
         [data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
         [backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
       requestBody:
@@ -15523,12 +15523,20 @@ paths:
               properties:
                 export_type:
                   description: |
-                    Whether to create a public or a standard data export.
+                    Whether the data export should be public, full with consent,
+                    or full without consent.
 
-                    - 1 = Public data export.
-                    - 2 = Standard data export.
+                    - 1 = Public data only export.
+                    - 2 = Public and private data export (with consent), which includes
+                      private data for users who have granted consent.
+                    - 3 = All public and private data export, which includes private data for
+                      all users. This option requires the organization to have
+                      the `owner_full_content_access` feature enabled.
 
                     If not specified, defaults to 1.
+
+                    **Changes**: Zulip 12.0 (feature level ZF-712cf1) added the value 3
+                    option for data export of all public and private data.
 
                     **Changes**: New in Zulip 10.0 (feature level 304). Previously,
                     all export requests were public data exports.
@@ -15536,6 +15544,7 @@ paths:
                   enum:
                     - 1
                     - 2
+                    - 3
                   default: 1
                   example: 2
       responses:
@@ -26038,10 +26047,15 @@ components:
         export_type:
           type: integer
           description: |
-            Whether the data export is a public or a standard data export.
+            Whether the data export is public, full with consent, or full without consent.
 
-            - 1 = Public data export.
-            - 2 = Standard data export.
+            - 1 = Public data only export.
+            - 2 = Public and private data export (with consent), which includes private data
+              for users who have granted consent.
+            - 3 = All public and private data, which includes private data for all users.
+
+            **Changes**: Zulip 12.0 (feature level ZF-712cf1) added the value 3 option
+            for data export of all public and private data.
 
             **Changes**: New in Zulip 10.0 (feature level 304). Previously,
             the export type was not included in these objects because only
