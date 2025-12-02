@@ -968,9 +968,7 @@ input.settings_text_input {
     }
 }
 
-div.overlay .flex.overlay-content > .overlay-container,
-#settings_page,
-.informational-overlays .overlay-content {
+div.overlay:not(#about-zulip) .overlay-container {
     box-shadow: var(--box-shadow-overlay);
 }
 
