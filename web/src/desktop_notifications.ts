@@ -9,6 +9,7 @@ type NoticeMemory = Map<
         obj: Notification | ElectronBridgeNotification;
         msg_count: number;
         message_id: number;
+        on_close?: (() => void) | undefined;
     }
 >;
 
@@ -69,6 +70,50 @@ if (electron_bridge?.new_notification) {
     NotificationAPI = window.Notification;
 }
 
+export function create_notification(
+    opts: NotificationOptions,
+    key: string,
+    title: string,
+    message_id: number,
+    msg_count: number,
+    on_click?: () => void,
+    on_close?: () => void,
+): void {
+    assert(NotificationAPI !== undefined);
+    const notification_object = new NotificationAPI(title, opts);
+    notice_memory.set(key, {
+        obj: notification_object,
+        msg_count,
+        message_id,
+        // Ideally, we would let the close event handler call this and
+        // wouldn't need to store it in notice_memory. However, since
+        // event handlers aren't available in some cases, we need to
+        // call this manually after calling close().
+        on_close,
+    });
+
+    if (typeof notification_object.addEventListener === "function") {
+        // Sadly, some third-party Electron apps like Franz/Ferdi
+        // misimplement the Notification API not inheriting from
+        // EventTarget.  This results in addEventListener being
+        // unavailable for them.
+        notification_object.addEventListener("click", () => {
+            notification_object.close();
+            on_click?.();
+            window.focus();
+        });
+        notification_object.addEventListener("close", () => {
+            const current_notice_memory = notice_memory.get(key);
+            // This check helps avoid race between close event for current notification
+            // object and the previous notification_object close handler.
+            if (current_notice_memory?.obj === notification_object) {
+                notice_memory.delete(key);
+                on_close?.();
+            }
+        });
+    }
+}
+
 export function get_notifications(): NoticeMemory {
     return notice_memory;
 }
@@ -77,6 +122,7 @@ export function initialize(): void {
     $(window).on("focus", () => {
         for (const notice_mem_entry of notice_memory.values()) {
             notice_mem_entry.obj.close();
+            notice_mem_entry.on_close?.();
         }
         notice_memory.clear();
     });
@@ -95,6 +141,7 @@ export function close_notification(message_id: number): void {
     for (const [key, notice_mem_entry] of notice_memory) {
         if (notice_mem_entry.message_id === message_id) {
             notice_mem_entry.obj.close();
+            notice_mem_entry.on_close?.();
             notice_memory.delete(key);
         }
     }
