@@ -2,8 +2,11 @@ from unittest.mock import patch
 
 import orjson
 
+from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
+from zerver.models import CustomProfileField
+from zerver.models.realms import get_realm
 
 TOPIC_REPO = "public-repo"
 TOPIC_ISSUE = "public-repo / issue #2 Spelling error in the README file"
@@ -723,6 +726,44 @@ A temporary team so that I can get some webhook fixtures!
             expected_message=None,
             expect_noop=True,
         )
+
+    def test_issue_comment_with_github_username_mention(self) -> None:
+        """Test that GitHub usernames are converted to silent mentions when user has GitHub profile field set"""
+        realm = get_realm("zulip")
+        github_field = CustomProfileField.objects.get(
+            realm=realm,
+            name="GitHub username",
+        )
+        hamlet = self.example_user("hamlet")
+        do_update_user_custom_profile_data_if_changed(
+            hamlet, [{"id": github_field.id, "value": "baxterthehacker"}]
+        )
+        # Expected: sender name should be silent mention instead of plain text.
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
+        self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+        # Test returns None when multiple users have same external username.
+        cordelia = self.example_user("cordelia")
+        do_update_user_custom_profile_data_if_changed(
+            cordelia, [{"id": github_field.id, "value": "baxterthehacker"}]
+        )
+        expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
+        self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+        # Test return None when EXTERNAL_ACCOUNT fields exist but none match the service.
+        do_update_user_custom_profile_data_if_changed(
+            cordelia, [{"id": github_field.id, "value": ""}]
+        )
+        github_field.field_data = '{"subtype": "gitlab"}'
+        github_field.save()
+        self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+        # Test returns None when realm has no EXTERNAL_ACCOUNT custom fields.
+        CustomProfileField.objects.filter(
+            realm=realm, field_type=CustomProfileField.EXTERNAL_ACCOUNT
+        ).delete()
+
+        self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):
