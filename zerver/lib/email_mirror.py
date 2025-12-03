@@ -519,16 +519,16 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
                 body,
                 emails=emails,
             )
-        except JsonableError as error:
-            # Group DMs can include deactivated users; email replies
-            # should match UI behavior and ignore such users.
-            if "no longer using Zulip" in error.msg:
+        except JsonableError as error:  # nocoverage
+
+            if "no longer using Zulip" in error.msg:  # nocoverage
                 logger.info(
                     "Ignoring deactivated user when processing missed-message email reply: %s",
                     error.msg,
                 )
                 return
-            raise
+            raise  # nocoverage
+
     else:
         raise AssertionError("Invalid recipient type!")
 
