@@ -15,7 +15,14 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for more information
 #
 ########################################################################
+import sys
 from typing import TYPE_CHECKING
+
+# Patch datetime.fromisoformat for Python < 3.11
+if sys.version_info < (3, 11):
+    import backports.datetime_fromisoformat
+
+    backports.datetime_fromisoformat.MonkeyPatch.patch_fromisoformat()
 
 # Monkey-patch certain types that are declared as generic types
 # generic in django-stubs, but not (yet) as generic types in Django
