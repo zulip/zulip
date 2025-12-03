@@ -5,7 +5,6 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from pydantic import Json
 
 from analytics.models import RealmCount
 from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
@@ -16,8 +15,9 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.lib.typed_endpoint_validators import check_int_in_validator
+from zerver.lib.typed_endpoint_validators import check_string_in_validator
 from zerver.models import RealmExport, UserProfile
+from zerver.models.realms import DEFAULT_REALM_EXPORT_TYPE_SLUG, RealmExportSlug
 
 
 @transaction.atomic(durable=True)
@@ -27,24 +27,17 @@ def export_realm(
     request: HttpRequest,
     user: UserProfile,
     *,
-    export_type: Json[
-        Annotated[
-            int,
-            check_int_in_validator(
-                [
-                    RealmExport.EXPORT_PUBLIC,
-                    RealmExport.EXPORT_FULL_WITH_CONSENT,
-                    RealmExport.EXPORT_FULL_WITHOUT_CONSENT,
-                ]
-            ),
-        ]
-    ] = RealmExport.EXPORT_PUBLIC,
+    export_type: Annotated[
+        RealmExportSlug,
+        check_string_in_validator(RealmExport.EXPORT_TYPES.keys()),
+    ] = DEFAULT_REALM_EXPORT_TYPE_SLUG,
 ) -> HttpResponse:
     realm = user.realm
     EXPORT_LIMIT = 5
+    export_type_value = RealmExport.EXPORT_TYPES[export_type]
 
     if (
-        export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+        export_type_value == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
         and not realm.owner_full_content_access
     ):
         raise JsonableError(
@@ -52,7 +45,7 @@ def export_realm(
         )
 
     if (
-        export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+        export_type_value == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
         and realm.owner_full_content_access
         and not user.is_realm_owner
     ):
@@ -87,7 +80,7 @@ def export_realm(
     realm_count_query = RealmCount.objects.filter(
         realm=realm, property="messages_sent:message_type:day"
     )
-    if export_type == RealmExport.EXPORT_PUBLIC:
+    if export_type_value == RealmExport.EXPORT_PUBLIC:
         realm_count_query.filter(subgroup="public_stream")
     exportable_messages_estimate = sum(realm_count.value for realm_count in realm_count_query)
 
@@ -105,7 +98,7 @@ def export_realm(
 
     row = RealmExport.objects.create(
         realm=realm,
-        type=export_type,
+        type=export_type_value,
         acting_user=user,
         status=RealmExport.REQUESTED,
         date_requested=timezone_now(),
