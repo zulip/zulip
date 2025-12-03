@@ -22,7 +22,7 @@
         {{else if is_date_field }}
         <input class="custom_user_field_value datepicker {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" data-field-id="{{ field.id }}" type="text"
           value="{{ field_value.value }}" {{#unless editable_by_user}}disabled{{/unless}}/>
-        {{#if editable_by_user}}<span class="remove_date"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></span>{{/if}}
+        {{#if editable_by_user}}<span class="remove_date"><i class="zulip-icon zulip-icon-x-circle" aria-hidden="true"></i></span>{{/if}}
         {{else if is_url_field }}
         <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_url_input{{else}}settings_url_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{else if is_pronouns_field}}
