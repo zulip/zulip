@@ -44,7 +44,6 @@ def make_set(files: list[str]) -> set[str]:
 # We do not yet require 100% line coverage for these files:
 EXEMPT_FILES = make_set(
     [
-        "web/shared/src/poll_data.ts",
         "web/src/about_zulip.ts",
         "web/src/add_group_members_pill.ts",
         "web/src/add_stream_options_popover.ts",
@@ -62,6 +61,7 @@ EXEMPT_FILES = make_set(
         "web/src/blueslip.ts",
         "web/src/blueslip_stacktrace.ts",
         "web/src/bootstrap_typeahead.ts",
+        "web/src/bot_helper.ts",
         "web/src/browser_history.ts",
         "web/src/buddy_list.ts",
         "web/src/buttons.ts",
@@ -69,7 +69,7 @@ EXEMPT_FILES = make_set(
         "web/src/channel_folders_ui.ts",
         "web/src/click_handlers.ts",
         "web/src/color_picker_popover.ts",
-        "web/src/compose.js",
+        "web/src/compose.ts",
         "web/src/compose_actions.ts",
         "web/src/compose_banner.ts",
         "web/src/compose_call_ui.ts",
@@ -79,8 +79,8 @@ EXEMPT_FILES = make_set(
         "web/src/compose_paste.ts",
         "web/src/compose_recipient.ts",
         "web/src/compose_reply.ts",
-        "web/src/compose_send_menu_popover.js",
-        "web/src/compose_setup.js",
+        "web/src/compose_send_menu_popover.ts",
+        "web/src/compose_setup.ts",
         "web/src/compose_state.ts",
         "web/src/compose_textarea.ts",
         "web/src/compose_tooltips.ts",
@@ -113,15 +113,15 @@ EXEMPT_FILES = make_set(
         "web/src/fetch_status.ts",
         "web/src/flatpickr.ts",
         "web/src/gear_menu.ts",
+        "web/src/gif_state.ts",
         "web/src/giphy.ts",
-        "web/src/giphy_state.ts",
         "web/src/global.ts",
         "web/src/group_permission_settings.ts",
         "web/src/group_setting_pill.ts",
         "web/src/hash_util.ts",
         "web/src/hashchange.ts",
         "web/src/hbs.d.ts",
-        "web/src/hotkey.js",
+        "web/src/hotkey.ts",
         "web/src/inbox_ui.ts",
         "web/src/inbox_util.ts",
         "web/src/info_overlay.ts",
@@ -160,6 +160,7 @@ EXEMPT_FILES = make_set(
         "web/src/message_live_update.ts",
         "web/src/message_notifications.ts",
         "web/src/message_reminder.ts",
+        "web/src/message_report.ts",
         "web/src/message_scroll.ts",
         "web/src/message_scroll_state.ts",
         "web/src/message_summary.ts",
@@ -186,6 +187,7 @@ EXEMPT_FILES = make_set(
         "web/src/playground_links_popover.ts",
         "web/src/pm_list.ts",
         "web/src/pm_list_dom.ts",
+        "web/src/poll_data.ts",
         "web/src/poll_widget.ts",
         "web/src/popover_menus.ts",
         "web/src/popover_menus_data.ts",
@@ -197,7 +199,7 @@ EXEMPT_FILES = make_set(
         "web/src/realm_playground.ts",
         "web/src/recent_view_ui.ts",
         "web/src/reload.ts",
-        "web/src/reload_setup.js",
+        "web/src/reload_setup.ts",
         "web/src/reminders_overlay_ui.ts",
         "web/src/resize.ts",
         "web/src/resize_handler.ts",
@@ -257,8 +259,6 @@ EXEMPT_FILES = make_set(
         "web/src/stream_edit_subscribers.ts",
         "web/src/stream_edit_toggler.ts",
         "web/src/stream_list.ts",
-        # TODO/channel-folders: Remove when tests are restored.
-        "web/src/stream_list_sort.ts",
         "web/src/stream_muting.ts",
         "web/src/stream_popover.ts",
         "web/src/stream_settings_api.ts",
@@ -309,10 +309,8 @@ EXEMPT_FILES = make_set(
         "web/src/views_util.ts",
         "web/src/widget_modal.ts",
         "web/src/zcommand.ts",
-        "web/src/zform.js",
+        "web/src/zform.ts",
         "web/src/zulip_test.ts",
-        # TODO/channel-folders: Remove when tests are restored.
-        "web/tests/left_sidebar_navigation_area.test.cjs",
         # Test library code isn't always fully used.
         "web/tests/lib/example_user.cjs",
         "web/tests/lib/mdiff.cjs",
@@ -322,8 +320,6 @@ EXEMPT_FILES = make_set(
         # There are some important functions which are not called right now but will
         # be reused when we add tests for dropdown widget so it doesn't make sense to remove them.
         "web/tests/recent_view.test.cjs",
-        # TODO/channel-folders: Remove when tests are restored.
-        "web/tests/stream_list.test.cjs",
     ]
 )
 
@@ -494,8 +490,6 @@ def read_coverage() -> Any:
 
 def enforce_proper_coverage(coverage_json: Any) -> bool:
     all_js_files = {
-        *glob.glob("web/shared/src/*.js"),
-        *glob.glob("web/shared/src/*.ts"),
         *glob.glob("web/src/*.js"),
         *glob.glob("web/src/*.ts"),
         *glob.glob("web/src/billing/*.js"),

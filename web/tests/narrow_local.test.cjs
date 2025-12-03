@@ -16,7 +16,7 @@ const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const message_view = zrequire("message_view");
 const message_lists = zrequire("message_lists");
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 
 function verify_fixture(fixture, override_rewire) {
     const msg_list = make_message_list(fixture.filter_terms);

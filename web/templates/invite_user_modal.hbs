@@ -1,11 +1,14 @@
-<form id="invite-user-form">
-    <div class="setup-tips-container"></div>
-    {{#if development_environment}}
-    <div class="alert" id="dev_env_msg"></div>
-    {{/if}}
+<div class="invite-user-modal-banners">
+    <div id="invite-success-banner-container" class="banner-wrapper"></div>
     {{#if (not user_has_email_set) }}
-    <div class="demo-organization-add-email-banner"></div>
+    <div class="demo-organization-add-email-banner banner-wrapper"></div>
     {{/if}}
+    {{#if development_environment}}
+    <div id="dev-env-email-access-banner-container" class="banner-wrapper"></div>
+    {{/if}}
+    <div class="invite-setup-tips-container banner-wrapper"></div>
+</div>
+<form id="invite-user-form">
     <div class="input-group">
         <div id="invite_users_option_tabs_container"></div>
         <div id="invitee_emails_container">
@@ -116,7 +119,7 @@
         {{/if}}
         <div id="invite_welcome_message_custom_text_container">
             <label for="invite_welcome_custom_message_text" class="modal-field-label">{{t "Message text" }}</label>
-            <textarea id="invite_welcome_custom_message_text" name="invite_welcome_message_custom_text" class="settings_textarea" maxlength="8000" rows="3">
+            <textarea id="invite_welcome_custom_message_text" name="invite_welcome_message_custom_text" class="modal-textarea" maxlength="8000" rows="3">
                 {{~default_welcome_message_custom_text~}}
             </textarea>
         </div>

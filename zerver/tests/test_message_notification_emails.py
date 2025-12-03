@@ -1297,6 +1297,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "Group DMs with iago and Iago"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_pm_link_in_missed_message_header_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
@@ -1360,6 +1361,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[2].alternatives[0][0],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_sender_name_in_missed_pm_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
@@ -1382,6 +1384,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[0].alternatives[0][0],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_your_name_in_missed_pm_to_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
 
@@ -1402,6 +1405,58 @@ class TestMessageNotificationEmails(ZulipTestCase):
         self.assertIn(
             ">\n                    \n                        <div><p>Hello</p></div>\n",
             mail.outbox[0].alternatives[0][0],
+        )
+
+    def test_datetime_conversion_in_missed_message_content(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        # Normal message with timestamp.
+        msg_id = self.send_personal_message(
+            hamlet, hamlet, "Meeting at <time:2025-09-30T09:30:00-07:00>", read_by_sender=False
+        )
+
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+        )
+
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        self.assertEqual(mail.outbox[0].subject, "DMs with King Hamlet")
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
+        # Sender name is not appended for missed 1:1 direct messages
+        self.assertEqual(
+            "> Meeting at <time:2025-09-30T09:30:00-07:00>\n\n--\n\nReply", mail.outbox[0].body[:56]
+        )
+        self.assertRegex(
+            mail.outbox[0].alternatives[0][0],
+            r'<p>Meeting at <time datetime="2025-09-30T16:30:00Z">Tue, Sep 30, 2025, 4:30[ \u202f]PM UTC</time></p>',
+        )
+
+        # The timestamp is not formatted correctly.
+        msg_id = self.send_personal_message(
+            hamlet, hamlet, "Meeting at <time:2025-09-30T09:30:00-07:00>", read_by_sender=False
+        )
+
+        with (
+            mock.patch(
+                "zerver.lib.email_notifications.format_datetime_to_string",
+                side_effect=ValueError("Invalid datetime format"),
+            ),
+            self.assertLogs(level="WARNING") as m,
+        ):
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {msg_id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+            )
+
+        self.assertEqual(
+            m.output,
+            [
+                "WARNING:zerver.lib.email_notifications:Failed to convert time element "
+                "'2025-09-30T16:30:00Z': Invalid datetime format",
+            ],
         )
 
     def test_multiple_missed_personal_messages(self) -> None:

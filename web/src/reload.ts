@@ -5,7 +5,6 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_state from "./compose_state.ts";
-import {csrf_token} from "./csrf.ts";
 import * as drafts from "./drafts.ts";
 import * as hash_util from "./hash_util.ts";
 import type {LocalStorage} from "./localstorage.ts";
@@ -21,7 +20,14 @@ import * as util from "./util.ts";
 
 let server_reachable_check_failures = 0;
 
-const token_metadata_schema = z.object({url: z.string(), timestamp: z.number()});
+export const reload_metadata_schema = z.object({
+    hash: z.string(),
+    message_view_pointer: z.optional(z.number()),
+    message_view_scroll_offset: z.optional(z.number()),
+    compose_active_draft_id: z.optional(z.string()),
+    compose_active_draft_send_immediately: z.optional(z.boolean()),
+    timestamp: z.number(),
+});
 
 const reload_hooks: (() => void)[] = [];
 
@@ -35,7 +41,10 @@ function call_reload_hooks(): void {
     }
 }
 
-function preserve_state(send_after_reload: boolean, save_compose: boolean): void {
+function preserve_state(
+    compose_active_draft_send_immediately: boolean,
+    save_compose: boolean,
+): void {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
         // save the browser's position across reloads (since there's
@@ -54,47 +63,32 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
         return;
     }
 
-    let url = "#reload:send_after_reload=" + Number(send_after_reload);
-    assert(csrf_token !== undefined);
-    url += "+csrf_token=" + encodeURIComponent(csrf_token);
-
-    if (save_compose) {
-        const msg_type = compose_state.get_message_type();
-        if (msg_type === "stream") {
-            const stream_id = compose_state.stream_id();
-            url += "+msg_type=stream";
-            if (stream_id) {
-                url += "+stream_id=" + encodeURIComponent(stream_id);
-            }
-            url += "+topic=" + encodeURIComponent(compose_state.topic());
-        } else if (msg_type === "private") {
-            url += "+msg_type=private";
-            url +=
-                "+recipient=" +
-                encodeURIComponent(compose_state.private_message_recipient_emails());
-        }
-
-        if (msg_type) {
-            url += "+msg=" + encodeURIComponent(compose_state.message_content());
-            const draft_id = drafts.update_draft();
-            if (draft_id) {
-                url += "+draft_id=" + encodeURIComponent(draft_id);
-            }
-        }
+    let draft_id: string | undefined;
+    if (save_compose && compose_state.get_message_type()) {
+        draft_id = drafts.update_draft({force_save: true});
+        assert(draft_id !== undefined);
     }
-
+    let message_view_pointer: number | undefined;
+    let message_view_scroll_offset: number | undefined;
     if (message_lists.current !== undefined) {
         const narrow_pointer = message_lists.current.selected_id();
         if (narrow_pointer !== -1) {
-            url += "+narrow_pointer=" + narrow_pointer;
+            message_view_pointer = narrow_pointer;
         }
         const $narrow_row = message_lists.current.selected_row();
         if ($narrow_row.length > 0) {
-            url += "+narrow_offset=" + $narrow_row.get_offset_to_window().top;
+            message_view_scroll_offset = $narrow_row.get_offset_to_window().top;
         }
     }
 
-    url += hash_util.build_reload_url();
+    const reload_data: z.infer<typeof reload_metadata_schema> = {
+        compose_active_draft_send_immediately,
+        compose_active_draft_id: draft_id,
+        message_view_pointer,
+        message_view_scroll_offset,
+        hash: hash_util.get_reload_hash(),
+        timestamp: Date.now(),
+    };
 
     // Delete unused states that have been around for a while.
     const ls = localstorage();
@@ -105,25 +99,18 @@ function preserve_state(send_after_reload: boolean, save_compose: boolean): void
     // others) which is passed via the URL to the browser (post
     // reloading).  The token is a key into local storage, where we
     // marshall and store the URL.
-    //
-    // TODO: Remove the now-unnecessary URL-encoding logic above and
-    // just pass the actual data structures through local storage.
     const token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
-    const metadata: z.infer<typeof token_metadata_schema> = {
-        url,
-        timestamp: Date.now(),
-    };
-    ls.set("reload:" + token, metadata);
+    ls.set("reload:" + token, reload_data);
     window.location.replace("#reload:" + token);
 }
 
 export function is_stale_refresh_token(token_metadata: unknown, now: number): boolean {
-    const parsed = token_metadata_schema.safeParse(token_metadata);
-    // TODO/compatibility: the metadata was changed from a string
-    // to a map containing the string and a timestamp. For now we'll
-    // delete all tokens that only contain the url. Remove this
-    // early return once you can no longer directly upgrade from
-    // Zulip 5.x to the current version.
+    const parsed = reload_metadata_schema.safeParse(token_metadata);
+    // TODO/compatibility(12.0): The metadata format was rewritten in
+    // the 12.0 development branch in 2025. We garbage-collect reload
+    // tokens in the old format if they are more than a week stale. We
+    // can delete the parsing logic for the old format once it's no
+    // longer possible to directly upgrade from 11.x to main.
     if (!parsed.success) {
         return true;
     }

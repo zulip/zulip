@@ -143,8 +143,10 @@
         {% endfor %}
     </tbody>
     <tfoot class="activity-foot">
-        {% for total in totals %}
-        <td>{{ total }}</td>
-        {% endfor %}
+        <tr>
+            {% for total in totals %}
+            <td>{{ total }}</td>
+            {% endfor %}
+        </tr>
     </tfoot>
 </table>

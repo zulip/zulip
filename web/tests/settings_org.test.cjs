@@ -88,8 +88,7 @@ function createSaveButtons(subsection) {
         $stub_discard_button,
     );
     $save_button_controls.set_find_results(".discard-button", $stub_discard_button);
-    const props = {};
-    props.hidden = false;
+    const props = {hidden: false};
     $save_button_controls.fadeIn = () => {
         props.hidden = false;
     };
@@ -99,7 +98,7 @@ function createSaveButtons(subsection) {
 
     $save_button_controls.closest = () => $stub_save_button_header;
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
-    $stub_save_button_header.set_find_results(".pill-container", []);
+    $stub_save_button_header.set_find_results(".pill-container.prop-element", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
     $stub_save_button_header.set_find_results(".save-button", $stub_save_button);
 
@@ -151,18 +150,18 @@ function test_submit_settings_form(override, submit_form) {
     $save_button_header = stubs.$save_button_header;
     $save_button_header.attr("id", `org-${subsection}`);
 
-    const $realm_default_language_elem = $("#id_realm_default_language");
-    $realm_default_language_elem.val("en");
-    $realm_default_language_elem.attr("id", "id_realm_default_language");
+    const $realm_topics_policy_elem = $("#id_realm_topics_policy");
+    $realm_topics_policy_elem.val("disable_empty_topic");
+    $realm_topics_policy_elem.attr("id", "id_realm_topics_policy");
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
+    $subsection_elem.set_find_results(".prop-element", [$realm_topics_policy_elem]);
 
     submit_form.call({to_$: () => $(".save-button")}, ev);
     assert.ok(patched);
 
     const expected_value = {
-        default_language: "en",
+        topics_policy: "disable_empty_topic",
     };
     assert.deepEqual(data, expected_value);
 
@@ -221,18 +220,17 @@ function test_change_save_button_state() {
 }
 
 function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    const file_input = [{files: ["image1.png", "image2.png"]}];
+    const file = "image1.png";
 
     let posted;
     override(channel, "post", (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/icon");
         assert.equal(req.data.get("csrfmiddlewaretoken"), "token-stub");
-        assert.equal(req.data.get("file-0"), "image1.png");
-        assert.equal(req.data.get("file-1"), "image2.png");
+        assert.deepEqual(req.data.get("file"), file);
     });
 
-    upload_realm_logo_or_icon(file_input, null, true);
+    upload_realm_logo_or_icon(file, null, true);
     assert.ok(posted);
 }
 
@@ -573,6 +571,7 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_welcome_message_custom_text").set_parent(
         $.create("<stub welcome message custom text>"),
     );
+    override_rewire(settings_components, "resize_textareas_in_subsection", noop);
 
     // Make our plan not limited so we don't have to stub all the
     // elements involved in disabling the can_create_groups input.

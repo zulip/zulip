@@ -8,6 +8,7 @@
       "created": 1000000000,
       "customer": "cus_NORMALIZED",
       "description": null,
+      "excluded_payment_method_types": null,
       "flow_directions": null,
       "id": "upgrade_by_card_with_outdated_lower_seat_count--SetupIntent.list.1.json",
       "last_setup_error": null,

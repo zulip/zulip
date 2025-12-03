@@ -24,6 +24,7 @@ VENV_DEPENDENCIES = [
     "libsasl2-dev",  # For building python-ldap from source
     "libvips",  # For thumbnailing
     "libvips-tools",
+    "libicu-dev",  # For building pyicu
 ]
 
 COMMON_YUM_VENV_DEPENDENCIES = [

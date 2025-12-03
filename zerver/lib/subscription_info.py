@@ -196,7 +196,7 @@ def build_stream_api_dict(
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
         )
-    else:
+    else:  # nocoverage
         stream_weekly_traffic = None
 
     # Backwards-compatibility for clients that haven't been
@@ -388,7 +388,7 @@ def build_stream_dict_for_never_sub(
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
         )
-    else:
+    else:  # nocoverage
         stream_weekly_traffic = None
 
     can_add_subscribers_group_value = get_group_setting_value_for_register_api(
@@ -847,8 +847,7 @@ def gather_subscriptions_helper(
     def get_stream_id(sub_dict: RawSubscriptionDict) -> int:
         return recip_id_to_stream_id[sub_dict["recipient_id"]]
 
-    traffic_stream_ids = {get_stream_id(sub_dict) for sub_dict in sub_dicts}
-    recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids, realm=realm)
+    recent_traffic = get_streams_traffic(realm=realm)
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.

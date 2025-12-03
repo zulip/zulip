@@ -1,7 +1,6 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
 import logging
-import mimetypes
 import re
 import time
 from collections import deque
@@ -58,7 +57,7 @@ from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import (
     AttachmentData,
-    get_user_upload_previews,
+    manifest_and_get_user_upload_previews,
     rewrite_thumbnailed_images,
 )
 from zerver.lib.timeout import unsafe_timeout
@@ -586,7 +585,7 @@ class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
         # an inline code span.
-        el, start, end = ret = super().handleMatch(m, data)
+        el, _start, _end = ret = super().handleMatch(m, data)
         if el is not None and m.group(3):
             assert isinstance(el, Element)
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
@@ -966,7 +965,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         found_url: ResultWithFamily[tuple[str, str | None]],
     ) -> None:
         info = self.get_inlining_information(root, found_url)
-        (url, text) = found_url.result
+        (url, _text) = found_url.result
         actual_url = self.get_actual_image_url(url)
         self.add_a(
             info["parent"],
@@ -985,7 +984,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_image: str,
     ) -> None:
         info = self.get_inlining_information(root, found_url)
-        (url, text) = found_url.result
+        (url, _text) = found_url.result
         yt_id = self.youtube_id(url)
         self.add_a(
             info["parent"],
@@ -1032,7 +1031,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.zmd.image_preview_enabled:
             return False
 
-        url_type = mimetypes.guess_type(url)[0]
+        url_type = guess_type(url)[0]
         # Support only video formats (containers) that are supported cross-browser and cross-device. As per
         # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
         # MP4 and WebM are the only formats that are widely supported.
@@ -2123,6 +2122,77 @@ class AudioInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
+class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
+    def __init__(self, pattern: str, zmd: "ZulipMarkdown") -> None:
+        super().__init__(pattern, zmd)
+        self.zmd = zmd
+
+    def zulip_specific_src_changes(self, img: Element) -> None | Element:
+        # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
+        src = img.get("src")
+        assert src is not None
+
+        # Sanitize URL or don't parse image. See linkify_tests in markdown_test_cases for banned syntax.
+        src = sanitize_url(self.unescape(src.strip()))
+        if src is None:
+            return None  # no-op; the image is not processed.
+
+        # Rewrite local links to be relative
+        db_data: DbData | None = self.zmd.zulip_db_data
+        src = rewrite_local_links_to_relative(db_data, src)
+        maybe_add_attachment_path_id(src, self.zmd)
+        img.set("data-original-src", src)
+
+        # We try to use image thumbnails for previews of the user
+        # upload images rather than original images when available.
+        if src.startswith("/user_uploads/") and db_data:
+            path_id = src[len("/user_uploads/") :]
+
+            # We should have pulled the preview data for this image
+            # (even if that's "no preview yet") from the database
+            # before rendering; Else, its header didn't parse as
+            # a valid image type which libvips handles.
+            if path_id not in db_data.user_upload_previews.image_metadata:
+                return None
+            else:
+                assert path_id in db_data.user_upload_previews.image_metadata
+                metadata = db_data.user_upload_previews.image_metadata[path_id]
+
+            # Insert a placeholder image spinner.  We post-process
+            # this content (see rewrite_thumbnailed_images in
+            # zerver.lib.thumbnail), looking specifically for this
+            # tag, and may re-write it into the thumbnail URL if it
+            # already exists when the message is sent.
+            img.set("class", "inline-image image-loading-placeholder")
+            img.set("src", "/static/images/loading/loader-black.svg")
+            img.set(
+                "data-original-dimensions",
+                f"{metadata.original_width_px}x{metadata.original_height_px}",
+            )
+            if metadata.original_content_type:
+                img.set(
+                    "data-original-content-type",
+                    metadata.original_content_type,
+                )
+        else:
+            img.set("src", src)
+
+        return img
+
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> tuple[Element | str | None, int | None, int | None]:
+        ret = super().handleMatch(m, data)
+        if ret[0] is not None:
+            img, match_start, index = ret
+            assert isinstance(img, Element)
+            img = self.zulip_specific_src_changes(img)
+            if img is not None:
+                return img, match_start, index
+        return None, None, None
+
+
 def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -2136,7 +2206,6 @@ def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.
 # These are used as keys ("linkifiers_keys") to md_engines and the respective
 # linkifier caches
 DEFAULT_MARKDOWN_KEY = -1
-ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 
 class ZulipMarkdown(markdown.Markdown):
@@ -2184,7 +2253,6 @@ class ZulipMarkdown(markdown.Markdown):
         self.inlinePatterns = self.build_inlinepatterns()
         self.treeprocessors = self.build_treeprocessors()
         self.postprocessors = self.build_postprocessors()
-        self.handle_zephyr_mirror()
         return self
 
     def build_preprocessors(self) -> markdown.util.Registry[markdown.preprocessors.Preprocessor]:
@@ -2286,7 +2354,10 @@ class ZulipMarkdown(markdown.Markdown):
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
-        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 57)
+        # We register higher priority on audio patterns, as the processing logic will pass things
+        # onto image patterns in the absence of a supported audio type
+        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 58)
+        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 57)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)
@@ -2346,26 +2417,6 @@ class ZulipMarkdown(markdown.Markdown):
             markdown.postprocessors.AndSubstitutePostprocessor(), "amp_substitute", 15
         )
         return postprocessors
-
-    def handle_zephyr_mirror(self) -> None:
-        if self.linkifiers_key == ZEPHYR_MIRROR_MARKDOWN_KEY:
-            # Disable almost all inline patterns for zephyr mirror
-            # users' traffic that is mirrored.  Note that
-            # inline_interesting_links is a treeprocessor and thus is
-            # not removed
-            self.inlinePatterns = get_sub_registry(self.inlinePatterns, ["autolink"])
-            self.treeprocessors = get_sub_registry(
-                self.treeprocessors, ["inline_interesting_links", "rewrite_images_proxy"]
-            )
-            # insert new 'inline' processor because we have changed self.inlinePatterns
-            # but InlineProcessor copies md as self.md in __init__.
-            self.treeprocessors.register(
-                markdown.treeprocessors.InlineProcessor(self), "inline", 25
-            )
-            self.preprocessors = get_sub_registry(self.preprocessors, ["custom_text_notifications"])
-            self.parser.blockprocessors = get_sub_registry(
-                self.parser.blockprocessors, ["paragraph"]
-            )
 
 
 md_engines: dict[tuple[int, bool], ZulipMarkdown] = {}
@@ -2581,16 +2632,6 @@ def do_convert(
     else:
         logging_message_id = "unknown"
 
-    if (
-        message is not None
-        and message_realm is not None
-        and message_realm.is_zephyr_mirror_realm
-        and message.sending_client.name == "zephyr_mirror"
-    ):
-        # Use slightly customized Markdown processor for content
-        # delivered via zephyr_mirror
-        linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
-
     maybe_update_markdown_engines(linkifiers_key, email_gateway)
     md_engine_key = (linkifiers_key, email_gateway)
     _md_engine = md_engines[md_engine_key]
@@ -2654,7 +2695,7 @@ def do_convert(
         else:
             active_realm_emoji = {}
 
-        user_upload_previews = get_user_upload_previews(message_realm.id, content)
+        user_upload_previews = manifest_and_get_user_upload_previews(message_realm.id, content)
         _md_engine.zulip_db_data = DbData(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,

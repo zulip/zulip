@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
 from django.forms.models import model_to_dict
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -53,7 +54,6 @@ from zerver.lib.export import (
     Record,
     do_export_realm,
     do_export_user,
-    export_usermessages_batch,
     get_consented_user_ids,
 )
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
@@ -113,7 +113,10 @@ from zerver.models.messages import ImageAttachment
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_direct_message_group_hash
+from zerver.models.recipients import (
+    get_direct_message_group_hash,
+    get_or_create_direct_message_group,
+)
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import ExternalAuthID, get_system_bot, get_user_by_delivery_email
 
@@ -412,11 +415,11 @@ class RealmImportExportTest(ExportFile):
         if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
             assert exportable_user_ids is not None
 
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
-                threads=0,
+                processes=1,
                 export_type=export_type,
                 exportable_user_ids=exportable_user_ids,
             )
@@ -426,13 +429,6 @@ class RealmImportExportTest(ExportFile):
             # will cause a conflict - so rotate it.
             realm.uuid = uuid.uuid4()
             realm.save()
-
-            export_usermessages_batch(
-                input_path=os.path.join(output_dir, "messages-000001.json.partial"),
-                output_path=os.path.join(output_dir, "messages-000001.json"),
-                export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
-                consented_user_ids=exportable_user_ids,
-            )
 
     def export_realm_and_create_auditlog(
         self,
@@ -849,11 +845,13 @@ class RealmImportExportTest(ExportFile):
         # Consented users:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
         # Iago will be non-consenting.
         iago = self.example_user("iago")
 
         do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(othello, "allow_private_data_export", True, acting_user=None)
+        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=None)
         do_change_user_setting(iago, "allow_private_data_export", False, acting_user=None)
 
         # Despite both hamlet and othello having consent enabled, in a public export
@@ -864,6 +862,9 @@ class RealmImportExportTest(ExportFile):
         a_message = Message.objects.get(id=a_message_id)
         a_message.sending_client = private_client
         a_message.save()
+
+        # Verify that a group DM between consenting users is not exported
+        self.send_group_direct_message(hamlet, [othello, cordelia])
 
         # SavedSnippets are private content - so in a public export, despite
         # hamlet having consent enabled, such objects should not be exported.
@@ -887,6 +888,9 @@ class RealmImportExportTest(ExportFile):
 
         exported_user_presence_ids = self.get_set(realm_data["zerver_userpresence"], "id")
         self.assertIn(iago_presence.id, exported_user_presence_ids)
+
+        exported_huddle_ids = self.get_set(realm_data["zerver_huddle"], "id")
+        self.assertEqual(exported_huddle_ids, set())
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
@@ -1014,6 +1018,12 @@ class RealmImportExportTest(ExportFile):
         do_deactivate_user(deactivated_non_consented_user, acting_user=None)
 
         self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
+
+        # Remove the recipient of the welcome bot to test exporting bots without personal recipients.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        welcome_bot.recipient = None
+        welcome_bot.save(update_fields=["recipient"])
 
         self.export_realm_and_create_auditlog(
             realm,
@@ -1780,6 +1790,11 @@ class RealmImportExportTest(ExportFile):
                 ).count(),
             )
 
+        # Check is_imported_stub is False for users imported from another
+        # Zulip organization.
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            self.assertFalse(user_profile.is_imported_stub)
+
         # Check folder field for imported streams
         for stream in Stream.objects.filter(realm=imported_realm):
             if stream.name == "Verona":
@@ -1789,7 +1804,7 @@ class RealmImportExportTest(ExportFile):
             else:
                 self.assertIsNone(stream.folder_id)
 
-        for dm_group in DirectMessageGroup.objects.all():
+        for dm_group in DirectMessageGroup.objects.all().iterator():
             # Direct Message groups don't have a realm column, so we just test all
             # Direct Message groups for simplicity.
             self.assertEqual(
@@ -2160,18 +2175,18 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_named_user_group_names(r: Realm) -> set[str]:
-            return {group.name for group in NamedUserGroup.objects.filter(realm=r)}
+            return {group.name for group in NamedUserGroup.objects.filter(realm_for_sharding=r)}
 
         @getter
         def get_user_membership(r: Realm) -> set[str]:
-            usergroup = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
             users = {membership.user_profile.email for membership in usergroup_membership}
             return users
 
         @getter
         def get_group_group_membership(r: Realm) -> set[str]:
-            usergroup = NamedUserGroup.objects.get(realm=r, name="role:members")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="role:members")
             group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
             subgroups = {
                 membership.subgroup.named_user_group.name for membership in group_group_membership
@@ -2183,7 +2198,7 @@ class RealmImportExportTest(ExportFile):
             # We already check the members of the group through UserGroupMembership
             # objects, but we also want to check direct_members field is set
             # correctly since we do not include this in export data.
-            usergroup = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             direct_members = usergroup.direct_members.all()
             direct_member_emails = {user.email for user in direct_members}
             return direct_member_emails
@@ -2193,14 +2208,14 @@ class RealmImportExportTest(ExportFile):
             # We already check the subgroups of the group through GroupGroupMembership
             # objects, but we also want to check that direct_subgroups field is set
             # correctly since we do not include this in export data.
-            usergroup = NamedUserGroup.objects.get(realm=r, name="role:members")
+            usergroup = NamedUserGroup.objects.get(realm_for_sharding=r, name="role:members")
             direct_subgroups = usergroup.direct_subgroups.all()
             direct_subgroup_names = {group.named_user_group.name for group in direct_subgroups}
             return direct_subgroup_names
 
         @getter
         def get_user_group_can_mention_group_setting(r: Realm) -> str:
-            user_group = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            user_group = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             return user_group.can_mention_group.named_user_group.name
 
         # test botstoragedata and botconfigdata
@@ -2259,7 +2274,7 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_user_group_mention(r: Realm) -> str:
-            user_group = NamedUserGroup.objects.get(realm=r, name="hamletcharacters")
+            user_group = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             data_usergroup_id = f'data-user-group-id="{user_group.id}"'
             mention_message = get_stream_messages(r).get(
                 rendered_content__contains=data_usergroup_id
@@ -2984,6 +2999,55 @@ class SingleUserExportTest(ExportFile):
                 (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
                 (hi_myself_message_id, "hi myself", cordelia.full_name),
                 (bye_stream_message_id, "bye stream", "Denmark"),
+            ],
+        )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_1_to_1_message_data_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        bot = self.create_test_bot("test-bot", hamlet)
+
+        get_or_create_direct_message_group([hamlet.id, cordelia.id])
+        get_or_create_direct_message_group([hamlet.id, bot.id])
+        get_or_create_direct_message_group([hamlet.id])
+
+        hi_hamlet_message_id = self.send_personal_message(othello, hamlet, "hi hamlet")
+        hi_cordelia_message_id = self.send_personal_message(hamlet, cordelia, "hi cordelia")
+        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
+        test_bot_message_id = self.send_personal_message(hamlet, bot, "test bot message")
+        self.send_personal_message(othello, cordelia, "an irrelevant message")
+        bye_peeps_message_id = self.send_group_direct_message(
+            othello, [cordelia, hamlet], "bye peeps"
+        )
+        self_message_id = self.send_personal_message(hamlet, hamlet, "hi myself")
+
+        output_dir = make_export_output_dir()
+        hamlet = self.example_user("hamlet")
+
+        with self.assertLogs(level="INFO"):
+            do_export_user(hamlet, output_dir)
+
+        messages = read_json("messages-000001.json")
+
+        excerpt = [
+            (rec["id"], rec["content"], rec["recipient_name"])
+            for rec in messages["zerver_message"][-6:]
+        ]
+        self.assertEqual(
+            excerpt,
+            [
+                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
+                (hi_cordelia_message_id, "hi cordelia", cordelia.full_name),
+                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
+                (test_bot_message_id, "test bot message", bot.full_name),
+                (
+                    bye_peeps_message_id,
+                    "bye peeps",
+                    f"{cordelia.full_name}, {hamlet.full_name}, {othello.full_name}",
+                ),
+                (self_message_id, "hi myself", hamlet.full_name),
             ],
         )
 

@@ -1061,7 +1061,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             with self.settings(DEVELOPMENT=False):
                 response = self.client_get(url)
             assert settings.LOCAL_UPLOADS_DIR is not None
-            test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
+            _test_run, _worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
             self.assertEqual(
                 response["X-Accel-Redirect"],
                 "/internal/local/uploads/" + fp_path + "/" + name_str_for_test,

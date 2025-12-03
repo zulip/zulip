@@ -58,11 +58,11 @@ class Customer(models.Model):
     @override
     def __str__(self) -> str:
         if self.realm is not None:
-            return f"{self.realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
+            return f"{self.realm!r} (stripe: {self.stripe_customer_id})"
         elif self.remote_realm is not None:
-            return f"{self.remote_realm!r} (with stripe_customer_id: {self.stripe_customer_id})"
+            return f"{self.remote_realm!r} (stripe: {self.stripe_customer_id})"
         else:
-            return f"{self.remote_server!r} (with stripe_customer_id: {self.stripe_customer_id})"
+            return f"{self.remote_server!r} (stripe: {self.stripe_customer_id})"
 
     def get_discounted_price_for_plan(self, plan_tier: int, schedule: int) -> int | None:
         from corporate.models.plans import CustomerPlan

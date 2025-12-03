@@ -44,10 +44,7 @@ const ListWidget = zrequire("list_widget");
 // in the real code.
 
 function make_container() {
-    const $container = {};
-    $container.attr = noop;
-    $container.empty = noop;
-    $container.data = noop;
+    const $container = {attr: noop, empty: noop, data: noop};
 
     // Make our append function just set a field we can
     // check in our tests.
@@ -59,10 +56,7 @@ function make_container() {
 }
 
 function make_scroll_container() {
-    const $scroll_container = {};
-    $scroll_container[0] = {};
-
-    $scroll_container.cleared = false;
+    const $scroll_container = {[0]: {}, cleared: false};
 
     // Capture the scroll callback so we can call it in
     // our tests.
@@ -83,9 +77,7 @@ function make_scroll_container() {
 }
 
 function make_sort_container() {
-    const $sort_container = {};
-
-    $sort_container.cleared = false;
+    const $sort_container = {cleared: false};
 
     $sort_container.on = (ev, sel, f) => {
         assert.equal(ev, "click.list_widget_sort");
@@ -102,10 +94,7 @@ function make_sort_container() {
 }
 
 function make_filter_element() {
-    const $element = {};
-
-    $element.cleared = false;
-    $element.clear_button_elem_cleared = false;
+    const $element = {cleared: false, clear_button_elem_cleared: false};
 
     $element.on = (ev, f) => {
         assert.equal(ev, "input.list_widget_filter");
@@ -155,13 +144,13 @@ function make_search_input() {
         };
     };
 
-    const clear_search_button_element = {};
-
-    clear_search_button_element.on = (event, f) => {
-        assert.equal(event, "click");
-        $element.simulate_clear_search = () => {
-            f.call();
-        };
+    const clear_search_button_element = {
+        on(event, f) {
+            assert.equal(event, "click");
+            $element.simulate_clear_search = () => {
+                f.call();
+            };
+        },
     };
 
     $element.siblings = (selector) => {
@@ -763,12 +752,7 @@ run_test("replace_list_data w/filter update", () => {
 });
 
 run_test("opts.get_item", () => {
-    const items = {};
-
-    items[1] = "one";
-    items[2] = "two";
-    items[3] = "three";
-    items[4] = "four";
+    const items = {[1]: "one", [2]: "two", [3]: "three", [4]: "four"};
 
     const list = [1, 2, 3, 4];
 

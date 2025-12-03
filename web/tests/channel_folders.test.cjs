@@ -66,6 +66,11 @@ run_test("basics", () => {
         devops_folder,
     ]);
 
+    assert.deepEqual(
+        channel_folders.get_all_folder_ids(),
+        new Set([frontend_folder.id, backend_folder.id, devops_folder.id]),
+    );
+
     assert.ok(channel_folders.is_valid_folder_id(frontend_folder.id));
     assert.ok(!channel_folders.is_valid_folder_id(999));
 
@@ -97,22 +102,35 @@ run_test("basics", () => {
         name: "Stream 4",
         folder_id: frontend_folder.id,
     });
-    stream_data.add_sub(stream_1);
+    const stream_5 = make_stream({
+        stream_id: 5,
+        name: "channel 5",
+        folder_id: frontend_folder.id,
+    });
+    stream_data.add_sub_for_tests(stream_1);
 
     assert.deepEqual(channel_folders.user_has_folders(), false);
 
-    stream_data.add_sub(stream_2);
-    stream_data.add_sub(stream_3);
-    stream_data.add_sub(stream_4);
+    stream_data.add_sub_for_tests(stream_2);
+    stream_data.add_sub_for_tests(stream_3);
+    stream_data.add_sub_for_tests(stream_4);
+    stream_data.add_sub_for_tests(stream_5);
 
     assert.deepEqual(channel_folders.get_stream_ids_in_folder(frontend_folder.id), [
         stream_2.stream_id,
         stream_4.stream_id,
+        stream_5.stream_id,
     ]);
     assert.deepEqual(channel_folders.get_stream_ids_in_folder(devops_folder.id), [
         stream_3.stream_id,
     ]);
     assert.deepEqual(channel_folders.get_stream_ids_in_folder(backend_folder.id), []);
+
+    assert.deepEqual(channel_folders.get_sorted_streams_in_folder(frontend_folder.id), [
+        stream_5,
+        stream_2,
+        stream_4,
+    ]);
 
     const subscribed_streams = new Set([
         stream_1.stream_id,

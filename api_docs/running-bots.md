@@ -1,7 +1,9 @@
-# Interactive bots
+# Running interactive bots
 
-Zulip's API has a powerful framework for interactive bots that react
-to messages in Zulip.
+Zulip's API has a powerful framework for interactive bots that react to messages
+in Zulip. You can [write your own interactive bot](/api/writing-bots), or run a
+Zulip bot from [zulip_bots/bots](
+https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
 
 ## Running a bot
 
@@ -56,16 +58,6 @@ You can now play around with the bot and get it configured the way you
 like.  Eventually, you'll probably want to run it in a production
 environment where it'll stay up, by [deploying](/api/deploying-bots) it on a
 server using the Zulip Botserver.
-
-## Common problems
-
-* My bot won't start
-    * Ensure that your API config file is correct (download the config file from the server).
-    * Ensure that your bot script is located in `zulip_bots/bots/<my-bot>/`
-    * Are you using your own Zulip development server? Ensure that you run your bot outside
-      the Vagrant environment.
-    * Some bots require Python 3. Try switching to a Python 3 environment before running
-      your bot.
 
 ## Related articles
 

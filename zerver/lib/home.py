@@ -37,7 +37,6 @@ class UserPermissionInfo:
     is_guest: bool
     is_realm_admin: bool
     is_realm_owner: bool
-    show_webathena: bool
 
 
 def get_furthest_read_time(user_profile: UserProfile | None) -> float | None:
@@ -67,7 +66,6 @@ def get_user_permission_info(user_profile: UserProfile | None) -> UserPermission
             is_guest=user_profile.is_guest,
             is_realm_owner=user_profile.is_realm_owner,
             is_realm_admin=user_profile.is_realm_admin,
-            show_webathena=user_profile.realm.webathena_enabled,
         )
     else:
         return UserPermissionInfo(
@@ -75,7 +73,6 @@ def get_user_permission_info(user_profile: UserProfile | None) -> UserPermission
             is_guest=False,
             is_realm_admin=False,
             is_realm_owner=False,
-            show_webathena=False,
         )
 
 
@@ -151,7 +148,6 @@ def build_page_params_for_home_page_load(
 
     furthest_read_time = get_furthest_read_time(user_profile)
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
-    user_permission_info = get_user_permission_info(user_profile)
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a JavaScript Object named 'page_params'.
@@ -173,7 +169,6 @@ def build_page_params_for_home_page_load(
         two_fa_enabled=two_fa_enabled,
         apps_page_url=get_apps_page_url(),
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
-        show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),

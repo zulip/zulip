@@ -148,8 +148,10 @@ test("fetch on search", async ({override}) => {
     stub_buddy_list_empty_list_message_lengths();
 
     const office = {stream_id: 23, name: "office", subscribed: true};
-    stream_data.add_sub(office);
-    message_lists.set_current(make_message_list([{operator: "stream", operand: office.stream_id}]));
+    stream_data.add_sub_for_tests(office);
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: office.stream_id.toString()}]),
+    );
     let get_call_count = 0;
     channel.get = () => {
         get_call_count += 1;
@@ -170,15 +172,15 @@ test("fetch on search", async ({override}) => {
     get_call_count = 0;
     populate_call_count = 0;
     const kitchen = {stream_id: 25, name: "kitchen", subscribed: true};
-    stream_data.add_sub(kitchen);
+    stream_data.add_sub_for_tests(kitchen);
     const living_room = {stream_id: 26, name: "living_room", subscribed: true};
-    stream_data.add_sub(living_room);
+    stream_data.add_sub_for_tests(living_room);
     message_lists.set_current(
-        make_message_list([{operator: "stream", operand: kitchen.stream_id}]),
+        make_message_list([{operator: "stream", operand: kitchen.stream_id.toString()}]),
     );
     set_input_val("somevalue");
     message_lists.set_current(
-        make_message_list([{operator: "stream", operand: living_room.stream_id}]),
+        make_message_list([{operator: "stream", operand: living_room.stream_id.toString()}]),
     );
     set_input_val("somevalue");
     await activity_ui.await_pending_promise_for_testing();
@@ -224,11 +226,12 @@ test("blur search left", ({override}) => {
 });
 
 test("filter_user_ids", ({override}) => {
-    const user_presence = {};
-    user_presence[alice.user_id] = "active";
-    user_presence[fred.user_id] = "active";
-    user_presence[jill.user_id] = "active";
-    user_presence[me.user_id] = "active";
+    const user_presence = {
+        [alice.user_id]: "active",
+        [fred.user_id]: "active",
+        [jill.user_id]: "active",
+        [me.user_id]: "active",
+    };
 
     override(presence, "get_status", (user_id) => user_presence[user_id]);
     override(presence, "get_user_ids", () => all_user_ids);

@@ -23,7 +23,7 @@ class zulip::profile::postgresql(Boolean $start = true) {
   $wal_buffers = zulipconf('postgresql', 'wal_buffers', undef)
   $min_wal_size = zulipconf('postgresql', 'min_wal_size', undef)
   $max_wal_size = zulipconf('postgresql', 'max_wal_size', undef)
-  $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
+  $random_page_cost = zulipconf('postgresql', 'random_page_cost', '1.1')
   $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
 
   $listen_addresses = zulipconf('postgresql', 'listen_addresses', undef)

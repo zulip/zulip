@@ -93,7 +93,7 @@ def migrate_realm_emoji_image_files(
 ) -> None:
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     uploader = get_uploader()
-    for realm_emoji in RealmEmoji.objects.all():
+    for realm_emoji in RealmEmoji.objects.all().iterator():
         old_file_name = realm_emoji.file_name
         new_file_name = get_emoji_file_name(old_file_name, str(realm_emoji.id))
         uploader.ensure_emoji_images(realm_emoji.realm_id, old_file_name, new_file_name)
@@ -104,7 +104,7 @@ def migrate_realm_emoji_image_files(
 def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     # Ensures that migration can be re-run in case of a failure.
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
-    for realm_emoji in RealmEmoji.objects.all():
+    for realm_emoji in RealmEmoji.objects.all().iterator():
         corrupt_file_name = realm_emoji.file_name
         correct_file_name = get_emoji_file_name(corrupt_file_name, realm_emoji.name)
         realm_emoji.file_name = correct_file_name

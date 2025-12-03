@@ -82,9 +82,6 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
-    if user_profile.realm.is_zephyr_mirror_realm:
-        raise AssertionError("Deleting zephyr mirror users is not supported")
-
     do_deactivate_user(user_profile, acting_user=acting_user)
 
     to_resubscribe_recipient_ids = set(
@@ -102,8 +99,8 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None
         # Recipient objects don't get deleted through CASCADE, so we need to handle
         # the user's personal recipient manually. This will also delete all Messages pointing
         # to this recipient (all direct messages sent to the user).
-        assert personal_recipient is not None
-        personal_recipient.delete()
+        if personal_recipient is not None:
+            personal_recipient.delete()
         replacement_user = create_user(
             force_id=user_id,
             email=Address(
@@ -187,9 +184,6 @@ def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
       space of user IDs that contain actual users.
 
     """
-    if user_profile.realm.is_zephyr_mirror_realm:
-        raise AssertionError("Deleting zephyr mirror users is not supported")
-
     do_deactivate_user(user_profile, acting_user=None)
 
     user_id = user_profile.id
@@ -360,9 +354,9 @@ def send_update_events_for_anonymous_group_settings(
         group_setting_query |= Q(**{f"{setting_name}__in": setting_group_ids})
 
     named_groups_using_setting_groups_dict = {}
-    named_groups_using_setting_groups = NamedUserGroup.objects.filter(realm=realm).filter(
-        group_setting_query
-    )
+    named_groups_using_setting_groups = NamedUserGroup.objects.filter(
+        realm_for_sharding=realm
+    ).filter(group_setting_query)
     for group in named_groups_using_setting_groups:
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             setting_value_id = getattr(group, setting_name + "_id")
@@ -393,6 +387,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         user_profile,
         include_public=False,
         include_subscribed=True,
+        exclude_archived=False,
     )
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     streams: list[Stream] = []
@@ -520,16 +515,6 @@ def do_deactivate_user(
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
     with transaction.atomic(savepoint=False):
-        if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
-            # For zephyr mirror users, we need to make them a mirror dummy
-            # again; otherwise, other users won't get the correct behavior
-            # when trying to send messages to this person inside Zulip.
-            #
-            # Ideally, we need to also ensure their zephyr mirroring bot
-            # isn't running, but that's a separate issue.
-            user_profile.is_mirror_dummy = True
-            user_profile.save(update_fields=["is_mirror_dummy"])
-
         change_user_is_active(user_profile, False)
 
         clear_scheduled_emails([user_profile.id])
@@ -580,7 +565,7 @@ def send_stream_events_for_role_update(
 
     now_accessible_stream_ids = current_accessible_stream_ids - old_accessible_stream_ids
     if now_accessible_stream_ids:
-        recent_traffic = get_streams_traffic(now_accessible_stream_ids, user_profile.realm)
+        recent_traffic = get_streams_traffic(user_profile.realm, now_accessible_stream_ids)
 
         now_accessible_streams = [
             stream
@@ -1016,3 +1001,22 @@ def do_send_password_reset_email(
             realm=realm,
             request=request,
         )
+
+
+@transaction.atomic(durable=True)
+def do_change_is_imported_stub(user_profile: UserProfile) -> None:
+    user_profile.is_imported_stub = False
+    user_profile.save(update_fields=["is_imported_stub"])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        acting_user=user_profile,
+        event_type=AuditLogEventType.USER_IS_IMPORTED_STUB_CHANGED,
+        event_time=timezone_now(),
+    )
+
+    event = dict(
+        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_imported_stub=False)
+    )
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))

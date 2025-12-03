@@ -31,14 +31,14 @@ const me_group = make_user_group({
     id: 1,
     members: new Set([me.user_id]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const nobody_group = make_user_group({
     name: "nobody_group",
     id: 2,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 const denmark = {
@@ -80,7 +80,7 @@ const sweden_pill = {
 
 const subs = [denmark, sweden, germany];
 for (const sub of subs) {
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 }
 
 peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);

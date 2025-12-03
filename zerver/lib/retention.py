@@ -328,7 +328,7 @@ def delete_messages(msg_ids: list[int]) -> None:
 
 
 def delete_expired_attachments(realm: Realm) -> None:
-    (num_deleted, ignored) = Attachment.objects.filter(
+    (num_deleted, _deletions) = Attachment.objects.filter(
         messages__isnull=True,
         scheduled_messages__isnull=True,
         realm_id=realm.id,
@@ -629,7 +629,7 @@ def restore_data_from_archive_by_realm(realm: Realm) -> None:
 
 
 def restore_all_data_from_archive(restore_manual_transactions: bool = True) -> None:
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         restore_data_from_archive_by_realm(realm)
 
     if restore_manual_transactions:

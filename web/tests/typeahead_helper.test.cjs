@@ -131,22 +131,24 @@ const dev_sub = {
     name: "Dev",
     color: "blue",
     stream_id: 1,
+    subscriber_count: 0,
 };
 
 const linux_sub = {
     name: "Linux",
     color: "red",
     stream_id: 2,
+    subscriber_count: 0,
 };
 stream_data.create_streams([dev_sub, linux_sub]);
-stream_data.add_sub(dev_sub);
-stream_data.add_sub(linux_sub);
+stream_data.add_sub_for_tests(dev_sub);
+stream_data.add_sub_for_tests(linux_sub);
 
 const bob_system_group = make_user_group({
     id: 1,
     name: "Bob system group",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 const bob_system_group_item = user_group_item(bob_system_group);
@@ -155,7 +157,7 @@ const bob_group = make_user_group({
     id: 2,
     name: "Bob group",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
 });
 const bob_group_item = user_group_item(bob_group);
@@ -172,7 +174,7 @@ const admins_group = make_user_group({
     id: 4,
     name: "Admins of zulip",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
 });
 const admins_group_item = user_group_item(admins_group);
@@ -181,7 +183,7 @@ const members_group = make_user_group({
     id: 5,
     name: "role:members",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 const members_group_item = user_group_item(members_group);
@@ -190,7 +192,7 @@ const everyone_group = make_user_group({
     id: 6,
     name: "role:everyone",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 
@@ -212,7 +214,6 @@ function test(label, f) {
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
         helpers.override(current_user, "is_admin", false);
-        helpers.override(realm, "realm_is_zephyr_mirror_realm", false);
 
         f(helpers);
     });

@@ -230,9 +230,10 @@ installing Zulip with a dedicated database server.
   backend][s3-uploads].
 
 - **Sharding:** For servers with several thousand daily active users,
-  Zulip supports sharding its real-time-push Tornado service, both by
-  realm/organization (for hosting many organizations) and by user ID
-  (for hosting single very large organizations)
+  Zulip supports [sharding its real-time-push Tornado
+  service][tornado-sharding], both by realm/organization (for hosting many
+  organizations) and by user ID (for hosting single very large
+  organizations).
 
   Care must be taken when dividing traffic for a single Zulip realm
   between multiple Zulip application servers, which is why we
@@ -250,3 +251,4 @@ document](../subsystems/performance.md) may also be of interest.
 [s3-uploads]: upload-backends.md#s3-backend-configuration
 [streaming-replication]: postgresql.md#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support
+[tornado-sharding]: system-configuration.md#tornado_sharding

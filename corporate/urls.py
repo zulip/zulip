@@ -91,9 +91,6 @@ from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
 
 i18n_urlpatterns: Any = [
-    # Zephyr/MIT
-    path("zephyr/", TemplateView.as_view(template_name="corporate/zephyr.html")),
-    path("zephyr-mirror/", TemplateView.as_view(template_name="corporate/zephyr-mirror.html")),
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
     # Billing
     path("billing/", billing_page, name="billing_page"),
@@ -150,6 +147,7 @@ landing_page_urls = [
     path("partners/", landing_view, {"template_name": "corporate/partners.html"}),
     path("why-zulip/", landing_view, {"template_name": "corporate/why-zulip.html"}),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
+    path("zulip-cloud/", landing_view, {"template_name": "corporate/zulip-cloud.html"}),
     path("security/", landing_view, {"template_name": "corporate/security.html"}),
     # /for pages
     path("use-cases/", landing_view, {"template_name": "corporate/for/use-cases.html"}),

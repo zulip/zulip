@@ -59,10 +59,10 @@ Sample JSON data that gets encrypted:
 {
   "content": "test content",
   "message_id": 46,
-  "pm_users": "6,10,12,15",
   "realm_name": "Zulip Dev",
   "realm_url": "http://zulip.testserver",
   "recipient_type": "direct",
+  "recipient_user_ids": [6,10,12,15],
   "sender_avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
   "sender_full_name": "aaron",
   "sender_id": 6,
@@ -72,14 +72,16 @@ Sample JSON data that gets encrypted:
 }
 ```
 
-- **Group direct messages**: The `pm_users` string field is only
-present for group direct messages, containing a sorted comma-separated
-list of all user IDs in the group direct message conversation,
-including both `user_id` and `sender_id`.
+- The `recipient_user_ids` field is a sorted array of all user IDs in
+the direct message conversation, including both `user_id` and
+`sender_id`.
 
-**Changes**: New in Zulip 11.0 (feature level 413).
+**Changes**: In Zulip 12.0 (feature level 429), replaced the
+`pm_users` field with `recipient_user_ids`. The old `pm_users` field
+was only present for group DMs, and was a string containing a
+comma-separated list of sorted user IDs.
 
-### New group direct message
+New in Zulip 11.0 (feature level 413).
 
 ### Remove notifications
 

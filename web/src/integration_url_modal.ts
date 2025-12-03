@@ -106,8 +106,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
             if (
                 !$("#integration-url-all-branches").prop("checked") &&
-                branch_pill_widget !== undefined &&
-                branch_pill_widget.items().length === 0
+                branch_pill_widget?.items().length === 0
             ) {
                 branch_pill_widget.appendValue("main");
             }
@@ -312,7 +311,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const options = [
                 default_integration_option,
                 ...realm.realm_incoming_webhook_bots
-                    .sort((a, b) => util.strcmp(a.display_name, b.display_name))
+                    .toSorted((a, b) => util.strcmp(a.display_name, b.display_name))
                     .map((bot) => ({
                         name: bot.display_name,
                         unique_id: bot.name,

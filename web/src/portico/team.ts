@@ -147,10 +147,10 @@ export default function render_tabs(contributors: Contributor[]): void {
         profile_url: get_profile_url(c),
         commits: calculate_total_commits(c),
     }));
-    const total_tab_html = mapped_contributors_list
-        .sort((a, b) => (a.commits < b.commits ? 1 : a.commits > b.commits ? -1 : 0))
-        .map((c) => template(c))
-        .join("");
+    mapped_contributors_list.sort((a, b) =>
+        a.commits < b.commits ? 1 : a.commits > b.commits ? -1 : 0,
+    );
+    const total_tab_html = mapped_contributors_list.map((c) => template(c)).join("");
 
     const twenty_plus_total_contributors = mapped_contributors_list.filter((c) => c.commits >= 20);
     const hundred_plus_total_contributors = mapped_contributors_list.filter(
@@ -191,13 +191,13 @@ export default function render_tabs(contributors: Contributor[]): void {
                             0,
                         ),
                     }));
+                filtered_by_tab.sort((a, b) => {
+                    const a_commits = a.total_commits;
+                    const b_commits = b.total_commits;
+                    return a_commits < b_commits ? 1 : a_commits > b_commits ? -1 : 0;
+                });
 
                 const html = filtered_by_tab
-                    .sort((a, b) => {
-                        const a_commits = a.total_commits;
-                        const b_commits = b.total_commits;
-                        return a_commits < b_commits ? 1 : a_commits > b_commits ? -1 : 0;
-                    })
                     .map((c) =>
                         template({
                             name: get_display_name(c),

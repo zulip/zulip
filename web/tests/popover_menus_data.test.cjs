@@ -103,7 +103,7 @@ const everyone = make_user_group({
     id: 2,
     members: new Set([999, 1000, 2000]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 user_groups.initialize({realm_user_groups: [everyone]});
 
@@ -203,6 +203,7 @@ test("my_message_all_actions", ({override}) => {
             unread: false,
             collapsed: false,
             not_spectator: true,
+            submessages: [],
             edit_history: [
                 {
                     prev_content: "Previous content",

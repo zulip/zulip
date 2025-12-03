@@ -1,10 +1,9 @@
 import autosize from "autosize";
+import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as internal_url from "../shared/src/internal_url.ts";
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_bookend from "../templates/bookend.hbs";
 import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
 import render_message_group from "../templates/message_group.hbs";
@@ -18,10 +17,12 @@ import * as compose_fade from "./compose_fade.ts";
 import * as condense from "./condense.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as internal_url from "./internal_url.ts";
 import * as message_edit from "./message_edit.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -33,13 +34,13 @@ import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
-import {is_same_day} from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
@@ -137,11 +138,9 @@ function same_day(earlier_msg: Message | undefined, later_msg: Message | undefin
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    return is_same_day(
-        earlier_msg.timestamp * 1000,
-        later_msg.timestamp * 1000,
-        timerender.display_time_zone,
-    );
+    return isSameDay(earlier_msg.timestamp * 1000, later_msg.timestamp * 1000, {
+        in: timerender.display_tz,
+    });
 }
 
 function same_year(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {
@@ -273,7 +272,8 @@ function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
         return util.strcmp(a.full_name, b.full_name);
     }
 
-    return users.sort(compare_by_name);
+    users.sort(compare_by_name);
+    return users;
 }
 
 let message_id_to_focus_after_processing_message_events:
@@ -637,10 +637,7 @@ export class MessageListView {
             // mention (which is the only other option for `mentioned` being true).
             if (message.mentioned_me_directly && is_user_mention) {
                 // Highlight messages having personal mentions only in DMs and subscribed streams.
-                if (
-                    message.type === "private" ||
-                    stream_data.is_user_subscribed(message.stream_id, people.my_current_user_id())
-                ) {
+                if (message.type === "private" || stream_data.is_subscribed(message.stream_id)) {
                     mention_classname = "direct_mention";
                 } else {
                     mention_classname = undefined;
@@ -779,6 +776,7 @@ export class MessageListView {
         for (const message of messages) {
             const message_reactions = reactions.get_message_reactions(message);
             message.message_reactions = message_reactions;
+            message.reminders = message_reminder.get_reminders(message.id);
 
             // These will be used to build the message container
             let include_recipient = false;
@@ -985,6 +983,11 @@ export class MessageListView {
                 update_group_date(second_group, curr_msg_container.msg, prev_msg_container?.msg);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
+            } else if (second_group.bookend_top) {
+                // We know there was no bookend_top before since we
+                // are adding messages to the top.
+                const rendered_bookend_html = render_bookend(second_group);
+                this.$list.prepend($(rendered_bookend_html));
             }
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = [...new_message_groups, ...this._message_groups];
@@ -1038,9 +1041,9 @@ export class MessageListView {
         if (page_params.is_spectator) {
             // For images that fail to load due to being rate limited or being denied access
             // by server in general, we tell user to login to be able to view the image.
-            $message_rows.find(".message_inline_image img").on("error", (e) => {
+            $message_rows.find(".media-image-element").on("error", (e) => {
                 $(e.target)
-                    .closest(".message_inline_image")
+                    .closest(".message-media-preview-image")
                     .replaceWith($(render_login_to_view_image_button()));
             });
         }
@@ -1074,6 +1077,7 @@ export class MessageListView {
     _get_message_template(message_container: MessageContainer): string {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
+        message_container.msg.reminders = message_reminder.get_reminders(message_container.msg.id);
         const msg_to_render = {
             ...message_container,
             message_list_id: this.list.id,
@@ -2178,7 +2182,6 @@ export class MessageListView {
 
     show_messages_as_unread(message_ids: number[]): void {
         const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
-            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
             const message_id = Number.parseFloat($row.getAttribute("data-message-id")!);
             return message_ids.includes(message_id);
         });

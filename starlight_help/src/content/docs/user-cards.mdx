@@ -8,8 +8,7 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-
-import RightSidebarUserCard from "./include/_RightSidebarUserCard.mdx";
+import RightSidebarUserCard from "../include/_RightSidebarUserCard.mdx";
 
 In the web and desktop apps, user cards contain basic information about a user
 or bot. User cards are also a handy starting point for actions such as a [viewing a
@@ -63,7 +62,7 @@ sent](/help/view-messages-sent-by-a-user).
 
   <TabItem label="Bot">
     <FlattenedSteps>
-      <NavigationSteps target="settings/bot-list-admin" />
+      <NavigationSteps target="settings/bots" />
 
       1. Click on the name of a bot in the **Name** column to open its **user card**.
     </FlattenedSteps>

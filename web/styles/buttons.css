@@ -64,6 +64,14 @@
         pointer-events: none;
         opacity: 0.5;
     }
+
+    .zulip-icon {
+        /* We apply the same line-height to icons,
+           as those applied to the label element,
+           to maintain a consistent height for
+           icon-only action buttons. */
+        line-height: 1.25; /* 20px at 16px/1em */
+    }
 }
 
 .action-button-label {

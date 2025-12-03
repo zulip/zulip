@@ -227,8 +227,16 @@ class Realm(models.Model):
     # Day of the week on which the digest is sent (default: Tuesday).
     digest_weekday = models.SmallIntegerField(default=1)
 
+    # Whether channel event messages are enabled in the organizaton.
+    send_channel_events_messages = models.BooleanField(default=False)
+
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
+
+    # Whether the organization's security policy allows owners to take
+    # actions like full data exports that grant access to all private
+    # content in this organization.
+    owner_full_content_access = models.BooleanField(default=False, db_default=False)
 
     topics_policy = models.PositiveSmallIntegerField(
         default=RealmTopicsPolicyEnum.allow_empty_topic.value
@@ -661,26 +669,22 @@ class Realm(models.Model):
             "name": gettext_lazy("GIPHY integration disabled"),
             "id": 0,
         },
-        # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
-        "y": {
-            "name": gettext_lazy("Allow GIFs rated Y (Very young audience)"),
-            "id": 1,
-        },
+        # Source: https://developers.giphy.com/docs/optional-settings/#rating
         "g": {
             "name": gettext_lazy("Allow GIFs rated G (General audience)"),
-            "id": 2,
+            "id": 1,
         },
         "pg": {
             "name": gettext_lazy("Allow GIFs rated PG (Parental guidance)"),
-            "id": 3,
+            "id": 2,
         },
         "pg-13": {
             "name": gettext_lazy("Allow GIFs rated PG-13 (Parental guidance - under 13)"),
-            "id": 4,
+            "id": 3,
         },
         "r": {
             "name": gettext_lazy("Allow GIFs rated R (Restricted)"),
-            "id": 5,
+            "id": 4,
         },
     }
 
@@ -732,6 +736,7 @@ class Realm(models.Model):
         push_notifications_enabled=bool,
         require_e2ee_push_notifications=bool,
         require_unique_names=bool,
+        send_channel_events_messages=bool,
         send_welcome_emails=bool,
         topics_policy=RealmTopicsPolicyEnum,
         video_chat_provider=int,
@@ -1082,12 +1087,20 @@ class Realm(models.Model):
             return Realm.UPLOAD_QUOTA_LIMITED
         elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
             return Realm.UPLOAD_QUOTA_STANDARD_FREE
-        elif plan_type in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
+        elif plan_type == Realm.PLAN_TYPE_STANDARD:
             from corporate.lib.stripe import get_cached_seat_count
 
             # Paying customers with few users should get a reasonable minimum quota.
             return max(
-                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD,
+                Realm.UPLOAD_QUOTA_STANDARD_FREE,
+            )
+        elif plan_type == Realm.PLAN_TYPE_PLUS:
+            from corporate.lib.stripe import get_cached_seat_count
+
+            # Paying customers with few users should get a reasonable minimum quota.
+            return max(
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_PLUS,
                 Realm.UPLOAD_QUOTA_STANDARD_FREE,
             )
         else:
@@ -1182,16 +1195,8 @@ class Realm(models.Model):
         return settings.REALM_HOSTS.get(subdomain, default_host)
 
     @property
-    def is_zephyr_mirror_realm(self) -> bool:
-        return self.string_id == "zephyr"
-
-    @property
-    def webathena_enabled(self) -> bool:
-        return self.is_zephyr_mirror_realm
-
-    @property
     def presence_disabled(self) -> bool:
-        return self.is_zephyr_mirror_realm
+        return False
 
     def web_public_streams_enabled(self) -> bool:
         if not settings.WEB_PUBLIC_STREAMS_ENABLED:

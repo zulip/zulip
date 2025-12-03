@@ -15,7 +15,7 @@ exports.server_supported_permission_settings = {
             allow_internet_group: false,
             allow_nobody_group: true,
             allow_everyone_group: false,
-            default_group_name: "stream_creator_or_nobody",
+            default_group_name: "channel_creator",
             allowed_system_groups: [],
         },
         can_remove_subscribers_group: {

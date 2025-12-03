@@ -39,11 +39,11 @@ export async function copy_link_to_clipboard(link: string): Promise<void> {
             } else {
                 const stream = stream_data.get_sub_by_id(stream_topic_details.stream_id);
                 assert(stream !== undefined);
-                const {text} = topic_link_util.get_topic_link_content(
-                    stream.name,
-                    stream_topic_details.topic_name,
-                    stream_topic_details.message_id,
-                );
+                const {text} = topic_link_util.get_topic_link_content_with_stream_name({
+                    stream_name: stream.name,
+                    topic_name: stream_topic_details.topic_name,
+                    message_id: stream_topic_details.message_id,
+                });
 
                 const copy_in_html_syntax = topic_link_util.as_html_link_syntax_unsafe(text, link);
                 const copy_in_markdown_syntax = topic_link_util.as_markdown_link_syntax(text, link);

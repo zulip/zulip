@@ -330,8 +330,10 @@ class UnreadTopicCounter {
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
             // so that callers have a view of the **current** world.
+            // Similarly we ignore unreads for archived channels, since
+            // they don't show up in the left sidebar either.
             const sub = sub_store.get(stream_id);
-            if (!sub || !stream_data.is_subscribed(stream_id)) {
+            if (!sub || !stream_data.is_subscribed(stream_id) || sub.is_archived) {
                 continue;
             }
 
@@ -597,7 +599,7 @@ class UnreadTopicCounter {
             // topic in this stream containing a given unread message
             // ID. If it's not in this stream, we'll get undefined.
             const stream_topic = this.reverse_lookup.get(message_id);
-            if (stream_topic !== undefined && stream_topic.stream_id === stream_id) {
+            if (stream_topic?.stream_id === stream_id) {
                 // Important: We lower-case topics here before adding them
                 // to this set, to support case-insensitive checks.
                 result.add(stream_topic.topic.toLowerCase());

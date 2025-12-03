@@ -25,6 +25,8 @@ const home_params_schema = z.looseObject({
     corporate_enabled: z.boolean(),
     embedded_bots_enabled: z.boolean(),
     furthest_read_time: z.nullable(z.number()),
+    insecure_desktop_app: z.boolean(),
+    is_node_test: z.optional(z.literal(true)),
     is_spectator: z.boolean(),
     // `language_cookie_name` is only sent for spectators.
     language_cookie_name: z.optional(z.string()),
@@ -47,9 +49,9 @@ const home_params_schema = z.looseObject({
     // processor time to compute.
     realm_rendered_description: z.optional(z.string()),
     show_try_zulip_modal: z.boolean(),
-    show_webathena: z.boolean(),
     state_data: z.nullable(state_data_schema),
     translation_data: z.record(z.string(), z.string()),
+    warn_no_email: z.boolean(),
 });
 
 // Sync this with analytics.views.stats.render_stats.
@@ -115,11 +117,12 @@ function take_params(): string {
     if (page_params_div === null) {
         throw new Error("Missing #page-params");
     }
-    if (page_params_div.dataset.params === undefined) {
+    const params = page_params_div.getAttribute("data-params");
+    if (params === null) {
         throw new Error("Missing #page_params[data-params]");
     }
     page_params_div.remove();
-    return page_params_div.dataset.params;
+    return params;
 }
 
 export const page_params = page_params_schema.parse(JSON.parse(take_params()));

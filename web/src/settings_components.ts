@@ -9,7 +9,7 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import * as blueslip from "./blueslip.ts";
 import * as buttons from "./buttons.ts";
 import * as compose_banner from "./compose_banner.ts";
-import type {DropdownWidget} from "./dropdown_widget.ts";
+import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {
     AssignedGroupPermission,
@@ -17,7 +17,7 @@ import type {
     RealmGroupSettingNameSupportingAnonymousGroups,
 } from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
-import {$t} from "./i18n.ts";
+import {$t, get_language_list_columns} from "./i18n.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -201,7 +201,7 @@ export function get_realm_default_setting_property_value(
 export function realm_authentication_methods_to_boolean_dict(): Record<string, boolean> {
     return Object.fromEntries(
         Object.entries(realm.realm_authentication_methods)
-            .sort()
+            .toSorted()
             .map(([auth_method_name, auth_method_info]) => [
                 auth_method_name,
                 auth_method_info.enabled,
@@ -491,10 +491,12 @@ function get_field_data_input_value($input_elem: JQuery): string | undefined {
 }
 
 const dropdown_widget_map = new Map<string, DropdownWidget | null>([
+    ["realm_moderation_request_channel_id", null],
     ["realm_new_stream_announcements_stream_id", null],
     ["realm_signup_announcements_stream_id", null],
     ["realm_zulip_update_announcements_stream_id", null],
     ["realm_default_code_block_language", null],
+    ["realm_default_language", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
@@ -677,6 +679,7 @@ export function get_input_type($input_elem: JQuery, input_type?: string): string
 export let get_input_element_value = (
     input_elem: HTMLElement,
     input_type?: string,
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 ): boolean | number | string | null | undefined | GroupSettingValue => {
     const $input_elem = $(input_elem);
     input_type = get_input_type($input_elem, input_type);
@@ -835,10 +838,12 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_authentication_methods":
             proposed_val = get_input_element_value(elem, "auth-methods");
             break;
+        case "realm_moderation_request_channel_id":
         case "realm_new_stream_announcements_stream_id":
         case "realm_signup_announcements_stream_id":
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
+        case "realm_default_language":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
@@ -885,11 +890,6 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_jitsi_server_url":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_jitsi_server_url_setting_value($(elem), false);
-            break;
-        case "realm_default_language":
-            proposed_val = $("#org-notifications .language_selection_widget").attr(
-                "data-language-code",
-            );
             break;
         default:
             if (current_val !== undefined) {
@@ -964,10 +964,9 @@ export function get_group_setting_widget_value(
         return direct_subgroups[0];
     }
 
-    return {
-        direct_subgroups: direct_subgroups.sort(),
-        direct_members: direct_members.sort(),
-    };
+    direct_subgroups.sort();
+    direct_members.sort();
+    return {direct_subgroups, direct_members};
 }
 
 export function check_group_property_changed(elem: HTMLElement, group: UserGroup): boolean {
@@ -1497,7 +1496,7 @@ function should_disable_save_button_for_stream_settings(stream_id: number): bool
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const $save_button = $subsection_elem.find(".save-button");
 
-    if ($subsection_elem.closest(".advanced-configurations-container").length > 0) {
+    if ($subsection_elem.closest(".channel-permissions").length > 0) {
         const $settings_container = $subsection_elem.closest(".subscription_settings");
         const stream_id_string = $settings_container.attr("data-stream-id");
         assert(stream_id_string !== undefined);
@@ -1540,7 +1539,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         return;
     }
 
-    const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
+    const group_settings = [...$subsection_elem.find(".pill-container.prop-element")].map((elem) =>
         extract_property_name($(elem)),
     );
     if (
@@ -1595,10 +1594,16 @@ export function disable_opening_typeahead_on_clicking_label($container: JQuery):
     $group_setting_labels.off("click");
 }
 
-export function disable_group_permission_setting($container: JQuery): void {
-    $container.find(".input").prop("contenteditable", false);
-    $container.closest(".input-group").addClass("group_setting_disabled");
-    disable_opening_typeahead_on_clicking_label($container.closest(".input-group"));
+export function disable_group_permission_setting($containers: JQuery): void {
+    $containers.find(".input").prop("contenteditable", false);
+    $containers.closest(".input-group").addClass("group_setting_disabled");
+    disable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
+}
+
+export function enable_group_permission_setting($containers: JQuery): void {
+    $containers.find(".input").prop("contenteditable", true);
+    $containers.closest(".input-group").removeClass("group_setting_disabled");
+    enable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
 }
 
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
@@ -1829,7 +1834,7 @@ export function create_stream_group_setting_widget({
             setting_name,
             "stream",
         )!.default_group_name;
-        if (default_group_name === "stream_creator_or_nobody") {
+        if (default_group_name === "channel_creator") {
             set_group_setting_widget_value(pill_widget, {
                 direct_members: [current_user.user_id],
                 direct_subgroups: [],
@@ -2016,4 +2021,53 @@ export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): nu
         return null;
     }
     return value;
+}
+
+export const language_options = (): Option[] => {
+    const languages = get_language_list_columns(realm.realm_default_language).toSorted((a, b) =>
+        util.strcmp(a.name_with_percent, b.name_with_percent),
+    );
+    return languages.map((language) => ({
+        name: language.name_with_percent,
+        unique_id: language.code,
+    }));
+};
+
+export function resize_textareas_in_section($section: JQuery): void {
+    const $subsections = $section.find(".settings-subsection-parent");
+    if ($subsections.length === 0) {
+        return;
+    }
+
+    $subsections.each(function () {
+        resize_textareas_in_subsection($(this));
+    });
+}
+
+export let resize_textareas_in_subsection = ($subsection: JQuery): void => {
+    const $textareas = $subsection.find("textarea");
+
+    if ($textareas.length === 0) {
+        return;
+    }
+
+    $textareas.each(function () {
+        const $el = $<HTMLTextAreaElement>(this);
+
+        const min_rows = 2;
+        const max_rows = 5;
+        $el.attr("rows", min_rows);
+        const scrollheight = util.the($el).scrollHeight;
+        const line_height = Number.parseFloat($el.css("line-height"));
+        const needed_rows = Math.ceil(scrollheight / line_height) - 1;
+
+        const new_rows = Math.min(Math.max(needed_rows, min_rows), max_rows);
+        $el.attr("rows", new_rows);
+    });
+};
+
+export function rewire_resize_textareas_in_subsection(
+    value: typeof resize_textareas_in_subsection,
+): void {
+    resize_textareas_in_subsection = value;
 }

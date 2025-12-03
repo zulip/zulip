@@ -11,12 +11,10 @@
         {{/tr}}
     {{/if}}
 </div>
-<p>
-    <ul>
-        {{#each attachments_list}}
-            <li>
-                <a href="/user_uploads/{{this.path_id}}" rel="noopener noreferrer" target="_blank">{{this.name}}</a>
-            </li>
-        {{/each}}
-    </ul>
-</p>
+<ul>
+    {{#each attachments_list}}
+        <li>
+            <a href="/user_uploads/{{this.path_id}}" rel="noopener noreferrer" target="_blank">{{this.name}}</a>
+        </li>
+    {{/each}}
+</ul>

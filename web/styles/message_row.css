@@ -100,7 +100,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
+        minmax(var(--message-box-sender-line-height), auto) repeat(4, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
@@ -109,7 +109,16 @@
         "edited message   controls . time"
         ".      message   .        . .   "
         ".      more      .        . .   "
-        ".      reactions .        . .   ";
+        ".      reactions .        . .   "
+        ".      reminders .        . .   ";
+
+    &:has(.message-reminders) {
+        .message_reactions {
+            margin-bottom: calc(
+                var(--message-box-markdown-aligned-vertical-space) / 2
+            );
+        }
+    }
 
     &.content_edit_mode {
         cursor: default;
@@ -121,6 +130,12 @@
                 var(--message-box-timestamp-column-width),
                 max-content
             );
+
+        /* Hide reactions, scheduled reminders in edit mode. */
+        .message_reactions,
+        .message-reminders {
+            display: none;
+        }
     }
 
     .message_edit_notice {
@@ -203,6 +218,16 @@
         gap: 4px;
     }
 
+    .message-reminders {
+        grid-area: reminders;
+        font-style: italic;
+        color: hsl(0deg 0% 53%);
+
+        .message-reminder {
+            margin-bottom: 0.1875em; /* 3px at 16px/1em */
+        }
+    }
+
     .message_edit {
         grid-area: message;
         /* Align self to start, rather than baseline, so the baseline
@@ -274,7 +299,8 @@
             "avatar sender    controls . time"
             "avatar message   .        . .   "
             ".      more      .        . .   "
-            ".      reactions .        . .   ";
+            ".      reactions .        . .   "
+            ".      reminders .        . .   ";
 
         .message_edit {
             /* No top margin when there's a sender row */
@@ -285,14 +311,12 @@
             grid-template-areas:
                 ".      .         .        . .   "
                 "avatar sender    controls . time"
-                "avatar sender    .        . .   "
                 ".      more      .        . .   "
-                ".      reactions .        . .   ";
+                ".      reactions .        . .   "
+                ".      reminders .        . .   ";
             grid-template-rows:
-                var(--message-box-vertical-margin) var(
-                    --message-box-avatar-height
-                )
-                minmax(0, auto) repeat(3, auto);
+                var(--message-box-vertical-margin)
+                minmax(var(--message-box-avatar-height), auto) repeat(3, auto);
             /* We align items to the baseline on me messages,
                and unset the align-content property. */
             align-items: baseline;
@@ -320,6 +344,11 @@
                    available grid row height on me-messages, we
                    align to center here. */
                 align-self: center;
+                /* But, we need to adjust the bottom margin by the
+                   message box's vertical margin so that the controls
+                   appear properly aligned with both the time stamp
+                   and any me-message content--including inline images. */
+                margin-bottom: var(--message-box-vertical-margin);
             }
 
             .message_edit_notice {
@@ -809,6 +838,11 @@
     }
 }
 
+.upload-overlay-visible .edit-form {
+    position: relative;
+    z-index: var(--compose-with-upload-overlay-z-index);
+}
+
 .message_edit_content {
     max-height: var(--max-message-edit-height);
     width: 100%;
@@ -819,8 +853,10 @@
        (which even has a background color of its own!). */
     resize: none !important;
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 3px;
+    background-color: var(--background-color-textarea);
+    /* Flatten the bottom edge of the textarea to
+    merge with the flat top edge of the buttons row */
+    border-radius: 3px 3px 0 0;
     vertical-align: middle;
     border: none;
     /* Match textarea padding to compose box and
@@ -830,6 +866,10 @@
 
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
         outline: 0;
     }
@@ -838,12 +878,6 @@
     &:disabled {
         cursor: not-allowed;
     }
-}
-
-/* The selector needs to be written this way to override the specificity
-of the base style defined for a read-only textarea in dark mode. */
-.message_edit_form .edit-controls textarea.message_edit_content:read-only {
-    opacity: 1;
 }
 
 .message-editing-animation {

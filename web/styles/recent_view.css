@@ -63,7 +63,7 @@
         &.change_visibility_policy
             .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
             /* Show vertical ellipsis when user hovers over visibility indicator icon. */
-            background-image: url("../shared/icons/more-vertical.svg");
+            background-image: url("../icons/more-vertical.svg");
             background-repeat: no-repeat;
             background-position: left bottom;
             background-size: contain;
@@ -639,9 +639,4 @@
         outline-color: var(--color-outline-input-focus);
         box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
     }
-}
-
-.dropdown-widget-disabled-for-spectators #recent-view-filter_widget {
-    cursor: not-allowed;
-    opacity: 0.5;
 }

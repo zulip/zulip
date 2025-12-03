@@ -6,10 +6,12 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import CloudPaidPlansOnly from "../include/_CloudPaidPlansOnly.mdx";
+import UserGroupsApplications from "../include/_UserGroupsApplications.mdx";
+import UserGroupsIntro from "../include/_UserGroupsIntro.mdx";
 
-import CloudPaidPlansOnly from "./include/_CloudPaidPlansOnly.mdx";
-import UserGroupsApplications from "./include/_UserGroupsApplications.mdx";
-import UserGroupsIntro from "./include/_UserGroupsIntro.mdx";
+import SubscriberCheckIcon from "~icons/zulip-icon/subscriber-check";
+import SubscriberPlusIcon from "~icons/zulip-icon/subscriber-plus";
 
 <CloudPaidPlansOnly />
 
@@ -29,7 +31,7 @@ organization's structure in Zulip's permissions system.
 
       1. Scroll through the list of user groups. You can use the **search box** near
          the top of the menu to filter the list by group name or description.
-      1. Click the **join group** (<img src="../../../../static/images/help/desktop-web-plus-icon.svg" alt="plus" class="help-center-icon" />) icon to the left of a user group to
+      1. Click the **join group** (<SubscriberPlusIcon class="zulip-unplugin-icon subscriber-plus-icon" />) icon to the left of a user group to
          join the group, if you have
          [permission](/help/manage-user-groups#configure-group-permissions) to do so.
     </FlattenedSteps>
@@ -43,7 +45,7 @@ organization's structure in Zulip's permissions system.
     <FlattenedSteps>
       <NavigationSteps target="relative/gear/group-settings" />
 
-      1. Click the **leave group** (<img src="../../../../static/images/help/desktop-web-check-icon.svg" alt="checkmark" class="help-center-icon" />) icon to the left of a user group to leave the
+      1. Click the **leave group** (<SubscriberCheckIcon class="zulip-unplugin-icon subscriber-check-icon" />) icon to the left of a user group to leave the
          group, if you have
          [permission](/help/manage-user-groups#configure-group-permissions) to do so.
     </FlattenedSteps>

@@ -129,10 +129,10 @@ const setting_link_mapping: Record<
         setting_name: "Users",
         setting_link: "/#organization/users/invitations",
     },
-    "bot-list-admin": {
+    bots: {
         setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Bots",
-        setting_link: "/#organization/bot-list-admin",
+        setting_link: "/#organization/bots",
     },
     "default-channels-list": {
         setting_type: ORGANIZATION_SETTINGS_TYPE,
@@ -280,9 +280,9 @@ const relative_link_mapping: Record<
                 label: "All",
                 relative_link: "/#channels/all",
             },
-            "not-subscribed": {
-                label: "Not subscribed",
-                relative_link: "/#channels/notsubscribed",
+            available: {
+                label: "Available",
+                relative_link: "/#channels/available",
             },
         },
         template: `

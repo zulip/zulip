@@ -78,14 +78,6 @@ class Stream(models.Model):
             "is_web_public": False,
             "policy_name": gettext_lazy("Private, protected history"),
         },
-        # Public streams with protected history are currently only
-        # available in Zephyr realms
-        "public_protected_history": {
-            "invite_only": False,
-            "history_public_to_subscribers": False,
-            "is_web_public": False,
-            "policy_name": gettext_lazy("Public, protected history"),
-        },
     }
     invite_only = models.BooleanField(default=False)
     history_public_to_subscribers = models.BooleanField(default=True)
@@ -115,16 +107,6 @@ class Stream(models.Model):
         SystemGroups.FULL_MEMBERS: STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
         SystemGroups.MODERATORS: STREAM_POST_POLICY_MODERATORS,
     }
-
-    # The unique thing about Zephyr public streams is that we never list their
-    # users.  We may try to generalize this concept later, but for now
-    # we just use a concrete field.  (Zephyr public streams aren't exactly like
-    # invite-only streams--while both are private in terms of listing users,
-    # for Zephyr we don't even list users to stream members, yet membership
-    # is more public in the sense that you don't need a Zulip invite to join.
-    # This field is populated directly from UserProfile.is_zephyr_mirror_realm,
-    # and the reason for denormalizing field is performance.
-    is_in_zephyr_realm = models.BooleanField(default=False)
 
     # For old messages being automatically deleted.
     # Value NULL means "use retention policy of the realm".
@@ -189,7 +171,7 @@ class Stream(models.Model):
         "can_administer_channel_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=False,
-            default_group_name="stream_creator_or_nobody",
+            default_group_name="channel_creator",
         ),
         "can_delete_any_message_group": GroupPermissionSetting(
             allow_nobody_group=True,
@@ -260,8 +242,7 @@ class Stream(models.Model):
         return self.name
 
     def is_public(self) -> bool:
-        # All streams are private in Zephyr mirroring realms.
-        return not self.invite_only and not self.is_in_zephyr_realm
+        return not self.invite_only
 
     def is_history_realm_public(self) -> bool:
         return self.is_public()
@@ -272,7 +253,6 @@ class Stream(models.Model):
     # Stream fields included whenever a Stream object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * "id" is represented as "stream_id" in most API interfaces.
-    # * is_in_zephyr_realm is a backend-only optimization.
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [

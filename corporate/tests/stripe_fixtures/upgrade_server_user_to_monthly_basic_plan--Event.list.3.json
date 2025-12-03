@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -41,7 +41,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -209,7 +209,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -249,7 +249,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -417,7 +417,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -457,7 +457,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -635,7 +635,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -657,6 +657,7 @@
           "currency": "usd",
           "customer": "cus_NORMALIZED",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_server_user_to_monthly_basic_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": "ch_NORMALIZED",
@@ -665,6 +666,10 @@
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
+          "payment_details": {
+            "customer_reference": null,
+            "order_reference": "in_1SVWxDDwzgQ85STgQZ740I"
+          },
           "payment_method": "pm_NORMALIZED",
           "payment_method_configuration_details": null,
           "payment_method_options": {

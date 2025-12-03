@@ -16,7 +16,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.cache import cache_delete, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
-from zerver.models import Recipient, Subscription, UserProfile, UserTopic
+from zerver.models import PushDevice, Recipient, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
@@ -194,6 +194,7 @@ class MissedMessageHookTest(ZulipTestCase):
         do_change_user_setting(
             self.user_profile, "enable_online_push_notifications", False, acting_user=None
         )
+        self.register_push_device(self.user_profile.id)
         self.iago = self.example_user("iago")
         self.client_descriptor = self.allocate_event_queue(self.user_profile)
         self.assertTrue(self.client_descriptor.event_queue.empty())
@@ -291,6 +292,28 @@ class MissedMessageHookTest(ZulipTestCase):
         do_change_user_setting(
             self.user_profile, "enable_offline_push_notifications", False, acting_user=None
         )
+        msg_id = self.send_personal_message(self.iago, self.user_profile)
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                dm_email_notify=True,
+                dm_push_notify=False,
+                already_notified={"email_notified": True, "push_notified": False},
+            )
+
+    def test_no_push_device_registered(self) -> None:
+        # When `enable_offline_push_notifications` is `true` but no push device registered,
+        # push notifications should not be sent.
+        do_change_user_setting(
+            self.user_profile, "enable_offline_push_notifications", True, acting_user=None
+        )
+        PushDevice.objects.all().delete()
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)

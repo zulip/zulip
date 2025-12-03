@@ -154,14 +154,12 @@ class UserBaseSettings(models.Model):
 
     # Emoji sets
     GOOGLE_EMOJISET = "google"
-    GOOGLE_BLOB_EMOJISET = "google-blob"
     TEXT_EMOJISET = "text"
     TWITTER_EMOJISET = "twitter"
     EMOJISET_CHOICES = (
         (GOOGLE_EMOJISET, "Google"),
         (TWITTER_EMOJISET, "Twitter"),
         (TEXT_EMOJISET, "Plain text"),
-        (GOOGLE_BLOB_EMOJISET, "Google blobs"),
     )
     emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)
 
@@ -297,6 +295,10 @@ class UserBaseSettings(models.Model):
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
 
+    # UI setting to control showing channel folders in the Inbox view
+    # of the Zulip web app.
+    web_inbox_show_channel_folders = models.BooleanField(default=True, db_default=True)
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is
     # the same as UserProfile.delivery_email, or is instead a fake
@@ -368,39 +370,40 @@ class UserBaseSettings(models.Model):
 
     modern_settings = dict(
         # Add new general settings here.
+        allow_private_data_export=bool,
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
-        web_escape_navigates_to_home_view=bool,
+        hide_ai_features=bool,
         receives_typing_notifications=bool,
+        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
-        allow_private_data_export=bool,
-        web_mark_read_on_scroll_policy=int,
-        web_channel_default_view=int,
         user_list_style=int,
         web_animate_image_previews=str,
-        web_stream_unreads_count_display_policy=int,
+        web_channel_default_view=int,
+        web_escape_navigates_to_home_view=bool,
         web_font_size_px=int,
-        web_line_height_percent=int,
-        web_navigate_to_sent_message=bool,
-        web_suggest_update_timezone=bool,
-        hide_ai_features=bool,
-        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
-        web_left_sidebar_unreads_count_summary=bool,
+        web_inbox_show_channel_folders=bool,
         web_left_sidebar_show_channel_folders=bool,
+        web_left_sidebar_unreads_count_summary=bool,
+        web_line_height_percent=int,
+        web_mark_read_on_scroll_policy=int,
+        web_navigate_to_sent_message=bool,
+        web_stream_unreads_count_display_policy=int,
+        web_suggest_update_timezone=bool,
     )
 
     modern_notification_settings = dict(
         # Add new notification settings here.
+        automatically_follow_topics_policy=int,
+        automatically_follow_topics_where_mentioned=bool,
+        automatically_unmute_topics_in_muted_streams_policy=int,
+        enable_followed_topic_audible_notifications=bool,
         enable_followed_topic_desktop_notifications=bool,
         enable_followed_topic_email_notifications=bool,
         enable_followed_topic_push_notifications=bool,
-        enable_followed_topic_audible_notifications=bool,
         enable_followed_topic_wildcard_mentions_notify=bool,
-        automatically_follow_topics_policy=int,
-        automatically_unmute_topics_in_muted_streams_policy=int,
-        automatically_follow_topics_where_mentioned=bool,
     )
 
     notification_setting_types = {
@@ -613,13 +616,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     last_active_message_id = models.IntegerField(null=True)
 
     # Mirror dummies are fake (!is_active) users used to provide
-    # message senders in our cross-protocol Zephyr<->Zulip content
-    # mirroring integration, so that we can display mirrored content
-    # like native Zulip messages (with a name + avatar, etc.).
+    # message senders in cross-protocol mirroring integrations, so
+    # that we can display mirrored content like native Zulip messages
+    # (with a name + avatar, etc.).  We also abuse this for data
+    # imports and deleted users.
     is_mirror_dummy = models.BooleanField(default=False)
 
+    # Flag used for imported users who have not activated their account.
+    is_imported_stub = models.BooleanField(default=False)
+
     # Users with this flag set are allowed to forge messages as sent by another
-    # user and to send to private streams; also used for Zephyr/Jabber mirroring.
+    # user and to send to private streams; also used for Jabber mirroring.
     can_forge_sender = models.BooleanField(default=False, db_index=True)
     # Users with this flag set can create other users via API.
     can_create_users = models.BooleanField(default=False, db_index=True)
@@ -936,7 +943,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("can_summarize_topics_group")
 
     def can_access_public_streams(self) -> bool:
-        return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
+        return not self.is_guest
 
     def major_tos_version(self) -> int:
         if self.tos_version is not None:

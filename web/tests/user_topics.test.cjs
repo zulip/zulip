@@ -39,10 +39,10 @@ const unknown = {
     name: "whatever",
 };
 
-stream_data.add_sub(design);
-stream_data.add_sub(devel);
-stream_data.add_sub(office);
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(design);
+stream_data.add_sub_for_tests(devel);
+stream_data.add_sub_for_tests(office);
+stream_data.add_sub_for_tests(social);
 
 function test(label, f) {
     run_test(label, ({override}) => {
@@ -215,9 +215,10 @@ test("get_mutes", () => {
         all_visibility_policies.MUTED,
         1577836700,
     );
-    const all_muted_topics = user_topics
-        .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.MUTED)
-        .sort((a, b) => a.date_updated - b.date_updated);
+    const all_muted_topics = user_topics.get_user_topics_for_visibility_policy(
+        user_topics.all_visibility_policies.MUTED,
+    );
+    all_muted_topics.sort((a, b) => a.date_updated - b.date_updated);
 
     assert.deepEqual(all_muted_topics, [
         {
@@ -260,9 +261,10 @@ test("get_unmutes", () => {
         all_visibility_policies.UNMUTED,
         1577836700,
     );
-    const all_unmuted_topics = user_topics
-        .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.UNMUTED)
-        .sort((a, b) => a.date_updated - b.date_updated);
+    const all_unmuted_topics = user_topics.get_user_topics_for_visibility_policy(
+        user_topics.all_visibility_policies.UNMUTED,
+    );
+    all_unmuted_topics.sort((a, b) => a.date_updated - b.date_updated);
 
     assert.deepEqual(all_unmuted_topics, [
         {
@@ -305,9 +307,10 @@ test("get_follows", () => {
         all_visibility_policies.FOLLOWED,
         1577836700,
     );
-    const all_followed_topics = user_topics
-        .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.FOLLOWED)
-        .sort((a, b) => a.date_updated - b.date_updated);
+    const all_followed_topics = user_topics.get_user_topics_for_visibility_policy(
+        user_topics.all_visibility_policies.FOLLOWED,
+    );
+    all_followed_topics.sort((a, b) => a.date_updated - b.date_updated);
 
     assert.deepEqual(all_followed_topics, [
         {
@@ -374,9 +377,9 @@ test("set_user_topics", () => {
     user_topics.initialize({user_topics: test_user_topics_params});
 
     assert.deepEqual(
-        user_topics
-            .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.MUTED)
-            .sort(),
+        user_topics.get_user_topics_for_visibility_policy(
+            user_topics.all_visibility_policies.MUTED,
+        ),
         [
             {
                 date_updated: 1577836800000,
@@ -398,9 +401,9 @@ test("set_user_topics", () => {
     );
 
     assert.deepEqual(
-        user_topics
-            .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.UNMUTED)
-            .sort(),
+        user_topics.get_user_topics_for_visibility_policy(
+            user_topics.all_visibility_policies.UNMUTED,
+        ),
         [
             {
                 date_updated: 1577836800000,
@@ -414,9 +417,9 @@ test("set_user_topics", () => {
     );
 
     assert.deepEqual(
-        user_topics
-            .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.FOLLOWED)
-            .sort(),
+        user_topics.get_user_topics_for_visibility_policy(
+            user_topics.all_visibility_policies.FOLLOWED,
+        ),
         [
             {
                 date_updated: 1577836800000,

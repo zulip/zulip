@@ -18,7 +18,7 @@
         </li>
         {{/if}}
         {{!-- Group 2 --}}
-        {{#if (or editability_menu_item move_message_menu_item should_display_delete_option)}}
+        {{#if (or editability_menu_item move_message_menu_item should_display_delete_option should_display_message_report_option)}}
         <li role="separator" class="popover-menu-separator"></li>
         {{/if}}
         {{#if editability_menu_item}}
@@ -44,6 +44,14 @@
             <a role="menuitem" data-message-id="{{message_id}}" class="delete_message popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-trash" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Delete message" }}</span>
+            </a>
+        </li>
+        {{/if}}
+        {{#if should_display_message_report_option}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" data-message-id="{{message_id}}" class="popover_report_message popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-flag" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Report message" }}</span>
             </a>
         </li>
         {{/if}}

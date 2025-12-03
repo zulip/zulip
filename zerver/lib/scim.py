@@ -17,7 +17,7 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
-    create_user_group_in_database,
+    check_add_user_group_core,
     do_update_user_group_name,
 )
 from zerver.actions.user_settings import check_change_full_name, do_change_user_delivery_email
@@ -533,7 +533,9 @@ class ZulipSCIMGroup(SCIMGroup):
                 check_user_group_name(name_new_value)
             except JsonableError as e:
                 raise scim_exceptions.BadRequestError(e.msg)
-            if NamedUserGroup.objects.filter(name=name_new_value, realm=realm).exists():
+            if NamedUserGroup.objects.filter(
+                name=name_new_value, realm_for_sharding=realm
+            ).exists():
                 raise ConflictError("Group name already in use: " + name_new_value)
 
         # At most one of the three should be set for a .save() call. If the SCIM request has multiple operations
@@ -566,11 +568,11 @@ class ZulipSCIMGroup(SCIMGroup):
                 can_manage_group=group_nobody,
             )
             assert name_new_value is not None
-            self.obj = create_user_group_in_database(
+            self.obj = check_add_user_group_core(
+                realm,
                 name_new_value,
                 members,
-                realm,
-                description="Created from SCIM",
+                "Created from SCIM",
                 group_settings_map=group_settings_map,
                 acting_user=None,
             )

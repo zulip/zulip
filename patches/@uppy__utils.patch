@@ -1,0 +1,25 @@
+diff --git a/lib/generateFileID.d.ts b/lib/generateFileID.d.ts
+index c699b2453ff6d019b03509d65d66f8ffcb2c1be6..b83c4ffa9b7e7c2755416e8b7631d8971e9952d5 100644
+--- a/lib/generateFileID.d.ts
++++ b/lib/generateFileID.d.ts
+@@ -11,6 +11,6 @@ export default function generateFileID<M extends Meta, B extends Body>(file: Par
+ export declare function getSafeFileId<M extends Meta, B extends Body>(file: Partial<Pick<UppyFile<M, B>, 'id' | 'type'>> & Pick<UppyFile<M, B>, 'data'> & (Pick<RemoteUppyFile<M, B>, 'isRemote' | 'remote'> | Pick<LocalUppyFile<M, B>, 'isRemote'>) & {
+     meta?: {
+         relativePath?: unknown;
+-    };
++    } | undefined;
+ }, instanceId: string): string;
+ //# sourceMappingURL=generateFileID.d.ts.map
+diff --git a/src/generateFileID.ts b/src/generateFileID.ts
+index 53124860637e5b56dee7e5663a595c2e18d12410..7f6fcc4d8b1356ad26c03509d12186fa4363c31f 100644
+--- a/src/generateFileID.ts
++++ b/src/generateFileID.ts
+@@ -83,7 +83,7 @@ export function getSafeFileId<M extends Meta, B extends Body>(
+     (
+       | Pick<RemoteUppyFile<M, B>, 'isRemote' | 'remote'>
+       | Pick<LocalUppyFile<M, B>, 'isRemote'>
+-    ) & { meta?: { relativePath?: unknown } },
++    ) & { meta?: { relativePath?: unknown } | undefined },
+   instanceId: string,
+ ): string {
+   if (hasFileStableId(file)) return file.id!

@@ -6,13 +6,12 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-
-import DmFeedInstructions from "./include/_DmFeedInstructions.mdx";
-import FindDmConversationLeftSidebar from "./include/_FindDmConversationLeftSidebar.mdx";
-import MobileDirectMessages from "./include/_MobileDirectMessages.mdx";
-import SearchNoteForDmConversations from "./include/_SearchNoteForDmConversations.mdx";
-import SendDm from "./include/_SendDm.mdx";
-import ViewDmsLeftSidebar from "./include/_ViewDmsLeftSidebar.mdx";
+import DmFeedInstructions from "../include/_DmFeedInstructions.mdx";
+import FindDmConversationLeftSidebar from "../include/_FindDmConversationLeftSidebar.mdx";
+import MobileDirectMessages from "../include/_MobileDirectMessages.mdx";
+import SearchNoteForDmConversations from "../include/_SearchNoteForDmConversations.mdx";
+import SendDm from "../include/_SendDm.mdx";
+import ViewDmsLeftSidebar from "../include/_ViewDmsLeftSidebar.mdx";
 
 import ChevronRightIcon from "~icons/zulip-icon/chevron-right";
 import SearchIcon from "~icons/zulip-icon/search";
@@ -20,7 +19,10 @@ import UserListIcon from "~icons/zulip-icon/user-list";
 
 **Direct messages (DMs)** are conversations with other users that happen outside
 of a [channel](/help/introduction-to-channels). They are convenient for 1:1 and
-small group conversations.
+small group conversations. Direct messages are private to conversation participants. Administrators may be
+able to [export](/help/export-your-organization) your DMs in a corporate
+organization, or [with your
+permission](/help/export-your-organization#configure-whether-administrators-can-export-your-private-data).
 
 If you find yourself frequently conversing with the same person or group, it
 often works best to [create a private channel](/help/create-a-channel) for your

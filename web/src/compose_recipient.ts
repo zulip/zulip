@@ -79,7 +79,7 @@ export let update_recipient_row_attention_level = (): void => {
     // row is focused, that puts users outside the low-attention
     // recipient-row state--including the `c` hotkey or the
     // Start new conversation button being clicked. But that
-    // logic is handled via the event handlers in compose_setup.js
+    // logic is handled via the event handlers in compose_setup.ts
     // that call set_high_attention_recipient_row().
     if (
         (composing_to_current_topic_narrow() ||
@@ -158,34 +158,11 @@ export function update_on_recipient_change(): void {
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
-    check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
 
     // Clear the topic moved banner when the recipient
     // is changed or compose box is closed.
     compose_validate.clear_topic_moved_info();
-}
-
-export let check_posting_policy_for_compose_box = (): void => {
-    const banner_text = compose_validate.get_posting_policy_error_message();
-    if (banner_text === "") {
-        compose_banner.clear_errors();
-        return;
-    }
-
-    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
-        compose_banner.cannot_send_direct_message_error(banner_text);
-    } else {
-        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
-    }
-};
-
-export function rewire_check_posting_policy_for_compose_box(
-    value: typeof check_posting_policy_for_compose_box,
-): void {
-    check_posting_policy_for_compose_box = value;
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -447,9 +424,6 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     // Otherwise, we have some adjustments to make to display:
     // * a placeholder with the default topic name stylized
     // * the empty string topic stylized
-    function update_placeholder_visibility(): void {
-        $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
-    }
 
     const is_empty_string_topic = compose_state.topic() === "";
     if (
@@ -461,8 +435,14 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     } else {
         $topic_not_mandatory_placeholder.show();
         update_placeholder_visibility();
-        $input.on("input", update_placeholder_visibility);
     }
+}
+
+export function update_placeholder_visibility(): void {
+    const $input = $("input#stream_message_recipient_topic");
+    const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+
+    $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
 }
 
 export let update_compose_area_placeholder_text = (): void => {

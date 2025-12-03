@@ -12,6 +12,34 @@ export function postprocess_content(html: string): string {
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 
+    process_emoji_only_message(template.content);
+
+    for (const ol of template.content.querySelectorAll("ol")) {
+        const list_start = Number(ol.getAttribute("start") ?? 1);
+        // We don't count the first item in the list, as it
+        // will be identical to the start value
+        const list_length = ol.children.length - 1;
+        const max_list_counter = list_start + list_length;
+        // We count the characters in the longest list counter,
+        // and use that to offset the list accordingly in CSS
+        const max_list_counter_string_length = max_list_counter.toString().length;
+        ol.classList.add(`counter-length-${max_list_counter_string_length}`);
+        // We subtract 1 from list_start, as `count 0` displays 1.
+        ol.style.setProperty("counter-reset", `count ${list_start - 1}`);
+    }
+
+    // Here we're setting up better processing of message embeds;
+    // In the future, we will be able to write logic here to permit
+    // recipients to remove embeds on a per-message basis.
+    // We want to do this processing up front, so that embeds benefit
+    // from other processing below for links and images
+    for (const message_embed of template.content.querySelectorAll(".message_embed")) {
+        const message_embed_title_link = message_embed.querySelector(".message_embed_title a");
+        // Add a class to the anchor tag on embed-title links for easier
+        // reference from CSS
+        message_embed_title_link?.classList.add("message-embed-title-link");
+    }
+
     for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
@@ -52,123 +80,10 @@ export function postprocess_content(html: string): string {
             elt.removeAttribute("target");
         }
 
-        if (elt.querySelector("img") || elt.querySelector("video")) {
-            // We want a class to refer to media links
-            elt.classList.add("media-anchor-element");
-            // Add a class to the video, if it exists
-            if (elt.querySelector("video")) {
-                elt.querySelector("video")?.classList.add("media-video-element");
-            }
-            // Add a class to the image, if it exists
-            if (elt.querySelector("img")) {
-                elt.querySelector("img")?.classList.add("media-image-element");
-            }
-        }
-
-        if (elt.querySelector("video")) {
-            // We want a class to refer to media links
-            elt.classList.add("media-anchor-element");
-            // And likewise a class to refer to image elements
-            elt.querySelector("video")?.classList.add("media-image-element");
-        }
-
-        // Update older, smaller default.jpg YouTube preview images
-        // with higher-quality preview images (320px wide)
-        if (elt.parentElement?.classList.contains("youtube-video")) {
-            const img = elt.querySelector("img");
-            assert(img instanceof HTMLImageElement);
-            const img_src = img.src;
-            if (img_src.endsWith("/default.jpg")) {
-                const mq_src = img_src.replace(/\/default.jpg$/, "/mqdefault.jpg");
-                img.src = mq_src;
-            }
-        }
-
-        // Add a class to the anchor tag on
-        if (elt.parentElement?.classList.contains("message_embed_title")) {
-            elt.classList.add("message-embed-title-link");
-        }
-
-        if (elt.parentElement?.classList.contains("message_inline_image")) {
-            // For inline images we want to handle the tooltips explicitly, and disable
-            // the browser's built in handling of the title attribute.
-            const title = elt.getAttribute("title");
-            if (title !== null) {
-                elt.setAttribute("aria-label", title);
-                elt.removeAttribute("title");
-            }
-            // To prevent layout shifts and flexibly size image previews,
-            // we read the image's original dimensions, when present, and
-            // set those values as `height` and `width` attributes on the
-            // image source.
-            const inline_image = elt.querySelector("img");
-            if (inline_image?.hasAttribute("data-original-dimensions")) {
-                // TODO: Modify eslint config, if we wish to avoid dataset
-                //
-                /* eslint unicorn/prefer-dom-node-dataset: "off" */
-                const original_dimensions_attribute = inline_image.getAttribute(
-                    "data-original-dimensions",
-                );
-                assert(original_dimensions_attribute);
-                const original_dimensions: string[] = original_dimensions_attribute.split("x");
-                assert(
-                    original_dimensions.length === 2 &&
-                        typeof original_dimensions[0] === "string" &&
-                        typeof original_dimensions[1] === "string",
-                );
-
-                const original_width = Number(original_dimensions[0]);
-                const original_height = Number(original_dimensions[1]);
-                const font_size_in_use = user_settings.web_font_size_px;
-                // At 20px/1em, image boxes are 200px by 80px in either
-                // horizontal or vertical orientation; 80 / 200 = 0.4
-                // We need to show more of the background color behind
-                // these extremely tall or extremely wide images, and
-                // use a subtler background color than on other images
-                const image_min_aspect_ratio = 0.4;
-                // "Dinky" images are those that are shorter than the
-                // 10em height reserved for thumbnails
-                const image_box_em = 10;
-                const is_dinky_image = original_height / font_size_in_use <= image_box_em;
-                const has_extreme_aspect_ratio =
-                    original_width / original_height <= image_min_aspect_ratio ||
-                    original_height / original_width <= image_min_aspect_ratio;
-                const is_portrait_image = original_width <= original_height;
-
-                inline_image.setAttribute("width", `${original_width}`);
-                inline_image.setAttribute("height", `${original_height}`);
-
-                // Despite setting `width` and `height` values above, the
-                // flexbox gallery collapses until images have loaded. We
-                // therefore have to avoid the layout shift that would
-                // otherwise cause by setting the only the width attribute
-                // here. And by setting this value in ems, we ensure that
-                // images scale as users adjust the information-density
-                // settings.
-                inline_image.style.setProperty(
-                    "width",
-                    `${(image_box_em * font_size_in_use * original_width) / original_height / font_size_in_use}em`,
-                );
-
-                if (is_dinky_image) {
-                    inline_image.classList.add("dinky-thumbnail");
-                    // For dinky images, we just set the original width
-                    inline_image.style.setProperty("width", `${original_width}px`);
-                }
-
-                if (has_extreme_aspect_ratio) {
-                    inline_image.classList.add("extreme-aspect-ratio");
-                }
-
-                if (is_portrait_image) {
-                    inline_image.classList.add("portrait-thumbnail");
-                } else {
-                    inline_image.classList.add("landscape-thumbnail");
-                }
-            }
-        } else {
-            // For non-image user uploads, the following block ensures that the title
-            // attribute always displays the filename as a security measure.
+        if (!elt.parentElement?.classList.contains("message_inline_image")) {
+            // For non-media (images, video) user uploads, the following block
+            // ensures that the title attribute always displays the filename,
+            // as a security measure.
             let title: string;
             let legacy_title: string;
             if (
@@ -198,70 +113,215 @@ export function postprocess_content(html: string): string {
         }
     }
 
-    for (const ol of template.content.querySelectorAll("ol")) {
-        const list_start = Number(ol.getAttribute("start") ?? 1);
-        // We don't count the first item in the list, as it
-        // will be identical to the start value
-        const list_length = ol.children.length - 1;
-        const max_list_counter = list_start + list_length;
-        // We count the characters in the longest list counter,
-        // and use that to offset the list accordingly in CSS
-        const max_list_counter_string_length = max_list_counter.toString().length;
-        ol.classList.add(`counter-length-${max_list_counter_string_length}`);
-        // We subtract 1 from list_start, as `count 0` displays 1.
-        ol.style.setProperty("counter-reset", `count ${list_start - 1}`);
-    }
+    // We need to quickly wrap inline images so we can pass them onto the
+    // image-processing loop below.
+    for (const inline_img_elt of template.content.querySelectorAll(".inline-image")) {
+        const original_src = inline_img_elt.getAttribute("data-original-src");
+        assert(typeof original_src === "string");
+        const alt = inline_img_elt.getAttribute("alt");
 
-    for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
-        "div.message_inline_image > a > img",
-    )) {
-        inline_img.setAttribute("loading", "lazy");
-        // We can't just check whether `inline_image.src` starts with
-        // `/user_uploads/thumbnail`, even though that's what the
-        // server writes in the markup, because Firefox will have
-        // already prepended the origin to the source of an image.
-        let image_url;
-        try {
-            image_url = new URL(inline_img.src, window.location.origin);
-        } catch {
-            // If the image source URL can't be parsed, likely due to
-            // some historical bug in the Markdown processor, just
-            // drop the invalid image element.
-            inline_img.closest("div.message_inline_image")!.remove();
-            continue;
+        const media_wrapper = inertDocument.createElement("span");
+        media_wrapper.classList.add("message-media-inline-image");
+
+        // If one or more inline images sit in a paragraph containing no
+        // other text content, we will include it in a gallery via the
+        // logic further down in this file.
+        const inline_img_parent_elt = inline_img_elt.parentElement;
+        // We want to determine the length after trimming out the spaces
+        // from line breaks; this value will be precisely zero if the
+        // containing paragraph has no text content, including things
+        // that might be tucked in a link or a bold tag, etc.
+        const inline_img_parent_elt_text_length = inline_img_parent_elt?.textContent?.trim().length;
+        const inline_img_parent_elt_name = inline_img_parent_elt?.tagName.toLowerCase();
+
+        if (inline_img_parent_elt_name === "p" && inline_img_parent_elt_text_length === 0) {
+            media_wrapper.classList.add("message-media-gallery-image");
+            // Multiple images will be separated by break tags, which will
+            // be unnecessary (and make trouble for correctly placing
+            // adjacent images into a single gallery, when we process them.
+            inline_img_parent_elt?.querySelector("br")?.remove();
         }
 
-        if (
-            image_url.origin === window.location.origin &&
-            image_url.pathname.startsWith("/user_uploads/thumbnail/")
-        ) {
-            let thumbnail_name = thumbnail.preferred_format.name;
-            if (inline_img.dataset.animated === "true") {
-                if (
-                    user_settings.web_animate_image_previews === "always" ||
-                    // Treat on_hover as "always" on mobile web, where
-                    // hovering is impossible and there's much less on
-                    // the screen.
-                    (user_settings.web_animate_image_previews === "on_hover" && util.is_mobile())
-                ) {
-                    thumbnail_name = thumbnail.animated_format.name;
-                } else {
-                    // If we're showing a still thumbnail, show a play
-                    // button so that users that it can be played.
-                    inline_img
-                        .closest(".message_inline_image")!
-                        .classList.add("message_inline_animated_image_still");
-                }
+        const media_link = inertDocument.createElement("a");
+        media_link.setAttribute("href", original_src);
+        media_link.setAttribute("target", "_blank");
+        media_link.setAttribute("rel", "noopener noreferrer");
+
+        if (alt) {
+            media_link.setAttribute("title", alt);
+        }
+
+        media_link.append(inline_img_elt.cloneNode(true));
+        media_wrapper.append(media_link);
+        inline_img_elt.parentNode?.replaceChild(media_wrapper, inline_img_elt);
+    }
+
+    for (const message_media_wrapper of template.content.querySelectorAll(
+        ".message_inline_image, .message-media-inline-image",
+    )) {
+        const message_media_link = message_media_wrapper.querySelector("a");
+        const message_media_image = message_media_wrapper.querySelector("img");
+        const message_media_video = message_media_wrapper.querySelector("video");
+
+        // We want a class to refer to media links
+        message_media_link?.classList.add("media-anchor-element");
+
+        // For inline media, we want to handle the tooltips explicitly and
+        // disable the browser's built in handling of the title attribute.
+        const title = message_media_link?.getAttribute("title");
+        if (typeof title === "string") {
+            message_media_link?.setAttribute("aria-label", title);
+            message_media_link?.removeAttribute("title");
+        }
+
+        // Update older, smaller default.jpg YouTube preview images
+        // with higher-quality preview images (320px wide)
+        if (message_media_wrapper.classList.contains("youtube-video")) {
+            assert(message_media_image instanceof HTMLImageElement);
+            const img_src = message_media_image.src;
+            if (img_src.endsWith("/default.jpg")) {
+                const mq_src = img_src.replace(/\/default.jpg$/, "/mqdefault.jpg");
+                message_media_image.src = mq_src;
             }
-            inline_img.src = inline_img.src.replace(/\/[^/]+$/, "/" + thumbnail_name);
+        }
+
+        // Replace the legacy .message_inline_image class, whose
+        // name would add confusion when Zulip supports inline
+        // images via standard Markdown, with dedicated classes
+        // for video and image previews.
+        if (message_media_video) {
+            message_media_wrapper.classList.replace(
+                "message_inline_image",
+                "message-media-preview-video",
+            );
+            message_media_video.classList.add("media-video-element", "media-image-element");
+        } else if (message_media_image) {
+            message_media_wrapper.classList.replace(
+                "message_inline_image",
+                "message-media-preview-image",
+            );
+            message_media_image.classList.add("media-image-element");
+            message_media_image.setAttribute("loading", "lazy");
+
+            // We can't just check whether `inline_image.src` starts with
+            // `/user_uploads/thumbnail`, even though that's what the
+            // server writes in the markup, because Firefox will have
+            // already prepended the origin to the source of an image.
+            let image_url;
+            try {
+                image_url = new URL(message_media_image.src, window.location.origin);
+            } catch {
+                // If the image source URL can't be parsed, likely due to
+                // some historical bug in the Markdown processor, just
+                // drop the invalid image element.
+                message_media_image
+                    .closest(".message-media-preview-image, .message-media-inline-image")!
+                    .remove();
+                continue;
+            }
+
+            if (
+                image_url.origin === window.location.origin &&
+                image_url.pathname.startsWith("/user_uploads/thumbnail/")
+            ) {
+                let thumbnail_name = thumbnail.preferred_format.name;
+                if (message_media_image.getAttribute("data-animated") === "true") {
+                    if (
+                        user_settings.web_animate_image_previews === "always" ||
+                        // Treat on_hover as "always" on mobile web, where
+                        // hovering is impossible and there's much less on
+                        // the screen.
+                        (user_settings.web_animate_image_previews === "on_hover" &&
+                            util.is_mobile())
+                    ) {
+                        thumbnail_name = thumbnail.animated_format.name;
+                    } else {
+                        // If we're showing a still thumbnail, show a play
+                        // button so that users that it can be played.
+                        message_media_image
+                            .closest(".message-media-preview-image, .message-media-inline-image")!
+                            .classList.add("message_inline_animated_image_still");
+                    }
+                }
+                message_media_image.src = message_media_image.src.replace(
+                    /\/[^/]+$/,
+                    "/" + thumbnail_name,
+                );
+            }
+        }
+
+        // To prevent layout shifts and flexibly size image previews,
+        // we read the image's original dimensions, when present, and
+        // set those values as `height` and `width` attributes on the
+        // image source.
+        if (message_media_image?.hasAttribute("data-original-dimensions")) {
+            const original_dimensions_attribute = message_media_image.getAttribute(
+                "data-original-dimensions",
+            );
+            assert(original_dimensions_attribute);
+            const original_dimensions: string[] = original_dimensions_attribute.split("x");
+            assert(
+                original_dimensions.length === 2 &&
+                    typeof original_dimensions[0] === "string" &&
+                    typeof original_dimensions[1] === "string",
+            );
+
+            const original_width = Number(original_dimensions[0]);
+            const original_height = Number(original_dimensions[1]);
+            const font_size_in_use = user_settings.web_font_size_px;
+            // At 20px/1em, image boxes are 200px by 80px in either
+            // horizontal or vertical orientation; 80 / 200 = 0.4
+            // We need to show more of the background color behind
+            // these extremely tall or extremely wide images, and
+            // use a subtler background color than on other images
+            const image_min_aspect_ratio = 0.4;
+            // "Dinky" images are those that are shorter than the
+            // 10em height reserved for thumbnails
+            const image_box_em = 10;
+            const is_dinky_image = original_height / font_size_in_use <= image_box_em;
+            const has_extreme_aspect_ratio =
+                original_width / original_height <= image_min_aspect_ratio ||
+                original_height / original_width <= image_min_aspect_ratio;
+            const is_portrait_image = original_width <= original_height;
+
+            message_media_image.setAttribute("width", `${original_width}`);
+            message_media_image.setAttribute("height", `${original_height}`);
+
+            // Despite setting `width` and `height` values above, the
+            // flexbox gallery collapses until images have loaded. We
+            // therefore have to avoid the layout shift that would
+            // otherwise cause by setting the only the width attribute
+            // here. And by setting this value in ems, we ensure that
+            // images scale as users adjust the information-density
+            // settings.
+            message_media_image.style.setProperty(
+                "width",
+                `${(image_box_em * font_size_in_use * original_width) / original_height / font_size_in_use}em`,
+            );
+
+            if (is_dinky_image) {
+                message_media_image.classList.add("dinky-thumbnail");
+                // For dinky images, we just set the original width
+                message_media_image.style.setProperty("width", `${original_width}px`);
+            }
+
+            if (has_extreme_aspect_ratio) {
+                message_media_image.classList.add("extreme-aspect-ratio");
+            }
+
+            if (is_portrait_image) {
+                message_media_image.classList.add("portrait-thumbnail");
+            } else {
+                message_media_image.classList.add("landscape-thumbnail");
+            }
         }
     }
 
     // After all other processing on images has been done, we look for
-    // adjacent images and tuck them structurally into galleries.
-    // This will also process uploaded video thumbnails, which likewise
-    // take the `.message_inline_image` class
-    for (const elt of template.content.querySelectorAll(".message_inline_image")) {
+    // adjacent images and videos, and tuck them structurally into galleries.
+    for (const elt of template.content.querySelectorAll(
+        ".message-media-gallery-image, .message-media-preview-image, .message-media-preview-video",
+    )) {
         let gallery_element;
 
         const is_part_of_open_gallery = elt.previousElementSibling?.classList.contains(
@@ -288,4 +348,45 @@ export function postprocess_content(html: string): string {
     }
 
     return template.innerHTML;
+}
+
+// Process single-paragraph messages that contain only emoji.
+function process_emoji_only_message(content: DocumentFragment): void {
+    // Exit as quickly as possible when more than one child element
+    // exists or the first child element is not a paragraph.
+    if (content.childElementCount !== 1 || content.firstElementChild?.tagName !== "P") {
+        return;
+    }
+
+    // Now we look at the collection of child nodes on the single
+    // paragraph to make sure there is no text in the paragraph's
+    // text nodes.
+    const paragraph_child_nodes = content.firstElementChild?.childNodes;
+    assert(paragraph_child_nodes !== undefined);
+    for (const node of paragraph_child_nodes) {
+        if (node.nodeName === "#text" && node.textContent?.trim() !== "") {
+            // If we find a #text node that doesn't trim down
+            // to the empty string, then the message has text
+            // content, so we should exit swiftly.
+            return;
+        }
+    }
+
+    // Having gotten this far, we check the child elements to make
+    // sure there are none other than spans for system emoji or
+    // img tags for realm emoji--both of which take the .emoji class.
+    const paragraph_child_elements = content.firstElementChild?.children;
+    assert(paragraph_child_elements !== undefined);
+    for (const element of paragraph_child_elements) {
+        if (!element.classList.contains("emoji")) {
+            // Any element without the .emoji class is obviously not
+            // emoji, so we again exit swiftly.
+            return;
+        }
+    }
+
+    // If we haven't returned by now, this is an emoji-only message,
+    // so we add .emoji-only to the paragraph element for styling
+    // the emoji in CSS.
+    content.firstElementChild?.classList.add("emoji-only");
 }

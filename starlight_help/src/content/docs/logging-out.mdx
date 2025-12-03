@@ -5,12 +5,15 @@ title: Logging out
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-
-import MobileSwitchAccount from "./include/_MobileSwitchAccount.mdx";
+import ChangePasswordAndAPIKey from "../include/_ChangePasswordAndAPIKey.mdx";
+import MobileSwitchAccount from "../include/_MobileSwitchAccount.mdx";
 
 import GearIcon from "~icons/zulip-icon/gear";
 import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+
+## Log out of a Zulip account on one device
 
 <Tabs>
   <TabItem label="Desktop/Web">
@@ -39,8 +42,20 @@ import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
   for each one.
 </ZulipTip>
 
+## Log out of a Zulip account on all devices
+
+Resetting the [API key](/api/api-keys) for a Zulip account will immediately log
+you out of that account on all mobile devices. Resetting your password will log
+you out of all browsers and desktop apps.
+
+### Change your password and API key
+
+<ChangePasswordAndAPIKey />
+
 ## Related articles
 
 * [Logging in](/help/logging-in)
 * [Switching between organizations](/help/switching-between-organizations)
+* [Change your password](/help/change-your-password)
+* [Protect your account](/help/protect-your-account)
 * [Deactivate your account](/help/deactivate-your-account)

@@ -6,9 +6,9 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
-
-import GoToReminders from "./include/_GoToReminders.mdx";
-import MessageActions from "./include/_MessageActions.mdx";
+import ZulipTip from "../../components/ZulipTip.astro";
+import GoToReminders from "../include/_GoToReminders.mdx";
+import MessageActions from "../include/_MessageActions.mdx";
 
 import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
 import TrashIcon from "~icons/zulip-icon/trash";
@@ -63,6 +63,10 @@ conversation at a later time.
     <FlattenedSteps>
       <GoToReminders />
     </FlattenedSteps>
+
+    <ZulipTip>
+      A note on the message will indicate that you have a reminder scheduled.
+    </ZulipTip>
   </TabItem>
 </Tabs>
 

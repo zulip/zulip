@@ -68,7 +68,7 @@ organization in Zulip). The following files are involved in the process:
 
 - `zerver/openapi/zulip.yaml`: OpenAPI definitions for the Zulip REST API.
 - `api_docs/changelog.md`: documentation listing all changes to the Zulip Server API.
-- `help/...`: end user facing documentation (Help Center) for the application.
+- `help/...`: end user facing documentation (help center) for the application.
 
 ### Adding a field to the database
 

@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
@@ -26,15 +25,15 @@ import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_paste from "./compose_paste.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
-import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
-import * as compose_setup from "./compose_setup.js";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
+import * as compose_setup from "./compose_setup.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -50,12 +49,13 @@ import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
+import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
+import * as gif_state from "./gif_state.ts";
 import * as giphy from "./giphy.ts";
-import * as giphy_state from "./giphy_state.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
-import * as hotkey from "./hotkey.js";
+import * as hotkey from "./hotkey.ts";
 import * as i18n from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
@@ -106,7 +106,7 @@ import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
-import * as reload_setup from "./reload_setup.js";
+import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
 import * as saved_snippets from "./saved_snippets.ts";
@@ -155,7 +155,7 @@ import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_popover from "./topic_popover.ts";
-import * as transmit from "./transmit.js";
+import * as transmit from "./transmit.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
 import * as unread from "./unread.ts";
@@ -174,7 +174,7 @@ import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
-import * as widgets from "./widgets.js";
+import * as widgets from "./widgets.ts";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -208,7 +208,7 @@ function initialize_compose_box() {
             render_compose({
                 embedded: $("#compose").attr("data-embedded") === "",
                 file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
-                giphy_enabled: giphy_state.is_giphy_enabled(),
+                giphy_enabled: gif_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
@@ -355,7 +355,7 @@ export function initialize_kitchen_sink_stuff() {
                         message_lists.current
                             .all_messages()
                             .map((message) => message.id)
-                            .sort(),
+                            .toSorted(),
                     ),
                     found_in_dom: $row_from_dom.length,
                 });
@@ -477,6 +477,16 @@ export async function initialize_everything(state_data) {
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
+
+    // The user_group must be initialized before right sidebar
+    // module, so that we can tell whether user is member of
+    // user_group whose members are allowed to create multiuse
+    // invite. The user_group module must also be initialized
+    // before people module, so that can_access_all_users_group
+    // setting group can be used to check whether the user
+    // has permission to access all other users.
+    user_groups.initialize(state_data.user_groups);
+
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
@@ -486,11 +496,6 @@ export async function initialize_everything(state_data) {
         ...state_data.emoji,
         emoji_codes: generated_emoji_codes,
     });
-
-    // The user_group must be initialized before right sidebar
-    // module, so that we can tell whether user is member of
-    // user_group whose members are allowed to create multiuse invite.
-    user_groups.initialize(state_data.user_groups);
 
     // Channel folders data must be initialized before left sidebar.
     channel_folders.initialize(state_data.channel_folders);
@@ -614,7 +619,7 @@ export async function initialize_everything(state_data) {
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
             compose_recipient.update_compose_area_placeholder_text();
-            compose_recipient.check_posting_policy_for_compose_box();
+            compose_validate.validate_and_update_send_button_status();
         },
     });
     compose_closed_ui.initialize();
@@ -776,9 +781,6 @@ $(() => {
     }
 
     if (page_params.is_spectator) {
-        if (page_params.show_try_zulip_modal) {
-            show_try_zulip_modal();
-        }
         const data = {
             apply_markdown: true,
             client_capabilities: JSON.stringify({
@@ -798,6 +800,9 @@ $(() => {
             success(response_data) {
                 const state_data = state_data_schema.parse(response_data);
                 initialize_everything(state_data);
+                if (page_params.show_try_zulip_modal) {
+                    show_try_zulip_modal();
+                }
             },
             error() {
                 $("#app-loading-middle-content").hide();

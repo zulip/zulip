@@ -134,9 +134,9 @@ Someone is testing the alert notification within grafana.
 
 **TestAlert**
 
-This alert was fired at <time:2022-08-31T05:54:04.52289368Z>.
+This alert was fired at <time:2022-08-31T05:54:04+00:00>.
 
-This alert was resolved at <time:2022-08-31T10:30:00.52288431Z>.
+This alert was resolved at <time:2022-08-31T10:30:00+00:00>.
 
 Labels:
 - alertname: TestAlert
@@ -166,7 +166,7 @@ Annotations:
 
 **High memory usage**
 
-This alert was fired at <time:2021-10-12T09:51:03.157076+02:00>.
+This alert was fired at <time:2021-10-12T09:51:03+02:00>.
 
 Labels:
 - alertname: High memory usage
@@ -189,7 +189,7 @@ Annotations:
 
 **High CPU usage**
 
-This alert was fired at <time:2021-10-12T09:56:03.157076+02:00>.
+This alert was fired at <time:2021-10-12T09:56:03+02:00>.
 
 Labels:
 - alertname: High CPU usage
@@ -241,7 +241,7 @@ Annotations:
 
 **Memory (copy)**
 
-This alert was fired at <time:2024-03-01T02:09:00Z>.
+This alert was fired at <time:2024-03-01T02:09:00+00:00>.
 
 Labels:
 - alertname: Memory (copy)
@@ -274,7 +274,7 @@ Annotations:
         expected_message = """
 :alert: **FIRING**
 
-This alert was fired at <time:2024-03-01T02:09:00Z>.
+This alert was fired at <time:2024-03-01T02:09:00+00:00>.
 
 Labels:
 - debug: true

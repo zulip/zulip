@@ -17,7 +17,6 @@ import "tippy.js/dist/tippy.css";
 // Adds color inheritance to the borders when using the default CSS Arrow.
 // https://atomiks.github.io/tippyjs/v6/themes/#arrow-border
 import "tippy.js/dist/border.css";
-import "tippy.js/themes/light-border.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
 import "flatpickr/dist/plugins/confirmDate/confirmDate.css";
@@ -61,6 +60,8 @@ import "../../styles/widgets.css";
 import "../../styles/print.css";
 import "../../styles/inbox.css";
 import "../../styles/color_picker.css";
+import "@uppy/core/css/style.min.css";
+import "@uppy/image-editor/css/style.min.css";
 
 // This should be last.
 import "../ui_init.js";

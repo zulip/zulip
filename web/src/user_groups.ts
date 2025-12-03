@@ -147,7 +147,8 @@ export function realm_has_deactivated_user_groups(): boolean {
 }
 
 export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
-    const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    const user_groups = [...user_group_by_id_dict.values()];
+    user_groups.sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
         if (group.is_system_group) {
             return false;
@@ -165,7 +166,8 @@ export function get_all_realm_user_groups(
     include_deactivated = false,
     include_internet_group = false,
 ): UserGroup[] {
-    const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
+    const user_groups = [...user_group_by_id_dict.values()];
+    user_groups.sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
         if (!include_deactivated && group.deactivated) {
             return false;

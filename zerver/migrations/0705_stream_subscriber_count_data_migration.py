@@ -39,7 +39,7 @@ def set_stream_subscribe_count(apps: StateApps, schema_editor: BaseDatabaseSchem
         recipient_table=sql.Identifier(Recipient._meta.db_table),
     )
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         with connection.cursor() as cursor, transaction.atomic(durable=True):
             cursor.execute(query, {"realm_id": realm.id})
 

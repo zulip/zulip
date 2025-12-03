@@ -5,10 +5,11 @@ import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as unread from "./unread.ts";
+import * as util from "./util.ts";
 
 export function filter(): Filter | undefined {
     // We use Filter objects for message views as well as the list of
@@ -25,7 +26,7 @@ export function filter(): Filter | undefined {
     return message_lists.current?.data.filter;
 }
 
-export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
+export function search_terms(current_filter: Filter | undefined = filter()): NarrowCanonicalTerm[] {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
             current_filter = new Filter(page_params.narrow);
@@ -146,11 +147,14 @@ export let stream_id = (
     if (current_filter === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("channel");
-    if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
-        const id = Number.parseInt(stream_operands[0], 10);
-        if (!Number.isNaN(id)) {
-            return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
+    const channel_terms = current_filter.terms_with_operator("channel");
+    if (channel_terms.length === 1) {
+        const channel_operand = channel_terms[0]?.operand;
+        if (channel_operand !== undefined) {
+            const id = Number.parseInt(channel_operand, 10);
+            if (!Number.isNaN(id)) {
+                return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
+            }
         }
     }
     return undefined;
@@ -182,46 +186,35 @@ export function topic(current_filter: Filter | undefined = filter()): string | u
     if (current_filter === undefined) {
         return undefined;
     }
-    const operands = current_filter.operands("topic");
-    if (operands.length === 1) {
-        return operands[0];
+    const terms = current_filter.terms_with_operator("topic");
+    if (terms.length === 1) {
+        return terms[0]!.operand;
     }
     return undefined;
 }
 
-export function pm_ids_string(filter?: Filter): string | undefined {
-    // If you are narrowed to a group direct message with
-    // users 4, 5, and 99, this will return "4,5,99"
-    const emails_string = pm_emails_string(filter);
-
-    if (!emails_string) {
+export function pm_ids_string(current_filter: Filter | undefined = filter()): string | undefined {
+    if (current_filter === undefined) {
         return undefined;
     }
 
-    const user_ids_string = people.reply_to_to_user_ids_string(emails_string);
+    const terms = current_filter.terms_with_operator("dm");
+    if (terms.length !== 1) {
+        return undefined;
+    }
 
-    return user_ids_string;
+    // If you are narrowed to a group direct message with users 4, 5, and 99,
+    // this will return "4,5,99". Will return undefined when the value of the
+    // operand string does not translate to a comma-separated list of valid
+    // user emails.
+    const emails_string = util.the(terms).operand;
+    return people.reply_to_to_user_ids_string(emails_string);
 }
 
 export function pm_ids_set(filter?: Filter): Set<number> {
     const ids_string = pm_ids_string(filter);
     const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
     return new Set(pm_ids_list);
-}
-
-export function pm_emails_string(
-    current_filter: Filter | undefined = filter(),
-): string | undefined {
-    if (current_filter === undefined) {
-        return undefined;
-    }
-
-    const operands = current_filter.operands("dm");
-    if (operands.length !== 1) {
-        return undefined;
-    }
-
-    return operands[0];
 }
 
 // We expect get_first_unread_info and therefore _possible_unread_message_ids
@@ -374,8 +367,8 @@ export function narrowed_by_topic_reply(current_filter: Filter | undefined = fil
     const terms = current_filter.terms().filter((term) => term.operator !== "with");
     return (
         terms.length === 2 &&
-        current_filter.operands("channel").length === 1 &&
-        current_filter.operands("topic").length === 1
+        current_filter.terms_with_operator("channel").length === 1 &&
+        current_filter.terms_with_operator("topic").length === 1
     );
 }
 
@@ -391,7 +384,7 @@ export function narrowed_by_stream_reply(current_filter: Filter | undefined = fi
         return false;
     }
     const terms = current_filter.terms();
-    return terms.length === 1 && current_filter.operands("channel").length === 1;
+    return terms.length === 1 && current_filter.terms_with_operator("channel").length === 1;
 }
 
 export function narrowed_to_stream_id(stream_id_to_check: number, filter?: Filter): boolean {

@@ -66,7 +66,7 @@ export function initialize(): void {
 
         // Allow selecting text inside a spoiler header.
         const selection = document.getSelection();
-        if (selection && selection.type === "Range") {
+        if (selection?.type === "Range") {
             return;
         }
 

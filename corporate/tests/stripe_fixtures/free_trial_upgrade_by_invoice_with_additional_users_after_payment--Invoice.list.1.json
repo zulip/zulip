@@ -37,7 +37,7 @@
       "default_payment_method": null,
       "default_source": null,
       "default_tax_rates": [],
-      "description": null,
+      "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
       "discounts": [],
       "due_date": 1000000000,
       "effective_at": 1000000000,
@@ -103,7 +103,7 @@
       "livemode": false,
       "metadata": {
         "billing_schedule": "1",
-        "current_plan_id": "1",
+        "current_plan_id": "2",
         "license_management": "manual",
         "licenses": "123",
         "on_free_trial": "True",

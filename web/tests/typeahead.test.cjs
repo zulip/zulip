@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const typeahead = zrequire("../shared/src/typeahead");
+const typeahead = zrequire("typeahead");
 
 const unicode_emojis = [
     ["1f43c", "panda_face"],
@@ -36,7 +36,7 @@ function emoji_matches(query) {
 
 function assert_emoji_matches(query, expected) {
     const names = emoji_matches(query).map((emoji) => emoji.emoji_name);
-    assert.deepEqual(names.sort(), expected);
+    assert.deepEqual(names.toSorted(), expected);
 }
 
 run_test("get_emoji_matcher: nonmatches", () => {

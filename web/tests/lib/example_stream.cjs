@@ -40,7 +40,6 @@ exports.make_stream = (opts = {}) => {
         pin_to_top: false,
         previously_subscribed: false,
         push_notifications: false,
-        render_subscribers: false,
         rendered_description: `<p>Description of ${name}</p>`,
         stream_id,
         /* STREAM_POST_POLICY_EVERYONE */
@@ -49,6 +48,7 @@ exports.make_stream = (opts = {}) => {
         /* Most tests want to work with a channel the current user is subscribed to. */
         subscribed: true,
         wildcard_mentions_notify: false,
+        folder_id: null,
     };
 
     return {...default_channel, ...opts};

@@ -96,11 +96,20 @@ run_test("get_unread_ids", () => {
         mentioned_me_directly: false,
     };
 
-    message_store.update_message_cache(stream_msg);
-    message_store.update_message_cache(private_msg);
-    message_store.update_message_cache(other_topic_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message: stream_msg,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: private_msg,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_topic_message,
+    });
 
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
     terms = [{operator: "search", operand: "whatever"}];
     set_filter(terms);
@@ -108,7 +117,7 @@ run_test("get_unread_ids", () => {
     assert.equal(unread_ids, undefined);
     assert_unread_info({flavor: "cannot_compute"});
 
-    terms = [{operator: "bogus_operator", operand: "me@example.com"}];
+    terms = [{operator: "dm", operand: "123123"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -261,7 +270,7 @@ run_test("defensive code", ({override_rewire}) => {
     // couldn't compute the unread message ids, but that
     // invariant is hard to future-proof.
     override_rewire(narrow_state, "_possible_unread_message_ids", () => undefined);
-    const terms = [{operator: "some-unhandled-case", operand: "whatever"}];
+    const terms = [{operator: "dm", operand: "12344"}];
     set_filter(terms);
     assert_unread_info({
         flavor: "cannot_compute",

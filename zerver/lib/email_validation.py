@@ -72,7 +72,7 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
             return
 
         while len(domain) > 0:
-            subdomain, sep, domain = domain.partition(".")
+            _subdomain, _sep, domain = domain.partition(".")
             if domain in allowed_subdomains:
                 return
 
@@ -216,5 +216,5 @@ def validate_email_not_already_in_realm(
     # Loop through errors, the only key should be our email.
     for key, error_info in error_dict.items():
         assert key == email
-        msg, deactivated = error_info
+        msg, _deactivated = error_info
         raise ValidationError(msg)

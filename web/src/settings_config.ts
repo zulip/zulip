@@ -635,6 +635,9 @@ export const preferences_settings_labels = {
     ),
     receives_typing_notifications: $t({defaultMessage: "Show when other users are typing"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
+    web_inbox_show_channel_folders: $t({
+        defaultMessage: "Group channels by folder in the inbox",
+    }),
     web_left_sidebar_show_channel_folders: $t({
         defaultMessage: "Group channels by folder in the left sidebar",
     }),
@@ -765,7 +768,7 @@ export const all_group_setting_labels = {
         can_set_topics_policy_group: new Handlebars.SafeString(
             $t_html({
                 defaultMessage:
-                    "Who can configure per-channel topic settings <i>(also requires being a channel administrator)</i>",
+                    "Who can configure the per-channel <i>general chat</i> topic configuration <i>(also requires being a channel administrator)</i>",
             }),
         ),
     },
@@ -881,16 +884,16 @@ export const owner_editable_realm_group_permission_settings = new Set([
 // Order of settings is important, as this list is used to
 // render assigned permissions in permissions panel.
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
-    "can_send_message_group",
-    "can_administer_channel_group",
-    "can_delete_any_message_group",
-    "can_delete_own_message_group",
-    "can_move_messages_out_of_channel_group",
-    "can_move_messages_within_channel_group",
     "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
+    "can_send_message_group",
+    "can_move_messages_within_channel_group",
+    "can_move_messages_out_of_channel_group",
     "can_resolve_topics_group",
+    "can_delete_any_message_group",
+    "can_delete_own_message_group",
+    "can_administer_channel_group",
 ];
 
 export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [

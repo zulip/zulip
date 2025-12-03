@@ -1,8 +1,6 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-import type {EmojiSuggestion} from "../shared/src/typeahead.ts";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
@@ -26,6 +24,8 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import type {StreamPill, StreamPillData} from "./stream_pill.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import type {EmojiSuggestion} from "./typeahead.ts";
+import * as typeahead from "./typeahead.ts";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
@@ -281,8 +281,14 @@ export function compare_people_for_relevance(
 
         // If the client does not yet have complete subscriber data,
         // "unknown" and "not subscribed" are both represented as false here.
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
+        const a_is_sub = stream_data.is_user_loaded_and_subscribed(
+            current_stream_id,
+            person_a.user.user_id,
+        );
+        const b_is_sub = stream_data.is_user_loaded_and_subscribed(
+            current_stream_id,
+            person_b.user.user_id,
+        );
 
         if (a_is_sub && !b_is_sub) {
             return -1;
@@ -1026,10 +1032,33 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
     sort_user_groups = value;
 }
 
+export function query_matches_person_name(
+    query: string,
+    person: UserPillData,
+    should_remove_diacritics: boolean | undefined = undefined,
+    match_prefix?: boolean,
+): boolean {
+    query = query.toLowerCase();
+    should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
+
+    const full_name = people.maybe_remove_diacritics_from_name(
+        person.user,
+        should_remove_diacritics,
+    );
+
+    return typeahead.query_matches_string_in_order_assume_canonicalized(
+        query,
+        full_name.toLowerCase(),
+        " ",
+        match_prefix,
+    );
+}
+
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
     should_remove_diacritics: boolean | undefined = undefined,
+    match_prefix?: boolean,
 ): boolean {
     if (
         person.type === "broadcast" &&
@@ -1039,20 +1068,7 @@ export function query_matches_person(
     }
 
     if (person.type === "user") {
-        query = query.toLowerCase();
-        should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
-
-        const full_name = people.maybe_remove_diacritics_from_name(
-            person.user,
-            should_remove_diacritics,
-        );
-        if (
-            typeahead.query_matches_string_in_order_assume_canonicalized(
-                query,
-                full_name.toLowerCase(),
-                " ",
-            )
-        ) {
+        if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
             return true;
         }
 

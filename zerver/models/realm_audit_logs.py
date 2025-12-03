@@ -37,6 +37,7 @@ class AuditLogEventType(IntEnum):
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
     USER_SETTING_CHANGED = 132
     USER_DIGEST_EMAIL_CREATED = 133
+    USER_IS_IMPORTED_STUB_CHANGED = 134
 
     REALM_DEACTIVATED = 201
     REALM_REACTIVATED = 202
@@ -119,6 +120,8 @@ class AuditLogEventType(IntEnum):
 
     SAVED_SNIPPET_CREATED = 800
 
+    CUSTOM_EMAIL_SENT = 810
+
     NAVIGATION_VIEW_CREATED = 850
     NAVIGATION_VIEW_UPDATED = 851
     NAVIGATION_VIEW_DELETED = 852
@@ -190,6 +193,7 @@ class AbstractRealmAuditLog(models.Model):
     HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS = {
         "existing_user": "At an organization that's using it",
         "search_engine": "Search engine",
+        "ai_chatbot": "AI/LLM",
         "review_site": "Review site",
         "personal_recommendation": "Personal recommendation",
         "hacker_news": "Hacker News",

@@ -1,0 +1,42 @@
+---
+import assert from "node:assert/strict";
+
+import {fromHtml} from "hast-util-from-html";
+import {toHtml} from "hast-util-to-html";
+
+const tree = fromHtml(await Astro.slots.render("default"), {fragment: true});
+
+const tree_with_removed_newlines = {
+    type: "root",
+    children: tree.children.filter((child) => {
+        if (child.type === "text" && child.value === "\n") {
+            return false;
+        }
+        return true;
+    }),
+};
+const first_element = tree_with_removed_newlines.children[0];
+assert.ok(
+    first_element?.type === "element" &&
+        ["ol", "ul"].includes(first_element.tagName),
+);
+const flattened = {
+    ...first_element,
+    children: tree_with_removed_newlines.children.flatMap((other) => {
+        if (other.type === "comment") {
+            return [];
+        }
+        assert.ok(other.type === "element");
+        // Flatten only in case of matching tagName, for the rest, we
+        // return the elements without flattening since asides, code
+        // blocks and other elements can be part of a single list item
+        // and we do not want to flatten them.
+        if (other.tagName === first_element.tagName) {
+            return other.children;
+        }
+        return [other];
+    }),
+};
+---
+
+<Fragment set:html={toHtml(flattened)} />

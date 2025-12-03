@@ -51,7 +51,7 @@ const admins_group = {
     id: 1,
     members: new Set([admin.user_id]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 };
 
 const moderators_group = {
@@ -73,9 +73,9 @@ const everyone_group = {
 const nobody_group = {
     name: "Nobody",
     id: 4,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 };
 user_groups.initialize({
     realm_user_groups: [admins_group, moderators_group, everyone_group, nobody_group],
@@ -171,8 +171,8 @@ run_test("get_deletability", ({override}) => {
         can_delete_any_message_group: nobody_group.id,
         can_delete_own_message_group: moderators_group.id,
     };
-    stream_data.add_sub(social);
-    stream_data.add_sub(denmark);
+    stream_data.add_sub_for_tests(social);
+    stream_data.add_sub_for_tests(denmark);
 
     message = {
         locally_echoed: true,

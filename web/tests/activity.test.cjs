@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {
     clear_buddy_list,
-    override_user_matches_narrow,
+    override_user_matches_narrow_using_loaded_data,
     buddy_list_add_user_matching_view,
     buddy_list_add_other_user,
     stub_buddy_list_elements,
@@ -114,8 +114,8 @@ const $fred_stub = $.create("fred stub");
 
 const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
 function add_sub_and_set_as_current_narrow(sub) {
-    stream_data.add_sub(sub);
-    const filter_terms = [{operator: "stream", operand: sub.stream_id}];
+    stream_data.add_sub_for_tests(sub);
+    const filter_terms = [{operator: "stream", operand: String(sub.stream_id)}];
     message_lists.set_current(make_message_list(filter_terms));
 }
 
@@ -274,8 +274,7 @@ test("direct_message_update_dom_counts", () => {
     $li.set_find_results(".unread_count", $count);
     $count.set_parents_result("li", $li);
 
-    const counts = new Map();
-    counts.set(pm_key, 5);
+    const counts = new Map([[pm_key, 5]]);
     $li.addClass("user_sidebar_entry");
 
     activity_ui.update_dom_with_unread_counts({pm_count: counts});
@@ -389,7 +388,11 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 });
 
 test("first/prev/next", ({override, override_rewire, mock_template}) => {
-    override_rewire(buddy_data, "user_matches_narrow", override_user_matches_narrow);
+    override_rewire(
+        buddy_data,
+        "user_matches_narrow_using_loaded_data",
+        override_user_matches_narrow_using_loaded_data,
+    );
     mock_template("presence_rows.hbs", false, () => "<presence-rows-stub>");
     override(padded_widget, "update_padding", noop);
     stub_buddy_list_elements();
@@ -809,7 +812,6 @@ test("initialize", ({override, override_rewire}) => {
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
-        zephyr_mirror_active: true,
         presences: {},
         msg: "",
         result: "success",
@@ -821,7 +823,6 @@ test("initialize", ({override, override_rewire}) => {
 
     assert.ok(scroll_handler_started);
     assert.ok(!activity.new_user_input);
-    assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
     assert.equal(activity.compute_active_status(), "active");
 
     $(window).idle = (params) => {
@@ -834,7 +835,6 @@ test("initialize", ({override, override_rewire}) => {
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
-        zephyr_mirror_active: false,
         presences: {},
         msg: "",
         result: "success",
@@ -842,7 +842,6 @@ test("initialize", ({override, override_rewire}) => {
         presence_last_update_id: -1,
     });
 
-    assert.ok($("#zephyr-mirror-error").hasClass("show"));
     assert.ok(!activity.new_user_input);
     assert.equal(activity.compute_active_status(), "idle");
 

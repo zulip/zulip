@@ -1278,6 +1278,10 @@ button {
     background-image: url("../../images/landing-page/hands.jpg");
 }
 
+.portico-landing.why-page .bg-pycon.clouds {
+    background-image: url("../../images/landing-page/clouds.jpg");
+}
+
 .portico-landing.why-page .bg-dimmer {
     position: absolute;
     width: 100%;
@@ -2875,4 +2879,17 @@ button {
 .apps .apps-page-link {
     text-decoration: underline;
     color: hsl(0deg 0% 100%);
+}
+
+.zulip-cloud-page .hero-description {
+    font-size: 1.3em !important;
+
+    @media (width <= 768px) {
+        font-size: 2em !important;
+    }
+}
+
+.zulip-cloud-page .man-mobile-image {
+    width: auto;
+    height: 300px;
 }

@@ -40,7 +40,7 @@ const verona = {
     name: "Verona",
     stream_id: 1,
 };
-stream_data.add_sub(verona);
+stream_data.add_sub_for_tests(verona);
 
 run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");

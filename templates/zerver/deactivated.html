@@ -51,6 +51,10 @@
                             {% trans %}
                             If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact Zulip support</a> to reactivate it.
                             {% endtrans %}
+                            <br /><br />
+                            {% trans %}
+                            If you're a member of the organization and want information about why it has been deactivated, please reach out to the organization's administrators directly.
+                            {% endtrans %}
                         {% else %}
                             {% trans %}
                             If you are an owner of this organization, you can <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a> to reactivate it.

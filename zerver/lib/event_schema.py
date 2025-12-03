@@ -117,6 +117,7 @@ from zerver.lib.event_types import (
     PersonEmail,
     PersonFullName,
     PersonIsActive,
+    PersonIsImportedStub,
     PersonRole,
     PersonTimezone,
     PlanTypeData,
@@ -278,6 +279,7 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     role=PersonRole,
     timezone=PersonTimezone,
     is_active=PersonIsActive,
+    is_imported_stub=PersonIsImportedStub,
 )
 
 
@@ -364,7 +366,7 @@ def check_modern_presence(var_name: str, event: dict[str, object], user_id: int)
 
     assert isinstance(event["presences"], dict)
 
-    [(event_presences_key, event_presences_value)] = event["presences"].items()
+    [(event_presences_key, _event_presences_value)] = event["presences"].items()
     assert event_presences_key == str(user_id)
 
 

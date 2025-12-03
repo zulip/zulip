@@ -74,6 +74,7 @@ run ./tools/check-schemas
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+run pnpm run --filter=starlight_help check
 run ./tools/test-js-with-puppeteer "${forcearg[@]}"
 
 printf '\n\e[32mAll OK!\e[0m\n'

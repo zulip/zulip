@@ -51,12 +51,7 @@ people.add_active_user(bob);
 
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
-    const $widget = {};
-
-    $widget.s = s;
-    $widget.length = 1;
-    $widget[0] = "textarea";
-    $widget.focused = false;
+    const $widget = {s, length: 1, [0]: "textarea", focused: false};
 
     $widget.caret = function (arg) {
         if (typeof arg === "number") {
@@ -210,7 +205,7 @@ run_test("compute_placeholder_text", ({override}) => {
         name: "all",
         stream_id: 2,
     };
-    stream_data.add_sub(stream_all);
+    stream_data.add_sub_for_tests(stream_all);
     opts.stream_id = stream_all.stream_id;
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
 
@@ -1211,6 +1206,15 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "link");
         format_text_type = undefined;
+
+        // Test code block insertion:
+        // Mac = Cmd+Shift+C
+        // Windows/Linux = Ctrl+Shift+C
+        event.key = "c";
+        event.shiftKey = true;
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
+        assert.equal(format_text_type, "code");
+        format_text_type = undefined;
     }
 
     // This function cross tests the Cmd/Ctrl + Markdown shortcuts in
@@ -1298,7 +1302,7 @@ run_test("get_focus_area", ({override}) => {
         "#compose_select_recipient_widget_wrapper",
     );
 
-    stream_data.add_sub({
+    stream_data.add_sub_for_tests({
         message_type: "stream",
         name: "fun",
         stream_id: 4,

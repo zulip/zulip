@@ -212,9 +212,9 @@ first add it to the appropriate place under `static/`.
 - CSS files live under `web/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
   `web/src/portico`.
-- Custom SVG graphics living under `web/images/icons` are compiled into
+- Custom SVG graphics living under `web/icons` are compiled into
   custom icon webfonts by webfont-loader according to the
-  `web/images/icons/template.hbs` template. See
+  `web/icons/template.hbs` template. See
   [icons](../subsystems/icons.md) for more details on adding icons.
 
 For your asset to be included in a development/production bundle, it

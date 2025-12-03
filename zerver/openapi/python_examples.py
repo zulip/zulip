@@ -1698,7 +1698,7 @@ def register_push_device(client: Client) -> None:
     request = {
         "token_kind": "fcm",
         "push_account_id": 2408,
-        "push_public_key": "push-public-key",
+        "push_key": "MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt",
         "bouncer_public_key": "bouncer-public-key",
         "encrypted_push_registration": "encrypted-push-registration-data",
     }

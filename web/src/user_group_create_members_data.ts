@@ -9,8 +9,8 @@ import type {UserGroup} from "./user_groups.ts";
 
 let user_id_set: Set<number>;
 let soft_remove_user_id_set: Set<number>;
-let subgroup_id_set = new Set<number>([]);
-let soft_remove_subgroup_id_set = new Set<number>([]);
+let subgroup_id_set = new Set<number>();
+let soft_remove_subgroup_id_set = new Set<number>();
 
 export function initialize_with_current_user(): void {
     user_id_set = new Set([current_user.user_id]);
@@ -18,17 +18,18 @@ export function initialize_with_current_user(): void {
 }
 
 export function reset_subgroups_data(): void {
-    subgroup_id_set = new Set([]);
-    soft_remove_subgroup_id_set = new Set<number>([]);
+    subgroup_id_set = new Set();
+    soft_remove_subgroup_id_set = new Set<number>();
 }
 
 export function sorted_members(): (User | UserGroup)[] {
     const users = people.get_users_from_ids([...user_id_set]);
     people.sort_but_pin_current_user_on_top(users);
 
-    const subgroups = [...subgroup_id_set]
-        .map((group_id) => user_groups.get_user_group_from_id(group_id))
-        .sort(user_group_components.sort_group_member_name);
+    const subgroups = [...subgroup_id_set].map((group_id) =>
+        user_groups.get_user_group_from_id(group_id),
+    );
+    subgroups.sort(user_group_components.sort_group_member_name);
 
     return [...subgroups, ...users];
 }

@@ -922,7 +922,7 @@ Output:
             "source_realm_id": source_realm_id,
             "is_demo_organization": is_demo_organization,
             "how_realm_creator_found_zulip": "other",
-            "how_realm_creator_found_zulip_extra_context": "I found it on the internet.",
+            "how_realm_creator_found_zulip_other_text": "I found it on the internet.",
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
@@ -970,6 +970,29 @@ Output:
             payload["realm_in_root_domain"] = realm_in_root_domain
         return self.client_post(
             "/new/",
+            payload,
+        )
+
+    def submit_demo_creation_form(
+        self,
+        demo_name: str,
+        *,
+        org_type: int = Realm.ORG_TYPES["business"]["id"],
+        language: str = "en",
+        captcha: str | None = None,
+    ) -> "TestHttpResponse":
+        payload = {
+            "realm_name": demo_name,
+            "realm_type": org_type,
+            "realm_default_language": language,
+            "how_realm_creator_found_zulip": "ai_chatbot",
+            "how_realm_creator_found_zulip_which_ai_chatbot": "I don't remember.",
+            "terms": True,
+        }
+        if captcha is not None:
+            payload["captcha"] = captcha
+        return self.client_post(
+            "/new/demo/",
             payload,
         )
 
@@ -1074,6 +1097,7 @@ Output:
     def api_get(
         self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_get(
             url,
@@ -1096,6 +1120,7 @@ Output:
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_post(
             url,
@@ -1112,6 +1137,7 @@ Output:
     def api_patch(
         self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_patch(
             url,
@@ -1128,6 +1154,7 @@ Output:
     def api_delete(
         self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_delete(
             url,
@@ -1517,7 +1544,7 @@ Output:
             realm = get_realm("zulip")
 
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-            realm, invite_only, history_public_to_subscribers
+            invite_only, history_public_to_subscribers
         )
 
         try:
@@ -1567,7 +1594,7 @@ Output:
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(
+            stream, _from_stream_creation = create_stream_if_needed(
                 realm,
                 stream_name,
                 invite_only=invite_only,
@@ -1917,6 +1944,23 @@ Output:
             realm, licenses, licenses_at_next_renewal, CustomerPlan.BILLING_SCHEDULE_MONTHLY
         )
 
+    def register_push_device(self, user_profile_id: int) -> None:
+        PushDevice.objects.create(
+            user_id=user_profile_id,
+            push_account_id=10,
+            bouncer_device_id=1,
+            token_kind=PushDevice.TokenKind.FCM,
+            push_key=base64.b64decode("MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"),
+        )
+
+    def register_push_device_token(self, user_profile_id: int) -> None:
+        PushDeviceToken.objects.create(
+            user_id=user_profile_id,
+            kind=PushDeviceToken.APNS,
+            token="test-token",
+            ios_app_id="com.zulip.flutter",
+        )
+
     def create_user_notifications_data_object(
         self, *, user_id: int, **kwargs: Any
     ) -> UserMessageNotificationsData:
@@ -1992,7 +2036,7 @@ Output:
         """
         dct = {}
 
-        for realm_emoji in RealmEmoji.objects.all():
+        for realm_emoji in RealmEmoji.objects.all().iterator():
             dct[realm_emoji.id] = realm_emoji
 
         if not dct:
@@ -2079,7 +2123,7 @@ Output:
         self.send_personal_message(shiva, polonius)
         self.send_group_direct_message(aaron, [polonius, zoe])
 
-        members_group = NamedUserGroup.objects.get(name="role:members", realm=realm)
+        members_group = NamedUserGroup.objects.get(name="role:members", realm_for_sharding=realm)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
@@ -2891,14 +2935,14 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
             push_account_id=10,
             bouncer_device_id=1,
             token_kind=PushDevice.TokenKind.APNS,
-            push_public_key="9VvW7k59AET0v3+VFCkKTrNm5DJQ7JTKdvUjZInZZ0Y=",
+            push_key=base64.b64decode("MXPC4WK2YfyfCBdK6ElnzSpKJtcpFSZrYiJto4YCETzx"),
         )
         PushDevice.objects.create(
             user=hamlet,
             push_account_id=20,
             bouncer_device_id=2,
             token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key=base64.b64decode("Mc3u6xraEI79aGk6Nd+boqi/ODfT+JcsEIATzG7C/m+V"),
         )
 
         realm_and_remote_realm_fields: dict[str, Realm | RemoteRealm | None] = {

@@ -1,4 +1,4 @@
-import type {Meta} from "@uppy/core";
+import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
 import {getSafeFileId} from "@uppy/utils";
@@ -30,6 +30,25 @@ const upload_objects_by_message_edit_row = new Map<number, Uppy<ZulipMeta, TusBo
 
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
+}
+
+export function current_message_list_has_edit_box(): boolean {
+    return (
+        message_lists.current !== undefined && $(".focused-message-list .message_edit").length > 0
+    );
+}
+
+function show_upload_overlay(): void {
+    if (current_message_list_has_edit_box()) {
+        // Don't show the overlay if an edit box is open.
+        return;
+    }
+
+    $("body").addClass("upload-overlay-visible");
+}
+
+function hide_upload_overlay(): void {
+    $("body").removeClass("upload-overlay-visible");
 }
 
 export function feature_check(): XMLHttpRequestUpload {
@@ -351,6 +370,12 @@ const zulip_upload_response_schema = z.object({
     filename: z.string(),
 });
 
+// Wrapped to work around https://github.com/transloadit/uppy/issues/6033
+const get_safe_file_id: <M extends Meta>(
+    file: UppyFile<M, TusBody>,
+    instance_id: string,
+) => string = getSafeFileId;
+
 export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
     const uppy = new Uppy<ZulipMeta, TusBody>({
         debug: false,
@@ -372,7 +397,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             pluralize: (_n) => 0,
         },
         onBeforeFileAdded(file, files) {
-            const file_id = getSafeFileId(file, uppy.getID());
+            const file_id = get_safe_file_id(file, uppy.getID());
 
             if (files[file_id]) {
                 // We have a duplicate file upload on our hands.
@@ -448,6 +473,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
     $drag_drop_container.on("drop", (event) => {
         event.preventDefault();
         event.stopPropagation();
+        hide_upload_overlay();
         assert(event.originalEvent !== undefined);
         assert(event.originalEvent.dataTransfer !== null);
         const files = event.originalEvent.dataTransfer.files;
@@ -532,7 +558,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             }
         }
 
-        const filtered_filename = file.name!.replaceAll("[", "").replaceAll("]", "");
+        const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
         const syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
@@ -601,13 +627,13 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
-        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
     uppy.on("restriction-failed", (file) => {
         assert(file !== undefined);
-        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
@@ -665,18 +691,35 @@ export function initialize(): void {
         }
     });
 
+    let drag_counter = 0;
     // Allow the app panel to receive drag/drop events.
     $(".app, #navbar-fixed-container").on("dragover", (event) => {
         event.preventDefault();
+        // Show the upload overlay during drag events.
+        show_upload_overlay();
     });
 
-    // TODO: Do something visual to hint that drag/drop will work.
     $(".app, #navbar-fixed-container").on("dragenter", (event) => {
         event.preventDefault();
+        drag_counter += 1;
+        // Show the upload overlay during drag events.
+        show_upload_overlay();
+    });
+
+    $(".app, #navbar-fixed-container").on("dragleave", (event) => {
+        event.preventDefault();
+        drag_counter -= 1;
+        // Hide the upload overlay when no files are being dragged.
+        if (drag_counter === 0) {
+            hide_upload_overlay();
+        }
     });
 
     $(".app, #navbar-fixed-container").on("drop", (event) => {
         event.preventDefault();
+        drag_counter = 0;
+        // Hide the upload overlay after files are dropped.
+        hide_upload_overlay();
 
         if (event.target.nodeName === "IMG" && event.target === drag_drop_img) {
             drag_drop_img = null;

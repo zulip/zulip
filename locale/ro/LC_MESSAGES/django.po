@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-08 15:53+0000\n"
+"POT-Creation-Date: 2025-10-22 13:48+0000\n"
 "PO-Revision-Date: 2025-08-07 16:28+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/zulip/django/ro/"
@@ -209,7 +209,7 @@ msgstr ""
 msgid "Please add a credit card to schedule upgrade."
 msgstr "Vă rugăm să adăugați un card de credit pentru a programa upgrade-ul."
 
-#: corporate/lib/stripe.py:2978
+#: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
@@ -217,18 +217,18 @@ msgstr ""
 "Nu se poate actualiza planul. Planul a fost expirat și înlocuit cu un nou "
 "plan."
 
-#: corporate/lib/stripe.py:2983
+#: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
 msgstr "Nu se poate actualiza planul. Planul s-a încheiat."
 
-#: corporate/lib/stripe.py:3051
+#: corporate/lib/stripe.py:3061
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
 "Nu se pot actualiza licențele în perioada de facturare curentă pentru planul "
 "de testare gratuită."
 
-#: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
+#: corporate/lib/stripe.py:3066 corporate/lib/stripe.py:3094
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
@@ -236,18 +236,18 @@ msgstr ""
 "Nu se pot actualiza manual licențele. Planul dvs. este de gestionare "
 "automată a licențelor."
 
-#: corporate/lib/stripe.py:3062
+#: corporate/lib/stripe.py:3072
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 "Planul dvs. este deja pe licențe {licenses} în perioada de facturare curentă."
 
-#: corporate/lib/stripe.py:3067
+#: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "Nu puteți reduce licențele în perioada curentă de facturare."
 
-#: corporate/lib/stripe.py:3093
+#: corporate/lib/stripe.py:3103
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
@@ -255,7 +255,7 @@ msgstr ""
 "Nu se pot modifica licențele pentru următorul ciclu de facturare pentru un "
 "plan care este retrogradat."
 
-#: corporate/lib/stripe.py:3099
+#: corporate/lib/stripe.py:3109
 #, python-brace-format
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
@@ -264,50 +264,50 @@ msgstr ""
 "Planul dvs. este deja programat să fie reînnoit cu licențe "
 "{licenses_at_next_renewal}."
 
-#: corporate/lib/stripe.py:3123
+#: corporate/lib/stripe.py:3133
 #, python-brace-format
 msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
 
-#: corporate/lib/stripe.py:3145
+#: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
 msgstr "Nimic de schimbat."
 
-#: corporate/lib/stripe.py:3430
+#: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
 msgstr "Niciun client pentru această organizație!"
 
-#: corporate/lib/stripe.py:3439
+#: corporate/lib/stripe.py:3449
 msgid "Session not found"
 msgstr "Sesiune nu a fost găsită"
 
-#: corporate/lib/stripe.py:3445 zerver/decorator.py:218 zerver/decorator.py:723
-#: zerver/lib/streams.py:142 zerver/lib/streams.py:216
-#: zerver/lib/streams.py:218 zerver/lib/streams.py:220
-#: zerver/lib/streams.py:229 zerver/lib/streams.py:1552
-#: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
-#: zerver/lib/user_groups.py:363 zerver/lib/user_groups.py:459
-#: zerver/lib/users.py:204 zerver/lib/users.py:271 zerver/lib/users.py:300
-#: zerver/lib/users.py:304 zerver/views/invite.py:157
-#: zerver/views/invite.py:278 zerver/views/message_summary.py:31
-#: zerver/views/presence.py:53 zerver/views/realm_emoji.py:35
-#: zerver/views/streams.py:400 zerver/views/streams.py:403
-#: zerver/views/streams.py:412 zerver/views/streams.py:456
-#: zerver/views/streams.py:698 zerver/views/streams.py:974
+#: corporate/lib/stripe.py:3455 zerver/decorator.py:218 zerver/decorator.py:723
+#: zerver/lib/streams.py:144 zerver/lib/streams.py:213
+#: zerver/lib/streams.py:215 zerver/lib/streams.py:217
+#: zerver/lib/streams.py:226 zerver/lib/streams.py:1518
+#: zerver/lib/streams.py:1573 zerver/lib/user_groups.py:168
+#: zerver/lib/user_groups.py:194 zerver/lib/user_groups.py:365
+#: zerver/lib/user_groups.py:461 zerver/lib/users.py:204
+#: zerver/lib/users.py:271 zerver/lib/users.py:300 zerver/lib/users.py:304
+#: zerver/views/invite.py:157 zerver/views/invite.py:278
+#: zerver/views/message_summary.py:31 zerver/views/presence.py:52
+#: zerver/views/realm_emoji.py:35 zerver/views/streams.py:381
+#: zerver/views/streams.py:384 zerver/views/streams.py:393
+#: zerver/views/streams.py:437 zerver/views/streams.py:878
 msgid "Insufficient permission"
 msgstr "Permisiune insuficientă"
 
-#: corporate/lib/stripe.py:3456
+#: corporate/lib/stripe.py:3466
 msgid "Payment intent not found"
 msgstr "Intenția de plată nu a fost găsită"
 
-#: corporate/lib/stripe.py:3459
+#: corporate/lib/stripe.py:3469
 msgid "Pass stripe_session_id or stripe_invoice_id"
 msgstr ""
 
-#: corporate/lib/stripe.py:4205
+#: corporate/lib/stripe.py:4215
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -334,8 +334,8 @@ msgstr "Tokenul de acces la facturare a expirat."
 msgid "Invalid billing access token."
 msgstr "Token de acces la facturare nevalabil."
 
-#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1479
-#: zilencer/views.py:1504
+#: corporate/views/remote_billing_page.py:213 zilencer/views.py:1503
+#: zilencer/views.py:1528
 #, python-brace-format
 msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
@@ -410,7 +410,7 @@ msgid "Method not allowed (405)"
 msgstr "Metoda nu este permisă (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:412
 msgid "Internal server error"
 msgstr "Eroare internă a serverului"
 
@@ -1471,7 +1471,7 @@ msgid "Email"
 msgstr "E-mail"
 
 #: templates/zerver/accounts_accept_terms.html:54
-#: templates/zerver/register.html:235
+#: templates/zerver/register.html:236
 #, python-format
 msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
@@ -1481,7 +1481,7 @@ msgstr ""
 "target=\"_blank\" rel=\"noopener noreferrer\">Termenii de utilizare</a>."
 
 #: templates/zerver/accounts_accept_terms.html:68
-#: templates/zerver/register.html:250
+#: templates/zerver/register.html:251
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
 msgstr ""
 "Abonați-mă la buletinul informativ Zulip cu trafic redus (câteva e-mailuri "
@@ -1493,7 +1493,7 @@ msgstr "Continuă"
 
 #: templates/zerver/accounts_home.html:5 templates/zerver/accounts_home.html:72
 #: templates/zerver/login.html:158 templates/zerver/portico-header.html:48
-#: templates/zerver/register.html:256
+#: templates/zerver/register.html:257
 msgid "Sign up"
 msgstr "Înscriere"
 
@@ -1580,15 +1580,15 @@ msgstr ""
 "Eroare la încărcarea Zulip. Încercați să <a class=\"reload-"
 "lnk\">reîncărcați</a> pagina."
 
-#: templates/zerver/app/index.html:227
+#: templates/zerver/app/index.html:209
 msgid "No conversations match your filters."
 msgstr ""
 
-#: templates/zerver/app/index.html:240
+#: templates/zerver/app/index.html:222
 msgid "This view is still loading messages."
 msgstr ""
 
-#: templates/zerver/app/index.html:243
+#: templates/zerver/app/index.html:225
 msgid "Load more"
 msgstr ""
 
@@ -1761,6 +1761,13 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/deactivated.html:55
+msgid ""
+"If you're a member of the organization and want information about why it has "
+"been deactivated, please reach out to the organization's administrators "
+"directly."
+msgstr ""
+
+#: templates/zerver/deactivated.html:59
 #, fuzzy, python-format
 #| msgid ""
 #| "If you have any questions, please contact this Zulip server's "
@@ -1912,43 +1919,43 @@ msgstr ""
 "Veți utiliza următoarele informații pentru a vă conecta la aplicațiile web, "
 "<a href=\"%(apps_page_link)s\">mobilă și desktop</a> Zulip:"
 
-#: templates/zerver/emails/account_registered.html:34
+#: templates/zerver/emails/account_registered.html:35
 #: templates/zerver/emails/account_registered.txt:16
-#: templates/zerver/emails/confirm_registration.html:12
+#: templates/zerver/emails/confirm_registration.html:13
 #: templates/zerver/emails/confirm_registration.txt:3
 #, python-format
 msgid "Organization URL: %(organization_url)s"
 msgstr "URL-ul organizației: %(organization_url)s"
 
-#: templates/zerver/emails/account_registered.html:37
+#: templates/zerver/emails/account_registered.html:38
 #: templates/zerver/emails/account_registered.txt:20
 #, python-format
 msgid "Your username: %(ldap_username)s"
 msgstr "Numele tău de utilizator: %(ldap_username)s"
 
-#: templates/zerver/emails/account_registered.html:39
+#: templates/zerver/emails/account_registered.html:40
 #: templates/zerver/emails/account_registered.txt:22
 msgid "Use your LDAP account to log in"
 msgstr "Utilizați contul LDAP pentru a vă conecta"
 
-#: templates/zerver/emails/account_registered.html:42
+#: templates/zerver/emails/account_registered.html:43
 #: templates/zerver/emails/account_registered.txt:25
 #, python-format
 msgid "Your account email: %(email)s"
 msgstr "Adresa de e-mail a contului dumneavoastră: %(email)s"
 
-#: templates/zerver/emails/account_registered.html:45
+#: templates/zerver/emails/account_registered.html:47
 msgid "Go to organization"
 msgstr "Mergeți la organizație"
 
-#: templates/zerver/emails/account_registered.html:49
+#: templates/zerver/emails/account_registered.html:51
 #, python-format
 msgid ""
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">getting started guide</a>!"
 msgstr ""
 
-#: templates/zerver/emails/account_registered.html:51
+#: templates/zerver/emails/account_registered.html:53
 #, python-format
 msgid ""
 "We also have a guide for <a "
@@ -1956,7 +1963,7 @@ msgid ""
 "Zulip</a>."
 msgstr ""
 
-#: templates/zerver/emails/account_registered.html:57
+#: templates/zerver/emails/account_registered.html:59
 #, python-format
 msgid ""
 "Questions? <a href=\"mailto:%(support_email)s\">Contact us</a> — we'd love "
@@ -2110,18 +2117,18 @@ msgstr "Verifică noua ta adresă de e-mail pentru %(organization_host)s"
 msgid "You have requested a new Zulip organization:"
 msgstr "Ați solicitat o nouă organizație Zulip:"
 
-#: templates/zerver/emails/confirm_registration.html:13
+#: templates/zerver/emails/confirm_registration.html:14
 #: templates/zerver/emails/confirm_registration.txt:5
 #, python-format
 msgid "Organization type: %(organization_type)s"
 msgstr "Tipul de organizație: %(organization_type)s"
 
-#: templates/zerver/emails/confirm_registration.html:16
+#: templates/zerver/emails/confirm_registration.html:18
 #: templates/zerver/emails/confirm_registration.txt:7
 msgid "You recently signed up for Zulip. Awesome!"
 msgstr "Recent te-ai înscris pe Zulip. Fantastic!"
 
-#: templates/zerver/emails/confirm_registration.html:21
+#: templates/zerver/emails/confirm_registration.html:23
 #: templates/zerver/emails/confirm_registration.txt:12
 msgid ""
 "Click the button below to create the organization and register your account. "
@@ -2130,11 +2137,11 @@ msgstr ""
 "Faceți clic pe butonul de mai jos pentru a crea organizația și a vă "
 "înregistra contul. Veți putea actualiza informațiile de mai sus, dacă doriți."
 
-#: templates/zerver/emails/confirm_registration.html:23
+#: templates/zerver/emails/confirm_registration.html:25
 msgid "Click the button below to complete registration."
 msgstr "Apasă butonul de mai jos pentru a termina înregistrarea."
 
-#: templates/zerver/emails/confirm_registration.html:25
+#: templates/zerver/emails/confirm_registration.html:27
 #: templates/zerver/emails/invitation.html:16
 #: templates/zerver/emails/invitation_reminder.html:14
 msgid "Complete registration"
@@ -2165,15 +2172,15 @@ msgstr ""
 "Aveți întrebări sau feedback de împărtășit? Contactați-ne la "
 "%(support_email)s - ne-ar face plăcere să vă ajutăm!"
 
-#: templates/zerver/emails/custom_email_base.pre.html:19
-#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:8
+#: templates/zerver/emails/custom_email_base.pre.html:23
+#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
 #: templates/zerver/emails/digest.html:55
-#: templates/zerver/emails/notify_new_login.html:46
+#: templates/zerver/emails/notify_new_login.html:44
 msgid "Manage email preferences"
 msgstr "Administrează preferințe emailurilor"
 
-#: templates/zerver/emails/custom_email_base.pre.html:19
-#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
+#: templates/zerver/emails/custom_email_base.pre.html:23
+#: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:16
 msgid "Unsubscribe from marketing emails"
 msgstr "Dezabonarea de la e-mailurile de marketing"
 
@@ -2725,41 +2732,41 @@ msgstr ""
 msgid "We noticed a recent login for the following Zulip account."
 msgstr "Am observat o autentificare recentă pentru următorul cont Zulip."
 
-#: templates/zerver/emails/notify_new_login.html:16
+#: templates/zerver/emails/notify_new_login.html:15
 #, python-format
 msgid "Organization: %(organization_link)s"
 msgstr "Organizație: %(organization_link)s"
 
-#: templates/zerver/emails/notify_new_login.html:19
+#: templates/zerver/emails/notify_new_login.html:18
 #: templates/zerver/emails/notify_new_login.txt:5
 #, python-format
 msgid "Email: %(user_email)s"
 msgstr "Email: %(user_email)s"
 
-#: templates/zerver/emails/notify_new_login.html:22
+#: templates/zerver/emails/notify_new_login.html:21
 #: templates/zerver/emails/notify_new_login.txt:7
 #, python-format
 msgid "Time: %(login_time)s"
 msgstr "Ora: %(login_time)s"
 
-#: templates/zerver/emails/notify_new_login.html:25
+#: templates/zerver/emails/notify_new_login.html:24
 #: templates/zerver/emails/notify_new_login.txt:9
 #, python-format
 msgid "Device: %(device_browser)s on %(device_os)s."
 msgstr "Dispozitiv: %(device_browser)s pe %(device_os)s."
 
-#: templates/zerver/emails/notify_new_login.html:28
+#: templates/zerver/emails/notify_new_login.html:27
 #: templates/zerver/emails/notify_new_login.txt:11
 #, python-format
 msgid "IP address: %(device_ip)s"
 msgstr "Adresa IP: %(device_ip)s"
 
-#: templates/zerver/emails/notify_new_login.html:33
+#: templates/zerver/emails/notify_new_login.html:31
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
 msgstr "Dacă ai fost tu, grozav! Nu mai trebuie să faceți nimic altceva."
 
-#: templates/zerver/emails/notify_new_login.html:36
+#: templates/zerver/emails/notify_new_login.html:34
 #, python-format
 msgid ""
 "If you do not recognize this login, or think your account may have been "
@@ -2770,17 +2777,17 @@ msgstr ""
 "fost compromis, vă rugăm să <a href=\"%(reset_link)s\">vă resetați parola</"
 "a> sau să ne contactați imediat la %(support_email)s."
 
-#: templates/zerver/emails/notify_new_login.html:40
+#: templates/zerver/emails/notify_new_login.html:38
 #: templates/zerver/emails/notify_new_login.txt:20
 msgid "Thanks,"
 msgstr "Multumim,"
 
-#: templates/zerver/emails/notify_new_login.html:41
+#: templates/zerver/emails/notify_new_login.html:39
 #: templates/zerver/emails/notify_new_login.txt:21
 msgid "Zulip Security"
 msgstr "Securitate Zulip"
 
-#: templates/zerver/emails/notify_new_login.html:46
+#: templates/zerver/emails/notify_new_login.html:44
 msgid "Unsubscribe from login notifications"
 msgstr "Dezactivează notifcările la autentificare"
 
@@ -2821,7 +2828,7 @@ msgstr ""
 "Altfel, iată câteva sfaturi pe care le auzim adesea de la clienți pentru "
 "evaluarea <i>oricărui</i> produs de chat în echipă:"
 
-#: templates/zerver/emails/onboarding_team_to_zulip.html:15
+#: templates/zerver/emails/onboarding_team_to_zulip.html:16
 #, python-format
 msgid ""
 "<a href=\"%(invite_users)s\"><b>Invite your teammates</b></a> to explore "
@@ -2831,13 +2838,13 @@ msgstr ""
 "exploreze împreună cu dumneavoastră și să vă împărtășească perspectivele lor "
 "unice."
 
-#: templates/zerver/emails/onboarding_team_to_zulip.html:16
+#: templates/zerver/emails/onboarding_team_to_zulip.html:17
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
 msgid "Use the app itself to chat about your impressions."
 msgstr ""
 "Folosiți aplicația în sine pentru a discuta despre impresiile dumneavoastră."
 
-#: templates/zerver/emails/onboarding_team_to_zulip.html:18
+#: templates/zerver/emails/onboarding_team_to_zulip.html:19
 #, python-format
 msgid ""
 "<a href=\"%(trying_out_zulip)s\"><b>Run a week-long trial</b></a> with your "
@@ -3103,7 +3110,7 @@ msgstr "Nu ai un cont în acea organizație Zulip."
 msgid "You do have active accounts in the following organization(s)."
 msgstr "Ai conturi active în următoarea organizație(i)."
 
-#: templates/zerver/emails/password_reset.html:32
+#: templates/zerver/emails/password_reset.html:34
 #: templates/zerver/emails/password_reset.txt:21
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
@@ -3112,7 +3119,7 @@ msgstr ""
 "Puteți încerca să vă autentificați sau să vă resetați parola în organizația "
 "(organizațiile) de mai sus."
 
-#: templates/zerver/emails/password_reset.html:38
+#: templates/zerver/emails/password_reset.html:40
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
@@ -3622,7 +3629,7 @@ msgid "Incoming webhooks"
 msgstr "Webhooks de intrare"
 
 #: templates/zerver/integrations/index.html:66
-#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:43
+#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:44
 msgid "Interactive bots"
 msgstr "Boți interactivi"
 
@@ -3965,14 +3972,14 @@ msgstr "URL-ul organizatiei"
 msgid "Use %(external_host)s"
 msgstr "Folosește %(external_host)s"
 
-#: templates/zerver/realm_creation_form.html:96
+#: templates/zerver/realm_creation_form.html:101
 msgid ""
 "Learn how to import from <a href=\"/help/import-from-"
 "mattermost\">Mattermost</a> or <a href=\"/help/import-from-"
 "rocketchat\">Rocket.Chat</a>."
 msgstr ""
 
-#: templates/zerver/realm_creation_form.html:104
+#: templates/zerver/realm_creation_form.html:110
 #, fuzzy
 #| msgid "Private, shared history"
 msgid "Import chat history?"
@@ -4047,6 +4054,19 @@ msgid ""
 "<a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(org_creation_link)s\">Create a new organization</a> if you don't "
 "have one yet."
+msgstr ""
+
+#: templates/zerver/realm_redirect.html:52
+#, fuzzy
+#| msgid "Self-host Zulip"
+msgid "Self-hosting Zulip?"
+msgstr "Auto-gazdă Zulip"
+
+#: templates/zerver/realm_redirect.html:53
+#, python-format
+msgid ""
+"You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
+"href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
 
 #: templates/zerver/register.html:5
@@ -4139,7 +4159,7 @@ msgstr ""
 msgid "Which organization?"
 msgstr ""
 
-#: templates/zerver/register.html:216
+#: templates/zerver/register.html:216 templates/zerver/register.html:217
 msgid "Which one?"
 msgstr ""
 
@@ -4248,8 +4268,8 @@ msgstr ""
 
 #: templates/zerver/slack_import.html:102
 msgid ""
-"Or <a href=\"#\" id=\"cancel-slack-import\">create organization</a> without "
-"importing data."
+"Or <span id=\"cancel-slack-import\" tabindex=\"0\">create organization</"
+"span> without importing data."
 msgstr ""
 
 #: templates/zerver/social_auth_select_email.html:4
@@ -4346,12 +4366,12 @@ msgstr "abonări"
 msgid "{user} joined this organization."
 msgstr ""
 
-#: zerver/actions/create_user.py:313
+#: zerver/actions/create_user.py:310
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} a acceptat invitația ta pe Zulip!"
 
-#: zerver/actions/create_user.py:720
+#: zerver/actions/create_user.py:717
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
@@ -4573,41 +4593,41 @@ msgstr "Steguleț care nu poate fi editat: \"{flag}"
 msgid "Invalid message flag operation: '{operation}'"
 msgstr "Operațiune de marcare a mesajului invalidă: \"{operation}"
 
-#: zerver/actions/message_flags.py:355 zerver/lib/message.py:398
-#: zerver/lib/message.py:413 zerver/lib/message.py:432
-#: zerver/lib/message.py:446
+#: zerver/actions/message_flags.py:355 zerver/lib/message.py:399
+#: zerver/lib/message.py:414 zerver/lib/message.py:433
+#: zerver/lib/message.py:447
 msgid "Invalid message(s)"
 msgstr "Mesaj nevalid(e)"
 
-#: zerver/actions/message_send.py:186
+#: zerver/actions/message_send.py:188
 msgid "Unable to render message"
 msgstr "Imposibil de redat mesajul"
 
-#: zerver/actions/message_send.py:1317
+#: zerver/actions/message_send.py:1327
 msgid "Expected exactly one channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1328
+#: zerver/actions/message_send.py:1338
 msgid "Invalid data type for channel"
 msgstr ""
 
-#: zerver/actions/message_send.py:1344 zerver/actions/message_send.py:1354
+#: zerver/actions/message_send.py:1354 zerver/actions/message_send.py:1364
 #: zerver/lib/recipient_parsing.py:15
 msgid "Invalid data type for recipients"
 msgstr "Tip de date nevalid pentru destinatari"
 
-#: zerver/actions/message_send.py:1362 zerver/actions/message_send.py:1370
+#: zerver/actions/message_send.py:1372 zerver/actions/message_send.py:1380
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Lista destinatarilor poate conține emailuri sau ID, dar nu ambele."
 
-#: zerver/actions/message_send.py:1526
+#: zerver/actions/message_send.py:1533
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
 "but there is no channel with that ID."
 msgstr ""
 
-#: zerver/actions/message_send.py:1537
+#: zerver/actions/message_send.py:1544
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}, "
@@ -4615,22 +4635,22 @@ msgid ""
 "it."
 msgstr ""
 
-#: zerver/actions/message_send.py:1549
+#: zerver/actions/message_send.py:1556
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
 "The channel exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/actions/message_send.py:1654
+#: zerver/actions/message_send.py:1661
 msgid "You do not have permission to access some of the recipients."
 msgstr "Nu aveți permisiunea de a accesa unii dintre destinatari."
 
-#: zerver/actions/message_send.py:1864
+#: zerver/actions/message_send.py:1865
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgets: Programatorul API a trimis JSON conținut nevalid"
 
-#: zerver/actions/message_send.py:1870
+#: zerver/actions/message_send.py:1871
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Widgets: {error_msg}"
@@ -4671,7 +4691,7 @@ msgstr ""
 msgid "Authentication method {name} is not available on your current plan."
 msgstr ""
 
-#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:385
+#: zerver/actions/realm_settings.py:470 zerver/views/streams.py:366
 msgid "Moderation request channel must be private."
 msgstr ""
 
@@ -4727,14 +4747,14 @@ msgstr ""
 msgid "Channel #**{channel_name}** has been unarchived."
 msgstr ""
 
-#: zerver/actions/streams.py:1241
+#: zerver/actions/streams.py:1236
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions]({help_link}) for this channel from "
 "**{old_policy}** to **{new_policy}**."
 msgstr ""
 
-#: zerver/actions/streams.py:1473
+#: zerver/actions/streams.py:1468
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions]({help_link}) for this channel:\n"
@@ -4743,51 +4763,51 @@ msgid ""
 "* **New**: {new_setting_description}\n"
 msgstr ""
 
-#: zerver/actions/streams.py:1543
+#: zerver/actions/streams.py:1538
 #, python-brace-format
 msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
 msgstr ""
 
-#: zerver/actions/streams.py:1560 zerver/actions/streams.py:1562
-#: zerver/views/streams.py:1141
+#: zerver/actions/streams.py:1555 zerver/actions/streams.py:1557
+#: zerver/views/streams.py:1042
 msgid "No description."
 msgstr "Fără descriere."
 
-#: zerver/actions/streams.py:1565
+#: zerver/actions/streams.py:1560
 #, python-brace-format
 msgid "{user} changed the description for this channel."
 msgstr ""
 
-#: zerver/actions/streams.py:1567
+#: zerver/actions/streams.py:1562
 msgid "Old description"
 msgstr "Descriere veche"
 
-#: zerver/actions/streams.py:1571
+#: zerver/actions/streams.py:1566
 msgid "New description"
 msgstr "Descriere nouă"
 
-#: zerver/actions/streams.py:1642 zerver/actions/streams.py:1649
+#: zerver/actions/streams.py:1637 zerver/actions/streams.py:1644
 msgid "Forever"
 msgstr "Pentru totdeauna"
 
-#: zerver/actions/streams.py:1643 zerver/actions/streams.py:1648
-#: zerver/actions/streams.py:1652 zerver/actions/streams.py:1653
+#: zerver/actions/streams.py:1638 zerver/actions/streams.py:1643
+#: zerver/actions/streams.py:1647 zerver/actions/streams.py:1648
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr ""
 
-#: zerver/actions/streams.py:1645 zerver/actions/streams.py:1655
+#: zerver/actions/streams.py:1640 zerver/actions/streams.py:1650
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
 msgstr ""
 
-#: zerver/actions/streams.py:1650
+#: zerver/actions/streams.py:1645
 msgid "Messages in this channel will now be retained forever."
 msgstr ""
 
-#: zerver/actions/streams.py:1658
+#: zerver/actions/streams.py:1653
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period]({help_link}) for this "
@@ -4798,26 +4818,26 @@ msgid ""
 "{summary_line}"
 msgstr ""
 
-#: zerver/actions/streams.py:1755
+#: zerver/actions/streams.py:1750
 msgid "Automatic"
 msgstr ""
 
-#: zerver/actions/streams.py:1757
+#: zerver/actions/streams.py:1752
 #, python-brace-format
 msgid "*{empty_topic_display_name}* topic allowed"
 msgstr ""
 
-#: zerver/actions/streams.py:1760
+#: zerver/actions/streams.py:1755
 #, python-brace-format
 msgid "No *{empty_topic_display_name}* topic"
 msgstr ""
 
-#: zerver/actions/streams.py:1763
+#: zerver/actions/streams.py:1758
 #, python-brace-format
 msgid "Only *{empty_topic_display_name}* topic allowed"
 msgstr ""
 
-#: zerver/actions/streams.py:1769
+#: zerver/actions/streams.py:1764
 #, python-brace-format
 msgid ""
 "{user_name} changed the \"Allow posting to the *general chat* topic?\" "
@@ -4870,11 +4890,11 @@ msgstr "Lipsește antetul autorizației pentru autentificarea de bază"
 msgid "Webhook bots can only access webhooks"
 msgstr "Boții webhook pot accesa doar webhooks"
 
-#: zerver/forms.py:66
+#: zerver/forms.py:64
 msgid "Incorrect email or password."
 msgstr ""
 
-#: zerver/forms.py:68
+#: zerver/forms.py:66
 #, python-brace-format
 msgid ""
 "Your account {username} has been deactivated. Please contact your "
@@ -4883,41 +4903,41 @@ msgstr ""
 "{username} contului a fost dezactivat. Vă rugăm să contactați "
 "administratorul organizației pentru a-l reactiva."
 
-#: zerver/forms.py:71
+#: zerver/forms.py:69
 msgid "The password is too weak."
 msgstr "Parola este prea slabă."
 
-#: zerver/forms.py:93
+#: zerver/forms.py:83
 msgid "Subdomain needs to have length 3 or greater."
 msgstr "Subdomeniul trebuie să aibă lungimea 3 sau mai mare."
 
-#: zerver/forms.py:94
+#: zerver/forms.py:84
 msgid "Subdomain cannot start or end with a '-'."
 msgstr "Subdomeniul nu poate începe sau termina cu '-'."
 
-#: zerver/forms.py:95
+#: zerver/forms.py:85
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "Subdomeniul poate avea litere mici, numere și  '-'s."
 
-#: zerver/forms.py:96
+#: zerver/forms.py:86
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr ""
 
-#: zerver/forms.py:97
+#: zerver/forms.py:87
 msgid "Subdomain reserved. Please choose a different one."
 msgstr "Subdomeniu rezervat. Vă rugăm să alegeți un alt domeniu."
 
-#: zerver/forms.py:134 zerver/forms.py:304 zerver/lib/email_validation.py:111
-#: zilencer/views.py:230
+#: zerver/forms.py:124 zerver/forms.py:296 zerver/lib/email_validation.py:111
+#: zilencer/views.py:244
 msgid "Please use your real email address."
 msgstr "Te rog folosește-ți adresa ta reală de email."
 
-#: zerver/forms.py:277
+#: zerver/forms.py:269
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr "Organizația în care vrei să intri cu {email} nu există."
 
-#: zerver/forms.py:286
+#: zerver/forms.py:278
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
@@ -4925,11 +4945,11 @@ msgstr ""
 "Vă rugăm să solicitați o invitație pentru {email} de la administratorul "
 "organizației."
 
-#: zerver/forms.py:291
+#: zerver/forms.py:283
 msgid "Can't join the organization: password authentication is not enabled."
 msgstr ""
 
-#: zerver/forms.py:299
+#: zerver/forms.py:291
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
@@ -4938,11 +4958,11 @@ msgstr ""
 "Adresa de email, {email}, nu este între domeniile care sunt permise pentru a "
 "crea un cont în această organizație."
 
-#: zerver/forms.py:307
+#: zerver/forms.py:299
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr "Adresele de e-mail conținând + nu sunt permise în această organizație."
 
-#: zerver/forms.py:325
+#: zerver/forms.py:314
 msgid ""
 "New members cannot join this organization because all Zulip licenses are in "
 "use. Please contact the person who invited you and ask them to increase the "
@@ -4952,34 +4972,34 @@ msgstr ""
 "Zulip sunt în uz. Contactați persoana care v-a invitat și cereți-i să "
 "mărească numărul de licențe, apoi încercați din nou."
 
-#: zerver/forms.py:379
+#: zerver/forms.py:370
 msgid "Verified that you're a human user!"
 msgstr ""
 
-#: zerver/forms.py:380
+#: zerver/forms.py:371
 msgid "Verifying that you're not a bot…"
 msgstr ""
 
-#: zerver/forms.py:402 zerver/forms.py:413 zerver/forms.py:418
-#: zerver/forms.py:425
+#: zerver/forms.py:394 zerver/forms.py:405 zerver/forms.py:410
+#: zerver/forms.py:417
 msgid "Validation failed, please try again."
 msgstr ""
 
-#: zerver/forms.py:407 zerver/views/antispam.py:29
+#: zerver/forms.py:399 zerver/views/antispam.py:29
 #, fuzzy
 #| msgid "Embedded bots are not enabled."
 msgid "Challenges are not enabled."
 msgstr "Boții incorporați nu sunt activi."
 
-#: zerver/forms.py:437
+#: zerver/forms.py:429
 msgid "New password"
 msgstr "Parola nouă"
 
-#: zerver/forms.py:444
+#: zerver/forms.py:436
 msgid "New password confirmation"
 msgstr "Confirmare parolă nouă"
 
-#: zerver/forms.py:586
+#: zerver/forms.py:578
 #, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in {seconds} seconds "
@@ -4989,7 +5009,7 @@ msgstr ""
 "{seconds} secunde sau contactați administratorul organizației dumneavoastră "
 "pentru ajutor."
 
-#: zerver/forms.py:598
+#: zerver/forms.py:590
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
@@ -4997,20 +5017,20 @@ msgstr ""
 "Parola a fost dezactivată deoarece este prea slabă. Resetați parola pentru a "
 "crea una nouă."
 
-#: zerver/forms.py:646
+#: zerver/forms.py:638
 msgid "Token"
 msgstr "Token"
 
-#: zerver/forms.py:669
+#: zerver/forms.py:661
 msgid "Tip: You can enter multiple email addresses with commas between them."
 msgstr ""
 "Sfat: Puteți introduce mai multe adrese de e-mail cu virgule între ele."
 
-#: zerver/forms.py:675
+#: zerver/forms.py:667
 msgid "Please enter at most 10 emails."
 msgstr "Te rog introdu cel puțin 10 emailuri."
 
-#: zerver/forms.py:688
+#: zerver/forms.py:680
 msgid "We couldn't find that Zulip organization."
 msgstr "Nu am găsit acea organizație Zulip."
 
@@ -5147,11 +5167,11 @@ msgstr ""
 msgid "Email with no subject"
 msgstr ""
 
-#: zerver/lib/email_notifications.py:143 zerver/lib/email_notifications.py:165
+#: zerver/lib/email_notifications.py:145 zerver/lib/email_notifications.py:167
 msgid "Open Zulip to see the spoiler content"
 msgstr "Deschide Zulip pentru a vedea conținutul spoiler"
 
-#: zerver/lib/email_notifications.py:605
+#: zerver/lib/email_notifications.py:627
 #, python-brace-format
 msgid "{service_name} notifications"
 msgstr "{service_name} notificări"
@@ -5234,7 +5254,7 @@ msgstr ""
 msgid "Emoji name is missing"
 msgstr "Numele emoji-ului lipsește"
 
-#: zerver/lib/events.py:2137
+#: zerver/lib/events.py:2136
 msgid "Could not allocate event queue"
 msgstr "Nu pot aloca lista de evenimente"
 
@@ -5360,42 +5380,42 @@ msgstr "Utilizatorul nu este autentificat"
 msgid "Invalid subdomain"
 msgstr "Domeniu nevalid"
 
-#: zerver/lib/exceptions.py:557
+#: zerver/lib/exceptions.py:552
 msgid "You do not have permission to initiate direct message conversations."
 msgstr ""
 
-#: zerver/lib/exceptions.py:570
+#: zerver/lib/exceptions.py:565
 #, python-brace-format
 msgid ""
 "Sending messages to the {empty_topic_display_name} is not allowed in this "
 "channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:583
+#: zerver/lib/exceptions.py:578
 #, python-brace-format
 msgid "Only the {empty_topic_display_name} topic is allowed in this channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:596
+#: zerver/lib/exceptions.py:591
 #, python-brace-format
 msgid ""
 "To enable this configuration, all messages in this channel must be in the "
 "{empty_topic_display_name} topic. Consider renaming or deleting other topics."
 msgstr ""
 
-#: zerver/lib/exceptions.py:603
+#: zerver/lib/exceptions.py:598
 msgid "Direct messages are disabled in this organization."
 msgstr "Mesajele directe sunt dezactivate în această organizație."
 
-#: zerver/lib/exceptions.py:605
+#: zerver/lib/exceptions.py:600
 msgid "This conversation does not include any users who can authorize it."
 msgstr ""
 
-#: zerver/lib/exceptions.py:618
+#: zerver/lib/exceptions.py:613
 msgid "Access denied"
 msgstr "Acces interzis"
 
-#: zerver/lib/exceptions.py:658
+#: zerver/lib/exceptions.py:653
 #, python-brace-format
 msgid ""
 "You only have permission to move the {total_messages_allowed_to_move}/"
@@ -5404,79 +5424,79 @@ msgstr ""
 "Aveți permisiunea de a muta doar {total_messages_allowed_to_move}/"
 "{total_messages_in_topic} cele mai recente mesaje din acest subiect."
 
-#: zerver/lib/exceptions.py:671
+#: zerver/lib/exceptions.py:666
 msgid "Reaction already exists."
 msgstr "Reacția deja există."
 
-#: zerver/lib/exceptions.py:683
+#: zerver/lib/exceptions.py:678
 msgid "Reaction doesn't exist."
 msgstr "Reacția nu există."
 
-#: zerver/lib/exceptions.py:708
+#: zerver/lib/exceptions.py:703
 msgid ""
 "Your organization is registered to a different Zulip server. Please contact "
 "Zulip support for assistance in resolving this issue."
 msgstr ""
 
-#: zerver/lib/exceptions.py:722
+#: zerver/lib/exceptions.py:717
 msgid "Organization not registered"
 msgstr "Organizație neînregistrată"
 
-#: zerver/lib/exceptions.py:734
+#: zerver/lib/exceptions.py:729
 msgid ""
 "You do not have permission to use channel wildcard mentions in this channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:746
+#: zerver/lib/exceptions.py:741
 msgid ""
 "You do not have permission to use topic wildcard mentions in this topic."
 msgstr ""
 "Nu aveți permisiunea de a utiliza mențiunile wildcard ale subiectului în "
 "acest subiect."
 
-#: zerver/lib/exceptions.py:759
+#: zerver/lib/exceptions.py:754
 #, python-brace-format
 msgid "'{field_name}' value does not match the expected value."
 msgstr ""
 
-#: zerver/lib/exceptions.py:784
+#: zerver/lib/exceptions.py:779
 #, python-brace-format
 msgid "'{setting_name}' must be a system user group."
 msgstr "'{setting_name}' trebuie să fie un grup de utilizatori de sistem."
 
-#: zerver/lib/exceptions.py:800
+#: zerver/lib/exceptions.py:795
 msgid "Cannot deactivate user group in use."
 msgstr ""
 
-#: zerver/lib/exceptions.py:810
+#: zerver/lib/exceptions.py:805
 msgid "You do not have permission to administer this channel."
 msgstr ""
 
-#: zerver/lib/exceptions.py:820
+#: zerver/lib/exceptions.py:815
 msgid "You do not have permission to change default channels."
 msgstr ""
 
-#: zerver/lib/exceptions.py:830
+#: zerver/lib/exceptions.py:825
 msgid "Email is already in use."
 msgstr ""
 
-#: zerver/lib/exceptions.py:840
+#: zerver/lib/exceptions.py:835
 msgid "Scheduled delivery time must be in the future."
 msgstr "Termenul de livrare programat trebuie să fie în viitor."
 
-#: zerver/lib/exceptions.py:863
+#: zerver/lib/exceptions.py:858
 msgid "Invalid bouncer_public_key"
 msgstr ""
 
-#: zerver/lib/exceptions.py:875
+#: zerver/lib/exceptions.py:870
 msgid "Request expired"
 msgstr ""
 
-#: zerver/lib/exceptions.py:885
+#: zerver/lib/exceptions.py:880
 msgid "Invalid encrypted_push_registration"
 msgstr ""
 
-#: zerver/lib/exceptions.py:897
+#: zerver/lib/exceptions.py:892
 msgid "Server is not configured to use push notification service."
 msgstr ""
 
@@ -5496,71 +5516,77 @@ msgstr "Contul extern personalizat trebuie să definească modelul URL"
 msgid "Invalid external account type"
 msgstr "Tip de cont extern nevalid"
 
-#: zerver/lib/integrations.py:42
+#: zerver/lib/integrations.py:43
 msgid "Integration frameworks"
 msgstr "Integration frameworks"
 
-#: zerver/lib/integrations.py:48
+#: zerver/lib/integrations.py:49
+#, fuzzy
+#| msgid "Video call ended"
+msgid "Video calling"
+msgstr "Apelul video s-a încheiat"
+
+#: zerver/lib/integrations.py:50
 msgid "Continuous integration"
 msgstr "Integrare continua"
 
-#: zerver/lib/integrations.py:49
+#: zerver/lib/integrations.py:51
 msgid "Customer support"
 msgstr "Relații clienți"
 
-#: zerver/lib/integrations.py:50
+#: zerver/lib/integrations.py:52
 msgid "Deployment"
 msgstr "Implementare"
 
-#: zerver/lib/integrations.py:51
+#: zerver/lib/integrations.py:53
 msgid "Entertainment"
 msgstr "Divertisment"
 
-#: zerver/lib/integrations.py:52
+#: zerver/lib/integrations.py:54
 msgid "Communication"
 msgstr "Comunicare"
 
-#: zerver/lib/integrations.py:53
+#: zerver/lib/integrations.py:55
 msgid "Financial"
 msgstr "Financiar"
 
-#: zerver/lib/integrations.py:54
+#: zerver/lib/integrations.py:56
 msgid "Human resources"
 msgstr "Resurse umane"
 
-#: zerver/lib/integrations.py:55
+#: zerver/lib/integrations.py:57
 msgid "Marketing"
 msgstr "CAD-CAM"
 
-#: zerver/lib/integrations.py:56
+#: zerver/lib/integrations.py:58
 msgid "Miscellaneous"
 msgstr "Diverse"
 
-#: zerver/lib/integrations.py:57
+#: zerver/lib/integrations.py:59
 msgid "Monitoring"
 msgstr "Monitorizare"
 
-#: zerver/lib/integrations.py:58
+#: zerver/lib/integrations.py:60
 msgid "Project management"
 msgstr "Managementul proiectului"
 
-#: zerver/lib/integrations.py:59
+#: zerver/lib/integrations.py:61
 msgid "Productivity"
 msgstr "Productivitate"
 
-#: zerver/lib/integrations.py:60
+#: zerver/lib/integrations.py:62
 msgid "Version control"
 msgstr "Controlul versiunii"
 
-#: zerver/lib/message.py:205 zerver/views/welcome_bot_custom_message.py:32
+#: zerver/lib/message.py:206 zerver/views/welcome_bot_custom_message.py:32
 msgid "Message must not be empty"
 msgstr "Mesajul nu trebuie să fie gol"
 
-#: zerver/lib/message.py:207
+#: zerver/lib/message.py:208
 msgid "Message must not contain null bytes"
 msgstr "Mesajul nu poate conține biți null"
 
-#: zerver/lib/message.py:1538
+#: zerver/lib/message.py:1537
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
 msgstr ""
@@ -5603,29 +5629,29 @@ msgstr ""
 msgid "{fullname}'s moderation requests"
 msgstr "{full_name} te-a menționat:"
 
-#: zerver/lib/narrow.py:202
+#: zerver/lib/narrow.py:201
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
 msgstr "Operator de limitare nevalid: {desc}"
 
-#: zerver/lib/narrow.py:215
+#: zerver/lib/narrow.py:214
 #, python-brace-format
 msgid "Invalid narrow operator combination: {desc}"
 msgstr ""
 
-#: zerver/lib/narrow.py:977
+#: zerver/lib/narrow.py:890
 msgid "Duplicate 'with' operators."
 msgstr ""
 
-#: zerver/lib/narrow.py:987 zerver/lib/narrow.py:1008
+#: zerver/lib/narrow.py:900 zerver/lib/narrow.py:921
 msgid "Invalid 'with' operator"
 msgstr ""
 
-#: zerver/lib/narrow.py:1290
+#: zerver/lib/narrow.py:1202
 msgid "Missing 'anchor' argument."
 msgstr "Lipsește argumentul 'anchor' ."
 
-#: zerver/lib/narrow.py:1310
+#: zerver/lib/narrow.py:1222
 msgid "Invalid anchor"
 msgstr "Ancora nevalidă"
 
@@ -5810,7 +5836,7 @@ msgid ""
 "Here are a few messages I understand: {bot_commands}\n"
 "\n"
 "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-"or browse the [Help center](/help/) to learn more!\n"
+"or browse the [help center](/help/) to learn more!\n"
 msgstr ""
 
 #: zerver/lib/onboarding.py:269
@@ -5979,7 +6005,7 @@ msgid "Invalid GCM options to bouncer: {options}"
 msgstr "Opțiuni MCG nevalabile pentru bouncer: {options}"
 
 #. error
-#: zerver/lib/push_notifications.py:729 zilencer/views.py:661
+#: zerver/lib/push_notifications.py:729 zilencer/views.py:685
 msgid "Token does not exist"
 msgstr "Tokenul nu există"
 
@@ -6041,10 +6067,10 @@ msgstr ""
 msgid "Invalid data type for channel ID"
 msgstr ""
 
-#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:619
-#: zerver/lib/streams.py:635 zerver/tornado/views.py:229
-#: zerver/views/events_register.py:75 zerver/views/message_send.py:196
-#: zerver/views/message_send.py:217
+#: zerver/lib/recipient_users.py:36 zerver/lib/streams.py:615
+#: zerver/lib/streams.py:631 zerver/tornado/views.py:229
+#: zerver/views/events_register.py:75 zerver/views/message_send.py:170
+#: zerver/views/message_send.py:191
 msgid "User not authorized for this query"
 msgstr "Utilizator neautorizat pentru această interogare"
 
@@ -6117,7 +6143,7 @@ msgstr "Eroare de respingere a notificărilor push: {error}"
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr "Nu se poate decide între argumentele '{var_name1}' și '{var_name2}'"
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:680 zerver/views/typing.py:47
+#: zerver/lib/request.py:83 zerver/lib/streams.py:676 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
 msgstr "Argument '{var_name}' lipsă"
@@ -6136,44 +6162,40 @@ msgstr "Mesajul programat nu există"
 msgid "{service_name} account security"
 msgstr "{service_name} securitatea contului"
 
-#: zerver/lib/streams.py:222 zerver/views/streams.py:381
+#: zerver/lib/streams.py:219 zerver/views/streams.py:362
 msgid "A default channel cannot be private."
 msgstr ""
 
-#: zerver/lib/streams.py:225 zerver/views/streams.py:410
+#: zerver/lib/streams.py:222 zerver/views/streams.py:391
 msgid "Web-public channels are not enabled."
 msgstr ""
 
-#: zerver/lib/streams.py:582 zerver/lib/streams.py:590
+#: zerver/lib/streams.py:578 zerver/lib/streams.py:586
 msgid "You do not have permission to post in this channel."
 msgstr ""
 
-#: zerver/lib/streams.py:626 zerver/lib/streams.py:672
+#: zerver/lib/streams.py:622 zerver/lib/streams.py:668
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:768 zerver/lib/streams.py:803
-#: zerver/lib/streams.py:932 zerver/lib/streams.py:959
-#: zerver/lib/streams.py:1034 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:760 zerver/lib/streams.py:795
+#: zerver/lib/streams.py:924 zerver/lib/streams.py:951
+#: zerver/lib/streams.py:1017 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr ""
 
-#: zerver/lib/streams.py:1006
-msgid "You can only invite other Zephyr mirroring users to private channels."
-msgstr ""
-
-#: zerver/lib/streams.py:1017 zerver/lib/streams.py:1154
+#: zerver/lib/streams.py:1000 zerver/lib/streams.py:1137
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr ""
 
-#: zerver/lib/streams.py:1569
+#: zerver/lib/streams.py:1590
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:1606
+#: zerver/lib/streams.py:1660
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr ""
@@ -6376,44 +6398,44 @@ msgstr "Grup nevalid"
 msgid "Invalid system group name."
 msgstr ""
 
-#: zerver/lib/user_groups.py:354 zerver/lib/user_groups.py:450
+#: zerver/lib/user_groups.py:356 zerver/lib/user_groups.py:452
 #, python-brace-format
 msgid "Invalid user group ID: {group_id}"
 msgstr "ID-ul grupului de utilizatori invalid: {group_id}"
 
-#: zerver/lib/user_groups.py:385
+#: zerver/lib/user_groups.py:387
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr ""
 "setarea '{setting_name}' nu poate fi setată pentru grupul 'role:internet'."
 
-#: zerver/lib/user_groups.py:395
+#: zerver/lib/user_groups.py:397
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr ""
 "setarea '{setting_name}' nu poate fi setată pentru grupul 'role:nobody'."
 
-#: zerver/lib/user_groups.py:405
+#: zerver/lib/user_groups.py:407
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr ""
 "setarea '{setting_name}' nu poate fi setată pentru grupul 'role:everyone'."
 
-#: zerver/lib/user_groups.py:415
+#: zerver/lib/user_groups.py:417
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr "setarea '{setting_name}' nu poate fi setată la grupul '{group_name}'."
 
-#: zerver/lib/user_groups.py:524
+#: zerver/lib/user_groups.py:526
 msgid "User group name can't be empty!"
 msgstr "Numele grupului de utilizatori nu poate fi gol!"
 
-#: zerver/lib/user_groups.py:528
+#: zerver/lib/user_groups.py:530
 #, python-brace-format
 msgid "User group name cannot exceed {max_length} characters."
 msgstr "Numele grupului de utilizatori nu poate depăși {max_length} caractere."
 
-#: zerver/lib/user_groups.py:536
+#: zerver/lib/user_groups.py:538
 #, python-brace-format
 msgid "User group name cannot start with '{prefix}'."
 msgstr "Numele grupului de utilizatori nu poate începe cu \"{prefix}\"."
@@ -6423,8 +6445,10 @@ msgid "Name too long!"
 msgstr "Nume prea lung!"
 
 #: zerver/lib/users.py:62
-msgid "Name too short!"
-msgstr "Nume prea scurt!"
+#, fuzzy
+#| msgid "Message must not be empty"
+msgid "Name must not be empty!"
+msgstr "Mesajul nu trebuie să fie gol"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -6485,7 +6509,7 @@ msgstr "Nu există un astfel de bot"
 
 #: zerver/lib/users.py:293 zerver/lib/users.py:324 zerver/lib/users.py:341
 #: zerver/lib/users.py:420 zerver/lib/users.py:446 zerver/lib/users.py:468
-#: zerver/views/presence.py:41
+#: zerver/views/presence.py:40
 msgid "No such user"
 msgstr "Nu există un astfel de utilizator"
 
@@ -6613,16 +6637,16 @@ msgstr "În zcommand ar trebui să existe un slash la început."
 msgid "No such command: {command}"
 msgstr "Nu există o astfel de comandă: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:745
+#: zerver/lib/zulip_update_announcements.py:766
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:469
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "Eroare CSRF: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:643
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "Configurarea greșită a proxy-ului invers: {proxy_reason}"
@@ -6670,7 +6694,7 @@ msgstr "Cont extern"
 msgid "Pronouns"
 msgstr "Pronume"
 
-#: zerver/models/groups.py:22 zerver/models/users.py:318
+#: zerver/models/groups.py:22 zerver/models/users.py:316
 msgid "Nobody"
 msgstr "Nimeni"
 
@@ -6711,15 +6735,15 @@ msgid "Group %(name)r in linkifier pattern is not present in URL template."
 msgstr ""
 "Grupul %(name)r din modelul de linkifier nu este prezent în șablonul URL."
 
-#: zerver/models/messages.py:381
+#: zerver/models/messages.py:380
 msgid "Unicode emoji"
 msgstr "Emoji unicode"
 
-#: zerver/models/messages.py:382
+#: zerver/models/messages.py:381
 msgid "Custom emoji"
 msgstr "Emoji personalizat"
 
-#: zerver/models/messages.py:383
+#: zerver/models/messages.py:382
 msgid "Zulip extra emoji"
 msgstr "Emoji extra Zulip"
 
@@ -6824,59 +6848,55 @@ msgstr "Istorie privată, comună"
 msgid "Private, protected history"
 msgstr "Istorie privată, protejată"
 
-#: zerver/models/streams.py:87
-msgid "Public, protected history"
-msgstr "Istorie publică, protejată"
-
-#: zerver/models/users.py:314
+#: zerver/models/users.py:312
 msgid "Admins, moderators, members and guests"
 msgstr "Administratori, moderatori, membri și invitați"
 
-#: zerver/models/users.py:315
+#: zerver/models/users.py:313
 msgid "Admins, moderators and members"
 msgstr "Administratori, moderatori și membri"
 
-#: zerver/models/users.py:316
+#: zerver/models/users.py:314
 msgid "Admins and moderators"
 msgstr "Administratori și moderatori"
 
-#: zerver/models/users.py:317
+#: zerver/models/users.py:315
 msgid "Admins only"
 msgstr "Administratori doar"
 
-#: zerver/models/users.py:519
+#: zerver/models/users.py:516
 msgid "Unknown user"
 msgstr "Utilizator necunoscut"
 
-#: zerver/models/users.py:685
+#: zerver/models/users.py:683
 msgid "Organization owner"
 msgstr "Proprietarul organizaţiei"
 
-#: zerver/models/users.py:686
+#: zerver/models/users.py:684
 msgid "Organization administrator"
 msgstr "Administratorul organizației"
 
-#: zerver/models/users.py:687
+#: zerver/models/users.py:685
 msgid "Moderator"
 msgstr "Moderator"
 
-#: zerver/models/users.py:688
+#: zerver/models/users.py:686
 msgid "Member"
 msgstr "Membru"
 
-#: zerver/models/users.py:689
+#: zerver/models/users.py:687
 msgid "Guest"
 msgstr "Vizitator"
 
-#: zerver/signals.py:101
+#: zerver/signals.py:98
 msgid "Unknown IP address"
 msgstr "Adresă IP necunoscută"
 
-#: zerver/signals.py:102
+#: zerver/signals.py:99
 msgid "an unknown operating system"
 msgstr "un sistem de operare necunoscut"
 
-#: zerver/signals.py:103
+#: zerver/signals.py:100
 msgid "An unknown browser"
 msgstr "Un browser necunoscut"
 
@@ -7088,21 +7108,17 @@ msgstr "Este necesar un link de creare a organizației"
 msgid "Message reporting is not enabled in this organization."
 msgstr "Mirroring Zephyr nu este permis în această organizație"
 
-#: zerver/views/message_send.py:215
+#: zerver/views/message_send.py:189
 msgid "Missing sender"
 msgstr "Lipseste expeditorul"
 
-#: zerver/views/message_send.py:222
+#: zerver/views/message_send.py:196
 msgid "Mirroring not allowed with recipient user IDs"
 msgstr "Mirroring nu este permis cu ID-urile de utilizator destinatar"
 
-#: zerver/views/message_send.py:234 zerver/views/message_send.py:241
+#: zerver/views/message_send.py:208 zerver/views/message_send.py:213
 msgid "Invalid mirrored message"
 msgstr "Mesaj mirrored nevalid"
-
-#: zerver/views/message_send.py:237
-msgid "Zephyr mirroring is not allowed in this organization"
-msgstr "Mirroring Zephyr nu este permis în această organizație"
 
 #: zerver/views/message_summary.py:28
 msgid "AI features are not enabled on this server."
@@ -7128,18 +7144,18 @@ msgstr "Utilizator deja dezactivat"
 msgid "User is not muted"
 msgstr "Utilizatorul nu este dezactivat"
 
-#: zerver/views/navigation_views.py:58 zerver/views/navigation_views.py:90
+#: zerver/views/navigation_views.py:59 zerver/views/navigation_views.py:91
 msgid "Built-in views cannot have a custom name."
 msgstr ""
 
-#: zerver/views/navigation_views.py:61
+#: zerver/views/navigation_views.py:62
 #, fuzzy
 #| msgid "{hostname} is not a valid hostname"
 msgid "Custom views must have a valid name."
 msgstr "{hostname} nu este un nume de gazdă valid"
 
-#: zerver/views/navigation_views.py:64 zerver/views/navigation_views.py:66
-#: zerver/views/navigation_views.py:92
+#: zerver/views/navigation_views.py:65 zerver/views/navigation_views.py:67
+#: zerver/views/navigation_views.py:93
 #, fuzzy
 #| msgid "Reaction already exists."
 msgid "Navigation view already exists."
@@ -7158,27 +7174,27 @@ msgid ""
 "later. Is this a good time?\n"
 msgstr ""
 
-#: zerver/views/presence.py:48
+#: zerver/views/presence.py:47
 msgid "Presence is not supported for bot users."
 msgstr "Presence nu este suportat pentru utilizatorii boți."
 
-#: zerver/views/presence.py:58
+#: zerver/views/presence.py:57
 #, python-brace-format
 msgid "No presence data for {user_id_or_email}"
 msgstr "Nu există date de prezență pentru {user_id_or_email}"
 
-#: zerver/views/presence.py:101
+#: zerver/views/presence.py:100
 msgid "Client did not pass any new values."
 msgstr "Clientul nu a trecut nici o valoare nouă."
 
-#: zerver/views/presence.py:124
+#: zerver/views/presence.py:123
 msgid ""
 "Client must pass emoji_name if they pass either emoji_code or reaction_type."
 msgstr ""
 "Clientul trebuie să transmită emoji_name dacă transmite fie emoji_code, fie "
 "reaction_type."
 
-#: zerver/views/presence.py:195
+#: zerver/views/presence.py:194
 #, python-brace-format
 msgid "Invalid status: {status}"
 msgstr "Stare invalidă: {status}"
@@ -7327,43 +7343,43 @@ msgstr "Trebuie să încărcați exact un singur logo."
 msgid "Invalid playground"
 msgstr "Loc de joacă nevalid"
 
-#: zerver/views/registration.py:303
+#: zerver/views/registration.py:302
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
-#: zerver/views/registration.py:1076
+#: zerver/views/registration.py:1049
 #, fuzzy
 #| msgid "User not authenticated"
 msgid "Unauthenticated"
 msgstr "Utilizatorul nu este autentificat"
 
-#: zerver/views/registration.py:1087
+#: zerver/views/registration.py:1060
 msgid "Converting Slack data… This may take a while."
 msgstr ""
 
-#: zerver/views/registration.py:1107
+#: zerver/views/registration.py:1080
 #, fuzzy
 #| msgid "Direct messages"
 msgid "Importing messages…"
 msgstr "Mesaje directe"
 
-#: zerver/views/registration.py:1110
+#: zerver/views/registration.py:1083
 msgid "Importing attachment data…"
 msgstr ""
 
-#: zerver/views/registration.py:1113
+#: zerver/views/registration.py:1086
 msgid "Importing converted Slack data…"
 msgstr ""
 
-#: zerver/views/registration.py:1119
+#: zerver/views/registration.py:1092
 msgid "Finalizing import…"
 msgstr ""
 
-#: zerver/views/registration.py:1122
+#: zerver/views/registration.py:1095
 msgid "Done!"
 msgstr ""
 
-#: zerver/views/registration.py:1150
+#: zerver/views/registration.py:1123
 msgid "No users matching provided email."
 msgstr ""
 
@@ -7383,100 +7399,100 @@ msgstr "Format de cerere nevalabil"
 msgid "Invalid DSN"
 msgstr "DSN invalid"
 
-#: zerver/views/streams.py:185
+#: zerver/views/streams.py:174
 msgid "Private channels cannot be made default."
 msgstr ""
 
-#: zerver/views/streams.py:219
+#: zerver/views/streams.py:208
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr "Trebuie să treci \"new_description\" sau \"new_group_name\"."
 
-#: zerver/views/streams.py:250
+#: zerver/views/streams.py:239
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 "Valoare nevalidă pentru \"op\". Specifică unul din \"add\" sau \"remove\"."
 
-#: zerver/views/streams.py:365 zerver/views/streams.py:369
-#: zerver/views/streams.py:377
+#: zerver/views/streams.py:350 zerver/views/streams.py:354
+#: zerver/views/streams.py:358
 msgid "Invalid parameters"
 msgstr "Parametri Incorecţi"
 
-#: zerver/views/streams.py:393 zerver/views/streams.py:507
+#: zerver/views/streams.py:374 zerver/views/streams.py:488
 msgid "Channel content access is required."
 msgstr ""
 
-#: zerver/views/streams.py:463
+#: zerver/views/streams.py:444
 msgid "Channel already has that name."
 msgstr ""
 
-#: zerver/views/streams.py:576 zerver/views/user_groups.py:511
+#: zerver/views/streams.py:557 zerver/views/user_groups.py:511
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Nimic de făcut. Specifică cel puțin un \"adaugă\" sau \"șterge\"."
 
-#: zerver/views/streams.py:653
+#: zerver/views/streams.py:634
 #, fuzzy, python-brace-format
 #| msgid "{user_full_name} added you to the group {group_name}."
 msgid "{user_full_name} subscribed you to {channel_name}."
 msgstr "{user_full_name} te-a adăugat la grupul {group_name}."
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:640
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr ""
 
-#: zerver/views/streams.py:969
+#: zerver/views/streams.py:873
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
 msgstr ""
 
-#: zerver/views/streams.py:1105
+#: zerver/views/streams.py:1006
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
 msgstr ""
 
-#: zerver/views/streams.py:1107
+#: zerver/views/streams.py:1008
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
 msgstr ""
 
-#: zerver/views/streams.py:1108
+#: zerver/views/streams.py:1009
 msgid "new channels"
 msgstr ""
 
-#: zerver/views/streams.py:1156
+#: zerver/views/streams.py:1055
 #, python-brace-format
 msgid "**Web-public** channel created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1160
+#: zerver/views/streams.py:1059
 #, python-brace-format
 msgid "**Public** channel created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1164
+#: zerver/views/streams.py:1063
 #, python-brace-format
 msgid ""
 "**Private, shared history** channel created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:1168
+#: zerver/views/streams.py:1067
 #, python-brace-format
 msgid ""
 "**Private, protected history** channel created by {user_name}. **Description:"
 "**"
 msgstr ""
 
-#: zerver/views/streams.py:1403
+#: zerver/views/streams.py:1302
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr ""
 
-#: zerver/views/streams.py:1406
+#: zerver/views/streams.py:1305
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Proprietate de abonament necunoscută: {property}"
 
-#: zerver/views/streams.py:1454
+#: zerver/views/streams.py:1353
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -7753,22 +7769,6 @@ msgstr "Eroare la autentificare pe serverul BigBlueButton."
 msgid "BigBlueButton server returned an unexpected error."
 msgstr "Serverul BigBlueButton a returnat o eroare neașteptată."
 
-#: zerver/views/zephyr.py:34
-msgid "Could not find Kerberos credential"
-msgstr "Nu găsesc acreditarea Kerberos"
-
-#: zerver/views/zephyr.py:36
-msgid "Webathena login not enabled"
-msgstr "Autentificare webathena dezactivat"
-
-#: zerver/views/zephyr.py:57
-msgid "Invalid Kerberos cache"
-msgstr "Cache Kerberos nevalid"
-
-#: zerver/views/zephyr.py:61 zerver/views/zephyr.py:75
-msgid "We were unable to set up mirroring for you"
-msgstr "Nu am reușit să configurăm oglindirea pentru dvs"
-
 #: zerver/webhooks/circleci/view.py:86
 msgid "Projects using this version control system provider aren't supported"
 msgstr ""
@@ -7851,101 +7851,106 @@ msgid "Must validate with valid Zulip server API key"
 msgstr "Trebuie validat cu o cheie API validă Zulip"
 
 #. error
-#: zilencer/views.py:121 zilencer/views.py:123
+#: zilencer/views.py:122 zilencer/views.py:124
 msgid "Invalid UUID"
 msgstr "UUID nevalid"
 
 #. error
-#: zilencer/views.py:128
+#: zilencer/views.py:129
 msgid "Invalid token type"
 msgstr "Tip de token nevalid"
 
-#: zilencer/views.py:165
+#: zilencer/views.py:166
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
 msgstr ""
 
-#: zilencer/views.py:172
+#: zilencer/views.py:173
 #, python-brace-format
 msgid "{hostname} is not a valid hostname"
 msgstr "{hostname} nu este un nume de gazdă valid"
 
-#: zilencer/views.py:182
+#: zilencer/views.py:183
 #, python-brace-format
 msgid "{hostname} not yet registered"
 msgstr ""
 
-#: zilencer/views.py:234
-msgid "Invalid email address."
+#: zilencer/views.py:204
+#, python-brace-format
+msgid "Invalid server administrator email address: {email_reason}"
 msgstr ""
 
-#: zilencer/views.py:250
+#: zilencer/views.py:248
+msgid "example.com is not a valid email domain."
+msgstr ""
+
+#: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
 msgid "{domain} is invalid because it does not have any MX records"
 msgstr ""
 
-#: zilencer/views.py:255
+#: zilencer/views.py:278
 #, python-brace-format
 msgid "{domain} does not exist"
 msgstr ""
 
-#: zilencer/views.py:357
+#: zilencer/views.py:381
 #, python-brace-format
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please "
 "try again later or reach out to {support_email} for assistance."
 msgstr ""
 
-#: zilencer/views.py:365
+#: zilencer/views.py:389
 msgid "Registration not found for this hostname"
 msgstr ""
 
-#: zilencer/views.py:377
+#: zilencer/views.py:401
 msgid "The host reported it has no verification secret."
 msgstr ""
 
-#: zilencer/views.py:379
+#: zilencer/views.py:403
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
 msgstr ""
 
-#: zilencer/views.py:469
+#: zilencer/views.py:493
 msgid "Missing ios_app_id"
 msgstr "Lipsește ios_app_id"
 
-#: zilencer/views.py:472
+#: zilencer/views.py:496
 msgid "Missing user_id or user_uuid"
 msgstr "Lipsă user_id sau user_uuid"
 
-#: zilencer/views.py:855
+#: zilencer/views.py:879
 #, python-brace-format
 msgid ""
 "Your plan doesn't allow sending push notifications. Reason provided by the "
 "server: {reason}"
 msgstr ""
 
-#: zilencer/views.py:903
+#: zilencer/views.py:927
 msgid "Your plan doesn't allow sending push notifications."
 msgstr ""
 
-#: zilencer/views.py:1118
+#: zilencer/views.py:1142
 #, python-brace-format
 msgid "Invalid property {property}"
 msgstr "Proprietate invalidă {property}"
 
-#: zilencer/views.py:1121
+#: zilencer/views.py:1145
 msgid "Invalid event type."
 msgstr ""
 
-#: zilencer/views.py:1128
+#: zilencer/views.py:1152
 msgid "Data is out of order."
 msgstr "Datele sunt în dezordine."
 
-#: zilencer/views.py:1233
+#: zilencer/views.py:1257
 msgid "Duplicate registration detected."
 msgstr "Înregistrare duplicată detectată."
 
-#: zilencer/views.py:1651
+#: zilencer/views.py:1675
 msgid "Malformed audit log data"
 msgstr "Date de jurnal de audit malformate"
 
@@ -7953,17 +7958,38 @@ msgstr "Date de jurnal de audit malformate"
 msgid "You need to reset your password."
 msgstr "Trebuie să vă resetați parola."
 
-#: zproject/backends.py:2821
+#: zproject/backends.py:2827
 msgid "Missing id_token parameter"
 msgstr "Lipsește parametrul id_token"
 
-#: zproject/backends.py:3545
+#: zproject/backends.py:3551
 msgid "Invalid OTP"
 msgstr "OTP nevalid"
 
-#: zproject/backends.py:3548
+#: zproject/backends.py:3554
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Nu pot folosi mobile_flow_otp și desktop_flow_otp împreună."
+
+#~ msgid "Name too short!"
+#~ msgstr "Nume prea scurt!"
+
+#~ msgid "Public, protected history"
+#~ msgstr "Istorie publică, protejată"
+
+#~ msgid "Zephyr mirroring is not allowed in this organization"
+#~ msgstr "Mirroring Zephyr nu este permis în această organizație"
+
+#~ msgid "Could not find Kerberos credential"
+#~ msgstr "Nu găsesc acreditarea Kerberos"
+
+#~ msgid "Webathena login not enabled"
+#~ msgstr "Autentificare webathena dezactivat"
+
+#~ msgid "Invalid Kerberos cache"
+#~ msgstr "Cache Kerberos nevalid"
+
+#~ msgid "We were unable to set up mirroring for you"
+#~ msgstr "Nu am reușit să configurăm oglindirea pentru dvs"
 
 #~ msgid "Convert demo organization before upgrading."
 #~ msgstr "Convertiți organizația demo înainte de a face upgrade."

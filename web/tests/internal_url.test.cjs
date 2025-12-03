@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const internal_url = zrequire("../shared/src/internal_url");
+const internal_url = zrequire("internal_url");
 
 run_test("test encodeHashComponent", () => {
     const decoded = "https://www.zulipexample.com";

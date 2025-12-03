@@ -23,9 +23,13 @@ import * as util from "./util.ts";
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
 export function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
-    if (reference instanceof HTMLElement && reference.dataset.tooltipTemplateId !== undefined) {
+    let template_id;
+    if (
+        reference instanceof HTMLElement &&
+        (template_id = reference.getAttribute("data-tooltip-template-id")) !== null
+    ) {
         const template = document.querySelector<HTMLTemplateElement>(
-            `template#${CSS.escape(reference.dataset.tooltipTemplateId)}`,
+            `template#${CSS.escape(template_id)}`,
         );
         if (template !== null) {
             const fragment = template.content.cloneNode(true);
@@ -91,6 +95,8 @@ tippy.default.setDefaultProps({
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
     content: get_tooltip_content,
 });
+
+export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
 
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
@@ -184,17 +190,17 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#subscription_overlay .subscription_settings .sub-stream-name",
+        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "top",
         onShow(instance) {
-            const stream_name_element = instance.reference;
-            assert(stream_name_element instanceof HTMLElement);
-            // Only show tooltip if the stream name is truncated.
+            const name_element = instance.reference;
+            assert(name_element instanceof HTMLElement);
+            // Only show tooltip if the stream or group name is truncated.
             // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
             // for more details.
-            if (stream_name_element.offsetWidth >= stream_name_element.scrollWidth) {
+            if (name_element.offsetWidth >= name_element.scrollWidth) {
                 return false;
             }
 
@@ -305,7 +311,6 @@ export function initialize(): void {
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",
-            "#copy_generated_invite_link",
             ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
@@ -420,17 +425,6 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#deactivate_realm_button_container.disabled_setting_tooltip",
-        content: $t({
-            defaultMessage: "Only organization owners may deactivate an organization.",
-        }),
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
         target: ".settings-radio-input-parent.default_stream_private_tooltip",
         content: $t({
             defaultMessage: "Default channels for new users cannot be made private.",
@@ -443,7 +437,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "[data-tab-key='not-subscribed'].disabled",
+            "[data-tab-key='available'].disabled",
             "[data-tab-key='all-streams'].disabled",
         ].join(","),
         content: $t({
@@ -472,6 +466,21 @@ export function initialize(): void {
             defaultMessage:
                 "You do not have permissions to create invite links in this organization.",
         }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#copy_generated_invite_link",
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage: "Copy link",
+                }),
+            );
+        },
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
@@ -614,7 +623,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".status-emoji-name",
+        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
         appendTo: () => document.body,
@@ -629,6 +638,26 @@ export function initialize(): void {
 
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".typeahead-item .status-emoji-name",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for emojis inside typeahead to
+            separately handle emoji instance.
+        */
+
+        onShow(instance) {
+            typeahead_status_emoji_tooltip = instance;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            typeahead_status_emoji_tooltip = undefined;
         },
     });
 
@@ -796,8 +825,8 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".folder_id-dropdown-list-container .dropdown-list-edit, .new_channel_folder_id-dropdown-list-container .dropdown-list-edit",
-        content: $t({defaultMessage: "Edit folder"}),
+        target: ".folder_id-dropdown-list-container .dropdown-list-manage-folder, .new_channel_folder_id-dropdown-list-container .dropdown-list-manage-folder",
+        content: $t({defaultMessage: "Manage folder"}),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {

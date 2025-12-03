@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const fenced_code = zrequire("../shared/src/fenced_code");
+const fenced_code = zrequire("fenced_code");
 
 // Check the default behavior of fenced code blocks
 // works properly before Markdown is initialized.

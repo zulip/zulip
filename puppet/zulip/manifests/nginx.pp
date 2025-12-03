@@ -1,4 +1,5 @@
 class zulip::nginx {
+  include zulip::certbot
   $web_packages = [
     # Needed to run nginx with the modules we use
     $zulip::common::nginx,
@@ -40,9 +41,9 @@ class zulip::nginx {
   }
 
   if $facts['os']['family'] == 'Debian' {
-      $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
+    $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
   } else {
-      $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
+    $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
   }
   $worker_connections = zulipconf('application_server', 'nginx_worker_connections', 10000)
   file { '/etc/nginx/nginx.conf':
@@ -96,9 +97,6 @@ class zulip::nginx {
     group   => 'root',
     mode    => '0644',
     content => template('zulip/logrotate/nginx.template.erb'),
-  }
-  package { 'certbot':
-    ensure => installed,
   }
   file { ['/var/lib/zulip', '/var/lib/zulip/certbot-webroot']:
     ensure => directory,

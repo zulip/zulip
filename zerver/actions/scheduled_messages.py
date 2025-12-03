@@ -45,7 +45,6 @@ def check_schedule_message(
     deliver_at: datetime,
     realm: Realm | None = None,
     *,
-    forwarder_user_profile: UserProfile | None = None,
     read_by_sender: bool | None = None,
     skip_events: bool = False,
 ) -> int:
@@ -56,7 +55,6 @@ def check_schedule_message(
         addressee,
         message_content,
         realm=realm,
-        forwarder_user_profile=forwarder_user_profile,
     )
     send_request.deliver_at = deliver_at
 
@@ -236,7 +234,6 @@ def edit_scheduled_message(
             addressee,
             updated_content,
             realm=realm,
-            forwarder_user_profile=sender,
         )
 
     if recipient_type_name is not None or message_to is not None:
@@ -315,11 +312,13 @@ def send_reminder(scheduled_message: ScheduledMessage) -> None:
         # If we no longer have access to the message, we send the reminder with the
         # last known message position and content.
         content = scheduled_message.content
-    # Reminder messages are always sent from the notification bot.
+    # Reminder messages are always sent from the notification bot. We use acting_user
+    # to have appropriate permissions for the messages.
     message_id = internal_send_private_message(
         get_system_bot(settings.NOTIFICATION_BOT, scheduled_message.realm.id),
         current_user,
         content,
+        acting_user=current_user,
     )
     scheduled_message.delivered_message_id = message_id
     scheduled_message.delivered = True

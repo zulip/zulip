@@ -1,4 +1,3 @@
-import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
@@ -36,7 +35,9 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("channel")) {
-        const sub = stream_data.get_sub_by_id_string(filter.operands("channel")[0]!);
+        const sub = stream_data.get_sub_by_id_string(
+            filter.terms_with_operator("channel")[0]!.operand,
+        );
         if (!sub) {
             // The stream is not set because it does not currently
             // exist, or it is a private stream and the user is not
@@ -44,14 +45,14 @@ export function compute_narrow_title(filter?: Filter): string {
             return filter_title;
         }
         if (filter.has_operator("topic")) {
-            const topic_name = filter.operands("topic")[0];
+            const topic_name = filter.terms_with_operator("topic")[0]!.operand;
             return "#" + filter_title + " > " + topic_name;
         }
         return "#" + filter_title;
     }
 
     if (filter.has_operator("dm")) {
-        const emails = filter.operands("dm")[0]!;
+        const emails = filter.terms_with_operator("dm")[0]!.operand;
         const user_ids = people.emails_strings_to_user_ids_string(emails);
 
         if (user_ids !== undefined) {
@@ -59,29 +60,6 @@ export function compute_narrow_title(filter?: Filter): string {
         }
         if (emails.includes(",")) {
             return $t({defaultMessage: "Invalid users"});
-        }
-        return $t({defaultMessage: "Invalid user"});
-    }
-
-    if (
-        _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
-        filter.operands("sender")[0] === people.my_current_email()
-    ) {
-        return $t({defaultMessage: "Reactions"});
-    }
-
-    if (filter.has_operator("sender")) {
-        const user = people.get_by_email(filter.operands("sender")[0]!);
-        if (user) {
-            if (people.is_my_user_id(user.user_id)) {
-                return $t({defaultMessage: "Messages sent by you"});
-            }
-            return $t(
-                {defaultMessage: "Messages sent by {sender}"},
-                {
-                    sender: user.full_name,
-                },
-            );
         }
         return $t({defaultMessage: "Invalid user"});
     }

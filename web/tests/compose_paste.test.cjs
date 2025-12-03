@@ -16,11 +16,11 @@ const compose_paste = zrequire("compose_paste");
 const stream_data = zrequire("stream_data");
 
 set_global("document", {});
-stream_data.add_sub({
+stream_data.add_sub_for_tests({
     stream_id: 4,
     name: "Rome",
 });
-stream_data.add_sub({
+stream_data.add_sub_for_tests({
     stream_id: 5,
     name: "Romeo`s lair",
 });
@@ -149,18 +149,99 @@ run_test("paste_handler_converter", () => {
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 6,
-            val: () => "e.g. `",
+            val() {
+                return "e.g. `";
+            },
+            0: {
+                selectionStart: 6,
+                value: "e.g. `",
+            },
+            length: 1,
         }),
         "single line",
     );
 
-    // Yes code formatting if the given text area has a backtick but not at the cursor position
+    // No code formatting if the given text area has a backtick at the cursor position
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 0,
+            val() {
+                return "`e.g. ` ```hi`` ``";
+            },
+            0: {
+                selectionStart: 19,
+                value: "`e.g. ` ```hi`` ``",
+            },
+            length: 1,
+        }),
+        "single line",
+    );
+
+    // No code formatting if the given text area has a opening backtick before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "e.g. ` ";
+            },
+            0: {
+                selectionStart: 7,
+                value: "e.g. ` ",
+            },
+            length: 1,
+        }),
+        "single line",
+    );
+
+    // Yes code formatting if the given text area does not have a backtick at the cursor position.
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "";
+            },
+            0: {
+                selectionStart: 0,
+                value: "",
+            },
+            length: 1,
+        }),
+        "`single line`",
+    );
+
+    // Yes code formatting if the given text area closes the code block before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "` e.g. ` ";
+            },
+            0: {
+                selectionStart: 9,
+                value: "` e.g. ` ",
+            },
+            length: 1,
+        }),
+        "`single line`",
+    );
+
+    // Yes code formatting if the given text area closes the code block before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "``` e.g. ``` ``hi`` ";
+            },
+            0: {
+                selectionStart: 20,
+                value: "``` e.g. ``` ``hi`` ",
+            },
+            length: 1,
         }),
         "`single line`",
     );
@@ -279,6 +360,12 @@ run_test("paste_handler_converter", () => {
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><style type="text/css"><!--td {border: 1px solid #cccccc;}br {mso-data-placement:same-cell;}--></style><span style="font-size:10pt;font-family:Arial;font-style:normal;text-align:right;" data-sheets-value="{&quot;1&quot;:3,&quot;3&quot;:123}" data-sheets-userformat="{&quot;2&quot;:769,&quot;3&quot;:{&quot;1&quot;:0},&quot;11&quot;:3,&quot;12&quot;:0}">123</span>';
     assert.equal(compose_paste.paste_handler_converter(input), "123");
 
+    // Pasting a long, visually line-wrapped single-line message from Firefox should not insert extraneous newlines.
+    input = `<html><body>\n<!--StartFragment--><div class="message_content rendered_markdown">\n<p>At some point recently, Zulip changed such that copying a \nlong message includes hard newlines, rather than putting things all on \none line when they were on one line in the original message.</p>\n</div><!--EndFragment-->\n</body>\n</html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "At some point recently, Zulip changed such that copying a long message includes hard newlines, rather than putting things all on one line when they were on one line in the original message.",
+    );
     // Pasting from Excel
     input = `<html xmlns:v="urn:schemas-microsoft-com:vml"\nxmlns:o="urn:schemas-microsoft-com:office:office"\nxmlns:x="urn:schemas-microsoft-com:office:excel"\nxmlns="http://www.w3.org/TR/REC-html40">\n<head>\n<meta http-equiv=Content-Type content="text/html; charset=utf-8">\n<meta name=ProgId content=Excel.Sheet>\n<meta name=Generator content="Microsoft Excel 15">\n<link id=Main-File rel=Main-File\nhref="file:///C:/Users/ADMINI~1/AppData/Local/Temp/msohtmlclip1/01/clip.htm">\n<link rel=File-List\nhref="file:///C:/Users/ADMINI~1/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">\n<style>\n<!--table\n    {mso-displayed-decimal-separator:"\\.";\n    mso-displayed-thousand-separator:"\\,";}\n@page\n    {margin:.75in .7in .75in .7in;\n    mso-header-margin:.3in;\n    mso-footer-margin:.3in;}\ntr\n    {mso-height-source:auto;}\ncol\n    {mso-width-source:auto;}\nbr\n    {mso-data-placement:same-cell;}\ntd\n    {padding-top:1px;\n    padding-right:1px;\n    padding-left:1px;\n    mso-ignore:padding;\n    color:black;\n    font-size:11.0pt;\n    font-weight:400;\n    font-style:normal;\n    text-decoration:none;\n    font-family:Calibri, sans-serif;\n    mso-font-charset:0;\n    mso-number-format:General;\n    text-align:general;\n    vertical-align:bottom;\n    border:none;\n    mso-background-source:auto;\n    mso-pattern:auto;\n    mso-protection:locked visible;\n    white-space:nowrap;\n    mso-rotate:0;}\n.xl65\n    {mso-number-format:"_\\(\\0022$\\0022* \\#\\,\\#\\#0\\.00_\\)\\;_\\(\\0022$\\0022* \\\\\\(\\#\\,\\#\\#0\\.00\\\\\\)\\;_\\(\\0022$\\0022* \\0022-\\0022??_\\)\\;_\\(\\@_\\)";}\n-->\n</style>\n</head>\n<body link="#0563C1" vlink="#954F72">\n<table border=0 cellpadding=0 cellspacing=0 width=88 style='border-collapse:\n collapse;width:66pt'>\n<!--StartFragment-->\n <col width=88 style='mso-width-source:userset;mso-width-alt:3218;width:66pt'>\n <tr height=20 style='height:15.0pt'>\n  <td height=20 class=xl65 width=88 style='height:15.0pt;width:66pt;font-size:\n  11.0pt;color:black;font-weight:400;text-decoration:none;text-underline-style:\n  none;text-line-through:none;font-family:Calibri, sans-serif;border-top:.5pt solid #5B9BD5;\n  border-right:none;border-bottom:none;border-left:none'><span\n  style='mso-spacerun:yes'> </span>$<span style='mso-spacerun:yes'>\n  </span>20.00 </td>\n </tr>\n <tr height=20 style='height:15.0pt'>\n  <td height=20 class=xl65 style='height:15.0pt;font-size:11.0pt;color:black;\n  font-weight:400;text-decoration:none;text-underline-style:none;text-line-through:\n  none;font-family:Calibri, sans-serif;border-top:.5pt solid #5B9BD5;\n  border-right:none;border-bottom:none;border-left:none'><span\n  style='mso-spacerun:yes'> </span>$<span\n  style='mso-spacerun:yes'>               </span>7.00 </td>\n </tr>\n<!--EndFragment-->\n</table>\n</body>\n</html>`;
 
@@ -306,6 +393,11 @@ run_test("paste_handler_converter", () => {
     // detected as a LibreOffice Calc table.
     // See https://github.com/zulip/zulip/pull/34752/#discussion_r2113598064
     input = `<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"/><title></title><meta name="generator" content="LibreOffice 25.2.3.2 (Windows)"/><style type="text/css">@page { size: 8.5in 11in; margin: 0.79in }p { line-height: 115%; margin-bottom: 0.1in; background: transparent }</style></head><body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><table width="258" cellpadding="2" cellspacing="0"><col width="83"/><col width="81"/><col width="81"/><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Melgar</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">UnitedStates</font></p></td></tr><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Weiland</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">UnitedStates</font></p></td></tr><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Winward</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">GreatBritain</font></p></td></tr></table></body></html>`;
+    assert.ok(compose_paste.is_single_image(input));
+
+    // Copying an image and pasting it with `paste_html` containing other empty text nodes and
+    // comment nodes should still classify the `paste_html` as an image that needs to be uploaded.
+    input = `<html>\n<body>\n<!--StartFragment--><img src="http://zulip.zulipdev.com:9991/user_uploads/thumbnail/2/a0/wETeF-Yv2wmMM6289kO9VC0s/image.png/840x560.webp"/><!--EndFragment-->\n</body>\n</html>`;
     assert.ok(compose_paste.is_single_image(input));
 
     // Pasting from the mac terminal

@@ -120,6 +120,8 @@ SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[str, dict[str, dict[str, str | list[str | tupl
 SSO_APPEND_DOMAIN: str | None = None
 CUSTOM_HOME_NOT_LOGGED_IN: str | None = None
 
+VIDEO_ZOOM_API_URL: str = "https://api.zoom.us"
+VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"
 VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
@@ -172,9 +174,13 @@ LOCAL_UPLOADS_DIR: str | None = None
 LOCAL_AVATARS_DIR: str | None = None
 LOCAL_FILES_DIR: str | None = None
 MAX_FILE_UPLOAD_SIZE = 100
-# How many GB an organization on a paid plan can upload per user,
+# How many GB an organization on a cloud standard plan can upload per user,
 # on zulipchat.com.
-UPLOAD_QUOTA_PER_USER_GB = 5
+UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD = 5
+
+# How many GB an organization on a cloud plus plan can upload per user,
+# on zulipchat.com.
+UPLOAD_QUOTA_PER_USER_GB_FOR_PLUS = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL: str | None = "https://meet.jit.si"
@@ -266,11 +272,15 @@ DEFAULT_RATE_LIMITING_RULES = {
     "api_by_user": [
         # 200 requests per minute
         (60, 200),
+        # 2000 requests per hour
+        (3600, 2000),
     ],
     # Limits total number of unauthenticated API requests (primarily
     # used by the public access option). Since these are
-    # unauthenticated requests, each IP address is a separate bucket.
+    # unauthenticated requests, each IPv4 address is a separate bucket.
+    # For IPv6, one bucket is used for each /64 subnet.
     "api_by_ip": [
+        # 100 requests per minute.
         (60, 100),
     ],
     # Limits total requests to the Mobile Push Notifications Service
@@ -318,6 +328,7 @@ DEFAULT_RATE_LIMITING_RULES = {
     # sending of an email, restricting the number per IP address. This
     # is a general anti-spam measure.
     "sends_email_by_ip": [
+        # 5 emails per day.
         (86400, 5),
     ],
     # Limits access to uploaded files, in web-public contexts, done by
@@ -333,6 +344,13 @@ DEFAULT_RATE_LIMITING_RULES = {
     # remote billing system that trigger the sending of an email.
     "sends_email_by_remote_server": [
         # 10 emails per day
+        (86400, 10),
+    ],
+    # Limits how many demo organizations can be created per IP
+    # address. This is important to prevent abuse of the demo
+    # organization feature.
+    "demo_realm_creation_by_ip": [
+        # 10 demos per day
         (86400, 10),
     ],
 }
@@ -422,7 +440,7 @@ WEB_PUBLIC_STREAMS_ENABLED = False
 SYSTEM_ONLY_REALMS = {"zulip"}
 
 # Default deadline for demo organizations
-DEMO_ORG_DEADLINE_DAYS = 30
+DEMO_ORG_DEADLINE_DAYS: int | None = None
 
 # Alternate hostnames to serve particular realms on, in addition to
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),
@@ -508,10 +526,6 @@ ROOT_DOMAIN_LANDING_PAGE = False
 
 # Subdomain for serving endpoints to users from self-hosted deployments.
 SELF_HOSTING_MANAGEMENT_SUBDOMAIN: str | None = None
-
-# If using the Zephyr mirroring supervisord configuration, the
-# hostname to connect to in order to transfer credentials from webathena.
-PERSONAL_ZMIRROR_SERVER: str | None = None
 
 # When security-relevant links in emails expire.
 CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS = 1
@@ -745,3 +759,7 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 # Minimum number of subscribers in a channel for us to no longer
 # send full subscriber data to the client.
 MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
+
+# Whether to prefer direct message group over personal recipient
+# for 1:1 or self messages.
+PREFER_DIRECT_MESSAGE_GROUP = False

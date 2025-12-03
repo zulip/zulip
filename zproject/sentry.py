@@ -7,6 +7,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.tornado import TornadoIntegration
 from sentry_sdk.utils import capture_internal_exceptions
 
 from version import ZULIP_VERSION
@@ -73,15 +74,22 @@ def setup_sentry(dsn: str | None, environment: str) -> None:
     if os.path.exists(os.path.join(DEPLOY_ROOT, "sentry-release")):
         with open(os.path.join(DEPLOY_ROOT, "sentry-release")) as sentry_release_file:
             sentry_release = sentry_release_file.readline().strip()
+    integrations = [
+        RedisIntegration(),
+        SqlalchemyIntegration(),
+    ]
+    disabled_integrations = []
+    if settings.RUNNING_INSIDE_TORNADO:
+        integrations.append(TornadoIntegration())
+        disabled_integrations.append(DjangoIntegration())
+    else:
+        integrations.append(DjangoIntegration())
     sentry_sdk.init(
         dsn=dsn,
         environment=environment,
         release=sentry_release,
-        integrations=[
-            DjangoIntegration(),
-            RedisIntegration(),
-            SqlalchemyIntegration(),
-        ],
+        integrations=integrations,
+        disabled_integrations=disabled_integrations,
         before_send=add_context,
         # Increase possible max wait to send exceptions during
         # shutdown, from 2 to 10; potentially-large exceptions are of

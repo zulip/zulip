@@ -5,7 +5,6 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_confirm_edit_messages from "../templates/confirm_dialog/confirm_edit_messages.hbs";
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
@@ -35,7 +34,7 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as echo from "./echo.ts";
 import * as feedback_widget from "./feedback_widget.ts";
-import * as giphy_state from "./giphy_state.ts";
+import * as gif_state from "./gif_state.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -48,6 +47,7 @@ import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as resize from "./resize.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -141,7 +141,7 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
 }
 
 function is_widget_message(message: Message): boolean {
-    if (message.submessages && message.submessages.length > 0) {
+    if (message.submessages.length > 0) {
         return true;
     }
     return false;
@@ -552,7 +552,6 @@ function edit_message($row: JQuery, raw_content: string): void {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($row));
     assert(message !== undefined);
-    $row.find(".message_reactions").hide();
     condense.hide_message_length_toggle($row);
 
     // We potentially got to this function by clicking a button that implied the
@@ -579,7 +578,7 @@ function edit_message($row: JQuery, raw_content: string): void {
             is_editable,
             content: raw_content,
             file_upload_enabled,
-            giphy_enabled: giphy_state.is_giphy_enabled(),
+            giphy_enabled: gif_state.is_giphy_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
         }),
@@ -1079,7 +1078,6 @@ export function end_message_row_edit($row: JQuery): void {
             condense.show_message_condenser($row);
         }
     }
-    $row.find(".message_reactions").show();
 
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
@@ -1414,7 +1412,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             }
         },
     });
-    // The message will automatically get replaced via message_list.update_message.
+    // The message will automatically get replaced via message_events.update_messages.
 }
 
 export function maybe_show_edit($row: JQuery, id: number): void {

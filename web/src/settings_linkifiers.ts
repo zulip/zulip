@@ -133,23 +133,23 @@ function handle_linkifier_api_error(
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
     // dictionaries. This logic parses them.
-    if (errors.pattern !== undefined) {
+    if (errors["pattern"] !== undefined) {
         ui_report.error(
-            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.pattern[0]}),
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["pattern"][0]}),
             undefined,
             pattern_status,
         );
     }
-    if (errors.url_template !== undefined) {
+    if (errors["url_template"] !== undefined) {
         ui_report.error(
-            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.url_template[0]}),
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["url_template"][0]}),
             undefined,
             template_status,
         );
     }
-    if (errors.__all__ !== undefined) {
+    if (errors["__all__"] !== undefined) {
         ui_report.error(
-            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.__all__[0]}),
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["__all__"][0]}),
             undefined,
             linkifier_status,
         );

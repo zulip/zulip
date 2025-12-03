@@ -608,7 +608,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
@@ -625,7 +625,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(
@@ -638,7 +638,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(
@@ -764,7 +764,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
@@ -779,7 +779,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
@@ -790,7 +790,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
@@ -1244,8 +1244,8 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         )
 
     def _do_test(self, user_email: str) -> "TestHttpResponse":
-        data = {"password": initial_password(user_email)}
-        return self.client_post(r"/accounts/webathena_kerberos_login/", data)
+        data = {"status_text": "working"}
+        return self.client_post(r"/json/users/me/status", data)
 
 
 class TestPublicJsonViewDecorator(ZulipTestCase):

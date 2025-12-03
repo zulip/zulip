@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import {page_params} from "../base_page_params.ts";
-import * as util from "../util.ts";
 
 import type {UserOS} from "./tabbed-instructions.ts";
 import {detect_user_os} from "./tabbed-instructions.ts";
@@ -242,6 +241,13 @@ $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () 
     window.location.hash = $(this).attr("id")!;
 });
 
+$(document).on("click", ".nav-zulip-logo", (e) => {
+    if (document.querySelector(".portico-hello-page")) {
+        e.preventDefault();
+        window.scrollTo({top: 0, behavior: "smooth"});
+    }
+});
+
 $(document).on("click", ".pricing-tab", function () {
     const id = $(this).attr("id")!;
     const $pricing_wrapper = $(".portico-pricing");
@@ -277,7 +283,7 @@ $(document).on("click", ".comparison-tab", function (this: HTMLElement, _event: 
 
     const tab_label = z
         .enum(["tab-cloud", "tab-hosted", "tab-all"])
-        .parse(util.the($(this)).dataset.label);
+        .parse(this.getAttribute("data-label"));
     const plans_columns_count = plans_columns_counts[tab_label];
     const visible_plans_id = `showing-${tab_label}`;
 

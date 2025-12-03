@@ -1,7 +1,9 @@
+import dateutil.parser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
@@ -24,9 +26,9 @@ OLD_MESSAGE_TEMPLATE = "{alert_status}[{rule_name}]({rule_url})\n\n{alert_messag
 
 NEW_TOPIC_TEMPLATE = "[{alertname}]"
 
-START_TIME_TEMPLATE = "This alert was fired at <time:{start_time}>."
+START_TIME_TEMPLATE = "This alert was fired at {start_time}."
 
-END_TIME_TEMPLATE = "\n\nThis alert was resolved at <time:{end_time}>."
+END_TIME_TEMPLATE = "\n\nThis alert was resolved at {end_time}."
 
 MESSAGE_LABELS_TEMPLATE = "\n\nLabels:\n{label_information}\n"
 
@@ -45,6 +47,11 @@ LEGACY_EVENT_TYPES = ["ok", "pending", "alerting", "paused"]
 NEW_EVENT_TYPES = ["firing", "resolved"]
 
 ALL_EVENT_TYPES = LEGACY_EVENT_TYPES + NEW_EVENT_TYPES
+
+
+def get_global_time(dt_str: str) -> str:
+    dt = dateutil.parser.parse(dt_str)
+    return datetime_to_global_time(dt)
 
 
 @webhook_view("Grafana", all_event_types=ALL_EVENT_TYPES)
@@ -83,11 +90,13 @@ def api_grafana_webhook(
                     alertname=alert["fingerprint"].tame(check_string)
                 )
 
-            body += START_TIME_TEMPLATE.format(start_time=alert["startsAt"].tame(check_string))
+            body += START_TIME_TEMPLATE.format(
+                start_time=get_global_time(alert["startsAt"].tame(check_string))
+            )
 
             end_time = alert["endsAt"].tame(check_string)
             if end_time != "0001-01-01T00:00:00Z":
-                body += END_TIME_TEMPLATE.format(end_time=end_time)
+                body += END_TIME_TEMPLATE.format(end_time=get_global_time(end_time))
 
             if alert["labels"]:
                 label_information = ""

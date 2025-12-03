@@ -49,10 +49,10 @@ email addresses and send notifications.
 
 For sending outgoing email from your Zulip server, we highly recommend
 using a "transactional email" service like
-[Mailgun](https://documentation.mailgun.com/en/latest/quickstart-sending.html#send-via-smtp),
-[SendGrid](https://sendgrid.com/docs/API_Reference/SMTP_API/integrating_with_the_smtp_api.html),
+[Mailgun](https://documentation.mailgun.com/docs/mailgun/user-manual/sending-messages/send-smtp),
+[SendGrid](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/integrating-with-the-smtp-api),
 or, for AWS users,
-[Amazon SES](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html).
+[Amazon SES](https://docs.aws.amazon.com/ses/latest/dg/send-email-smtp.html).
 These services are designed to send email from servers, and are by far
 the easiest way to get outgoing email working reliably (Mailgun has
 the best documentation).

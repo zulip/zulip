@@ -752,6 +752,11 @@ class PersonIsActive(BaseModel):
     is_active: bool
 
 
+class PersonIsImportedStub(BaseModel):
+    user_id: int
+    is_imported_stub: bool
+
+
 class EventRealmUserUpdate(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
@@ -765,6 +770,7 @@ class EventRealmUserUpdate(BaseEvent):
         | PersonRole
         | PersonTimezone
         | PersonIsActive
+        | PersonIsImportedStub
     )
 
 
@@ -903,7 +909,7 @@ class EventStreamUpdateCore(BaseEvent):
     type: Literal["stream"]
     op: Literal["update"]
     property: str
-    value: bool | int | str | UserGroupMembersDict | Literal[None]
+    value: bool | int | str | UserGroupMembersDict | None
     name: str
     stream_id: int
 

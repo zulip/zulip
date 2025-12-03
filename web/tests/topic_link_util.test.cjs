@@ -49,10 +49,10 @@ const markdown_stream = {
     type: "stream",
 };
 
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(dollar_stream);
-stream_data.add_sub(markdown_stream);
+stream_data.add_sub_for_tests(sweden_stream);
+stream_data.add_sub_for_tests(denmark_stream);
+stream_data.add_sub_for_tests(dollar_stream);
+stream_data.add_sub_for_tests(markdown_stream);
 
 run_test("stream_link_syntax_test", () => {
     assert.equal(topic_link_util.get_stream_link_syntax("Sweden"), "#**Sweden**");
@@ -155,5 +155,33 @@ run_test("stream_topic_link_syntax_test", () => {
     assert.equal(
         topic_link_util.html_unescape_invalid_stream_topic_characters("&#36;&#36;MONEY&#36;&#36;"),
         "$$MONEY$$",
+    );
+});
+
+run_test("get_topic_link_content_with_stream_name", () => {
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_name({
+            stream_name: sweden_stream.name,
+            topic_name: "abc",
+            message_id: 123,
+        }),
+        {
+            text: "#Sweden > abc @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
+    );
+});
+
+run_test("get_topic_link_content_with_stream_id", () => {
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: sweden_stream.stream_id,
+            topic_name: "abc",
+            message_id: 123,
+        }),
+        {
+            text: "#Sweden > abc @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
     );
 });

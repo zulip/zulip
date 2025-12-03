@@ -397,7 +397,7 @@ class MentionData:
         user_group_names_mentions = possible_user_group_mentions(content)
         if user_group_names_mentions:
             named_user_groups = NamedUserGroup.objects.filter(
-                realm_id=realm_id, name__in=user_group_names_mentions
+                realm_for_sharding_id=realm_id, name__in=user_group_names_mentions
             )
 
             # No filter here as we need user_group_name_info for all groups mentions.

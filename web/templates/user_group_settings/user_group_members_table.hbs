@@ -2,13 +2,15 @@
     <div class="member_list_loading_indicator"></div>
     <table class="member-list table table-striped">
         <thead class="table-sticky-headers">
-            <th class="panel_user_list" data-sort="name">{{t "Name" }}
-                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-            </th>
-            <th class="settings-email-column" data-sort="email">{{t "Email" }}
-                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-            </th>
-            <th class="remove-button-column" {{#unless can_remove_members}}style="display:none"{{/unless}}></th>
+            <tr>
+                <th class="panel_user_list" data-sort="name">{{t "Name" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="settings-email-column" data-sort="email">{{t "Email" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="remove-button-column" {{#unless can_remove_members}}style="display:none"{{/unless}}></th>
+            </tr>
         </thead>
         <tbody class="member_table" data-empty="{{t 'This group has no members.' }}" data-search-results-empty="{{t 'No group members match your current filter.'}}"></tbody>
     </table>

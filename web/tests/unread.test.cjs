@@ -41,7 +41,7 @@ const social = {
     subscribed: true,
     is_muted: false,
 };
-stream_data.add_sub(social);
+stream_data.add_sub_for_tests(social);
 
 function assert_zero_counts(counts) {
     assert.equal(counts.direct_message_count, 0);
@@ -112,8 +112,14 @@ test("changing_topics", () => {
         topic: "lunCH",
         unread: true,
     };
-    message_store.update_message_cache(message);
-    message_store.update_message_cache(other_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_message,
+    });
 
     assert.deepEqual(unread.get_read_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
@@ -191,9 +197,18 @@ test("changing_topics", () => {
         unread: true,
     };
 
-    message_store.update_message_cache(message);
-    message_store.update_message_cache(other_message);
-    message_store.update_message_cache(sticky_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: sticky_message,
+    });
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");
@@ -292,7 +307,10 @@ test("num_unread_for_topic", () => {
     let i;
     for (i = num_msgs; i > 0; i -= 1) {
         message.id = i;
-        message_store.update_message_cache(message);
+        message_store.update_message_cache({
+            type: "server_message",
+            message,
+        });
         unread.process_loaded_messages([message]);
     }
 
@@ -383,6 +401,49 @@ test("home_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
+test("archived_stream", () => {
+    const rome = {
+        stream_id: 401,
+        name: "Rome",
+        subscribed: true,
+        is_muted: false,
+    };
+    sub_store.add_hydrated_sub(rome.stream_id, rome);
+
+    const denmark = {
+        stream_id: 501,
+        name: "Denmark",
+        subscribed: true,
+        is_muted: false,
+    };
+    sub_store.add_hydrated_sub(denmark.stream_id, denmark);
+
+    const rome_message = {
+        id: 15,
+        type: "stream",
+        stream_id: rome.stream_id,
+        topic: "lunch",
+        unread: true,
+    };
+
+    const denmark_message = {
+        id: 16,
+        type: "stream",
+        stream_id: denmark.stream_id,
+        topic: "lunch",
+        unread: true,
+    };
+    unread.process_loaded_messages([rome_message, denmark_message]);
+
+    let counts = unread.get_counts();
+    assert.equal(counts.home_unread_messages, 2);
+
+    // Now archive rome.
+    rome.is_archived = true;
+    counts = unread.get_counts();
+    assert.equal(counts.home_unread_messages, 1);
+});
+
 test("phantom_messages", () => {
     const message = {
         id: 999,
@@ -390,7 +451,10 @@ test("phantom_messages", () => {
         stream_id: 555,
         topic: "phantom",
     };
-    message_store.update_message_cache(message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
@@ -718,7 +782,7 @@ test("topics with unread mentions", () => {
     assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set(["topic with mention"]));
     unread.mark_as_read(message_with_mention.id);
     assert.equal(unread.get_topics_with_unread_mentions(999).size, 0);
-    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set([]));
+    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set());
 });
 
 test("starring", () => {

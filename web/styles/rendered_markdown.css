@@ -254,6 +254,15 @@
         vertical-align: var(--line-fitted-vertical-align-offset-em);
     }
 
+    /* We double the size of emoji on emoji-only messages. As there
+       is by definition no adjacent text in these messages, there is
+       no need to adjust the `margin` or `vertical-align` properties
+       declared above. */
+    .emoji-only .emoji {
+        height: calc(var(--length-line-oversize-block) * 2);
+        width: calc(var(--length-line-oversize-block) * 2);
+    }
+
     /* Mentions and alert words */
     .user-group-mention,
     .user-mention,
@@ -504,8 +513,24 @@
         font-weight: bold;
     }
 
+    .message-media-inline-image:not(.message-media-gallery-image) {
+        .media-anchor-element {
+            /* We want the image to behave as inline, which the
+               .message-media-inline-image will ensure, but in
+               order to keep inline images from touching each
+               other when they flow over separate lines, we
+               introduce top/bottom margins of 3px--a value
+               derived from the border around legacy images and
+               images presented in galleries. */
+            display: inline-block;
+            margin: 3px 0;
+        }
+    }
+
     .twitter-image,
-    .message_inline_image {
+    .message-media-gallery-image,
+    .message-media-preview-image,
+    .message-media-preview-video {
         /* Set a background for the image; the background will be visible
            behind the width of the transparent border. */
         border: solid 3px transparent;
@@ -569,6 +594,10 @@
         }
     }
 
+    .inline-image {
+        display: inline;
+    }
+
     .twitter-tweet {
         border: 1px solid hsl(0deg 0% 87%);
         padding: 0.5em 0.75em;
@@ -595,7 +624,7 @@
         border: none !important;
     }
 
-    .message_inline_image .media-image-element {
+    .media-image-element {
         cursor: zoom-in;
     }
 
@@ -1016,4 +1045,12 @@
         top: -1px;
         padding-left: 0.3em;
     }
+}
+
+/* This is required to align the time-example output in the "?" menu. */
+#markdown-instructions p:has(time) {
+    display: flex;
+    align-items: center;
+    margin: calc(var(--markdown-interelement-space-px) / 2) 0;
+    padding: calc(var(--message-box-link-focus-ring-block-padding) / 2) 0;
 }

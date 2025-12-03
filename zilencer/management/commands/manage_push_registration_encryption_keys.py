@@ -29,7 +29,6 @@ Usage:
         )
         parser.add_argument(
             "--remove-key",
-            type=str,
             metavar="PUBLIC_KEY",
             help="Remove the key pair associated with the given public key from the `push_registration_encryption_keys` map.",
         )

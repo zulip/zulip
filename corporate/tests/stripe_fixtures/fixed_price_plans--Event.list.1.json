@@ -1,95 +1,69 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
-          "adaptive_pricing": null,
-          "after_expiration": null,
-          "allow_promotion_codes": null,
-          "amount_subtotal": null,
-          "amount_total": null,
-          "automatic_tax": {
-            "enabled": false,
-            "liability": null,
-            "provider": null,
-            "status": null
+          "amount": 984000,
+          "amount_capturable": 0,
+          "amount_details": {
+            "tip": {}
           },
-          "billing_address_collection": "required",
-          "cancel_url": "http://annual-free.zulipdev.com:9991/billing/",
-          "client_reference_id": null,
-          "client_secret": null,
-          "collected_information": {
-            "shipping_details": null
-          },
-          "consent": null,
-          "consent_collection": null,
+          "amount_received": 0,
+          "application": null,
+          "application_fee_amount": null,
+          "automatic_payment_methods": null,
+          "canceled_at": 1000000000,
+          "cancellation_reason": "requested_by_customer",
+          "capture_method": "automatic",
+          "client_secret": "NORMALIZED",
+          "confirmation_method": "automatic",
           "created": 1000000000,
-          "currency": null,
-          "currency_conversion": null,
-          "custom_fields": [],
-          "custom_text": {
-            "after_submit": null,
-            "shipping_address": null,
-            "submit": null,
-            "terms_of_service_acceptance": null
-          },
+          "currency": "usd",
           "customer": "cus_NORMALIZED",
-          "customer_creation": null,
-          "customer_details": {
-            "address": null,
-            "email": "limited-plan-admin@zulip.com",
-            "name": null,
-            "phone": null,
-            "tax_exempt": null,
-            "tax_ids": null
-          },
-          "customer_email": null,
-          "discounts": null,
-          "expires_at": 1000000000,
+          "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "fixed_price_plans--Event.list.1.json",
-          "invoice": null,
-          "invoice_creation": null,
+          "last_payment_error": null,
+          "latest_charge": null,
           "livemode": false,
-          "locale": null,
-          "metadata": {
-            "type": "card_update",
-            "user_id": "25"
+          "metadata": {},
+          "next_action": null,
+          "object": "payment_intent",
+          "on_behalf_of": null,
+          "payment_details": {
+            "customer_reference": null,
+            "order_reference": "in_1SVX0PDwzgQ85STgNEghQI"
           },
-          "mode": "setup",
-          "object": "checkout.session",
-          "payment_intent": null,
-          "payment_link": null,
-          "payment_method_collection": "always",
+          "payment_method": null,
           "payment_method_configuration_details": null,
           "payment_method_options": {
             "card": {
+              "installments": null,
+              "mandate_options": null,
+              "network": null,
               "request_three_d_secure": "automatic"
+            },
+            "link": {
+              "persistent_token": null
             }
           },
           "payment_method_types": [
-            "card"
+            "card",
+            "link"
           ],
-          "payment_status": "no_payment_required",
-          "permissions": null,
-          "phone_number_collection": {
-            "enabled": false
-          },
-          "recovered_from": null,
-          "saved_payment_method_options": null,
-          "setup_intent": "seti_NORMALIZED",
-          "shipping_address_collection": null,
-          "shipping_cost": null,
-          "shipping_options": [],
-          "status": "expired",
-          "submit_type": null,
-          "subscription": null,
-          "success_url": "http://annual-free.zulipdev.com:9991/billing/event_status/?stripe_session_id={CHECKOUT_SESSION_ID}",
-          "total_details": null,
-          "ui_mode": "hosted",
-          "url": null,
-          "wallet_options": null
+          "processing": null,
+          "receipt_email": "hamlet@zulip.com",
+          "review": null,
+          "setup_future_usage": null,
+          "shipping": null,
+          "source": null,
+          "statement_descriptor": "Zulip Cloud Standard",
+          "statement_descriptor_suffix": null,
+          "status": "canceled",
+          "transfer_data": null,
+          "transfer_group": null
         }
       },
       "id": "fixed_price_plans--Event.list.1.json",
@@ -97,10 +71,10 @@
       "object": "event",
       "pending_webhooks": 0,
       "request": {
-        "id": null,
-        "idempotency_key": null
+        "id": "fixed_price_plans--Event.list.1.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
       },
-      "type": "checkout.session.expired"
+      "type": "payment_intent.canceled"
     }
   ],
   "has_more": true,

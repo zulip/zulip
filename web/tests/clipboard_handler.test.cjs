@@ -33,7 +33,7 @@ run_test("copy_link_to_clipboard", async ({override}) => {
         subscribed: true,
         type: "stream",
     };
-    stream_data.add_sub(stream);
+    stream_data.add_sub_for_tests(stream);
     const {window} = new JSDOM();
     global.document = window.document;
 

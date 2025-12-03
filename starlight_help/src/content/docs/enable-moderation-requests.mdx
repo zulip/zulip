@@ -1,0 +1,55 @@
+---
+title: Enable moderation requests
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+
+<AdminOnly />
+
+When moderation requests are enabled, users can report problematic messages.
+This sends a message to a private channel, where moderators can review the
+report. To make it easy to see all reports about someone's behavior and discuss
+them, there will be a dedicated topic for each user whose messages are reported.
+
+If no channel for moderation requests is configured, users won't see the option
+to report a message.
+
+## Enable moderation requests
+
+<FlattenedSteps>
+  1. [Create](/help/create-channels) a
+     [private](/help/channel-permissions#private-channels) channel for
+     receiving moderation requests.
+
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Automated messages and emails**, configure **Moderation requests**.
+</FlattenedSteps>
+
+## Disable moderation requests
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Automated messages and emails**, select **Disable** from the
+     **Moderation requests** dropdown.
+</FlattenedSteps>
+
+## Configure where moderation requests are sent
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Automated messages and emails**, configure **Moderation requests**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Report a message](/help/report-a-message)
+* [Delete a message](/help/delete-a-message)
+* [Mute a user](/help/mute-a-user)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Customize organization settings](/help/customize-organization-settings)
+* [Community moderation toolkit](/help/moderating-open-organizations)

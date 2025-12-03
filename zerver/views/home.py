@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
 from zerver.actions.user_settings import do_change_tos_version, do_change_user_setting
+from zerver.actions.users import do_change_is_imported_stub
 from zerver.context_processors import get_realm_from_request, get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
@@ -69,6 +70,10 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
                     enable_marketing_emails,
                     acting_user=request.user,
                 )
+
+            if request.user.is_imported_stub:
+                do_change_is_imported_stub(request.user)
+
             return redirect(home)
     else:
         form = ToSForm()
@@ -128,7 +133,7 @@ def detect_narrowed_window(
             # TODO: We should support stream IDs and direct messages here as well.
             narrow_stream_name = request.GET.get("stream")
             assert narrow_stream_name is not None
-            (narrow_stream, ignored_sub) = access_stream_by_name(user_profile, narrow_stream_name)
+            (narrow_stream, _sub) = access_stream_by_name(user_profile, narrow_stream_name)
             narrow = [NeverNegatedNarrowTerm(operator="stream", operand=narrow_stream.name)]
         except Exception:
             logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))

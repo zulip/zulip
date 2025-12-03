@@ -295,12 +295,9 @@ def process_new_human_user(
     )
 
     realm = user_profile.realm
-    mit_beta_user = realm.is_zephyr_mirror_realm
 
-    # mit_beta_users don't have a referred_by field
     if (
-        not mit_beta_user
-        and prereg_user is not None
+        prereg_user is not None
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
         and prereg_user.notify_referrer_on_join
@@ -606,7 +603,7 @@ def do_create_user(
     if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
         full_members_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.FULL_MEMBERS,
-            realm=user_profile.realm,
+            realm_for_sharding=user_profile.realm,
             is_system_group=True,
         )
         UserGroupMembership.objects.create(
@@ -750,6 +747,10 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
             modified_user=user_profile,
             event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED,
             event_time=event_time,
+            extra_data={
+                RealmAuditLog.OLD_VALUE: previous_owner.id,
+                RealmAuditLog.NEW_VALUE: acting_user.id,
+            },
         )
         bot_owner_changed = True
 

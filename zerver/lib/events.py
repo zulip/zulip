@@ -406,6 +406,8 @@ def fetch_initial_state_data(
                 setting_group_id, anonymous_group_membership_data_dict
             )
 
+        state["realm_owner_full_content_access"] = realm.owner_full_content_access
+
         state["realm_create_public_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
                 realm,
@@ -490,7 +492,6 @@ def fetch_initial_state_data(
         )
 
         state["server_generation"] = settings.SERVER_GENERATION
-        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
         state["realm_org_type"] = realm.org_type
         state["realm_plan_type"] = realm.plan_type
@@ -570,6 +571,11 @@ def fetch_initial_state_data(
                 realm.demo_organization_scheduled_deletion_date
             )
         state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
+
+        state["server_report_message_types"] = [
+            {"key": type_id, "name": str(type_name)}
+            for type_id, type_name in Realm.REPORT_MESSAGE_REASONS.items()
+        ]
 
         # Presence system parameters for client behavior.
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
@@ -1659,7 +1665,8 @@ def apply_event(
                     subscriber_key = (
                         "subscribers" if "subscribers" in sub else "partial_subscribers"
                     )
-                    sub[subscriber_key].remove(user_profile.id)
+                    if user_profile.id in sub[subscriber_key]:
+                        sub[subscriber_key].remove(user_profile.id)
 
             state["unsubscribed"] += removed_subs
 

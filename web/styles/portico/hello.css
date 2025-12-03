@@ -886,6 +886,7 @@ ul {
 
         .switch-diagram {
             max-width: 220px;
+            align-self: center;
         }
 
         .screen-2__header,
@@ -1114,4 +1115,8 @@ ul {
             font-size: 18px;
         }
     }
+}
+
+.mirror-image {
+    transform: scaleX(-1);
 }

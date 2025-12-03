@@ -6,11 +6,11 @@
         {{> settings_save_discard_widget section_name="general-settings" show_only_indicator=(not for_realm_settings) }}
     </div>
     {{#unless for_realm_settings}}
-        {{> language_selection_widget
-          section_name="default_language_name"
-          setting_value=default_language_name
-          section_title=settings_label.default_language_settings_label
-          language_code=default_language }}
+        {{> ../dropdown_widget_with_label
+          widget_name="default_language"
+          label=settings_label.default_language_settings_label
+          value_type="string"
+          help_link="/help/change-your-language"}}
     {{/unless}}
 
     <div class="input-group">

@@ -90,7 +90,6 @@ exports.make_realm = (opts = {}) => {
         realm_inline_image_preview: false,
         realm_inline_url_embed_preview: false,
         realm_invite_required: false,
-        realm_is_zephyr_mirror_realm: false,
         realm_jitsi_server_url: null,
         realm_linkifiers: [],
         realm_logo_source: "",

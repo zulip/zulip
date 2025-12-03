@@ -8,6 +8,7 @@
       "created": 1000000000,
       "customer": "cus_NORMALIZED",
       "description": null,
+      "excluded_payment_method_types": null,
       "flow_directions": null,
       "id": "migrate_customer_server_to_realms_and_upgrade--SetupIntent.list.1.json",
       "last_setup_error": null,

@@ -649,7 +649,7 @@ input[name="licenses"] {
     padding-top: 2px;
 }
 
-#upgrade-page-details #upgrade-payment-menthod-wrapper {
+#upgrade-page-details #upgrade-payment-method-wrapper {
     margin-left: 0;
     grid-area: payment-info;
     width: 100%;

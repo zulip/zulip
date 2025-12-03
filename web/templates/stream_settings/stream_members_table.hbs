@@ -2,15 +2,17 @@
     <div class="subscriber_list_loading_indicator"></div>
     <table id="stream_members_list" class="subscriber-list table table-striped">
         <thead class="table-sticky-headers">
-            <th class="panel_user_list" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}
-                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-            </th>
-            <th class="settings-email-column" data-sort="email">{{t "Email" }}
-                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-            </th>
-            {{#if can_remove_subscribers}}
-            <th class="remove-button-column"></th>
-            {{/if}}
+            <tr>
+                <th class="panel_user_list" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="settings-email-column" data-sort="email">{{t "Email" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                {{#if can_remove_subscribers}}
+                <th class="remove-button-column"></th>
+                {{/if}}
+            </tr>
         </thead>
         <tbody class="subscriber_table" data-empty="{{t 'This channel has no subscribers.' }}" data-search-results-empty="{{t 'No channel subscribers match your current filter.'}}"></tbody>
     </table>

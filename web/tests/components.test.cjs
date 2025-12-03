@@ -61,64 +61,60 @@ function make_tab(i) {
 }
 
 const ind_tab = (function () {
-    const $self = {};
+    return {
+        stub: true,
 
-    $self.stub = true;
+        on(name, f) {
+            if (name === "click") {
+                env.click_f = f;
+            } else if (name === "keydown") {
+                env.keydown_f = f;
+            }
+        },
 
-    $self.on = (name, f) => {
-        if (name === "click") {
-            env.click_f = f;
-        } else if (name === "keydown") {
-            env.keydown_f = f;
-        }
+        off(name) {
+            if (name === "click") {
+                env.click_f = undefined;
+            }
+        },
+
+        removeClass(c) {
+            for (const $tab of env.tabs) {
+                $tab.removeClass(c);
+            }
+        },
+
+        eq: (idx) => env.tabs[idx],
     };
-
-    $self.off = (name) => {
-        if (name === "click") {
-            env.click_f = undefined;
-        }
-    };
-
-    $self.removeClass = (c) => {
-        for (const $tab of env.tabs) {
-            $tab.removeClass(c);
-        }
-    };
-
-    $self.eq = (idx) => env.tabs[idx];
-
-    return $self;
 })();
 
 function make_switcher() {
-    const $self = {};
+    return {
+        stub: true,
 
-    $self.stub = true;
+        children: [],
 
-    $self.children = [];
+        classList: new Set(),
 
-    $self.classList = new Set();
+        append(child) {
+            this.children.push(child);
+        },
 
-    $self.append = (child) => {
-        $self.children.push(child);
+        addClass(c) {
+            this.classList.add(c);
+            this.addedClass = c;
+        },
+
+        find(sel) {
+            switch (sel) {
+                case ".ind-tab":
+                    return ind_tab;
+                /* istanbul ignore next */
+                default:
+                    throw new Error("unknown selector: " + sel);
+            }
+        },
     };
-
-    $self.addClass = (c) => {
-        $self.classList.add(c);
-        $self.addedClass = c;
-    };
-
-    $self.find = (sel) => {
-        switch (sel) {
-            case ".ind-tab":
-                return ind_tab;
-            /* istanbul ignore next */
-            default:
-                throw new Error("unknown selector: " + sel);
-        }
-    };
-
-    return $self;
 }
 
 mock_jquery((sel) => {

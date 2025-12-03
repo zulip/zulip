@@ -14,7 +14,7 @@ system-configuration
 mobile-push-notifications
 upgrade
 modify
-security-model
+securing-your-zulip-server
 authentication-methods
 export-and-import
 postgresql
@@ -27,6 +27,6 @@ multiple-organizations
 email-gateway
 video-calls
 ai-integrations
-giphy-gif-integration
+gif-picker-integrations
 scim
 ```

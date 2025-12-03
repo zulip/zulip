@@ -11,8 +11,9 @@ export type ActionButtonAttention = (typeof ACTION_BUTTON_ATTENTION_VALUES)[numb
 export type ActionButton = {
     attention: ActionButtonAttention;
     intent?: ComponentIntent;
-    label: string;
+    label?: string;
     icon?: string;
+    id?: string;
     custom_classes?: string;
 };
 

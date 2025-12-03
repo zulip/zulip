@@ -39,7 +39,7 @@ function settings_button_for_sub(sub: StreamSubscription): JQuery {
 }
 
 export let show_subscribed = true;
-export let show_not_subscribed = false;
+export let show_available = false;
 
 export function is_subscribed_stream_tab_active(): boolean {
     // Returns true if "Subscribed" tab in stream settings is open
@@ -47,18 +47,18 @@ export function is_subscribed_stream_tab_active(): boolean {
     return show_subscribed;
 }
 
-export function is_not_subscribed_stream_tab_active(): boolean {
-    // Returns true if "not-subscribed" tab in stream settings is open
+export function is_available_stream_tab_active(): boolean {
+    // Returns true if "available" tab in stream settings is open
     // otherwise false.
-    return show_not_subscribed;
+    return show_available;
 }
 
 export function set_show_subscribed(value: boolean): void {
     show_subscribed = value;
 }
 
-export function set_show_not_subscribed(value: boolean): void {
-    show_not_subscribed = value;
+export function set_show_available(value: boolean): void {
+    show_available = value;
 }
 
 export function update_web_public_stream_privacy_option_state($container: JQuery): void {
@@ -111,10 +111,7 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
     }
 }
 
-export function update_private_stream_privacy_option_state(
-    $container: JQuery,
-    is_default_stream = false,
-): void {
+export function update_private_stream_privacy_option_state($container: JQuery): void {
     // Disable both "Private, shared history" and "Private, protected history" options.
     const $private_stream_elem = $container.find(
         `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
@@ -124,6 +121,11 @@ export function update_private_stream_privacy_option_state(
             settings_config.stream_privacy_policy_values.private_with_public_history.code,
         )}']`,
     );
+
+    // If the default stream option is checked, the private stream options are disabled.
+    const is_default_stream = util.the(
+        $container.find<HTMLInputElement>(".default-stream input"),
+    ).checked;
 
     const disable_private_stream_options =
         is_default_stream || !settings_data.user_can_create_private_streams();
@@ -269,7 +271,29 @@ export function update_regular_sub_settings(sub: StreamSubscription): void {
     }
 }
 
-export function update_default_stream_and_stream_privacy_state($container: JQuery): void {
+export function enable_or_disable_generate_email_button(sub: StreamSubscription): void {
+    if (!hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    const $settings = $(
+        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
+    );
+    const $generate_email_button_container = $settings.find(
+        ".generate-channel-email-button-container",
+    );
+    const $generate_email_button = $generate_email_button_container.find(".copy_email_button");
+
+    if (stream_data.can_access_stream_email(sub)) {
+        $generate_email_button.prop("disabled", false);
+        $generate_email_button_container.removeClass("disabled_setting_tooltip");
+    } else {
+        $generate_email_button.prop("disabled", true);
+        $generate_email_button_container.addClass("disabled_setting_tooltip");
+    }
+}
+
+export function update_default_stream_option_state($container: JQuery): void {
     const $default_stream = $container.find(".default-stream");
     const is_stream_creation = $container.attr("id") === "stream-creation";
 
@@ -290,10 +314,6 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
         "control-label-disabled default_stream_private_tooltip",
         is_invite_only,
     );
-
-    // If the default stream option is checked, the private stream options are disabled.
-    const is_default_stream = util.the($default_stream.find("input")).checked;
-    update_private_stream_privacy_option_state($container, is_default_stream);
 }
 
 export function update_can_subscribe_group_label($container: JQuery): void {
@@ -314,47 +334,32 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    const $general_settings_container = $stream_settings.find(".stream-permissions");
-    $general_settings_container
-        .find("input, button")
+    const $default_stream_container = $stream_settings.find(".default-stream");
+    $default_stream_container
+        .find("input")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
-    const $advanced_configurations_container = $stream_settings.find(
-        $(".advanced-configurations-container"),
-    );
-    $advanced_configurations_container
-        .find("input, select, button")
+    const $permissions_container = $stream_settings.find($(".channel-permissions"));
+    $permissions_container
+        .find("input, select")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
-    const $permission_pill_container_elements =
-        $advanced_configurations_container.find(".pill-container");
-    $permission_pill_container_elements
-        .find(".input")
-        .prop("contenteditable", sub.can_change_stream_permissions_requiring_metadata_access);
+    const $permission_pill_container_elements = $permissions_container.find(".pill-container");
 
     $stream_settings
         .find(".channel-folder-widget-container button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
-        $general_settings_container.find(".default-stream").addClass("control-label-disabled");
-        $permission_pill_container_elements
-            .closest(".input-group")
-            .addClass("group_setting_disabled");
-        settings_components.disable_opening_typeahead_on_clicking_label(
-            $advanced_configurations_container,
-        );
+        $default_stream_container.addClass("control-label-disabled");
+        settings_components.disable_group_permission_setting($permission_pill_container_elements);
         return;
     }
 
-    $permission_pill_container_elements
-        .closest(".input-group")
-        .removeClass("group_setting_disabled");
-    settings_components.enable_opening_typeahead_on_clicking_label(
-        $advanced_configurations_container,
-    );
+    settings_components.enable_group_permission_setting($permission_pill_container_elements);
 
-    update_default_stream_and_stream_privacy_state($("#stream_settings"));
+    update_default_stream_option_state($("#stream_settings"));
+    update_private_stream_privacy_option_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -375,10 +380,8 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         $stream_privacy_values.prop("disabled", true);
 
         for (const setting_name of settings_config.stream_group_permission_settings_requiring_content_access) {
-            const $setting_element = $advanced_configurations_container.find("#id_" + setting_name);
-            $setting_element.find(".input").prop("contenteditable", false);
-            $setting_element.closest(".input-group").addClass("group_setting_disabled");
-            settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
+            const $setting_element = $permissions_container.find("#id_" + setting_name);
+            settings_components.disable_group_permission_setting($setting_element);
         }
     }
     settings_banner.set_up_upgrade_banners();
@@ -458,23 +461,25 @@ export function update_notification_setting_checkbox(
 
 export function update_stream_row_in_settings_tab(sub: StreamSubscription): void {
     // This is in the left panel.
-    // This function display/hide stream row in stream settings tab,
-    // used to display immediate effect of add/removal subscription event.
-    // If user is subscribed or unsubscribed to stream, it will show sub or unsub
-    // row under "Subscribed" or "Not subscribed" (only if the stream is public) tab, otherwise
-    // if stream is not public hide stream row under tab.
+    // This function is used to display immediate effect of add/removal subscription
+    // event.
+    // If user is subscribed or unsubscribed to stream, the stream row is kept in
+    // the tab view if user can toggle the state again, otherwise the stream row
+    // is removed.
 
-    if (is_subscribed_stream_tab_active() || is_not_subscribed_stream_tab_active()) {
+    if (is_subscribed_stream_tab_active() || is_available_stream_tab_active()) {
         const $row = row_for_stream_id(sub.stream_id);
 
         if (
             (is_subscribed_stream_tab_active() && sub.subscribed) ||
-            (is_not_subscribed_stream_tab_active() && !sub.subscribed)
+            (is_available_stream_tab_active() &&
+                !sub.subscribed &&
+                stream_data.can_toggle_subscription(sub))
         ) {
             if (stream_settings_components.filter_includes_channel(sub)) {
                 $row.removeClass("notdisplayed");
             }
-        } else if (sub.invite_only || current_user.is_guest) {
+        } else if (current_user.is_guest || !stream_data.can_toggle_subscription(sub)) {
             $row.addClass("notdisplayed");
         }
     }
@@ -488,7 +493,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
     // We are only concerned with the Subscribers tab for editing streams.
     const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
-    if (current_user.is_guest || realm.realm_is_zephyr_mirror_realm) {
+    if (current_user.is_guest) {
         // For guest users, we just hide the add_subscribers feature.
         $add_subscribers_container.hide();
         return;

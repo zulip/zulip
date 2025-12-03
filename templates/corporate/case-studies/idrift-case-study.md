@@ -50,7 +50,7 @@ prior conversations.”
 
 Chat integrations for operational systems and alerts are a crucial part of the
 workflow at iDrift AS. Zulip offers a [Slack-compatible
-interface](/integrations/doc/slack_incoming), so many integrations could be
+interface](/integrations/slack_incoming), so many integrations could be
 simply moved over. “For a handful of integrations where Zulip didn’t meet our
 needs, it was easy to [create our own
 integration](/api/integrations-overview#write-your-own-integration) or improve

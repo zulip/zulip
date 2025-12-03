@@ -189,7 +189,7 @@
         {{/if}}
         {{/if}}
         {{!-- Group 3 --}}
-        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator show_webathena)}}
+        {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator)}}
         <li role="separator" class="popover-menu-separator"></li>
         {{/if}}
         {{#if (or can_invite_users_by_email can_create_multiuse_invite)}}
@@ -197,14 +197,6 @@
             <a role="menuitem" tabindex="0" class="invite-user-link popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t 'Invite users' }}</span>
-            </a>
-        </li>
-        {{/if}}
-        {{#if show_webathena}}
-        <li role="none" class="link-item popover-menu-list-item" title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu">
-            <a role="menuitem" href="#webathena" class="webathena_login popover-menu-link">
-                <i class="popover-menu-icon fa fa-bolt" aria-hidden="true"></i>
-                <span class="popover-menu-label">{{t 'Link with Webathena' }}</span>
             </a>
         </li>
         {{/if}}

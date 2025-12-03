@@ -10,25 +10,23 @@
 
 {% block content %}
 <p>{{ _("We noticed a recent login for the following Zulip account.") }}</p>
-<p>
-    <ul>
-        <li>
-            {% trans organization_link=macros.link_tag(realm_url) %}Organization: {{ organization_link }}{% endtrans %}
-        </li>
-        <li>
-            {% trans user_email=macros.email_tag(user_email) %}Email: {{ user_email }}{% endtrans %}
-        </li>
-        <li>
-            {% trans %}Time: {{ login_time }}{% endtrans %}
-        </li>
-        <li>
-            {% trans %}Device: {{ device_browser }} on {{ device_os }}.{% endtrans %}
-        </li>
-        <li>
-            {% trans %}IP address: {{ device_ip }}{% endtrans %}
-        </li>
-    </ul>
-</p>
+<ul>
+    <li>
+        {% trans organization_link=macros.link_tag(realm_url) %}Organization: {{ organization_link }}{% endtrans %}
+    </li>
+    <li>
+        {% trans user_email=macros.email_tag(user_email) %}Email: {{ user_email }}{% endtrans %}
+    </li>
+    <li>
+        {% trans %}Time: {{ login_time }}{% endtrans %}
+    </li>
+    <li>
+        {% trans %}Device: {{ device_browser }} on {{ device_os }}.{% endtrans %}
+    </li>
+    <li>
+        {% trans %}IP address: {{ device_ip }}{% endtrans %}
+    </li>
+</ul>
 
 <p>{{ _("If this was you, great! There's nothing else you need to do.") }}</p>
 

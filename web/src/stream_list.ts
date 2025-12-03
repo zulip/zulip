@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
+import * as z from "zod/mini";
 
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
@@ -17,13 +18,17 @@ import * as channel_folders from "./channel_folders.ts";
 import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import {localstorage} from "./localstorage.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import type {StreamListSection} from "./stream_list_sort.ts";
@@ -51,7 +56,13 @@ export function set_update_inbox_channel_view_callback(value: (channel_id: numbe
 let has_scrolled = false;
 
 const collapsed_sections = new Set<string>();
+const sections_with_only_inactive_or_muted = new Set<string>();
 const sections_showing_inactive_or_muted = new Set<string>();
+
+// Persistence for collapsed sections state
+const collapsed_sections_ls_key = "left_sidebar_collapsed_stream_sections";
+const collapsed_sections_ls_schema = z._default(z.array(z.string()), []);
+const ls = localstorage();
 
 export function is_zoomed_in(): boolean {
     return zoomed_in;
@@ -321,9 +332,7 @@ export function build_stream_list(force_rerender: boolean): void {
         assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
         const $li = sidebar_row.get_li();
-        if (inactive_or_muted) {
-            $li.addClass("inactive-or-muted-in-channel-folder");
-        }
+        $li.toggleClass("inactive-or-muted-in-channel-folder", inactive_or_muted);
         $list.append($li);
     }
 
@@ -348,10 +357,27 @@ export function build_stream_list(force_rerender: boolean): void {
         }
         const muted_and_inactive_streams = [...section.muted_streams, ...section.inactive_streams];
         if (section.id !== "pinned-streams" && muted_and_inactive_streams.length > 0) {
+            let button_text;
+            if (section.muted_streams.length > 0 && section.inactive_streams.length > 0) {
+                button_text = $t(
+                    {defaultMessage: "{count} INACTIVE OR MUTED"},
+                    {count: muted_and_inactive_streams.length},
+                );
+            } else if (section.muted_streams.length > 0) {
+                button_text = $t(
+                    {defaultMessage: "{count} MUTED"},
+                    {count: section.muted_streams.length},
+                );
+            } else {
+                button_text = $t(
+                    {defaultMessage: "{count} INACTIVE"},
+                    {count: section.inactive_streams.length},
+                );
+            }
             $(`#stream-list-${section.id}`).append(
                 $(
                     render_show_inactive_or_muted_channels({
-                        inactive_or_muted_count: muted_and_inactive_streams.length,
+                        button_text,
                     }),
                 ),
             );
@@ -362,6 +388,17 @@ export function build_stream_list(force_rerender: boolean): void {
                 $(`#stream-list-${section.id}`),
                 section.id !== "pinned-streams",
             );
+        }
+        // If a section appears empty, due to only having inactive or muted channels,
+        // we collapse it, since there's nothing to easily see. But don't do this during
+        // search, since sections can enter that state temporarily.
+        if (!searching()) {
+            if (!is_empty && section.streams.length === 0) {
+                collapsed_sections.add(section.id);
+                sections_with_only_inactive_or_muted.add(section.id);
+            } else {
+                sections_with_only_inactive_or_muted.delete(section.id);
+            }
         }
     }
 
@@ -445,11 +482,15 @@ export function rewire_update_stream_section_mention_indicators(
    channel, we show it too. If there's no highlighted topic within the
    channel, then we should treat this like an empty topic list and remove
    the left bracket. */
-export function maybe_hide_topic_bracket(section_id: string): void {
+export let maybe_hide_topic_bracket = function (section_id: string): void {
     const $container = $(`#stream-list-${section_id}-container`);
     const is_collapsed = collapsed_sections.has(section_id);
     const $highlighted_topic = $container.find(".topic-list-item.active-sub-filter");
     $container.toggleClass("hide-topic-bracket", is_collapsed && $highlighted_topic.length === 0);
+};
+
+export function rewire_maybe_hide_topic_bracket(value: typeof maybe_hide_topic_bracket): void {
+    maybe_hide_topic_bracket = value;
 }
 
 function toggle_section_collapse($container: JQuery): void {
@@ -467,9 +508,41 @@ function toggle_section_collapse($container: JQuery): void {
         collapsed_sections.delete(section_id);
     }
     maybe_hide_topic_bracket(section_id);
+    save_collapsed_sections_state();
+
+    if (
+        sections_with_only_inactive_or_muted.has(section_id) &&
+        !sections_showing_inactive_or_muted.has(section_id)
+    ) {
+        toggle_inactive_or_muted_channels($container);
+    }
 }
 
-function set_sections_states(): void {
+function save_collapsed_sections_state(): void {
+    // Prune any section IDs that no longer exist (e.g., a folder was deleted
+    // in another browser) before saving to localStorage.
+    const valid_section_ids = new Set(stream_list_sort.section_ids());
+    for (const section_id of collapsed_sections) {
+        if (!valid_section_ids.has(section_id)) {
+            collapsed_sections.delete(section_id);
+        }
+    }
+    ls.set(collapsed_sections_ls_key, [...collapsed_sections]);
+}
+
+function restore_collapsed_sections_state(): void {
+    // Note: This code path has no way to know whether all of the
+    // sections we last saved actually exist, because we're running
+    // before the stream_list_sort code path has determined that.
+    // Validation happens in save_collapsed_sections_state() instead.
+    const collapsed_array = collapsed_sections_ls_schema.parse(ls.get(collapsed_sections_ls_key));
+    collapsed_sections.clear();
+    for (const section_id of collapsed_array) {
+        collapsed_sections.add(section_id);
+    }
+}
+
+export let set_sections_states = function (): void {
     if (ui_util.get_left_sidebar_search_term() === "") {
         // Restore the collapsed state of sections.
         for (const section_id of collapsed_sections) {
@@ -484,6 +557,10 @@ function set_sections_states(): void {
     for (const section_id of sections_showing_inactive_or_muted) {
         $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive-or-muted", true);
     }
+};
+
+export function rewire_set_sections_states(value: typeof set_sections_states): void {
+    set_sections_states = value;
 }
 
 export function get_stream_li(stream_id: number): JQuery | undefined {
@@ -510,9 +587,12 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
 }
 
 export function update_subscribe_to_more_streams_link(): void {
+    // Here we filter archived channels, even if you can add yourself to
+    // them as a subscriber from a permissions standpoint, because you
+    // can't add them to your left sidebar.
     const can_subscribe_stream_count = stream_data
         .unsubscribed_subs()
-        .filter((sub) => stream_data.can_toggle_subscription(sub)).length;
+        .filter((sub) => !sub.is_archived && stream_data.can_toggle_subscription(sub)).length;
 
     const can_create_streams =
         settings_data.user_can_create_private_streams() ||
@@ -743,6 +823,9 @@ type SectionUnreadCount = {
     // e.g. followed topics in a muted channel, which count towards
     // the unmuted count in the inactive/muted channels toggle.
     muted_channel_unmuted: number;
+    // Doesn't include muted topics in unmuted channels, which shouldn't
+    // contribute to the count for the inactive/muted channel toggle.
+    muted_channel_muted: number;
 };
 
 export let update_dom_with_unread_counts = function (counts: FullUnreadCountsData): void {
@@ -778,6 +861,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         inactive_unmuted: 0,
         inactive_muted: 0,
         muted_channel_unmuted: 0,
+        muted_channel_muted: 0,
     };
     const folder_unread_counts = new Map<number, SectionUnreadCount>();
     const normal_section_unread_counts: SectionUnreadCount = {
@@ -786,6 +870,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         inactive_unmuted: 0,
         inactive_muted: 0,
         muted_channel_unmuted: 0,
+        muted_channel_muted: 0,
     };
 
     for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
@@ -794,7 +879,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         if (sub.pin_to_top) {
             pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
             pinned_unread_counts.muted += stream_count_info.muted_count;
-        } else if (sub.folder_id !== null) {
+        } else if (sub.folder_id !== null && user_settings.web_left_sidebar_show_channel_folders) {
             if (!folder_unread_counts.has(sub.folder_id)) {
                 folder_unread_counts.set(sub.folder_id, {
                     unmuted: 0,
@@ -802,6 +887,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
                     inactive_unmuted: 0,
                     inactive_muted: 0,
                     muted_channel_unmuted: 0,
+                    muted_channel_muted: 0,
                 });
             }
 
@@ -810,6 +896,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             unread_counts.muted += stream_count_info.muted_count;
             if (sub.is_muted) {
                 unread_counts.muted_channel_unmuted += stream_count_info.unmuted_count;
+                unread_counts.muted_channel_muted += stream_count_info.muted_count;
             }
             if (!stream_list_sort.has_recent_activity(sub)) {
                 unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
@@ -821,6 +908,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             if (sub.is_muted) {
                 normal_section_unread_counts.muted_channel_unmuted +=
                     stream_count_info.unmuted_count;
+                normal_section_unread_counts.muted_channel_muted += stream_count_info.muted_count;
             }
             if (!stream_list_sort.has_recent_activity(sub)) {
                 normal_section_unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
@@ -862,27 +950,31 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         $("#stream-list-normal-streams-container .show-inactive-or-muted-channels"),
         normal_section_unread_counts.inactive_unmuted +
             normal_section_unread_counts.muted_channel_unmuted,
-        normal_section_unread_counts.inactive_muted + normal_section_unread_counts.muted,
+        normal_section_unread_counts.inactive_muted +
+            normal_section_unread_counts.muted_channel_muted,
     );
 
-    for (const folder_id of channel_folders.get_all_folder_ids()) {
-        const unread_counts = folder_unread_counts.get(folder_id) ?? {
-            unmuted: 0,
-            muted: 0,
-            inactive_unmuted: 0,
-            inactive_muted: 0,
-            muted_channel_unmuted: 0,
-        };
-        update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
-            unread_counts.unmuted,
-            unread_counts.muted,
-        );
-        update_section_unread_count(
-            $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
-            unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
-            unread_counts.inactive_muted + unread_counts.muted,
-        );
+    if (user_settings.web_left_sidebar_show_channel_folders) {
+        for (const folder_id of channel_folders.get_all_folder_ids()) {
+            const unread_counts = folder_unread_counts.get(folder_id) ?? {
+                unmuted: 0,
+                muted: 0,
+                inactive_unmuted: 0,
+                inactive_muted: 0,
+                muted_channel_unmuted: 0,
+                muted_channel_muted: 0,
+            };
+            update_section_unread_count(
+                $(`#stream-list-${folder_id}-container .stream-list-subsection-header`),
+                unread_counts.unmuted,
+                unread_counts.muted,
+            );
+            update_section_unread_count(
+                $(`#stream-list-${folder_id}-container .show-inactive-or-muted-channels`),
+                unread_counts.inactive_unmuted + unread_counts.muted_channel_unmuted,
+                unread_counts.inactive_muted + unread_counts.muted_channel_muted,
+            );
+        }
     }
 };
 
@@ -952,12 +1044,12 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
         topic_selected: false,
     };
 
-    const op_stream = filter.operands("channel");
-    if (op_stream[0] === undefined) {
+    const channel_terms = filter.terms_with_operator("channel");
+    if (channel_terms.length === 0) {
         return result;
     }
 
-    const stream_id = Number.parseInt(op_stream[0], 10);
+    const stream_id = Number.parseInt(channel_terms[0]!.operand, 10);
 
     if (!stream_id) {
         return result;
@@ -969,8 +1061,8 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
 
     result.stream_id = stream_id;
 
-    const op_topic = filter.operands("topic");
-    result.topic_selected = op_topic.length === 1;
+    const topic_terms = filter.terms_with_operator("topic");
+    result.topic_selected = topic_terms.length === 1;
 
     return result;
 }
@@ -1060,11 +1152,15 @@ export function initialize({
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
+    restore_collapsed_sections_state();
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     build_stream_list(false);
+    // After building the stream list, prune any invalid section IDs that were
+    // restored from localStorage (e.g., folders that no longer exist).
+    save_collapsed_sections_state();
     update_subscribe_to_more_streams_link();
     initialize_tippy_tooltips();
     set_event_handlers({show_channel_feed});
@@ -1256,28 +1352,40 @@ export function set_event_handlers({
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
-        if (document.getSelection()?.type === "Range") {
+
+        if (mouse_drag.is_drag(e)) {
             // To avoid the click behavior if a channel name is selected.
             e.preventDefault();
             return;
         }
-
         const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
         on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
 
-    $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
-        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
-        compose_actions.start({
-            message_type: "stream",
-            stream_id,
-            topic: "",
-            trigger: "clear topic button",
-            keep_composebox_empty: true,
-        });
-    });
+    $("#stream_filters").on(
+        "click",
+        ".channel-new-topic-button, .zoomed-new-topic",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const stream_id = Number.parseInt(this.getAttribute("data-stream-id")!, 10);
+            let trigger = "clear topic button";
+            let topic = "";
+
+            if ($(e.target).closest(".zoomed-new-topic").length > 0) {
+                trigger = "zoomed new topic";
+                topic = $("#topic_filter_query").text().trim().slice(0, realm.max_topic_length);
+            }
+
+            compose_actions.start({
+                message_type: "stream",
+                stream_id,
+                topic,
+                trigger,
+                keep_composebox_empty: true,
+            });
+        },
+    );
 
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
@@ -1415,4 +1523,24 @@ export function get_current_stream_li(): JQuery | undefined {
     }
 
     return $stream_li;
+}
+
+export function expand_all_stream_sections(): void {
+    for (const section_id of collapsed_sections) {
+        const $container = $(`#stream-list-${section_id}-container`);
+        if ($container.hasClass("collapsed")) {
+            toggle_section_collapse($container);
+        }
+    }
+}
+
+export function collapse_all_stream_sections(): void {
+    for (const section_id of stream_list_sort.section_ids()) {
+        if (!collapsed_sections.has(section_id)) {
+            const $container = $(`#stream-list-${section_id}-container`);
+            if (!$container.hasClass("collapsed")) {
+                toggle_section_collapse($container);
+            }
+        }
+    }
 }

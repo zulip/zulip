@@ -31,6 +31,7 @@ test("is_full_topic_history_available", ({override}) => {
         name: "general",
         stream_id,
         first_message_id: null,
+        subscriber_count: 0,
     };
     const messages = [
         {id: 1, stream_id},

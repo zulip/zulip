@@ -1,13 +1,13 @@
 # https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
-from collections.abc import MutableSequence, Sequence
+from collections.abc import Sequence
 from email.message import Message
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
-from django.core.mail.message import EmailMessage
+from django.core.mail.message import EmailAlternative, EmailMessage
 from django.template import loader
 from typing_extensions import override
 
@@ -73,18 +73,19 @@ class EmailLogBackEnd(EmailBackend):
 
         for email_message in email_messages:
             assert isinstance(email_message, EmailMultiAlternatives)
-            assert isinstance(email_message.alternatives[0][0], str)
-            # Here, we replace the email addresses used in development
-            # with chat.zulip.org, so that web email providers like Gmail
+            # Here, we replace the image URLs used in development with
+            # chat.zulip.org URLs, so that web email providers like Gmail
             # will be able to fetch the illustrations used in the emails.
-            html_alternative = (
-                email_message.alternatives[0][0].replace(
+            assert isinstance(email_message.alternatives[0], EmailAlternative)
+            original_content = email_message.alternatives[0].content
+            original_mimetype = email_message.alternatives[0].mimetype
+            assert isinstance(original_content, str)
+            email_message.alternatives[0] = EmailAlternative(
+                content=original_content.replace(
                     localhost_email_images_base_url, czo_email_images_base_url
                 ),
-                email_message.alternatives[0][1],
+                mimetype=original_mimetype,
             )
-            assert isinstance(email_message.alternatives, MutableSequence)
-            email_message.alternatives[0] = html_alternative
 
             email_message.to = [get_forward_address()]
 

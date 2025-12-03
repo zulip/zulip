@@ -40,7 +40,22 @@ no matter how many other conversations are going on.
 If anything is out of place, it’s easy to move messages, rename and split
 topics, or even move a topic to a different channel.
 
-![Channels and topics](/static/images/help/channels-and-topics.png)
+![Channels and topics](/static/images/landing-page/why-zulip/channels-and-topics.png)
+
+<br />
+
+> We switched to Zulip after trying pretty much every chat app out there. And
+> it’s been amazing. The threading-by-topic system is genius. It keeps every
+> conversation in its lane and makes catching up effortless. We’ve cut down on
+> meeting time and repetitive messaging, which easily saves us hours each week.
+> The async setup means no one feels pressured to respond instantly, but nothing
+> slips through the cracks either.
+> <br /> <br />
+> It’s fast, reliable, and honestly feels like
+> the way team chat should work. Once you’ve used Zulip, other tools just feel
+> outdated.
+>
+> — Deepak Shukla, Founder and CEO of [Pearl Lemon](https://pearllemon.com/)
 
 <br />
 

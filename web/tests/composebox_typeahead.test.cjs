@@ -45,7 +45,7 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-const typeahead = zrequire("../shared/src/typeahead");
+const typeahead = zrequire("typeahead");
 const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
@@ -453,7 +453,7 @@ const hamletcharacters = user_group_item(
         description: "Characters of Hamlet",
         members: new Set([100, 104]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -493,7 +493,7 @@ const call_center = user_group_item(
         description: "folks working in support",
         members: new Set([102]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -511,9 +511,9 @@ const support = user_group_item(
         creator_id: null,
         date_created: 1596710000,
         description: "Support team",
-        members: new Set([]),
+        members: new Set(),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -532,7 +532,7 @@ const admins = user_group_item(
         description: "Administrators",
         members: new Set([102, 103]),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -617,12 +617,12 @@ const broken_link_stream = stream_item({
     can_add_subscribers_group: support.id,
 });
 
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(netherland_stream);
-stream_data.add_sub(mobile_stream);
-stream_data.add_sub(mobile_team_stream);
-stream_data.add_sub(broken_link_stream);
+stream_data.add_sub_for_tests(sweden_stream);
+stream_data.add_sub_for_tests(denmark_stream);
+stream_data.add_sub_for_tests(netherland_stream);
+stream_data.add_sub_for_tests(mobile_stream);
+stream_data.add_sub_for_tests(mobile_team_stream);
+stream_data.add_sub_for_tests(broken_link_stream);
 
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
@@ -1147,7 +1147,7 @@ test("content_typeahead_selected", ({override}) => {
 });
 
 function sorted_names_from(subs) {
-    return subs.map((sub) => sub.name).sort();
+    return subs.map((sub) => sub.name).toSorted();
 }
 
 const sweden_topics_to_show = [
@@ -1460,8 +1460,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("othello");
                 actual_value = options.item_html(othello_item);
                 expected_value =
-                    `    <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n` +
-                    `    <img class="typeahead-image" src="/avatar/${othello.user_id}" />\n` +
+                    '    <div class="typeahead-image">\n' +
+                    `        <img class="typeahead-image-avatar" src="/avatar/${othello.user_id}" />\n` +
+                    '        <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n' +
+                    "    </div>\n" +
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
                     "</div>\n";
@@ -1473,7 +1475,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("hamletcharacters");
                 actual_value = options.item_html(hamletcharacters);
                 expected_value =
-                    '    <i class="typeahead-image zulip-icon zulip-icon-user-group no-presence-circle" aria-hidden="true"></i>\n' +
+                    '    <i class="typeahead-image zulip-icon zulip-icon-user-group" aria-hidden="true"></i>\n' +
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
                     "</div>\n";

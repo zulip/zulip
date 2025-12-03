@@ -59,7 +59,6 @@ class HomeTest(ZulipTestCase):
         "promote_sponsoring_zulip",
         "request_language",
         "show_try_zulip_modal",
-        "show_webathena",
         "state_data",
         "test_suite",
         "translation_data",
@@ -185,7 +184,6 @@ class HomeTest(ZulipTestCase):
         "realm_inline_image_preview",
         "realm_inline_url_embed_preview",
         "realm_invite_required",
-        "realm_is_zephyr_mirror_realm",
         "realm_jitsi_server_url",
         "realm_linkifiers",
         "realm_logo_source",
@@ -205,6 +203,7 @@ class HomeTest(ZulipTestCase):
         "realm_night_logo_url",
         "realm_non_active_users",
         "realm_org_type",
+        "realm_owner_full_content_access",
         "realm_password_auth_enabled",
         "realm_plan_type",
         "realm_playgrounds",
@@ -213,6 +212,7 @@ class HomeTest(ZulipTestCase):
         "realm_push_notifications_enabled_end_timestamp",
         "realm_require_e2ee_push_notifications",
         "realm_require_unique_names",
+        "realm_send_channel_events_messages",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",
         "realm_topics_policy",
@@ -246,6 +246,7 @@ class HomeTest(ZulipTestCase):
         "server_needs_upgrade",
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
+        "server_report_message_types",
         "server_supported_permission_settings",
         "server_thumbnail_formats",
         "server_timestamp",
@@ -391,7 +392,6 @@ class HomeTest(ZulipTestCase):
             "realm_rendered_description",
             "request_language",
             "show_try_zulip_modal",
-            "show_webathena",
             "state_data",
             "test_suite",
             "translation_data",
@@ -747,6 +747,18 @@ class HomeTest(ZulipTestCase):
             user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
         )
 
+        # Test is_imported_stub is set to False when user accepts terms of service.
+        user.tos_version = "-1"
+        user.is_imported_stub = True
+        user.save()
+
+        result = self.client_post("/accounts/accept_terms/", {"terms": True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        self.assertFalse(user.is_imported_stub)
+
     def test_set_email_address_visibility_without_terms_of_service(self) -> None:
         self.login("hamlet")
         user = self.example_user("hamlet")
@@ -965,6 +977,7 @@ class HomeTest(ZulipTestCase):
                         role=cross_realm_email_gateway_bot.role,
                         is_system_bot=True,
                         is_guest=False,
+                        is_imported_stub=False,
                     ),
                     dict(
                         avatar_version=cross_realm_notification_bot.avatar_version,
@@ -981,6 +994,7 @@ class HomeTest(ZulipTestCase):
                         role=cross_realm_notification_bot.role,
                         is_system_bot=True,
                         is_guest=False,
+                        is_imported_stub=False,
                     ),
                     dict(
                         avatar_version=cross_realm_welcome_bot.avatar_version,
@@ -997,6 +1011,7 @@ class HomeTest(ZulipTestCase):
                         role=cross_realm_welcome_bot.role,
                         is_system_bot=True,
                         is_guest=False,
+                        is_imported_stub=False,
                     ),
                 ],
                 key=by_email,

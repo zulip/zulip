@@ -337,6 +337,11 @@ run_test("filter_by_word_prefix_match", () => {
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
 });
 
+run_test("prefix_match", () => {
+    assert.ok(util.prefix_match({value: "VIEWS", search_term: "V"}));
+    assert.ok(!util.prefix_match({value: "VIEWS", search_term: "I"}));
+});
+
 run_test("get_string_diff", () => {
     assert.deepEqual(
         util.get_string_diff("#ann is for updates", "#**announce** is for updates"),
@@ -506,10 +511,10 @@ run_test("compare_a_b", () => {
     };
     const unsorted = [user2, user1, user4, user3];
 
-    const sorted_by_id = [...unsorted].sort((a, b) => util.compare_a_b(a.id, b.id));
+    const sorted_by_id = unsorted.toSorted((a, b) => util.compare_a_b(a.id, b.id));
     assert.deepEqual(sorted_by_id, [user1, user2, user3, user4]);
 
-    const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
+    const sorted_by_name = unsorted.toSorted((a, b) => util.compare_a_b(a.name, b.name));
     assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
 });
 

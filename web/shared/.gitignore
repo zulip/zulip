@@ -1,5 +1,0 @@
-# This /node_modules doesn't ordinarily appear when developing on web.
-# But it does appear when developing this package in tandem with
-# mobile, using `yarn link`.
-/node_modules
-/lib

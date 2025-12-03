@@ -1,3 +1,5 @@
+import {type NarrowTerm, narrow_operator_schema} from "./state_data.ts";
+
 export function get_hash_category(hash?: string): string {
     // given "#channels/subscribed", returns "channels"
     return hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
@@ -117,7 +119,10 @@ export function is_in_specified_hash_category(hash_categories: string[]): boolea
     return hash_categories.includes(main_hash);
 }
 
-export function is_an_allowed_web_public_narrow(operator: string, operand: string): boolean {
+export function is_an_allowed_web_public_narrow(
+    operator: NarrowTerm["operator"],
+    operand: NarrowTerm["operand"],
+): boolean {
     if (operator === "is" && operand === "resolved") {
         return true;
     }
@@ -172,7 +177,11 @@ export function is_spectator_compatible(hash: string): boolean {
         for (let i = 0; i < hash_components.length; i += 2) {
             const hash_section = hash_components[i]!.replace(/^-/, "");
             const second_hash_section = hash_components[i + 1]!;
-            if (!is_an_allowed_web_public_narrow(hash_section, second_hash_section)) {
+            const operator = narrow_operator_schema.safeParse(hash_section);
+            if (
+                !operator.success ||
+                !is_an_allowed_web_public_narrow(operator.data, second_hash_section)
+            ) {
                 return false;
             }
         }

@@ -653,9 +653,11 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
                         to find custom sort function
 
         <thead>
-            <th data-sort="alphabetic" data-sort-prop="name"></th>
-            <th data-sort="numeric" data-sort-prop="age"></th>
-            <th data-sort="status"></th>
+            <tr>
+                <th data-sort="alphabetic" data-sort-prop="name"></th>
+                <th data-sort="numeric" data-sort-prop="age"></th>
+                <th data-sort="status"></th>
+            </tr>
         </thead>
         */
     const sort_type = $th.attr("data-sort");

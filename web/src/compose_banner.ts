@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_long_paste_options from "../templates/compose_banner/long_paste_options.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
@@ -63,7 +64,6 @@ export const CLASSNAMES = {
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",
     topic_missing: "topic_missing",
-    zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",
@@ -150,6 +150,7 @@ export function clear_warnings(): void {
 
 export function clear_uploads(): void {
     $("#compose_banners .upload_banner").remove();
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
 }
 
 export function clear_unmute_topic_notifications(): void {
@@ -171,10 +172,6 @@ export function clear_non_interleaved_view_messages_fading_banner(): void {
 
 export function clear_interleaved_view_messages_fading_banner(): void {
     $(`#compose_banners .${CSS.escape(CLASSNAMES.interleaved_view_messages_fading)}`).remove();
-}
-
-export function clear_convert_pasted_text_to_file_banner(): void {
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
 }
 
 export function clear_all(): void {
@@ -296,19 +293,25 @@ export function has_error(): boolean {
     return $("#compose_banners .error").length > 0;
 }
 
-export function show_convert_pasted_text_to_file_banner(cb: () => void): JQuery {
+export function show_convert_pasted_text_to_file_banner({
+    show_paste_button,
+    convert_to_file_cb,
+    paste_to_compose_cb,
+}: {
+    show_paste_button: boolean;
+    convert_to_file_cb: () => void;
+    paste_to_compose_cb: () => void;
+}): JQuery {
     $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
     const $new_row = $(
-        render_compose_banner({
+        render_long_paste_options({
             banner_type: INFO,
-            banner_text: $t({
-                defaultMessage: "Do you want to convert the pasted text into a file?",
-            }),
-            button_text: $t({defaultMessage: "Yes, convert"}),
             classname: CLASSNAMES.convert_pasted_text_to_file,
+            show_paste_button,
         }),
     );
-    $new_row.on("click", ".main-view-banner-action-button", cb);
+    $new_row.on("click", ".main-view-banner-action-button.convert-to-file", convert_to_file_cb);
+    $new_row.on("click", ".main-view-banner-action-button.paste-to-compose", paste_to_compose_cb);
     append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
     return $new_row;
 }

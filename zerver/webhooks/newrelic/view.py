@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
@@ -16,13 +17,13 @@ from zerver.lib.validator import (
     check_string_in,
     check_union,
 )
-from zerver.lib.webhooks.common import check_send_webhook_message, unix_milliseconds_to_timestamp
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 MISSING_FIELDS_NOTIFICATION = """
 :danger: A New Relic [incident]({url}) updated
 
-**Warning**: Unable to use the default notification format because at least one expected field was missing from the incident payload. See [New Relic integration documentation](/integrations/doc/newrelic).
+**Warning**: Unable to use the default notification format because at least one expected field was missing from the incident payload. See [New Relic integration documentation](/integrations/newrelic).
 
 **Missing fields**: {formatted_missing_fields}
 """
@@ -74,13 +75,9 @@ EXPECTED_FIELDS = [
 ]
 
 
-def get_timestamp_string(payload: WildValue, event_type: str) -> str:
-    # This function is intended to be used only for the "updatedAt"
-    # and "createdAt" fields. Theoretically, neither field can be
-    # None at any time.
-    unix_time = payload[event_type].tame(check_union([check_int, check_string]))
-    timestamp = str(unix_milliseconds_to_timestamp(unix_time, "newrelic"))
-    return f"<time: {timestamp} >"
+def get_timestamp_string(payload: WildValue, field: str) -> str:
+    unix_time = payload[field].tame(check_int)
+    return datetime_to_global_time(timestamp_to_datetime(unix_time / 1000))
 
 
 def parse_payload(payload: WildValue) -> dict[str, str]:

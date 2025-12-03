@@ -788,7 +788,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # RemoteRealm objects should be created for all realms on the server but no customer plans.
         self.assert_length(RemoteRealm.objects.all(), 4)
-        for remote_realm in RemoteRealm.objects.all():
+        for remote_realm in RemoteRealm.objects.all().iterator():
             self.assertIsNone(get_customer_by_remote_realm(remote_realm))
 
         # Same customer plan exists for server since there are multiple realms to manage here.
@@ -812,9 +812,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.server.refresh_from_db()
         self.assertEqual(self.server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_MANAGED)
         # Check if zephyr and lear were deactivated
-        self.assertCountEqual(
-            RemoteRealm.objects.filter(realm_deactivated=True).values_list("host", flat=True),
-            ["zephyr.testserver", "lear.testserver"],
+        self.assertEqual(
+            set(RemoteRealm.objects.filter(realm_deactivated=True).values_list("host", flat=True)),
+            {"zephyr.testserver", "lear.testserver"},
         )
 
         # Check complimentary access CustomerPlan exists for the one non-deactivated
@@ -1055,7 +1055,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
 
         # RemoteRealm objects should be created for all realms on the server but no customer plans.
         self.assert_length(RemoteRealm.objects.all(), 4)
-        for remote_realm in RemoteRealm.objects.all():
+        for remote_realm in RemoteRealm.objects.all().iterator():
             self.assertIsNone(get_customer_by_remote_realm(remote_realm))
 
         # Same customer plan exists for server since there are multiple realms to manage here.

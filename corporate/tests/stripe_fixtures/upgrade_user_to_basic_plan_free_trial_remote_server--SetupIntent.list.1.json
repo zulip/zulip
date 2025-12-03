@@ -8,6 +8,7 @@
       "created": 1000000000,
       "customer": "cus_NORMALIZED",
       "description": null,
+      "excluded_payment_method_types": null,
       "flow_directions": null,
       "id": "upgrade_user_to_basic_plan_free_trial_remote_server--SetupIntent.list.1.json",
       "last_setup_error": null,

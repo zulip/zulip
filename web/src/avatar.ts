@@ -118,9 +118,10 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
 
     upload_widget.build_direct_upload_widget(
         get_file_input,
-        $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
+        $("#user-avatar-upload-widget-error").expectOne(),
         $("#user-avatar-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_avatar_file_size_mib,
+        "user_avatar",
     );
 }

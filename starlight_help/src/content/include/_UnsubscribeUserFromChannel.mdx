@@ -1,0 +1,41 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ChannelMenuSubscribersTabTip from "../include/_ChannelMenuSubscribersTabTip.mdx";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
+import RightSidebarViewProfile from "../include/_RightSidebarViewProfile.mdx";
+import SelectChannelViewSubscribers from "../include/_SelectChannelViewSubscribers.mdx";
+
+import CloseIcon from "~icons/zulip-icon/close";
+
+<DependsOnPermissions />
+
+<Tabs>
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select a channel.
+
+      <SelectChannelViewSubscribers />
+
+      1. Under **Subscribers**, find the user you would like
+         to unsubscribe from the channel.
+      1. Click the **Unsubscribe** (<CloseIcon />) icon in that row.
+    </FlattenedSteps>
+
+    <ChannelMenuSubscribersTabTip />
+  </TabItem>
+
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <RightSidebarViewProfile />
+
+      1. Select the **Channels** tab.
+      1. Under **Subscribed channels**, find the channel you would like
+         to unsubscribe the user from.
+      1. Click the **Unsubscribe** (<CloseIcon />) icon in that row.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

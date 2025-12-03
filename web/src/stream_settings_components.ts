@@ -127,7 +127,7 @@ function display_subscribe_toggle_spinner($stream_row: JQuery): void {
     $stream_row.find(".check").removeClass("sub_unsub_button");
 
     /* Hide the tick. */
-    const $tick = $stream_row.find("svg");
+    const $tick = $stream_row.find(".sub-unsub-icon");
     $tick.addClass("hide");
 
     /* Add a spinner to show the request is in process. */
@@ -142,7 +142,7 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
     $stream_row.find(".check").addClass("sub_unsub_button");
 
     /* Show the tick. */
-    const $tick = $stream_row.find("svg");
+    const $tick = $stream_row.find(".sub-unsub-icon");
     $tick.removeClass("hide");
 
     /* Destroy the spinner. */
@@ -326,9 +326,9 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
             name: folder.name,
             unique_id: folder.id,
             has_delete_icon: true,
-            has_edit_icon: true,
+            has_manage_folder_icon: true,
             delete_icon_label: $t({defaultMessage: "Delete folder"}),
-            edit_icon_label: $t({defaultMessage: "Edit folder"}),
+            manage_folder_icon_label: $t({defaultMessage: "Manage folder"}),
         }));
 
         const disabled_option = {
@@ -367,7 +367,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
             if (sub !== undefined) {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 settings_components.save_discard_stream_settings_widget_status_handler(
-                    $edit_container.find(".channel-folder-subsection"),
+                    $edit_container.find(".stream-settings-subsection"),
                     stream_data.get_sub_by_id(sub.stream_id),
                 );
             }
@@ -391,7 +391,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
 
             if (
                 $(event.target).closest(
-                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-edit`,
+                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-manage-folder`,
                 ).length > 0
             ) {
                 const folder_id = Number.parseInt(

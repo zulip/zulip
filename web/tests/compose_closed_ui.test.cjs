@@ -85,13 +85,13 @@ run_test("reply_label", () => {
         name: "first_stream",
         stream_id: 1,
     };
-    stream_data.add_sub(stream_one);
+    stream_data.add_sub_for_tests(stream_one);
     const stream_two = {
         subscribed: true,
         name: "second_stream",
         stream_id: 2,
     };
-    stream_data.add_sub(stream_two);
+    stream_data.add_sub_for_tests(stream_two);
     list.add_messages(
         [
             {
@@ -208,7 +208,7 @@ run_test("test_non_message_list_input", () => {
         name: "stream test",
         stream_id: 10,
     };
-    stream_data.add_sub(stream);
+    stream_data.add_sub_for_tests(stream);
 
     // Channel and topic row.
     compose_closed_ui.update_recipient_text_for_reply_button({
@@ -222,7 +222,7 @@ run_test("test_non_message_list_input", () => {
         user_ids: [current_user.user_id],
     });
     let label = $("#left_bar_compose_reply_button_big").html();
-    assert.equal(label, "Message yourself");
+    assert.equal(label, "Write yourself a note");
 
     // Invalid data for a the reply button text.
     compose_closed_ui.update_recipient_text_for_reply_button({

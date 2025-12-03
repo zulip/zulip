@@ -12,9 +12,10 @@ const linkifiers = zrequire("linkifiers");
 
 const my_id = 101;
 
-const user_map = new Map();
-user_map.set(my_id, "Me Myself");
-user_map.set(105, "greg");
+const user_map = new Map([
+    [my_id, "Me Myself"],
+    [105, "greg"],
+]);
 
 function get_actual_name_from_user_id(user_id) {
     return user_map.get(user_id);
@@ -48,8 +49,7 @@ const staff_group = {
     name: "Staff",
 };
 
-const user_group_map = new Map();
-user_group_map.set(staff_group.name, staff_group);
+const user_group_map = new Map([[staff_group.name, staff_group]]);
 
 function get_user_group_from_name(name) {
     return user_group_map.get(name);
@@ -66,8 +66,7 @@ const social = {
     name: "social",
 };
 
-const sub_map = new Map();
-sub_map.set(social.name, social);
+const sub_map = new Map([[social.name, social]]);
 
 function get_stream_by_name(name) {
     return sub_map.get(name);
@@ -88,9 +87,10 @@ function get_emoticon_translations() {
     ];
 }
 
-const emoji_map = new Map();
-emoji_map.set("smile", "1f604");
-emoji_map.set("alien", "1f47d");
+const emoji_map = new Map([
+    ["smile", "1f604"],
+    ["alien", "1f47d"],
+]);
 
 function get_emoji_codepoint(emoji_name) {
     return emoji_map.get(emoji_name);
@@ -107,19 +107,22 @@ function get_emoji_name(codepoint) {
     throw new Error(`unexpected codepoint ${codepoint}`);
 }
 
-const realm_emoji_map = new Map();
-realm_emoji_map.set("heart", "/images/emoji/heart.bmp");
+const realm_emoji_map = new Map([["heart", "/images/emoji/heart.bmp"]]);
 
 function get_realm_emoji_url(emoji_name) {
     return realm_emoji_map.get(emoji_name);
 }
 
 const regex = /#foo(\d+)(?!\w)/g;
-const linkifier_map = new Map();
-linkifier_map.set(regex, {
-    url_template: url_template_lib.parseTemplate("http://foo.com/{id}"),
-    group_number_to_name: {1: "id"},
-});
+const linkifier_map = new Map([
+    [
+        regex,
+        {
+            url_template: url_template_lib.parseTemplate("http://foo.com/{id}"),
+            group_number_to_name: {1: "id"},
+        },
+    ],
+]);
 
 function get_linkifier_map() {
     return linkifier_map;

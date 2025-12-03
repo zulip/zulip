@@ -229,7 +229,7 @@
                     <div {% if page_params.setup_payment_by_invoice %} id="update-invoice-billing-info" {% elif payment_method %} id="upgrade-payment-info"{% endif %}>
                         {% if page_params.setup_payment_by_invoice %}
                         {% elif payment_method %}
-                        <div class="input-box upgrade-page-field" id="upgrade-payment-menthod-wrapper">
+                        <div class="input-box upgrade-page-field" id="upgrade-payment-method-wrapper">
                             <label for="customer-payment-method-for-upgrade" class="inline-block label-title">Payment method</label>
                             <div id="customer-payment-method-for-upgrade" class="not-editable-realm-field">
                                 {{ payment_method }}

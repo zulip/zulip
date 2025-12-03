@@ -65,7 +65,9 @@ export async function get_user_ids(
 ): Promise<number[]> {
     const stream_ids = get_stream_ids(pill_widget);
     const results = await Promise.all(
-        stream_ids.map(async (stream_id) => peer_data.get_all_subscribers(stream_id, true)),
+        stream_ids.map(async (stream_id) =>
+            peer_data.get_subscribers_with_possible_fetch(stream_id, true),
+        ),
     );
 
     const current_stream_ids_in_widget = get_stream_ids(pill_widget);

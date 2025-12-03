@@ -45,7 +45,12 @@ $ ./scripts/get-django-setting EMAIL_GATEWAY_PATTERN
 %s@localhost:9991
 ```
 
-Zulip has separated those settings that we expect a system
+The `DJANGO_SETTINGS_MODULE` environment variable is set to
+`zproject.settings`, which is what tells Django to effectively import
+`zproject.settings.*` into `django.conf.settings` to make them
+accessible there.
+
+However, Zulip has separated those settings that we expect a system
 administrator to change (with nice documentation) from the ~1000 lines
 of settings needed by the Zulip Django app. As a result, there are a
 few files involved in the Zulip settings for server administrators.

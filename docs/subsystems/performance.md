@@ -137,12 +137,11 @@ idle for a minute. It's likely that with some strategy for detecting
 such situations, we could reduce their volume (and thus overall
 Tornado load) dramatically.
 
-Currently, Tornado is sharded by realm, which is sufficient for
-arbitrary scaling of the number of organizations on a multi-tenant
-system like zulip.com. With a somewhat straightforward set of work,
-one could change this to sharding by `user_id` instead, which will
-eventually be important for individual large organizations with many
-thousands of concurrent users.
+Currently, Tornado is sharded by realm, and optionally by user-id
+within each realm. Sharding by realm is sufficient for arbitrary
+scaling of the number of organizations on a multi-tenant system like
+zulip.com. Sharding by user-id is necessary for very large
+organizations with multiple thousands of active users at once.
 
 ### Presence
 

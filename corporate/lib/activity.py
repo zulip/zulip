@@ -247,7 +247,7 @@ def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str
 
     for plan in plans:
         assert plan.customer.realm is not None
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
         renewal_cents = RealmBillingSession(
             realm=plan.customer.realm
@@ -285,7 +285,7 @@ def get_plan_data_by_remote_server() -> dict[int, RemoteActivityPlanData]:  # no
         server_id = plan.customer.remote_server.id
         assert server_id is not None
 
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(
@@ -335,7 +335,7 @@ def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanDat
         server_id = plan.customer.remote_realm.server_id
         assert server_id is not None
 
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(

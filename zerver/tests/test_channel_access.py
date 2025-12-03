@@ -85,17 +85,6 @@ class AccessStreamTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
             access_stream_by_name(sipbtest, stream.name)
 
-        # MIT realm users cannot access even public streams in their realm
-        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
-            access_stream_by_id(sipbtest, mit_stream.id)
-        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'mit_stream'"):
-            access_stream_by_name(sipbtest, mit_stream.name)
-
-        # But they can access streams they are subscribed to
-        self.subscribe_via_post(sipbtest, [mit_stream.name], subdomain="zephyr")
-        access_stream_by_id(sipbtest, mit_stream.id)
-        access_stream_by_name(sipbtest, mit_stream.name)
-
     def test_access_stream_allow_metadata_access_flag(self) -> None:
         """
         A comprehensive security test for the access_stream_by_* API functions.
@@ -140,7 +129,7 @@ class AccessStreamTest(ZulipTestCase):
             othello.realm, "user_profile_group", [othello, polonius], acting_user=othello
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=othello.realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=othello.realm
         )
 
         do_change_stream_group_based_setting(
@@ -377,7 +366,7 @@ class AccessStreamTest(ZulipTestCase):
             True,
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             private_stream,
@@ -407,7 +396,7 @@ class AccessStreamTest(ZulipTestCase):
             True,
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             private_stream,
@@ -457,7 +446,7 @@ class AccessStreamTest(ZulipTestCase):
         realm = aaron.realm
         public_stream = self.make_stream("public_stream", realm, invite_only=False)
         nobody_system_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
 
         # Public stream with no subscribers.

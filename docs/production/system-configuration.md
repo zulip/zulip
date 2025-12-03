@@ -236,7 +236,10 @@ setting](https://www.postgresql.org/docs/current/runtime-config-connection.html#
 #### `random_page_cost`
 
 Override PostgreSQL's [`random_page_cost`
-setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST)
+setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST).
+Zulip defaults this value to 1.1, which is an appropriate value for
+SSDs; if your server uses spinning disks, you should set this back to
+the upstream default of 4.0.
 
 #### `replication_primary`
 
@@ -361,6 +364,48 @@ Set to a true value to enable object size reporting in memcached. This incurs a
 small overhead for every store or delete operation, but allows a
 memcached_exporter to report precise item size distribution.
 
+### `[tornado_sharding]`
+
+Keys in this section are used to configure how many Tornado instances
+are started, and which users are mapped to which of those instances.
+Each Tornado instance listens on a separate port, starting at 9800 and
+proceeding upwards from there. A single Tornado instance can usually
+handle 1000-1500 concurrent active users, depending on message sending
+volume.
+
+Individual organizations may be assigned to ports, either via their
+subdomain names, or their fully-qualified hostname (for [organizations
+using `REALM_HOSTS`](multiple-organizations.md#other-hostnames)):
+
+```ini
+[tornado_sharding]
+9800 = realm-a realm-b
+9801 = realm-c
+9802 = realm-host.example.net
+```
+
+Organizations can also be assigned to ports via regex over their
+fully-qualified hostname:
+
+```ini
+[tornado_sharding]
+9800_regex = ^realm-(a|b)\.example\.com$
+9801_regex = ^other(-option)?\.example.com$
+```
+
+Extremely large organizations can be distributed across multiple
+Tornado shards by joining the ports in the key with `_`:
+
+```ini
+[tornado_sharding]
+9800 = small-realm
+9801_9802 = very-large-realm
+```
+
+After running `scripts/zulip-puppet-apply`, a separate step to run
+`scripts/refresh-sharding-and-restart` is required for any sharding
+changes to take effect.
+
 ### `[loadbalancer]`
 
 #### `ips`
@@ -381,10 +426,13 @@ not_ send any requests to Zulip which came in unencrypted.
 
 ### `[http_proxy]`
 
+See "[Customizing the outgoing HTTP
+proxy](deployment.md#customizing-the-outgoing-http-proxy)" for general
+instructions on the outgoing proxy.
+
 #### `host`
 
-The hostname or IP address of an [outgoing HTTP `CONNECT`
-proxy](deployment.md#customizing-the-outgoing-http-proxy). Defaults to
+The hostname or IP address of an outgoing HTTP `CONNECT`. Defaults to
 `localhost` if unspecified.
 
 #### `port`
@@ -403,6 +451,12 @@ Because Camo includes logic to deny access to private subnets, routing
 its requests through Smokescreen is generally not necessary. Set to
 true or false to override the default, which uses the proxy only if
 it is not the default of Smokescreen on a local host.
+
+#### `allow_addresses`, `allow_ranges`, `deny_addresses`, `deny_ranges`
+
+Comma-separated lists of IP addresses or CIDR range rules. All
+private IP addresses (e.g., 127.0.0.0/8, 192.168.0.0/16) are denied by
+default; allow rules override deny rules.
 
 ### `[sentry]`
 

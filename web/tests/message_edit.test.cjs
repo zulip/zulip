@@ -53,6 +53,7 @@ run_test("is_content_editable", ({override}) => {
     // user, and that were successfully sent (i.e. no failed_request or local_id)
     const message = {
         sent_by_me: true,
+        submessages: [],
     };
 
     override(realm, "realm_allow_message_editing", false);
@@ -75,7 +76,7 @@ run_test("is_content_editable", ({override}) => {
     // Right now, we prevent users from editing widgets.
     message.submessages = ["/poll"];
     assert.equal(is_content_editable(message, 55), false);
-    delete message.submessages;
+    message.submessages = [];
     message.type = "private";
     assert.equal(is_content_editable(message, 45), false);
 

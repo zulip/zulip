@@ -109,7 +109,7 @@ def move_messages_from_general_chat_to_empty_string_topic(
         email__iexact=settings.NOTIFICATION_BOT, realm=internal_realm
     )
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         with transaction.atomic(durable=True):
             # Uses index "zerver_message_realm_upper_subject"
             message_queryset = Message.objects.filter(realm=realm, subject__iexact="general chat")

@@ -937,7 +937,7 @@ def authenticated_json_view(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated:  # nocoverage
             raise UnauthorizedError
 
         user_profile = request.user

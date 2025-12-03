@@ -302,7 +302,7 @@ class MarkdownMiscTest(ZulipTestCase):
         self.assertTrue(mention_data.message_has_topic_wildcards())
 
         content = "@*hamletcharacters*"
-        group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        group = NamedUserGroup.objects.get(realm_for_sharding=realm, name="hamletcharacters")
         mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id, cordelia.id})
 
@@ -368,7 +368,7 @@ class MarkdownMiscTest(ZulipTestCase):
         iago = self.example_user("iago")
         othello = self.example_user("othello")
 
-        hamlet_group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        hamlet_group = NamedUserGroup.objects.get(realm_for_sharding=realm, name="hamletcharacters")
         zulip_group = check_add_user_group(realm, "zulip_group", [iago, aaron], acting_user=othello)
         mention_backend = MentionBackend(realm.id)
 
@@ -579,7 +579,7 @@ class MarkdownFixtureTest(ZulipTestCase):
 
     def test_markdown_no_ignores(self) -> None:
         # We do not want any ignored tests to be committed and merged.
-        format_tests, linkify_tests = self.load_markdown_tests()
+        format_tests, _linkify_tests = self.load_markdown_tests()
         for name, test in format_tests.items():
             message = f'Test "{name}" shouldn\'t be ignored.'
             is_ignored = test.get("ignore", False)
@@ -829,6 +829,29 @@ class MarkdownEmbedsTest(ZulipTestCase):
         self.assertEqual(
             converted,
             f"""<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="{get_camo_url("https://i.ytimg.com/vi/nOJgD4fcZhI/mqdefault.jpg")}"></a></div>""",
+        )
+
+    def test_inline_image(self) -> None:
+        image_url = "https://www.google.com/images/srpr/logo4w.png"
+        msg = f"The Google logo looks like this: ![Google logo]({image_url}) and..."
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            f"""<p>The Google logo looks like this: <img alt="Google logo" data-original-src="{image_url}" src="{get_camo_url(image_url)}"> and...</p>""",
+        )
+
+        msg = '![foo](/url "the title")'
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="foo" data-original-src="/url" src="/url" title="the title"></p>',
+        )
+
+        msg = "![](/url)"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="" data-original-src="/url" src="/url"></p>',
         )
 
     def test_inline_image_preview(self) -> None:
@@ -3053,7 +3076,9 @@ class MarkdownMentionTest(ZulipTestCase):
         self.assertEqual(rendering_result.mentions_user_group_ids, set())
 
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=sender_user_profile.realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=sender_user_profile.realm,
+            is_system_group=True,
         )
         content = "Please contact @_*role:administrators*"
         rendering_result = render_message_markdown(msg, content)
@@ -3580,34 +3605,6 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             '<img src="https://external-content.zulipcdn.net/external_content/5cd6ddfa28639e2e95bb85a7c7910b31f5474e03/68747470733a2f2f6578616d706c652e636f6d2f74657374696d6167652e706e67">'
             "</a>"
             "</div>",
-        )
-
-
-class MarkdownMITTest(ZulipTestCase):
-    def test_mit_rendering(self) -> None:
-        """Test the Markdown configs for the MIT Zephyr mirroring system;
-        verifies almost all inline patterns are disabled, but
-        inline_interesting_links is still enabled"""
-        msg = "**test**"
-        realm = get_realm("zephyr")
-        client = get_client("zephyr_mirror")
-        message = Message(sending_client=client, sender=self.mit_user("sipbtest"))
-        converted = markdown_convert(msg, message_realm=realm, message=message)
-        self.assertEqual(
-            converted.rendered_content,
-            "<p>**test**</p>",
-        )
-        msg = "* test"
-        converted = markdown_convert(msg, message_realm=realm, message=message)
-        self.assertEqual(
-            converted.rendered_content,
-            "<p>* test</p>",
-        )
-        msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
-        converted = markdown_convert(msg, message_realm=realm, message=message)
-        self.assertEqual(
-            converted.rendered_content,
-            '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
         )
 
 

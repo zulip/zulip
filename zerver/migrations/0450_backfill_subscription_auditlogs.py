@@ -42,7 +42,7 @@ def backfill_missing_subscriptions(
             last_id = -1
         return last_id
 
-    for stream in Stream.objects.all():
+    for stream in Stream.objects.all().iterator():
         with transaction.atomic():
             subscribed_user_ids = set(
                 Subscription.objects.filter(recipient_id=stream.recipient_id).values_list(

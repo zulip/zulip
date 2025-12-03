@@ -631,6 +631,21 @@ paths:
                                           type: boolean
                                           description: |
                                             A boolean describing whether the user account has been deactivated.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When an imported user logs into the organization for
+                                        the first time.
+
+                                        **Changes**: New in Zulip 12.0 (feature level 433).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        is_imported_stub:
+                                          type: boolean
+                                          description: This value is always `false`.
                               additionalProperties: false
                               example:
                                 {
@@ -923,11 +938,15 @@ paths:
                                     removing the user's subscriptions before the `realm_user` event
                                     for the user's deactivation.
 
+                                    **Changes**: Before Zulip 12.0 (feature level 428), this event
+                                    was incorrectly not sent when deactivating a user subscribed to
+                                    archived channels. Clients supporting older server versions and
+                                    maintaining peer subscriber data need to remove all channel
+                                    subscriptions for a user when processing the `realm_user` event
+                                    with `op="remove"`.
+
                                     **Changes**: Before Zulip 10.0 (feature level 377), this event
-                                    was not sent on user deactivation. Clients supporting older
-                                    server versions and maintaining peer subscriber data need to
-                                    remove all channel subscriptions for a user when processing the
-                                    `realm_user` event with `op="remove"`.
+                                    was not sent on user deactivation.
 
                                     **Changes**: New in Zulip 4.0 (feature level 35), replacing
                                     the `stream_id` integer.
@@ -1128,6 +1147,7 @@ paths:
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
                                       "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
                                       "profile_data": {},
+                                      "is_imported_stub": false,
                                     },
                                   "id": 0,
                                 }
@@ -5473,6 +5493,13 @@ paths:
 
                                         **Changes**: New in Zulip 9.0 (feature level 246). Previously, the Zulip
                                         server could not be configured to enforce unique names.
+                                    send_channel_events_messages:
+                                      type: boolean
+                                      description: |
+                                        Indicates whether channel event messages are sent in this organization.
+
+                                        **Changes**: New in Zulip 12.0 (feature level 434). Previously,
+                                        channel events were sent unconditionally.
                                     send_welcome_emails:
                                       type: boolean
                                       description: |
@@ -8579,7 +8606,7 @@ paths:
         Fetch the message edit history of a previously edited message.
 
         Note that edit history may be disabled in some organizations; see the
-        [Zulip Help Center documentation on editing messages][edit-settings].
+        [Zulip help center documentation on editing messages][edit-settings].
 
         [edit-settings]: /help/view-a-messages-edit-history
       parameters:
@@ -10077,12 +10104,39 @@ paths:
       description: |
         Permanently delete a message.
 
-        This API corresponds to the
-        [delete a message completely][delete-completely] feature documented in
-        the Zulip Help Center.
+        This API corresponds to the [delete a message completely][delete-completely]
+        feature documented in the Zulip help center.
+
+        A user must be able to access the content of a message in order to delete it.
+        See [channel permissions](/help/channel-permissions) for more information
+        about content access for channel messages. For direct messages, the user
+        must have received or sent the direct message to have content access.
+
+        See [restricting message deletion](/help/restrict-message-editing-and-deletion)
+        for documentation on when users are allowed to delete messages.
+
+        The relevant realm settings in the API that are related to the above linked
+        documentation on when users are allowed to delete messages are:
+
+        - `realm_can_delete_any_message_group`
+        - `realm_can_delete_own_message_group`
+        - `realm_can_set_delete_message_policy_group`
+        - `realm_message_content_delete_limit_seconds`
+
+        The relevant per-channel permission settings in the API that are related to the
+        above linked documentation on when users are allowed to delete messages in a
+        specific channel are:
+
+        - `can_delete_any_message_group`
+        - `can_delete_own_message_group`
+
+        More details about these realm and channel settings can be found in the
+        [`POST /register`](/api/register-queue) response.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 281), only organization
+        administrators had permission to permanently delete a message.
 
         [delete-completely]: /help/delete-a-message#delete-a-message-completely
-      x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/MessageId"
       responses:
@@ -10355,7 +10409,13 @@ paths:
 
         You can also [fetch details on a single user](/api/get-user).
 
-        **Changes**: This endpoint did not support unauthenticated
+        **Changes**: In Zulip 12.0 (feature level 437), fixed a bug
+        dating to feature level 232, which caused guest users to
+        receive fake backwards-compatibility users in the format
+        intended for clients using `POST /register` without the
+        `user_list_incomplete` client capability.
+
+        This endpoint did not support unauthenticated
         access in organizations using the [public access
         option](/help/public-access-option) prior to Zulip 11.0
         (feature level 387).
@@ -10432,6 +10492,7 @@ paths:
                               "is_guest": false,
                               "date_joined": "2019-10-20T07:50:53.728864+00:00",
                               "full_name": "aaron",
+                              "is_imported_stub": false,
                             },
                             {
                               "date_joined": "2019-10-20T07:50:53.729659+00:00",
@@ -10471,6 +10532,7 @@ paths:
                               "is_active": true,
                               "email": "hamlet@zulip.com",
                               "delivery_email": null,
+                              "is_imported_stub": false,
                             },
                             {
                               "bot_owner_id": 11,
@@ -10488,6 +10550,7 @@ paths:
                               "bot_type": 1,
                               "timezone": "",
                               "is_bot": true,
+                              "is_imported_stub": false,
                             },
                           ],
                       }
@@ -11025,6 +11088,17 @@ paths:
                           present only when `email_address_visibility` was restricted and the
                           requesting user had permission to access realm users' emails. As of
                           this feature level, this field is always present.
+                      is_imported_stub:
+                        type: boolean
+                        description: |
+                          Indicates whether this user object is a stub account imported from
+                          another chat system. Stub accounts are used to represent the senders
+                          for imported messages. Stub accounts can be converted to regular Zulip
+                          accounts when the user starts using Zulip, preserving that imported
+                          user's message history.
+
+                          **Changes**: New in Zulip 12.0 (feature level 433).
+                        example: false
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
                     example:
@@ -11046,6 +11120,7 @@ paths:
                         "msg": "",
                         "result": "success",
                         "user_id": 5,
+                        "is_imported_stub": false,
                         "profile_data":
                           {
                             "5": {"value": "2000-01-01"},
@@ -11535,13 +11610,6 @@ paths:
                                 the specified Zulip API email.
                               additionalProperties:
                                 $ref: "#/components/schemas/LegacyPresenceFormat"
-                      zephyr_mirror_active:
-                        type: boolean
-                        deprecated: true
-                        description: |
-                          Legacy property for a part of the Zephyr mirroring system.
-
-                          **Deprecated**. Clients should ignore this field.
               examples:
                 modern-presence-format-example:
                   description: |
@@ -12740,15 +12808,35 @@ paths:
                     Must be unique in the client's table of accounts.
                   type: integer
                   example: 2408
-                push_public_key:
+                push_key:
                   description: |
-                    Public part of the asymmetric key pair generated by the client
-                    using NaCl (the Networking and Cryptography Library), encoded
-                    using a RFC 4648 standard base64 encoder.
+                    Key that the client would like the server to use to encrypt notifications,
+                    encoded with Base64.
 
-                    It is used to encrypt notifications for delivery to the client.
+                    The key is a byte sequence beginning with a single byte that encodes which
+                    cryptosystem to use, followed by the key to use for that cryptosystem.
+                    This byte sequence is encoded using standard Base64 encoding as defined in RFC 4648.
+
+                    The client should avoid sharing the key anywhere else: in particular it should
+                    generate a fresh key for each server, and to the extent possible keep the key
+                    out of any backups of the client's data.
+
+                    Supported cryptosystems are:
+
+                    - `0x31`: LibSodium's [SecretBox][libsodium-secretbox] symmetric key encryption
+                      system. Keys are 32 bytes, which the server will use with libsodium's
+                      `crypto_secretbox_easy`. See the [NaCl documentation][nacl-secretbox], which
+                      details how this system uses `XSalsa20` and `Poly1305` to provide authenticated
+                      encryption.
+
+                    [libsodium-secretbox]: https://libsodium.gitbook.io/doc/secret-key_cryptography/secretbox
+                    [nacl-secretbox]: https://nacl.cr.yp.to/secretbox.html
+
+                    **Changes**: New in Zulip 12.0 (feature level 432). This replaced the
+                    `push_public_key` parameter which had a prototype asymmetric cryptosystem, and
+                    did not have a natural way to support multiple cryptosystems.
                   type: string
-                  example: "push-public-key"
+                  example: "MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"
                 bouncer_public_key:
                   description: |
                     Which of the bouncer's public keys the client used to encrypt the
@@ -12774,7 +12862,7 @@ paths:
               required:
                 - token_kind
                 - push_account_id
-                - push_public_key
+                - push_key
                 - bouncer_public_key
                 - encrypted_push_registration
       responses:
@@ -14105,7 +14193,6 @@ paths:
                     - "google" - Google
                     - "twitter" - Twitter
                     - "text" - Plain text
-                    - "google-blob" - Google blobs
                   type: string
                   example: "google"
                 demote_inactive_streams:
@@ -14177,11 +14264,21 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                web_inbox_show_channel_folders:
+                  type: boolean
+                  description: |
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how conversations with unread messages
+                    are displayed in the web/desktop application's Inbox view.
+
+                    **Changes**: New in Zulip 12.0 (feature level 431).
+                  example: true
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
-                    Determines whether the web/desktop application's left sidebar displays
-                    any channel folders configured by the organization.
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how channels are displayed in the
+                    web/desktop application's left sidebar.
 
                     **Changes**: New in Zulip 11.0 (feature level 411).
                   example: true
@@ -14519,6 +14616,8 @@ paths:
                 contentType: application/json
               hide_ai_features:
                 contentType: application/json
+              web_inbox_show_channel_folders:
+                contentType: application/json
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_unreads_count_summary:
@@ -14722,7 +14821,13 @@ paths:
         either of which could change the client's ability to look them up by that
         email address.
 
-        **Changes**: Starting with Zulip 10.0 (feature level 302), the real email
+        **Changes**: In Zulip 12.0 (feature level 437), fixed a bug
+        dating to feature level 232, which caused guest users to
+        receive fake backwards-compatibility users in the format
+        intended for clients using `POST /register` without the
+        `user_list_incomplete` client capability.
+
+        Starting with Zulip 10.0 (feature level 302), the real email
         address can be used in the `email` parameter and will fetch the target user's
         data if and only if the target's email visibility setting permits the requester
         to see the email address.
@@ -14828,6 +14933,7 @@ paths:
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
+                            "is_imported_stub": false,
                           },
                       }
     patch:
@@ -14887,7 +14993,13 @@ paths:
         You can also fetch details on [all users in the organization](/api/get-users)
         or [by a user's Zulip API email](/api/get-user-by-email).
 
-        **Changes**: New in Zulip 3.0 (feature level 1).
+        **Changes**: In Zulip 12.0 (feature level 437), fixed a bug
+        dating to feature level 232, which caused guest users to
+        receive fake backwards-compatibility users in the format
+        intended for clients using `POST /register` without the
+        `user_list_incomplete` client capability.
+
+        New in Zulip 3.0 (feature level 1).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -14962,6 +15074,7 @@ paths:
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
+                            "is_imported_stub": false,
                           },
                       }
     patch:
@@ -15486,7 +15599,11 @@ paths:
         Fetches which users have [consented](/help/export-your-organization#configure-whether-administrators-can-export-your-private-data)
         for their private data to be exported by organization administrators.
 
-        **Changes**: New in Zulip 10.0 (feature level 295).
+        **Changes**: Changes in Zulip 12.0 (feature level 430). Added an
+        integer field `email_address_visibility` to the objects in the
+        `export_consents` array.
+
+        New in Zulip 10.0 (feature level 295).
       responses:
         "200":
           description: Success.
@@ -15503,8 +15620,9 @@ paths:
                       export_consents:
                         type: array
                         description: |
-                          An array of objects where each object contains a user ID and
-                          whether the user has consented for their private data to be exported.
+                          An array of objects where each object contains a user ID, whether the
+                          user has consented for their private data to be exported, and their
+                          email visibility policy.
                         items:
                           type: object
                           additionalProperties: false
@@ -15517,12 +15635,22 @@ paths:
                               description: |
                                 Whether the user has consented for their private data export.
                               type: boolean
+                            email_address_visibility:
+                              $ref: "#/components/schemas/EmailAddressVisibility"
                     example:
                       {
                         "export_consents":
                           [
-                            {"user_id": 11, "consented": true},
-                            {"user_id": 6, "consented": false},
+                            {
+                              "user_id": 11,
+                              "consented": true,
+                              "email_address_visibility": 1,
+                            },
+                            {
+                              "user_id": 6,
+                              "consented": false,
+                              "email_address_visibility": 2,
+                            },
                           ],
                         "msg": "",
                         "result": "success",
@@ -17782,7 +17910,6 @@ paths:
                               used to display emoji to the user everywhere they appear in the UI.
 
                               - "google" - Google modern
-                              - "google-blob" - Google classic
                               - "twitter" - Twitter
                               - "text" - Plain text
                           demote_inactive_streams:
@@ -17832,11 +17959,20 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          web_inbox_show_channel_folders:
+                            type: boolean
+                            description: |
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how conversations with unread messages
+                              are displayed in the web/desktop application's Inbox view.
+
+                              **Changes**: New in Zulip 12.0 (feature level 431).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
-                              Determines whether the web/desktop application's left sidebar displays
-                              any channel folders configured by the organization.
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how channels are displayed in the
+                              web/desktop application's left sidebar.
 
                               **Changes**: New in Zulip 11.0 (feature level 411).
                           web_left_sidebar_unreads_count_summary:
@@ -18970,6 +19106,12 @@ paths:
                               A [group-setting value](/api/group-setting-values) defining the set of
                               users who have permission to delete any message in the organization.
 
+                              Note that a user must also be able to access the content of a message
+                              in order to delete it. See [channel permissions](/help/channel-permissions)
+                              for information about content access for channel messages. For direct
+                              messages, the user must have received or sent the direct message to
+                              have content access.
+
                               **Changes**: New in Zulip 10.0 (feature level 281). Previously, this
                               permission was limited to administrators only and was uneditable.
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -19538,6 +19680,15 @@ paths:
                           Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
                           this organization are required to have an email
                           address in one of the `realm_domains` configured for the organization.
+                      realm_send_channel_events_messages:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Indicates whether channel event messages are sent in this organization.
+
+                          **Changes**: New in Zulip 12.0 (feature level 434). Previously,
+                          channel events were sent unconditionally.
                       realm_send_welcome_emails:
                         type: boolean
                         description: |
@@ -19958,12 +20109,6 @@ paths:
 
                           Relevant for administrative settings UI that can change the digest
                           email settings.
-                      realm_is_zephyr_mirror_realm:
-                        type: boolean
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Whether the organization is a Zephyr mirror realm.
                       realm_email_auth_enabled:
                         type: boolean
                         description: |
@@ -20053,6 +20198,18 @@ paths:
                           - 1000 = Other
 
                           **Changes**: New in Zulip 6.0 (feature level 128).
+                      realm_owner_full_content_access:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the organization's security model allows owners to access
+                          all private content in this organization.
+
+                          Note that this security model configuration can only be changed
+                          via a command-line management command.
+
+                          **Changes**: New in Zulip 12.0 (feature level 438).
                       realm_plan_type:
                         type: integer
                         description: |
@@ -20288,6 +20445,10 @@ paths:
                           names contained in this list, to obtain the desired
                           thumbnail size.
 
+                          See [Images in Markdown messages](/api/message-formatting#images)
+                          for details of how Zulip renders images, and how
+                          clients should handle them.
+
                           **Changes**: New in Zulip 9.0 (feature level 273).
                         type: array
                         items:
@@ -20314,7 +20475,7 @@ paths:
                               type: boolean
                               description: |
                                 If this file format is animated. These formats
-                                are only generated for uploaded imates which
+                                are only generated for uploaded images which
                                 themselves are animated.
                       server_avatar_changes_disabled:
                         type: boolean
@@ -20692,7 +20853,6 @@ paths:
                               used to display emoji to the user everywhere they appear in the UI.
 
                               - "google" - Google modern
-                              - "google-blob" - Google classic
                               - "twitter" - Twitter
                               - "text" - Plain text
                           demote_inactive_streams:
@@ -20742,11 +20902,20 @@ paths:
                               be hidden in all Zulip clients.
 
                               **Changes**: New in Zulip 10.0 (feature level 350).
+                          web_inbox_show_channel_folders:
+                            type: boolean
+                            description: |
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how conversations with unread messages
+                              are displayed in the web/desktop application's Inbox view.
+
+                              **Changes**: New in Zulip 12.0 (feature level 431).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
-                              Determines whether the web/desktop application's left sidebar displays
-                              any channel folders configured by the organization.
+                              Determines whether [channel folders](/help/channel-folders)
+                              are used to organize how channels are displayed in the
+                              web/desktop application's left sidebar.
 
                               **Changes**: New in Zulip 11.0 (feature level 411).
                           web_left_sidebar_unreads_count_summary:
@@ -21258,6 +21427,32 @@ paths:
                                   nullable: true
                                 avatar_version: {}
                                 profile_data: {}
+                                is_imported_stub: {}
+                      server_report_message_types:
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          A list of objects where each object describes a supported
+                          report type for the [message report](/help/report-a-message)
+                          feature.
+
+                          **Changes**: New in Zulip 12.0 (feature level 435).
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            key:
+                              type: string
+                              description: |
+                                The unique ID for the report message type.
+                            name:
+                              type: string
+                              description: |
+                                The user-facing string for the report message type, to be
+                                displayed in the report message UI, in the user's language.
+                                Note that the actual report will use the name for this type
+                                in the organization's default language.
                       server_supported_permission_settings:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -21464,7 +21659,8 @@ paths:
                               nullable: true
                               description: |
                                 URL for an image to be displayed as an icon in all buttons for
-                                the external authentication method.
+                                the external authentication method. This URL should be resolved
+                                relative to the server's base URL.
 
                                 When `null`, no icon should be displayed.
                             login_url:
@@ -21943,7 +22139,6 @@ paths:
                     used to display emoji to the user everywhere they appear in the UI.
 
                     - "google" - Google modern
-                    - "google-blob" - Google classic
                     - "twitter" - Twitter
                     - "text" - Plain text
 
@@ -22023,11 +22218,20 @@ paths:
                     be hidden in all Zulip clients.
 
                     **Changes**: New in Zulip 10.0 (feature level 350).
+                web_inbox_show_channel_folders:
+                  type: boolean
+                  description: |
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how conversations with unread messages
+                    are displayed in the web/desktop application's Inbox view.
+
+                    **Changes**: New in Zulip 12.0 (feature level 431).
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
-                    Determines whether the web/desktop application's left sidebar displays
-                    any channel folders configured by the organization.
+                    Determines whether [channel folders](/help/channel-folders)
+                    are used to organize how channels are displayed in the
+                    web/desktop application's left sidebar.
 
                     **Changes**: New in Zulip 11.0 (feature level 411).
                   example: true
@@ -22451,6 +22655,8 @@ paths:
               web_stream_unreads_count_display_policy:
                 contentType: application/json
               hide_ai_features:
+                contentType: application/json
+              web_inbox_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
@@ -25453,7 +25659,7 @@ paths:
       summary: Create BigBlueButton video call
       description: |
         Create a video call URL for a BigBlueButton video call.
-        Requires [BigBlueButton 2.4+](/integrations/doc/big-blue-button)
+        Requires [BigBlueButton 2.4+](/integrations/big-blue-button)
         to be configured on the Zulip server.
 
         The acting user will be given the moderator role on the call.
@@ -25715,8 +25921,8 @@ components:
             The ID of the user who created this channel.
 
             A `null` value means the channel has no recorded creator, which is often
-            because the channel is very old, or because it was created via a data
-            import tool or [management command][management-commands].
+            because the channel is very old, was created during realm creation or
+            because it was created via a data import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
 
@@ -26768,8 +26974,8 @@ components:
             The ID of the user who created this channel.
 
             A `null` value means the channel has no recorded creator, which is often
-            because the channel is very old, or because it was created via a data
-            import tool or [management command][management-commands].
+            because the channel is very old, was created during realm creation or
+            because it was created via a data import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 9.0 (feature level 254).
 
@@ -27988,7 +28194,21 @@ components:
         default_group_name:
           type: string
           description: |
-            Name of the default group for the setting.
+            Name of the default system group for the setting.
+
+            For some channel settings, this can also be `channel_creator`.
+            In that case:
+
+            - If the channel's [`creator_id`][channel-response] is not `null`, default for the
+              setting is an anonymous group with the channel creator as
+              the only member.
+            - If the channel's [`creator_id`][channel-response] is `null`, default for the setting
+              is `role:nobody` system group.
+
+            **Changes**: In Zulip 12.0 (feature level 427), renamed
+            `stream_creator_or_nobody` value to `channel_creator`.
+
+            [channel-response]: /api/get-stream-by-id#response
         default_for_system_groups:
           type: string
           nullable: true
@@ -28033,6 +28253,7 @@ components:
             avatar_url:
               nullable: true
             avatar_version: {}
+            is_imported_stub: {}
             profile_data: {}
     UserBase:
       type: object
@@ -28169,6 +28390,17 @@ components:
             Version for the user's avatar. Used for cache-busting requests
             for the user's avatar. Clients generally shouldn't need to use this;
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
+        is_imported_stub:
+          type: boolean
+          description: |
+            Indicates whether this user object is a stub account imported from
+            another chat system. Stub accounts are used to represent the senders
+            for imported messages. Stub accounts can be converted to regular Zulip
+            accounts when the user starts using Zulip, preserving that imported
+            user's message history.
+
+            **Changes**: New in Zulip 12.0 (feature level 433).
+          example: false
         profile_data:
           $ref: "#/components/schemas/profile_data"
     profile_data:

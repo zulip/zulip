@@ -60,10 +60,6 @@ export const stream_schema = z.object({
     rendered_description: z.string(),
     stream_id: z.number(),
     stream_post_policy: z.enum(StreamPostPolicy),
-    // Generally, this should not be accessed directly, since it can
-    // have small inaccuracies in the event of rare races. See
-    // the comments on peer_data.get_subscriber_count.
-    subscriber_count: z.number(),
     topics_policy: stream_topics_policy_schema,
 });
 
@@ -78,7 +74,13 @@ export const stream_specific_notification_settings_schema = z.object({
 export const api_stream_schema = z.object({
     ...stream_schema.shape,
     stream_weekly_traffic: z.nullable(z.number()),
+    // This field is stripped from subscriber objects when loading data
+    // from the server. Always use `peer_data.get_subscriber_count` to
+    // access channel subscriber counts, and see its comments for notes
+    // about the possibility of inaccuracy in the presence of certain races.
+    subscriber_count: z.number(),
 });
+export type APIStream = z.infer<typeof api_stream_schema>;
 
 export const never_subscribed_stream_schema = z.object({
     ...api_stream_schema.shape,

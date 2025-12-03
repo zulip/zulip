@@ -271,7 +271,4 @@ accurate.
 - Disabled images with `![]()` (images from links are shown as an inline
   preview).
 
-- Allow embedding any avatar as a tiny (list bullet size) image. This
-  is used primarily by version control integrations.
-
 - We added the `~~~ quote` block quote syntax.

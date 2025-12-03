@@ -55,7 +55,7 @@ def get_outbound_message_body(payload: WildValue) -> str:
 
 
 def get_outbound_reply_body(payload: WildValue) -> str:
-    link, outbox, inbox, subject = get_message_data(payload)
+    link, outbox, inbox, _subject = get_message_data(payload)
     return f"[Outbound reply]({link}) from **{inbox}** to **{outbox}**."
 
 

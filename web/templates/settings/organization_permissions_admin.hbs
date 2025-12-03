@@ -102,7 +102,8 @@
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_set_topics_policy_group"
-                  label=group_setting_labels.can_set_topics_policy_group}}
+                  label=group_setting_labels.can_set_topics_policy_group
+                  help_link="/help/require-topics"}}
             </div>
         </div>
 
@@ -313,8 +314,9 @@
                 {{> settings_checkbox
                   setting_name="realm_name_changes_disabled"
                   prefix="id_"
-                  is_checked=realm_name_changes_disabled
-                  label=admin_settings_label.realm_name_changes_disabled}}
+                  is_checked=(or realm_name_changes_disabled server_name_changes_disabled)
+                  label=admin_settings_label.realm_name_changes_disabled
+                  is_disabled=server_name_changes_disabled}}
 
                 {{> settings_checkbox
                   setting_name="realm_email_changes_disabled"
@@ -325,8 +327,9 @@
                 {{> settings_checkbox
                   setting_name="realm_avatar_changes_disabled"
                   prefix="id_"
-                  is_checked=realm_avatar_changes_disabled
-                  label=admin_settings_label.realm_avatar_changes_disabled}}
+                  is_checked=(or realm_avatar_changes_disabled server_avatar_changes_disabled)
+                  label=admin_settings_label.realm_avatar_changes_disabled
+                  is_disabled=server_avatar_changes_disabled}}
 
             </div>
         </div>

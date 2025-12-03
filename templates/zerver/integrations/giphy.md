@@ -11,4 +11,4 @@ GIPHY is enabled by default in Zulip Cloud. Follow
 * [Using GIPHY in Zulip][help-center-giphy]
 
 [help-center-giphy]: /help/animated-gifs-from-giphy
-[configure-giphy]: https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
+[configure-giphy]: https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
