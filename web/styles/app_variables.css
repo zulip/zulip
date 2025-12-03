@@ -732,6 +732,10 @@
         hsl(217deg 75% 59%),
         hsl(217deg 95% 59%)
     );
+    --color-hovered-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59% / 50%),
+        hsl(217deg 95% 59% / 60%)
+    );
     --color-message-list-border: light-dark(
         hsl(0deg 0% 0% / 16%),
         hsl(0deg 0% 0% / 40%)

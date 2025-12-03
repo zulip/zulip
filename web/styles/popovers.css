@@ -769,6 +769,11 @@ ul.popover-group-menu-member-list {
         outline: 2px solid var(--color-selected-gif-in-grid-picker);
     }
 
+    .giphy-gif:hover,
+    .tenor-gif:hover {
+        outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+    }
+
     .gif-scrolling-container {
         overflow: hidden auto;
         height: 300px;
