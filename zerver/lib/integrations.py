@@ -1001,6 +1001,7 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
 EMBEDDED_INTEGRATIONS: list[Integration] = [
     Integration("email", ["communication"]),
     Integration("giphy", ["misc"], display_name="GIPHY"),
+    Integration("tenor", ["misc"], display_name="Tenor"),
 ]
 
 ZAPIER_INTEGRATIONS: list[Integration] = [
@@ -1163,8 +1164,9 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Video call integrations
     | {"big-blue-button", "jitsi", "zoom"}
     | {
-        # the integration does not send messages
+        # these integrations do not send messages
         "giphy",
+        "tenor",
         # the integration is planned to be removed
         "twitter",
     }
