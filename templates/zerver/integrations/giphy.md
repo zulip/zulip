@@ -8,7 +8,7 @@ GIPHY is enabled by default in Zulip Cloud. Follow
 
 ### Related documentation
 
-* [Using GIPHY in Zulip][help-center-giphy]
+* [Using GIFs in Zulip][help-center-gifs]
 
-[help-center-giphy]: /help/animated-gifs-from-giphy
+[help-center-gifs]: /help/animated-gifs
 [configure-giphy]: https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html

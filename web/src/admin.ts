@@ -136,7 +136,7 @@ export function build_page(): void {
         realm_night_logo_url = realm.realm_logo_url;
     }
 
-    let giphy_help_link = "/help/animated-gifs-from-giphy";
+    let giphy_help_link = "/help/animated-gifs";
     if (realm.giphy_api_key === "") {
         giphy_help_link =
             "https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html";

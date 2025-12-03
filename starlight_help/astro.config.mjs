@@ -317,7 +317,7 @@ export default defineConfig({
                         "share-and-upload-files",
                         {
                             label: "Animated GIFs",
-                            link: "/animated-gifs-from-giphy",
+                            link: "/animated-gifs",
                         },
                         "text-emphasis",
                         "paragraph-and-section-formatting",
