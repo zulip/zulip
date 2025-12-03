@@ -72,8 +72,8 @@ def redact_email_address(error_message: str) -> str:
     return re.sub(rf"\b(\S*?)(@{re.escape(domain)})", redact, error_message)
 
 
-def log_error(email_message: EmailMessage, error_message: str, to: str | None) -> None:
-    recipient = to or "No recipient found"
+def log_error(email_message: EmailMessage, error_message: str) -> None:
+    recipient = email_message.get("To") or "No recipient found"
     error_message = "Sender: {}\nTo: {}\n{}".format(
         email_message.get("From"), recipient, error_message
     )
@@ -520,7 +520,8 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
                 emails=emails,
             )
         except JsonableError as error:  # nocoverage
-
+            # Group DMs can include deactivated users; email replies
+            # should match UI behavior and ignore such users.
             if "no longer using Zulip" in error.msg:  # nocoverage
                 logger.info(
                     "Ignoring deactivated user when processing missed-message email reply: %s",
@@ -528,7 +529,6 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
                 )
                 return
             raise  # nocoverage
-
     else:
         raise AssertionError("Invalid recipient type!")
 
@@ -556,7 +556,7 @@ def process_message(message: EmailMessage, rcpt_to: str | None = None) -> None:
         # TODO: notify sender of error, retry if appropriate.
         logger.info(e.args[0])
     except ZulipEmailForwardError as e:
-        log_error(message, e.args[0], to)
+        log_error(message, e.args[0])
 
 
 def validate_to_address(address: str, rate_limit: bool = True) -> None:
