@@ -5,6 +5,7 @@ from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel
 
 from zerver.lib.types import UserGroupMembersDict
+from zerver.models.realms import RealmExportSlug
 
 
 def check_url(val: str) -> str:
@@ -509,7 +510,7 @@ class Export(BaseModel):
     deleted_timestamp: float | int | None
     failed_timestamp: float | int | None
     pending: bool
-    export_type: int
+    export_type: RealmExportSlug
 
 
 class EventRealmExport(BaseEvent):

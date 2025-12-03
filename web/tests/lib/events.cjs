@@ -609,7 +609,7 @@ exports.fixtures = {
                 deleted_timestamp: null,
                 failed_timestamp: null,
                 pending: true,
-                export_type: 1,
+                export_type: "public",
             },
         ],
     },
