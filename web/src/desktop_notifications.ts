@@ -69,6 +69,49 @@ if (electron_bridge?.new_notification) {
     NotificationAPI = window.Notification;
 }
 
+export function create_notification(opts: {
+    notification_options: NotificationOptions;
+    key: string;
+    title: string;
+    message_id: number;
+    msg_count: number;
+    on_click?: (() => void) | undefined;
+}): void {
+    const {notification_options, key, title, message_id, msg_count, on_click} = opts;
+
+    assert(NotificationAPI !== undefined);
+    const existing_notification = notice_memory.get(key);
+    if (existing_notification) {
+        existing_notification.obj.close();
+    }
+    const notification_object = new NotificationAPI(title, notification_options);
+    notice_memory.set(key, {
+        obj: notification_object,
+        msg_count,
+        message_id,
+    });
+
+    if (typeof notification_object.addEventListener === "function") {
+        // Sadly, some third-party Electron apps like Franz/Ferdi
+        // misimplement the Notification API not inheriting from
+        // EventTarget.  This results in addEventListener being
+        // unavailable for them.
+        notification_object.addEventListener("click", () => {
+            notification_object.close();
+            on_click?.();
+            window.focus();
+        });
+        notification_object.addEventListener("close", () => {
+            const current_notice_memory = notice_memory.get(key);
+            // This check helps avoid race between close event for current notification
+            // object and the previous notification_object close handler.
+            if (current_notice_memory?.obj === notification_object) {
+                notice_memory.delete(key);
+            }
+        });
+    }
+}
+
 export function get_notifications(): NoticeMemory {
     return notice_memory;
 }
