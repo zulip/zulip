@@ -511,7 +511,24 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
-        internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
+
+        try:
+            internal_send_group_direct_message(
+                user_profile.realm,
+                user_profile,
+                body,
+                emails=emails,
+            )
+        except JsonableError as error:
+            # Group DMs can include deactivated users; email replies
+            # should match UI behavior and ignore such users.
+            if "no longer using Zulip" in error.msg:
+                logger.info(
+                    "Ignoring deactivated user when processing missed-message email reply: %s",
+                    error.msg,
+                )
+                return
+            raise
     else:
         raise AssertionError("Invalid recipient type!")
 
