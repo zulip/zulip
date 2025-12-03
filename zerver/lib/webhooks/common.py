@@ -31,7 +31,8 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
+from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -344,3 +345,41 @@ def validate_webhook_signature(
 
     if signed_payload != signature:
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def guess_zulip_user_from_external_account(
+    realm: Realm, external_username: str, service: str
+) -> UserProfile | None:
+    """
+    Find a Zulip user by their external service username from custom profile fields.
+
+    Matches fields whose subtype contains the service name (case-insensitive).
+    Example: service="github" matches "github", "github_business", "GitHub_Personal".
+
+    Note: Returns None for multiple matches to prevent mention conflicts.
+    """
+    service_fields = CustomProfileField.objects.filter(
+        realm=realm,
+        field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+        name__icontains=service,
+    )
+
+    if not service_fields:
+        return None
+
+    users = list(
+        CustomProfileFieldValue.objects.filter(
+            field__in=service_fields,
+            value__iexact=external_username,
+            user_profile__realm=realm,
+            user_profile__is_active=True,
+        )
+        .distinct("user_profile")
+        .select_related("user_profile")
+        .only("user_profile__id", "user_profile__full_name")[:2]
+    )
+
+    if len(users) == 1:
+        return users[0].user_profile
+
+    return None
