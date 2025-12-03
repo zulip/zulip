@@ -75,8 +75,7 @@ from zerver.actions.custom_profile_fields import do_update_user_custom_profile_d
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
-    create_user_group_in_database,
-    do_send_create_user_group_event,
+    check_add_user_group_core,
 )
 from zerver.actions.user_settings import do_change_user_delivery_email, do_regenerate_api_key
 from zerver.actions.users import do_change_user_role, do_deactivate_user
@@ -1960,10 +1959,9 @@ def ensure_missing_groups(missing_group_names: set[str], realm: Realm) -> list[N
 
     created_groups = []
     for group_name in valid_groups_names:
-        user_group = create_user_group_in_database(
-            group_name, [], realm, acting_user=None, group_settings_map=group_settings_map
+        user_group = check_add_user_group_core(
+            realm, group_name, [], group_settings_map=group_settings_map, acting_user=None
         )
-        do_send_create_user_group_event(user_group, member_ids=[])
         created_groups.append(user_group)
 
     return created_groups
