@@ -683,9 +683,27 @@ function register_popover_events($popover: JQuery): void {
         emoji_select_tab(scroll_util.get_scroll_element($emoji_map));
     });
 
+    // [FIX] Attach the listener directly to the $popover object.
+    // This ensures we catch the event before it bubbles up to the modal or document.
+    $popover.on("keydown", (e) => {
+        // If it's a Tab or Arrow key, send it to our navigate function
+        if (["Tab", "ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+            const key_name = e.key.toLowerCase().replace("arrow", "") + "_arrow";
+            const event_name = e.key === "Tab" ? "tab" : key_name;
+
+            if (e.shiftKey && event_name === "tab") {
+                navigate("shift_tab", e);
+            } else {
+                navigate(event_name, e);
+            }
+        }
+    });
+
     $("#emoji-popover-filter").on("input", filter_emojis);
     $("#emoji-popover-filter").on("keydown", process_enter_while_filtering);
-    $(".emoji-popover").on("keydown", process_keydown);
+    // We can leave this one or change it to $popover.on(...) for consistency,
+    // but the critical one is the navigation handler above.
+    $popover.on("keydown", process_keydown);
 }
 
 function get_default_emoji_popover_options(): Partial<tippy.Props> {
