@@ -59,20 +59,35 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
     ):
         return content_type
 
+    early_abort = False
     if isinstance(file_data, bytes):
         detected = chardet.detect(file_data)
     else:
+        chunk_size = 4096
         reader = file_data.reader()
         detector = chardet.universaldetector.UniversalDetector()
+        total_read = 0
         while True:
-            data = reader.read(4096)
+            data = reader.read(chunk_size)
             detector.feed(data)
-            if detector.done or len(data) < 4096:
+            if detector.done or len(data) < chunk_size:
+                break
+            total_read += chunk_size
+            if total_read >= 32 * 1024:
+                # If there's no BOM and no high bytes, the detector
+                # never says "done" before EOF -- we bail out
+                # arbitrarily at 32k.
+                early_abort = True
                 break
         detector.close()
         reader.close()
         detected = detector.result
-    if detected["confidence"] >= 0.90 and detected["encoding"]:
+    if early_abort and detected["confidence"] == 1.0 and detected["encoding"] == "ascii":
+        # An early abort which didn't see high-byte characters is not
+        # a confident "ASCII", as they may come later in the file; we
+        # would prefer to leave off the charset rather than be wrong.
+        pass
+    elif detected["confidence"] >= 0.90 and detected["encoding"]:
         fake_msg.set_param("charset", detected["encoding"], replace=True)
     elif detected["confidence"] >= 0.73 and detected["encoding"] == "ISO-8859-1":
         # ISO-8859-1 detection maxes out at 73%, so if that's what
