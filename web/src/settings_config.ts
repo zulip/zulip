@@ -1331,27 +1331,27 @@ export const stream_privacy_policy_values = {
     },
 };
 
+export type ExportTypeSlug = "public" | "full_with_consent" | "full_without_consent";
+
 export type ExportTypeOption = {
-    value: number;
+    slug: ExportTypeSlug;
     description: string;
     default: boolean;
 };
 
-export type ExportTypeSlug = "public" | "full_with_consent" | "full_without_consent";
-
 export const export_type_values: Record<ExportTypeSlug, ExportTypeOption> = {
     public: {
-        value: 1,
-        description: $t({defaultMessage: "Public data only"}),
+        slug: "public",
+        description: $t({defaultMessage: "Public data"}),
         default: false,
     },
     full_with_consent: {
-        value: 2,
+        slug: "full_with_consent",
         description: $t({defaultMessage: "Public and private data (with consent)"}),
         default: true,
     },
     full_without_consent: {
-        value: 3,
+        slug: "full_without_consent",
         description: $t({defaultMessage: "All public and private data"}),
         default: false,
     },

@@ -1,7 +1,7 @@
 from email.headerregistry import Address
 from enum import Enum, IntEnum
 from types import UnionType
-from typing import TYPE_CHECKING, Optional, TypedDict
+from typing import TYPE_CHECKING, Literal, Optional, TypedDict
 from uuid import uuid4
 
 import django.contrib.auth
@@ -30,6 +30,8 @@ if TYPE_CHECKING:
 
 
 SECONDS_PER_DAY = 86400
+RealmExportSlug = Literal["public", "full_with_consent", "full_without_consent"]
+DEFAULT_REALM_EXPORT_TYPE_SLUG: RealmExportSlug = "public"
 
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
@@ -1407,11 +1409,11 @@ class RealmExport(models.Model):
     EXPORT_PUBLIC = 1
     EXPORT_FULL_WITH_CONSENT = 2
     EXPORT_FULL_WITHOUT_CONSENT = 3
-    EXPORT_TYPES = [
-        EXPORT_PUBLIC,
-        EXPORT_FULL_WITH_CONSENT,
-        EXPORT_FULL_WITHOUT_CONSENT,
-    ]
+    EXPORT_TYPES: dict[RealmExportSlug, int] = {
+        "public": EXPORT_PUBLIC,
+        "full_with_consent": EXPORT_FULL_WITH_CONSENT,
+        "full_without_consent": EXPORT_FULL_WITHOUT_CONSENT,
+    }
     type = models.PositiveSmallIntegerField(default=EXPORT_PUBLIC)
 
     REQUESTED = 1

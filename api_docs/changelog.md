@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 449**
+
+* [`POST /export/realm`](/api/export-realm): The `export_type` parameter now
+  takes string values (`public`, `full_with_consent`, `full_without_consent`)
+  instead of integers. The new `full_without_consent` option requests a full
+  export that includes private data for all users and requires the organization
+  to have the `owner_full_content_access` flag set to True.
+* [`GET /export/realm`](/api/get-realm-exports), [`GET /events`](/api/get-events):
+  `export_type` fields now contain the new string values, matching the
+  `POST /export/realm` parameter format. These endpoints now report
+  `export_type=full_without_consent` for a full export that includes private data
+  for all users.
+
 **Feature level 448**
 
 * [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
