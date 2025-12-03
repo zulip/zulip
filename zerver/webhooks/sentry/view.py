@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urljoin
 
-import dateutil.parser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -84,7 +83,7 @@ syntax_highlight_as_map = {
 
 
 def get_global_time(dt_str: str) -> str:
-    dt = dateutil.parser.parse(dt_str)
+    dt = datetime.fromisoformat(dt_str)
     return datetime_to_global_time(dt)
 
 

@@ -1,4 +1,5 @@
-import dateutil.parser
+from datetime import datetime
+
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -50,7 +51,7 @@ ALL_EVENT_TYPES = LEGACY_EVENT_TYPES + NEW_EVENT_TYPES
 
 
 def get_global_time(dt_str: str) -> str:
-    dt = dateutil.parser.parse(dt_str)
+    dt = datetime.fromisoformat(dt_str)
     return datetime_to_global_time(dt)
 
 

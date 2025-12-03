@@ -1,6 +1,6 @@
 import re
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
@@ -801,11 +801,7 @@ def get_subscription(payload: WildValue) -> str:
 
 def get_effective_date(payload: WildValue) -> str:
     effective_date = payload["effective_date"].tame(check_string)[:10]
-    return (
-        datetime.strptime(effective_date, "%Y-%m-%d")
-        .replace(tzinfo=timezone.utc)
-        .strftime("%B %d, %Y")
-    )
+    return datetime.fromisoformat(effective_date).strftime("%B %d, %Y")
 
 
 def get_prior_subscription(payload: WildValue) -> str:

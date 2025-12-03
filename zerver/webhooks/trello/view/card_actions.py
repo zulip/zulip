@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from datetime import datetime, timezone
+from datetime import datetime
 
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.timestamp import datetime_to_global_time
@@ -74,7 +74,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
 
 
 def prettify_date(date_string: str) -> str:
-    dt = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
+    dt = datetime.fromisoformat(date_string)
     return datetime_to_global_time(dt)
 
 

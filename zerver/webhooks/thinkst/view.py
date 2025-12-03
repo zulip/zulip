@@ -1,8 +1,7 @@
 # Webhooks for external integrations.
 
-from datetime import timezone
+from datetime import datetime
 
-import dateutil.parser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -80,8 +79,8 @@ def body(message: WildValue) -> str:
         timestamp = message["Timestamp"].tame(check_string)
         # Thinkst datetime format: https://help.canary.tools/hc/en-gb/articles/360012727777-How-do-I-configure-notifications-for-a-Generic-Webhook#h_01K71QZ806C5D49RYB6RBXSZ1B
         # "YYYY-MM-DD HH:MM:SS (UTC)"
-        formatted_timestamp = timestamp.replace("(UTC)", "").strip()
-        dt = dateutil.parser.parse(formatted_timestamp).replace(tzinfo=timezone.utc)
+        formatted_timestamp = timestamp.replace(" (UTC)", "Z")
+        dt = datetime.fromisoformat(formatted_timestamp)
         global_time = datetime_to_global_time(dt)
         body += f"**Timestamp:** {global_time}\n"
 
