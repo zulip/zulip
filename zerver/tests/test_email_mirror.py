@@ -1380,15 +1380,12 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             "to": orjson.dumps([cordelia.id, iago.id, desdemona.id]).decode(),
         })
         self.assert_json_success(result)
-    
         # Cordelia gets a missed message email
         cordelia_profile = self.example_user("cordelia")
         user_message = most_recent_usermessage(cordelia_profile)
         mm_address = create_missed_message_address(cordelia_profile, user_message.message)
-    
         # Deactivate Desdemona
         do_deactivate_user(desdemona, acting_user=None)
-    
         # Simulate Cordelia replying via missed message email
         incoming_valid_message = self.EmailMessage()
         incoming_valid_message.set_content("TestMissedGroupDirectMessageEmailMessages body")
@@ -1396,21 +1393,17 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["From"] = cordelia_profile.delivery_email
         incoming_valid_message["To"] = str(mm_address)
         incoming_valid_message["Reply-To"] = cordelia_profile.delivery_email
-    
         # Assert the error is swallowed (no crash, warning logged)
         with self.assertLogs(__name__, level="WARNING") as warn_log, \
              self.assert_database_query_count(22):  # Matches existing test
             process_message(incoming_valid_message)
-    
         # Verify warning was logged for deactivated user
-        self.assert_length(len(warn_log.output), 1)
+        self.assert_length(warn_log.output, 1)
         self.assertIn("Swallowed email-mirror group DM send error", warn_log.output[0])
         self.assertIn("is no longer using Zulip", warn_log.output[0])
-    
         # Verify no new message was created (error was swallowed)
         iago_profile = self.example_user("iago")
         self.assertEqual(most_recent_message(iago_profile).content, "TestMissedGroupDirectMessageEmailMessages body")
-
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
