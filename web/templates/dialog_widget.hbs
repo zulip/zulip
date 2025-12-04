@@ -14,10 +14,11 @@
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </header>
-            <main class="modal__content" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
+            <main class="modal__content {{#if hide_footer}} footer-hidden {{/if}}" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
                 {{{ body_html }}}
             </main>
+            {{#unless hide_footer}}
             <footer class="modal__footer">
                 {{#if footer_minor_text }}
                 <div class="dialog-widget-footer-minor-text">{{footer_minor_text}}</div>
@@ -32,6 +33,7 @@
                     </button>
                 </div>
             </footer>
+            {{/unless}}
         </div>
     </div>
 </div>
