@@ -177,3 +177,19 @@ run_test("basics", () => {
     can_load_older();
     blocked_newer();
 });
+
+run_test("force_load_newer", () => {
+    reset();
+    // Simulate found_newest = true
+    fetch_status.finish_newer_batch([], {
+        update_loading_indicator: false,
+        found_newest: true,
+    });
+    blocked_newer(); // Should be blocked by default
+    assert.equal(fetch_status.can_load_newer_messages(true), true); // Should be allowed if forced
+
+    // Simulate loading_newer = true
+    fetch_status.start_newer_batch({update_loading_indicator: false});
+    blocked_newer(); // Should be blocked
+    assert.equal(fetch_status.can_load_newer_messages(true), false); // Should STILL be blocked if loading, even if forced
+});

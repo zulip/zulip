@@ -653,13 +653,13 @@ export function do_backfill(opts: {
     });
 }
 
-export function maybe_load_newer_messages(opts: {msg_list: MessageList}): void {
+export function maybe_load_newer_messages(opts: {msg_list: MessageList; force?: boolean}): void {
     // This function gets called when you scroll to the bottom
     // of your window, and you want to get messages newer
     // than what the browsers originally fetched.
     const msg_list = opts.msg_list;
 
-    if (!msg_list.data.fetch_status.can_load_newer_messages()) {
+    if (!msg_list.data.fetch_status.can_load_newer_messages(opts.force)) {
         // We may already be loading new messages or already
         // got the newest one.
         return;

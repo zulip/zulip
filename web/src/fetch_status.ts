@@ -127,8 +127,8 @@ export class FetchStatus {
         return false;
     }
 
-    can_load_newer_messages(): boolean {
-        return !this._loading_newer && !this._found_newest;
+    can_load_newer_messages(force = false): boolean {
+        return !this._loading_newer && (force || !this._found_newest);
     }
 
     has_found_newest(): boolean {
