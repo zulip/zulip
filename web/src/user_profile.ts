@@ -1489,7 +1489,7 @@ export function initialize(): void {
         );
     });
 
-    $("body").on("click", "#user-profile-modal .stream-row .remove-button", (e) => {
+    $("body").on("click", "#user-profile-modal .modal-channel-list-row .remove-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-button");
