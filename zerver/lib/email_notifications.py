@@ -10,6 +10,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from email.headerregistry import Address
+from email.utils import format_datetime as email_format_datetime
 from typing import Any
 
 import lxml.html
@@ -30,7 +31,7 @@ from zerver.lib.message import bulk_access_messages
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
+from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import format_datetime_to_string
@@ -605,7 +606,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         "from_address": from_address,
         "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         "context": context,
-        "date": local_time.strftime(EMAIL_DATE_FORMAT),
+        "date": email_format_datetime(local_time),
     }
     queue_event_on_commit("email_senders", email_dict)
 
