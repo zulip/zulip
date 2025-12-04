@@ -97,7 +97,7 @@ def dictfetchall(cursor: CursorWrapper) -> list[dict[str, Any]]:
 
 def format_optional_datetime(date: datetime | None, display_none: bool = False) -> str:
     if date:
-        return date.strftime("%Y-%m-%d %H:%M")
+        return date.replace(tzinfo=None).isoformat(" ", "minutes")
     elif display_none:
         return "None"
     else:
@@ -105,7 +105,7 @@ def format_optional_datetime(date: datetime | None, display_none: bool = False) 
 
 
 def format_datetime_as_date(date: datetime) -> str:
-    return date.strftime("%Y-%m-%d")
+    return date.date().isoformat()
 
 
 def format_none_as_zero(value: int | None) -> int:

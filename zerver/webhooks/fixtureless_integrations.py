@@ -54,7 +54,7 @@ _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
 
 DATETIME_GLOBAL = datetime_to_global_time(_DT)
 
-DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
+DATE_ISO_8601 = _DT.date().isoformat()
 DATE_LONG = _DT.strftime("%A, %B %d, %Y")
 
 

@@ -389,8 +389,10 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
             # mobile_pushes_forwarded is a CountStat with a day frequency,
             # so we want to show the start of the latest day interval.
             push_forwarded_interval_start = (
-                latest_remote_server_push_forwarded_count.end_time - timedelta(days=1)
-            ).strftime("%Y-%m-%d")
+                (latest_remote_server_push_forwarded_count.end_time - timedelta(days=1))
+                .date()
+                .isoformat()
+            )
         else:
             push_forwarded_interval_start = "None"
         push_status = get_push_status_for_remote_request(
@@ -432,8 +434,10 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
             # mobile_pushes_forwarded is a CountStat with a day frequency,
             # so we want to show the start of the latest day interval.
             push_forwarded_interval_start = (
-                latest_remote_realm_push_forwarded_count.end_time - timedelta(days=1)
-            ).strftime("%Y-%m-%d")
+                (latest_remote_realm_push_forwarded_count.end_time - timedelta(days=1))
+                .date()
+                .isoformat()
+            )
         else:
             push_forwarded_interval_start = "None"
         push_status = get_push_status_for_remote_request(remote_entity.server, remote_entity)

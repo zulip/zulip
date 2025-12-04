@@ -6513,7 +6513,7 @@ class InvoiceTest(StripeTestCase):
 
         billing_session = RealmBillingSession(user=hamlet, realm=realm)
         next_billing_cycle = billing_session.get_next_billing_cycle(plan)
-        plan_end_date_string = next_billing_cycle.strftime("%Y-%m-%d")
+        plan_end_date_string = next_billing_cycle.date().isoformat()
         plan_end_date = datetime.combine(
             date.fromisoformat(plan_end_date_string), time(0, 0, 0), tzinfo=timezone.utc
         )
@@ -8170,7 +8170,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         annual_fixed_price = 1200
 
         # Configure complimentary access plan
-        complimentary_access_plan_end = self.next_year.strftime("%Y-%m-%d")
+        complimentary_access_plan_end = self.next_year.date().isoformat()
         billing_session = RemoteRealmBillingSession(remote_realm=self.remote_realm)
         support_request = SupportViewRequest(
             support_type=SupportType.configure_complimentary_access_plan,
@@ -8713,7 +8713,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             message.body,
         )
         self.assertEqual(
-            f"Fixed-price plan for {billing_entity} ends on {end_date.strftime('%Y-%m-%d')}",
+            f"Fixed-price plan for {billing_entity} ends on {end_date.date().isoformat()}",
             message.subject,
         )
 
@@ -9114,9 +9114,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "Unable to verify current licenses in use, which delays invoicing for this customer.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_update.date().isoformat()}", message.body)
 
         # Cron runs again, don't send another email to Zulip team.
         invoice_plans_as_needed(self.next_month + timedelta(days=1))
@@ -10187,9 +10185,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Unable to verify current licenses in use, but invoicing not delayed because customer has a fixed-price plan.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_update.date().isoformat()}", message.body)
 
         # Audit log data is up-to-date when the plan is next invoiced.
         with time_machine.travel(updated_invoice_date, tick=False):
@@ -10701,9 +10697,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Unable to verify current licenses in use, which delays invoicing for this customer.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_upload.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_upload.date().isoformat()}", message.body)
 
         # Cron runs again, don't send another email to Zulip team.
         invoice_plans_as_needed(self.next_month + timedelta(days=1))

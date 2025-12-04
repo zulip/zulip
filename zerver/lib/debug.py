@@ -46,7 +46,9 @@ def tracemalloc_dump() -> None:
         logger.warning("pid %s: tracemalloc off, nothing to dump", os.getpid())
         return
     # Despite our name for it, `timezone_now` always deals in UTC.
-    basename = "snap.{}.{}".format(os.getpid(), timezone_now().strftime("%F-%T"))
+    basename = "snap.{}.{}".format(
+        os.getpid(), timezone_now().replace(tzinfo=None).isoformat("-", "seconds")
+    )
     path = os.path.join(settings.TRACEMALLOC_DUMP_DIR, basename)
     os.makedirs(settings.TRACEMALLOC_DUMP_DIR, exist_ok=True)
 

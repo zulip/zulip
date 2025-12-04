@@ -5570,7 +5570,7 @@ def maybe_send_fixed_price_plan_renewal_reminder_email(
     if plan.end_date - plan.next_invoice_date <= timedelta(days=62):
         context = {
             "billing_entity": billing_session.billing_entity_display_name,
-            "end_date": plan.end_date.strftime("%Y-%m-%d"),
+            "end_date": plan.end_date.date().isoformat(),
             "support_url": billing_session.support_url(),
             "notice_reason": "fixed_price_plan_ends_soon",
         }
@@ -5620,7 +5620,7 @@ def maybe_send_stale_audit_log_data_email(
     context = {
         "billing_entity": billing_session.billing_entity_display_name,
         "support_url": billing_session.support_url(),
-        "last_audit_log_update": last_audit_log_update.strftime("%Y-%m-%d"),
+        "last_audit_log_update": last_audit_log_update.date().isoformat(),
         "fixed_price_plan": plan.fixed_price is not None,
         "notice_reason": "stale_audit_log_data",
     }
@@ -5664,7 +5664,7 @@ def check_remote_server_audit_log_data(
             if last_audit_log_update is None:  # nocoverage
                 context["last_audit_log_update"] = "Never uploaded"
             else:
-                context["last_audit_log_update"] = last_audit_log_update.strftime("%Y-%m-%d")
+                context["last_audit_log_update"] = last_audit_log_update.date().isoformat()
             send_email(
                 "zerver/emails/internal_billing_notice",
                 to_emails=[BILLING_SUPPORT_EMAIL],
