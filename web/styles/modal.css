@@ -244,7 +244,7 @@
     -webkit-overflow-scrolling: touch;
 
     .user-profile-group-row,
-    .stream-row {
+    .modal-channel-list-row {
         display: flex;
         justify-content: space-between;
         padding: 0.3125em 0.625em;
@@ -255,7 +255,7 @@
         color: var(--color-dropdown-item);
         cursor: pointer;
 
-        .stream-row-content {
+        .modal-channel-list-row-content {
             display: flex;
             overflow: hidden;
         }
