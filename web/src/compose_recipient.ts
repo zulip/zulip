@@ -344,6 +344,17 @@ export function initialize(): void {
         get_options: get_options_for_recipient_widget,
         item_click_callback,
         $events_container: $("body"),
+        filter_predicate(item, value) {
+            // Allow "dm" to match "Direct message" option
+            if (item.is_direct_message) {
+                const dm_string = $t({defaultMessage: "dm"});
+                return (
+                    item.name.toLowerCase().includes(value) ||
+                    dm_string.toLowerCase().includes(value)
+                );
+            }
+            return item.name.toLowerCase().includes(value);
+        },
         on_exit_with_escape_callback: focus_compose_recipient,
         // We want to focus on topic box if dropdown was closed via selecting an item.
         focus_target_on_hidden: false,

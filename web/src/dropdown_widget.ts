@@ -86,6 +86,8 @@ export type DropdownWidgetOptions = {
     // When this is set, pressing tab will move focus to the target element.
     tab_moves_focus_to_target?: string | (() => string);
     search_placeholder_text?: string;
+    // Custom filter predicate function to override default name matching.
+    filter_predicate?: (item: Option, value: string) => boolean;
 };
 
 export class DropdownWidget {
@@ -124,6 +126,7 @@ export class DropdownWidget {
     keep_focus_on_search: boolean;
     tab_moves_focus_to_target: string | (() => string) | undefined;
     current_hover_index: number;
+    filter_predicate: (item: Option, value: string) => boolean;
 
     // TODO: This is only used in one widget, with no implementation
     // here, so should be generalized or reworked.
@@ -165,6 +168,9 @@ export class DropdownWidget {
         this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
         this.current_hover_index = 0;
         this.search_placeholder_text = options.search_placeholder_text ?? "";
+        this.filter_predicate =
+            options.filter_predicate ??
+            ((item, value) => item.name.toLowerCase().includes(value));
     }
 
     init(): void {
@@ -364,9 +370,7 @@ export class DropdownWidget {
                         },
                         filter: {
                             $element: $search_input,
-                            predicate(item, value) {
-                                return item.name.toLowerCase().includes(value);
-                            },
+                            predicate: (item, value) => this.filter_predicate(item, value),
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),
                     },
