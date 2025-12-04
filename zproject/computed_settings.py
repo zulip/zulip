@@ -311,6 +311,12 @@ INSTALLED_APPS += NODL_APPS
 ZILENCER_ENABLED = "zilencer" in INSTALLED_APPS
 CORPORATE_ENABLED = "corporate" in INSTALLED_APPS
 
+# NODL MODIFICATION START - Force Tornado port for Railway deployment
+# Reason: supervisord.conf runs Tornado on 9993, but default is 9800
+# Date: 2024-12-05
+TORNADO_PORTS = [9993]
+# NODL MODIFICATION END
+
 if not TORNADO_PORTS:
     TORNADO_PORTS = get_tornado_ports(config_file)
 TORNADO_PROCESSES = len(TORNADO_PORTS)
