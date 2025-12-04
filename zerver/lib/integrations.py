@@ -18,17 +18,17 @@ from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, Web
 from zerver.webhooks import fixtureless_integrations
 
 """This module declares all of the (documented) integrations available
-in the Zulip server.  The Integration class is used as part of
-generating the documentation on the /integrations/ page, while the
-WebhookIntegration class is also used to generate the URLs in
-`zproject/urls.py` for webhook integrations.
+in the Zulip server.
 
-To add a new non-webhook integration, add code to the INTEGRATIONS
-dictionary below.
+The Integration class is used as part of generating the
+documentation on the /integrations/ page, while the WebhookIntegration class
+is also used to generate the URLs in `zproject/urls.py` for webhook
+integrations.
 
-To add a new webhook integration, declare a WebhookIntegration in the
-WEBHOOK_INTEGRATIONS list below (it will be automatically added to
-INTEGRATIONS).
+To add a new integration, register it in the appropriate *_INTEGRATIONS
+list. For example, to add a new incoming webhook integration, declare a
+WebhookIntegration in the WEBHOOK_INTEGRATIONS list. All *_INTEGRATIONS
+lists are automatically aggregated into the INTEGRATIONS dict.
 
 To add a new integration category, add to either the CATEGORIES or
 META_CATEGORY dicts below. The META_CATEGORY dict is for categories
