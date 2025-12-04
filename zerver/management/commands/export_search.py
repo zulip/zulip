@@ -287,9 +287,9 @@ This is most often used for legal compliance.
         def transform_message(message: Message) -> dict[str, str]:
             row = {
                 "id": str(message.id),
-                "timestamp (UTC)": message.date_sent.astimezone(timezone.utc).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                ),
+                "timestamp (UTC)": message.date_sent.astimezone(timezone.utc)
+                .replace(tzinfo=None)
+                .isoformat(" ", "seconds"),
                 "sender": format_sender(message.sender.full_name, message.sender.delivery_email),
                 "recipient": format_full_recipient(message.recipient_id, message.subject),
                 "content": message.content,

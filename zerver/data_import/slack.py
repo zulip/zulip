@@ -986,7 +986,7 @@ def get_zulip_thread_topic_name(
 
     e.g "2024-05-22 Hello this is a long message that will be c… (1)"
     """
-    thread_date = thread_ts.strftime(r"%Y-%m-%d")
+    thread_date = thread_ts.date().isoformat()
 
     # Truncate
     truncated_zulip_topic_name = truncate_content(

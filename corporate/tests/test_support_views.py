@@ -1751,7 +1751,7 @@ class TestSupportEndpoint(ZulipTestCase):
         )
 
         billing_session = RealmBillingSession(user=iago, realm=lear_realm, support_session=True)
-        next_billing_cycle = billing_session.get_next_billing_cycle(plan).strftime("%Y-%m-%d")
+        next_billing_cycle = billing_session.get_next_billing_cycle(plan).date().isoformat()
         with time_machine.travel(datetime(2016, 1, 3, tzinfo=timezone.utc), tick=False):
             result = self.client_post(
                 "/activity/support",
