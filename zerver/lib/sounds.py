@@ -7,6 +7,10 @@ def get_available_notification_sounds() -> list[str]:
     notification_sounds_path = static_path("audio/notification_sounds")
     available_notification_sounds = []
 
+    # NODL: Handle missing directory in Railway deployment
+    if not os.path.isdir(notification_sounds_path):
+        return available_notification_sounds
+
     for file_name in os.listdir(notification_sounds_path):
         root, ext = os.path.splitext(file_name)
         if "." in root:  # nocoverage
