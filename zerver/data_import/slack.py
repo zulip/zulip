@@ -22,6 +22,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    AvatarFileRequest,
     AvatarRecordData,
     UploadFileRequest,
     UploadRecordData,
@@ -38,12 +39,12 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    download_and_export_avatar_file,
     download_and_export_upload_file,
     get_attachment_path_and_content,
     get_data_file,
     long_term_idle_helper,
     make_subscriber_map,
-    process_avatars,
     process_emojis,
     request_file_stream,
     validate_user_emails_for_import,
@@ -54,6 +55,7 @@ from zerver.data_import.slack_message_conversion import (
     get_user_full_name,
     process_slack_block_and_attachment,
 )
+from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
@@ -168,7 +170,7 @@ class RealmConversionResult:
     added_channels: AddedChannelsT
     added_dms: AddedDMsT
     added_mpims: AddedMPIMsT
-    avatar_list: list[AvatarRecordData]
+    avatar_records: list[AvatarRecordData]
     dm_members: DMMembersT
     emoji_url_map: dict[str, Any]
     realm: ZerverFieldsT
@@ -183,19 +185,35 @@ def slack_workspace_to_realm(
     realm_subdomain: str,
     slack_data_dir: str,
     custom_emoji_list: ZerverFieldsT,
+    processes: int,
+    output_dir: str,
 ) -> RealmConversionResult:
     NOW = float(timezone_now().timestamp())
 
     zerver_realm: list[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, "Slack")
     realm = build_realm(zerver_realm, realm_id, domain_name, import_source="slack")
+    avatar_records: list[AvatarRecordData] = []
 
-    (
-        zerver_userprofile,
-        avatars,
-        slack_user_id_to_zulip_user_id,
-        zerver_customprofilefield,
-        zerver_customprofilefield_value,
-    ) = users_to_zerver_userprofile(slack_data_dir, user_list, realm_id, int(NOW), domain_name)
+    with run_parallel_queue(
+        partial(download_and_export_avatar_file, output_dir, avatar_records),
+        processes,
+        catch=True,
+        report_every=100,
+        report=lambda count: logging.info("Downloaded %s profile pictures", count),
+    ) as do_download_and_export_avatar_file:
+        (
+            zerver_userprofile,
+            slack_user_id_to_zulip_user_id,
+            zerver_customprofilefield,
+            zerver_customprofilefield_value,
+        ) = users_to_zerver_userprofile(
+            slack_data_dir,
+            user_list,
+            realm_id,
+            int(NOW),
+            domain_name,
+            do_download_and_export_avatar_file,
+        )
     (
         realm,
         added_channels,
@@ -221,7 +239,7 @@ def slack_workspace_to_realm(
         added_channels=added_channels,
         added_dms=added_dms,
         added_mpims=added_mpims,
-        avatar_list=avatars,
+        avatar_records=avatar_records,
         dm_members=dm_members,
         emoji_url_map=emoji_url_map,
         realm=realm,
@@ -261,10 +279,14 @@ def build_realmemoji(
 
 
 def users_to_zerver_userprofile(
-    slack_data_dir: str, users: list[ZerverFieldsT], realm_id: int, timestamp: Any, domain_name: str
+    slack_data_dir: str,
+    users: list[ZerverFieldsT],
+    realm_id: int,
+    timestamp: Any,
+    domain_name: str,
+    do_download_and_export_avatar_file: Callable[[AvatarRecordData, AvatarFileRequest], None],
 ) -> tuple[
     list[ZerverFieldsT],
-    list[AvatarRecordData],
     SlackToZulipUserIDT,
     list[ZerverFieldsT],
     list[ZerverFieldsT],
@@ -272,17 +294,15 @@ def users_to_zerver_userprofile(
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
-    2. avatar_list, which is list to map avatars to Zulip avatar records.json
-    3. slack_user_id_to_zulip_user_id, which is a dictionary to map from Slack user ID to Zulip
+    2. slack_user_id_to_zulip_user_id, which is a dictionary to map from Slack user ID to Zulip
        user id
-    4. zerver_customprofilefield, which is a list of all custom profile fields
-    5. zerver_customprofilefield_values, which is a list of user profile fields
+    3. zerver_customprofilefield, which is a list of all custom profile fields
+    4. zerver_customprofilefield_values, which is a list of user profile fields
     """
     logging.info("######### IMPORTING USERS STARTED #########\n")
     zerver_userprofile = []
     zerver_customprofilefield: list[ZerverFieldsT] = []
     zerver_customprofilefield_values: list[ZerverFieldsT] = []
-    avatar_list: list[AvatarRecordData] = []
     slack_user_id_to_zulip_user_id = {}
 
     # The user data we get from the Slack API does not contain custom profile data
@@ -321,18 +341,39 @@ def users_to_zerver_userprofile(
         # ref: https://zulip.com/help/change-your-profile-picture
         avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
         if avatar_source == UserProfile.AVATAR_FROM_USER:
-            avatar_data = AvatarRecordData(
-                avatar_version=1,
+            avatar_version = 1
+            # The actual file path along with its content type will be added
+            # later when the file is downloaded.
+            incomplete_avatar_record = AvatarRecordData(
+                avatar_version=avatar_version,
                 content_type=None,
                 last_modified=timestamp,
-                # Save original avatar URL here, which is downloaded later
-                path=avatar_url,
+                path="",
                 realm_id=realm_id,
                 s3_path="",
+                # We don't add the size field here in avatar's records.json,
+                # since the metadata is not needed on the import end.
                 size=None,
                 user_profile_id=user_id,
             )
-            avatar_list.append(avatar_data)
+            assert avatar_url is not None
+            if avatar_url.startswith("https://ca.slack-edge.com/"):
+                # Adjust the avatar size for a typical Slack user.
+                size_url_suffix = "-512"
+                avatar_url += size_url_suffix
+
+            avatar_hash = user_avatar_base_path_from_ids(user_id, avatar_version, realm_id)
+            avatar_file_request = AvatarFileRequest(
+                output_file_path="",
+                request_url=avatar_url,
+                params=None,
+                headers=None,
+                kwargs={},
+                base_avatar_path=avatar_hash,
+            )
+
+            do_download_and_export_avatar_file(incomplete_avatar_record, avatar_file_request)
+
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
             role = UserProfile.ROLE_REALM_OWNER
@@ -399,7 +440,6 @@ def users_to_zerver_userprofile(
     logging.info("######### IMPORTING USERS FINISHED #########\n")
     return (
         zerver_userprofile,
-        avatar_list,
         slack_user_id_to_zulip_user_id,
         zerver_customprofilefield,
         zerver_customprofilefield_values,
@@ -1760,7 +1800,14 @@ def do_convert_directory(
     assert isinstance(domain_name, str)
 
     converted_realm_result = slack_workspace_to_realm(
-        domain_name, realm_id, user_list, realm_subdomain, slack_data_dir, custom_emoji_list
+        domain_name,
+        realm_id,
+        user_list,
+        realm_subdomain,
+        slack_data_dir,
+        custom_emoji_list,
+        processes,
+        output_dir,
     )
     realm = converted_realm_result.realm
 
@@ -1799,17 +1846,6 @@ def do_convert_directory(
         realm["zerver_realmemoji"], emoji_folder, converted_realm_result.emoji_url_map, processes
     )
 
-    avatar_folder = os.path.join(output_dir, "avatars")
-    avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
-    os.makedirs(avatar_realm_folder, exist_ok=True)
-    avatar_records = process_avatars(
-        converted_realm_result.avatar_list,
-        avatar_folder,
-        realm_id,
-        processes,
-        size_url_suffix="-512",
-    )
-
     attachment = {"zerver_attachment": zerver_attachment}
 
     team_info_dict = get_slack_api_data("https://slack.com/api/team.info", "team", token=token)
@@ -1820,7 +1856,9 @@ def do_convert_directory(
 
     create_converted_data_files(realm, output_dir, "/realm.json")
     create_converted_data_files(emoji_records, output_dir, "/emoji/records.json")
-    create_converted_data_files(avatar_records, output_dir, "/avatars/records.json")
+    create_converted_data_files(
+        converted_realm_result.avatar_records, output_dir, "/avatars/records.json"
+    )
     create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(realm_icon_records, output_dir, "/realm_icons/records.json")

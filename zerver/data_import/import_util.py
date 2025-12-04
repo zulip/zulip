@@ -19,12 +19,9 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
-from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_extension
-from zerver.lib.parallel import run_parallel
-from zerver.lib.partial import partial
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_extension, guess_type
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.upload import sanitize_name
@@ -83,6 +80,7 @@ class UploadFileRequest:
     kwargs: dict[str, Any]
 
 
+@dataclass
 class AvatarRecordData:
     avatar_version: int
     content_type: str | None
@@ -92,6 +90,11 @@ class AvatarRecordData:
     s3_path: str
     size: int | None
     user_profile_id: int
+
+
+@dataclass
+class AvatarFileRequest(UploadFileRequest):
+    base_avatar_path: str
 
 
 class SubscriberHandler:
@@ -593,80 +596,45 @@ def build_attachment(
     zerver_attachment.append(attachment_dict)
 
 
-def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[str]) -> None:
-    avatar_url = avatar_upload_item[0]
-
-    image_path = os.path.join(avatar_dir, avatar_upload_item[1])
-    original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
-
-    if avatar_url.startswith("https://ca.slack-edge.com/"):
-        # Adjust the avatar size for a typical Slack user.
-        avatar_url += size_url_suffix
-
-    response = request_file_stream(avatar_url)
-    with open(image_path, "wb") as image_file:
-        shutil.copyfileobj(response.raw, image_file)
-    shutil.copy(image_path, original_image_path)
-
-
-def process_avatars(
-    avatar_list: list[AvatarRecordData],
-    avatar_dir: str,
-    realm_id: int,
-    processes: int,
-    size_url_suffix: str = "",
-) -> list[AvatarRecordData]:
-    """
-    This function gets the avatar of the user and saves it in the
-    user's avatar directory with both the extensions '.png' and '.original'
-    Required parameters:
-
-    1. avatar_list: List of avatars to be mapped in avatars records.json file
-    2. avatar_dir: Folder where the downloaded avatars are saved
-    3. realm_id: Realm ID.
-
-    We use this for Slack conversions, where avatars need to be
-    downloaded.
-    """
-
-    logging.info("######### GETTING AVATARS #########\n")
-    logging.info("DOWNLOADING AVATARS .......\n")
-    avatar_original_list = []
-    avatar_upload_list = []
-    for avatar in avatar_list:
-        avatar_hash = user_avatar_base_path_from_ids(
-            avatar.user_profile_id, avatar.avatar_version, realm_id
-        )
-        avatar_url = avatar.path
-        avatar_original = copy.deepcopy(avatar)
-
-        image_path = f"{avatar_hash}.png"
-        original_image_path = f"{avatar_hash}.original"
-
-        avatar_upload_list.append([avatar_url, image_path, original_image_path])
-        # We don't add the size field here in avatar's records.json,
-        # since the metadata is not needed on the import end, and we
-        # don't have it until we've downloaded the files anyway.
-        avatar.path = image_path
-        avatar.s3_path = image_path
-        avatar.content_type = "image/png"
-
-        avatar_original.path = original_image_path
-        avatar_original.s3_path = original_image_path
-        avatar_original.content_type = "image/png"
-        avatar_original_list.append(avatar_original)
-
-    # Run downloads in parallel
-    run_parallel(
-        partial(get_avatar, avatar_dir, size_url_suffix),
-        avatar_upload_list,
-        processes=processes,
-        catch=True,
-        report=lambda count: logging.info("Finished %s items", count),
+def download_and_export_avatar_file(
+    output_dir: str,
+    avatar_records: list[AvatarRecordData],
+    /,
+    incomplete_avatar_record: AvatarRecordData,
+    avatar_file_request: AvatarFileRequest,
+) -> None:
+    response = request_file_stream(
+        avatar_file_request.request_url,
+        avatar_file_request.params,
+        avatar_file_request.headers,
+        **avatar_file_request.kwargs,
     )
+    content_type = response.headers.get("Content-Type")
+    if content_type is None:
+        content_type = guess_type(avatar_file_request.request_url)[0]
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError("Invalid image format")
 
-    logging.info("######### GETTING AVATARS FINISHED #########\n")
-    return avatar_list + avatar_original_list
+    file_extension = guess_extension(content_type, strict=False)
+    relative_image_path = f"{avatar_file_request.base_avatar_path}.{file_extension}"
+    relative_original_image_path = f"{avatar_file_request.base_avatar_path}.original"
+
+    full_image_path = os.path.join(output_dir, "avatars", relative_image_path)
+    full_original_image_path = os.path.join(output_dir, "avatars", relative_original_image_path)
+
+    with open(full_image_path, "wb") as image_file:
+        shutil.copyfileobj(response.raw, image_file)
+    shutil.copy(full_image_path, full_original_image_path)
+
+    incomplete_avatar_record.content_type = content_type
+    original_avatar_record = copy.deepcopy(incomplete_avatar_record)
+    original_avatar_record.path = full_original_image_path
+    original_avatar_record.s3_path = full_original_image_path
+    avatar_record = incomplete_avatar_record
+    avatar_record.path = full_image_path
+    avatar_record.s3_path = full_image_path
+
+    avatar_records += [avatar_record, original_avatar_record]
 
 
 def request_file_stream(
