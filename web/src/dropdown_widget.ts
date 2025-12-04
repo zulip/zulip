@@ -169,8 +169,7 @@ export class DropdownWidget {
         this.current_hover_index = 0;
         this.search_placeholder_text = options.search_placeholder_text ?? "";
         this.filter_predicate =
-            options.filter_predicate ??
-            ((item, value) => item.name.toLowerCase().includes(value));
+            options.filter_predicate ?? ((item, value) => item.name.toLowerCase().includes(value));
     }
 
     init(): void {
