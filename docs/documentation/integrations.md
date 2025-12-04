@@ -29,13 +29,14 @@ Typically, the documentation process involves the following steps:
   See [Markdown macros](#markdown-macros) for further details.
 
 - Make sure you've added your integration to `zerver/lib/integrations.py` in
-  the `WEBHOOK_INTEGRATIONS` section (or `INTEGRATIONS` if not a
-  webhook).
+  the relevant `*_INTEGRATIONS` list, such as the `WEBHOOK_INTEGRATIONS`
+  list for incoming webhook integrations.
 
-  This registry configures your integration to appear on the
-  `/integrations` page, and makes it possible to automatically generate the
-  screenshot of an example message, which is important for the screenshots
-  to be updated as Zulip's design changes.
+  These lists get aggregated into the `INTEGRATIONS` registry which
+  configures your integration to appear on the `/integrations` page, and
+  makes it possible to automatically generate the screenshot of an example
+  message, which is important so that these screenshots can be easily
+  updated as Zulip's design changes.
 
 - You'll need to add an SVG graphic of your integration's logo under the
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
