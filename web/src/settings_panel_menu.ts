@@ -7,12 +7,17 @@ import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {redraw_all_bots_list, redraw_your_bots_list} from "./settings_bots.ts";
 import {resize_textareas_in_section} from "./settings_components.ts";
 import * as settings_sections from "./settings_sections.ts";
-import {redraw_active_users_list, redraw_deactivated_users_list} from "./settings_users.ts";
+import {
+    redraw_active_users_list,
+    redraw_deactivated_users_list,
+    redraw_imported_users_list,
+} from "./settings_users.ts";
 import * as util from "./util.ts";
 
 export let normal_settings: SettingsPanelMenu;
@@ -79,6 +84,7 @@ export class SettingsPanelMenu {
             child_wants_focus: true,
             values: [
                 {label: $t({defaultMessage: "Users"}), key: "active"},
+                {label: $t({defaultMessage: "Imported"}), key: "imported"},
                 {
                     label: $t({defaultMessage: "Deactivated"}),
                     key: "deactivated",
@@ -89,10 +95,18 @@ export class SettingsPanelMenu {
                 browser_history.update(`#organization/users/${key}`);
                 this.set_user_settings_tab(key);
                 $(".user-settings-section").hide();
-                if (key === "active") {
-                    redraw_active_users_list();
-                } else if (key === "deactivated") {
-                    redraw_deactivated_users_list();
+                update_imported_users_tab();
+
+                switch (key) {
+                    case "active":
+                        redraw_active_users_list();
+                        break;
+                    case "deactivated":
+                        redraw_deactivated_users_list();
+                        break;
+                    case "imported":
+                        redraw_imported_users_list();
+                        break;
                 }
                 $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
             },
@@ -147,6 +161,7 @@ export class SettingsPanelMenu {
         if ($("#admin-user-list").find(".tab-switcher").length === 0) {
             const toggler_html = util.the(this.org_user_settings_toggler.get());
             $("#admin-user-list .tab-container").html(toggler_html);
+            update_imported_users_tab(true);
 
             // We need to re-register these handlers since they are
             // destroyed once the settings modal closes.
@@ -341,4 +356,32 @@ export function show_org_settings(): void {
 export function set_key_handlers(toggler: Toggle): void {
     normal_settings.set_key_handlers(toggler);
     org_settings.set_key_handlers(toggler);
+}
+
+export function update_imported_users_tab(
+    hide_tab_if_active = false,
+    update_users_list = false,
+): void {
+    if (update_users_list) {
+        // We update the imported users list immediately only when
+        // the stub user logs in for the first time and not when
+        // deactivating or reactivating the users.
+        redraw_imported_users_list(true);
+    }
+
+    const show_import_tab = people.get_realm_active_imported_stub_user_ids().length > 0;
+    if (show_import_tab) {
+        $(".org-user-settings-switcher [data-tab-key='imported']").show();
+        return;
+    }
+
+    const settings_tab = org_settings.get_settings_tab("users")!;
+    if (settings_tab === "imported" && !hide_tab_if_active) {
+        return;
+    }
+
+    $(".org-user-settings-switcher [data-tab-key='imported']").hide();
+    if (hide_tab_if_active) {
+        org_settings.org_user_settings_toggler.goto("active");
+    }
 }

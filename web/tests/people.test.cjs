@@ -317,6 +317,13 @@ const stewie = {
     },
 };
 
+const imported_user = {
+    email: "imported-user@example.com",
+    user_id: 1205,
+    full_name: "Imported user",
+    is_imported_stub: true,
+};
+
 function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
@@ -456,6 +463,20 @@ run_test("basics", ({override}) => {
 
     // get_users_from_ids
     assert.deepEqual(people.get_users_from_ids([me.user_id, isaac.user_id]), [me, isaac]);
+
+    // Test with imported user.
+    people.add_active_user(imported_user);
+    assert.equal(people.get_realm_active_human_user_ids().length, 3);
+    assert.equal(people.get_realm_active_human_user_ids_for_users_panel().length, 2);
+    assert.equal(people.get_realm_active_imported_stub_user_ids().length, 1);
+
+    // Check get_realm_active_imported_stub_user_ids does not include deactivated users.
+    assert.equal(people.get_non_active_human_ids().length, 0);
+    people.deactivate(imported_user);
+    assert.equal(people.get_realm_active_human_user_ids().length, 2);
+    assert.equal(people.get_realm_active_human_user_ids_for_users_panel().length, 2);
+    assert.equal(people.get_realm_active_imported_stub_user_ids().length, 0);
+    assert.equal(people.get_non_active_human_ids().length, 1);
 });
 
 run_test("sort_but_pin_current_user_on_top with me", () => {
@@ -1790,6 +1811,7 @@ run_test("fetch_users retry", async ({override, override_rewire}) => {
                     avatar_url: "",
                     avatar_version: 1,
                     is_bot: false,
+                    is_imported_stub: false,
                 },
             ],
             result: "success",
@@ -1828,6 +1850,7 @@ run_test("fetch_users", async ({override}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
         {
             email: "alice@example.com",
@@ -1843,6 +1866,7 @@ run_test("fetch_users", async ({override}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
 
@@ -1971,6 +1995,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
         {
             email: "alice@example.com",
@@ -1986,6 +2011,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
     const second_request_response = [
@@ -2003,6 +2029,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
 

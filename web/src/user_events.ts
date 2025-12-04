@@ -22,6 +22,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_org from "./settings_org.ts";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_profile_fields from "./settings_profile_fields.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_streams from "./settings_streams.ts";
@@ -247,5 +248,13 @@ export const update_person = function update(event: UserUpdate): void {
             // A human user deactivated, update 'Export permissions' table.
             settings_exports.remove_export_consent_data_and_redraw(event.user_id);
         }
+        if (user.is_imported_stub) {
+            settings_panel_menu.update_imported_users_tab();
+        }
+    }
+
+    if ("is_imported_stub" in event) {
+        user.is_imported_stub = false;
+        settings_panel_menu.update_imported_users_tab(true, true);
     }
 };

@@ -222,6 +222,7 @@ export const user_schema = z.intersection(
         avatar_url: z.nullish(z.string()),
         avatar_version: z.number(),
         profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
+        is_imported_stub: z.boolean(),
         // used for fake user objects.
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.

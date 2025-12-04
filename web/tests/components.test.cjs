@@ -18,6 +18,7 @@ function make_tab(i) {
 
     $self.stub = true;
     $self.class = [];
+    $self.visible = true;
 
     $self.addClass = (c) => {
         $self.class += " " + c;
@@ -33,6 +34,14 @@ function make_tab(i) {
     $self.hasClass = (c) => {
         const tokens = $self.class.trim().split(/ +/);
         return tokens.includes(c);
+    };
+
+    $self.css = (prop) => {
+        assert.equal(prop, "display");
+        if ($self.visible) {
+            return "";
+        }
+        return "none";
     };
 
     $self.attr = (name) => {
@@ -285,6 +294,13 @@ run_test("basics", () => {
     assert.equal(widget.value(), "translated: Search filters");
 
     widget.enable_tab("message-formatting");
+
+    callback_args = undefined;
+    env.tabs[1].visible = false;
+    env.keydown_f.call(env.tabs[env.focused_tab], LEFT_KEY);
+    assert.equal(widget.value(), "translated: Keyboard shortcuts");
+
+    env.tabs[1].visible = true;
 
     callback_args = undefined;
 

@@ -2299,6 +2299,7 @@ label.preferences-radio-choice-label {
 }
 
 #admin_users_table .deactivated_user,
+#admin_imported_users_table .deactivated_user,
 #admin_deactivated_users_table .active-user {
     color: hsl(0deg 0% 64%);
 

@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
 import {compute_active_status, post_presence_response_schema} from "./activity.ts";
+import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -29,12 +30,15 @@ import * as util from "./util.ts";
 
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
+export const imported_user_list_dropdown_widget_name = "imported_user_list_select_user_role";
 
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
+let should_redraw_imported_users_list = false;
 let presence_data_fetched = false;
 let active_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
 let deactivated_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
+let imported_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
 
 type UserSettingsSection = {
     dropdown_widget_name: string;
@@ -68,6 +72,18 @@ const deactivated_section: UserSettingsSection = {
     },
     handle_events: deactivated_handle_events,
     create_table: deactivated_create_table,
+    list_widget: undefined,
+};
+
+const imported_section: UserSettingsSection = {
+    dropdown_widget_name: imported_user_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        // 0 role_code signifies All roles for our filter.
+        role_code: 0,
+    },
+    handle_events: imported_handle_events,
+    create_table: imported_create_table,
     list_widget: undefined,
 };
 
@@ -126,6 +142,13 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
         if (deactivated_users_role_dropdown) {
             deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
         }
+        const user = people.get_by_user_id(user_id);
+        if (user.is_imported_stub) {
+            should_redraw_imported_users_list = true;
+            if (imported_users_role_dropdown) {
+                imported_users_role_dropdown.render(imported_section.filters.role_code);
+            }
+        }
     }
 }
 
@@ -160,6 +183,13 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
         }
         if (deactivated_users_role_dropdown) {
             deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+        }
+        const user = people.get_by_user_id(user_id);
+        if (user.is_imported_stub) {
+            should_redraw_imported_users_list = true;
+            if (imported_users_role_dropdown) {
+                imported_users_role_dropdown.render(imported_section.filters.role_code);
+            }
         }
     }
 }
@@ -200,10 +230,20 @@ function role_selected_handler(
     event.stopPropagation();
 
     const role_code = Number($(event.currentTarget).attr("data-unique-id"));
-    if (widget.widget_name === active_section.dropdown_widget_name) {
-        add_value_to_filters(active_section, "role_code", role_code);
-    } else if (widget.widget_name === deactivated_section.dropdown_widget_name) {
-        add_value_to_filters(deactivated_section, "role_code", role_code);
+    switch (widget.widget_name) {
+        case active_section.dropdown_widget_name:
+            add_value_to_filters(active_section, "role_code", role_code);
+            break;
+        case deactivated_section.dropdown_widget_name:
+            add_value_to_filters(deactivated_section, "role_code", role_code);
+            break;
+        case imported_section.dropdown_widget_name:
+            add_value_to_filters(imported_section, "role_code", role_code);
+            break;
+        default:
+            blueslip.error("No dropdown widget with the given name", {
+                widget_name: widget.widget_name,
+            });
     }
 
     dropdown.hide();
@@ -247,13 +287,18 @@ function get_roles_with_counts(user_ids: number[]): dropdown_widget.Option[] {
 }
 
 function get_roles_count_for_active_users(): dropdown_widget.Option[] {
-    const active_user_ids = people.get_realm_active_human_user_ids();
+    const active_user_ids = people.get_realm_active_human_user_ids_for_users_panel();
     return get_roles_with_counts(active_user_ids);
 }
 
 function get_roles_count_for_deactivated_users(): dropdown_widget.Option[] {
     const deactivated_user_ids = people.get_non_active_human_ids();
     return get_roles_with_counts(deactivated_user_ids);
+}
+
+function get_roles_count_for_imported_users(): dropdown_widget.Option[] {
+    const imported_user_ids = people.get_realm_active_imported_stub_user_ids();
+    return get_roles_with_counts(imported_user_ids);
 }
 
 function create_role_filter_dropdown(
@@ -274,7 +319,11 @@ function create_role_filter_dropdown(
     });
 }
 
-function initialize_user_sections(active_user_ids: number[], deactivated_user_ids: number[]): void {
+function initialize_user_sections(
+    active_user_ids: number[],
+    deactivated_user_ids: number[],
+    imported_user_ids?: number[],
+): void {
     active_section.create_table(active_user_ids);
     deactivated_section.create_table(deactivated_user_ids);
     active_users_role_dropdown = create_role_filter_dropdown(
@@ -289,23 +338,34 @@ function initialize_user_sections(active_user_ids: number[], deactivated_user_id
     );
     active_users_role_dropdown.setup();
     deactivated_users_role_dropdown.setup();
+
+    if (imported_user_ids !== undefined) {
+        imported_section.create_table(imported_user_ids);
+        imported_users_role_dropdown = create_role_filter_dropdown(
+            $("#admin-imported-users-list"),
+            imported_section,
+            get_roles_count_for_imported_users,
+        );
+        imported_users_role_dropdown.setup();
+    }
 }
 
 function populate_users(): void {
-    const active_user_ids = people.get_realm_active_human_user_ids();
+    const active_user_ids = people.get_realm_active_human_user_ids_for_users_panel();
     const deactivated_user_ids = people.get_non_active_human_ids();
+    const imported_user_ids = people.get_realm_active_imported_stub_user_ids();
 
     if (!presence_data_fetched) {
         fetch_presence_user_setting({
             render_table() {
-                const active_user_ids = people.get_realm_active_human_user_ids();
+                const active_user_ids = people.get_realm_active_human_user_ids_for_users_panel();
                 const deactivated_user_ids = people.get_non_active_human_ids();
                 presence_data_fetched = true;
                 initialize_user_sections(active_user_ids, deactivated_user_ids);
             },
         });
     }
-    initialize_user_sections(active_user_ids, deactivated_user_ids);
+    initialize_user_sections(active_user_ids, deactivated_user_ids, imported_user_ids);
 }
 
 function reset_scrollbar($sel: JQuery): () => void {
@@ -462,6 +522,42 @@ function deactivated_create_table(deactivated_users: number[]): void {
     $("#admin_deactivated_users_table").show();
 }
 
+function imported_create_table(imported_users: number[]): void {
+    const $imported_users_table = $("#admin_imported_users_table");
+    imported_section.list_widget = ListWidget.create($imported_users_table, imported_users, {
+        name: "imported_users_table_list",
+        get_item: people.get_by_user_id,
+        modifier_html(item) {
+            return render_settings_user_list_row({
+                ...human_info(item),
+                display_last_active_column: false,
+            });
+        },
+        filter: {
+            predicate(person) {
+                return people.predicate_for_user_settings_filters(person, imported_section.filters);
+            },
+            is_active() {
+                const $search_input = $("#admin-imported-users-list .search");
+                return are_filters_active(imported_section.filters, $search_input);
+            },
+            onupdate: reset_scrollbar($imported_users_table),
+        },
+        $parent_container: $("#admin-imported-users-list").expectOne(),
+        init_sort: "full_name_alphabetic",
+        sort_fields: {
+            email: user_sort.sort_email,
+            role: user_sort.sort_role,
+            id: user_sort.sort_user_id,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
+        },
+        $simplebar_container: $("#admin-imported-users-list .progressive-table-wrapper"),
+    });
+    loading.destroy_indicator($("#admin_page_imported_users_loading_indicator"));
+    set_text_search_value($imported_users_table, imported_section.filters.text_search);
+    $("#admin_imported_users_table").show();
+}
+
 export function update_user_data(
     user_id: number,
     new_data: {full_name?: string; role?: number},
@@ -498,9 +594,22 @@ export function redraw_active_users_list(): void {
     if (!should_redraw_active_users_list || !active_section.list_widget) {
         return;
     }
-    const active_user_ids = people.get_realm_active_human_user_ids();
+    const active_user_ids = people.get_realm_active_human_user_ids_for_users_panel();
     active_section.list_widget.replace_list_data(active_user_ids);
     should_redraw_active_users_list = false;
+}
+
+export function redraw_imported_users_list(force_update = false): void {
+    if ((!force_update && !should_redraw_imported_users_list) || !imported_section.list_widget) {
+        return;
+    }
+
+    const imported_user_ids = people.get_realm_active_imported_stub_user_ids();
+    imported_section.list_widget.replace_list_data(imported_user_ids);
+    should_redraw_imported_users_list = false;
+    // This is needed to make sure that the imported user is shown
+    // in "Users" tab.
+    should_redraw_active_users_list = true;
 }
 
 function start_data_load(): void {
@@ -510,8 +619,12 @@ function start_data_load(): void {
     loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
+    loading.make_indicator($("#admin_page_imported_users_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
     $("#admin_deactivated_users_table").hide();
     $("#admin_users_table").hide();
+    $("#admin_imported_users_table").hide();
 
     populate_users();
 }
@@ -628,10 +741,21 @@ function deactivated_handle_events(): void {
     handle_clear_button_for_table_search_input($tbody);
 }
 
+function imported_handle_events(): void {
+    const $tbody = $("#admin_imported_users_table").expectOne();
+
+    handle_filter_change($tbody, imported_section);
+    handle_deactivation($tbody);
+    handle_reactivation($tbody);
+    handle_edit_form($tbody);
+    handle_clear_button_for_table_search_input($tbody);
+}
+
 export function set_up_humans(): void {
     start_data_load();
     active_section.handle_events();
     deactivated_section.handle_events();
+    imported_section.handle_events();
     setting_invites.set_up();
 }
 

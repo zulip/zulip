@@ -1159,6 +1159,27 @@ export function get_realm_active_human_user_ids(): number[] {
     return human_ids;
 }
 
+export function get_realm_active_human_user_ids_for_users_panel(): number[] {
+    const human_ids = [];
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot && !user.is_imported_stub) {
+            human_ids.push(user.user_id);
+        }
+    }
+
+    return human_ids;
+}
+
+export function get_realm_active_imported_stub_user_ids(): number[] {
+    const imported_stub_user_ids = [];
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot && user.is_imported_stub) {
+            imported_stub_user_ids.push(user.user_id);
+        }
+    }
+    return imported_stub_user_ids;
+}
+
 export function get_non_active_human_ids(): number[] {
     const human_ids = [];
 
@@ -1695,6 +1716,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         is_guest: false,
         is_bot: false,
         is_moderator: false,
+        is_imported_stub: false,
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
