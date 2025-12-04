@@ -1045,6 +1045,7 @@ export function dispatch_normal_event(event) {
                 stream_list.update_unread_counts_visibility();
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
+                stream_list.update_collapsed_state_on_show_channel_folders_change();
                 stream_list.build_stream_list(true);
             }
             if (event.property === "web_inbox_show_channel_folders") {
