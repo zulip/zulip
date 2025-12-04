@@ -145,6 +145,35 @@ export function generate_and_insert_audio_or_video_call_link(
                 }
             },
         });
+    } else if (
+        available_providers.nextcloud_talk &&
+        realm.realm_video_chat_provider === available_providers.nextcloud_talk.id
+    ) {
+        const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
+        const request = {meeting_name};
+
+        compose_call.abort_video_callbacks(edit_message_id);
+        const key = edit_message_id ?? "";
+        const xhr = channel.post({
+            url: "/json/calls/nextcloud_talk/create",
+            data: request,
+            success(response) {
+                const data = call_response_schema.parse(response);
+                insert_video_call_url(data.url, $target_textarea);
+            },
+            error(_, status) {
+                compose_call.video_call_xhrs.delete(key);
+                if (status !== "abort") {
+                    ui_report.generic_embed_error(
+                        $t_html({defaultMessage: "Failed to create video call."}),
+                        2000,
+                    );
+                }
+            },
+        });
+        if (xhr !== undefined && typeof xhr.abort === "function") {
+            compose_call.video_call_xhrs.set(key, xhr);
+        }
     } else {
         // TODO: Use `new URL` to generate the URLs here.
         const video_call_id = util.random_int(100000000000000, 999999999999999);

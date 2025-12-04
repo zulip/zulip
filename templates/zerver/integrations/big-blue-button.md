@@ -47,3 +47,4 @@ as your call provider instead.
 - [Jitsi Meet integration](/integrations/jitsi)
 - [Zoom integration](/integrations/zoom)
 * [BigBlueButton server configuration](https://docs.bigbluebutton.org/administration/customize/#other-configuration-changes)
+- [NextCloud Talk integration](/integrations/nextcloud-talk)
