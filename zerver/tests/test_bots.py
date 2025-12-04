@@ -2271,3 +2271,35 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
+
+    def test_get_bot_api_key(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot()
+        expected_api_key = bot["api_key"]
+        email = "hambot-bot@zulip.testserver"
+        bot_id = self.get_bot_user(email).id
+
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        api_key = self.assert_json_success(result)["api_key"]
+        self.assertEqual(api_key, expected_api_key)
+
+        # Admins can also get the bot's api key owned by others.
+        self.login("iago")
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        api_key = self.assert_json_success(result)["api_key"]
+        self.assertEqual(api_key, expected_api_key)
+
+        self.login("cordelia")
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        self.assert_json_error(result, "Insufficient permission")
+
+        # This endpoint can only be used to get a bot's api key.
+        self.login("iago")
+        invalid_bot_id = self.example_user("cordelia").id
+        result = self.client_get(f"/json/bots/{invalid_bot_id}/api_key")
+        self.assert_json_error(result, "No such bot")
+
+        invalid_bot_id = 1000
+        result = self.client_get(f"/json/bots/{invalid_bot_id}/api_key")
+        self.assert_json_error(result, "No such bot")
