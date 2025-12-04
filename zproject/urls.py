@@ -253,6 +253,7 @@ from zerver.views.users import (
     deactivate_bot_backend,
     deactivate_user_backend,
     deactivate_user_own_backend,
+    get_bot_api_key,
     get_bots_backend,
     get_member_backend,
     get_members_backend,
@@ -368,6 +369,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
+    rest_path("bots/<int:bot_id>/api_key", GET=get_bot_api_key),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite

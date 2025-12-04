@@ -25048,6 +25048,59 @@ paths:
                       }
                     description: |
                       An example JSON response when the channel folder ID is invalid:
+  /bots/{bot_id}/api_key:
+    get:
+      operationId: get-bot-api-key
+      summary: Get a bot's API key
+      tags: ["users"]
+      description: |
+        Get API key for the bot.
+
+        Only bot owner and organization administrators have access to the bot's
+        API key.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-62e371).
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: |
+                          The API key of the bot.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "api_key": "hkA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+                      }
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "No such bot",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the bot ID is invalid:
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -29351,4 +29404,13 @@ components:
       schema:
         type: integer
       example: 1
+      required: true
+    BotId:
+      name: bot_id
+      in: path
+      description: |
+        The ID of the target bot.
+      schema:
+        type: integer
+      example: 16
       required: true
