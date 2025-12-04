@@ -1368,6 +1368,51 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
+    def test_missed_group_dm_reply_with_deactivated_user(self) -> None:
+        # Create group DM with 4 users
+        self.login("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")  # Will be deactivated
+    
+        result = self.client_post("/json/messages", {
+            "type": "private",
+            "content": "original group DM message",
+            "to": orjson.dumps([cordelia.id, iago.id, desdemona.id]).decode(),
+        })
+        self.assert_json_success(result)
+    
+        # Cordelia gets a missed message email
+        cordelia_profile = self.example_user("cordelia")
+        user_message = most_recent_usermessage(cordelia_profile)
+        mm_address = create_missed_message_address(cordelia_profile, user_message.message)
+    
+        # Deactivate Desdemona
+        do_deactivate_user(desdemona, acting_user=None)
+    
+        # Simulate Cordelia replying via missed message email
+        incoming_valid_message = self.EmailMessage()
+        incoming_valid_message.set_content("TestMissedGroupDirectMessageEmailMessages body")
+        incoming_valid_message["Subject"] = "TestMissedGroupDirectMessageEmailMessages subject"
+        incoming_valid_message["From"] = cordelia_profile.delivery_email
+        incoming_valid_message["To"] = str(mm_address)
+        incoming_valid_message["Reply-To"] = cordelia_profile.delivery_email
+    
+        # Assert the error is swallowed (no crash, warning logged)
+        with self.assertLogs(__name__, level="WARNING") as warn_log:
+            with self.assert_database_query_count(22):  # Matches existing test
+                process_message(incoming_valid_message)
+    
+        # Verify warning was logged for deactivated user
+        self.assertEqual(len(warn_log.output), 1)
+        self.assertIn("Swallowed email-mirror group DM send error", warn_log.output[0])
+        self.assertIn("is no longer using Zulip", warn_log.output[0])
+    
+        # Verify no new message was created (error was swallowed)
+        iago_profile = self.example_user("iago")
+        self.assertEqual(most_recent_message(iago_profile).content, "TestMissedGroupDirectMessageEmailMessages body")
+
+
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
         # have Hamlet send a message to stream Denmark, that Othello
