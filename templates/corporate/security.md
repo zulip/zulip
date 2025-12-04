@@ -1,168 +1,229 @@
-Zulip’s security strategy covers all aspects of our product and
-business. Making sure your information stays protected is our highest
-priority.
+We take the trust our users put in Zulip extremely seriously. Our security model
+is designed to be:
 
-## Security basics
+- **Secure by default**: Your data is protected out-of-the-box.
+- **Well-documented** and **easy to understand**, so that you’re never caught by
+  surprise.
+- **Flexible**, so that you can configure Zulip according to your organization’s
+  needs.
 
-- All Zulip clients (web, mobile, desktop, terminal, and integrations) require
-  TLS encryption and authentication over HTTPS for all data transmission between
-  clients and the server, both on LAN and the Internet. By default, all Zulip
-  services talk to each other either via a localhost connection or using an
-  encrypted SSL connection.
-- All Zulip Cloud customer data is encrypted at rest. Self-hosted Zulip can be
-  configured for encryption at rest via your hosting provider, or by setting up
-  hardware and software disk encryption of the database and other data storage
-  media.
-- Zulip’s on-premise offerings can be hosted entirely behind your firewall,
-  or even on an air-gapped network (disconnected from the Internet).
-- Every Zulip authenticated API endpoint has built in rate limiting to
-  prevent DoS attacks.
-- Connections from the Zulip servers to Active Directory/LDAP can be secured
-  with TLS.  If Zulip is
-  [deployed on multiple servers](https://zulip.readthedocs.io/en/latest/production/deployment.html),
-  all connections between parts of the Zulip infrastructure can be secured
-  with TLS or SSH.
-- Zulip requires CSRF tokens in all interactions with the web API to
-  prevent CSRF attacks.
-- Message content can be
-  [excluded from mobile push notifications][redact-content],
-  to avoid displaying message content on locked mobile screens, and to
-  comply with strict compliance policies such as the USA’s HIPAA standards.
-- Zulip operates a HackerOne disclosure program to reward hackers for
-  finding and responsibly reporting security vulnerabilities in Zulip.  Our
-  [completely open source codebase](https://github.com/zulip/zulip) means
-  that HackerOne’s white-hat hackers can audit Zulip for potential security
-  issues with full access to the source code.
+This page will walk you Zulip's security tools and practices:
 
-[redact-content]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#security-and-privacy
+- [Compliance support](#zulip-serves-your-compliance-needs)
+- [Data encryption](#data-is-encrypted-for-your-protection)
+- [Tools to protect your data when you self-host](#self-hosting-we-give-you-the-tools-to-protect-your-data)
+- [How we keep your organization secure on Zulip Cloud](#zulip-cloud-we-keep-your-organization-secure)
+- [Zulip's robust 100% open-source system](#robust-100-open-source-system)
+- [Highly configurable access controls](#highly-configurable-access-controls)
+- [Our responsible vulnerability disclosure program](#responsible-disclosure-program)
 
-## Configurable access control policies
+---
 
-- Zulip supports [direct messages](/help/direct-messages) (to one or more
-  individuals), [private channels](/help/channel-permissions#private-channels)
-  with any number of subscribers, as well as [public
-  channels](/help/channel-permissions#public-channels) available to all
-  organization members.  We also support [guest accounts](/help/guest-users),
-  which only have access to a fixed set of channels, and [announcement
-  channels](/help/channel-posting-policy), where only organization owners and
-  administrators can post.
-- By default, users can maintain their own names and email addresses, but
-  Zulip also supports
-  [restricting changes](/help/restrict-name-and-email-changes) and
-  synchronizing these data from another database (such as
-  [LDAP/Active Directory][ldap-name]).
-- Zulip provides many options for
-  [managing who can join the organization](/help/invite-new-users),
-  supporting everything from open to the public (e.g., for open source
-  projects), to requiring an invitation to join, to having an email from a
-  list of domains, to being a member of a specific organization in
-  LDAP/Active Directory.
-- Zulip can limit the features that new users have access to until their
-  accounts are older than a [configurable waiting period][waiting_period].
-- Zulip also supports customizing whether non-admins can
-  [create channels](/help/configure-who-can-create-channels),
-  [subscribe other users to channels](/help/configure-who-can-invite-to-channels),
-  [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
-  [add integrations and bots](/help/restrict-bot-creation),
-  [edit or delete messages](/help/restrict-message-editing-and-deletion),
-  and more.
+## Zulip serves your compliance needs
 
-[waiting_period]: /help/restrict-permissions-of-new-members
-[ldap-name]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
+- [GDPR and CCPA compliant](https://zulip.com/help/gdpr-compliance)
+- Self-hosting facilitates HIPAA and FERPA compliance
+- [Message editing and deletion policies](/help/restrict-message-editing-and-deletion)
+- [Global and per-channel data retention policies](/help/message-retention-policy)
+- [Detailed audit log of administrative actions](https://zulip.readthedocs.io/en/stable/subsystems/logging.html#backend-logging)
+- [Complete data exports](/help/export-your-organization)
+- [Compliance exports](https://zulip.readthedocs.io/en/stable/production/export-and-import.html#compliance-exports)
 
-## Authentication
+---
 
-- Zulip supports integrated single sign-on with Google, GitHub, SAML
-  (including Okta), Entra ID (AzureAD), and Active Directory/LDAP.  With Zulip
-  on-premise, we can support any of the 100+ authentication tools
-  supported by
-  [python-social-auth](https://python-social-auth.readthedocs.io/en/latest/backends/index.html#social-backends)
-  as well as [any SSO service that has a plugin for
-  Apache][apache-sso].
-- Zulip uses the zxcvbn password strength checker by default, and supports
-  customizing users’ password strength requirements. See our documentation
-  on
-  [password strength](https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#passwords)
-  for more detail.
-- Users can rotate their accounts’ credentials, blocking further access from
-  any compromised Zulip credentials.  With Zulip on-premise, server
-  administrators can additionally revoke and reset any user’s credentials.
-- Owners can deactivate any [user](/help/deactivate-or-reactivate-a-user),
-  [bot, or integration](/help/deactivate-or-reactivate-a-bot). Administrators
-  can also deactivate any [user](/help/deactivate-or-reactivate-a-user),
-  [bot, or integration](/help/deactivate-or-reactivate-a-bot) except owners.
-- With Zulip on-premise,
-  [session length](https://github.com/zulip/zulip/search?q=SESSION_COOKIE_AGE&type=code) and
-  [idle timeouts](https://github.com/zulip/zulip/search?q=SESSION_EXPIRE_AT_BROWSER_CLOSE&type=code)
-  can be configured to match your organization’s security policies.
+## Data is encrypted for your protection
 
-[apache-sso]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#apache-based-sso-with-remote-user
+### Secure data transmission
 
-## Integrity and auditing
+All Zulip clients require [TLS
+encryption](https://zulip.readthedocs.io/en/stable/production/ssl-certificates.html)
+and authentication over HTTPS for data transmission to and from the server, both
+on LAN and the Internet.
 
-- Zulip owners and administrators can restrict users’
-  [ability to edit or delete messages](/help/restrict-message-editing-and-deletion),
-  and whether deleted messages are retained in the database or deleted
-  permanently. Zulip by default stores the complete history of all message
-  content on the platform, including edits and deletions, and all uploaded
-  files.
-- Zulip’s server logging has configurable log rotation policies and can be
-  used for an end-to-end history of system usage.
-- Zulip stores in its database a permanent long-term audit log containing
-  the history of important actions (e.g., changes to passwords, email
-  addresses, and channel subscriptions).
-- Zulip’s powerful data exports
-  ([on-premise](https://zulip.readthedocs.io/en/latest/production/export-and-import.html),
-  [cloud](/help/export-your-organization)) can be imported into third-party
-  tools for legal discovery and other compliance purposes.  Zulip’s
-  enterprise offerings include support for integrating these with your
-  compliance tools.
-- Zulip supports GDPR and HIPAA compliance.
+### End-to-end encryption for push notification content
 
+You can [require end-to-end
+encryption](https://zulip.com/help/mobile-notifications#end-to-end-encryption-e2ee-for-mobile-push-notifications)
+for message content in mobile push notifications. If you do, content will be
+omitted when sending notifications to an app that doesn't support end-to-end
+encryption.
 
-## The little things
+### Secure integrations
+[Integrations](/integrations/) use TLS encryption and authentication over HTTPS
+for data transmission. Administrators can browse,
+[manage](https://zulip.com/help/manage-a-bot), and
+[deactivate](https://zulip.com/help/deactivate-or-reactivate-a-bot)
+integrations.
 
-Many products talk about having great security and privacy practices, but
-fall short in actually protecting their users due to buggy code or poor
-operational practices.
+---
 
-Our focus on security goes beyond a feature checklist: it’s a point of
-pride. Zulip founder Tim Abbott was previously the CTO of Ksplice, which
-provided rebootless Linux kernel security updates for over 100,000
-production servers (now the flagship feature of
-[Oracle Linux](https://www.oracle.com/linux/)).
+## Self-hosting: We give you the tools to protect your data
 
-Here are some security practices we’re proud of, all of which are unusual in
-the industry:
+### Support for encryption in transit and at rest
 
-- The Zulip server’s automated test suite has over 98% test coverage,
-  including 100% of Zulip’s API layer (responsible for parsing user input).
-  It is difficult to find any full-stack web application with as complete a
-  set of automated tests as Zulip.
-- Zulip’s Python codebase is written entirely in
-  [statically typed Python 3](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
-  which automatically prevents a wide range of possible bugs.
-- All access to user data (messages, channels, uploaded files, etc.) in the
-  Zulip backend is through carefully-audited core libraries that validate
-  that the user who is making the request has access to that data.
-- Only a small handful of people have access to production servers or
-  to sensitive customer data.
-- Our error handling systems have been designed from the beginning to
-  avoid including user message content in error reports, even in cases where
-  this makes debugging quite difficult (e.g., bugs in the message rendering
-  codebase).
-- Zulip has a carefully designed API surface area of only about 100 API
-  endpoints. For comparison, products of similar scope typically have
-  hundreds or even thousands of endpoints. Every new API endpoint is
-  personally reviewed for security and necessity by the system architect Tim
-  Abbott.
+Encrypt your database, uploads, and backups at rest on infrastructure you
+control. All connections between parts of the Zulip system are secured
+out-of-the-box with encryption, a protected network like a local socket, or
+both. All of the inter-service connections are also authenticated, to provide a
+defensive-by-default security posture, and prevent SSRF attacks.
 
-These security practices matter!  Slack, the most popular SaaS team chat
-provider, has needed to award
-[hundreds of bounties](https://hackerone.com/slack) for security bugs found
-by security researchers outside the company.
+### Firewalled and air-gapped deployments
 
-## Further reading
+Zulip can be hosted entirely behind your firewall, or on an air-gapped network.
 
-- Detailed
-  [security model documentation](https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html)
+### Custom security policies
+
+- [Configurable](https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#email-and-password)
+  password strength requirements.
+- Administrators can revoke and reset any user’s credentials.
+- Configurable [session
+  length](https://github.com/zulip/zulip/search?q=SESSION_COOKIE_AGE&type=code)
+  and [idle
+  timeouts](https://github.com/zulip/zulip/search?q=SESSION_EXPIRE_AT_BROWSER_CLOSE&type=code).
+- Configurable log rotation policies.
+- [Configurable rate
+  limits](https://zulip.readthedocs.io/en/stable/production/securing-your-zulip-server.html#understand-zulip-s-rate-limiting-system)
+  for API endpoints and authentication attempts.
+
+---
+
+## Zulip Cloud: We keep your organization secure
+
+- All customer data is encrypted in transit and at rest.
+- [Strong
+  passwords](https://zulip.readthedocs.io/en/stable/production/password-strength.html)
+  are required with the zxcvbn password strength checker.
+- Users can [rotate](https://zulip.com/help/protect-your-account) their account
+  credentials.
+- To protect your privacy, error handling systems exclude user message content
+  in reports.
+- Data and server access is limited to a very small number of staff.
+
+---
+
+## Robust 100% open-source system
+
+Your security team and independent security researchers have access to [Zulip’s
+entire codebase](https://github.com/zulip), and can thus fully audit the system
+for security issues. We are proud of our industry-leading efforts to prevent
+security issues from being introduced in Zulip.
+
+### Development process
+
+- **Comprehensive automated testing**: The Zulip server has an remarkably
+  complete automated test suite, including [complete test
+  coverage](https://app.codecov.io/gh/zulip/zulip/tree/main/zerver) in
+  security-sensitive code paths.
+- **Stable, carefully audited APIs**: All clients share a common, highly stable
+  [API](https://zulip.com/api/). API changes are carefully reviewed for security
+  and necessity, and documented in a [readable API
+  changelog](https://zulip.com/api/changelog).
+- **Disciplined code review:** Zulip is known for its unusually disciplined
+  [code review
+  process](https://zulip.readthedocs.io/en/latest/contributing/review-process.html),
+  ensuring that all changes are carefully verified by our maintainer team.
+
+### System design
+
+- **Static typing**: The Zulip server
+  [pioneered](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
+  statically typed Python. Extensive use of both standard and custom linters
+  helps prevent several classes of common security bugs.
+- **Access control**: Access to user data (messages, channels, uploaded files,
+  etc.) in the Zulip server is mediated through carefully-audited core libraries
+  that consistently validate access controls.
+- **Minimizing supply chain risk:** Dependencies are evaluated for quality,
+  maintainability, and necessity before being integrated into the system.
+
+---
+
+## Highly configurable access controls
+
+### Identity management your way
+
+- [Email authentication](/help/invite-users-to-join), with option to [restrict
+  email
+  domains](/help/restrict-account-creation#configuring-email-domain-restrictions)
+- [OAuth social logins](/help/configure-authentication-methods) (Google, GitHub,
+  GitLab, Apple)
+- SSO with [SAML](/help/saml-authentication) (Including Okta and OneLogin),
+  [Microsoft Entra
+  ID](https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#microsoft-entra-id),
+  [OpenID
+  Connect](https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#openid-connect)
+- [AD/LDAP user and group
+  sync](https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#ldap-including-active-directory)
+- [SAML user and group sync](/help/saml-authentication)
+- [SCIM user and group sync](/help/scim)
+- Configure whether users can change their
+  [names](/help/restrict-name-and-email-changes), [email
+  addresses](/help/restrict-name-and-email-changes), and
+  [avatars](/help/restrict-profile-picture-changes)
+- [Minimum app
+  version](https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#desktop-app)
+  for the desktop app
+- [100+ authentication
+  options](https://python-social-auth.readthedocs.io/en/latest/backends/index.html#social-backends)
+  with python-social-auth (self-hosted)
+
+### Configure data access and messaging policies
+
+- [Private channels with shared history](/help/channel-permissions#private-channels)
+- [Private channels with private history](/help/channel-permissions#private-channels)
+- [Channel posting permissions](/help/channel-posting-policy)
+- [Direct messaging permissions](/help/restrict-direct-messages)
+- [Customize permissions by channel](/help/channel-permissions)
+- Authenticated access to uploaded files
+- [Custom terms of service and privacy
+  policy](https://zulip.readthedocs.io/en/stable/production/settings.html#terms-of-service-and-privacy-policy)
+- [Configurable waiting period](/help/restrict-permissions-of-new-members) for new users
+
+### Custom permissions with comprehensive audit log
+
+- [Role-based access control](/help/user-roles)
+- Control access by [roles](/help/user-roles), [custom
+  groups](/help/user-groups), and user accounts
+- Grant [permissions](/help/manage-permissions) to roles, custom groups, and
+  individual users
+- [Control](/help/manage-permissions) who can create channels, subscribe and
+  unsubscribe users, add custom emoji and integrations, and more
+- Permissions for [editing](/help/restrict-message-editing-and-deletion),
+  [deleting](/help/restrict-message-editing-and-deletion) and
+  [moving](/help/restrict-moving-messages) messages, and an audit history of
+  these actions
+- Permanent long-term [audit
+  log](https://zulip.readthedocs.io/en/stable/subsystems/logging.html#backend-logging)
+  of important actions (e.g., changes to passwords, email addresses, and channel
+  subscriptions)
+
+### Tightly controlled guest accounts for vendors, partners, and customers
+
+[Guest users](/help/guest-users) cannot see any channels, unless they have been
+specifically subscribed, and can never invite new users. You can limit guests’
+ability to see other users, and warn users when they are DMing a guest to
+prevent accidental disclosures.
+
+---
+
+## Responsible disclosure program
+
+- We operate a private HackerOne vulnerability disclosure program, and credit
+  reporters for issues that were not discovered internally. See the [Zulip
+  security reporting policy](https://github.com/zulip/zulip/security/policy).
+- We publish security releases for all security vulnerabilities, and publicly
+  disclose them [on our blog](https://blog.zulip.com/tag/security/) with CVE
+  numbers for tracking.
+- Zulip Server security and maintenance releases are carefully engineered to
+  minimize the inherent risks of upgrading software, so there is never a reason
+  to run an insecure version. Announcements of serious vulnerabilities
+  [include](https://blog.zulip.com/2025/07/02/zulip-server-10-4-security-release/)
+  applicable mitigation guidance.
+- We responsibly report vulnerabilities we discover in our upstream
+  dependencies.
+
+---
+
+## Learn more
+
+For more information, check out our [guide on securing your Zulip
+server](https://zulip.readthedocs.io/en/stable/production/securing-your-zulip-server.html).
