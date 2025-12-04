@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime, timezone
 from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
 
@@ -7,6 +8,7 @@ import regex
 from django.core.exceptions import ValidationError
 from requests.utils import requote_uri
 
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
     WildValue,
@@ -453,7 +455,7 @@ def render_attachment(attachment: WildValue) -> str:
                 raise e
 
             time = int(ts_float)
-        pieces.append(f"<time:{time}>")
+        pieces.append(datetime_to_global_time(datetime.fromtimestamp(time, timezone.utc)))
 
     return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
