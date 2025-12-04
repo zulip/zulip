@@ -293,7 +293,7 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
+        channel_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
     });
 }
 

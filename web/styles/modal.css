@@ -280,7 +280,7 @@
         }
 
         .user-group-name,
-        .stream-name {
+        .channel-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
