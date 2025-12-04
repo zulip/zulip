@@ -491,6 +491,10 @@
     will-change: transform;
 }
 
+.micromodal .modal__content.footer-hidden {
+    margin-bottom: 1.25em;
+}
+
 .modal__spinner .loading_indicator_spinner {
     height: 16px;
 
