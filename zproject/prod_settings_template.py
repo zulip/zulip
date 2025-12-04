@@ -615,7 +615,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
 # REMOTE_POSTGRES_HOST = "dbserver.example.com"
 # REMOTE_POSTGRES_PORT = "5432"
-# REMOTE_POSTGRES_SSLMODE = "require"
+# REMOTE_POSTGRES_SSLMODE = "verify-full"
 
 ########
 ## RabbitMQ configuration.
