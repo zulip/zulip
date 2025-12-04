@@ -28,6 +28,7 @@ from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, e
 from zerver.lib.reminders import get_reminder_formatted_content
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -388,11 +389,10 @@ def send_failed_scheduled_message_notification(
     user_profile: UserProfile, scheduled_message_id: int
 ) -> None:
     scheduled_message = access_scheduled_message(user_profile, scheduled_message_id)
-    delivery_datetime_string = str(scheduled_message.scheduled_timestamp)
 
     with override_language(user_profile.default_language):
         error_string = scheduled_message.failure_message
-        delivery_time_markdown = f"<time:{delivery_datetime_string}> "
+        delivery_time_markdown = datetime_to_global_time(scheduled_message.scheduled_timestamp)
 
         content = "".join(
             [
