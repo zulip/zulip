@@ -1374,7 +1374,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")  # Will be deactivated
-    
         result = self.client_post("/json/messages", {
             "type": "private",
             "content": "original group DM message",
@@ -1399,12 +1398,12 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["Reply-To"] = cordelia_profile.delivery_email
     
         # Assert the error is swallowed (no crash, warning logged)
-        with self.assertLogs(__name__, level="WARNING") as warn_log:
-            with self.assert_database_query_count(22):  # Matches existing test
-                process_message(incoming_valid_message)
+        with self.assertLogs(__name__, level="WARNING") as warn_log, \
+             self.assert_database_query_count(22):  # Matches existing test
+            process_message(incoming_valid_message)
     
         # Verify warning was logged for deactivated user
-        self.assertEqual(len(warn_log.output), 1)
+        self.assert_length(len(warn_log.output), 1)
         self.assertIn("Swallowed email-mirror group DM send error", warn_log.output[0])
         self.assertIn("is no longer using Zulip", warn_log.output[0])
     

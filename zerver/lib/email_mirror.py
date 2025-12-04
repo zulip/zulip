@@ -8,7 +8,6 @@ from re import Match
 from django.conf import settings
 from django.utils.translation import gettext as _
 from typing_extensions import override
-from zerver.lib.exceptions import JsonableError
 
 from zerver.actions.message_send import (
     check_send_message,
