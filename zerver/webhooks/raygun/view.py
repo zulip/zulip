@@ -1,6 +1,5 @@
-from datetime import timezone
+from datetime import datetime
 
-import dateutil.parser
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -294,7 +293,5 @@ def parse_time(dt_str: str) -> str:
     :returns: A string containing the time
     """
 
-    # Raygun provides two timestamp format, one with the Z at the end,
-    # and one without the Z.
-    dt = dateutil.parser.parse(dt_str).replace(tzinfo=timezone.utc)
+    dt = datetime.fromisoformat(dt_str)
     return datetime_to_global_time(dt)

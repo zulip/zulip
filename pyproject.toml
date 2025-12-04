@@ -213,6 +213,9 @@ prod = [
 
   # Internationalization
   "pyicu",
+
+  # Backport datetime.fromisoformat fixes to Python < 3.11
+  "backports-datetime-fromisoformat; python_version < '3.11'",
 ]
 docs = [
   # Needed to build RTD docs
@@ -409,6 +412,7 @@ plugins = [
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
+    "backports.datetime_fromisoformat.*",
     "bitfield.*",
     "bmemcached.*",
     "circuitbreaker.*",

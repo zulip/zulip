@@ -79,7 +79,7 @@ ALL_EVENT_TYPES = [
 
 
 def get_global_time(dt_str: str) -> str:
-    dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S%z")
+    dt = datetime.fromisoformat(dt_str)
     return datetime_to_global_time(dt)
 
 

@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse
 
@@ -61,7 +61,7 @@ def add_time_part_to_string_date_if_needed(value: int, text_name: str) -> str:
 
 def get_body_for_down_event(event: WildValue) -> str:
     started_at = event["downtime"]["started_at"].tame(check_string)
-    dt = datetime.strptime(started_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    dt = datetime.fromisoformat(started_at)
     pretty_started_at = datetime_to_global_time(dt)
     return "Service is `down`. It returned a {} error at {}.".format(
         event["downtime"]["error"].tame(check_none_or(check_string)),
