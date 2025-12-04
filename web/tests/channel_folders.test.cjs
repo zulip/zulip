@@ -3,11 +3,13 @@
 const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const channel_folders = zrequire("channel_folders");
 const stream_data = zrequire("stream_data");
+
+const channel = mock_esm("../src/channel");
 
 run_test("basics", () => {
     const params = {};
@@ -168,4 +170,35 @@ run_test("basics", () => {
     );
 
     assert.deepEqual(channel_folders.user_has_folders(), true);
+
+    let success_func_called = false;
+    let error_func_called = false;
+    let channel_patch_opts;
+
+    const success = () => {
+        success_func_called = true;
+    };
+
+    const error = () => {
+        error_func_called = true;
+    };
+
+    channel.patch = (opts) => {
+        channel_patch_opts = opts;
+        if (!success_func_called) {
+            opts.success();
+        } else {
+            opts.error();
+        }
+    };
+
+    channel_folders.add_channel_to_folder(stream_1.stream_id, frontend_folder.id, success, error);
+    assert.equal(channel_patch_opts.url, `/json/streams/${stream_1.stream_id}`);
+    assert.equal(channel_patch_opts.data.folder_id, frontend_folder.id.toString());
+    assert.ok(success_func_called);
+
+    channel_folders.remove_channel_from_folder(stream_2.stream_id, success, error);
+    assert.equal(channel_patch_opts.url, `/json/streams/${stream_2.stream_id}`);
+    assert.equal(channel_patch_opts.data.folder_id, "null");
+    assert.ok(error_func_called);
 });

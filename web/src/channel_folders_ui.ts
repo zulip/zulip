@@ -92,41 +92,6 @@ export function add_channel_folder(): void {
     });
 }
 
-function remove_channel_from_folder(
-    stream_id: number,
-    on_success: () => void,
-    on_error: (xhr: JQuery.jqXHR) => void,
-): void {
-    const url = "/json/streams/" + stream_id.toString();
-    const data = {
-        folder_id: JSON.stringify(null),
-    };
-    void channel.patch({
-        url,
-        data,
-        success: on_success,
-        error: on_error,
-    });
-}
-
-function add_channel_to_folder(
-    stream_id: number,
-    folder_id: number,
-    on_success: () => void,
-    on_error: (xhr: JQuery.jqXHR) => void,
-): void {
-    const url = "/json/streams/" + stream_id.toString();
-    const data = {
-        folder_id: JSON.stringify(folder_id),
-    };
-    void channel.patch({
-        url,
-        data,
-        success: on_success,
-        error: on_error,
-    });
-}
-
 function archive_folder(folder_id: number): void {
     const stream_ids = channel_folders.get_stream_ids_in_folder(folder_id);
     let successful_requests = 0;
@@ -175,7 +140,7 @@ function archive_folder(folder_id: number): void {
     }
 
     for (const stream_id of stream_ids) {
-        remove_channel_from_folder(stream_id, on_success, on_error);
+        channel_folders.remove_channel_from_folder(stream_id, on_success, on_error);
     }
 }
 
@@ -267,7 +232,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
             buttons.hide_button_loading_indicator($remove_button);
         }
 
-        remove_channel_from_folder(stream_id, on_success, on_error);
+        channel_folders.remove_channel_from_folder(stream_id, on_success, on_error);
     });
 }
 
@@ -389,7 +354,7 @@ function render_add_channel_folder_widget(): void {
             dialog_widget.hide_dialog_spinner();
         }
 
-        add_channel_to_folder(stream_id, folder_id, on_success, on_error);
+        channel_folders.add_channel_to_folder(stream_id, folder_id, on_success, on_error);
     });
 }
 
