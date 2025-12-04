@@ -384,10 +384,7 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"].update(
             PASSWORD=get_secret("postgres_password"),
         )
-    if REMOTE_POSTGRES_SSLMODE != "":
-        DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
-    else:
-        DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
+    DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
 elif (
     get_config("postgresql", "database_user", "zulip") != "zulip"
     and get_secret("postgres_password") is not None
