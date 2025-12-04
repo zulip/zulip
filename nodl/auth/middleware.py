@@ -32,6 +32,7 @@ class SupabaseJWTMiddleware:
     EXEMPT_PATHS = (
         "/health",
         "/api/v1/internal/",
+        "/api/v1/events/internal",  # Zulip internal Django→Tornado (uses SHARED_SECRET)
     )
 
     def __init__(self, get_response: callable) -> None:
