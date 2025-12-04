@@ -1076,7 +1076,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             e.preventDefault();
             e.stopPropagation();
             assert(bot !== undefined);
-            bot_helper.show_zuliprc_and_api_key_modal(bot.user_id);
+            void (async () => {
+                await bot_helper.show_zuliprc_and_api_key_modal(bot.user_id);
+            })();
         });
     }
 }
