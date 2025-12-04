@@ -4,14 +4,14 @@ import operator
 import os
 import re
 import sys
-import time
 import typing
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
+from time import sleep
 from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, cast
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
@@ -591,7 +591,7 @@ class StripeTestCase(ZulipTestCase):
                         raise AssertionError(
                             f"Did not find expected event {must_have_event} after looking for it multiple times"
                         )
-                    time.sleep(0.2)
+                    sleep(0.2)
                     continue
 
             for event in events_old_to_new:
@@ -6514,8 +6514,8 @@ class InvoiceTest(StripeTestCase):
         billing_session = RealmBillingSession(user=hamlet, realm=realm)
         next_billing_cycle = billing_session.get_next_billing_cycle(plan)
         plan_end_date_string = next_billing_cycle.strftime("%Y-%m-%d")
-        plan_end_date = datetime.strptime(plan_end_date_string, "%Y-%m-%d").replace(
-            tzinfo=timezone.utc
+        plan_end_date = datetime.combine(
+            date.fromisoformat(plan_end_date_string), time(0, 0, 0), tzinfo=timezone.utc
         )
 
         self.logout()
