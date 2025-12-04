@@ -25,7 +25,7 @@ This page will walk you Zulip's security tools and practices:
 - Self-hosting facilitates HIPAA and FERPA compliance
 - [Message editing and deletion policies](/help/restrict-message-editing-and-deletion)
 - [Global and per-channel data retention policies](/help/message-retention-policy)
-- [Detailed audit log of administrative actions](https://zulip.readthedocs.io/en/stable/subsystems/logging.html#backend-logging)
+- Detailed audit log of administrative actions
 - [Complete data exports](/help/export-your-organization)
 - [Compliance exports](https://zulip.readthedocs.io/en/stable/production/export-and-import.html#compliance-exports)
 
@@ -191,10 +191,8 @@ security issues from being introduced in Zulip.
   [deleting](/help/restrict-message-editing-and-deletion) and
   [moving](/help/restrict-moving-messages) messages, and an audit history of
   these actions
-- Permanent long-term [audit
-  log](https://zulip.readthedocs.io/en/stable/subsystems/logging.html#backend-logging)
-  of important actions (e.g., changes to passwords, email addresses, and channel
-  subscriptions)
+- Permanent long-term audit log of important actions (e.g., changes to
+  passwords, email addresses, and channel subscriptions)
 
 ### Tightly controlled guest accounts for vendors, partners, and customers
 
