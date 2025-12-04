@@ -533,14 +533,6 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
-# Twitter API credentials
-# Secrecy not required because its only used for R/O requests.
-# Please don't make us go over our rate limit.
-TWITTER_CONSUMER_KEY = get_secret("twitter_consumer_key")
-TWITTER_CONSUMER_SECRET = get_secret("twitter_consumer_secret")
-TWITTER_ACCESS_TOKEN_KEY = get_secret("twitter_access_token_key")
-TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
-
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [
     {
