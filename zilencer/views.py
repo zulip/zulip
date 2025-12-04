@@ -2,6 +2,7 @@ import logging
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
+from email.utils import formatdate as email_formatdate
 from typing import Annotated, Any, TypedDict, TypeVar
 from urllib.parse import urljoin, urlsplit
 from uuid import UUID
@@ -77,7 +78,7 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress
+from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.typed_endpoint import (
     ApnsAppId,
@@ -1380,7 +1381,7 @@ def update_remote_realm_data_for_server(
         "template_prefix": "zerver/emails/internal_billing_notice",
         "to_emails": [BILLING_SUPPORT_EMAIL],
         "from_address": FromAddress.tokenized_no_reply_address(),
-        "date": timezone_now().strftime(EMAIL_DATE_FORMAT),
+        "date": email_formatdate(),
     }
     for context in new_locally_deleted_remote_realms_on_paid_plan_contexts:
         email_dict["context"] = context

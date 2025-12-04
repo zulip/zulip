@@ -12,6 +12,7 @@ from email.message import EmailMessage
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
+from email.utils import formatdate as email_formatdate
 from typing import Any
 
 import backoff
@@ -44,7 +45,6 @@ from zproject.email_backends import EmailLogBackEnd, get_forward_address
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
 
-EMAIL_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
 MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
@@ -132,7 +132,7 @@ def build_email(
         # Date header of when they were enqueued; Django would also
         # add a default-now header if we left this off, but doing so
         # ourselves here explicitly makes it slightly more consistent.
-        date = timezone_now().strftime(EMAIL_DATE_FORMAT)
+        date = email_formatdate()
     extra_headers["Date"] = date
 
     if realm is not None:
