@@ -202,7 +202,7 @@ function format_channel_item_html(stream: StreamSubscription): string {
         stream_color: stream.color,
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
-        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
+        channel_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
         can_manage_folder: can_user_manage_folder(),
     });
 }
@@ -232,7 +232,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
         const $remove_button = $(e.currentTarget).closest(".remove-button");
         buttons.show_button_loading_indicator($remove_button);
         const stream_id = Number.parseInt(
-            $remove_button.closest(".stream-list-item").attr("data-stream-id")!,
+            $remove_button.closest(".channel-list-item").attr("data-stream-id")!,
             10,
         );
 
