@@ -1318,7 +1318,7 @@ export function initialize(): void {
         );
     });
 
-    $("body").on("click", "#user-profile-modal .stream-row .remove-button", (e) => {
+    $("body").on("click", "#user-profile-modal .modal-channel-row .remove-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const $remove_button = $(e.currentTarget).closest(".remove-button");
@@ -1461,13 +1461,9 @@ export function initialize(): void {
         browser_history.go_to_location("#settings/profile");
     });
 
-    $("body").on(
-        "click",
-        "#user-profile-modal .user-profile-channel-row, .user-profile-group-row",
-        () => {
-            hide_user_profile();
-        },
-    );
+    $("body").on("click", "#user-profile-modal .modal-channel-row, .user-profile-group-row", () => {
+        hide_user_profile();
+    });
 
     bot_helper.initialize_bot_click_handlers();
 
