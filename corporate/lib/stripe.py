@@ -5,7 +5,7 @@ import secrets
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from enum import Enum, IntEnum
 from functools import wraps
@@ -1417,8 +1417,11 @@ class BillingSession(ABC):
         return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
     def configure_complimentary_access_plan(self, end_date_string: str) -> str:
-        plan_end_date = datetime.strptime(end_date_string, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        if plan_end_date.date() <= timezone_now().date():
+        plan_end_date = datetime.combine(
+            date.fromisoformat(end_date_string), time(0, 0, 0), timezone.utc
+        )
+        plan_anchor_date = timezone_now()
+        if plan_end_date <= plan_anchor_date:
             raise SupportRequestError(
                 f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} to end on {end_date_string}."
             )
@@ -1429,7 +1432,6 @@ class BillingSession(ABC):
                 raise SupportRequestError(
                     f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} because of current plan."
                 )
-        plan_anchor_date = timezone_now()
         if isinstance(self, RealmBillingSession):
             # TODO implement a complimentary access plan/tier for Zulip Cloud.
             raise SupportRequestError(
@@ -1612,8 +1614,10 @@ class BillingSession(ABC):
         return success_message
 
     def update_end_date_of_current_plan(self, end_date_string: str) -> str:
-        new_end_date = datetime.strptime(end_date_string, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        if new_end_date.date() <= timezone_now().date():
+        new_end_date = datetime.combine(
+            date.fromisoformat(end_date_string), time(0, 0, 0), timezone.utc
+        )
+        if new_end_date <= timezone_now():
             raise SupportRequestError(
                 f"Cannot update current plan for {self.billing_entity_display_name} to end on {end_date_string}."
             )

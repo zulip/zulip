@@ -8,7 +8,7 @@ import sys
 import zoneinfo
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from email.headerregistry import Address
 from typing import Any
 
@@ -195,7 +195,7 @@ def convert_time_to_local_timezone(fragment: lxml.html.HtmlElement, user: UserPr
             # We expect there to always be a datetime attribute.
             continue  # nocoverage
         try:
-            dt_utc = timezone_now().strptime(datetime_str, "%Y-%m-%dT%H:%M:%S%z")
+            dt_utc = datetime.fromisoformat(datetime_str)
             dt_local = dt_utc.astimezone(zoneinfo.ZoneInfo(canonicalize_timezone(user_tz)))
             formatted_time = format_datetime_to_string(dt_local, user.twenty_four_hour_time)
             time_elem.text = formatted_time
