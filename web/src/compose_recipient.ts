@@ -347,7 +347,7 @@ export function initialize(): void {
         filter_predicate(item, value) {
             // Allow "dm" to match "Direct message" option
             if (item.is_direct_message) {
-                const dm_string = $t({defaultMessage: "dm"});
+                const dm_string = $t({defaultMessage: "DM"});
                 return (
                     item.name.toLowerCase().includes(value) ||
                     dm_string.toLowerCase().includes(value)
