@@ -1340,13 +1340,21 @@ export const stream_privacy_policy_values = {
     },
 };
 
-export const export_type_values = {
-    export_public: {
+export type ExportTypeOption = {
+    value: number;
+    description: string;
+    default: boolean;
+};
+
+export type ExportTypeSlug = "public" | "full_with_consent";
+
+export const export_type_values: Record<ExportTypeSlug, ExportTypeOption> = {
+    public: {
         value: 1,
         description: $t({defaultMessage: "Public data"}),
         default: false,
     },
-    export_full_with_consent: {
+    full_with_consent: {
         value: 2,
         description: $t({defaultMessage: "Standard"}),
         default: true,
