@@ -16428,20 +16428,20 @@ paths:
                       for backwards-compatibility; it will be required in a
                       future server release.
 
-                    - `user_settings_object`: Boolean for whether the client supports the modern
-                      `user_settings` event type. If false, the server will additionally send the
-                      legacy `update_global_notifications` and `update_display_settings` event
-                      types.
+                    - `user_settings_object`: Has no effect with modern servers. Previously, this
+                      was a boolean for whether the client supported the modern `user_settings` event type.
                       <br />
-                      **Changes**: New in Zulip 5.0 (feature level 89). This capability is for
-                      backwards-compatibility; it will be removed in a future server release.
-                      Because the feature level 89 API changes were merged together, clients can
-                      safely make a request with this client capability and also request all three
-                      event types (`user_settings`, `update_display_settings`,
-                      `update_global_notifications`), and get exactly one copy of settings data on
-                      any server version. Clients can then use the `zulip_feature_level` in the
-                      `/register` response or the presence/absence of a `user_settings` key to
-                      determine where to look for the data.
+                      **Changes**: Prior to Zulip 12.0 (feature level 439), if false, the server
+                      would additionally send the legacy `update_global_notifications` and
+                      `update_display_settings` event types if requested.
+
+                      New in Zulip 5.0 (feature level 89). Because the feature level 89 API changes
+                      were merged together, clients can safely make a request with this client
+                      capability and also request all three event types (`user_settings`,
+                      `update_display_settings`, `update_global_notifications`), and get exactly one
+                      copy of settings data on any server version. Clients can then use the
+                      `zulip_feature_level` in the `/register` response or the presence/absence of a
+                      `user_settings` key to determine where to look for the data.
 
                     - `linkifier_url_template`: Boolean for whether the client accepts
                       [linkifiers][help-linkifiers] that use [RFC 6570][rfc6570] compliant

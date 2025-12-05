@@ -782,27 +782,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
             else:
                 self.assertFalse("avatar_url" in user_dict)
 
-    def test_user_settings_based_on_client_capabilities(self) -> None:
-        hamlet = self.example_user("hamlet")
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=True,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            self.assertNotIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
-
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=False,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            self.assertIn(prop, result["user_settings"])
-
     def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
         user = self.example_user("iago")
         self.login_user(user)
