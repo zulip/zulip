@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 440**
+
+* [`GET users/<user_id>/subscriptions`](/api/get-user-subscriptions)
+  Added a new endpoint to get all known subscriptions for a user.
+
 **Feature level 439**
 
 * [`GET /events`](/api/get-events): The deprecated `update_display_settings`

@@ -32,6 +32,10 @@ export type StreamSubscription = z.infer<typeof stream_subscription_schema>;
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
 
+export function stream_ids(): number[] {
+    return [...subs_by_stream_id.keys()];
+}
+
 export function get(stream_id: number): StreamSubscription | undefined {
     return subs_by_stream_id.get(stream_id);
 }
