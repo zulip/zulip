@@ -43,6 +43,7 @@ import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import type {Realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
@@ -708,6 +709,12 @@ export function discard_stream_property_element_changes(
         }
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
+            break;
+        case "channel_privacy":
+            settings_components.set_dropdown_list_widget_setting_value(
+                "channel_privacy",
+                stream_data.get_stream_privacy_policy(sub.stream_id),
+            );
             break;
         case "folder_id":
             settings_components.set_channel_folder_dropdown_value(sub);

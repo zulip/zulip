@@ -487,16 +487,9 @@ function clear_error_display(): void {
 export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
-    stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     stream_create_subscribers.build_widgets();
 
-    // Select the first visible and enabled choice for stream privacy.
-    $(
-        "#stream_creation_form .stream-privacy-values .settings-radio-input-parent:not([hidden]) input:not(:disabled)",
-    )
-        .first()
-        .prop("checked", true);
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
@@ -562,7 +555,7 @@ export function show_new_stream_modal(): void {
     update_announce_stream_state();
     stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_option_state($("#stream-creation"));
-    stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    stream_ui_updates.update_history_public_to_subscribers_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -588,16 +581,6 @@ export function set_up_handlers(): void {
     stream_create_subscribers.create_handlers($subscribers_container);
 
     const $container = $("#stream-creation").expectOne();
-
-    $container.on("change", ".stream-privacy-values input", () => {
-        update_announce_stream_state();
-        stream_ui_updates.update_default_stream_option_state($container);
-        stream_ui_updates.update_can_subscribe_group_label($container);
-    });
-
-    $container.on("change", ".default-stream input", () => {
-        stream_ui_updates.update_private_stream_privacy_option_state($container);
-    });
 
     $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
@@ -665,6 +648,7 @@ export function set_up_handlers(): void {
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
     folder_widget = stream_settings_components.set_up_folder_dropdown_widget();
+    stream_edit.set_up_channel_privacy_dropdown_widget();
 }
 
 export function initialize(): void {

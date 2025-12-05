@@ -250,7 +250,6 @@ export function update_is_default_stream(): void {
         const sub = sub_store.get(active_stream_id);
         assert(sub !== undefined);
         stream_ui_updates.update_setting_element(sub, "is_default_stream");
-        stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
     }
 }
 
@@ -952,6 +951,7 @@ function setup_page(callback: () => void): void {
             stream_privacy_policy,
             stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
             check_default_stream: false,
+            history_public_to_subscribers: true,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             org_level_message_retention_setting:
                 stream_edit.get_display_text_for_realm_message_retention_setting(),
