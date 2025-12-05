@@ -4,7 +4,9 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.user_status import try_clear_scheduled_user_status
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_status import (
     UserInfoDict,
     get_all_users_status_dict,
@@ -37,6 +39,7 @@ class UserStatusTest(ZulipTestCase):
             emoji_code=None,
             reaction_type=None,
             client_id=client1.id,
+            scheduled_end_time=None,
         )
 
         self.assertEqual(
@@ -62,6 +65,7 @@ class UserStatusTest(ZulipTestCase):
             emoji_code="1f697",
             reaction_type=UserStatus.UNICODE_EMOJI,
             client_id=client2.id,
+            scheduled_end_time=None,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -95,6 +99,7 @@ class UserStatusTest(ZulipTestCase):
             emoji_code=None,
             reaction_type=None,
             client_id=client2.id,
+            scheduled_end_time=None,
         )
 
         self.assertEqual(
@@ -126,6 +131,7 @@ class UserStatusTest(ZulipTestCase):
             emoji_code="",
             reaction_type=UserStatus.UNICODE_EMOJI,
             client_id=client2.id,
+            scheduled_end_time=None,
         )
 
         self.assertEqual(
@@ -147,6 +153,7 @@ class UserStatusTest(ZulipTestCase):
             emoji_code=None,
             reaction_type=None,
             client_id=client2.id,
+            scheduled_end_time=None,
         )
 
         self.assertEqual(
@@ -170,6 +177,7 @@ class UserStatusTest(ZulipTestCase):
             emoji_code=None,
             reaction_type=None,
             client_id=client2.id,
+            scheduled_end_time=None,
         )
         self.assertEqual(
             user_status_info(hamlet, self.example_user("polonius")),
@@ -195,6 +203,97 @@ class UserStatusTest(ZulipTestCase):
             self.assertEqual(events[0]["event"], expected_event)
         else:
             self.assertEqual(events[2]["event"], expected_event)
+
+    def test_clear_statuses_upon_expiry(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        self.login_user(hamlet)
+        now = datetime_to_timestamp(timezone_now())
+        time_after_5_minutes = now + 5 * 60
+
+        # Set a user status with some end time.
+        payload: dict[str, Any] = {
+            "status_text": "out to lunch",
+            "emoji_name": "car",
+            "emoji_code": "1f697",
+            "reaction_type": UserStatus.UNICODE_EMOJI,
+            "scheduled_end_time": time_after_5_minutes,
+        }
+        result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(user_status_info(hamlet), payload)
+        rec_count = UserStatus.objects.filter(user_profile_id=hamlet.id).count()
+        self.assertEqual(rec_count, 1)
+
+        # When time not yet reached, status not cleared
+        with time_machine.travel(now + 4 * 60, tick=False):
+            try_clear_scheduled_user_status()
+
+        self.assertEqual(
+            user_status_info(hamlet),
+            payload,
+        )
+
+        # Test passing same values for status
+        result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_success(result)
+
+        # Clear all statuses which have crossed their expiry time
+        with time_machine.travel(now + 5 * 60, tick=False):
+            try_clear_scheduled_user_status()
+
+        self.assertEqual(user_status_info(hamlet), {})
+
+        # Test scheduling time to clear status, with no status set
+        payload = {"scheduled_end_time": now + 10000}
+        result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_error(result, "Client must set status if they pass scheduled_end_time.")
+
+        # Test setting status with already expired status expiry time
+        payload = {"status_text": "In a meeting", "scheduled_end_time": now - 60}
+        result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_success(result)
+        self.assertEqual(user_status_info(hamlet), {})
+
+        # Test auto clearing status after expiry time
+        now = datetime_to_timestamp(timezone_now())
+        time_after_5_minutes = now + 5 * 60
+        payload = {"status_text": "At office", "scheduled_end_time": time_after_5_minutes}
+        result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_success(result)
+        self.assertEqual(user_status_info(hamlet), payload)
+
+        with time_machine.travel(now + 5 * 60, tick=False):
+            try_clear_scheduled_user_status()
+
+        self.assertEqual(
+            user_status_info(hamlet),
+            {},
+        )
+
+        # Test expiry time set to never
+        payload = {
+            "status_text": "Vacationing",
+            "scheduled_end_time": orjson.dumps(None).decode(),
+        }
+        result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_success(result)
+        self.assertEqual(user_status_info(hamlet), {"status_text": "Vacationing"})
+
+        with time_machine.travel(now + 100000, tick=False):
+            try_clear_scheduled_user_status()
+
+        self.assertEqual(
+            user_status_info(hamlet),
+            {"status_text": "Vacationing"},
+        )
+
+        # Test `scheduled_end_time` with no status
+        now = datetime_to_timestamp(timezone_now())
+        payload = {"status_text": "", "scheduled_end_time": now + 1000}
+        result = self.client_post("/json/users/me/status", payload)
+        self.assert_json_error(result, "Client must set status if they pass scheduled_end_time.")
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -456,29 +555,14 @@ class UserStatusTest(ZulipTestCase):
         # Login as admin Iago
         self.login_user(iago)
 
-        # Server should remove emoji_code and reaction_type if emoji_name is empty.
         self.update_status_and_assert_event(
-            payload=dict(
-                emoji_name="",
-            ),
+            payload=dict(status_text="   Vacationing  "),
             url=update_status_url,
-            expected_event=dict(
-                type="user_status",
-                user_id=hamlet.id,
-                emoji_name="",
-                emoji_code="",
-                reaction_type=UserStatus.UNICODE_EMOJI,
-            ),
-        )
-
-        self.update_status_and_assert_event(
-            payload=dict(status_text="   at the beach  "),
-            url=update_status_url,
-            expected_event=dict(type="user_status", user_id=hamlet.id, status_text="at the beach"),
+            expected_event=dict(type="user_status", user_id=hamlet.id, status_text="Vacationing"),
         )
         self.assertEqual(
             user_status_info(hamlet),
-            dict(status_text="at the beach", away=True),
+            dict(status_text="Vacationing", away=True),
         )
 
         result = self.client_post(update_status_url, {})
@@ -573,6 +657,21 @@ class UserStatusTest(ZulipTestCase):
                 status_text="on vacation",
                 emoji_name="car",
                 emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+            ),
+        )
+
+        # Server should remove emoji_code and reaction_type if emoji_name is empty.
+        self.update_status_and_assert_event(
+            payload=dict(
+                emoji_name="",
+            ),
+            url=update_status_url,
+            expected_event=dict(
+                type="user_status",
+                user_id=hamlet.id,
+                emoji_name="",
+                emoji_code="",
                 reaction_type=UserStatus.UNICODE_EMOJI,
             ),
         )

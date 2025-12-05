@@ -3,6 +3,7 @@ import * as z from "zod/mini";
 export const user_status_schema = z.intersection(
     z.object({
         status_text: z.optional(z.string()),
+        scheduled_end_time: z.optional(z.nullable(z.number())),
         away: z.optional(z.boolean()),
     }),
     z.union([
