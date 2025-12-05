@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import configparser
 import glob
+import json
 import logging
 import os
 import subprocess
@@ -58,12 +59,8 @@ env = os.environ.copy()
 env["WALG_UPLOAD_DISK_CONCURRENCY"] = disk_concurrency
 subprocess.check_call(["env-wal-g", "backup-push", pg_data_path], env=env)
 
-backups = {}
-lines = subprocess.check_output(["env-wal-g", "backup-list"], text=True).split("\n")
-for line in lines[1:]:
-    if line:
-        backup_name, date_str = line.split()[0:2]
-        backups[dateutil.parser.parse(date_str)] = backup_name
+data = json.loads(subprocess.check_output(["env-wal-g", "backup-list", "--json"]))
+backups = {dateutil.parser.parse(backup["time"]): backup["backup_name"] for backup in data}
 
 one_month_ago = datetime.now(tz=timezone.utc) - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):
