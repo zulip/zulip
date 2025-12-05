@@ -348,12 +348,6 @@ export function dispatch_normal_event(event) {
                         if (event.property === "name") {
                             electron_bridge?.send_event("realm_name", event.value);
                         }
-
-                        if (event.property === "enable_spectator_access") {
-                            stream_ui_updates.update_stream_privacy_choices(
-                                "can_create_web_public_channel_group",
-                            );
-                        }
                     }
                     break;
                 case "update_dict":
@@ -394,14 +388,6 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
-                                }
-
-                                if (
-                                    key === "can_create_public_channel_group" ||
-                                    key === "can_create_private_channel_group" ||
-                                    key === "can_create_web_public_channel_group"
-                                ) {
-                                    stream_ui_updates.update_stream_privacy_choices(key);
                                 }
 
                                 if (

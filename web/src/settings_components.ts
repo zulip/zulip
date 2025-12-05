@@ -127,7 +127,7 @@ type RealmUserSettingDefaultProperties = z.infer<
 
 export const stream_settings_property_schema = z.union([
     z.keyof(stream_subscription_schema),
-    z.enum(["stream_privacy", "is_default_stream"]),
+    z.enum(["channel_privacy", "is_default_stream"]),
 ]);
 type StreamSettingProperty = z.infer<typeof stream_settings_property_schema>;
 
@@ -156,7 +156,7 @@ export function get_stream_settings_property_value(
     property_name: StreamSettingProperty,
     sub: StreamSubscription,
 ): valueof<StreamSubscription> {
-    if (property_name === "stream_privacy") {
+    if (property_name === "channel_privacy") {
         return stream_data.get_stream_privacy_policy(sub.stream_id);
     }
     if (property_name === "is_default_stream") {
@@ -500,6 +500,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
+    ["channel_privacy", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -923,8 +924,8 @@ export function check_stream_settings_property_changed(
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_message_retention_setting_value($(elem), false);
             break;
-        case "stream_privacy":
-            proposed_val = get_input_element_value(elem, "radio-group");
+        case "channel_privacy":
+            proposed_val = get_dropdown_list_widget_setting_value($(elem));
             break;
         case "folder_id":
             proposed_val = get_channel_folder_value_from_dropdown_widget($(elem));
@@ -1161,7 +1162,7 @@ export function populate_data_for_stream_settings_request(
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
                 const property_name = extract_property_name($input_elem);
-                if (property_name === "stream_privacy") {
+                if (property_name === "channel_privacy") {
                     assert(typeof input_value === "string");
                     data = {
                         ...data,
@@ -1185,6 +1186,11 @@ export function populate_data_for_stream_settings_request(
                 if (property_name === "folder_id") {
                     const folder_id = get_channel_folder_value_from_dropdown_widget($input_elem);
                     data[property_name] = JSON.stringify(folder_id);
+                    continue;
+                }
+
+                if (property_name === "history_public_to_subscribers") {
+                    data[property_name] = JSON.stringify(input_value);
                     continue;
                 }
 
@@ -1264,11 +1270,11 @@ function switching_to_private(properties_elements: HTMLElement[]): boolean {
     for (const elem of properties_elements) {
         const $elem = $(elem);
         const property_name = extract_property_name($elem);
-        if (property_name !== "stream_privacy") {
+        if (property_name !== "channel_privacy") {
             continue;
         }
-        const proposed_val = get_input_element_value(elem, "radio-group");
-        return proposed_val === "invite-only-public-history" || proposed_val === "invite-only";
+        const proposed_val = get_input_element_value(elem);
+        return proposed_val === "invite-only";
     }
     return false;
 }
