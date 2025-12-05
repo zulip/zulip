@@ -653,13 +653,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     timezone = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
+    AVATAR_FROM_JDENTICON = "J"
     AVATAR_FROM_USER = "U"
     AVATAR_SOURCES = (
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
+        (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
         (AVATAR_FROM_USER, "Uploaded by user"),
     )
     avatar_source = models.CharField(
-        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+        default=AVATAR_FROM_JDENTICON, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
     # This is only used for LDAP-provided avatars; it contains the

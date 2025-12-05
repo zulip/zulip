@@ -961,6 +961,8 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         with self.verify_action(client_gravatar=True) as events:
             self.send_stream_message(
@@ -1308,7 +1310,7 @@ class NormalActionsTest(BaseAction):
         message_obj = events[0]["message"]
         self.assertEqual(message_obj["sender_full_name"], iago.full_name)
         self.assertEqual(message_obj["sender_email"], iago.delivery_email)
-        self.assertIsNone(message_obj["avatar_url"])
+        self.assertIn("/user_avatars/", message_obj["avatar_url"])
 
     def test_add_reaction(self) -> None:
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
@@ -1593,6 +1595,12 @@ class NormalActionsTest(BaseAction):
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         self.user_profile = self.example_user("iago")
+        do_set_realm_property(
+            self.user_profile.realm,
+            "default_avatar_source",
+            Realm.AVATAR_FROM_GRAVATAR,
+            acting_user=None,
+        )
         streams = [
             get_stream(stream_name, self.user_profile.realm)
             for stream_name in ["Denmark", "Scotland"]
@@ -2642,6 +2650,10 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
+        do_change_avatar_fields(
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.
@@ -2663,6 +2675,10 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
+        do_change_avatar_fields(
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.

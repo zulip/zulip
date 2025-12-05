@@ -31,7 +31,7 @@ from zerver.lib.upload.base import StreamingSourceWithSize
 from zerver.lib.upload.local import write_local_file
 from zerver.models import Attachment, RealmEmoji
 from zerver.models.realms import get_realm
-from zerver.models.users import get_system_bot
+from zerver.models.users import UserProfile, get_system_bot
 
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
@@ -206,6 +206,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         file_path = user_avatar_path(user_profile)
 
         write_local_file("avatars", file_path + ".original", read_test_image_file("img.png"))
+        user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+        user_profile.save()
 
         assert settings.LOCAL_UPLOADS_DIR is not None
         assert settings.LOCAL_AVATARS_DIR is not None

@@ -363,7 +363,7 @@ def get_members(client: Client) -> None:
             assert member.get("profile_data", None) is None
         else:
             assert member.get("profile_data", None) is not None
-        assert member["avatar_url"] is None
+        assert member["avatar_url"] is not None
 
 
 @openapi_test_function("/users/{email}:get")
