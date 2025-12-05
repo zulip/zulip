@@ -8,6 +8,7 @@ import logging
 
 import jwt
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpRequest, JsonResponse
 from django.http.response import HttpResponseBase
 from django.utils.crypto import constant_time_compare
@@ -15,6 +16,10 @@ from django.utils.crypto import constant_time_compare
 from zerver.models import UserProfile
 
 logger = logging.getLogger(__name__)
+
+# Cache timeout for user profile lookups (in seconds)
+# Short timeout to ensure changes propagate quickly while still reducing DB load
+USER_PROFILE_CACHE_TIMEOUT = 60  # 1 minute
 
 
 class SupabaseJWTMiddleware:
@@ -81,20 +86,17 @@ class SupabaseJWTMiddleware:
 
             # Look up the corresponding Zulip UserProfile
             # This bridges Supabase JWT auth to Zulip's user system
+            # Uses caching to avoid DB query on every request
             email = payload.get("email")
             if email:
-                try:
-                    user_profile = UserProfile.objects.get(
-                        delivery_email=email,
-                        is_active=True,
-                    )
+                user_profile = self._get_user_profile_cached(email)
+                if user_profile:
                     request.user_profile = user_profile
                     request.user = user_profile  # Django's auth system expects this
                     logger.info(f"[nodl-auth] JWT auth success for {email} (user_id={user_profile.id})")
-                except UserProfile.DoesNotExist:
+                else:
                     # User not yet synced from Supabase - views will return 401
                     logger.warning(f"[nodl-auth] JWT valid but UserProfile not found for {email}")
-                    pass
             else:
                 logger.warning("[nodl-auth] JWT valid but no email in payload")
 
@@ -136,6 +138,40 @@ class SupabaseJWTMiddleware:
             True if the path should bypass authentication.
         """
         return any(path.startswith(exempt) for exempt in self.EXEMPT_PATHS)
+
+    def _get_user_profile_cached(self, email: str) -> UserProfile | None:
+        """Get UserProfile by email, with caching to reduce DB queries.
+
+        Args:
+            email: The user's email address.
+
+        Returns:
+            The UserProfile if found, None otherwise.
+        """
+        cache_key = f"jwt_user_profile:{email}"
+
+        # Try cache first
+        user_profile = cache.get(cache_key)
+        if user_profile is not None:
+            # Cache hit - verify user is still active (cache stores the object)
+            if isinstance(user_profile, UserProfile) and user_profile.is_active:
+                return user_profile
+            # Cached "not found" marker or inactive user
+            if user_profile == "NOT_FOUND":
+                return None
+
+        # Cache miss - query database
+        try:
+            user_profile = UserProfile.objects.get(
+                delivery_email=email,
+                is_active=True,
+            )
+            cache.set(cache_key, user_profile, USER_PROFILE_CACHE_TIMEOUT)
+            return user_profile
+        except UserProfile.DoesNotExist:
+            # Cache the "not found" result to avoid repeated queries
+            cache.set(cache_key, "NOT_FOUND", USER_PROFILE_CACHE_TIMEOUT)
+            return None
 
     def _error_response(self, message: str) -> JsonResponse:
         """Create a standardized error response.
