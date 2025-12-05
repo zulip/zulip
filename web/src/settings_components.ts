@@ -180,6 +180,9 @@ export function get_custom_profile_property_value(
     if (property_name === "display_in_profile_summary" && value === undefined) {
         return false;
     }
+    if (property_name === "use_for_user_matching" && value === undefined) {
+        return false;
+    }
     return value;
 }
 

@@ -219,6 +219,22 @@ function set_up_create_field_form(): void {
         $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
         $("#profile_field_display_in_profile_summary").prop("checked", false);
     }
+
+    // Show "Use in @-mention suggestions" only for EXTERNAL_ACCOUNT and SHORT_TEXT
+    if (
+        profile_field_type === field_types.EXTERNAL_ACCOUNT.id ||
+        profile_field_type === field_types.SHORT_TEXT.id
+    ) {
+        $("#profile_field_use_for_user_matching_row").show();
+        // Default: True for EXTERNAL_ACCOUNT, False for SHORT_TEXT
+        $("#profile_field_use_for_user_matching").prop(
+            "checked",
+            profile_field_type === field_types.EXTERNAL_ACCOUNT.id,
+        );
+    } else {
+        $("#profile_field_use_for_user_matching_row").hide();
+        $("#profile_field_use_for_user_matching").prop("checked", false);
+    }
 }
 
 function open_custom_profile_field_form_modal(): void {
@@ -247,6 +263,7 @@ function open_custom_profile_field_form_modal(): void {
             ),
             required: $("#profile-field-required").is(":checked"),
             editable_by_user: $("#profile_field_editable_by_user").is(":checked"),
+            use_for_user_matching: $("#profile_field_use_for_user_matching").is(":checked"),
         };
         const url = "/json/realm/profile_fields";
         const opts = {
@@ -499,9 +516,13 @@ function open_edit_form_modal(this: HTMLElement): void {
             display_in_profile_summary: field.display_in_profile_summary === true,
             required: field.required,
             editable_by_user: field.editable_by_user,
+            use_for_user_matching: field.use_for_user_matching === true,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
+            can_use_for_user_matching:
+                field.type === field_types.EXTERNAL_ACCOUNT.id ||
+                field.type === field_types.SHORT_TEXT.id,
         },
         realm_default_external_accounts: realm.realm_default_external_accounts,
     });

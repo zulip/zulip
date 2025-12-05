@@ -155,12 +155,12 @@ export function rewire_render_user_group(value: typeof render_user_group): void 
 
 export function render_person_or_user_group(
     item: UserGroupPillData | UserPillData | UserOrMentionPillData,
+    query?: string,
 ): string {
     if (item.type === "user_group") {
         return render_user_group(item);
     }
-
-    return render_person(item);
+    return render_person(item, query);
 }
 
 export let render_stream = (stream: StreamData): string =>
@@ -1070,6 +1070,28 @@ export function query_matches_person(
     if (person.type === "user") {
         if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
             return true;
+        }
+
+        // Check custom profile fields that are enabled for use_for_user_matching
+        const field_types = realm.custom_profile_field_types;
+        for (const field of realm.custom_profile_fields) {
+            if (
+                field.use_for_user_matching &&
+                (field.type === field_types.SHORT_TEXT.id ||
+                    field.type === field_types.EXTERNAL_ACCOUNT.id)
+            ) {
+                const field_value =
+                    people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
+                if (
+                    typeahead.query_matches_string_in_order_assume_canonicalized(
+                        query,
+                        field_value.toLowerCase(),
+                        " ",
+                    )
+                ) {
+                    return true;
+                }
+            }
         }
 
         if (person.user.delivery_email) {
