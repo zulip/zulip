@@ -318,7 +318,7 @@ export function show(filter?: Filter): void {
     const is_new_filter_channel_view = filter?.is_channel_view();
     if (was_inbox_channel_view && is_new_filter_channel_view) {
         assert(filter !== undefined);
-        const filter_channel_id_string = filter.terms_with_operator("channel")[0]!.operator;
+        const filter_channel_id_string = filter.terms_with_operator("channel")[0]!.operand;
         const filter_channel_id = Number.parseInt(filter_channel_id_string, 10);
 
         if (inbox_util.get_channel_id() === filter_channel_id) {
