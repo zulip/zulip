@@ -94,11 +94,10 @@ export function populate_exports_table(exports: RealmExport[]): void {
                 );
             }
 
-            let export_type_description =
-                settings_config.export_type_values.export_public.description;
-            if (data.export_type !== settings_config.export_type_values.export_public.value) {
+            let export_type_description = settings_config.export_type_values.public.description;
+            if (data.export_type !== settings_config.export_type_values.public.value) {
                 export_type_description =
-                    settings_config.export_type_values.export_full_with_consent.description;
+                    settings_config.export_type_values.full_with_consent.description;
             }
 
             return render_admin_export_list({
@@ -311,7 +310,7 @@ export function refresh_allow_private_data_export_banner(): void {
         maybe_show_allow_private_data_export_banner();
         const $export_type = $<HTMLSelectOneElement>("select:not([multiple])#export_type");
         const selected_export_type = Number.parseInt($export_type.val()!, 10);
-        if (selected_export_type === settings_config.export_type_values.export_public.value) {
+        if (selected_export_type === settings_config.export_type_values.public.value) {
             $(".allow_private_data_export_warning").hide();
         }
     }
@@ -327,10 +326,10 @@ function maybe_show_notes_about_unusable_users_if_exported(export_type: number):
     let unusable_user_ids: number[] = [];
     const $warning_container = $("div#unusable-user-accounts-warning");
     $warning_container.empty();
-    if (export_type === settings_config.export_type_values.export_full_with_consent.value) {
+    if (export_type === settings_config.export_type_values.full_with_consent.value) {
         const non_consenting_users = get_export_consents_having_consent_value(false);
         unusable_user_ids = non_consenting_users.map((user) => user.user_id);
-    } else if (export_type === settings_config.export_type_values.export_public.value) {
+    } else if (export_type === settings_config.export_type_values.public.value) {
         const users_with_inaccessible_email = get_export_consents_having_email_visibility_value(
             settings_config.email_address_visibility_values.nobody.code,
         );
@@ -413,8 +412,7 @@ function show_start_export_modal(): void {
         $export_type.on("change", () => {
             const selected_export_type = Number.parseInt($export_type.val()!, 10);
             if (
-                selected_export_type ===
-                settings_config.export_type_values.export_full_with_consent.value
+                selected_export_type === settings_config.export_type_values.full_with_consent.value
             ) {
                 $("#allow_private_data_export_stats").show();
                 $(".allow_private_data_export_warning").show();
