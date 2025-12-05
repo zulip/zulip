@@ -838,13 +838,6 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
-        // Don't show warning for empty topic as the user is probably
-        // about to type a new topic name. Note that if topics are
-        // mandatory, then the submit button is disabled, which returns
-        // early above.
-        if (new_topic_name === "" || new_topic_name === "(no topic)") {
-            return false;
-        }
         let stream_id: number;
         if (stream_widget_value === undefined) {
             // Set stream_id to current_stream_id since the user is not
