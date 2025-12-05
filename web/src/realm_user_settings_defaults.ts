@@ -30,6 +30,8 @@ export const realm_default_settings_schema = z.object({
     enable_offline_email_notifications: z.boolean(),
     enable_offline_push_notifications: z.boolean(),
     enable_online_push_notifications: z.boolean(),
+    enable_reaction_audible_notifications: z.boolean(),
+    enable_reaction_desktop_notifications: z.boolean(),
     enable_sounds: z.boolean(),
     enable_stream_audible_notifications: z.boolean(),
     enable_stream_desktop_notifications: z.boolean(),
