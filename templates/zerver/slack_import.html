@@ -68,6 +68,7 @@
                         {% trans %}
                         Follow <a href="https://zulip.com/help/import-from-slack#export-your-slack-data" target="_blank" rel="noopener noreferrer">these instructions</a> to obtain your Slack message history export.
                         {% endtrans %}
+                        {% include "zerver/slack_import_file_upload_instruction.html" %}
                     </div>
                     <button class="slack-import-upload-file full-width">{{ _('Start upload') }}</button>
                 </div>
