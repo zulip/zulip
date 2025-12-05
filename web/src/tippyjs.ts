@@ -425,17 +425,6 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".settings-radio-input-parent.default_stream_private_tooltip",
-        content: $t({
-            defaultMessage: "Default channels for new users cannot be made private.",
-        }),
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
         target: [
             "[data-tab-key='available'].disabled",
             "[data-tab-key='all-streams'].disabled",

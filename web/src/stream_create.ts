@@ -201,7 +201,7 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
 
     const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
     const is_stream_name_valid = stream_name_error.validate_for_submit(stream_name);
-    const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
+    const privacy_type = stream_settings_components.channel_creation_privacy_widget.value();
     let invite_only = false;
     let is_web_public = false;
 
@@ -222,7 +222,7 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
     }
 
     if (is_stream_name_valid && !is_any_stream_group_widget_pending) {
-        if (privacy_type === "invite-only" || privacy_type === "invite-only-public-history") {
+        if (privacy_type === "invite-only") {
             invite_only = true;
         } else if (privacy_type === "web-public") {
             is_web_public = true;
@@ -268,9 +268,8 @@ function update_announce_stream_state(): void {
     const $announce_stream_checkbox = $<HTMLInputElement>("#announce-new-stream input");
     const $announce_stream_label = $("#announce-new-stream");
     let disable_it = false;
-    const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
-    const is_invite_only =
-        privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+    const privacy_type = stream_settings_components.channel_creation_privacy_widget.value();
+    const is_invite_only = privacy_type === "invite-only";
     $announce_stream_label.removeClass("control-label-disabled");
 
     // Here, we arrange to save the state of the announce checkbox
@@ -313,38 +312,31 @@ function create_stream(): void {
     const subscriptions = JSON.stringify([{name: stream_name, description}]);
 
     let invite_only;
-    let history_public_to_subscribers;
     let is_web_public;
-    const privacy_setting = $("#stream_creation_form input[name=privacy]:checked").val();
+    const privacy_type = stream_settings_components.channel_creation_privacy_widget.value();
 
-    switch (privacy_setting) {
+    switch (privacy_type) {
         case "invite-only": {
             invite_only = true;
-            history_public_to_subscribers = false;
-            is_web_public = false;
-
-            break;
-        }
-        case "invite-only-public-history": {
-            invite_only = true;
-            history_public_to_subscribers = true;
             is_web_public = false;
 
             break;
         }
         case "web-public": {
             invite_only = false;
-            history_public_to_subscribers = true;
             is_web_public = true;
 
             break;
         }
         default: {
             invite_only = false;
-            history_public_to_subscribers = true;
             is_web_public = false;
         }
     }
+
+    const history_public_to_subscribers = util.the(
+        $<HTMLInputElement>("input#id_new_history_public_to_subscribers"),
+    ).checked;
 
     const default_stream = util.the(
         $<HTMLInputElement>("#stream_creation_form input.is_default_stream"),
@@ -488,16 +480,9 @@ function clear_error_display(): void {
 export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
-    stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     stream_create_subscribers.build_widgets();
 
-    // Select the first visible and enabled choice for stream privacy.
-    $(
-        "#stream_creation_form .stream-privacy-values .settings-radio-input-parent:not([hidden]) input:not(:disabled)",
-    )
-        .first()
-        .prop("checked", true);
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
@@ -563,7 +548,7 @@ export function show_new_stream_modal(): void {
     update_announce_stream_state();
     stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_option_state($("#stream-creation"));
-    stream_ui_updates.update_private_stream_privacy_option_state($("#stream-creation"));
+    stream_ui_updates.update_history_public_to_subscribers_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -581,6 +566,12 @@ function set_up_group_setting_widgets(): void {
 }
 
 export function set_up_handlers(): void {
+    if (current_user.is_guest) {
+        // Guests do not have permission to create streams and
+        // hence cannot access the stream creation UI.
+        return;
+    }
+
     stream_announce_previous_value =
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
@@ -589,16 +580,6 @@ export function set_up_handlers(): void {
     stream_create_subscribers.create_handlers($subscribers_container);
 
     const $container = $("#stream-creation").expectOne();
-
-    $container.on("change", ".stream-privacy-values input", () => {
-        update_announce_stream_state();
-        stream_ui_updates.update_default_stream_option_state($container);
-        stream_ui_updates.update_can_subscribe_group_label($container);
-    });
-
-    $container.on("change", ".default-stream input", () => {
-        stream_ui_updates.update_private_stream_privacy_option_state($container);
-    });
 
     $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
@@ -666,6 +647,7 @@ export function set_up_handlers(): void {
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
     folder_widget = stream_settings_components.set_up_folder_dropdown_widget();
+    stream_edit.set_up_channel_privacy_dropdown_widget(update_announce_stream_state);
 }
 
 export function initialize(): void {

@@ -29,6 +29,7 @@ import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
 
 export let archived_status_filter_dropdown_widget: DropdownWidget;
+export let channel_creation_privacy_widget: DropdownWidget;
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -411,4 +412,8 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
     }
     folder_widget.setup();
     return folder_widget;
+}
+
+export function set_channel_creation_privacy_widget(widget: DropdownWidget): void {
+    channel_creation_privacy_widget = widget;
 }

@@ -8,7 +8,8 @@
 
     {{#if is_stream_edit}}
         <div class="stream-permissions-warning-banner"></div>
-        {{> channel_type .}}
+        {{> channel_type .
+          channel_privacy_widget_name="channel_privacy" }}
 
         <div class="default-stream">
             {{> ../settings/settings_checkbox

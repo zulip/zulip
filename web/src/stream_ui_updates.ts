@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
@@ -61,84 +60,29 @@ export function set_show_available(value: boolean): void {
     show_available = value;
 }
 
-export function update_web_public_stream_privacy_option_state($container: JQuery): void {
-    const $web_public_stream_elem = $container.find(
-        `input[value='${CSS.escape(
-            settings_config.stream_privacy_policy_values.web_public.code,
-        )}']`,
-    );
+export function update_history_public_to_subscribers_state($container: JQuery): void {
+    const is_stream_creation = $container.attr("id") === "stream-creation";
 
-    const for_stream_edit_panel = $container.attr("id") === "stream_settings";
-    if (for_stream_edit_panel) {
-        const stream_id = Number.parseInt(
-            $container.find(".subscription_settings.show").attr("data-stream-id")!,
-            10,
-        );
-        const sub = sub_store.get(stream_id);
-        assert(sub !== undefined);
-        if (!stream_data.can_change_permissions_requiring_content_access(sub)) {
-            // We do not want to enable the already disabled web-public option
-            // in stream-edit panel if user is not allowed to change stream
-            // privacy at all.
-            return;
-        }
-    }
-
-    if (!realm.server_web_public_streams_enabled || !realm.realm_enable_spectator_access) {
-        if (for_stream_edit_panel && $web_public_stream_elem.is(":checked")) {
-            // We do not hide web-public option in the "Change privacy" modal if
-            // stream is web-public already. The option is disabled in this case.
-            $web_public_stream_elem.prop("disabled", true);
-            return;
-        }
-        $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", true);
-        $container
-            .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
-            .last()
-            .css("border-bottom", "none");
+    let stream_privacy_widget;
+    if (is_stream_creation) {
+        stream_privacy_widget = stream_settings_components.channel_creation_privacy_widget!;
     } else {
-        if ($web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden")) {
-            $container
-                .find(".stream-privacy-values .settings-radio-input-parent:not([hidden])")
-                .last()
-                .css("border-bottom", "");
-            $web_public_stream_elem.closest(".settings-radio-input-parent").prop("hidden", false);
-        }
-        $web_public_stream_elem.prop(
-            "disabled",
-            !settings_data.user_can_create_web_public_streams(),
-        );
+        stream_privacy_widget =
+            settings_components.get_widget_for_dropdown_list_settings("channel_privacy")!;
     }
-}
 
-export function update_private_stream_privacy_option_state($container: JQuery): void {
-    // Disable both "Private, shared history" and "Private, protected history" options.
-    const $private_stream_elem = $container.find(
-        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.private.code)}']`,
+    const is_invite_only = stream_privacy_widget.value() === "invite-only";
+
+    const $history_public_to_subscribers_container = $container.find(
+        ".history-public-to-subscribers",
     );
-    const $private_with_public_history_elem = $container.find(
-        `input[value='${CSS.escape(
-            settings_config.stream_privacy_policy_values.private_with_public_history.code,
-        )}']`,
-    );
-
-    // If the default stream option is checked, the private stream options are disabled.
-    const is_default_stream = util.the(
-        $container.find<HTMLInputElement>(".default-stream input"),
-    ).checked;
-
-    const disable_private_stream_options =
-        is_default_stream || !settings_data.user_can_create_private_streams();
-
-    $private_stream_elem.prop("disabled", disable_private_stream_options);
-    $private_with_public_history_elem.prop("disabled", disable_private_stream_options);
-
-    $private_stream_elem
-        .closest("div")
-        .toggleClass("default_stream_private_tooltip", is_default_stream);
-    $private_with_public_history_elem
-        .closest("div")
-        .toggleClass("default_stream_private_tooltip", is_default_stream);
+    $history_public_to_subscribers_container.find("input").prop("disabled", !is_invite_only);
+    $history_public_to_subscribers_container.toggleClass("control-label-disabled", !is_invite_only);
+    if (!is_invite_only) {
+        // For public and web-public streams, history_public_to_subscribers should
+        // always be true.
+        $history_public_to_subscribers_container.find("input").prop("checked", true);
+    }
 }
 
 export function initialize_cant_subscribe_popover(): void {
@@ -304,9 +248,15 @@ export function update_default_stream_option_state($container: JQuery): void {
         return;
     }
 
-    const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
-    const is_invite_only =
-        privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+    let stream_privacy_widget;
+    if (is_stream_creation) {
+        stream_privacy_widget = stream_settings_components.channel_creation_privacy_widget!;
+    } else {
+        stream_privacy_widget =
+            settings_components.get_widget_for_dropdown_list_settings("channel_privacy")!;
+    }
+
+    const is_invite_only = stream_privacy_widget.value() === "invite-only";
 
     // If a private stream option is selected, the default stream option is disabled.
     $default_stream.find("input").prop("disabled", is_invite_only);
@@ -314,12 +264,29 @@ export function update_default_stream_option_state($container: JQuery): void {
         "control-label-disabled default_stream_private_tooltip",
         is_invite_only,
     );
+    if (is_invite_only) {
+        // Private streams cannot be set as default streams so uncheck the checkbox.
+        $default_stream.find("input").prop("checked", false);
+    }
+}
+
+export function handle_channel_privacy_update($container: JQuery): void {
+    update_can_subscribe_group_label($container);
+    update_history_public_to_subscribers_state($container);
+    update_default_stream_option_state($container);
 }
 
 export function update_can_subscribe_group_label($container: JQuery): void {
-    const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
-    const is_invite_only =
-        privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+    const is_stream_creation = $container.attr("id") === "stream-creation";
+
+    let stream_privacy_widget;
+    if (is_stream_creation) {
+        stream_privacy_widget = stream_settings_components.channel_creation_privacy_widget!;
+    } else {
+        stream_privacy_widget =
+            settings_components.get_widget_for_dropdown_list_settings("channel_privacy")!;
+    }
+    const is_invite_only = stream_privacy_widget.value() === "invite-only";
 
     const $can_subscribe_group_label = $container.find(".can_subscribe_group_label");
     $can_subscribe_group_label.html(render_stream_can_subscribe_group_label({is_invite_only}));
@@ -344,6 +311,10 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find("input, select")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
+    $("#channel_privacy_widget_container")
+        .find("button")
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
+
     const $permission_pill_container_elements = $permissions_container.find(".pill-container");
 
     $stream_settings
@@ -359,7 +330,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     settings_components.enable_group_permission_setting($permission_pill_container_elements);
 
     update_default_stream_option_state($("#stream_settings"));
-    update_private_stream_privacy_option_state($("#stream_settings"));
+    update_history_public_to_subscribers_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -370,14 +341,8 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find(".message-retention-setting-custom-input")
         .prop("disabled", disable_message_retention_setting);
 
-    update_web_public_stream_privacy_option_state($("#stream_settings"));
-    update_public_stream_privacy_option_state($("#stream_settings"));
-
     if (!sub.can_change_stream_permissions_requiring_content_access) {
-        const $stream_privacy_values = $stream_settings
-            .find($(".stream-privacy-values"))
-            .find("input, button");
-        $stream_privacy_values.prop("disabled", true);
+        $("#channel_privacy_widget_container").find("button").prop("disabled", true);
 
         for (const setting_name of settings_config.stream_group_permission_settings_requiring_content_access) {
             const $setting_element = $permissions_container.find("#id_" + setting_name);
@@ -565,45 +530,6 @@ export function enable_or_disable_add_subscribers_elements(
         if (enable_elem) {
             $add_subscribers_button.css("pointer-events", "");
         }
-    }
-}
-
-export function update_public_stream_privacy_option_state($container: JQuery): void {
-    const $public_stream_elem = $container.find(
-        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
-    );
-    $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
-}
-
-export function hide_or_disable_stream_privacy_options_if_required($container: JQuery): void {
-    update_web_public_stream_privacy_option_state($container);
-
-    update_public_stream_privacy_option_state($container);
-
-    update_private_stream_privacy_option_state($container);
-}
-
-export function update_stream_privacy_choices(policy: string): void {
-    if (!overlays.streams_open()) {
-        return;
-    }
-
-    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
-        return;
-    }
-    let $container = $("#stream-creation");
-    if ($("#stream_settings").css("display") !== "none") {
-        $container = $("#stream_settings");
-    }
-
-    if (policy === "can_create_private_channel_group") {
-        update_private_stream_privacy_option_state($container);
-    }
-    if (policy === "can_create_public_channel_group") {
-        update_public_stream_privacy_option_state($container);
-    }
-    if (policy === "can_create_web_public_channel_group") {
-        update_web_public_stream_privacy_option_state($container);
     }
 }
 

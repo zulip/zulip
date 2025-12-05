@@ -22,6 +22,7 @@ import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -324,6 +325,104 @@ function setup_group_setting_widgets(sub: StreamSubscription): void {
     }
 }
 
+function get_channel_privacy_options(
+    current_value: string | number | undefined,
+    stream_id: number | undefined,
+): dropdown_widget.Option[] {
+    let sub: StreamSubscription | undefined;
+    if (stream_id !== undefined) {
+        sub = stream_data.get_sub_by_id(stream_id);
+    }
+    return Object.values(settings_config.stream_privacy_policy_values)
+        .filter((privacy_type) => {
+            if (privacy_type.code === settings_config.stream_privacy_policy_values.private.code) {
+                if (settings_data.user_can_create_private_streams()) {
+                    return true;
+                }
+                return sub?.invite_only;
+            }
+
+            if (privacy_type.code === settings_config.stream_privacy_policy_values.public.code) {
+                if (settings_data.user_can_create_public_streams()) {
+                    return true;
+                }
+                return sub && !sub.invite_only && !sub.is_web_public;
+            }
+
+            if (settings_data.user_can_create_web_public_streams()) {
+                return true;
+            }
+            return sub?.is_web_public;
+        })
+        .map((privacy_type) => ({
+            unique_id: privacy_type.code,
+            name: privacy_type.name,
+            description: privacy_type.description,
+            bold_current_selection: current_value === privacy_type.code,
+        }));
+}
+
+export function set_up_channel_privacy_dropdown_widget(
+    update_callback?: () => void,
+    sub?: StreamSubscription,
+): DropdownWidget {
+    let default_id;
+    if (sub) {
+        default_id = stream_data.get_stream_privacy_policy(sub.stream_id);
+    } else {
+        if (settings_data.user_can_create_public_streams()) {
+            default_id = settings_config.stream_privacy_policy_values.public.code;
+        } else if (settings_data.user_can_create_web_public_streams()) {
+            default_id = settings_config.stream_privacy_policy_values.web_public.code;
+        } else {
+            default_id = settings_config.stream_privacy_policy_values.private.code;
+        }
+    }
+
+    let widget_name = "channel_privacy";
+    if (sub === undefined) {
+        widget_name = "new_channel_privacy";
+    }
+
+    let $events_container = $("#stream_settings .subscription_settings");
+    if (sub === undefined) {
+        $events_container = $("#stream_creation_form");
+    }
+
+    const channel_privacy_widget = new dropdown_widget.DropdownWidget({
+        widget_name,
+        get_options: (current_value) => get_channel_privacy_options(current_value, sub?.stream_id),
+        $events_container,
+        hide_search_box: true,
+        item_click_callback(event, dropdown, this_widget) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            this_widget.render();
+            if (sub !== undefined) {
+                stream_ui_updates.handle_channel_privacy_update($("#stream_settings"));
+                settings_components.save_discard_stream_settings_widget_status_handler(
+                    $("#channel-subscription-permissions"),
+                    stream_data.get_sub_by_id(sub.stream_id),
+                );
+            } else {
+                stream_ui_updates.handle_channel_privacy_update($("#stream-creation"));
+            }
+            if (update_callback) {
+                update_callback();
+            }
+        },
+        default_id,
+    });
+    if (sub !== undefined) {
+        settings_components.set_dropdown_setting_widget("channel_privacy", channel_privacy_widget);
+    } else {
+        stream_settings_components.set_channel_creation_privacy_widget(channel_privacy_widget);
+    }
+    channel_privacy_widget.setup();
+    return channel_privacy_widget;
+}
+
 export function show_settings_for(node: HTMLElement): void {
     // Hide any tooltips or popovers before we rerender / change
     // currently displayed stream settings.
@@ -348,8 +447,6 @@ export function show_settings_for(node: HTMLElement): void {
         sub,
         notification_settings,
         other_settings,
-        stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
-        stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
@@ -380,6 +477,7 @@ export function show_settings_for(node: HTMLElement): void {
     stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
+    set_up_channel_privacy_dropdown_widget(undefined, sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
@@ -894,12 +992,6 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
-            if (sub && $subsection.attr("id") === "channel-subscription-permissions") {
-                const $edit_container = stream_settings_containers.get_edit_container(sub);
-                stream_ui_updates.update_private_stream_privacy_option_state($edit_container);
-                stream_ui_updates.update_default_stream_option_state($edit_container);
-                stream_ui_updates.update_can_subscribe_group_label($edit_container);
-            }
             return true;
         },
     );
@@ -961,7 +1053,7 @@ export function initialize(): void {
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             if ($subsection.attr("id") === "channel-subscription-permissions") {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
-                stream_ui_updates.update_private_stream_privacy_option_state($edit_container);
+                stream_ui_updates.update_history_public_to_subscribers_state($edit_container);
                 stream_ui_updates.update_default_stream_option_state($edit_container);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }

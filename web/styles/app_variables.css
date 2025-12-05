@@ -2870,10 +2870,6 @@
         color-mix(in oklch, hsl(228deg 10% 20%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
     );
-    --color-border-settings-radio-input-parent: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 0% / 20%)
-    );
 
     /* .main-view-banner colors */
     --color-success-main-view-banner: light-dark(
