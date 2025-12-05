@@ -1239,8 +1239,10 @@
 
 #report-message-preview-container {
     /* Hide most UI for interacting with a message in the report message preview UI. */
+    .add-task-bar,
     .change_visibility_policy,
     .recipient-row-topic-menu,
+    .todo-edit-task-list-title,
     .message_controls,
     .message-reminders,
     .message_reactions {
