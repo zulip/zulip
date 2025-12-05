@@ -13,7 +13,7 @@ from django.utils.timezone import now as timezone_now
 from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from zerver.context_processors import get_apps_page_url
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
+from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.url_redirects import INTEGRATION_CATEGORY_SLUGS
@@ -458,20 +458,30 @@ class DocPageTest(ZulipTestCase):
             response,
         )
 
+        bot_subdirs = [integration.name for integration in BOT_INTEGRATIONS]
         for integration in INTEGRATIONS:
             url = f"/integrations/{integration}"
             response = self._test(url, expected_strings=[])
             doc = response.content.decode("utf-8")
-            for image in re.findall(r"/static/images/integrations/(.*)\"", doc):
-                images_in_docs.add(image)
 
-        directory = "static/images/integrations"
+            patterns = [r"/static/images/integrations/(.*?)\""] + [
+                rf"/static/generated/bots/{bot_dir}/(.*?)\"" for bot_dir in bot_subdirs
+            ]
+            for pattern in patterns:
+                for image in re.findall(pattern, doc):
+                    images_in_docs.add(image)
+
         images_in_dir = {
             image_path
+            for directory, exclude_md in [
+                ("static/images/integrations", False),
+            ]
+            + [(f"static/generated/bots/{bot_dir}", True) for bot_dir in bot_subdirs]
             for root, _, files in os.walk(directory)
             for file in files
             if "bot_avatars"
             not in (image_path := os.path.relpath(os.path.join(root, file), directory))
+            and (not exclude_md or not image_path.endswith(".md"))
         }
 
         # The integration docs and the screenshot images are in different repos
