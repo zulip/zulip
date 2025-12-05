@@ -10,6 +10,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
+from django.utils.cache import patch_cache_control
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator, BaseModel, Json, StringConstraints
 
@@ -40,7 +41,12 @@ from zerver.actions.users import (
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
-from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
+from zerver.lib.avatar import (
+    avatar_url,
+    generate_avatar_jdenticon,
+    get_avatar_for_inaccessible_user,
+    get_gravatar_url,
+)
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -369,8 +375,14 @@ def avatar_by_id(
             avatar_user_profile, maybe_user_profile
         ):
             url = get_avatar_for_inaccessible_user()
+        elif avatar_user_profile.avatar_source == "J":
+            # TODO: Use UserProfile.AVATAR_FROM_JDENTICON instead of "J".
+            avatar_bytes = generate_avatar_jdenticon(str(avatar_user_profile.id))
+            response = HttpResponse(avatar_bytes, content_type="image/png")
+            patch_cache_control(response, max_age=31536000, public=True, immutable=True)
+            return response
         else:
-            # If there is a valid user account passed in, use its avatar
+            # Gravatar or uploaded avatar
             url = avatar_url(avatar_user_profile, medium=medium)
         assert url is not None
     except UserProfile.DoesNotExist:
@@ -404,8 +416,14 @@ def avatar_by_email(
         url: str | None = None
         if not check_can_access_user(avatar_user_profile, maybe_user_profile):
             url = get_avatar_for_inaccessible_user()
+        elif avatar_user_profile.avatar_source == "J":
+            # TODO: Use UserProfile.AVATAR_FROM_JDENTICON instead of "J".
+            avatar_bytes = generate_avatar_jdenticon(str(avatar_user_profile.id))
+            response = HttpResponse(avatar_bytes, content_type="image/png")
+            patch_cache_control(response, max_age=31536000, public=True, immutable=True)
+            return response
         else:
-            # If there is a valid user account passed in, use its avatar
+            # Gravatar or uploaded avatar
             url = avatar_url(avatar_user_profile, medium=medium)
         assert url is not None
     except UserProfile.DoesNotExist:

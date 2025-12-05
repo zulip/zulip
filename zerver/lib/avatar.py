@@ -1,3 +1,5 @@
+import os
+import subprocess
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -173,3 +175,10 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
 
 def get_avatar_for_inaccessible_user() -> str:
     return staticfiles_storage.url("images/unknown-user-avatar.png")
+
+
+def generate_avatar_jdenticon(input: str) -> bytes:
+    jdenticon_path = os.path.join(settings.DEPLOY_ROOT, "node_modules/jdenticon/bin/jdenticon.js")
+    command = ["node", jdenticon_path, input]
+    stdout = subprocess.check_output(command)
+    return stdout

@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 439
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (361, 1)  # bumped 2025-12-03 to add backports-datetime-fromisoformat
+PROVISION_VERSION = (361, 2)  # bumped 2025-12-05 to add jdenticon
