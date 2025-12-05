@@ -810,23 +810,23 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
+
+        // Determine target stream. If stream_widget_value is undefined, the user
+        // is not allowed to edit the stream (topic-edit only UI).
+        const target_stream_id = stream_widget_value ?? current_stream_id;
+
         // Don't show warning for empty topic as the user is probably
         // about to type a new topic name. Note that if topics are
         // mandatory, then the submit button is disabled, which returns
-        // early above.
-        if (new_topic_name === "" || new_topic_name === "(no topic)") {
+        // early above. But if empty topics are allowed in the channel,
+        // an empty topic is a valid topic name (general chat) and we
+        // should show a warning if it already exists.
+        if (new_topic_name === "" && !stream_data.can_use_empty_topic(target_stream_id)) {
             return false;
         }
-        let stream_id: number;
-        if (stream_widget_value === undefined) {
-            // Set stream_id to current_stream_id since the user is not
-            // allowed to edit the stream in topic-edit only UI.
-            stream_id = current_stream_id;
-        } else {
-            stream_id = stream_widget_value;
-        }
+
         const stream_topics = stream_topic_history
-            .get_recent_topic_names(stream_id)
+            .get_recent_topic_names(target_stream_id)
             .map((topic) => topic.toLowerCase());
         if (stream_topics.includes(new_topic_name.trim().toLowerCase())) {
             return true;
