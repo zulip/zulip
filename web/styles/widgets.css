@@ -201,6 +201,11 @@
             background-color: var(--color-background-poll-vote-focus);
             border-color: var(--color-border-poll-vote-focus);
         }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     }
 
     .poll-names {
