@@ -355,9 +355,13 @@ paths:
                                         avatar_source:
                                           type: string
                                           description: |
-                                            The new avatar data source type for the user.
+                                            The new avatar data source type for the user. Valid values are:
 
-                                            Valid values are `G` (gravatar) and `U` (uploaded by user).
+                                            - "G" = Hosted by Gravatar
+                                            - "J" = Generated using Jdenticon
+                                            - "U" = Uploaded by user
+
+                                            **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
                                         avatar_url_medium:
                                           type: string
                                           description: |
@@ -4993,6 +4997,9 @@ paths:
 
                                         - "G" = Hosted by Gravatar
                                         - "J" = Generated using Jdenticon
+
+                                        Note that "U" is not a supported value here, since there is
+                                        no such thing as a "default" user-uploaded avatar.
 
                                         **Changes**: New in Zulip 12.0 (feature level 456).
                                     default_code_block_language:
@@ -19827,6 +19834,9 @@ paths:
                           - "G" = Hosted by Gravatar
                           - "J" = Generated using Jdenticon
 
+                          Note that "U" is not a supported value here, since there is
+                          no such thing as a "default" user-uploaded avatar.
+
                           **Changes**: New in Zulip 12.0 (feature level 456).
                       jitsi_server_url:
                         type: string
@@ -20753,9 +20763,14 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          The avatar data source type for the current user.
+                          The avatar data source type for the current user. Valid values are:
 
-                          Valid values are `G` (gravatar) and `U` (uploaded by user).
+                          - "G" = Hosted by Gravatar
+                          - "J" = Generated using Jdenticon
+                          - "U" = Uploaded by user
+
+                          **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
+                          The avatar data source type for the current user.
                       avatar_url_medium:
                         type: string
                         description: |

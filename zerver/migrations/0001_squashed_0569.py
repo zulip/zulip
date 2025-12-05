@@ -1037,7 +1037,11 @@ class Migration(migrations.Migration):
                 (
                     "avatar_source",
                     models.CharField(
-                        choices=[("G", "Hosted by Gravatar"), ("U", "Uploaded by user")],
+                        choices=[
+                            ("G", "Hosted by Gravatar"),
+                            ("J", "Generated using Jdenticon"),
+                            ("U", "Uploaded by user"),
+                        ],
                         default="G",
                         max_length=1,
                     ),

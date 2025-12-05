@@ -11,7 +11,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED, STATUS_USED
 from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.actions.presence import do_update_user_presence
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, generate_and_upload_jdenticon_avatar
 from zerver.lib.cache import (
     bulk_flush_users,
     cache_delete,
@@ -438,11 +438,26 @@ def do_change_avatar_fields(
 
 def do_scrub_avatar_images(user: UserProfile, *, acting_user: UserProfile | None) -> None:
     old_version = user.avatar_version
+    # Note: while scrubbing, no need to generate and upload
+    # avatar when default_avatar_source is jdenticon.
     do_change_avatar_fields(
-        user, UserProfile.AVATAR_FROM_GRAVATAR, skip_notify=True, acting_user=acting_user
+        user, user.realm.default_avatar_source, skip_notify=True, acting_user=acting_user
     )
     for version in range(1, old_version + 1):
         delete_avatar_image(user, version)
+
+
+def set_avatar_to_default(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
+    default_avatar_source = user_profile.realm.default_avatar_source
+
+    if user_profile.avatar_source == default_avatar_source:  # nocoverage
+        return
+
+    if default_avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        generate_and_upload_jdenticon_avatar(
+            user_profile, realm_uuid=str(user_profile.realm.uuid), future=True
+        )
+    do_change_avatar_fields(user_profile, default_avatar_source, acting_user=acting_user)
 
 
 def update_scheduled_email_notifications_time(

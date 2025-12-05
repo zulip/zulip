@@ -693,12 +693,11 @@ def add_bot_backend(
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
-    if len(request.FILES) == 0:
-        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-    elif len(request.FILES) != 1:
-        raise JsonableError(_("You may only upload one file at a time"))
-    else:
+    avatar_source = None
+    if len(request.FILES) == 1:
         avatar_source = UserProfile.AVATAR_FROM_USER
+    elif len(request.FILES) > 1:
+        raise JsonableError(_("You may only upload one file at a time"))
 
     default_sending_stream = None
     if default_sending_stream_name is not None:

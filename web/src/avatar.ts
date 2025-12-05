@@ -72,8 +72,11 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
     };
 
-    if (current_user.avatar_source === "G") {
+    if (current_user.avatar_source !== "U") {
         $("#user-avatar-upload-widget .image-delete-button").hide();
+    }
+
+    if (current_user.avatar_source === "G") {
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();

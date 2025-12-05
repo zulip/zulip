@@ -25,6 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue): Added `realm_uuid`
   field to response. Used by clients that prefer to compute
   Jdenticon avatars locally.
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events): The `avatar_source` fields may now have
+  the value `"J"`, for Jdenticons.
 
 **Feature level 465**
 

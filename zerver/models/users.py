@@ -653,9 +653,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     timezone = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
+    AVATAR_FROM_JDENTICON = "J"
     AVATAR_FROM_USER = "U"
     AVATAR_SOURCES = (
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
+        (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
         (AVATAR_FROM_USER, "Uploaded by user"),
     )
     avatar_source = models.CharField(
