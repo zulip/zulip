@@ -5,9 +5,8 @@ from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
-from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import get_message_link_syntax
-from zerver.lib.url_encoding import message_link_url
+from zerver.lib.url_encoding import near_message_url
 from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
 
@@ -68,7 +67,11 @@ def get_reminder_formatted_content(
 
     # Format the message content as a quote.
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
-    conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
+    
+    # Pass user=current_user so that DM URLs exclude the current user's ID,
+    # matching the expected URL format (e.g., dm/12 instead of dm/10,12)
+    conversation_url = near_message_url(message, user=current_user)
+    
     content += "\n\n"
     if message.content.startswith("/poll"):
         content += _("{user_silent_mention} [sent]({conversation_url}) a poll.").format(
