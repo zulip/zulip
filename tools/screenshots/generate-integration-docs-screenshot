@@ -41,11 +41,11 @@ from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS,
+    INCOMING_WEBHOOK_INTEGRATIONS,
     INTEGRATIONS,
-    WEBHOOK_INTEGRATIONS,
     FixturelessScreenshotConfig,
+    IncomingWebhookIntegration,
     Integration,
-    WebhookIntegration,
     WebhookScreenshotConfig,
     get_fixture_path,
     get_image_path,
@@ -151,7 +151,7 @@ def custom_headers(headers_json: str) -> dict[str, str]:
 
 def send_bot_payload_message(
     bot: UserProfile,
-    integration: WebhookIntegration,
+    integration: IncomingWebhookIntegration,
     fixture_path: str,
     config: WebhookScreenshotConfig,
 ) -> bool:
@@ -253,7 +253,7 @@ def generate_screenshot_from_config(
     create_integration_channel(channel_name, bot)
     image_path = get_image_path(integration, screenshot_config)
 
-    if isinstance(integration, WebhookIntegration):
+    if isinstance(integration, IncomingWebhookIntegration):
         assert isinstance(screenshot_config, WebhookScreenshotConfig)
         fixture_path = get_fixture_path(integration, screenshot_config)
         message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
@@ -342,7 +342,7 @@ def build_config(options: argparse.Namespace, config_keys: list[str]) -> dict[st
 
 def generate_full_batch_screenshots(
     option_key: str,
-    integration_list: list[Integration] | list[WebhookIntegration],
+    integration_list: list[Integration] | list[IncomingWebhookIntegration],
     batch_type: str,
 ) -> None:
     for key, value in vars(options).items():
@@ -356,7 +356,9 @@ def generate_full_batch_screenshots(
 if options.all:
     generate_full_batch_screenshots("all", list(INTEGRATIONS.values()), "all integrations")
 elif options.all_webhook:
-    generate_full_batch_screenshots("all_webhook", WEBHOOK_INTEGRATIONS, "all webhook integrations")
+    generate_full_batch_screenshots(
+        "all_webhook", INCOMING_WEBHOOK_INTEGRATIONS, "all incoming webhook integrations"
+    )
 elif options.all_fixtureless:
     fixtureless_integrations_list = [
         INTEGRATIONS[name] for name in FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS

@@ -42,9 +42,8 @@ process.
   `zerver/webhooks/<mywebhook>/fixtures/` directory, and add the
   captured JSON payload as a test fixture.
 
-* Create an `Integration` object, and add it to the `WEBHOOK_INTEGRATIONS`
-  list in `zerver/lib/integrations.py`. Search for `WebhookIntegration` in that
-  file to find an existing one to copy.
+* Create an `IncomingWebhookIntegration` object, and add it to the
+  `INCOMING_WEBHOOK_INTEGRATIONS` list in `zerver/lib/integrations.py`.
 
 * Write a draft webhook handler in `zerver/webhooks/<mywebhook>/view.py`. There
   are a lot of examples in the `zerver/webhooks/` directory that you can copy.
@@ -107,7 +106,7 @@ below are for a webhook named `MyWebHook`.
 ### Files that need to be updated
 
 * `zerver/lib/integrations.py`: Add your integration to
-  `WEBHOOK_INTEGRATIONS`. This will automatically register a
+  `INCOMING_WEBHOOK_INTEGRATIONS`. This will automatically register a
   URL for the incoming webhook of the form `api/v1/external/mywebhook` and
   associate it with the function called `api_mywebhook_webhook` in
   `zerver/webhooks/mywebhook/view.py`.
@@ -166,7 +165,7 @@ integration, is:
 
 The list of existing webhook integrations can be found by browsing the
 [Integrations documentation](/integrations/) or in
-`zerver/lib/integrations.py` at `WEBHOOK_INTEGRATIONS`.
+`zerver/lib/integrations.py` at `INCOMING_WEBHOOK_INTEGRATIONS`.
 
 Parameters accepted in the URL include:
 
