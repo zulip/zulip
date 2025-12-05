@@ -22841,7 +22841,7 @@ paths:
                         Note that using this permission requires also having permission to send
                         messages in the channel.
 
-                        **Changes**: New in Zulip 12.0 (feature level ZF-b7d3e1). Previously, if you
+                        **Changes**: New in Zulip 12.0 (feature level 441). Previously, if you
                         could send messages in a channel, you could create topics in the channel.
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
@@ -28763,7 +28763,7 @@ components:
             Note that using this permission requires also having permission to
             send messages in the channel.
 
-            **Changes**: New in Zulip 12.0 (feature level ZF-b7d3e1). Previously,
+            **Changes**: New in Zulip 12.0 (feature level 441). Previously,
             if you could send messages in a channel, you could create topics in
             the channel.
 
