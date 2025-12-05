@@ -1112,20 +1112,15 @@ export function handle_narrow_activated(
     show_more_topics: boolean,
 ): void {
     const $stream_li = update_stream_sidebar_for_narrow(filter);
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-        if (!change_hash) {
-            if (!is_zoomed_in() && show_more_topics) {
-                zoom_in();
-            } else if (is_zoomed_in() && !show_more_topics) {
-                zoom_out();
-            }
+    if ($stream_li && !change_hash) {
+        if (!is_zoomed_in() && show_more_topics) {
+            zoom_in();
+        } else if (is_zoomed_in() && !show_more_topics) {
+            zoom_out();
         }
     }
 
-    if (is_zoomed_in()) {
-        topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
-    }
+    scroll_stream_into_view();
 }
 
 export function handle_message_view_deactivated(): void {
