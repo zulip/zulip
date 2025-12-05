@@ -93,7 +93,10 @@ export function rewire_render_typeahead_item(value: typeof render_typeahead_item
     render_typeahead_item = value;
 }
 
-export let render_person = (person: UserPillData | UserOrMentionPillData): string => {
+export let render_person = (
+    person: UserPillData | UserOrMentionPillData,
+    query?: string,
+): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
@@ -112,6 +115,25 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
     const pronouns = pronouns_list?.[0]?.value;
 
+    const custom_fields = realm.custom_profile_fields
+        .filter((f) => f.use_for_user_matching)
+        .map((field) => {
+            const data = people.get_custom_profile_data(person.user.user_id, field.id);
+            return data?.value?.trim() ?? "";
+        })
+        .filter((v) => v.length > 0);
+
+    // Determine "secondary" based on match
+    let secondary_text = person.user.delivery_email;
+
+    if (query) {
+        const q = query.toLowerCase();
+        const matched_value = custom_fields.find((v) => v.toLowerCase() === q);
+
+        if (matched_value) {
+            secondary_text = matched_value;
+        }
+    }
     const typeahead_arguments = {
         primary: person.user.full_name,
         img_src: avatar_url,
@@ -123,7 +145,7 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
             person.user.user_id,
         ),
         pronouns,
-        secondary: person.user.delivery_email,
+        secondary: secondary_text,
     };
 
     return render_typeahead_item(typeahead_arguments);
