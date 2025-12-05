@@ -1074,6 +1074,13 @@ BOT_INTEGRATIONS: list[BotIntegration] = [
         display_name="xkcd",
         logo="images/integrations/logos/xkcd.png",
     ),
+    BotIntegration(
+        "baremetrics",
+        ["bots"],
+        display_name="Baremetrics",
+        logo="images/integrations/logos/baremetrics.png",
+        doc="../../tools/setup/static/generated/bots/baremetrics/doc.md",
+    ),
 ]
 
 HUBOT_INTEGRATIONS: list[HubotIntegration] = [
