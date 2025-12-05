@@ -9,7 +9,7 @@ from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.mime_types import guess_type
 from zerver.lib.parallel import run_parallel
 from zerver.lib.thumbnail import BadImageError
-from zerver.lib.upload import upload_emoji_image, write_avatar_images
+from zerver.lib.upload import upload_emoji_image, write_avatar_images, write_jdenticon_avatars
 from zerver.lib.upload.s3 import S3UploadBackend, upload_content_to_s3
 from zerver.models import Attachment, RealmEmoji, UserProfile
 
@@ -30,20 +30,35 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
     assert settings.LOCAL_AVATARS_DIR is not None
     file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path)
     try:
-        with open(file_path + ".original", "rb") as f:
-            # We call write_avatar_images directly to walk around the
-            # content-type checking in upload_avatar_image.  We don't
-            # know the original file format, and we don't need to know
-            # it because we never serve them directly.
-            write_avatar_images(
-                user_avatar_path(user, future=False),
-                user,
-                f.read(),
-                content_type="application/octet-stream",
-                backend=s3backend,
-                future=False,
-            )
-            logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
+        if user.avatar_source == UserProfile.AVATAR_FROM_USER:
+            with open(file_path + ".original", "rb") as f:
+                # We call write_avatar_images directly to walk around the
+                # content-type checking in upload_avatar_image.  We don't
+                # know the original file format, and we don't need to know
+                # it because we never serve them directly.
+                write_avatar_images(
+                    user_avatar_path(user, future=False),
+                    user,
+                    f.read(),
+                    content_type="application/octet-stream",
+                    backend=s3backend,
+                    future=False,
+                )
+        else:
+            assert user.avatar_source == UserProfile.AVATAR_FROM_JDENTICON
+            with (
+                open(file_path + ".png", "rb") as f,
+                open(file_path + "-medium.png", "rb") as f_medium,
+            ):
+                write_jdenticon_avatars(
+                    user_avatar_path(user, future=False),
+                    user,
+                    image_data=f.read(),
+                    image_data_medium=f_medium.read(),
+                    backend=s3backend,
+                    future=False,
+                )
+        logging.info("Uploaded avatar for %s in realm %s", user.id, user.realm.name)
     except FileNotFoundError:
         pass
 
