@@ -223,7 +223,7 @@ def fetch_initial_state_data(
             # restrictions apply to these users as well, and it lets
             # us avoid unnecessary conditionals.
             role=UserProfile.ROLE_GUEST,
-            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+            avatar_source=realm.default_avatar_source,
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
             default_language=spectator_requested_language,

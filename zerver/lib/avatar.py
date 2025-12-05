@@ -107,7 +107,7 @@ def get_avatar_field(
     ):
         return None
 
-    if avatar_source == "J":
+    if avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
         return f"/avatar/{user_id}/medium" if medium else f"/avatar/{user_id}"
 
     """

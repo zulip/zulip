@@ -382,8 +382,7 @@ def avatar_by_id(
             avatar_user_profile, maybe_user_profile
         ):
             url = get_avatar_for_inaccessible_user()
-        elif avatar_user_profile.avatar_source == "J":
-            # TODO: Use UserProfile.AVATAR_FROM_JDENTICON instead of "J".
+        elif avatar_user_profile.avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
             avatar_bytes = generate_avatar(avatar_user_profile, medium)
             response = HttpResponse(avatar_bytes, content_type="image/png")
             patch_cache_control(response, max_age=31536000, public=True, immutable=True)
@@ -423,8 +422,7 @@ def avatar_by_email(
         url: str | None = None
         if not check_can_access_user(avatar_user_profile, maybe_user_profile):
             url = get_avatar_for_inaccessible_user()
-        elif avatar_user_profile.avatar_source == "J":
-            # TODO: Use UserProfile.AVATAR_FROM_JDENTICON instead of "J".
+        elif avatar_user_profile.avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
             avatar_bytes = generate_avatar(avatar_user_profile, medium)
             response = HttpResponse(avatar_bytes, content_type="image/png")
             patch_cache_control(response, max_age=31536000, public=True, immutable=True)
@@ -653,12 +651,11 @@ def add_bot_backend(
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
-    if len(request.FILES) == 0:
-        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-    elif len(request.FILES) != 1:
-        raise JsonableError(_("You may only upload one file at a time"))
-    else:
+    avatar_source = None
+    if len(request.FILES) == 1:
         avatar_source = UserProfile.AVATAR_FROM_USER
+    elif len(request.FILES) > 1:
+        raise JsonableError(_("You may only upload one file at a time"))
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
