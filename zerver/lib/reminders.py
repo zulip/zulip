@@ -67,11 +67,11 @@ def get_reminder_formatted_content(
 
     # Format the message content as a quote.
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
-    
+
     # Pass user=current_user so that DM URLs exclude the current user's ID,
     # matching the expected URL format (e.g., dm/12 instead of dm/10,12)
     conversation_url = near_message_url(message, user=current_user)
-    
+
     content += "\n\n"
     if message.content.startswith("/poll"):
         content += _("{user_silent_mention} [sent]({conversation_url}) a poll.").format(
