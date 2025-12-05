@@ -135,14 +135,24 @@ function toggle_password_visibility(
 ): void {
     let label;
     const $password_field = $(password_field_id);
+    const $toggle = $(password_selector);
+    const uses_zulip_icons = $toggle.hasClass("zulip-icon-hide") || $toggle.hasClass("zulip-icon-eye");
 
     if ($password_field.attr("type") === "password") {
         $password_field.attr("type", "text");
-        $(password_selector).removeClass("fa-eye-slash").addClass("fa-eye");
+        if (uses_zulip_icons) {
+            $toggle.removeClass("zulip-icon-hide").addClass("zulip-icon-eye");
+        } else {
+            $toggle.removeClass("fa-eye-slash").addClass("fa-eye");
+        }
         label = $t({defaultMessage: "Hide password"});
     } else {
         $password_field.attr("type", "password");
-        $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+        if (uses_zulip_icons) {
+            $toggle.removeClass("zulip-icon-eye").addClass("zulip-icon-hide");
+        } else {
+            $toggle.removeClass("fa-eye").addClass("fa-eye-slash");
+        }
         label = $t({defaultMessage: "Show password"});
     }
     set_password_toggle_label(password_selector, label, tippy_tooltips);
@@ -153,7 +163,13 @@ export function reset_password_toggle_icons(
     password_selector: string,
 ): void {
     $(password_field).attr("type", "password");
-    $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+    const $toggle = $(password_selector);
+    const uses_zulip_icons = $toggle.hasClass("zulip-icon-hide") || $toggle.hasClass("zulip-icon-eye");
+    if (uses_zulip_icons) {
+        $toggle.removeClass("zulip-icon-eye").addClass("zulip-icon-hide");
+    } else {
+        $toggle.removeClass("fa-eye").addClass("fa-eye-slash");
+    }
     const label = $t({defaultMessage: "Show password"});
     set_password_toggle_label(password_selector, label, true);
 }
