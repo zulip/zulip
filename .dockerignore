@@ -34,8 +34,12 @@ docs/
 dist/
 build/
 
-# Puppet/deployment configs not needed in container
-puppet/
+# Puppet - exclude most, but keep files needed at runtime
+puppet/kandra/
+puppet/zulip/manifests/
+puppet/zulip/templates/
+puppet/deps.yaml
+# Keep: puppet/zulip/files/ (contains stop words for full-text search)
 
 # Note: static/generated/ is NOT excluded - it contains pre-generated
 # emoji data needed at import time before collectstatic runs

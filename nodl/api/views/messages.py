@@ -283,7 +283,7 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             message_ids=message_ids,
             user_message_flags={mid: [] for mid in message_ids},
             search_fields={},
-            apply_markdown=False,
+            apply_markdown=True,
             client_gravatar=False,
             allow_empty_topic_name=False,
             message_edit_history_visibility_policy=1,  # UserProfile.POLICY_ALLOW_ANYONE

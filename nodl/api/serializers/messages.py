@@ -114,18 +114,17 @@ class MessageListSerializer(BaseModel):
 
         The dict format comes from Zulip's MessageDict after hydration.
         """
-        # Get stream_id from recipient_type_id if this is a stream message
+        # Get stream_id from display_recipient if this is a stream message
         stream_id = None
-        if msg_dict.get("recipient_type") == Recipient.STREAM:
-            stream_id = msg_dict.get("recipient_type_id")
+        if msg_dict.get("type") == "stream":
+            stream_id = msg_dict.get("stream_id")
 
-        # Convert date_sent to timestamp
-        date_sent = msg_dict.get("date_sent")
-        if isinstance(date_sent, datetime):
-            timestamp = int(date_sent.timestamp())
-        else:
-            # Already a timestamp or needs conversion
-            timestamp = int(date_sent) if date_sent else 0
+        # Zulip cache uses "timestamp" field (already Unix timestamp)
+        timestamp = msg_dict.get("timestamp", 0)
+
+        # When apply_markdown=True, "content" has the rendered HTML
+        # rendered_content may be deleted by Zulip's finalize_payload, so fallback to content
+        rendered_content = msg_dict.get("rendered_content") or msg_dict.get("content", "")
 
         return cls(
             id=msg_dict["id"],
@@ -134,7 +133,7 @@ class MessageListSerializer(BaseModel):
             stream_id=stream_id,
             topic=msg_dict.get("subject", ""),  # Zulip uses 'subject' for topic
             content=msg_dict.get("content", ""),
-            rendered_content=msg_dict.get("rendered_content", ""),
+            rendered_content=rendered_content,
             timestamp=timestamp,
         )
 
