@@ -889,7 +889,7 @@ export function get_candidates(
         if (
             current_token.length === 3 &&
             !compose_ui.code_formatting_button_triggered &&
-            compose_ui.compose_textarea_typeahead === undefined
+            !compose_ui.compose_textarea_typeahead?.shown
         ) {
             return [];
         }
