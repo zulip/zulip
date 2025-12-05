@@ -274,7 +274,9 @@ class BotIntegration(Integration):
             self.logo_url = self.get_logo_url()
             if self.logo_url is None:
                 # TODO: Add a test for this by initializing one in a test.
-                logo = staticfiles_storage.url(self.ZULIP_LOGO_STATIC_PATH_PNG)  # nocoverage
+                self.logo_url = staticfiles_storage.url(
+                    self.ZULIP_LOGO_STATIC_PATH_PNG
+                )  # nocoverage
         else:
             self.logo_url = staticfiles_storage.url(logo)
 
@@ -1068,12 +1070,7 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
-    BotIntegration(
-        "xkcd",
-        ["bots", "entertainment"],
-        display_name="xkcd",
-        logo="images/integrations/logos/xkcd.png",
-    ),
+    BotIntegration("xkcd", ["bots", "entertainment"], display_name="xkcd"),
 ]
 
 HUBOT_INTEGRATIONS: list[HubotIntegration] = [
