@@ -2,6 +2,7 @@ import os
 
 from zerver.lib.integrations import (
     BOT_INTEGRATIONS,
+    EMBEDDED_BOTS,
     EMBEDDED_INTEGRATIONS,
     HUBOT_INTEGRATIONS,
     INTEGRATIONS,
@@ -41,15 +42,40 @@ class IntegrationsTestCase(ZulipTestCase):
         self.assertEqual(fixture_path, "zerver/webhooks/airbrake/fixtures/error_message.json")
         self.assertEqual(image_path, "static/images/integrations/ci/002.png")
 
+    def test_get_logo_path(self) -> None:
+        # Test with an integration that passed logo as an argument
+        integration = INTEGRATIONS["slack_incoming"]
+        with self.assertRaises(AssertionError):
+            integration.get_logo_path()
+
+        # Test with an integration that has only a PNG option
+        integration = INTEGRATIONS["onyx"]
+        self.assertEqual(integration.get_logo_path(), "images/integrations/logos/onyx.png")
+
+        # Test the fallback logo with an embedded integration without a logo
+        ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
+        integration = EMBEDDED_BOTS[0]
+        with self.assertRaises(AssertionError):
+            integration.get_logo_path()
+        self.assertEqual(
+            integration.get_logo_path(ZULIP_LOGO_STATIC_PATH_PNG), ZULIP_LOGO_STATIC_PATH_PNG
+        )
+
+        # Test with a bot integration that has a logo
+        # They use different DEFAULT_* paths.
+        integration = INTEGRATIONS["xkcd"]
+        logo_path = integration.get_logo_path()
+        self.assertEqual(logo_path, "generated/bots/xkcd/logo.png")
+        self.assertTrue(logo_path.startswith("generated/bots/"))
+
     def test_get_bot_avatar_path(self) -> None:
         integration = INTEGRATIONS["alertmanager"]
         self.assertEqual(
             integration.get_bot_avatar_path(), "images/integrations/bot_avatars/prometheus.png"
         )
 
-        # New instance with logo parameter not set
-        integration = WebhookIntegration("alertmanager", ["misc"])
-        self.assertIsNone(integration.get_bot_avatar_path())
+        with self.assertRaises(AssertionError):
+            integration = Integration("alertmanager", ["misc"])
 
     def test_no_missing_doc_screenshot_config(self) -> None:
         integration_names = {integration.name for integration in INTEGRATIONS.values()}

@@ -163,6 +163,7 @@ class Integration:
         webhook_screenshot_configs: list[WebhookScreenshotConfig] | None = None,
         client_name: str | None = None,
         logo: str | None = None,
+        fallback_logo_path: str | None = None,
         secondary_line_text: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
@@ -203,9 +204,8 @@ class Integration:
                 )
         self.categories = [CATEGORIES[c] for c in categories]
 
-        self.logo_path = logo if logo is not None else self.get_logo_path()
-        # TODO: Enforce that all integrations have logo_url with an assertion.
-        self.logo_url = self.get_logo_url()
+        self.logo_path = logo if logo is not None else self.get_logo_path(fallback_logo_path)
+        self.logo_url = staticfiles_storage.url(self.logo_path)
 
         if display_name is None:
             display_name = name.title()
@@ -218,28 +218,25 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
-    def get_logo_path(self) -> str | None:
-        logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
-        logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
-        if os.path.isfile(static_path(logo_file_path_svg)):
-            return logo_file_path_svg
-        elif os.path.isfile(static_path(logo_file_path_png)):
-            return logo_file_path_png
+    def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
+        paths_to_check = [
+            self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name),
+            self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name),
+        ]
+        if fallback_logo_path is not None:
+            paths_to_check.append(fallback_logo_path)
 
-        return None
+        for potential_path in paths_to_check:
+            if os.path.isfile(static_path(potential_path)):
+                return potential_path
 
-    def get_bot_avatar_path(self) -> str | None:
-        if self.logo_path is not None:
-            name = os.path.splitext(os.path.basename(self.logo_path))[0]
-            return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
+        raise AssertionError(
+            f"Could not find a logo for integration {self.name}. Paths checked: {', '.join(paths_to_check)}"
+        )
 
-        return None
-
-    def get_logo_url(self) -> str | None:
-        if self.logo_path is not None:
-            return staticfiles_storage.url(self.logo_path)
-
-        return None
+    def get_bot_avatar_path(self) -> str:
+        name = os.path.splitext(os.path.basename(self.logo_path))[0]
+        return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
 
     def get_translated_categories(self) -> list[str]:
         return [str(category) for category in self.categories]
@@ -268,17 +265,9 @@ class BotIntegration(Integration):
             categories=categories,
             fixtureless_screenshot_config_options=fixtureless_screenshot_config_options,
             secondary_line_text=secondary_line_text,
+            logo=logo,
+            fallback_logo_path=self.ZULIP_LOGO_STATIC_PATH_PNG,
         )
-
-        if logo is None:
-            self.logo_url = self.get_logo_url()
-            if self.logo_url is None:
-                # TODO: Add a test for this by initializing one in a test.
-                self.logo_url = staticfiles_storage.url(
-                    self.ZULIP_LOGO_STATIC_PATH_PNG
-                )  # nocoverage
-        else:
-            self.logo_url = staticfiles_storage.url(logo)
 
         if display_name is None:
             display_name = f"{name.title()} Bot"  # nocoverage
@@ -463,10 +452,12 @@ class EmbeddedBotIntegration(Integration):
     """
 
     DEFAULT_CLIENT_NAME = "Zulip{name}EmbeddedBot"
+    ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         assert kwargs.get("client_name") is None
         kwargs["client_name"] = self.DEFAULT_CLIENT_NAME.format(name=name.title())
+        kwargs["fallback_logo_path"] = self.ZULIP_LOGO_STATIC_PATH_PNG
         super().__init__(name, *args, **kwargs)
 
 
