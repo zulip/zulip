@@ -55,16 +55,6 @@
         }
     }
 
-    &.muted-message-sender {
-        .sender_info_hover {
-            pointer-events: none;
-        }
-
-        .inline-profile-picture-wrapper {
-            pointer-events: none;
-        }
-    }
-
     &.sender_info_hovered {
         .sender_name {
             cursor: pointer;
@@ -549,8 +539,6 @@
 
                     .muted {
                         opacity: 0.5;
-                        user-select: none;
-                        cursor: default;
                     }
                 }
             }
