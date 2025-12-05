@@ -1382,9 +1382,17 @@ class SlackImporter(ZulipTestCase):
 
         # Message conversion already tested in tests.test_slack_message_conversion
         self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
+        self.assertEqual(zerver_message[0]["has_attachment"], False)
+        self.assertEqual(zerver_message[0]["has_image"], False)
         self.assertEqual(zerver_message[0]["has_link"], False)
+
+        # Messages containing links should only have the has_link attribute set
+        # to true.
         self.assertEqual(zerver_message[2]["content"], "http://journals.plos.org/plosone/article")
+        self.assertEqual(zerver_message[2]["has_attachment"], False)
+        self.assertEqual(zerver_message[2]["has_image"], False)
         self.assertEqual(zerver_message[2]["has_link"], True)
+
         self.assertEqual(zerver_message[5]["has_link"], False)
         self.assertEqual(zerver_message[7]["has_link"], False)
 
@@ -1443,8 +1451,11 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(attachment[0]["is_web_public"], False)
         self.assertEqual(attachment[0]["content_type"], "image/png")
 
-        self.assertEqual(zerver_message[9]["has_image"], True)
+        # Messages with images should have the has_attachment, has_image,
+        # and has_link attributes set to true.
         self.assertEqual(zerver_message[9]["has_attachment"], True)
+        self.assertEqual(zerver_message[9]["has_image"], True)
+        self.assertEqual(zerver_message[9]["has_link"], True)
         self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
 
     def test_channel_message_to_zerver_message_with_threads(self) -> None:
