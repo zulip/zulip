@@ -107,6 +107,9 @@ def get_avatar_field(
     ):
         return None
 
+    if avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        return f"/avatar/{user_id}/medium" if medium else f"/avatar/{user_id}"
+
     """
     If we get this far, we'll compute an avatar URL that may be
     either user-uploaded or a gravatar, and then we'll add version
