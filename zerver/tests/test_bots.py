@@ -1391,7 +1391,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_email = "hambot-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
         profile = get_user(bot_email, bot_realm)
-        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertTrue(os.path.exists(avatar_disk_path(profile)))
 
         email = "hambot-bot@zulip.testserver"
         # Try error case first (too many files):

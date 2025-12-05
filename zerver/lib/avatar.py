@@ -1,3 +1,5 @@
+import os
+import subprocess
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -7,9 +9,10 @@ from zerver.lib.avatar_hash import (
     gravatar_hash,
     user_avatar_base_path_from_ids,
     user_avatar_content_hash,
+    user_avatar_path,
 )
-from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE
-from zerver.lib.upload import get_avatar_url
+from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE
+from zerver.lib.upload import get_avatar_url, write_avatar_images
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
 from zerver.models.users import is_cross_realm_bot_email
@@ -107,10 +110,10 @@ def get_avatar_field(
 
     """
     If we get this far, we'll compute an avatar URL that may be
-    either user-uploaded or a gravatar, and then we'll add version
-    info to try to avoid stale caches.
+    either user-uploaded, jdenticon generated, or a gravatar, and
+    then we'll add version info to try to avoid stale caches.
     """
-    if avatar_source == "U":
+    if avatar_source in [UserProfile.AVATAR_FROM_USER, UserProfile.AVATAR_FROM_JDENTICON]:
         hash_key = user_avatar_base_path_from_ids(user_id, avatar_version, realm_id)
         return get_avatar_url(hash_key, medium=medium)
 
@@ -173,3 +176,30 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
 
 def get_avatar_for_inaccessible_user() -> str:
     return staticfiles_storage.url("images/unknown-user-avatar.png")
+
+
+def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
+    from zerver.lib.storage import static_path
+
+    jdenticon_path = (
+        static_path("webpack-bundles/jdenticon.js")
+        if settings.PRODUCTION
+        else os.path.join(settings.DEPLOY_ROOT, "node_modules/jdenticon/bin/jdenticon.js")
+    )
+    size = str(MEDIUM_AVATAR_SIZE if medium else DEFAULT_AVATAR_SIZE)
+    command = ["node", jdenticon_path, input, "-s", size]
+    stdout = subprocess.check_output(command)
+    return stdout
+
+
+def generate_and_upload_jdenticon_avatar(user_profile: UserProfile, future: bool) -> None:
+    image_data = generate_avatar_jdenticon(str(user_profile.id), medium=False)
+    file_path = user_avatar_path(user_profile, future)
+
+    write_avatar_images(
+        file_path,
+        user_profile,
+        image_data,
+        content_type="image/png",
+        future=future,
+    )

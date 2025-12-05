@@ -1295,6 +1295,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
         cordelia = self.example_user("cordelia")
         cordelia.email = cordelia.delivery_email
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         cordelia.save()
         with self.settings(
             ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/avatar.svg"
@@ -1569,7 +1570,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         do_scrub_avatar_image(user, acting_user=user)
 
-        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
         self.assertFalse(os.path.isfile(avatar_path_id))
         self.assertFalse(os.path.isfile(avatar_original_path_id))
         self.assertFalse(os.path.isfile(avatar_medium_path_id))
@@ -1625,7 +1626,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertIn("avatar_url", response_dict)
         self.assertEqual(response_dict["avatar_url"], avatar_url(user_profile))
 
-        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
         self.assertEqual(user_profile.avatar_version, 2)
 
     def test_avatar_upload_file_size_error(self) -> None:

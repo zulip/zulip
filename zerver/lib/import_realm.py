@@ -27,7 +27,8 @@ from zerver.actions.realm_settings import (
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_zulip_update_announcements_stream,
 )
-from zerver.actions.user_settings import do_change_avatar_fields
+from zerver.actions.user_settings import set_avatar_to_default
+from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableName
@@ -918,7 +919,7 @@ def process_avatars(record: dict[str, Any]) -> None:
             user_profile.id,
         )
         # Delete the record of the avatar to avoid 404s.
-        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        set_avatar_to_default(user_profile, acting_user=None)
 
 
 def process_emojis(
@@ -1728,6 +1729,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         processes,
         default_user_profile_id=None,  # Fail if there is no user set
     )
+
+    for user_profile in UserProfile.objects.filter(avatar_source=UserProfile.AVATAR_FROM_JDENTICON):
+        generate_and_upload_jdenticon_avatar(user_profile, future=False)
 
     # We need to have this check as the emoji files may not
     # be present in import data from other services.
