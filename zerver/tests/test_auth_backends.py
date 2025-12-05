@@ -6214,7 +6214,7 @@ class TestDevAuthBackend(ZulipTestCase):
     def test_choose_realm(self) -> None:
         result = self.client_post("/devlogin/", subdomain="zulip")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Click on a user to log in to Zulip Dev!"], result)
+        self.assert_in_success_response([" Click on a user to log in to Zulip Dev!"], result)
         self.assert_in_success_response(["iago@zulip.com", "hamlet@zulip.com"], result)
 
         result = self.client_post("/devlogin/", subdomain="")
