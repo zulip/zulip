@@ -65,7 +65,6 @@ run_test("t_tag", ({mock_template}) => {
         message_id: "99",
         should_display_quote_message: true,
         editability_menu_item: true,
-        should_display_hide_option: true,
         conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",
     };
