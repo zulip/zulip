@@ -306,7 +306,6 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "#scroll-to-bottom-button-clickable-area",
             ".spectator_narrow_login_button",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
@@ -318,6 +317,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
+            "#scroll-to-bottom-button-clickable-area",
             "#compose_close",
             ".expand-composebox-button",
             ".collapse-composebox-button",
