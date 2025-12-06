@@ -31,12 +31,12 @@ jobs:
       filenames: ${{ steps.set-matrix.outputs.filenames }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
@@ -60,7 +60,7 @@ jobs:
           perl -pi -e 's/\00/\n\n/g' closed-by-commits-output/message-*
 
       - name: Upload messages as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: closed-by-commits-output
           path: closed-by-commits-output/
@@ -80,7 +80,7 @@ jobs:
     if: success() && ${{github.repository == 'zulip/zulip'}}
     steps:
       - name: Download messages as artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: closed-by-commits-output
           path: closed-by-commits-output/
