@@ -54,7 +54,7 @@ function get_list_info(zoom, search) {
     const zoomed = zoom === undefined ? false : zoom;
     const search_term = search === undefined ? "" : search;
     return topic_list_data.get_list_info(stream_id, zoomed, (topics) =>
-        topic_list_data.filter_topics_by_search_term(topics, search_term),
+        topic_list_data.filter_topics_by_search_term(stream_id, topics, search_term),
     );
 }
 
@@ -66,6 +66,7 @@ test("filter_topics_by_search_term with resolved topics_state", () => {
     let topics_state = "is:resolved";
 
     let result = topic_list_data.filter_topics_by_search_term(
+        general.stream_id,
         topic_names,
         search_term,
         topics_state,
@@ -75,9 +76,42 @@ test("filter_topics_by_search_term with resolved topics_state", () => {
 
     // Filter for unresolved topics.
     topics_state = "-is:resolved";
-    result = topic_list_data.filter_topics_by_search_term(topic_names, search_term, topics_state);
+    result = topic_list_data.filter_topics_by_search_term(
+        general.stream_id,
+        topic_names,
+        search_term,
+        topics_state,
+    );
 
     assert.deepEqual(result, ["topic 1", "topic 2"]);
+});
+
+test("filter_topics_is_followed", ({override}) => {
+    const stream_id = general.stream_id;
+    const topics = ["followed_topic", "unfollowed_topic", "other"];
+
+    override(user_topics, "is_topic_followed", (id, topic_name) => {
+        assert.equal(id, stream_id);
+        return topic_name === "followed_topic";
+    });
+
+    // filter for is:followed
+    const results_followed = topic_list_data.filter_topics_by_search_term(
+        stream_id,
+        topics,
+        "",
+        "is:followed",
+    );
+    assert.deepEqual(results_followed, ["followed_topic"]);
+
+    // filter for -is:followed
+    const results_unfollowed = topic_list_data.filter_topics_by_search_term(
+        stream_id,
+        topics,
+        "",
+        "-is:followed",
+    );
+    assert.deepEqual(results_unfollowed, ["unfollowed_topic", "other"]);
 });
 
 function test(label, f) {
