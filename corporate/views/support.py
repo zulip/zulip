@@ -574,7 +574,7 @@ def support(
             user_profile_for_deletion = get_user_profile_by_id(delete_user_by_id)
             user_email = user_profile_for_deletion.delivery_email
             assert user_profile_for_deletion.realm == realm
-            do_delete_user_preserving_messages(user_profile_for_deletion)
+            do_delete_user_preserving_messages(user_profile_for_deletion, acting_user=acting_user)
             context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
 
         if support_view_request is not None:

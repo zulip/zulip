@@ -114,21 +114,16 @@ def create_user_profile(
     tos_version: str | None,
     timezone: str,
     default_language: str,
-    force_id: int | None = None,
     force_date_joined: datetime | None = None,
     *,
     email_address_visibility: int,
 ) -> UserProfile:
     if force_date_joined is None:
         date_joined = timezone_now()
-    else:
+    else:  # nocoverage
         date_joined = force_date_joined
 
     email = UserManager.normalize_email(email)
-
-    extra_kwargs = {}
-    if force_id is not None:
-        extra_kwargs["id"] = force_id
 
     user_profile = UserProfile(
         is_staff=False,
@@ -146,7 +141,6 @@ def create_user_profile(
         default_language=default_language,
         delivery_email=email,
         email_address_visibility=email_address_visibility,
-        **extra_kwargs,
     )
     if bot_type or not active:
         password = None
@@ -175,9 +169,7 @@ def create_user(
     default_events_register_stream: Stream | None = None,
     default_all_public_streams: bool | None = None,
     source_profile: UserProfile | None = None,
-    force_id: int | None = None,
     force_date_joined: datetime | None = None,
-    create_personal_recipient: bool = True,
     enable_marketing_emails: bool | None = None,
     email_address_visibility: int | None = None,
 ) -> UserProfile:
@@ -210,7 +202,6 @@ def create_user(
         tos_version,
         timezone,
         default_language,
-        force_id=force_id,
         force_date_joined=force_date_joined,
         email_address_visibility=user_email_address_visibility,
     )
@@ -249,9 +240,6 @@ def create_user(
         # a User ID, which isn't generated until the .save() above.
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
-
-    if not create_personal_recipient:
-        return user_profile
 
     recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
     user_profile.recipient = recipient
