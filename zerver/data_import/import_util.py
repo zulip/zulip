@@ -2,6 +2,7 @@ import logging
 import os
 import random
 import shutil
+import subprocess
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
@@ -852,3 +853,8 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
             f"Invalid email format, please fix the following email(s) and try again: {details}"
         )
         raise ValidationError(error_log)
+
+
+def convert_html_to_text(content: str) -> str:
+    # html2text is GPL licensed, so run it as a subprocess.
+    return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
