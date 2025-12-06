@@ -2503,6 +2503,7 @@ class TestClearOnRead(ZulipTestCase):
             user_profile_id=hamlet.id,
             message_id__in=message_ids,
         ).update(flags=F("flags").bitor(UserMessage.flags.active_mobile_push_notification))
+        self.register_push_device(hamlet.id)
 
         with mock_queue_publish("zerver.actions.message_flags.queue_event_on_commit") as m:
             assert stream.recipient_id is not None
