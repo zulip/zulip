@@ -571,6 +571,7 @@ const sweden_stream = stream_item({
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
     can_subscribe_group: support.id,
+    can_create_topic_group: admins.id,
 });
 const denmark_stream = stream_item({
     name: "Denmark",
@@ -1255,11 +1256,18 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(actual_value, expected_value);
 
                 // The sorter should return the query as the first element if there
-                // isn't a topic with such name.
+                // isn't a topic with such name only if user has permission to
+                // create new topics.
                 // This only happens if typeahead is providing other suggestions.
+                override(current_user, "user_id", 102);
                 query = "e"; // Letter present in "furniture" and "ice"
                 actual_value = options.sorter(["furniture", "ice"], query);
                 expected_value = ["e", "furniture", "ice"];
+                assert.deepEqual(actual_value, expected_value);
+
+                override(current_user, "user_id", 100);
+                actual_value = options.sorter(["furniture", "ice"], query);
+                expected_value = ["furniture", "ice"];
                 assert.deepEqual(actual_value, expected_value);
 
                 // Suggest the query if this query doesn't match any existing topic.
