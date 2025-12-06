@@ -251,6 +251,26 @@
         }
     }
 
+    /* Leading whitespaces are collapsed if they are at the start of a line.
+    This lets us conditionally add a space to the left of `.inline-hide-button`,
+    only when there is some preceding text on the same line before the button.
+    */
+    .inline-hide-button-space-wrapper {
+        margin-right: 0.2em;
+    }
+
+    .rehide-muted-user-message {
+        &.inline-hide-button {
+            display: inline-flex;
+        }
+
+        &.block-hide-button {
+            display: flex;
+            margin-bottom: var(--markdown-interelement-space-px);
+        }
+        align-items: center;
+    }
+
     .message_reactions {
         grid-area: reactions;
         display: flex;
