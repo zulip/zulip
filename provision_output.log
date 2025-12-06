@@ -1,0 +1,1 @@
++ sudo -- sh -c 'echo "$1" > "$2"' - bcf4c867-da6f-4bbf-970d-080b3c60390e /home/ak/.zulip-dev-uuid
