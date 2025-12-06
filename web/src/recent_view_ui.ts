@@ -114,6 +114,8 @@ let is_waiting_for_revive_current_focus = true;
 // it is hidden to avoid scroll jumping when it is shown again.
 let last_scroll_offset: number | undefined;
 let hide_other_views_callback: (() => void) | undefined;
+// Flag to highlight the search keyword when returning to the view.
+let should_highlight_search_on_render = false;
 
 export function set_hide_other_views(callback: () => void): void {
     hide_other_views_callback = callback;
@@ -1281,6 +1283,16 @@ function callback_after_render(): void {
     }
 
     update_load_more_banner();
+
+    // If we are returning with an active search, highlight it to make the filter salient.
+    if (should_highlight_search_on_render) {
+        const search_input = $<HTMLInputElement>("#recent_view_search").get(0);
+        if (search_input && search_input.value.length > 0) {
+            search_input.select();
+        }
+        should_highlight_search_on_render = false;
+    }
+
     setTimeout(() => {
         revive_current_focus();
         is_waiting_for_revive_current_focus = false;
@@ -1330,6 +1342,13 @@ export function complete_rerender(coming_from_other_views = false): void {
 
     if (topics_widget) {
         topics_widget.replace_list_data(mapped_topic_values);
+        // If returning from another view with an active search, select it so the filter is clear.
+        if (coming_from_other_views) {
+            const search_input = $<HTMLInputElement>("#recent_view_search").get(0);
+            if (search_input && search_input.value.length > 0) {
+                setTimeout(() => search_input.select(), 0);
+            }
+        }
         return;
     }
 
@@ -1338,6 +1357,9 @@ export function complete_rerender(coming_from_other_views = false): void {
         // So, we always scroll to the top to avoid any scroll jumping in case
         // user is returning from another view.
         window.scrollTo(0, 0);
+        // Remember to highlight the search text after the initial render if it exists.
+        const search_val = $<HTMLInputElement>("#recent_view_search").val();
+        should_highlight_search_on_render = typeof search_val === "string" && search_val.length > 0;
     }
 
     const rendered_body = render_recent_view_body({
