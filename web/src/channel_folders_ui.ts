@@ -3,8 +3,8 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
+import render_channel_list_item from "../templates/channel_list_item.hbs";
 import render_confirm_archive_channel_folder from "../templates/confirm_dialog/confirm_archive_channel_folder.hbs";
-import render_stream_list_item from "../templates/stream_list_item.hbs";
 import render_create_channel_folder_modal from "../templates/stream_settings/create_channel_folder_modal.hbs";
 import render_edit_channel_folder_modal from "../templates/stream_settings/edit_channel_folder_modal.hbs";
 
@@ -92,41 +92,6 @@ export function add_channel_folder(): void {
     });
 }
 
-function remove_channel_from_folder(
-    stream_id: number,
-    on_success: () => void,
-    on_error: (xhr: JQuery.jqXHR) => void,
-): void {
-    const url = "/json/streams/" + stream_id.toString();
-    const data = {
-        folder_id: JSON.stringify(null),
-    };
-    void channel.patch({
-        url,
-        data,
-        success: on_success,
-        error: on_error,
-    });
-}
-
-function add_channel_to_folder(
-    stream_id: number,
-    folder_id: number,
-    on_success: () => void,
-    on_error: (xhr: JQuery.jqXHR) => void,
-): void {
-    const url = "/json/streams/" + stream_id.toString();
-    const data = {
-        folder_id: JSON.stringify(folder_id),
-    };
-    void channel.patch({
-        url,
-        data,
-        success: on_success,
-        error: on_error,
-    });
-}
-
 function archive_folder(folder_id: number): void {
     const stream_ids = channel_folders.get_stream_ids_in_folder(folder_id);
     let successful_requests = 0;
@@ -175,7 +140,7 @@ function archive_folder(folder_id: number): void {
     }
 
     for (const stream_id of stream_ids) {
-        remove_channel_from_folder(stream_id, on_success, on_error);
+        channel_folders.remove_channel_from_folder(stream_id, on_success, on_error);
     }
 }
 
@@ -192,13 +157,13 @@ export function handle_archiving_channel_folder(folder_id: number): void {
 }
 
 function format_channel_item_html(stream: StreamSubscription): string {
-    return render_stream_list_item({
+    return render_channel_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
         stream_color: stream.color,
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
-        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
+        channel_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
         show_remove_channel_from_folder: true,
     });
 }
@@ -228,7 +193,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
         const $remove_button = $(e.currentTarget).closest(".remove-button");
         buttons.show_button_loading_indicator($remove_button);
         const stream_id = Number.parseInt(
-            $remove_button.closest(".stream-list-item").attr("data-stream-id")!,
+            $remove_button.closest(".channel-list-item").attr("data-stream-id")!,
             10,
         );
 
@@ -267,7 +232,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
             buttons.hide_button_loading_indicator($remove_button);
         }
 
-        remove_channel_from_folder(stream_id, on_success, on_error);
+        channel_folders.remove_channel_from_folder(stream_id, on_success, on_error);
     });
 }
 
@@ -389,7 +354,7 @@ function render_add_channel_folder_widget(): void {
             dialog_widget.hide_dialog_spinner();
         }
 
-        add_channel_to_folder(stream_id, folder_id, on_success, on_error);
+        channel_folders.add_channel_to_folder(stream_id, folder_id, on_success, on_error);
     });
 }
 
