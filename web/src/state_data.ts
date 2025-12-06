@@ -206,7 +206,7 @@ export const channel_folder_schema = z.object({
 
 export const navigation_view_schema = z.object({
     fragment: z.string(),
-    name: z.string(),
+    name: z.nullable(z.string()),
     is_pinned: z.boolean(),
 });
 
