@@ -261,96 +261,101 @@ function show_modal_with_cropped_file(): void {
         form_id: "add-custom-emoji-form",
         loading_spinner: true,
         on_click: add_custom_emoji,
-        post_render() {
-            // Set up the UI with the cropped file
-            const $preview_image = $("#emoji_preview_image");
-            const $placeholder_icon = $("#emoji_placeholder_icon");
-            const $preview_text = $("#emoji_preview_text");
-            const $file_name_field = $("#emoji-file-name");
-            const $clear_button = $("#emoji_image_clear_button");
-            const $upload_button = $("#emoji_upload_button");
-
-            if (cropped_emoji_file !== null) {
-                const image_blob = URL.createObjectURL(cropped_emoji_file);
-                $preview_image.attr("src", image_blob);
-                $preview_image.addClass("upload_widget_image_preview");
-                $preview_image.show();
-                $placeholder_icon.hide();
-                $preview_text.show();
-                $file_name_field.text(cropped_emoji_file.name);
-                $clear_button.show();
-                $upload_button.hide();
-
-                // Restore the emoji name
-                $("#emoji_name").val(saved_emoji_name);
-
-                // Enable submit button if name is filled
-                $("#add-custom-emoji-modal .dialog_submit_button").prop(
-                    "disabled",
-                    saved_emoji_name === "",
-                );
-            }
-
-            // Set up input handler for emoji name
-            $("#emoji_name").on("input", () => {
-                $("#add-custom-emoji-modal .dialog_submit_button").prop(
-                    "disabled",
-                    $("#emoji_name").val() === "" || cropped_emoji_file === null,
-                );
-            });
-
-            // Set up clear button
-            $clear_button.on("click", (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                cropped_emoji_file = null;
-                $preview_image.hide();
-                $placeholder_icon.show();
-                $clear_button.hide();
-                $upload_button.show();
-                $file_name_field.text("");
-                $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
-            });
-
-            // Set up upload button to reopen cropper
-            const get_file_input = (): JQuery<HTMLInputElement> => $("#emoji_file_input");
-            upload_widget.build_direct_upload_widget(
-                get_file_input,
-                $("#emoji_file_input_error"),
-                $upload_button,
-                (file: File, _night: boolean | null, _icon: boolean) => {
-                    saved_emoji_name = String($("#emoji_name").val() ?? "");
-                    cropped_emoji_file = file;
-                    show_modal_with_cropped_file();
-                },
-                5,
-                "custom_emoji",
-            );
-        },
+        post_render: add_custom_emoji_post_render,
         on_shown() {
             $("#emoji_name").trigger("focus");
-        },
-        on_hidden() {
-            // Clear state if modal is closed without submitting
-            if (cropped_emoji_file !== null) {
-                // Only clear if not transitioning to cropper
-                // This check isn't perfect but helps
-            }
         },
     });
 }
 
-function show_modal(): void {
+function show_add_emoji_modal(): void {
     // Reset state for a fresh modal
     cropped_emoji_file = null;
     saved_emoji_name = "";
     show_modal_with_cropped_file();
 }
 
+export function add_custom_emoji_post_render(): void {
+    const $preview_image = $("#emoji_preview_image");
+    const $placeholder_icon = $("#emoji_placeholder_icon");
+    const $preview_text = $("#emoji_preview_text");
+    const $file_name_field = $("#emoji-file-name");
+    const $clear_button = $("#emoji_image_clear_button");
+    const $upload_button = $("#emoji_upload_button");
+
+    // If we have a cropped file (returning from cropper), show it
+    if (cropped_emoji_file !== null) {
+        const image_blob = URL.createObjectURL(cropped_emoji_file);
+        $preview_image.attr("src", image_blob);
+        $preview_image.addClass("upload_widget_image_preview");
+        $preview_image.show();
+        $placeholder_icon.hide();
+        $preview_text.show();
+        $file_name_field.text(cropped_emoji_file.name);
+        $clear_button.show();
+        $upload_button.hide();
+
+        // Restore the emoji name
+        $("#emoji_name").val(saved_emoji_name);
+
+        // Enable submit button if name is filled
+        $("#add-custom-emoji-modal .dialog_submit_button").prop(
+            "disabled",
+            saved_emoji_name === "",
+        );
+    }
+
+    // Set up input handler for emoji name
+    $("#emoji_name").on("input", () => {
+        $("#add-custom-emoji-modal .dialog_submit_button").prop(
+            "disabled",
+            $("#emoji_name").val() === "" || cropped_emoji_file === null,
+        );
+    });
+
+    // Set up clear button
+    $clear_button.on("click", (e: JQuery.ClickEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        cropped_emoji_file = null;
+        $preview_image.hide();
+        $placeholder_icon.show();
+        $preview_text.hide();
+        $clear_button.hide();
+        $upload_button.show();
+        $file_name_field.text("");
+        $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
+    });
+
+    // Save emoji name when file input changes (before cropper opens and closes this modal)
+    const get_file_input = (): JQuery<HTMLInputElement> => $("#emoji_file_input");
+    get_file_input().on("change", () => {
+        saved_emoji_name = String($("#emoji_name").val() ?? "");
+    });
+
+    // Set up upload widget with cropper
+    upload_widget.build_direct_upload_widget(
+        get_file_input,
+        $("#emoji_file_input_error"),
+        $upload_button,
+        (file: File) => {
+            cropped_emoji_file = file;
+            // The cropper modal closes after this callback fires.
+            // We need to wait for the modal close animation to complete
+            // before opening a new modal. The animation takes ~300ms.
+            setTimeout(() => {
+                show_modal_with_cropped_file();
+            }, 300);
+        },
+        5,
+        "custom_emoji",
+    );
+}
+
 export function set_up(): void {
     meta.loaded = true;
 
-    $("#add-custom-emoji-button").on("click", show_modal);
+    $("#add-custom-emoji-button").on("click", show_add_emoji_modal);
 
     loading.make_indicator($("#admin_page_emoji_loading_indicator"));
 

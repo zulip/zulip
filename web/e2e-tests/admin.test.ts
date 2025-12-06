@@ -143,7 +143,24 @@ async function test_add_emoji(page: Page): Promise<void> {
     const emoji_upload_handle = await page.$("input#emoji_file_input");
     assert.ok(emoji_upload_handle);
     await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
-    await page.click("#add-custom-emoji-modal .dialog_submit_button");
+
+    // Wait for the image cropper modal to open and confirm the crop
+    await page.waitForSelector("#uppy-editor.modal--open", {visible: true});
+    const cropper_submit = await page.waitForSelector("#uppy-editor .dialog_submit_button", {
+        visible: true,
+    });
+    assert.ok(cropper_submit);
+    await cropper_submit.click();
+
+    // Wait for cropper to close, then wait for add-emoji modal to reopen
+    await page.waitForSelector("#uppy-editor", {hidden: true});
+    await page.waitForSelector("#add-custom-emoji-modal.modal--open", {visible: true});
+    const emoji_submit = await page.waitForSelector(
+        "#add-custom-emoji-modal .dialog_submit_button:not([disabled])",
+        {visible: true},
+    );
+    assert.ok(emoji_submit);
+    await emoji_submit.click();
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector("tr#emoji_zulip_logo", {visible: true});
@@ -156,10 +173,20 @@ async function test_add_emoji(page: Page): Promise<void> {
 }
 
 async function test_delete_emoji(page: Page): Promise<void> {
-    await page.click("tr#emoji_zulip_logo button.delete");
+    // Wait for the delete button to be visible before clicking
+    const delete_button = await page.waitForSelector("tr#emoji_zulip_logo button.delete", {
+        visible: true,
+    });
+    assert.ok(delete_button);
+    await delete_button.click();
 
     await common.wait_for_micromodal_to_open(page);
-    await page.click("#confirm_deactivate_custom_emoji_modal .dialog_submit_button");
+    const confirm_button = await page.waitForSelector(
+        "#confirm_deactivate_custom_emoji_modal .dialog_submit_button",
+        {visible: true},
+    );
+    assert.ok(confirm_button);
+    await confirm_button.click();
     await common.wait_for_micromodal_to_close(page);
 
     // assert the emoji is deleted.
