@@ -1,7 +1,7 @@
 # Incoming webhook walkthrough
 
 Below, we explain each part of a simple incoming webhook integration,
-called **Hello World**.  This integration sends a "hello" message to the `test`
+called **Hello World**. This integration sends a "hello" message to the `test`
 channel and includes a link to the Wikipedia article of the day, which
 it formats from json data it receives in the http request.
 
@@ -13,10 +13,10 @@ integration.
 The first step in creating an incoming webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
-* Use [Zulip's JSON integration](/integrations/json),
-<https://webhook.site/>, or a similar tool to capture webhook
-payload(s) from the service you are integrating. Examining this data
-allows you to do two things:
+- Use [Zulip's JSON integration](https://zulip.com/integrations/json),
+  <https://webhook.site/>, or a similar tool to capture webhook
+  payload(s) from the service you are integrating. Examining this data
+  allows you to do two things:
 
 1. Determine how you will need to structure your webhook code, including what
    message types your integration should support and how.
@@ -42,14 +42,14 @@ for each distinct message condition your integration supports. You'll also need 
 corresponding fixture for each of these tests. Depending on the type of data
 the 3rd party service sends, your fixture may contain JSON, URL encoded text, or
 some other kind of data. See [Step 5: Create automated tests](#step-5-create-automated-tests) or
-[Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html) for further details.
+[Testing](../testing/testing.md) for further details.
 
 ### HTTP Headers
 
 Some third-party webhook APIs, such as GitHub's, don't encode all the
-information about an event in the JSON request body.  Instead, they
+information about an event in the JSON request body. Instead, they
 put key details like the event type in a separate HTTP header
-(generally this is clear in their API documentation).  In order to
+(generally this is clear in their API documentation). In order to
 test Zulip's handling of that integration, you will need to record
 which HTTP headers are used with each fixture you capture.
 
@@ -123,8 +123,7 @@ def api_helloworld_webhook(
 The above code imports the required functions and defines the main webhook
 function `api_helloworld_webhook`, decorating it with `webhook_view` and
 `typed_endpoint`. The `typed_endpoint` decorator allows you to
-access request variables with `JsonBodyPayload()`. You can find more about `JsonBodyPayload` and request variables in [Writing views](
-https://zulip.readthedocs.io/en/latest/tutorials/writing-views.html#request-variables).
+access request variables with `JsonBodyPayload()`. You can find more about `JsonBodyPayload` and request variables in [Writing views](../tutorials/writing-views.md#request-variables).
 
 You must pass the name of your integration to the
 `webhook_view` decorator; that name will be used to
@@ -156,23 +155,23 @@ it must exist before a message can be created in it. (See
 [Step 4: Create automated tests](#step-5-create-automated-tests) for how to handle this in tests.)
 
 The line that begins `# type` is a mypy type annotation. See [this
-page](https://zulip.readthedocs.io/en/latest/testing/mypy.html) for details about
+page](../testing/mypy.md) for details about
 how to properly annotate your webhook functions.
 
 In the body of the function we define the body of the message as `Hello! I am
 happy to be here! :smile:`. The `:smile:` indicates an emoji. Then we append a
 link to the Wikipedia article of the day as provided by the json payload.
 
-* Sometimes, it might occur that a json payload does not contain all required keys your
+- Sometimes, it might occur that a json payload does not contain all required keys your
   integration checks for. In such a case, any `KeyError` thrown is handled by the server
   backend and will create an appropriate response.
 
 Then we send a message with `check_send_webhook_message`, which will
 validate the message and do the following:
 
-* Send a public (channel) message if the `stream` query parameter is
+- Send a public (channel) message if the `stream` query parameter is
   specified in the webhook URL.
-* If the `stream` query parameter isn't specified, it will send a direct
+- If the `stream` query parameter isn't specified, it will send a direct
   message to the owner of the webhook bot.
 
 Finally, we return a 200 http status with a JSON format success message via
@@ -212,7 +211,7 @@ tools which you can use to test your webhook - 2 command line tools and a GUI.
 
 In cases where an incoming webhook integration supports optional URL parameters,
 one can use the `url_options` feature. It's a field in the `WebhookIntegration`
-class that is used when [generating a URL for an integration](/help/generate-integration-url)
+class that is used when [generating a URL for an integration](https://zulip.com/help/generate-integration-url)
 in the web app, which encodes the user input for each URL parameter in the
 incoming webhook's URL.
 
@@ -235,20 +234,22 @@ These URL options are declared as follows:
 `url_options` is a list describing the parameters the web app UI should offer when
 generating the incoming webhook URL:
 
-  - `name`: The parameter name that is used to encode the user input in the
-    integration's webhook URL.
-  - `label`: A short descriptive label for this URL parameter in the web app UI.
-  - `validator`: A validator function, which is used to determine the input type
-    for this option in the UI, and to indicate how to validate the input.
-    Currently, the web app UI only supports these validators:
-      - `check_bool` for checkbox/select input.
-      - `check_string` for text input.
+- `name`: The parameter name that is used to encode the user input in the
+  integration's webhook URL.
+- `label`: A short descriptive label for this URL parameter in the web app UI.
+- `validator`: A validator function, which is used to determine the input type
+  for this option in the UI, and to indicate how to validate the input.
+  Currently, the web app UI only supports these validators:
+  - `check_bool` for checkbox/select input.
+  - `check_string` for text input.
 
-!!! warn ""
+:::{note}
 
-    **Note**: To add support for other validators, you can update
-    `web/src/integration_url_modal.ts`. Common validators are available in
-    `zerver/lib/validator.py`.
+To add support for other validators, you can update
+`web/src/integration_url_modal.ts`. Common validators are available in
+`zerver/lib/validator.py`.
+
+:::
 
 In rare cases, it may be necessary for an incoming webhook to require
 additional user configuration beyond what is specified in the POST
@@ -269,7 +270,7 @@ purposes:
   incoming webhook integrations.
 
 - To construct `WebhookUrlOption` objects with special UI in the web-app
-  for [generating incoming webhook URLs](/help/generate-integration-url).
+  for [generating incoming webhook URLs](https://zulip.com/help/generate-integration-url).
 
 Using a preset URL option with the `build_preset_config` method:
 
@@ -289,29 +290,29 @@ from zerver.lib.webhooks.common import PresetUrlOption, WebhookUrlOption
 Currently configured preset URL options:
 
 - **`BRANCHES`**: This preset is intended to be used for [version control
-  integrations](/integrations/category/version-control), and adds UI for the user to
+  integrations](https://zulip.com/integrations/category/version-control), and adds UI for the user to
   configure which branches of a project's repository will trigger Zulip
   notification messages. When the user specifies which branches to receive
   notifications from, the `branches` parameter will be added to the [generated
-  integration URL](/help/generate-integration-url). For example, if the user
+  integration URL](https://zulip.com/help/generate-integration-url). For example, if the user
   input `main` and `dev` for the branches of their repository, then
   `&branches=main%2Cdev` would be appended to the generated integration URL.
 
 - **`IGNORE_PRIVATE_REPOSITORIES`**: This preset is intended to be used for
-  [version control integrations](/integrations/category/version-control), and adds UI
+  [version control integrations](https://zulip.com/integrations/category/version-control), and adds UI
   for the user exclude private repositories from triggering Zulip
   notification messages. When the user selects this option, the
   `ignore_private_repositories` boolean parameter will be added to the
-  [generated integration URL](/help/generate-integration-url).
+  [generated integration URL](https://zulip.com/help/generate-integration-url).
 
 - **`MAPPING`**: This preset is intended to be used for [chat-app
-  integrations](/integrations/category/communication) (like Slack), and adds a
+  integrations](https://zulip.com/integrations/category/communication) (like Slack), and adds a
   special option, **Matching Zulip channel**, to the UI for where to send
   Zulip notification messages. This special option maps the notification
   messages to Zulip channels that match the messages' original channel
   name in the third-party app. When selected, this requires setting a
   single topic for notification messages, and adds `&mapping=channels`
-  to the [generated integration URL](/help/generate-integration-url).
+  to the [generated integration URL](https://zulip.com/help/generate-integration-url).
 
 ## Step 4: Manually testing the webhook
 
@@ -326,6 +327,7 @@ request was made by an authorized user.
 ### Curl
 
 Using curl:
+
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
 ```
@@ -354,7 +356,7 @@ After running the above command, you should see something similar to:
 ```
 
 Some webhooks require custom HTTP headers, which can be passed using
-`./manage.py send_webhook_fixture_message --custom-headers`.  For
+`./manage.py send_webhook_fixture_message --custom-headers`. For
 example:
 
     --custom-headers='{"X-Custom-Header": "value"}'
@@ -366,9 +368,10 @@ approach shown above.
 For more information about `manage.py` command-line tools in Zulip, see
 the [management commands][management-commands] documentation.
 
-[management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
+[management-commands]: ../production/management-commands.md
 
 ### Integrations Dev Panel
+
 This is the GUI tool.
 
 {start_tabs}
@@ -376,10 +379,10 @@ This is the GUI tool.
 1. Run `./tools/run-dev` then go to http://localhost:9991/devtools/integrations/.
 
 1. Set the following mandatory fields:
-**Bot** - Any incoming webhook bot.
-**Integration** - One of the integrations.
-**Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
-The remaining fields are optional, and the URL will automatically be generated.
+   **Bot** - Any incoming webhook bot.
+   **Integration** - One of the integrations.
+   **Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
+   The remaining fields are optional, and the URL will automatically be generated.
 
 1. Click **Send**!
 
@@ -394,8 +397,6 @@ Feel free to use 4-spaces as tabs for indentation if you'd like!
 Your sample notification may look like:
 
 <img class="screenshot" src="/static/images/api/helloworld-webhook.png" alt="screenshot" />
-
-
 
 ## Step 5: Create automated tests
 
@@ -441,7 +442,7 @@ to create the destination channel, and then create the message to send using the
 value from the fixture. If these don't match, the test will fail.
 
 `URL_TEMPLATE` defines how the test runner will call your incoming webhook, in the same way
- you would provide a webhook URL to the 3rd party service. `api_key={api_key}` says
+you would provide a webhook URL to the 3rd party service. `api_key={api_key}` says
 that an API key is expected.
 
 When writing tests for your webhook, you'll want to include one test function
@@ -502,7 +503,7 @@ DONE!
 
 ## Step 6: Create documentation
 
-Next, we add end-user documentation for our integration.  You
+Next, we add end-user documentation for our integration. You
 can see the existing examples at <https://zulip.com/integrations>
 or by accessing `/integrations` in your Zulip development environment.
 
@@ -517,7 +518,7 @@ some customization via options to the `WebhookIntegration` class.
 Second, you need to write the actual documentation content in
 `zerver/webhooks/mywebhook/doc.md`.
 
-```md
+````md
 Learn how Zulip integrations work with this simple Hello World example!
 
 1.  The Hello World webhook will use the `test` channel, which is created
@@ -530,7 +531,7 @@ Learn how Zulip integrations work with this simple Hello World example!
 
 1.  To trigger a notification using this example webhook, you can use
     `send_webhook_fixture_message` from a [Zulip development
-    environment](https://zulip.readthedocs.io/en/latest/development/overview.html):
+    environment](../development/overview.md):
 
     ```
         (zulip-server) vagrant@vagrant:/srv/zulip$
@@ -549,7 +550,7 @@ Learn how Zulip integrations work with this simple Hello World example!
 
 ![Hello World integration](/static/images/integrations/helloworld/001.png)
 
-```
+````
 
 `{!create-an-incoming-webhook.md!}` and `{!congrats.md!}` are examples of
 a Markdown macro. Zulip has a macro-based Markdown/Jinja2 framework that
@@ -562,7 +563,7 @@ for further details, including how to easily create the message
 screenshot. Mostly you should plan on templating off an existing guide, like
 [this one](https://raw.githubusercontent.com/zulip/zulip/main/zerver/webhooks/github/doc.md).
 
-[integration-docs-guide]: https://zulip.readthedocs.io/en/latest/documentation/integrations.html
+[integration-docs-guide]: ../documentation/integrations.md
 
 ## Step 7: Preparing a pull request to zulip/zulip
 
@@ -570,24 +571,21 @@ When you have finished your webhook integration, follow these guidelines before
 pushing the code to your fork and submitting a pull request to zulip/zulip:
 
 - Run tests including linters and ensure you have addressed any issues they
-  report. See [Testing](https://zulip.readthedocs.io/en/latest/testing/testing.html)
-  and [Linters](https://zulip.readthedocs.io/en/latest/testing/linters.html) for details.
-- Read through [Code styles and conventions](
-  https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
+  report. See [Testing](../testing/testing.md)
+  and [Linters](../testing/linters.md) for details.
+- Read through [Code styles and conventions](../contributing/code-style.md) and take a look
   through your code to double-check that you've followed Zulip's guidelines.
 - Take a look at your Git history to ensure your commits have been clear and
-  logical (see [Commit discipline](
-  https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html) for tips). If not,
+  logical (see [Commit discipline](../contributing/commit-discipline.md) for tips). If not,
   consider revising them with `git rebase --interactive`. For most incoming webhooks,
   you'll want to squash your changes into a single commit and include a good,
   clear commit message.
 
 If you would like feedback on your integration as you go, feel free to post a
 message on the [public Zulip instance](https://chat.zulip.org/#narrow/channel/integrations).
-You can also create a [draft pull request](
-https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) while you
+You can also create a [draft pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests) while you
 are still working on your integration. See the
-[Git guide](https://zulip.readthedocs.io/en/latest/git/pull-requests.html#create-a-pull-request)
+[Git guide](../git/pull-requests.md#create-a-pull-request)
 for more on Zulip's pull request process.
 
 ## Advanced topics
@@ -699,7 +697,6 @@ needs to be constructed in an unusual way.
 For more, see the definition for the base class, `WebhookTestCase`
 in `zerver/lib/test_classes.py`, or just grep for examples.
 
-
 ### Custom HTTP event-type headers
 
 Some third-party services set a custom HTTP header to indicate the event type that
@@ -739,5 +736,5 @@ raise UnsupportedWebhookEventTypeError(event_type)
 
 ## Related articles
 
-* [Integrations overview](/api/integrations-overview)
-* [Incoming webhook integrations](/api/incoming-webhooks-overview)
+- [Integrations overview](https://zulip.com/api/integrations-overview)
+- [Incoming webhook integrations](incoming-webhooks-overview)
