@@ -12,11 +12,13 @@
             </div>
         </li>
         {{#if (or displayed_members.length displayed_subgroups.length)}}
-            <li role="none" class="popover-menu-list-item text-item italic">
-                {{#tr}}
-                {members_count, plural, =1 {1 member} other {# members}}
-                {{/tr}}
-            </li>
+            {{#if user_can_access_all_other_users}}
+                <li role="none" class="popover-menu-list-item text-item italic">
+                    {{#tr}}
+                        {members_count, plural, =1 {1 member} other {# members}}
+                    {{/tr}}
+                </li>
+            {{/if}}
         {{/if}}
         {{#if deactivated}}
             <li role="none" class="popover-menu-list-item text-item italic hidden-for-spectators">
