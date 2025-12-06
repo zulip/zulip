@@ -442,3 +442,7 @@
         transform: translate3d(3px, 0, 0);
     }
 }
+/* Fix vertical alignment of group pills in warning banners */
+.banner_message .display_only_group_pill {
+    vertical-align: baseline;
+}
