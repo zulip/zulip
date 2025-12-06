@@ -739,7 +739,7 @@ export function process_cmd_or_ctrl_enter_key(): boolean {
     return false;
 }
 
-export function process_tab_key(): boolean {
+export function process_tab_key(e?: JQuery.KeyDownEvent): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -762,13 +762,18 @@ export function process_tab_key(): boolean {
     }
 
     if (emoji_picker.is_open()) {
-        return emoji_picker.navigate("tab");
+        const handled = emoji_picker.navigate("tab");
+        if (handled && e !== undefined) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        return handled;
     }
 
     return false;
 }
 
-export function process_shift_tab_key(): boolean {
+export function process_shift_tab_key(e?: JQuery.KeyDownEvent): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
@@ -798,7 +803,12 @@ export function process_shift_tab_key(): boolean {
 
     // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
     if (emoji_picker.is_open()) {
-        return emoji_picker.navigate("shift_tab");
+        const handled = emoji_picker.navigate("shift_tab");
+        if (handled && e !== undefined) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        return handled;
     }
 
     if ($("input#stream_message_recipient_topic").is(":focus")) {
@@ -863,9 +873,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "action_with_enter":
             return process_cmd_or_ctrl_enter_key();
         case "tab":
-            return process_tab_key();
+            return process_tab_key(e);
         case "shift_tab":
-            return process_shift_tab_key();
+            return process_shift_tab_key(e);
     }
 
     // This block needs to be before the open modals check, because
