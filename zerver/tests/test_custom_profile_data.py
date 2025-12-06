@@ -10,14 +10,16 @@ from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
+    try_update_realm_custom_profile_field,
 )
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
-from zerver.models import CustomProfileField, CustomProfileFieldValue, UserProfile
+from zerver.models import CustomProfileField, CustomProfileFieldValue, RealmAuditLog, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 
 
@@ -1303,3 +1305,81 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/realm/profile_fields", info={"order": orjson.dumps(order).decode()}
         )
         self.assert_json_error(result, "Invalid order mapping.")
+
+
+class AuditLogCustomFieldTest(CustomProfileFieldTestCase):
+    def test_audit_logs_for_field_lifecycle(self) -> None:
+        """
+        Tests the full lifecycle of a field (Create -> Update -> Delete)
+        to ensure Audit Logs are generated at every step.
+        """
+        admin = self.example_user("iago")
+        realm = admin.realm
+
+        field = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Audit Test",
+            field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=admin,
+        )
+
+        log = RealmAuditLog.objects.filter(realm=realm).last()
+        assert log is not None
+
+        self.assertEqual(log.event_type, AuditLogEventType.REALM_PROPERTY_CHANGED)
+        self.assertEqual(log.acting_user, admin)
+
+        log_data = orjson.loads(log.extra_data)
+        self.assertEqual(log_data["added"], "Audit Test")
+        self.assertEqual(log_data["property"], "custom_profile_fields")
+
+        try_update_realm_custom_profile_field(
+            realm=realm,
+            field=field,
+            name="Updated Name",
+            acting_user=admin,
+        )
+
+        log = RealmAuditLog.objects.filter(realm=realm).last()
+        assert log is not None
+
+        self.assertEqual(log.event_type, AuditLogEventType.REALM_PROPERTY_CHANGED)
+
+        log_data = orjson.loads(log.extra_data)
+        self.assertEqual(log_data["updated_name"], "Updated Name")
+
+        do_remove_realm_custom_profile_field(realm, field, acting_user=admin)
+
+        log = RealmAuditLog.objects.filter(realm=realm).last()
+        assert log is not None
+
+        self.assertEqual(log.event_type, AuditLogEventType.REALM_PROPERTY_CHANGED)
+
+        log_data = orjson.loads(log.extra_data)
+        self.assertEqual(log_data["removed"], "Updated Name")
+
+    def test_audit_log_for_user_data_change(self) -> None:
+        """
+        Tests that when a user changes their own profile data, it is logged.
+        """
+        user = self.example_user("hamlet")
+        realm = user.realm
+
+        field = try_add_realm_custom_profile_field(realm, "Github", CustomProfileField.SHORT_TEXT)
+
+        data: list[ProfileDataElementUpdateDict] = [{"id": field.id, "value": "hamlet_v1"}]
+
+        do_update_user_custom_profile_data_if_changed(
+            user_profile=user, data=data, acting_user=user
+        )
+
+        # Verify
+        log = RealmAuditLog.objects.filter(realm=realm).last()
+        assert log is not None
+
+        self.assertEqual(log.event_type, AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED)
+        self.assertEqual(log.acting_user, user)
+        self.assertEqual(log.modified_user, user)
+
+        log_data = orjson.loads(log.extra_data)
+        self.assertEqual(log_data["new_value"], "hamlet_v1")
