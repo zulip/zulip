@@ -191,6 +191,7 @@ export const raw_user_group_schema = z.object({
     can_mention_group: group_setting_value_schema,
     can_remove_members_group: group_setting_value_schema,
     deactivated: z.boolean(),
+    color: z.string(),
 });
 
 export const channel_folder_schema = z.object({

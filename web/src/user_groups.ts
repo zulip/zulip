@@ -48,6 +48,7 @@ export function add(user_group_raw: UserGroupRaw): UserGroup {
         date_created: user_group_raw.date_created,
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
+        color: user_group_raw.color,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
         can_add_members_group: user_group_raw.can_add_members_group,
         can_join_group: user_group_raw.can_join_group,
@@ -130,6 +131,12 @@ export function update(event: UserGroupUpdateEvent, group: UserGroup): void {
 
     if (event.data.can_remove_members_group !== undefined) {
         group.can_remove_members_group = event.data.can_remove_members_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.color !== undefined) {
+        group.color = event.data.color;
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }
