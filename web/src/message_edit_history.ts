@@ -8,6 +8,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import {$t, $t_html} from "./i18n.ts";
+import {handle_inline_media_element_click} from "./lightbox.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -408,4 +409,23 @@ export function initialize(): void {
             messages_overlay_ui.activate_element(this, keyboard_handling_context);
         },
     );
+
+    $("body").on("click", "#message-history-overlay .message_edit_history_content", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if ($(e.target).closest(".message_inline_image:not(.message_inline_video)").length > 0) {
+            const $img = $(e.target).closest("img");
+            if ($img.length > 0) {
+                overlays.close_overlay("message_edit_history");
+                handle_inline_media_element_click(e, $img);
+            }
+        } else if ($(e.target).closest(".message_inline_video").length > 0) {
+            const $video = $(e.target).closest("video");
+            if ($video.length > 0) {
+                overlays.close_overlay("message_edit_history");
+                handle_inline_media_element_click(e, $video);
+            }
+        }
+    });
 }
