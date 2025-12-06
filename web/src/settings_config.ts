@@ -1381,3 +1381,14 @@ export const realm_plan_types = {
 };
 
 export const no_folder_selected = -1;
+
+export const default_avatar_source_values = {
+    jdenticon: {
+        code: "J",
+        description: $t({defaultMessage: "Jdenticon"}),
+    },
+    gravatar: {
+        code: "G",
+        description: $t({defaultMessage: "Gravatar"}),
+    },
+};
