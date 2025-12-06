@@ -31,7 +31,8 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
+from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -344,3 +345,55 @@ def validate_webhook_signature(
 
     if signed_payload != signature:
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def get_user_by_external_account_username(
+    realm: Realm, external_username: str, service: str
+) -> UserProfile | None:
+    """
+    Find a Zulip user by their external service username from custom profile fields.
+
+    Matches fields whose subtype contains the service name (case-insensitive).
+    Example: service="github" matches "github", "github_business", "GitHub_Personal".
+
+    Note: Returns None for multiple matches to prevent mention conflicts.
+    """
+    import orjson
+
+    service_fields = CustomProfileField.objects.filter(
+        realm=realm,
+        field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+    )
+
+    if not service_fields:
+        return None
+
+    matching_field_ids = []
+    service_name_lower = service.lower()
+
+    for field in service_fields:
+        field_data = orjson.loads(field.field_data)
+        subtype = field_data.get("subtype", "")
+
+        # Match if service_name appears anywhere in subtype (case-insensitive)
+        if service_name_lower in subtype.lower():
+            matching_field_ids.append(field.id)
+
+    if not matching_field_ids:
+        return None
+
+    users = list(
+        CustomProfileFieldValue.objects.filter(
+            field_id__in=matching_field_ids,
+            value__iexact=external_username,
+            user_profile__realm=realm,
+            user_profile__is_active=True,
+        )
+        .select_related("user_profile")
+        .only("user_profile__id", "user_profile__full_name")[:2]
+    )
+
+    if len(users) == 1:
+        return users[0].user_profile
+
+    return None
