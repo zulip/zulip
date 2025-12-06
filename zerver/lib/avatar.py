@@ -1,3 +1,5 @@
+import os
+import subprocess
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -105,6 +107,9 @@ def get_avatar_field(
     ):
         return None
 
+    if avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        return f"/avatar/{user_id}/medium" if medium else f"/avatar/{user_id}"
+
     """
     If we get this far, we'll compute an avatar URL that may be
     either user-uploaded or a gravatar, and then we'll add version
@@ -173,3 +178,10 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
 
 def get_avatar_for_inaccessible_user() -> str:
     return staticfiles_storage.url("images/unknown-user-avatar.png")
+
+
+def generate_avatar_jdenticon(input: str) -> bytes:
+    jdenticon_path = os.path.join(settings.DEPLOY_ROOT, "node_modules/jdenticon/bin/jdenticon.js")
+    command = ["node", jdenticon_path, input]
+    stdout = subprocess.check_output(command)
+    return stdout
