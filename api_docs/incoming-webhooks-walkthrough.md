@@ -304,7 +304,7 @@ Currently configured preset URL options:
   `ignore_private_repositories` boolean parameter will be added to the
   [generated integration URL](/help/generate-integration-url).
 
-- **`MAPPING`**: This preset is intended to be used for [chat-app
+- **`CHANNEL_MAPPING`**: This preset is intended to be used for [chat-app
   integrations](/integrations/category/communication) (like Slack), and adds a
   special option, **Matching Zulip channel**, to the UI for where to send
   Zulip notification messages. This special option maps the notification
