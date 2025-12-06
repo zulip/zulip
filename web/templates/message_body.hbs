@@ -38,7 +38,7 @@
 </a>
 
 {{#if (and (not msg/failed_request) msg/locally_echoed)}}
-    <span data-tooltip-template-id="slow-send-spinner-tooltip-template" class="fa fa-circle-o-notch slow-send-spinner{{#unless msg/show_slow_send_spinner }} hidden{{/unless}}"></span>
+    <span data-tooltip-template-id="slow-send-spinner-tooltip-template" class="zulip-icon zulip-icon-loader slow-send-spinner{{#unless msg/show_slow_send_spinner }} hidden{{/unless}}"></span>
 {{/if}}
 
 <div class="message_controls no-select">
