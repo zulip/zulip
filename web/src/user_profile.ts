@@ -36,6 +36,7 @@ import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
 import * as integration_url_modal from "./integration_url_modal.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
@@ -1468,6 +1469,82 @@ export function initialize(): void {
             hide_user_profile();
         },
     );
+
+    $("body").on("keydown", "#user-profile-modal .user-profile-channel-row", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        const $row = $(e.currentTarget);
+        const $button = $row.find(".remove-subscription-button");
+
+        if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            e.stopPropagation();
+            $row.trigger("focus");
+        } else if (e.key === "ArrowRight" && $button.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            $button.trigger("focus");
+        }
+    });
+
+    $("body").on("keydown", "#user-profile-modal .remove-subscription-button", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        if (keydown_util.is_enter_event(e)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $elt = $(e.currentTarget);
+            $elt.trigger("click");
+        } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            e.stopPropagation();
+            const $row = $(e.currentTarget).closest(".user-profile-channel-row");
+            $row.trigger("focus");
+        }
+    });
+
+    $("body").on("keydown", "#user-profile-modal .user-profile-group-row", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        const $row = $(e.currentTarget);
+        const $button = $row.find(".remove-member-button:not(:disabled)");
+
+        if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            e.stopPropagation();
+            $row.trigger("focus");
+        } else if (e.key === "ArrowRight" && $button.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            $button.trigger("focus");
+        }
+    });
+
+    $("body").on("keydown", "#user-profile-modal .remove-member-button", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        if (keydown_util.is_enter_event(e)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $elt = $(e.currentTarget);
+            $elt.trigger("click");
+        } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            e.stopPropagation();
+            const $row = $(e.currentTarget).closest(".user-profile-group-row");
+            $row.trigger("focus");
+        }
+    });
 
     bot_helper.initialize_bot_click_handlers();
 
