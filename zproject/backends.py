@@ -1820,6 +1820,11 @@ def sync_groups_for_prereg_user(
     group_memberships_sync_map: dict[str, bool],
     create_missing_groups: bool,
 ) -> None:
+    # Take a lock on the PreregistrationUser to prevent race conditions
+    # when multiple concurrent login requests try to update the same user's groups.
+    PreregistrationUser.objects.select_for_update().get(id=prereg_user.id)
+    prereg_user.refresh_from_db()
+
     assert prereg_user.realm is not None
     realm = prereg_user.realm
 
@@ -1867,6 +1872,7 @@ def sync_groups_for_prereg_user(
     )
 
 
+@transaction.atomic(savepoint=False)
 def sync_groups(
     all_group_names: set[str],
     intended_group_names: set[str],
@@ -1883,7 +1889,16 @@ def sync_groups(
 
     If create_missing_groups is enabled, if a user is meant to be added to a group
     which doesn't yet exist, we create it. Otherwise, such groups are ignored.
+
+    This function uses database locking to prevent race conditions when a user
+    logs in simultaneously from multiple windows/sessions.
     """
+    # Take a lock on the UserProfile to prevent race conditions when multiple
+    # concurrent login requests try to update the same user's groups.
+    # We take the lock immediately and then refresh to ensure we have consistent data.
+    UserProfile.objects.select_for_update().get(id=user_profile.id)
+    user_profile.refresh_from_db()
+
     for system_group_name in SystemGroups.GROUP_DISPLAY_NAME_MAP:
         # system groups are not allowed to be synced.
         assert system_group_name not in all_group_names
