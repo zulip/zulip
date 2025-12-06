@@ -33,6 +33,10 @@ export function section_ids(): string[] {
     return current_sections.map((section) => section.id);
 }
 
+export function get_current_sections(): StreamListSection[] {
+    return current_sections;
+}
+
 function current_section_ids_for_streams(): Map<number, StreamListSection> {
     const map = new Map<number, StreamListSection>();
     for (const section of current_sections) {
