@@ -400,16 +400,23 @@ function maybe_change_focused_emoji(
     if ($next_emoji) {
         current_section = next_section;
         current_index = next_index;
-        if (!preserve_scroll) {
-            $next_emoji.trigger("focus");
-        } else {
-            const start = scroll_util.get_scroll_element($emoji_map).scrollTop()!;
-            $next_emoji.trigger("focus");
-            if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
-                scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+
+        // Use setTimeout to ensure the browser has finished processing the
+        // preventDefault() event from the Tab key before we apply focus.
+        // This ensures the blue focus ring appears correctly.
+        setTimeout(() => {
+            if (!preserve_scroll) {
+                $next_emoji.trigger("focus");
+            } else {
+                const start = scroll_util.get_scroll_element($emoji_map).scrollTop()!;
+                $next_emoji.trigger("focus");
+                if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
+                    scroll_util.get_scroll_element($emoji_map).scrollTop(start);
+                }
             }
-        }
-        update_emoji_showcase($next_emoji);
+            update_emoji_showcase($next_emoji);
+        }, 0);
+
         return true;
     }
     return false;
@@ -543,8 +550,47 @@ export function navigate(event_name: string, e?: JQuery.KeyDownEvent): boolean {
 
     switch (event_name) {
         case "tab":
-        case "shift_tab":
-            return false;
+        case "shift_tab": {
+            // [FIX] Prevent default browser tab behavior so we can manage focus manually.
+            // If we don't do this, the browser tries to move focus immediately after
+            // we set it, causing the focus ring to vanish or move to the wrong element.
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // 1. Determine direction (1 for Tab, -1 for Shift+Tab)
+            const move_by = event_name === "tab" ? 1 : -1;
+
+            // 2. Calculate where we SHOULD go next
+            const next_coord = get_next_emoji_coordinates(move_by);
+
+            // 3. Try to move focus there
+            const moved = maybe_change_focused_emoji(
+                $emoji_map,
+                next_coord.section,
+                next_coord.index,
+            );
+
+            // 4. If moved is true, we are good. Return true to stop default Tab behavior.
+            if (moved) {
+                return true;
+            }
+
+            // 5. EDGE CASE: We reached the end (or start) and couldn't move.
+            // We need to loop!
+
+            if (event_name === "tab") {
+                // We were at the End -> Loop to Start (Section 0, Index 0)
+                // OR: You could focus the Search Input here if you prefer.
+                // For now, let's loop to the first emoji as you asked:
+                return maybe_change_focused_emoji($emoji_map, 0, 0);
+            }
+            // We were at the Start (Shift+Tab) -> Loop to the very End
+            const last_section = get_total_sections() - 1;
+            const last_index = get_max_index(last_section)! - 1;
+            return maybe_change_focused_emoji($emoji_map, last_section, last_index);
+        }
         case "page_up":
             maybe_change_active_section(current_section - 1);
             return true;
@@ -637,9 +683,27 @@ function register_popover_events($popover: JQuery): void {
         emoji_select_tab(scroll_util.get_scroll_element($emoji_map));
     });
 
+    // [FIX] Attach the listener directly to the $popover object.
+    // This ensures we catch the event before it bubbles up to the modal or document.
+    $popover.on("keydown", (e) => {
+        // If it's a Tab or Arrow key, send it to our navigate function
+        if (["Tab", "ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+            const key_name = e.key.toLowerCase().replace("arrow", "") + "_arrow";
+            const event_name = e.key === "Tab" ? "tab" : key_name;
+
+            if (e.shiftKey && event_name === "tab") {
+                navigate("shift_tab", e);
+            } else {
+                navigate(event_name, e);
+            }
+        }
+    });
+
     $("#emoji-popover-filter").on("input", filter_emojis);
     $("#emoji-popover-filter").on("keydown", process_enter_while_filtering);
-    $(".emoji-popover").on("keydown", process_keydown);
+    // We can leave this one or change it to $popover.on(...) for consistency,
+    // but the critical one is the navigation handler above.
+    $popover.on("keydown", process_keydown);
 }
 
 function get_default_emoji_popover_options(): Partial<tippy.Props> {
