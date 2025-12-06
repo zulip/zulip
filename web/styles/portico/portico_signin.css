@@ -1675,3 +1675,13 @@ button#register_auth_button_gitlab {
 #new-realm-creation #altcha-submit-button-container {
     margin-bottom: 30px;
 }
+
+#slack-import-dashboard .uppy-Dashboard-note {
+    font-size: 1rem;
+    font-weight: 450;
+    color: inherit;
+}
+
+.slack-import-file-upload-instruction {
+    margin-top: 1rem;
+}
