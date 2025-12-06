@@ -374,7 +374,12 @@ export class TopicListWidget {
 
 function filter_topics_left_sidebar(topic_names: string[]): string[] {
     const search_term = get_left_sidebar_topic_search_term();
+    const stream_id = active_stream_id();
+    if (stream_id === undefined) {
+        return topic_names;
+    }
     return topic_list_data.filter_topics_by_search_term(
+        stream_id,
         topic_names,
         search_term,
         get_typeahead_search_pills_syntax(),
@@ -574,14 +579,21 @@ export function setup_topic_search_typeahead(): void {
             const stream_id = active_stream_id();
             assert(stream_id !== undefined);
 
-            if (!stream_topic_history.stream_has_locally_available_resolved_topics(stream_id)) {
-                return [];
-            }
-            const $pills = $("#left-sidebar-filter-topic-input .pill");
-            if ($pills.length > 0) {
-                return [];
-            }
-            return [...topic_filter_pill.filter_options];
+            const pills = topic_filter_pill_widget!.items();
+            const current_syntaxes = new Set(pills.map((pill) => pill.syntax));
+            const query = $("#topic_filter_query").text().trim();
+            return topic_filter_pill.filter_options.filter((option) => {
+                if (current_syntaxes.has(option.syntax)) {
+                    return false;
+                }
+                if (
+                    option.match_prefix_required &&
+                    !query.startsWith(option.match_prefix_required)
+                ) {
+                    return false;
+                }
+                return true;
+            });
         },
         item_html(item: TopicFilterPill) {
             return typeahead_helper.render_topic_state(item.label);
