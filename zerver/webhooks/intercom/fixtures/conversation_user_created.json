@@ -1,79 +1,129 @@
 {
-    "type":"notification_event",
-    "app_id":"i6wc9ipe",
-    "data":{
-        "type":"notification_event_data",
-        "item":{
-            "type":"conversation",
-            "id":"21321941764",
-            "created_at":1553290198,
-            "updated_at":1553290198,
-            "user":{
-                "type":"lead",
-                "id":"5c9553cb27e377f24eed49f7",
-                "user_id":"75067020-1204-495c-8edc-abb7d88bdd43",
-                "name":"Rose Poodle from St. John's",
-                "email":"",
-                "do_not_track":null
+  "type": "notification_event",
+  "app_id": "i6wc9ipe",
+  "data": {
+    "type": "notification_event_data",
+    "item": {
+      "type": "conversation",
+      "id": "9",
+      "created_at": 1720078759,
+      "updated_at": 1720078760,
+      "waiting_since": 1720078760,
+      "snoozed_until": null,
+      "source": {
+        "type": "conversation",
+        "id": "2284389183",
+        "delivered_as": "customer_initiated",
+        "subject": "",
+        "body": "<p>Hello</p>",
+        "author": {
+          "type": "lead",
+          "id": "5c9553cb27e377f24eed49f7",
+          "name": null,
+          "email": ""
+        },
+        "attachments": [],
+        "url": "http://localhost:9991/api/",
+        "redacted": false
+      },
+      "contacts": {
+        "type": "contact.list",
+        "contacts": [
+          {
+            "type": "contact",
+            "id": "6685217a9eb78f4c894ee2b1",
+            "external_id": "20fa6c3e-98c7-4eba-b7b1-dde32dd2aa66"
+          }
+        ]
+      },
+      "first_contact_reply": {
+        "created_at": 1720078759,
+        "type": "conversation",
+        "url": "http://localhost:9991/api/"
+      },
+      "admin_assignee_id": null,
+      "team_assignee_id": null,
+      "open": true,
+      "state": "open",
+      "read": true,
+      "tags": {
+        "type": "tag.list",
+        "tags": []
+      },
+      "priority": "not_priority",
+      "sla_applied": null,
+      "statistics": {
+        "type": "conversation_statistics",
+        "time_to_assignment": null,
+        "time_to_admin_reply": null,
+        "time_to_first_close": null,
+        "time_to_last_close": null,
+        "median_time_to_reply": null,
+        "first_contact_reply_at": "2024-07-04T07:39:19.000Z",
+        "first_assignment_at": null,
+        "first_admin_reply_at": null,
+        "first_close_at": null,
+        "last_assignment_at": null,
+        "last_assignment_admin_reply_at": null,
+        "last_contact_reply_at": "2024-07-04T07:39:19.000Z",
+        "last_admin_reply_at": null,
+        "last_close_at": null,
+        "last_closed_by_id": null,
+        "count_reopens": 0,
+        "count_assignments": 0,
+        "count_conversation_parts": 2
+      },
+      "conversation_rating": null,
+      "teammates": {
+        "type": "admin.list",
+        "admins": []
+      },
+      "title": "",
+      "custom_attributes": {},
+      "topics": {},
+      "ticket": null,
+      "linked_objects": {
+        "type": "list",
+        "data": [],
+        "total_count": 0,
+        "has_more": false
+      },
+      "ai_agent": null,
+      "ai_agent_participated": false,
+      "conversation_parts": {
+        "type": "conversation_part.list",
+        "conversation_parts": [
+          {
+            "type": "conversation_part",
+            "id": "21039394782",
+            "part_type": "language_detection_details",
+            "body": null,
+            "created_at": 1720078760,
+            "updated_at": 1720078760,
+            "notified_at": 1720078760,
+            "assigned_to": null,
+            "author": {
+              "id": "5475638",
+              "type": "bot",
+              "name": "Operator",
+              "email": "operator+unwn85bi@intercom.io"
             },
-            "assignee":{
-                "type":"nobody_admin",
-                "id":null
-            },
-            "conversation_message":{
-                "type":"conversation_message",
-                "id":"331494375",
-                "url":"http://localhost:9991/api/",
-                "subject":"",
-                "body":"<p>Hello everyone!</p>",
-                "author":{
-                    "type":"user",
-                    "id":"5c9553cb27e377f24eed49f7"
-                },
-                "attachments":[
-
-                ]
-            },
-            "conversation_parts":{
-                "type":"conversation_part.list",
-                "conversation_parts":[
-
-                ],
-                "total_count":0
-            },
-            "open":true,
-            "state":"open",
-            "snoozed_until":null,
-            "read":true,
-            "metadata":{
-
-            },
-            "tags":{
-                "type":"tag.list",
-                "tags":[
-
-                ]
-            },
-            "tags_added":{
-                "type":"tag.list",
-                "tags":[
-
-                ]
-            },
-            "links":{
-                "conversation_web":"https://app.intercom.io/a/apps/i6wc9ipe/conversations/21321941764"
-            }
-        }
-    },
-    "links":{
-
-    },
-    "id":"notif_3ac27816-d27c-45fd-a65a-bbaf021cf780",
-    "topic":"conversation.user.created",
-    "delivery_status":"pending",
-    "delivery_attempts":1,
-    "delivered_at":0,
-    "first_sent_at":1553290198,
-    "created_at":1553290198,
-    "self":null
+            "attachments": [],
+            "external_id": null,
+            "redacted": false
+          }
+        ],
+        "total_count": 1
+      }
+    }
+  },
+  "links": {},
+  "id": "notif_3ac27816-d27c-45fd-a65a-bbaf021cf780",
+  "topic": "conversation.user.created",
+  "delivery_status": "pending",
+  "delivery_attempts": 1,
+  "delivered_at": 0,
+  "first_sent_at": 1720078762,
+  "created_at": 1720078761,
+  "self": null
 }
