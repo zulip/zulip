@@ -76,7 +76,12 @@ test("filter_topics_by_search_term with resolved topics_state", () => {
 
     // Filter for unresolved topics.
     topics_state = "-is:resolved";
-    result = topic_list_data.filter_topics_by_search_term(general.stream_id, topic_names, search_term, topics_state);
+    result = topic_list_data.filter_topics_by_search_term(
+        general.stream_id,
+        topic_names,
+        search_term,
+        topics_state,
+    );
 
     assert.deepEqual(result, ["topic 1", "topic 2"]);
 });
