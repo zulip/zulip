@@ -450,11 +450,12 @@ function read_external_account_field_data(
 
     // Create new external account field - form uses dropdown widget
     if (old_field_data === undefined) {
+        const widget = get_widget_for_dropdown_list_settings("external_accounts_type");
+        assert(widget !== null);
+        const value = widget.value();
+        assert(typeof value === "string");
         field_data = {
-            subtype: $profile_field_form
-                .find("#external_accounts_type_widget .dropdown_widget_value")
-                .text()
-                .toLowerCase(),
+            subtype: value,
         };
     } // Edit existing external account field - form uses select widget
     else {
@@ -520,6 +521,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
+    ["external_accounts_type", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
