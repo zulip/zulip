@@ -23,6 +23,11 @@ export const filter_options: TopicFilterPill[] = [
         label: $t({defaultMessage: "resolved"}),
         syntax: "is:resolved",
     },
+    {
+        type: "topic_filter",
+        label: $t({defaultMessage: "followed"}),
+        syntax: "is:followed",
+    },
 ];
 
 export function create_item_from_syntax(
@@ -32,6 +37,13 @@ export function create_item_from_syntax(
     const existing_syntaxes = current_items.map((item) => item.syntax);
     if (existing_syntaxes.includes(syntax)) {
         return undefined;
+    }
+    if (syntax === "-is:followed") {
+        return {
+            type: "topic_filter",
+            label: $t({defaultMessage: "unfollowed"}),
+            syntax: "-is:followed",
+        };
     }
 
     // Find the matching filter option

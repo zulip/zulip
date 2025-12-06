@@ -156,6 +156,7 @@ type TopicListInfo = {
 };
 
 export function filter_topics_by_search_term(
+    stream_id: number,
     topic_names: string[],
     search_term: string,
     topics_state = "",
@@ -177,6 +178,10 @@ export function filter_topics_by_search_term(
         topic_names = topic_names.filter((name) => resolved_topic.is_resolved(name));
     } else if (topics_state === "-is:resolved") {
         topic_names = topic_names.filter((name) => !resolved_topic.is_resolved(name));
+    } else if (topics_state === "is:followed") {
+        topic_names = topic_names.filter((name) => user_topics.is_topic_followed(stream_id, name));
+    } else if (topics_state === "-is:followed") {
+        topic_names = topic_names.filter((name) => !user_topics.is_topic_followed(stream_id, name));
     }
 
     return topic_names;
