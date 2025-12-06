@@ -89,30 +89,20 @@ export function zoom_out(): void {
     if (pending_stream_list_rerender) {
         update_streams_sidebar(true);
     }
-    const $stream_li = topic_list.get_stream_li();
-
     popovers.hide_all();
     topic_list.zoom_out();
     zoom_out_topics();
-
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
+    scroll_stream_into_view();
 
     zoomed_in = false;
 }
 
 export function clear_topics(): void {
-    const $stream_li = topic_list.get_stream_li();
-
     topic_list.close();
 
     if (zoomed_in) {
         zoom_out_topics();
-
-        if ($stream_li) {
-            scroll_stream_into_view($stream_li);
-        }
+        scroll_stream_into_view();
     }
 
     zoomed_in = false;
@@ -573,7 +563,7 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
     }
 
     const $li = row.get_li();
-    if (!$li) {
+    if ($li.length === 0) {
         blueslip.error("Cannot find li", {stream_id});
         return undefined;
     }
@@ -1010,16 +1000,15 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
         maybe_hide_topic_bracket(section_id);
     }
 
-    // Only scroll pinned topics into view.  If we're unpinning
+    // Only scroll pinned topics into view. If we're unpinning
     // a topic, we may be literally trying to get it out of
     // our sight.
     if (sub.pin_to_top) {
-        const $stream_li = get_stream_li(sub.stream_id);
-        if (!$stream_li) {
+        if (!stream_sidebar.get_row(sub.stream_id)) {
             blueslip.error("passed in bad stream id", {stream_id: sub.stream_id});
             return;
         }
-        scroll_stream_into_view($stream_li);
+        scroll_stream_into_view();
     }
 }
 
@@ -1123,20 +1112,15 @@ export function handle_narrow_activated(
     show_more_topics: boolean,
 ): void {
     const $stream_li = update_stream_sidebar_for_narrow(filter);
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-        if (!change_hash) {
-            if (!is_zoomed_in() && show_more_topics) {
-                zoom_in();
-            } else if (is_zoomed_in() && !show_more_topics) {
-                zoom_out();
-            }
+    if ($stream_li && !change_hash) {
+        if (!is_zoomed_in() && show_more_topics) {
+            zoom_in();
+        } else if (is_zoomed_in() && !show_more_topics) {
+            zoom_out();
         }
     }
 
-    if (is_zoomed_in()) {
-        topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
-    }
+    scroll_stream_into_view();
 }
 
 export function handle_message_view_deactivated(): void {
@@ -1468,23 +1452,35 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-export let scroll_stream_into_view = function ($stream_li: JQuery): void {
+export let scroll_stream_into_view = function ($stream_li: JQuery | undefined = undefined): void {
+    if ($stream_li === undefined) {
+        if (narrow_state.filter()?.terms_with_operator("topic").length === 1) {
+            topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
+            return;
+        }
+
+        $stream_li = get_current_stream_li();
+        if ($stream_li === undefined) {
+            return;
+        }
+    }
+
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_filter_height = $("#left-sidebar-search").outerHeight()!;
-    const header_height = $stream_li
-        .closest(".stream-list-section-container")
-        .children(".stream-list-subsection-header")
-        .outerHeight()!;
-    scroll_util.scroll_element_into_container(
-        $stream_li,
-        $container,
-        stream_filter_height + header_height,
-    );
+
+    // Get the element with the channel name which we want to
+    // be visible.
+    const $stream_header = $stream_li.find(".subscription_block");
+    const header_height =
+        $stream_li
+            .closest(".stream-list-section-container")
+            .children(".stream-list-subsection-header")
+            .outerHeight()! + 2; // + 2px for top border
+    scroll_util.scroll_element_into_container($stream_header, $container, header_height);
     // Note: If the stream is in a collapsed folder, we don't uncollapse
     // the folder. We do uncollapse when the user clicks on the channel,
     // but that's handled elsewhere.
@@ -1500,10 +1496,7 @@ export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean
         return;
     }
 
-    const $stream_li = get_current_stream_li();
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
+    scroll_stream_into_view();
 }
 
 export function get_current_stream_li(): JQuery | undefined {
