@@ -92,6 +92,10 @@ function setup_external_accounts_dropdown_widget(): void {
         },
     });
     external_accounts_dropdown_widget.setup();
+    settings_components.set_dropdown_setting_widget(
+        "external_accounts_type",
+        external_accounts_dropdown_widget,
+    );
 }
 
 function display_success_status(): void {

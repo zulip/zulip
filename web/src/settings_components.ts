@@ -518,6 +518,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
     ["channel_privacy", null],
+    ["external_accounts_type", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
