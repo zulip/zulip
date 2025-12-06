@@ -169,3 +169,4 @@
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
