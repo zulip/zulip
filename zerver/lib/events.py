@@ -29,7 +29,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
-    WEBHOOK_INTEGRATIONS,
+    INCOMING_WEBHOOK_INTEGRATIONS,
     get_all_event_types_for_integration,
 )
 from zerver.lib.message import (
@@ -772,7 +772,7 @@ def fetch_initial_state_data(
                 if integration.url_options
                 else [],
             }
-            for integration in WEBHOOK_INTEGRATIONS
+            for integration in INCOMING_WEBHOOK_INTEGRATIONS
             if integration.legacy is False
         ]
 

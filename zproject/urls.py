@@ -15,7 +15,7 @@ from django.utils.module_loading import import_string
 from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
 from zerver.tornado.views import (
@@ -837,7 +837,7 @@ urls += [
 # Incoming webhook URLs
 # We don't create URLs for particular Git integrations here
 # because of generic one below
-urls.extend(incoming_webhook.url_object for incoming_webhook in WEBHOOK_INTEGRATIONS)
+urls.extend(incoming_webhook.url_object for incoming_webhook in INCOMING_WEBHOOK_INTEGRATIONS)
 
 # Desktop-specific authentication URLs
 urls += [

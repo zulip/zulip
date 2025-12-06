@@ -124,10 +124,10 @@ def check_valid_bot_config(
     bot_type: int, service_name: str, config_data: Mapping[str, str]
 ) -> None:
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
-        from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+        from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 
         config_options = None
-        for integration in WEBHOOK_INTEGRATIONS:
+        for integration in INCOMING_WEBHOOK_INTEGRATIONS:
             if integration.name == service_name:
                 # key: validator
                 config_options = {

@@ -25,9 +25,9 @@ from zerver.lib.integrations import (
     INTEGRATIONS,
     META_CATEGORY,
     HubotIntegration,
+    IncomingWebhookIntegration,
     Integration,
     PythonAPIIntegration,
-    WebhookIntegration,
     get_all_event_types_for_integration,
 )
 from zerver.lib.subdomains import get_subdomain
@@ -364,7 +364,7 @@ def build_integration_doc_html(integration: Integration, request: HttpRequest) -
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name
-    if isinstance(integration, WebhookIntegration):
+    if isinstance(integration, IncomingWebhookIntegration):
         assert integration.url.startswith("api/")
         context["integration_url"] = integration.url.removeprefix("api")
         all_event_types = get_all_event_types_for_integration(integration)

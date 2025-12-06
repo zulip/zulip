@@ -5,19 +5,19 @@ from zerver.lib.integrations import (
     EMBEDDED_BOTS,
     EMBEDDED_INTEGRATIONS,
     HUBOT_INTEGRATIONS,
+    INCOMING_WEBHOOK_INTEGRATIONS,
     INTEGRATIONS,
     NO_SCREENSHOT_CONFIG,
     PLUGIN_INTEGRATIONS,
     PYTHON_API_INTEGRATIONS,
     STANDALONE_REPO_INTEGRATIONS,
     VIDEO_CALL_INTEGRATIONS,
-    WEBHOOK_INTEGRATIONS,
     ZAPIER_INTEGRATIONS,
     BotIntegration,
     HubotIntegration,
+    IncomingWebhookIntegration,
     Integration,
     PythonAPIIntegration,
-    WebhookIntegration,
     WebhookScreenshotConfig,
     get_fixture_path,
     get_image_path,
@@ -35,7 +35,7 @@ class IntegrationsTestCase(ZulipTestCase):
 
     def test_get_fixture_and_image_paths(self) -> None:
         integration = INTEGRATIONS["airbrake"]
-        assert isinstance(integration, WebhookIntegration)
+        assert isinstance(integration, IncomingWebhookIntegration)
         screenshot_config = WebhookScreenshotConfig("error_message.json", "002.png", "ci")
         fixture_path = get_fixture_path(integration, screenshot_config)
         image_path = get_image_path(integration, screenshot_config)
@@ -125,7 +125,7 @@ class IntegrationsTestCase(ZulipTestCase):
             if integration.screenshot_configs is None:
                 continue
             for screenshot_config in integration.screenshot_configs:
-                if isinstance(integration, WebhookIntegration):
+                if isinstance(integration, IncomingWebhookIntegration):
                     assert isinstance(screenshot_config, WebhookScreenshotConfig)
                     if screenshot_config.fixture_name == "":
                         # Skip screenshot configs of webhooks with a placeholder fixture_name
@@ -150,12 +150,12 @@ class IntegrationsTestCase(ZulipTestCase):
         integration_lists: dict[
             str,
             list[Integration]
-            | list[WebhookIntegration]
+            | list[IncomingWebhookIntegration]
             | list[BotIntegration]
             | list[HubotIntegration]
             | list[PythonAPIIntegration],
         ] = {
-            "WEBHOOK_INTEGRATIONS": WEBHOOK_INTEGRATIONS,
+            "INCOMING_WEBHOOK_INTEGRATIONS": INCOMING_WEBHOOK_INTEGRATIONS,
             "PYTHON_API_INTEGRATIONS": PYTHON_API_INTEGRATIONS,
             "BOT_INTEGRATIONS": BOT_INTEGRATIONS,
             "HUBOT_INTEGRATIONS": HUBOT_INTEGRATIONS,
