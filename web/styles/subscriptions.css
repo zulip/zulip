@@ -1333,7 +1333,8 @@ div.settings-radio-input-parent {
     }
 }
 
-#subscription_overlay .default-stream {
+#subscription_overlay .default-stream,
+#subscription_overlay .history-public-to-subscribers {
     width: fit-content;
 
     .inline {
@@ -1360,6 +1361,14 @@ div.settings-radio-input-parent {
 .advanced-configurations-container .pill-container,
 .channel-permissions .pill-container {
     margin-bottom: 10px;
+}
+
+.channel-permissions,
+.new-stream-configuration {
+    .history-public-to-subscribers,
+    .dropdown_widget_with_label_wrapper {
+        margin-bottom: 1.25em;
+    }
 }
 
 .group-permissions .dropdown_widget_with_label_wrapper {

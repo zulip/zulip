@@ -952,10 +952,7 @@ export function get_stream_privacy_policy(stream_id: number): string {
     if (!sub.invite_only) {
         return settings_config.stream_privacy_policy_values.public.code;
     }
-    if (sub.invite_only && !sub.history_public_to_subscribers) {
-        return settings_config.stream_privacy_policy_values.private.code;
-    }
-    return settings_config.stream_privacy_policy_values.private_with_public_history.code;
+    return settings_config.stream_privacy_policy_values.private.code;
 }
 
 export function is_stream_archived_by_id(stream_id: number): boolean {

@@ -1312,30 +1312,21 @@ export const stream_privacy_policy_values = {
         code: "web-public",
         name: $t({defaultMessage: "Web-public"}),
         description: $t({
-            defaultMessage:
-                "Anyone on the internet can view messages; members of your organization can join.",
+            defaultMessage: "Anyone on the internet can view",
         }),
     },
     public: {
         code: "public",
         name: $t({defaultMessage: "Public"}),
         description: $t({
-            defaultMessage: "Members of your organization can view messages and join",
-        }),
-    },
-    private_with_public_history: {
-        code: "invite-only-public-history",
-        name: $t({defaultMessage: "Private, shared history"}),
-        description: $t({
-            defaultMessage: "Joining and viewing messages requires being invited",
+            defaultMessage: "Everyone except guests can view and join",
         }),
     },
     private: {
         code: "invite-only",
-        name: $t({defaultMessage: "Private, protected history"}),
+        name: $t({defaultMessage: "Private"}),
         description: $t({
-            defaultMessage:
-                "Joining and viewing messages requires being invited; users can only view messages sent while they were subscribed",
+            defaultMessage: "Requires permission to view and join",
         }),
     },
 };
