@@ -16,9 +16,9 @@ def generate_camo_url(url: str) -> str:
 # caching https image proxy
 def get_camo_url(url: str) -> str:
     # Only encode the URL if Camo is enabled
-    if settings.CAMO_URI == "":
+    if settings.CAMO_URL == "":
         return url
-    return f"{settings.CAMO_URI}{generate_camo_url(url)}"
+    return f"{settings.CAMO_URL}{generate_camo_url(url)}"
 
 
 def is_camo_url_valid(digest: str, url: str) -> bool:
