@@ -10,6 +10,7 @@ const default_params_schema = z.object({
     development_environment: z.boolean(),
     google_analytics_id: z.optional(z.string()),
     request_language: z.string(),
+    realm_default_emojiset: z.string(),
 });
 
 // These parameters are sent in #page-params for both users and spectators.
