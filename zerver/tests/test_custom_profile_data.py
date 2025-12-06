@@ -382,6 +382,31 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_delete("/json/realm/profile_fields/1")
         self.assert_json_error(result, "Must be an organization administrator")
 
+    def test_create_field_use_for_user_matching(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        data = {
+            "name": "Department",
+            "field_type": CustomProfileField.SHORT_TEXT,
+            "use_for_user_matching": "true",
+        }
+
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        field = CustomProfileField.objects.get(name="Department", realm=realm)
+        self.assertTrue(field.use_for_user_matching)
+
+        # Test false explicitly
+        data["name"] = "Team"
+        data["use_for_user_matching"] = "false"
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        field = CustomProfileField.objects.get(name="Team", realm=realm)
+        self.assertFalse(field.use_for_user_matching)
+
 
 class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_delete(self) -> None:
@@ -693,6 +718,32 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(
             result, "Only 2 custom profile fields can be displayed in the profile summary."
         )
+
+    def test_update_use_for_user_matching(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        self.assertFalse(field.use_for_user_matching)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "use_for_user_matching": "true",
+            },
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertTrue(field.use_for_user_matching)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "use_for_user_matching": "false",
+            },
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertFalse(field.use_for_user_matching)
 
     def test_update_field_data(self) -> None:
         self.login("iago")

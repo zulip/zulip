@@ -944,6 +944,31 @@ test("render_person when emails hidden", ({mock_template, override}) => {
     assert.ok(rendered);
 });
 
+test("render_person prefers matching custom profile fields", ({mock_template, override}) => {
+    a_user.profile_data ??= {};
+    a_user.delivery_email = "a_user_delivery@zulip.org";
+
+    override(realm, "custom_profile_field_types", {
+        PRONOUNS: {id: 8, name: "Pronouns"},
+    });
+    override(realm, "custom_profile_fields", [
+        {id: 42, name: "Nickname", type: 1, use_for_user_matching: true},
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {id: 42, value: "Alias"});
+
+    let rendered = false;
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.primary, a_user.full_name);
+        assert.equal(args.secondary, "Alias");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "Alias"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
 test("render_person", ({mock_template, override}) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
@@ -1663,4 +1688,22 @@ test("compare_stream_or_group_members_options", () => {
         th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item, undefined, false),
         0,
     );
+});
+
+test("query_matches_person checks custom profile fields used in mentions", ({override}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_fields", [
+        {id: 51, name: "Nickname", type: 1, use_for_user_matching: true},
+        {id: 52, name: "Tagline", type: 7, use_for_user_matching: true},
+        {id: 53, name: "Ignored", type: 3, use_for_user_matching: true},
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {id: 51, value: "Alpha"});
+    people.set_custom_profile_field_data(a_user.user_id, {id: 52, value: "Beta phrase"});
+    people.set_custom_profile_field_data(a_user.user_id, {id: 53, value: "Gamma"});
+
+    assert.equal(th.query_matches_person("alpha", a_user_item), true);
+    assert.equal(th.query_matches_person("beta phrase", a_user_item), true);
+    assert.equal(th.query_matches_person("gamma", a_user_item), false);
 });
