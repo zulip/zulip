@@ -23,6 +23,13 @@
                 <span class="rendered-checkbox"></span>
             </label>
         </span>
+        {{else if is_long_text_field}}
+        <span class="profile_field_display_on_user_card">
+            <label class="checkbox" for="profile_field_display_on_user_card_{{id}}">
+                <input class="display_on_user_card" type="checkbox" id="profile_field_display_on_user_card_{{id}}" {{#if display_on_user_card}} checked="checked" {{/if}} data-profile-field-id="{{id}}"/>
+                <span class="rendered-checkbox"></span>
+            </label>
+        </span>
         {{/if}}
     </td>
     <td class="required-cell">
