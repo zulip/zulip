@@ -702,9 +702,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # LOGGING_SHOW_PID = False
 
 #################
-## Animated GIF integration powered by GIPHY.  See:
+## GIF picker / search engine integrations. To get an API key, see:
 ## https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
 # GIPHY_API_KEY = "<Your API key from GIPHY>"
+# TENOR_API_KEY = "<Your API key from Tenor>"
 
 ################
 ## Video call integrations.
