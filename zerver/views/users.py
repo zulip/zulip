@@ -24,6 +24,7 @@ from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_update_user_custom_profile_data_if_changed,
 )
+from zerver.actions.message_delete import DeactivateUserActions
 from zerver.actions.user_settings import (
     check_change_bot_full_name,
     check_change_full_name,
@@ -129,6 +130,8 @@ def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    is_spammer: Json[bool] = False,
+    actions: Json[DeactivateUserActions] | None = None,
     deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
     | None = None,
     user_id: PathOnly[int],
@@ -140,10 +143,22 @@ def deactivate_user_backend(
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
         deactivation_notification_comment = deactivation_notification_comment.strip()
+    if (
+        actions is not None
+        and (
+            actions.delete_public_stream_messages
+            or actions.delete_private_stream_messages
+            or actions.delete_direct_messages
+        )
+        and not user_profile.has_permission("can_delete_any_message_group")
+    ):
+        raise JsonableError(_("User is not allowed to delete other user's messages."))
     return _deactivate_user_profile_backend(
         request,
         user_profile,
         target,
+        is_spammer=is_spammer,
+        deactivate_user_actions=actions,
         deactivation_notification_comment=deactivation_notification_comment,
     )
 
@@ -172,9 +187,16 @@ def _deactivate_user_profile_backend(
     user_profile: UserProfile,
     target: UserProfile,
     *,
+    is_spammer: Json[bool] = False,
+    deactivate_user_actions: Json[DeactivateUserActions] | None = None,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    do_deactivate_user(
+        target,
+        acting_user=user_profile,
+        is_spammer=is_spammer,
+        deactivate_user_actions=deactivate_user_actions,
+    )
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.
