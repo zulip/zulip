@@ -2485,7 +2485,7 @@ class WebhookTestCase(ZulipTestCase):
             if all_event_types is None:
                 return  # nocoverage
 
-            def side_effect(*args: Any, **kwargs: Any) -> None:
+            def side_effect(*args: Any, **kwargs: Any) -> int | None:
                 complete_event_type = (
                     kwargs.get("complete_event_type")
                     if len(args) < 5
@@ -2505,7 +2505,7 @@ self-documenting the supported event types for this integration.
 You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
 """.strip()
                     )
-                check_send_webhook_message(*args, **kwargs)
+                return check_send_webhook_message(*args, **kwargs)
 
             self.patch = mock.patch(
                 f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.check_send_webhook_message",
