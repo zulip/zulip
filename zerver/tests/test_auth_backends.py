@@ -80,6 +80,7 @@ from zerver.lib.test_helpers import (
     HostRequestMock,
     create_s3_buckets,
     load_subdomain_token,
+    most_recent_message,
     ratelimit_rule,
     read_test_image_file,
     use_s3_backend,
@@ -7785,6 +7786,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.perform_ldap_sync(self.example_user("hamlet"))
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.full_name, "New Name")
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        self.assertIn("**Old full name:** King Hamlet", message.content)
+        self.assertIn("**New full name:** New Name", message.content)
 
     def test_update_with_hidden_emails(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -7963,7 +7968,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             mock.patch("zerver.actions.user_settings.do_change_full_name") as f,
         ):
             self.perform_ldap_sync(hamlet2)
-            f.assert_called_once_with(*expected_call_args)
+            f.assert_called_once_with(*expected_call_args, notify=True)
 
             # Get the updated model and make sure the full name is changed correctly:
             hamlet2 = get_user_by_delivery_email(email, test_realm)
@@ -8094,6 +8099,15 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 user_profile=hamlet, field=field
             ).value
             self.assertEqual(field_value, test_case["expected_value"])
+        # Verify that notification was sent for custom profile field updates
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        # Check that both fields are mentioned in the notification
+        for data in test_data:
+            self.assertIn(f"**Old {data['field_name']}:**", message.content)
+            self.assertIn(
+                f"**New {data['field_name']}:** {data['expected_value']}", message.content
+            )
 
     def test_update_non_existent_profile_field(self) -> None:
         with (

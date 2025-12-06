@@ -7173,7 +7173,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         hamlet_recipient = self.example_user("hamlet").recipient
         message_to_hamlet = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
-        ).first()
+        ).last()
         assert message_to_hamlet is not None
         self.assertEqual(message_to_hamlet.content, expected_message)
         self.assertEqual(message_to_hamlet.recipient.type, Recipient.PERSONAL)

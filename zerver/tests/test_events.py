@@ -1798,6 +1798,16 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
+        # Test event for updating custom profile data.
+        updated_field: ProfileDataElementUpdateDict = {
+            "id": field_id,
+            "value": [self.example_user("othello").id],
+        }
+        with self.verify_action() as events:
+            do_update_user_custom_profile_data_if_changed(self.user_profile, [updated_field])
+        check_realm_user_update("events[0]", events[0], "custom_profile_field")
+        self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
+
         # Test event for removing custom profile data
         with self.verify_action() as events:
             check_remove_custom_profile_field_value(
@@ -1806,12 +1816,12 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
-        # Test event for updating custom profile data for guests.
+        # Test event for adding custom profile data for guests.
         self.set_up_db_for_testing_user_access()
         self.user_profile = self.example_user("polonius")
         field = {
             "id": field_id,
-            "value": "New value",
+            "value": [self.example_user("iago").id],
         }
         cordelia = self.example_user("cordelia")
         with self.verify_action(num_events=0, state_change_expected=False) as events:
