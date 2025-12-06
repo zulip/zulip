@@ -667,7 +667,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # us, pre-thumbnailing.
     avatar_hash = models.CharField(null=True, max_length=64)
 
-    zoom_token = models.JSONField(default=None, null=True)
+    # A place to store bearer tokens for accessing video call providers and other third-parties on behalf of the user.
+
+    # TODO: This currently has no indexes, so does not support searching for a user given their token
+    third_party_api_state = models.JSONField(default=dict, db_default={})
 
     objects = UserManager()
 
