@@ -347,6 +347,17 @@ function show_modal(): void {
     show_modal_with_cropped_file();
 }
 
+export function add_custom_emoji_post_render(): void {
+    const get_file_input = (): JQuery<HTMLInputElement> => $("#emoji_file_input");
+    upload_widget.build_widget(
+        get_file_input,
+        $("#emoji-file-name"),
+        $("#emoji_file_input_error"),
+        $("#emoji_image_clear_button"),
+        $("#emoji_upload_button"),
+    );
+}
+
 export function set_up(): void {
     meta.loaded = true;
 
