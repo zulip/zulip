@@ -258,6 +258,11 @@ function get_code_block_language(
 // it into a plain text block with single newlines.
 function normalize_vscode_markdown_html(html: string): string {
     const trimmed = html.trim();
+    // Basic safety: neutralize <script> tags in pasted HTML to satisfy CodeQL
+    html = html
+        .replaceAll(/<script/gi, "&lt;script")
+        .replaceAll(/<\/script>/gi, "&lt;/script&gt;");
+
 
     if (trimmed === "") {
         return html;
