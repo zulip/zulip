@@ -263,49 +263,35 @@ function normalize_vscode_markdown_html(html: string): string {
         return html;
     }
 
-    // If there are clearly other rich elements (paragraphs, lists, tables),
-    // don't touch it — we only want to special-case simple code-like blocks.
+    // If there are other rich HTML elements, don't normalize
     if (/(<p|<ul|<ol|<table|<img|<h[1-6]|<pre|<code)\b/i.test(trimmed)) {
         return html;
     }
 
-    // Check if the whole HTML is just a series of <div>...</div> elements.
-    // We allow attributes on <div>, and arbitrary inner content, but no text
-    // outside of <div> tags.
-    const divOnlyPattern = /^(?:\s*<div[^>]*>[\s\S]*?<\/div>\s*)+$/i;
+    // Safe detection of multiple <div> lines, without greedy backtracking
+    const divOnlyPattern = /^(\s*<div(?:\s+[^>]*)?>[\s\S]*?<\/div>\s*)+$/i;
     if (!divOnlyPattern.test(trimmed)) {
         return html;
     }
 
-    const lineRegex = /<div[^>]*>([\s\S]*?)<\/div>/gi;
+    const lineRegex = /<div(?:\s+[^>]*)?>([\s\S]*?)<\/div>/gi;
     const lines: string[] = [];
     let match: RegExpExecArray | null;
 
     while ((match = lineRegex.exec(trimmed)) !== null) {
-        let inner = match[1];
+        let inner = match[1] ?? "";
 
-        // Treat <br> as newlines inside a line
-        inner = inner.replace(/<br\s*\/?>/gi, "\n");
-
-        // Strip remaining HTML tags (e.g. <span style="color: ...">)
-        inner = inner.replace(/<[^>]+>/g, "");
-
-        // Decode a few basic entities commonly used in VS Code HTML
+        inner = inner.replaceAll(/<br\s*\/?>/gi, "\n");
+        inner = inner.replaceAll(/<[^>]+>/g, "");
         inner = inner
-            .replace(/&nbsp;/gi, " ")
-            .replace(/&lt;/gi, "<")
-            .replace(/&gt;/gi, ">")
-            .replace(/&amp;/gi, "&");
+            .replaceAll(/&nbsp;/gi, " ")
+            .replaceAll(/&lt;/gi, "<")
+            .replaceAll(/&gt;/gi, ">")
+            .replaceAll(/&amp;/gi, "&");
 
-        // Trim trailing whitespace/newlines per line
-        lines.push(inner.replace(/\s+$/g, ""));
+        lines.push(inner.trimEnd());
     }
 
-    if (lines.length === 0) {
-        return html;
-    }
-
-    // Join with single newlines to match “a\nb\nc”, not “a\n\nb\n\nc”.
     return lines.join("\n");
 }
 
