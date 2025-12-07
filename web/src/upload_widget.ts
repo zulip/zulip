@@ -178,9 +178,9 @@ function set_up_uppy_widget(): void {
     });
 }
 
-function open_uppy_editor(
+export function open_uppy_editor(
     file: File,
-    property_name: "realm_icon" | "realm_logo" | "user_avatar",
+    property_name: "realm_icon" | "realm_logo" | "user_avatar" | "custom_emoji",
     $file_input: JQuery<HTMLInputElement>,
     $upload_button: JQuery,
     upload_function: UploadFunction,
@@ -195,7 +195,8 @@ function open_uppy_editor(
             assert(uppy_widget !== undefined);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
         },
-        post_render() {
+        post_render() {},
+        on_shown() {
             set_up_uppy_widget();
             assert(uppy_widget !== undefined);
 

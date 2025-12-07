@@ -23,6 +23,8 @@ import * as ui_report from "./ui_report.ts";
 import * as upload_widget from "./upload_widget.ts";
 import * as util from "./util.ts";
 
+let cropped_emoji_file: File | null = null;
+
 const meta = {
     loaded: false,
 };
@@ -155,9 +157,15 @@ export function add_custom_emoji_post_render(): void {
     $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
 
     $("#add-custom-emoji-form").on("input", "input", () => {
+        const name_is_empty = $("#emoji_name").val() === "";
+        const file_is_empty = $("#emoji_file_input").val() === "";
+        
+        const has_cropped_file = cropped_emoji_file !== null;
+        const missing_file = file_is_empty && !has_cropped_file;
+
         $("#add-custom-emoji-modal .dialog_submit_button").prop(
             "disabled",
-            $("#emoji_name").val() === "" || $("#emoji_file_input").val() === "",
+            name_is_empty || missing_file,
         );
     });
 
@@ -185,13 +193,48 @@ export function add_custom_emoji_post_render(): void {
         $preview_image,
     );
 
-    get_file_input().on("input", () => {
-        $placeholder_icon.hide();
-        $preview_image.show();
+    get_file_input().on("input", function () {
+        const input = this as HTMLInputElement;
+        const file = input.files?.[0];
+
+        if (file) {
+            const saved_emoji_name = $("#emoji_name").val();
+
+            upload_widget.open_uppy_editor(
+                file,
+                "custom_emoji",
+                get_file_input(),
+                $("#emoji_upload_button"),
+                (cropped_file: any) => {
+                    dialog_widget.hide_dialog_spinner();
+                    $("#uppy-editor").find(".dialog_exit_button").trigger("click");
+
+                    show_modal();
+
+                    setTimeout(() => {
+                        $("#emoji_name").val(saved_emoji_name as string);
+                        
+                        cropped_emoji_file = cropped_file;
+
+                        const $new_preview = $("#emoji_preview_image");
+                        const $new_placeholder = $("#emoji_placeholder_icon");
+                        const $new_submit = $("#add-custom-emoji-modal .dialog_submit_button");
+
+                        const object_url = URL.createObjectURL(cropped_file);
+                        $new_preview.attr("src", object_url);
+                        $new_preview.show();
+                        $new_placeholder.hide();
+                        
+                        $new_submit.prop("disabled", false);
+                    }, 0);
+                }
+            );
+        }
     });
 
     $preview_text.show();
     $clear_button.on("click", (e) => {
+        cropped_emoji_file = null;
         e.stopPropagation();
         e.preventDefault();
 
@@ -204,6 +247,7 @@ export function add_custom_emoji_post_render(): void {
 }
 
 function show_modal(): void {
+    cropped_emoji_file = null;
     const html_body = render_add_emoji({});
 
     function add_custom_emoji(): void {
@@ -257,10 +301,17 @@ function show_modal(): void {
         }
 
         const formData = new FormData();
-        const files = util.the($<HTMLInputElement>("input#emoji_file_input")).files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
+        
+        // 🚀 YASHA UPDATE: Check if we have a cropped file from Uppy
+        if (cropped_emoji_file) {
+            formData.append("file-0", cropped_emoji_file);
+        } else {
+            // Fallback: If no crop happened, use the original input file
+            const files = util.the($<HTMLInputElement>("input#emoji_file_input")).files;
+            assert(files !== null);
+            for (const [i, file] of [...files].entries()) {
+                formData.append("file-" + i, file);
+            }
         }
 
         if (is_default_emoji(emoji["name"])) {
