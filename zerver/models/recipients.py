@@ -153,6 +153,7 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
     """
     from zerver.models import Subscription, UserProfile
 
+    assert len(id_list) == len(set(id_list))
     direct_message_group_hash = get_direct_message_group_hash(id_list)
     with transaction.atomic(savepoint=False):
         (direct_message_group, created) = DirectMessageGroup.objects.get_or_create(
