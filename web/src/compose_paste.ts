@@ -246,70 +246,38 @@ function get_code_block_language(
     return language;
 }
 
-// Heuristic normalization for VS Code Markdown HTML paste.
-//
-// VS Code often copies simple multi-line text as a sequence of <div> blocks,
-// e.g. <div>a</div><div>b</div><div>c</div>, possibly with <span> styling
-// for syntax highlighting. Our HTML→Markdown converter treats each <div>
-// as a paragraph and adds a blank line between them, which causes
-// `a\nb\nc` to become `a\n\nb\n\nc` when pasting into the compose box.
-//
-// This function detects the “only simple <div> lines” pattern and converts
-// it into a plain text block with single newlines.
-function normalize_vscode_markdown_html(html: string): string {
-    const trimmed = html.trim();
-    // Basic safety: neutralize <script> tags in pasted HTML to satisfy CodeQL
-    html = html
-        .replaceAll(/<script/gi, "&lt;script")
-        .replaceAll(/<\/script>/gi, "&lt;/script&gt;");
-
-
-    if (trimmed === "") {
-        return html;
-    }
-
-    // If there are other rich HTML elements, don't normalize
-    if (/(<p|<ul|<ol|<table|<img|<h[1-6]|<pre|<code)\b/i.test(trimmed)) {
-        return html;
-    }
-
-    // Safe detection of multiple <div> lines, without greedy backtracking
-    const divOnlyPattern = /^(\s*<div(?:\s+[^>]*)?>[\s\S]*?<\/div>\s*)+$/i;
-    if (!divOnlyPattern.test(trimmed)) {
-        return html;
-    }
-
-    const lineRegex = /<div(?:\s+[^>]*)?>([\s\S]*?)<\/div>/gi;
-    const lines: string[] = [];
-    let match: RegExpExecArray | null;
-
-    while ((match = lineRegex.exec(trimmed)) !== null) {
-        let inner = match[1] ?? "";
-
-        inner = inner.replaceAll(/<br\s*\/?>/gi, "\n");
-        inner = inner.replaceAll(/<[^>]+>/g, "");
-        inner = inner
-            .replaceAll(/&nbsp;/gi, " ")
-            .replaceAll(/&lt;/gi, "<")
-            .replaceAll(/&gt;/gi, ">")
-            .replaceAll(/&amp;/gi, "&");
-
-        lines.push(inner.trimEnd());
-    }
-
-    return lines.join("\n");
-}
-
-
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
 ): string {
-    paste_html = normalize_vscode_markdown_html(paste_html);
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
     assert(copied_html_fragment !== null);
+
+    // Handle VS Code-style multi-line copy, where each visual line is wrapped
+    // in a <div> (possibly with <span> children for syntax highlighting).
+    // If the body consists of multiple <div> children, we treat each div's
+    // textContent as a single line and join them with "\n", so that we don't
+    // introduce extra blank lines by converting each <div> into a paragraph.
+    const children = Array.from(copied_html_fragment.children);
+    const all_div_children =
+        children.length > 1 && children.every((child) => child.tagName === "DIV");
+
+    if (all_div_children) {
+        const lines = children.map((child) =>
+            // Trim trailing whitespace on each line, but preserve internal spaces.
+            (child.textContent ?? "").replace(/\s+$/g, ""),
+        );
+
+        const joined = lines.join("\n");
+
+        // If we got a non-empty plain text block without double blank lines,
+        // return it directly as Markdown-equivalent text.
+        if (joined.trim() !== "" && !/\n\s*\n/.test(joined)) {
+            return joined;
+        }
+    }
 
     const has_single_child_with_valid_text = has_single_textful_child_node(copied_html_fragment);
 
