@@ -2,13 +2,13 @@ import isUrl from "is-url";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {insertTextIntoField} from "text-field-edit";
+import { insertTextIntoField } from "text-field-edit";
 import TurndownService from "turndown";
 
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t} from "./i18n.ts";
+import { $t } from "./i18n.ts";
 import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
@@ -246,10 +246,75 @@ function get_code_block_language(
     return language;
 }
 
+// Heuristic normalization for VS Code Markdown HTML paste.
+//
+// VS Code often copies simple multi-line text as a sequence of <div> blocks,
+// e.g. <div>a</div><div>b</div><div>c</div>, possibly with <span> styling
+// for syntax highlighting. Our HTML→Markdown converter treats each <div>
+// as a paragraph and adds a blank line between them, which causes
+// `a\nb\nc` to become `a\n\nb\n\nc` when pasting into the compose box.
+//
+// This function detects the “only simple <div> lines” pattern and converts
+// it into a plain text block with single newlines.
+function normalize_vscode_markdown_html(html: string): string {
+    const trimmed = html.trim();
+
+    if (trimmed === "") {
+        return html;
+    }
+
+    // If there are clearly other rich elements (paragraphs, lists, tables),
+    // don't touch it — we only want to special-case simple code-like blocks.
+    if (/(<p|<ul|<ol|<table|<img|<h[1-6]|<pre|<code)\b/i.test(trimmed)) {
+        return html;
+    }
+
+    // Check if the whole HTML is just a series of <div>...</div> elements.
+    // We allow attributes on <div>, and arbitrary inner content, but no text
+    // outside of <div> tags.
+    const divOnlyPattern = /^(?:\s*<div[^>]*>[\s\S]*?<\/div>\s*)+$/i;
+    if (!divOnlyPattern.test(trimmed)) {
+        return html;
+    }
+
+    const lineRegex = /<div[^>]*>([\s\S]*?)<\/div>/gi;
+    const lines: string[] = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = lineRegex.exec(trimmed)) !== null) {
+        let inner = match[1];
+
+        // Treat <br> as newlines inside a line
+        inner = inner.replace(/<br\s*\/?>/gi, "\n");
+
+        // Strip remaining HTML tags (e.g. <span style="color: ...">)
+        inner = inner.replace(/<[^>]+>/g, "");
+
+        // Decode a few basic entities commonly used in VS Code HTML
+        inner = inner
+            .replace(/&nbsp;/gi, " ")
+            .replace(/&lt;/gi, "<")
+            .replace(/&gt;/gi, ">")
+            .replace(/&amp;/gi, "&");
+
+        // Trim trailing whitespace/newlines per line
+        lines.push(inner.replace(/\s+$/g, ""));
+    }
+
+    if (lines.length === 0) {
+        return html;
+    }
+
+    // Join with single newlines to match “a\nb\nc”, not “a\n\nb\n\nc”.
+    return lines.join("\n");
+}
+
+
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
 ): string {
+    paste_html = normalize_vscode_markdown_html(paste_html);
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
@@ -674,8 +739,8 @@ export function try_stream_topic_syntax_text(text: string): string | null {
 }
 
 function create_text_file(text: string, filename: string): File {
-    const blob = new Blob([text], {type: "text/plain"});
-    return new File([blob], filename, {type: "text/plain"});
+    const blob = new Blob([text], { type: "text/plain" });
+    return new File([blob], filename, { type: "text/plain" });
 }
 
 function do_paste_text(
@@ -734,7 +799,7 @@ export function paste_handler(
         // If the pasted or combined text is too large, present a
         // banner offering to upload as a file.
         if (is_paste_large_enough_for_file) {
-            const filename = `${$t({defaultMessage: "PastedText"})}.txt`;
+            const filename = `${$t({ defaultMessage: "PastedText" })}.txt`;
             const pasted_file = create_text_file(paste_text, filename);
             const $banner = compose_banner.show_convert_pasted_text_to_file_banner({
                 show_paste_button: avoid_direct_paste,
