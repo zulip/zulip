@@ -9,11 +9,13 @@ from nodl.api.views.events import (
     send_typing,
 )
 from nodl.api.views.messages import (
+    add_reaction,
     delete_message,
     edit_message,
     get_message,
     list_dm_conversations,
     list_messages,
+    remove_reaction,
     send_message,
 )
 from nodl.api.views.streams import (
@@ -65,6 +67,9 @@ urlpatterns = [
     path("api/v1/messages/<int:message_id>", get_message, name="nodl_get_message"),
     path("api/v1/messages/<int:message_id>/edit", edit_message, name="nodl_edit_message"),
     path("api/v1/messages/<int:message_id>/delete", delete_message, name="nodl_delete_message"),
+    # Reaction REST API endpoints - authenticated via JWT
+    path("api/v1/messages/<int:message_id>/reactions", add_reaction, name="nodl_add_reaction"),
+    path("api/v1/messages/<int:message_id>/reactions/<str:emoji_name>", remove_reaction, name="nodl_remove_reaction"),
     # DM REST API endpoints - authenticated via JWT
     path("api/v1/dm/conversations", list_dm_conversations, name="nodl_list_dm_conversations"),
 ]
