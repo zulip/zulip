@@ -30,10 +30,11 @@ for any particular type of object.
 
 from collections.abc import Collection, Container, Iterator
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Any, NoReturn, TypeVar, cast, overload
 
 import orjson
+from dateutil.parser import isoparse
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -122,6 +123,17 @@ def check_date(var_name: str, val: object) -> str:
     except ValueError:
         raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
     return val
+
+
+def check_iso_datetime(var_name: str, val: object) -> datetime:
+    if not isinstance(val, str):
+        raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
+    try:
+        return isoparse(val)
+    except ValueError:
+        raise ValidationError(
+            _("{var_name} is not an ISO 8601 datetime string").format(var_name=var_name)
+        )
 
 
 def check_int(var_name: str, val: object) -> int:
