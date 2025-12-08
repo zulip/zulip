@@ -82,7 +82,7 @@ export class MessageListData {
         this.add_messages_callback = callback;
     }
 
-    all_messages(): Message[] {
+    all_messages_after_mute_filtering(): Message[] {
         return this._items;
     }
 
