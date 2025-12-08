@@ -132,6 +132,7 @@ class MessageListSerializer(BaseModel):
     content: Annotated[str, Field(description="Raw Markdown content")]
     rendered_content: Annotated[str, Field(description="HTML rendered content")]
     timestamp: Annotated[int, Field(description="Unix timestamp when sent")]
+    reactions: Annotated[list[ReactionSerializer], Field(default=[], description="Message reactions")]
 
     @classmethod
     def from_message(cls, message: Message) -> "MessageListSerializer":
@@ -190,6 +191,22 @@ class MessageListSerializer(BaseModel):
         # rendered_content may be deleted by Zulip's finalize_payload, so fallback to content
         rendered_content = msg_dict.get("rendered_content") or msg_dict.get("content", "")
 
+        # Extract reactions from the message dict
+        # Zulip format: [{"emoji_name": "thumbs_up", "emoji_code": "1f44d", "user_id": 8, ...}]
+        raw_reactions = msg_dict.get("reactions", [])
+        # Group by emoji to aggregate user_ids
+        emoji_users: dict[tuple[str, str], list[int]] = {}
+        for r in raw_reactions:
+            key = (r.get("emoji_name", ""), r.get("emoji_code", ""))
+            if key not in emoji_users:
+                emoji_users[key] = []
+            emoji_users[key].append(r.get("user_id"))
+
+        reactions = [
+            ReactionSerializer(emoji_name=name, emoji_code=code, user_ids=user_ids)
+            for (name, code), user_ids in emoji_users.items()
+        ]
+
         return cls(
             id=msg_dict["id"],
             type=msg_type,
@@ -201,6 +218,7 @@ class MessageListSerializer(BaseModel):
             content=msg_dict.get("content", ""),
             rendered_content=rendered_content,
             timestamp=timestamp,
+            reactions=reactions,
         )
 
 
