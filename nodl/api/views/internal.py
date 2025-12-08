@@ -111,13 +111,16 @@ def sync_user(request: HttpRequest) -> HttpResponse:
 
     try:
         body = json.loads(request.body)
+        logger.info("sync_user_request received", extra={"payload": body})
         payload = UserSyncPayload(**body)
     except json.JSONDecodeError:
+        logger.error("sync_user_request invalid JSON")
         return JsonResponse(
             {"result": "error", "code": "INVALID_JSON", "msg": "Invalid JSON body"},
             status=400,
         )
     except ValidationError as e:
+        logger.error("sync_user_validation_error", extra={"error": str(e), "body": body})
         return JsonResponse(
             {"result": "error", "code": "VALIDATION_ERROR", "msg": str(e)},
             status=400,
