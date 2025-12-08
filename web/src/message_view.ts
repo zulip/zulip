@@ -1023,7 +1023,7 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
     // cases when our local cache (superset_data) has at least
     // one message the user will expect to see in the new narrow.
 
-    const in_msgs = superset_data.all_messages();
+    const in_msgs = superset_data.all_messages_after_mute_filtering();
     const is_contiguous_history = true;
     msg_data.add_messages(in_msgs, is_contiguous_history);
 

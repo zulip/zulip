@@ -118,7 +118,7 @@ export function initialize({
         // the present view as read; we need a server API to mark
         // every message matching the current search as read.
         const unread_messages = message_lists.current.data
-            .all_messages()
+            .all_messages_after_mute_filtering()
             .filter((message) => message.unread);
         notify_server_messages_read(unread_messages);
         // New messages received may be marked as read based on narrow type.
