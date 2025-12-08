@@ -1,10 +1,14 @@
+import copy
 import logging
 import os
 import random
+import secrets
 import shutil
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
+from dataclasses import dataclass
+from mimetypes import guess_type
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -15,13 +19,12 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_extension
-from zerver.lib.parallel import run_parallel
-from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
+from zerver.lib.upload import sanitize_name
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -48,6 +51,43 @@ DATA_IMPORT_CLIENTS = {
     # Special client key to be used for data import messages.
     "ZulipDataImport": 5,
 }
+
+
+@dataclass
+class UploadRecordData:
+    content_type: str | None
+    last_modified: float
+    path: str
+    realm_id: int
+    s3_path: str
+    size: int
+    user_profile_id: int
+
+
+@dataclass
+class UploadFileRequest:
+    output_file_path: str
+    request_url: str
+    params: dict[str, Any] | None
+    headers: dict[str, Any] | None
+    kwargs: dict[str, Any]
+
+
+class AvatarRecordData:
+    avatar_version: int
+    content_type: str | None
+    last_modified: int
+    path: str
+    realm_id: int
+    s3_path: str
+    size: int | None
+    user_profile_id: int
+
+
+@dataclass
+class AvatarFileRequest(UploadFileRequest):
+    output_file_path: str | None
+    base_avatar_path: str
 
 
 class SubscriberHandler:
@@ -138,26 +178,6 @@ def build_user_profile(
     """
     dct["short_name"] = short_name
     return dct
-
-
-def build_avatar(
-    zulip_user_id: int,
-    realm_id: int,
-    avatar_url: str,
-    timestamp: Any,
-    avatar_list: list[ZerverFieldsT],
-) -> None:
-    avatar = dict(
-        path=avatar_url,  # Save original avatar URL here, which is downloaded later
-        realm_id=realm_id,
-        content_type=None,
-        avatar_version=1,
-        user_profile_id=zulip_user_id,
-        last_modified=timestamp,
-        s3_path="",
-        size="",
-    )
-    avatar_list.append(avatar)
 
 
 def make_subscriber_map(zerver_subscription: list[ZerverFieldsT]) -> dict[int, set[int]]:
@@ -569,123 +589,83 @@ def build_attachment(
     zerver_attachment.append(attachment_dict)
 
 
-def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[str]) -> None:
-    avatar_url = avatar_upload_item[0]
+def download_and_export_avatar_file(
+    output_dir: str,
+    avatar_records: list[AvatarRecordData],
+    incomplete_avatar_record: AvatarRecordData,
+    avatar_file_request: AvatarFileRequest,
+) -> None:
+    response = request_file_stream(
+        avatar_file_request.request_url,
+        avatar_file_request.params,
+        avatar_file_request.headers,
+        **avatar_file_request.kwargs,
+    )
+    content_type = response.headers.get("Content-Type")
+    if content_type is None:
+        content_type = guess_type(avatar_file_request.request_url)[0]
+    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
+        raise BadImageError("Invalid image format")
 
-    image_path = os.path.join(avatar_dir, avatar_upload_item[1])
-    original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
+    file_extension = guess_extension(content_type, strict=False)
+    relative_image_path = f"{avatar_file_request.base_avatar_path}.{file_extension}"
+    relative_original_image_path = f"{avatar_file_request.base_avatar_path}.original"
 
-    if avatar_url.startswith("https://ca.slack-edge.com/"):
-        # Adjust the avatar size for a typical Slack user.
-        avatar_url += size_url_suffix
+    full_image_path = os.path.join(output_dir, "avatars", relative_image_path)
+    full_original_image_path = os.path.join(output_dir, "avatars", relative_original_image_path)
 
-    response = requests.get(avatar_url, stream=True)
-    with open(image_path, "wb") as image_file:
+    with open(full_image_path, "wb") as image_file:
         shutil.copyfileobj(response.raw, image_file)
-    shutil.copy(image_path, original_image_path)
+    shutil.copy(full_image_path, full_original_image_path)
+
+    incomplete_avatar_record.content_type = content_type
+    original_avatar_record = copy.deepcopy(incomplete_avatar_record)
+    original_avatar_record.path = full_original_image_path
+    original_avatar_record.s3_path = full_original_image_path
+    avatar_record = incomplete_avatar_record
+    avatar_record.path = full_image_path
+    avatar_record.s3_path = full_image_path
+
+    avatar_records += [avatar_record, original_avatar_record]
 
 
-def process_avatars(
-    avatar_list: list[ZerverFieldsT],
-    avatar_dir: str,
-    realm_id: int,
-    processes: int,
-    size_url_suffix: str = "",
-) -> list[ZerverFieldsT]:
-    """
-    This function gets the avatar of the user and saves it in the
-    user's avatar directory with both the extensions '.png' and '.original'
-    Required parameters:
+def request_file_stream(
+    url: str,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> requests.Response:
+    if "stream" not in kwargs:
+        kwargs.update(stream=True)
 
-    1. avatar_list: List of avatars to be mapped in avatars records.json file
-    2. avatar_dir: Folder where the downloaded avatars are saved
-    3. realm_id: Realm ID.
+    response = requests.get(
+        url,
+        params=params,
+        headers=headers,
+        **kwargs,
+    )
+    if response.status_code != requests.codes.ok:
+        logging.info("HTTP error: %s, Response: %s", response.status_code, response.text)
+        raise Exception("Failed downloading file.")
 
-    We use this for Slack conversions, where avatars need to be
-    downloaded.
-    """
+    return response
 
-    logging.info("######### GETTING AVATARS #########\n")
-    logging.info("DOWNLOADING AVATARS .......\n")
-    avatar_original_list = []
-    avatar_upload_list = []
-    for avatar in avatar_list:
-        avatar_hash = user_avatar_base_path_from_ids(
-            avatar["user_profile_id"], avatar["avatar_version"], realm_id
-        )
-        avatar_url = avatar["path"]
-        avatar_original = dict(avatar)
 
-        image_path = f"{avatar_hash}.png"
-        original_image_path = f"{avatar_hash}.original"
+def download_and_export_upload_file(
+    output_dir: str, upload_file_request: UploadFileRequest
+) -> None:
+    file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path)
 
-        avatar_upload_list.append([avatar_url, image_path, original_image_path])
-        # We don't add the size field here in avatar's records.json,
-        # since the metadata is not needed on the import end, and we
-        # don't have it until we've downloaded the files anyway.
-        avatar["path"] = image_path
-        avatar["s3_path"] = image_path
-        avatar["content_type"] = "image/png"
-
-        avatar_original["path"] = original_image_path
-        avatar_original["s3_path"] = original_image_path
-        avatar_original["content_type"] = "image/png"
-        avatar_original_list.append(avatar_original)
-
-    # Run downloads in parallel
-    run_parallel(
-        partial(get_avatar, avatar_dir, size_url_suffix),
-        avatar_upload_list,
-        processes=processes,
-        catch=True,
-        report=lambda count: logging.info("Finished %s items", count),
+    response = request_file_stream(
+        upload_file_request.request_url,
+        upload_file_request.params,
+        upload_file_request.headers,
+        **upload_file_request.kwargs,
     )
 
-    logging.info("######### GETTING AVATARS FINISHED #########\n")
-    return avatar_list + avatar_original_list
-
-
-def get_uploads(upload_dir: str, upload: list[str]) -> None:
-    upload_url = upload[0]
-    upload_path = upload[1]
-    upload_path = os.path.join(upload_dir, upload_path)
-
-    response = requests.get(upload_url, stream=True)
-    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-    with open(upload_path, "wb") as upload_file:
+    os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
+    with open(file_output_path, "wb") as upload_file:
         shutil.copyfileobj(response.raw, upload_file)
-
-
-def process_uploads(
-    upload_list: list[ZerverFieldsT], upload_dir: str, processes: int
-) -> list[ZerverFieldsT]:
-    """
-    This function downloads the uploads and saves it in the realm's upload directory.
-    Required parameters:
-
-    1. upload_list: List of uploads to be mapped in uploads records.json file
-    2. upload_dir: Folder where the downloaded uploads are saved
-    """
-    logging.info("######### GETTING ATTACHMENTS #########\n")
-    logging.info("DOWNLOADING ATTACHMENTS .......\n")
-    upload_url_list = []
-    for upload in upload_list:
-        upload_url = upload["path"]
-        upload_s3_path = upload["s3_path"]
-        upload_url_list.append([upload_url, upload_s3_path])
-        upload["path"] = upload_s3_path
-
-    # Run downloads in parallel
-    run_parallel(
-        partial(get_uploads, upload_dir),
-        upload_url_list,
-        processes=processes,
-        catch=True,
-        report=lambda count: logging.info("Finished %s items", count),
-    )
-
-    logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
-    return upload_list
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
@@ -702,7 +682,7 @@ def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> Zerv
 def get_emojis(emoji_dir: str, emoji_url: str, emoji_path: str) -> str | None:
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
-    response = requests.get(emoji_url, stream=True)
+    response = request_file_stream(emoji_url)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
     with open(upload_emoji_path, "wb") as emoji_file:
         shutil.copyfileobj(response.raw, emoji_file)
@@ -852,3 +832,29 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
             f"Invalid email format, please fix the following email(s) and try again: {details}"
         )
         raise ValidationError(error_log)
+
+
+@dataclass
+class AttachmentLinkResult:
+    path_id: str
+    markdown_link: str
+
+
+def get_attachment_path_and_content(
+    link_name: str, filename: str, realm_id: int
+) -> AttachmentLinkResult:
+    # Since the files will be remapped during import, the layout is
+    # for the most part arbitrary. They are split into 256 subdirectories
+    # to prevent directories from getting to big.
+    path_id = "/".join(
+        [
+            str(realm_id),
+            format(random.randint(0, 255), "x"),
+            secrets.token_urlsafe(18),
+            sanitize_name(filename),
+        ]
+    )
+    attachment_url = f"/user_uploads/{path_id}"
+    markdown_link = get_markdown_link_for_url(link_name, attachment_url)
+
+    return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link)
