@@ -146,6 +146,44 @@ def _get_message_flags(user: UserProfile, message_id: int) -> list[str]:
         return []
 
 
+def _build_dm_recipient_query(user: UserProfile, user_ids: list[int]):
+    """Build a query for DM messages to/from specific users.
+
+    For 1:1 DMs, this finds messages where:
+    - The recipient is a direct message group containing exactly user + target user
+
+    For group DMs, this finds messages where:
+    - The recipient is a direct message group containing all specified users + sender
+    """
+    from zerver.models import DirectMessageGroup
+    from zerver.lib.recipient_users import recipient_for_user_profiles
+
+    # Include current user in the lookup
+    all_user_ids = sorted(set(user_ids + [user.id]))
+
+    # Get recipient for this exact set of users
+    try:
+        user_profiles = list(UserProfile.objects.filter(
+            id__in=all_user_ids,
+            realm=user.realm,
+        ))
+        if len(user_profiles) != len(all_user_ids):
+            return None  # Some users not found
+
+        recipient = recipient_for_user_profiles(
+            user_profiles=user_profiles,
+            forwarded_mirror_message=False,
+            forwarder_user_profile=None,
+            sender=user,
+        )
+        return Message.objects.filter(
+            realm_id=user.realm_id,
+            recipient=recipient,
+        )
+    except Exception:
+        return None
+
+
 @require_jwt_auth
 @rate_limit(key_prefix="messages_read", limit=MESSAGES_READ_LIMIT)
 def list_messages(request: HttpRequest) -> HttpResponse:
@@ -153,9 +191,18 @@ def list_messages(request: HttpRequest) -> HttpResponse:
 
     GET /api/v1/messages
 
-    Query parameters:
+    Query parameters (choose one approach):
+
+    For stream messages (legacy):
     - stream_id: Filter by stream (required)
     - topic: Filter by topic (optional)
+
+    For DM messages (using narrow):
+    - narrow: JSON array of filter operators, e.g.:
+      - [{"operator":"dm","operand":[9]}] - DMs with user 9
+      - [{"operator":"dm","operand":[9,12]}] - Group DM with users 9 and 12
+
+    Common parameters:
     - anchor: 'newest', 'oldest', or message_id (default: 'newest')
     - num_before: Messages before anchor (default: 50)
     - num_after: Messages after anchor (default: 0)
@@ -177,23 +224,7 @@ def list_messages(request: HttpRequest) -> HttpResponse:
 
     user: UserProfile = request.user_profile  # type: ignore[attr-defined]
 
-    # Parse query parameters
-    stream_id_str = request.GET.get("stream_id")
-    if not stream_id_str:
-        return JsonResponse(
-            {"result": "error", "code": "INVALID_PARAMS", "msg": "stream_id is required"},
-            status=400,
-        )
-
-    try:
-        stream_id = int(stream_id_str)
-    except ValueError:
-        return JsonResponse(
-            {"result": "error", "code": "INVALID_PARAMS", "msg": "Invalid stream_id"},
-            status=400,
-        )
-
-    topic = request.GET.get("topic")
+    # Parse common query parameters
     anchor = request.GET.get("anchor", "newest")
 
     try:
@@ -209,29 +240,103 @@ def list_messages(request: HttpRequest) -> HttpResponse:
     num_before = min(max(0, num_before), 200)
     num_after = min(max(0, num_after), 200)
 
-    # Verify user has access to the stream
-    try:
-        stream, _ = access_stream_by_id(user, stream_id)
-    except Exception:
-        return JsonResponse(
-            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
-            status=404,
+    # Check for narrow parameter (DM queries)
+    narrow_str = request.GET.get("narrow")
+    stream_id_str = request.GET.get("stream_id")
+
+    base_query = None
+
+    if narrow_str:
+        # Parse narrow parameter
+        try:
+            narrow_terms = json.loads(narrow_str)
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"result": "error", "code": "INVALID_PARAMS", "msg": "Invalid narrow JSON"},
+                status=400,
+            )
+
+        if not isinstance(narrow_terms, list) or len(narrow_terms) == 0:
+            return JsonResponse(
+                {"result": "error", "code": "INVALID_PARAMS", "msg": "narrow must be a non-empty array"},
+                status=400,
+            )
+
+        # Parse the narrow operator
+        term = narrow_terms[0]
+        operator = term.get("operator", "")
+        operand = term.get("operand")
+
+        if operator == "dm":
+            # DM with specific users
+            if not isinstance(operand, list) or len(operand) == 0:
+                return JsonResponse(
+                    {"result": "error", "code": "INVALID_PARAMS", "msg": "dm operand must be a list of user IDs"},
+                    status=400,
+                )
+
+            # Validate operand contains integers
+            try:
+                user_ids = [int(uid) for uid in operand]
+            except (ValueError, TypeError):
+                return JsonResponse(
+                    {"result": "error", "code": "INVALID_PARAMS", "msg": "dm operand must contain valid user IDs"},
+                    status=400,
+                )
+
+            base_query = _build_dm_recipient_query(user, user_ids)
+            if base_query is None:
+                return JsonResponse(
+                    {"result": "error", "code": "NOT_FOUND", "msg": "DM conversation not found"},
+                    status=404,
+                )
+        else:
+            return JsonResponse(
+                {"result": "error", "code": "INVALID_PARAMS", "msg": f"Unsupported narrow operator: {operator}"},
+                status=400,
+            )
+
+    elif stream_id_str:
+        # Legacy stream-based query
+        try:
+            stream_id = int(stream_id_str)
+        except ValueError:
+            return JsonResponse(
+                {"result": "error", "code": "INVALID_PARAMS", "msg": "Invalid stream_id"},
+                status=400,
+            )
+
+        topic = request.GET.get("topic")
+
+        # Verify user has access to the stream
+        try:
+            stream, _ = access_stream_by_id(user, stream_id)
+        except Exception:
+            return JsonResponse(
+                {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
+                status=404,
+            )
+
+        base_query = Message.objects.filter(
+            realm_id=user.realm_id,
+            recipient_id=stream.recipient_id,
         )
 
-    # Build base query for messages in this stream (IDs only for efficiency)
-    base_query = Message.objects.filter(
-        realm_id=user.realm_id,
-        recipient_id=stream.recipient_id,
-    )
-
-    # Filter by topic if specified
-    if topic:
-        base_query = base_query.filter(subject__iexact=topic)
+        # Filter by topic if specified
+        if topic:
+            base_query = base_query.filter(subject__iexact=topic)
+    else:
+        return JsonResponse(
+            {"result": "error", "code": "INVALID_PARAMS", "msg": "Either stream_id or narrow is required"},
+            status=400,
+        )
 
     # Apply anchor-based pagination to get message IDs
     anchor_message_id = None
     found_anchor = True
     message_ids: list[int] = []
+    before_ids: list[int] = []
+    after_ids: list[int] = []
 
     if anchor == "newest":
         # Get newest message IDs
@@ -331,15 +436,23 @@ def list_messages(request: HttpRequest) -> HttpResponse:
 @require_jwt_auth
 @rate_limit(key_prefix="messages_send", limit=MESSAGES_WRITE_LIMIT)
 def send_message(request: HttpRequest) -> HttpResponse:
-    """Send a message to a stream.
+    """Send a message to a stream or direct message.
 
     POST /api/v1/messages
 
-    Request body:
+    For stream messages:
     {
+        "type": "stream",  // or omit for default
         "stream_id": 42,
         "topic": "Project Updates",
         "content": "Hello **world**!"
+    }
+
+    For direct messages:
+    {
+        "type": "direct",
+        "to": [9, 12],  // Array of recipient user IDs
+        "content": "Hello!"
     }
 
     Response:
@@ -371,6 +484,78 @@ def send_message(request: HttpRequest) -> HttpResponse:
             status=400,
         )
 
+    client = get_client("nodl-api")
+
+    # Handle direct messages
+    if payload.type == "direct":
+        if not payload.to or len(payload.to) == 0:
+            return JsonResponse(
+                {"result": "error", "code": "INVALID_PARAMS", "msg": "Missing 'to' recipients for direct message"},
+                status=400,
+            )
+
+        try:
+            # Get recipient user profiles
+            recipient_users = list(UserProfile.objects.filter(
+                id__in=payload.to,
+                realm=user.realm,
+                is_active=True,
+            ))
+
+            if len(recipient_users) != len(payload.to):
+                return JsonResponse(
+                    {"result": "error", "code": "NOT_FOUND", "msg": "One or more recipients not found"},
+                    status=404,
+                )
+
+            # Send using Zulip's check_send_message with "private" type
+            result = check_send_message(
+                sender=user,
+                client=client,
+                recipient_type_name="private",
+                message_to=payload.to,
+                topic_name="",  # DMs don't have topics
+                message_content=payload.content,
+                realm=user.realm,
+            )
+
+            # Fetch the created message
+            message = Message.objects.select_related("sender", "recipient").get(id=result.message_id)
+
+            # Include sender in recipients for display_recipient
+            all_users = recipient_users + [user] if user.id not in payload.to else recipient_users
+            serializer = MessageSerializer.from_message(message, recipient_users=all_users)
+
+            return JsonResponse({
+                "result": "success",
+                "id": message.id,
+                "message": serializer.model_dump(),
+            }, status=201)
+
+        except JsonableError as e:
+            return JsonResponse(
+                {"result": "error", "code": "SEND_FAILED", "msg": str(e)},
+                status=400,
+            )
+        except Exception as e:
+            logger.exception("Failed to send direct message")
+            return JsonResponse(
+                {"result": "error", "code": "SEND_FAILED", "msg": str(e)},
+                status=500,
+            )
+
+    # Handle stream messages (default)
+    if not payload.stream_id:
+        return JsonResponse(
+            {"result": "error", "code": "INVALID_PARAMS", "msg": "stream_id is required for stream messages"},
+            status=400,
+        )
+    if not payload.topic:
+        return JsonResponse(
+            {"result": "error", "code": "INVALID_PARAMS", "msg": "topic is required for stream messages"},
+            status=400,
+        )
+
     # Verify user has access to the stream
     try:
         stream, _ = access_stream_by_id(user, payload.stream_id)
@@ -382,7 +567,6 @@ def send_message(request: HttpRequest) -> HttpResponse:
 
     # Send the message using Zulip's check_send_message
     try:
-        client = get_client("nodl-api")
         result = check_send_message(
             sender=user,
             client=client,
@@ -622,5 +806,136 @@ def delete_message(request: HttpRequest, message_id: int) -> HttpResponse:
         logger.exception("Failed to delete message")
         return JsonResponse(
             {"result": "error", "code": "DELETE_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
+@require_jwt_auth
+@rate_limit(key_prefix="messages_read", limit=MESSAGES_READ_LIMIT)
+def list_dm_conversations(request: HttpRequest) -> HttpResponse:
+    """List DM conversations for the current user.
+
+    GET /api/v1/dm/conversations
+
+    Response:
+    {
+        "result": "success",
+        "conversations": [
+            {
+                "user_ids": [9],
+                "users": [
+                    {"id": 9, "full_name": "Alice", "email": "alice@example.com", "avatar_url": "/avatar/9"}
+                ],
+                "last_message": {
+                    "id": 12345,
+                    "content": "Hello!",
+                    "sender_id": 9,
+                    "timestamp": 1234567890
+                },
+                "unread_count": 2
+            }
+        ]
+    }
+    """
+    from zerver.models import DirectMessageGroup, Subscription, Recipient
+
+    if request.method != "GET":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "GET required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    try:
+        # Get all DM recipients the user is subscribed to
+        dm_subscriptions = Subscription.objects.filter(
+            user_profile=user,
+            active=True,
+            recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
+        ).select_related("recipient")
+
+        conversations = []
+
+        for sub in dm_subscriptions:
+            recipient = sub.recipient
+
+            # Get the participant user IDs
+            if recipient.type == Recipient.PERSONAL:
+                # 1:1 DM - the other user is the type_id
+                participant_ids = [recipient.type_id]
+                if recipient.type_id == user.id:
+                    # This is a self-DM - skip or handle specially
+                    continue
+            else:
+                # Group DM - need to get all members
+                from zerver.models.recipients import get_direct_message_group_user_ids
+                all_member_ids = get_direct_message_group_user_ids(recipient)
+                participant_ids = [uid for uid in all_member_ids if uid != user.id]
+
+            if not participant_ids:
+                continue
+
+            # Get participant user info
+            participant_users = UserProfile.objects.filter(
+                id__in=participant_ids,
+                is_active=True,
+            ).values("id", "full_name", "delivery_email", "avatar_source")
+
+            users_data = [
+                {
+                    "id": u["id"],
+                    "full_name": u["full_name"],
+                    "email": u["delivery_email"],
+                    "avatar_url": f"/avatar/{u['id']}" if u.get("avatar_source") else None,
+                }
+                for u in participant_users
+            ]
+
+            # Get the last message in this conversation
+            last_message = Message.objects.filter(
+                recipient=recipient,
+            ).order_by("-id").first()
+
+            last_message_data = None
+            if last_message:
+                last_message_data = {
+                    "id": last_message.id,
+                    "content": last_message.content[:100],  # Preview only
+                    "sender_id": last_message.sender_id,
+                    "sender_full_name": last_message.sender.full_name,
+                    "timestamp": int(last_message.date_sent.timestamp()),
+                }
+
+            # Get unread count
+            unread_count = UserMessage.objects.filter(
+                user_profile=user,
+                message__recipient=recipient,
+            ).exclude(
+                flags=UserMessage.flags.read,
+            ).count()
+
+            conversations.append({
+                "user_ids": participant_ids,
+                "users": users_data,
+                "last_message": last_message_data,
+                "unread_count": unread_count,
+            })
+
+        # Sort by last message timestamp (most recent first)
+        conversations.sort(
+            key=lambda c: c["last_message"]["timestamp"] if c["last_message"] else 0,
+            reverse=True,
+        )
+
+        return JsonResponse({
+            "result": "success",
+            "conversations": conversations,
+        })
+
+    except Exception as e:
+        logger.exception("Failed to list DM conversations")
+        return JsonResponse(
+            {"result": "error", "code": "FETCH_FAILED", "msg": str(e)},
             status=500,
         )

@@ -17,15 +17,28 @@ class ReactionSerializer(BaseModel):
     user_ids: Annotated[list[int], Field(default=[], description="List of user IDs who reacted")]
 
 
+class DMRecipient(BaseModel):
+    """Recipient info for direct messages."""
+
+    id: Annotated[int, Field(description="User ID")]
+    email: Annotated[str, Field(description="User email")]
+    full_name: Annotated[str, Field(description="User full name")]
+
+
 class MessageSerializer(BaseModel):
     """Serializer for full message details."""
 
     id: Annotated[int, Field(description="Message ID")]
+    type: Annotated[str, Field(description="Message type: 'stream' or 'private'")]
     sender_id: Annotated[int, Field(description="Sender user ID")]
     sender_full_name: Annotated[str, Field(description="Sender's full name")]
     sender_email: Annotated[str, Field(description="Sender's email")]
     sender_avatar_url: Annotated[Optional[str], Field(description="Sender's avatar URL")]
     stream_id: Annotated[Optional[int], Field(description="Stream ID (if channel message)")]
+    display_recipient: Annotated[
+        Optional[list[DMRecipient]],
+        Field(default=None, description="Recipients (for DMs)")
+    ]
     topic: Annotated[str, Field(description="Message topic")]
     content: Annotated[str, Field(description="Raw Markdown content")]
     rendered_content: Annotated[str, Field(description="HTML rendered content")]
@@ -41,12 +54,35 @@ class MessageSerializer(BaseModel):
         message: Message,
         reactions: Optional[list[ReactionSerializer]] = None,
         flags: Optional[list[str]] = None,
+        recipient_users: Optional[list[Any]] = None,
     ) -> "MessageSerializer":
-        """Create serializer from Message model."""
+        """Create serializer from Message model.
+
+        Args:
+            message: The Message model instance
+            reactions: Optional list of reactions
+            flags: Optional list of flags
+            recipient_users: For DMs, list of UserProfile objects for all recipients
+        """
+        # Determine message type
+        is_dm = message.recipient and message.recipient.type != Recipient.STREAM
+        msg_type = "private" if is_dm else "stream"
+
         # Get stream_id from recipient if this is a channel message
         stream_id = None
+        display_recipient = None
         if message.is_channel_message and message.recipient:
             stream_id = message.recipient.type_id
+        elif is_dm and recipient_users:
+            # For DMs, include recipient user info
+            display_recipient = [
+                DMRecipient(
+                    id=u.id,
+                    email=u.delivery_email,
+                    full_name=u.full_name,
+                )
+                for u in recipient_users
+            ]
 
         # Get avatar URL if sender has one
         avatar_url = None
@@ -62,11 +98,13 @@ class MessageSerializer(BaseModel):
 
         return cls(
             id=message.id,
+            type=msg_type,
             sender_id=message.sender_id,
             sender_full_name=message.sender.full_name,
             sender_email=message.sender.delivery_email,
             sender_avatar_url=avatar_url,
             stream_id=stream_id,
+            display_recipient=display_recipient,
             topic=message.topic_name(),
             content=message.content,
             rendered_content=message.rendered_content or "",
@@ -82,9 +120,14 @@ class MessageListSerializer(BaseModel):
     """Serializer for message list responses."""
 
     id: Annotated[int, Field(description="Message ID")]
+    type: Annotated[str, Field(description="Message type: 'stream' or 'private'")]
     sender_id: Annotated[int, Field(description="Sender user ID")]
     sender_full_name: Annotated[str, Field(description="Sender's full name")]
     stream_id: Annotated[Optional[int], Field(description="Stream ID")]
+    display_recipient: Annotated[
+        Optional[list[DMRecipient]],
+        Field(default=None, description="Recipients (for DMs)")
+    ]
     topic: Annotated[str, Field(description="Message topic")]
     content: Annotated[str, Field(description="Raw Markdown content")]
     rendered_content: Annotated[str, Field(description="HTML rendered content")]
@@ -93,15 +136,20 @@ class MessageListSerializer(BaseModel):
     @classmethod
     def from_message(cls, message: Message) -> "MessageListSerializer":
         """Create serializer from Message model."""
+        is_dm = message.recipient and message.recipient.type != Recipient.STREAM
+        msg_type = "private" if is_dm else "stream"
+
         stream_id = None
         if message.is_channel_message and message.recipient:
             stream_id = message.recipient.type_id
 
         return cls(
             id=message.id,
+            type=msg_type,
             sender_id=message.sender_id,
             sender_full_name=message.sender.full_name,
             stream_id=stream_id,
+            display_recipient=None,  # Will be populated separately for DMs
             topic=message.topic_name(),
             content=message.content,
             rendered_content=message.rendered_content or "",
@@ -114,10 +162,26 @@ class MessageListSerializer(BaseModel):
 
         The dict format comes from Zulip's MessageDict after hydration.
         """
+        msg_type = msg_dict.get("type", "stream")
+
         # Get stream_id from display_recipient if this is a stream message
         stream_id = None
-        if msg_dict.get("type") == "stream":
+        display_recipient = None
+        if msg_type == "stream":
             stream_id = msg_dict.get("stream_id")
+        else:
+            # For DMs, display_recipient is a list of user dicts
+            raw_recipients = msg_dict.get("display_recipient", [])
+            if isinstance(raw_recipients, list):
+                display_recipient = [
+                    DMRecipient(
+                        id=r.get("id", 0),
+                        email=r.get("email", ""),
+                        full_name=r.get("full_name", "Unknown"),
+                    )
+                    for r in raw_recipients
+                    if isinstance(r, dict)
+                ]
 
         # Zulip cache uses "timestamp" field (already Unix timestamp)
         timestamp = msg_dict.get("timestamp", 0)
@@ -128,9 +192,11 @@ class MessageListSerializer(BaseModel):
 
         return cls(
             id=msg_dict["id"],
+            type=msg_type,
             sender_id=msg_dict["sender_id"],
             sender_full_name=msg_dict.get("sender_full_name", "Unknown"),
             stream_id=stream_id,
+            display_recipient=display_recipient,
             topic=msg_dict.get("subject", ""),  # Zulip uses 'subject' for topic
             content=msg_dict.get("content", ""),
             rendered_content=rendered_content,
@@ -139,11 +205,40 @@ class MessageListSerializer(BaseModel):
 
 
 class MessageCreatePayload(BaseModel):
-    """Request payload for sending a message."""
+    """Request payload for sending a message.
 
-    stream_id: Annotated[int, Field(description="Stream ID to post to")]
-    topic: Annotated[str, Field(min_length=1, max_length=60, description="Message topic")]
-    content: Annotated[str, Field(min_length=1, max_length=10000, description="Message content")]
+    For stream messages:
+        - type: "stream" (default)
+        - stream_id: Required
+        - topic: Required
+        - content: Required
+
+    For direct messages:
+        - type: "direct"
+        - to: Required (list of user IDs)
+        - content: Required
+    """
+
+    type: Annotated[
+        str,
+        Field(default="stream", description="Message type: 'stream' or 'direct'")
+    ]
+    stream_id: Annotated[
+        Optional[int],
+        Field(default=None, description="Stream ID to post to (for stream messages)")
+    ]
+    topic: Annotated[
+        Optional[str],
+        Field(default=None, max_length=60, description="Message topic (for stream messages)")
+    ]
+    to: Annotated[
+        Optional[list[int]],
+        Field(default=None, description="Recipient user IDs (for direct messages)")
+    ]
+    content: Annotated[
+        str,
+        Field(min_length=1, max_length=10000, description="Message content")
+    ]
 
 
 class MessageUpdatePayload(BaseModel):

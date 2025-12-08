@@ -17,7 +17,7 @@ import logging
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from zerver.actions.typing import do_send_stream_typing_notification
+from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id_for_message, access_stream_for_send_message
@@ -255,8 +255,33 @@ def send_typing(request: HttpRequest) -> HttpResponse:
                 status=400,
             )
     else:
-        # Direct message typing - not implemented yet
-        return JsonResponse(
-            {"result": "error", "msg": "Direct message typing not yet supported"},
-            status=400,
-        )
+        # Direct message typing
+        to = body.get("to")  # List of recipient user IDs
+
+        if not to or not isinstance(to, list) or len(to) == 0:
+            return JsonResponse(
+                {"result": "error", "msg": "Missing 'to' argument for direct message typing"},
+                status=400,
+            )
+
+        try:
+            # Send the direct message typing notification
+            # check_send_typing_notification automatically includes sender in user_ids
+            check_send_typing_notification(
+                sender=user_profile,
+                user_ids=to,
+                operator=op,
+            )
+
+            logger.debug(
+                f"[nodl-typing] Sent DM {op} notification for user {user_profile.id} "
+                f"to users {to}"
+            )
+            return json_success(request)
+
+        except Exception as e:
+            logger.warning(f"[nodl-typing] Error sending DM typing notification: {e}")
+            return JsonResponse(
+                {"result": "error", "msg": str(e)},
+                status=400,
+            )

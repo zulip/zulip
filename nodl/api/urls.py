@@ -12,6 +12,7 @@ from nodl.api.views.messages import (
     delete_message,
     edit_message,
     get_message,
+    list_dm_conversations,
     list_messages,
     send_message,
 )
@@ -64,6 +65,8 @@ urlpatterns = [
     path("api/v1/messages/<int:message_id>", get_message, name="nodl_get_message"),
     path("api/v1/messages/<int:message_id>/edit", edit_message, name="nodl_edit_message"),
     path("api/v1/messages/<int:message_id>/delete", delete_message, name="nodl_delete_message"),
+    # DM REST API endpoints - authenticated via JWT
+    path("api/v1/dm/conversations", list_dm_conversations, name="nodl_list_dm_conversations"),
 ]
 
 # i18n URL patterns (empty for API endpoints)
