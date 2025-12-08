@@ -241,10 +241,16 @@ export function update_default_stream_option_state($container: JQuery): void {
     const $default_stream = $container.find(".default-stream");
     const is_stream_creation = $container.attr("id") === "stream-creation";
 
-    // In the stream creation UI, if the user is a non-admin hide the
-    // "Default stream for new users" widget
-    if (is_stream_creation && !current_user.is_admin) {
-        $default_stream.hide();
+    // Only admins are allowed to change default status for a stream.
+    // In the stream creation UI, if the user is a non-admin just hide
+    // the "Default stream for new users" widget.
+    if (!current_user.is_admin) {
+        if (is_stream_creation) {
+            $default_stream.hide();
+        } else {
+            $default_stream.find("input").prop("disabled", true);
+            $default_stream.addClass("control-label-disabled");
+        }
         return;
     }
 
@@ -301,11 +307,6 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    const $default_stream_container = $stream_settings.find(".default-stream");
-    $default_stream_container
-        .find("input")
-        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
-
     const $permissions_container = $stream_settings.find($(".channel-permissions"));
     $permissions_container
         .find("input, select")
@@ -322,7 +323,6 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
-        $default_stream_container.addClass("control-label-disabled");
         settings_components.disable_group_permission_setting($permission_pill_container_elements);
         return;
     }
