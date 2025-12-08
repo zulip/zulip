@@ -29,6 +29,7 @@ const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
 });
 const theme = mock_esm("../src/theme");
+const emoji_frequency = mock_esm("../src/emoji_frequency");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 mock_esm("../src/inbox_ui", {
@@ -477,6 +478,7 @@ run_test("reaction", ({override}) => {
     {
         const stub = make_stub();
         override(reactions, "add_reaction", stub.f);
+        override(emoji_frequency, "update_emoji_frequency_on_add_reaction_event", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
@@ -488,6 +490,7 @@ run_test("reaction", ({override}) => {
     {
         const stub = make_stub();
         override(reactions, "remove_reaction", stub.f);
+        override(emoji_frequency, "update_emoji_frequency_on_remove_reaction_event", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
@@ -1561,6 +1564,8 @@ run_test("delete_message", ({override}) => {
 
     const stream_topic_history_stub = make_stub();
     override(stream_topic_history, "remove_messages", stream_topic_history_stub.f);
+
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
 
     dispatch(event);
 
