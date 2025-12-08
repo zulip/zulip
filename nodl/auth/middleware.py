@@ -88,8 +88,10 @@ class SupabaseJWTMiddleware:
             # This bridges Supabase JWT auth to Zulip's user system
             # Uses caching to avoid DB query on every request
             email = payload.get("email")
+            # Optional workspace_id header for multi-realm disambiguation
+            workspace_id = request.headers.get("X-Workspace-Id")
             if email:
-                user_profile = self._get_user_profile_cached(email)
+                user_profile = self._get_user_profile_cached(email, workspace_id)
                 if user_profile:
                     request.user_profile = user_profile
                     request.user = user_profile  # Django's auth system expects this
@@ -139,16 +141,20 @@ class SupabaseJWTMiddleware:
         """
         return any(path.startswith(exempt) for exempt in self.EXEMPT_PATHS)
 
-    def _get_user_profile_cached(self, email: str) -> UserProfile | None:
+    def _get_user_profile_cached(
+        self, email: str, workspace_id: str | None = None
+    ) -> UserProfile | None:
         """Get UserProfile by email, with caching to reduce DB queries.
 
         Args:
             email: The user's email address.
+            workspace_id: Optional workspace ID to disambiguate users in multiple realms.
 
         Returns:
             The UserProfile if found, None otherwise.
         """
-        cache_key = f"jwt_user_profile:{email}"
+        # Include workspace_id in cache key if provided for proper isolation
+        cache_key = f"jwt_user_profile:{email}:{workspace_id or 'any'}"
 
         # Try cache first
         user_profile = cache.get(cache_key)
@@ -162,16 +168,37 @@ class SupabaseJWTMiddleware:
 
         # Cache miss - query database
         try:
-            user_profile = UserProfile.objects.get(
+            queryset = UserProfile.objects.filter(
                 delivery_email=email,
                 is_active=True,
             )
+
+            # If workspace_id provided, filter by realm string_id
+            if workspace_id:
+                # Realm string_id is first 20 chars of workspace_id
+                realm_string_id = workspace_id[:20].lower()
+                queryset = queryset.filter(realm__string_id=realm_string_id)
+
+            user_profile = queryset.get()
             cache.set(cache_key, user_profile, USER_PROFILE_CACHE_TIMEOUT)
             return user_profile
+
         except UserProfile.DoesNotExist:
             # Cache the "not found" result to avoid repeated queries
             cache.set(cache_key, "NOT_FOUND", USER_PROFILE_CACHE_TIMEOUT)
             return None
+
+        except UserProfile.MultipleObjectsReturned:
+            # User exists in multiple realms - return most recently created
+            # This can happen when same email is used across workspaces
+            logger.warning(
+                f"[nodl-auth] Multiple UserProfiles found for {email}, "
+                "using most recently created. Consider passing X-Workspace-Id header."
+            )
+            user_profile = queryset.order_by("-id").first()
+            if user_profile:
+                cache.set(cache_key, user_profile, USER_PROFILE_CACHE_TIMEOUT)
+            return user_profile
 
     def _error_response(self, message: str) -> JsonResponse:
         """Create a standardized error response.
