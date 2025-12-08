@@ -28,7 +28,7 @@ from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_send import check_send_message
 from zerver.actions.reactions import check_add_reaction, do_remove_reaction
 from zerver.lib.emoji import get_emoji_data
-from zerver.lib.exceptions import JsonableError, ReactionDoesNotExistError
+from zerver.lib.exceptions import JsonableError, ReactionDoesNotExistError, ReactionExistsError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.message import access_message, messages_for_ids
 from zerver.lib.rate_limiter import RateLimitedObject, RedisRateLimiterBackend
@@ -993,13 +993,13 @@ def add_reaction(request: HttpRequest, message_id: int) -> HttpResponse:
         with transaction.atomic():
             check_add_reaction(user, message_id, emoji_name, emoji_code, reaction_type)
         return JsonResponse({"result": "success"})
+    except ReactionExistsError:
+        # Idempotent success - reaction already exists
+        return JsonResponse({"result": "success"})
     except JsonableError as e:
-        # Handle REACTION_ALREADY_EXISTS gracefully - idempotent success
-        error_code = getattr(e, "code", None)
-        if error_code == "REACTION_ALREADY_EXISTS":
-            return JsonResponse({"result": "success"})
+        error_code = str(e.code) if hasattr(e, "code") else "ERROR"
         return JsonResponse(
-            {"result": "error", "code": error_code or "ERROR", "msg": str(e)},
+            {"result": "error", "code": error_code, "msg": str(e)},
             status=400,
         )
     except Exception as e:
