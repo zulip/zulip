@@ -240,6 +240,11 @@ ALLOWED_HOSTS += ["127.0.0.1", "localhost"]
 ALLOWED_HOSTS += [EXTERNAL_HOST_WITHOUT_PORT, "." + EXTERNAL_HOST_WITHOUT_PORT]
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
+# NODL MODIFICATION START - Allow Railway private networking
+# Reason: Internal service-to-service calls use *.railway.internal
+# Date: 2024-12-08
+ALLOWED_HOSTS += [".railway.internal"]
+# NODL MODIFICATION END
 
 MIDDLEWARE = [
     "zerver.middleware.TagRequests",
