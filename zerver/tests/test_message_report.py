@@ -196,7 +196,8 @@ class ReportMessageTest(ZulipTestCase):
         assert len(reports) == 1
         self.assertIn(expected_message_link_syntax, reports[0]["content"])
 
-    def test_dm_report(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_dm_report_using_personal_recipients(self) -> None:
         # Send a DM to be reported
         reported_dm_id = self.send_personal_message(
             self.reported_user,
@@ -346,7 +347,6 @@ class ReportMessageTest(ZulipTestCase):
         assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_message_report_using_direct_message_group(self) -> None:
         direct_message_group = get_or_create_direct_message_group(
             id_list=[self.hamlet.id, self.reported_user.id],
