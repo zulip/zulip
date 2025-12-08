@@ -896,6 +896,8 @@ export function initialize(): void {
             );
             if (sub && $subsection.attr("id") === "channel-subscription-permissions") {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
+                stream_ui_updates.update_private_stream_privacy_option_state($edit_container);
+                stream_ui_updates.update_default_stream_option_state($edit_container);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
             return true;
@@ -959,6 +961,8 @@ export function initialize(): void {
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             if ($subsection.attr("id") === "channel-subscription-permissions") {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
+                stream_ui_updates.update_private_stream_privacy_option_state($edit_container);
+                stream_ui_updates.update_default_stream_option_state($edit_container);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
         },
