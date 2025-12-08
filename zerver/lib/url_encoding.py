@@ -1,3 +1,5 @@
+# See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
 import urllib.parse
 from typing import Any
 from urllib.parse import urlsplit
