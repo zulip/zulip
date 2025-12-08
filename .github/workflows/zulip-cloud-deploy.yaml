@@ -77,7 +77,7 @@ jobs:
     strategy:
       matrix:
         filename: ${{ fromJson(needs.build-messages.outputs.filenames) }}
-    if: success() && ${{github.repository == 'zulip/zulip'}}
+    if: ${{ success() && github.repository == 'zulip/zulip' }}
     steps:
       - name: Download messages as artifacts
         uses: actions/download-artifact@v6
