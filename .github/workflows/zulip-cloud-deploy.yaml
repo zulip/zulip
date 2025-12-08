@@ -48,9 +48,9 @@ jobs:
         id: generate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE: ${{ inputs.before || github.event.before }}
+          HEAD: ${{ inputs.after || github.event.after }}
         run: |
-          BASE="${{ inputs.before || github.event.before }}"
-          HEAD="${{ inputs.after || github.event.after }}"
           set -o pipefail
 
           mkdir closed-by-commits-output
@@ -89,8 +89,10 @@ jobs:
         id: read-file
         run: |
           echo "content<<EOF" >> $GITHUB_OUTPUT
-          cat closed-by-commits-output/${{ matrix.filename }} >> $GITHUB_OUTPUT
+          cat "closed-by-commits-output/$FILENAME" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          FILENAME: ${{ matrix.filename }}
 
       - name: Send to Zulip
         uses: zulip/github-actions-zulip/send-message@v1
