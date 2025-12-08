@@ -1066,3 +1066,44 @@ def remove_reaction(request: HttpRequest, message_id: int, emoji_name: str) -> H
             {"result": "error", "code": "REACTION_FAILED", "msg": str(e)},
             status=500,
         )
+
+
+@require_jwt_auth
+@rate_limit(key_prefix="messages_read", limit=MESSAGES_READ_LIMIT)
+def get_unread_counts(request: HttpRequest) -> HttpResponse:
+    """Get unread message counts for the current user.
+
+    GET /api/v1/unread
+
+    Response:
+    {
+        "result": "success",
+        "unread_msgs": {
+            "count": 0,
+            "streams": [],
+            "huddles": [],
+            "pms": []
+        }
+    }
+    """
+    if request.method != "GET":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "GET required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    # Get unread message counts
+    # For now, return empty response structure matching Zulip's format
+    # The frontend expects this structure even if counts are zero
+
+    return JsonResponse({
+        "result": "success",
+        "unread_msgs": {
+            "count": 0,
+            "streams": [],
+            "huddles": [],
+            "pms": []
+        }
+    })
