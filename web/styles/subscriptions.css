@@ -390,10 +390,6 @@ h4.user_group_setting_subsection_title {
 
     .subsection-settings {
         margin-top: 10px;
-
-        .input-group {
-            margin-bottom: 1.25em; /* 20px at 16px/em */
-        }
     }
 
     .no-permissions-for-group-text {
@@ -1307,8 +1303,6 @@ div.settings-radio-input-parent {
 .group-permissions,
 .stream_details_box {
     .input-group {
-        margin-bottom: 0.625em; /* 10px at 16px/em */
-
         &.message-retention-setting-group {
             & input {
                 width: 5ch;
@@ -1351,11 +1345,6 @@ div.settings-radio-input-parent {
         opacity: 0.5;
         content: attr(data-placeholder);
     }
-}
-
-.advanced-configurations-container .pill-container,
-.channel-permissions .pill-container {
-    margin-bottom: 10px;
 }
 
 .group-permissions .dropdown_widget_with_label_wrapper {
