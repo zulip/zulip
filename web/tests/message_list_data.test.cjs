@@ -25,7 +25,7 @@ function make_msgs(msg_ids) {
 }
 
 function assert_contents(mld, msg_ids) {
-    const msgs = mld.all_messages();
+    const msgs = mld.all_messages_after_mute_filtering();
     assert.deepEqual(msgs, make_msgs(msg_ids));
 }
 
@@ -120,7 +120,7 @@ run_test("basics", () => {
     mld.change_message_id(125.01, 145);
     assert_contents(mld, [120, 130, 140, 145]);
 
-    for (const msg of mld.all_messages()) {
+    for (const msg of mld.all_messages_after_mute_filtering()) {
         msg.unread = false;
     }
 
