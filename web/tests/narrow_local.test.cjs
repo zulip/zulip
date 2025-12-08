@@ -50,7 +50,7 @@ function verify_fixture(fixture, override_rewire) {
             has_found_newest: () => fixture.has_found_newest,
         },
         visibly_empty: () => fixture.visibly_empty,
-        all_messages() {
+        all_messages_after_mute_filtering() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
         },
@@ -74,7 +74,7 @@ function verify_fixture(fixture, override_rewire) {
 
     assert.deepEqual(id_info, fixture.expected_id_info);
 
-    const msgs = msg_data.all_messages();
+    const msgs = msg_data.all_messages_after_mute_filtering();
     const msg_ids = msgs.map((message) => message.id);
     assert.deepEqual(msg_ids, fixture.expected_msg_ids);
 }

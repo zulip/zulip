@@ -624,7 +624,7 @@ export class MessageList {
     }
 
     all_messages(): Message[] {
-        return this.data.all_messages();
+        return this.data.all_messages_after_mute_filtering();
     }
 
     first_unread_message_id(): number | undefined {
