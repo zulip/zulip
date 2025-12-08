@@ -442,6 +442,14 @@ labels.
 
 ## Common questions
 
+- **Can I work on an issue that's not marked as "help wanted"?** The entire
+  purpose of the "help wanted" label is to indicate which issues are open for
+  contribution, so the answer is generally "no". Please feel free to ask if you
+  have a _merged PR_ in a closely related part of the codebase, _and_ the issue
+  has a clear product spec, and no obvious blockers. Otherwise, asking to claim
+  an issue without a "help wanted" label clutters up comment threads, and wastes
+  maintainer time.
+
 - **What if somebody is already working on the issue I want to claim?** There
   are lots of issues to work on (likely
   [hundreds](https://github.com/zulip/zulip/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22help%20wanted%22%20no%3Aassignee)
