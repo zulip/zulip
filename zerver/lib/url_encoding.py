@@ -1,9 +1,15 @@
 import urllib.parse
+from collections.abc import Sequence
 from typing import Any
 from urllib.parse import urlsplit
 
 import re2
+from django.core.exceptions import ValidationError
 
+from zerver.lib.addressee import get_user_profiles_by_ids
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.streams import get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
@@ -207,3 +213,84 @@ def append_url_query_string(original_url: str, query: str) -> str:
     u = urlsplit(original_url)
     query = u.query + ("&" if u.query and query else "") + query
     return u._replace(query=query).geturl()
+
+
+def generate_narrow_link_from_narrow_terms(
+    terms: Sequence[NarrowTerm],
+    realm: Realm,
+    sort_terms: bool = True,
+) -> str:
+    """
+    This converts a list of narrow terms into a narrow URL link.
+
+    If one of the terms is not supported, an `AssertionError`
+    will be raised.
+
+    If `sort_terms` is `True`, the operators in the narrow links
+    will be sorted from general("channel") to specific("near", "with").
+    """
+    from zerver.lib.narrow import BadNarrowOperatorError
+    from zerver.lib.url_decoding import Filter
+
+    if len(terms) == 0:
+        # Return to home-view
+        return "#"
+
+    narrow_terms = terms
+    if sort_terms:
+        narrow_terms = Filter.sorted_terms(list(terms))
+
+    link = ["/#narrow"]
+    for term in narrow_terms:
+        match term.operator:
+            case "channel":
+                channel_id_or_name = term.operand
+                assert isinstance(channel_id_or_name, str | int)
+                try:
+                    channel = get_stream_by_narrow_operand_access_unchecked(
+                        channel_id_or_name, realm
+                    )
+                except Stream.DoesNotExist:
+                    raise BadNarrowOperatorError("unknown channel " + str(channel_id_or_name))
+                link.append(encode_channel(channel.id, channel.name, with_operator=True))
+            case "dm":
+                user_ids = term.operand
+                # narrow.py technically accept a list of user emails for "dm" operators
+                # operand, but a list of user IDs is preferred, so we'll only accept user
+                # ids here. the Filter class also doesn't tolerate a list of user emails.
+                assert isinstance(user_ids, list)
+                if user_ids == []:
+                    raise BadNarrowOperatorError("invalid user ID")
+                elif len(user_ids) == 1:
+                    try:
+                        # Direct message to ones self.
+                        user_profile = get_user_profiles_by_ids(
+                            user_ids=user_ids,
+                            realm=realm,
+                        )
+                    except (JsonableError, ValidationError):
+                        raise BadNarrowOperatorError("unknown user in " + str(user_ids))
+                    encoded_user_ids = encode_user_full_name_and_id(
+                        user_profile[0].full_name,
+                        user_profile[0].id,
+                        with_operator=True,
+                    )
+                else:
+                    # Either group direct message or one-to-one direct
+                    # message.
+                    encoded_user_ids = encode_user_ids(
+                        user_ids,
+                        with_operator=True,
+                    )
+                link.append(encoded_user_ids)
+            case "topic":
+                topic_name = term.operand
+                assert isinstance(topic_name, str)
+                link.append(f"topic/{encode_hash_component(topic_name)}")
+            case "near" | "with":
+                assert isinstance(term.operand, int)
+                message_id = str(term.operand)
+                link.append(f"{term.operator}/{message_id}")
+            case _:
+                raise AssertionError(f"This operator is not yet supported: '{term.operator}'.")
+    return "/".join(link)
