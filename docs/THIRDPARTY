@@ -709,6 +709,11 @@ Files: zerver/decorator.py zerver/management/commands/runtornado.py scripts/setu
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
 
+Files: zerver/lib/demo_organization_words.json tools/build-demo-organization-wordlist
+Copyright: Jitsi js-utils
+License: Apache-2.0
+Comment: Code has been modified
+
 Files: zerver/lib/markdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg
 License: BSD-3-Clause
