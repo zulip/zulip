@@ -60,7 +60,7 @@ export function notify_above_composebox(
     above_composebox_narrow_url: string | null,
     link_msg_id: number,
     message_recipient: MessageRecipient | null,
-    link_text: string | null,
+    action_button_text: string | null,
 ): void {
     const $notification = $(
         render_message_sent_banner({
@@ -69,7 +69,7 @@ export function notify_above_composebox(
             above_composebox_narrow_url,
             link_msg_id,
             message_recipient,
-            link_text,
+            action_button_text,
         }),
     );
     // We pass in include_unmute_banner as false because we don't want to
@@ -224,8 +224,7 @@ function should_show_narrow_to_recipient_banner(message: Message): boolean {
 }
 
 function show_scroll_to_view_banner(link_msg_id: number): void {
-    const banner_text = $t({defaultMessage: "Sent!"});
-    const link_text = $t({defaultMessage: "Scroll down to view your message."});
+    const banner_text = $t({defaultMessage: "Sent! Scroll down to view your message."});
     notify_above_composebox(
         banner_text,
         compose_banner.CLASSNAMES.sent_scroll_to_view,
@@ -233,7 +232,7 @@ function show_scroll_to_view_banner(link_msg_id: number): void {
         null,
         link_msg_id,
         null,
-        link_text,
+        $t({defaultMessage: "Scroll down"}),
     );
     compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
 }
@@ -445,17 +444,13 @@ export function initialize(opts: {
             e.preventDefault();
         },
     );
-    $("#compose_banners").on(
-        "click",
-        ".sent_scroll_to_view .above_compose_banner_action_link",
-        (e) => {
-            assert(message_lists.current !== undefined);
-            const message_id = Number($(e.currentTarget).attr("data-message-id"));
-            message_lists.current.select_id(message_id);
-            on_click_scroll_to_selected();
-            compose_banner.clear_message_sent_banners(false);
-            e.stopPropagation();
-            e.preventDefault();
-        },
-    );
+    $("#compose_banners").on("click", ".sent_scroll_to_view .action-button", (e) => {
+        assert(message_lists.current !== undefined);
+        const message_id = Number($(e.currentTarget).attr("data-message-id"));
+        message_lists.current.select_id(message_id);
+        on_click_scroll_to_selected();
+        compose_banner.clear_message_sent_banners(false);
+        e.stopPropagation();
+        e.preventDefault();
+    });
 }
