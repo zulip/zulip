@@ -1,6 +1,5 @@
 import logging
 import random
-import string
 from collections.abc import Iterable
 from contextlib import suppress
 from typing import Annotated, Any, cast
@@ -68,6 +67,7 @@ from zerver.forms import (
     RegistrationForm,
     check_subdomain_available,
 )
+from zerver.lib.demo_organizations import DEMO_ORGANIZATION_WORD_LIST
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import (
@@ -1420,11 +1420,13 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
 def generate_demo_realm_subdomain() -> str:
     demo_subdomain = ""
     while True:
-        # Generate a moderate-entropy random ID for the organization;
-        # there are 10**4 * 26**4 ~= 4.5 billion possibilities.
-        letters = "".join(random.SystemRandom().choice(string.ascii_lowercase) for i in range(4))
-        digits = "".join(random.SystemRandom().choice(string.digits) for i in range(4))
-        demo_subdomain = f"demo-{letters}{digits}"
+        # Generate a moderate-entropy string for the organization;
+        # there are ~460 adverbs, ~1020 adjectives, ~2810 nouns in
+        # the word list so ~= 1.32 billion possibilities.
+        adverb = random.SystemRandom().choice(DEMO_ORGANIZATION_WORD_LIST["adverbs"])
+        adjective = random.SystemRandom().choice(DEMO_ORGANIZATION_WORD_LIST["adjectives"])
+        noun = random.SystemRandom().choice(DEMO_ORGANIZATION_WORD_LIST["nouns"])
+        demo_subdomain = f"{adverb}-{adjective}-{noun}"
         try:
             check_subdomain_available(demo_subdomain)
             break
