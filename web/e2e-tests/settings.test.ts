@@ -194,11 +194,13 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
-    await page.click("#download-botserverrc-file");
-    await page.waitForSelector('#hidden-botserverrc-download[href^="data:application"]');
+    await page.click("#admin-bot-list .download-botserverrc-file");
+    await page.waitForSelector(
+        '#admin-bot-list .hidden-botserverrc-download[href^="data:application"]',
+    );
     const botserverrc_decoded_url = await get_decoded_url_in_selector(
         page,
-        "#hidden-botserverrc-download",
+        "#admin-bot-list .hidden-botserverrc-download",
     );
     const botserverrc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
