@@ -570,6 +570,7 @@ export default defineConfig({
                         "manage-channel-folders",
                         "channel-permissions",
                         "channel-posting-policy",
+                        "configure-who-can-start-new-topics",
                         "configure-who-can-administer-a-channel",
                         "configure-who-can-create-channels",
                         {
