@@ -1824,6 +1824,12 @@ label.preferences-radio-choice-label {
     }
 }
 
+.settings-textarea {
+    resize: vertical;
+    min-height: 3em;
+    max-height: 15em;
+}
+
 .settings-textarea:disabled {
     background-color: var(--background-color-disabled-textarea);
     opacity: 0.5;
