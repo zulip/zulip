@@ -627,6 +627,19 @@
     );
 }
 
+#change_stream_name {
+    min-width: calc(var(--modal-input-width) - var(--modal-input-offset));
+    max-width: calc(100% - var(--modal-input-offset));
+}
+
+.hidden-mirror {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    visibility: hidden;
+    white-space: pre;
+}
+
 #add-realm-domain-widget {
     .modal_text_input {
         width: 14.7143em; /* 206px at 14px em */

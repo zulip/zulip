@@ -100,6 +100,19 @@ export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     }
 }
 
+ function setup_stream_name_input_resize(): void {
+        const $mirror = $("#change_stream_name_input_mirror");
+        const $input = $<HTMLInputElement>("#change_stream_name");
+
+        $input.on("input", () => {
+            const current_text = $input.val()!;
+            $mirror.text(current_text);
+            const mirrorWidth = $mirror.width();
+            $input.css("width", `${mirrorWidth}px`);
+        });
+        $input.trigger("input");
+}
+
 export function open_stream_edit_modal(stream_id: number): void {
     const stream = sub_store.get(stream_id);
     assert(stream !== undefined);
@@ -130,10 +143,12 @@ export function open_stream_edit_modal(stream_id: number): void {
             $("#change_stream_info_modal .dialog_submit_button")
                 .addClass("save-button")
                 .attr("data-stream-id", stream_id);
+            setup_stream_name_input_resize();
         },
         update_submit_disabled_state_on_change: true,
     });
 }
+
 
 export function save_stream_info(): void {
     const sub = get_sub_for_target(util.the($("#change_stream_info_modal .dialog_submit_button")));
@@ -677,6 +692,7 @@ export function initialize(): void {
             $("#stream_settings .stream-permissions-warning-banner").empty();
         },
     );
+
 
     $("#channels_overlay_container").on(
         "click",

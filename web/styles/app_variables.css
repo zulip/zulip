@@ -635,6 +635,7 @@
     /* User profile modal */
     --user-profile-modal-body-height: 60vh;
     --user-profile-modal-body-margin-bottom: 20px;
+    --modal-input-offset: 14px; /*  padding (6px each side) and border (1px each side) */
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
