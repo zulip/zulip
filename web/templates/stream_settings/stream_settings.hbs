@@ -95,11 +95,10 @@
                   }}
 
                 <div class="input-group stream-email-box">
-                    <label for="copy_stream_email_button" class="title inline-block">Email address</label>
-                    <p class="field-hint">
-                        {{t "You can use email to send messages to Zulip channels."}}
+                    <label for="copy_stream_email_button" class="settings-field-label">
+                        {{t "Email address" }}
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
-                    </p>
+                    </label>
                     <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
                         {{> ../components/action_button
                           label=(t "Generate email address")
