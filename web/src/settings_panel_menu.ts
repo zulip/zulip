@@ -65,6 +65,7 @@ export class SettingsPanelMenu {
     current_bot_settings_tab: Record<string, string>;
     org_user_settings_toggler: Toggle;
     org_bot_settings_toggler: Toggle;
+    personal_bot_settings_toggler: Toggle;
 
     constructor(opts: {$main_elem: JQuery; hash_prefix: string}) {
         this.$main_elem = opts.$main_elem;
@@ -75,6 +76,7 @@ export class SettingsPanelMenu {
         this.current_user_settings_tab = "active";
         this.current_bot_settings_tab = {
             org: "all-bots",
+            personal: "your-bots",
         };
         this.org_user_settings_toggler = components.toggle({
             html_class: "org-user-settings-switcher",
@@ -101,6 +103,7 @@ export class SettingsPanelMenu {
         });
 
         this.org_bot_settings_toggler = this.set_up_bot_settings_toggler("org");
+        this.personal_bot_settings_toggler = this.set_up_bot_settings_toggler("personal");
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section")!;
@@ -242,7 +245,10 @@ export class SettingsPanelMenu {
         }
 
         if (section === "bots") {
-            return this.current_bot_settings_tab["org"];
+            if (this.base === "organization") {
+                return this.current_bot_settings_tab["org"];
+            }
+            return this.current_bot_settings_tab["personal"];
         }
 
         return undefined;
@@ -293,15 +299,26 @@ export class SettingsPanelMenu {
             this.org_user_settings_toggler.goto(settings_tab);
         }
 
-        if (section === "bots" && this.org_bot_settings_toggler !== undefined) {
-            assert(settings_tab !== undefined);
-            this.show_bot_settings_toggler(this.org_bot_settings_toggler, $("#admin-bot-list"));
-            this.org_bot_settings_toggler.goto(settings_tab);
+        if (section === "bots") {
+            if (this.org_bot_settings_toggler !== undefined && this.base === "organization") {
+                assert(settings_tab !== undefined);
+                this.show_bot_settings_toggler(this.org_bot_settings_toggler, $("#admin-bot-list"));
+                this.org_bot_settings_toggler.goto(settings_tab);
+            }
+
+            if (this.personal_bot_settings_toggler !== undefined && this.base === "settings") {
+                assert(settings_tab !== undefined);
+                this.show_bot_settings_toggler(
+                    this.personal_bot_settings_toggler,
+                    $("#personal-bot-list"),
+                );
+                this.personal_bot_settings_toggler.goto(settings_tab);
+            }
         }
 
         $(".settings-section").removeClass("show");
 
-        settings_sections.load_settings_section(section);
+        settings_sections.load_settings_section(section, this.base);
 
         this.get_panel().addClass("show");
 
