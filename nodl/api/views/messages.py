@@ -292,6 +292,8 @@ def list_messages(request: HttpRequest) -> HttpResponse:
                     {"result": "error", "code": "NOT_FOUND", "msg": "DM conversation not found"},
                     status=404,
                 )
+            # Filter out bot messages from DMs (e.g., Zulip's "Welcome Bot")
+            base_query = base_query.exclude(sender__is_bot=True)
         else:
             return JsonResponse(
                 {"result": "error", "code": "INVALID_PARAMS", "msg": f"Unsupported narrow operator: {operator}"},
@@ -863,11 +865,18 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
             if not participant_ids:
                 continue
 
-            # Get participant user info
-            participant_users = UserProfile.objects.filter(
+            # Get participant user info (excluding bots)
+            participant_users = list(UserProfile.objects.filter(
                 id__in=participant_ids,
                 is_active=True,
-            ).values("id", "full_name", "delivery_email", "avatar_source")
+            ).values("id", "full_name", "delivery_email", "avatar_source", "is_bot"))
+
+            # Filter out bot users from participants
+            non_bot_users = [u for u in participant_users if not u.get("is_bot")]
+
+            # Skip conversations where all participants are bots (e.g., Welcome Bot)
+            if not non_bot_users:
+                continue
 
             users_data = [
                 {
@@ -876,7 +885,7 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
                     "email": u["delivery_email"],
                     "avatar_url": f"/avatar/{u['id']}" if u.get("avatar_source") else None,
                 }
-                for u in participant_users
+                for u in non_bot_users
             ]
 
             # Get last message using the max_message_id from recipient_map
