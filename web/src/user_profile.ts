@@ -136,6 +136,8 @@ export function update_user_profile_groups_list_for_users(user_ids: number[]): v
         const user_groups_list = user_groups.get_user_groups_of_user(user_id);
         user_groups_list.sort(compare_by_name);
         user_groups_list_widget.replace_list_data(user_groups_list);
+        const user = people.get_by_user_id(user_id);
+        render_or_update_user_groups_tab(user);
     }
 }
 
@@ -343,6 +345,30 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });
+}
+
+function render_or_update_user_groups_tab(user: User): void {
+    if (!user_groups_list_widget) {
+        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+        render_user_group_list(groups_of_user, user);
+        const $user_group_pill_container = $("#user-group-to-add .pill-container");
+        user_group_pill_widget = user_group_picker_pill.create(
+            $user_group_pill_container,
+            user.user_id,
+        );
+    }
+
+    const user_groups_allowed_to_add_members =
+        user_group_picker_pill.get_user_groups_allowed_to_add_members();
+    const show_user_group_widget =
+        user_groups_allowed_to_add_members.some(
+            (group) => !user_groups.is_direct_member_of(user.user_id, group.id),
+        ) && people.is_person_active(user.user_id);
+    if (show_user_group_widget) {
+        $(".group-list-bottom-section").show();
+    } else {
+        $(".group-list-bottom-section").hide();
+    }
 }
 
 function render_user_group_list(groups: UserGroup[], user: User): void {
@@ -616,9 +642,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         (people.can_admin_user(user) || user_unsub_streams.length > 0) &&
         !user.is_system_bot &&
         people.is_person_active(user.user_id);
-    const show_user_group_container =
-        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
-        people.is_person_active(user.user_id);
     // We currently have the main UI for editing your own profile in
     // settings for non-admins, so can_manage_profile is artificially
     // false for those.
@@ -640,7 +663,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         profile_data,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         show_user_subscribe_widget,
-        show_user_group_container,
         user_avatar: people.medium_avatar_url_for_person(user),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         user_id: user.user_id,
@@ -699,10 +721,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     }
                     break;
                 case "user-profile-groups-tab": {
-                    if (!user_groups_list_widget) {
-                        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
-                        render_user_group_list(groups_of_user, user);
-                    }
+                    render_or_update_user_groups_tab(user);
                     break;
                 }
                 case "user-profile-streams-tab": {
@@ -751,13 +770,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     }, 0);
     if (show_user_subscribe_widget) {
         reset_subscribe_widget();
-    }
-    if (show_user_group_container) {
-        const $user_group_pill_container = $("#user-group-to-add .pill-container");
-        user_group_pill_widget = user_group_picker_pill.create(
-            $user_group_pill_container,
-            user.user_id,
-        );
     }
 }
 

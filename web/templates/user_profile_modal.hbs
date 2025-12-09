@@ -156,26 +156,24 @@
                                 </div>
                             </div>
                         </div>
-                        {{#if show_user_group_container}}
-                            <div class="group-list-bottom-section">
-                                <div class="header-section">
-                                    <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
-                                </div>
-                                <div id="groups-to-add" class="add-button-container">
-                                    <div id="user-group-to-add">
-                                        <div class="add-user-group-container">
-                                            <div class="pill-container">
-                                                <div class="input" contenteditable="true"
-                                                  data-placeholder="{{t 'Add user groups' }}">
-                                                    {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                                                </div>
+                        <div class="group-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                            </div>
+                            <div id="groups-to-add" class="add-button-container">
+                                <div id="user-group-to-add">
+                                    <div class="add-user-group-container">
+                                        <div class="pill-container">
+                                            <div class="input" contenteditable="true"
+                                              data-placeholder="{{t 'Add user groups' }}">
+                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
                                             </div>
                                         </div>
                                     </div>
-                                    {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
                                 </div>
+                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
                             </div>
-                        {{/if}}
+                        </div>
                     </div>
                     <div class="tabcontent" id="manage-profile-tab"></div>
                 </div>
