@@ -1,7 +1,20 @@
+import os
+
+import orjson
+from django.conf import settings
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models.realms import Realm
+
+
+def get_demo_organization_wordlist() -> dict[str, list[str]]:
+    path = os.path.join(settings.DEPLOY_ROOT, "zerver/lib", "demo_organization_words.json")
+    with open(path, "rb") as reader:
+        return orjson.loads(reader.read())
+
+
+DEMO_ORGANIZATION_WORD_LIST = get_demo_organization_wordlist()
 
 
 def demo_organization_owner_email_exists(realm: Realm) -> bool:
