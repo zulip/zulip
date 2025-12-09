@@ -1874,6 +1874,7 @@ label.preferences-radio-choice-label {
 
 .modal-textarea:disabled {
     background-color: var(--background-color-readonly-modal-input);
+    opacity: var(--opacity-readonly-modal-input);
 }
 
 @media (width < $lg_min) {
