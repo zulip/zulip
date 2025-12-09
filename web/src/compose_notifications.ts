@@ -419,7 +419,7 @@ export function reify_message_id(opts: {old_id: number; new_id: number}): void {
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
-    for (const e of $("#compose_banners a")) {
+    for (const e of $("#compose_banners [data-message-id]")) {
         const $elem = $(e);
         const message_id = Number($elem.attr("data-message-id"));
 
