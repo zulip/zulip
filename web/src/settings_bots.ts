@@ -41,6 +41,10 @@ const EMBEDDED_BOT_TYPE = "4";
 
 export const org_all_bots_list_dropdown_widget_name = "org_all_bots_list_select_bot_status";
 export const org_your_bots_list_dropdown_widget_name = "org_your_bots_list_select_bot_status";
+export const personal_all_bots_list_dropdown_widget_name =
+    "personal_all_bots_list_select_bot_status";
+export const personal_your_bots_list_dropdown_widget_name =
+    "personal_your_bots_list_select_bot_status";
 
 type BotType = {
     type_id: number;
@@ -98,6 +102,24 @@ const org_all_bots_section: BotSettingsSection = {
 
 const org_your_bots_section: BotSettingsSection = {
     dropdown_widget_name: org_your_bots_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        status_code: 0,
+    },
+    list_widget: undefined,
+};
+
+const personal_all_bots_section: BotSettingsSection = {
+    dropdown_widget_name: personal_all_bots_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        status_code: 0,
+    },
+    list_widget: undefined,
+};
+
+const personal_your_bots_section: BotSettingsSection = {
+    dropdown_widget_name: personal_your_bots_list_dropdown_widget_name,
     filters: {
         text_search: "",
         status_code: 0,
@@ -188,8 +210,10 @@ export function update_bot_settings_tip($tip_container: JQuery): void {
 function update_add_bot_button(): void {
     if (can_create_incoming_webhooks()) {
         $("#admin-bot-list .add-a-new-bot").show();
+        $("#personal-bot-list .add-a-new-bot").show();
     } else {
         $("#admin-bot-list .add-a-new-bot").hide();
+        $("#personal-bot-list .add-a-new-bot").hide();
     }
 }
 
@@ -200,13 +224,16 @@ export function update_lock_icon_in_sidebar(): void {
         bot_data.get_all_bots_ids_for_current_user().length > 0
     ) {
         $(".org-settings-list li[data-section='bots'] .locked").hide();
+        $(".normal-settings-list li[data-section='bots'] .locked").hide();
     } else {
         $(".org-settings-list li[data-section='bots'] .locked").show();
+        $(".normal-settings-list li[data-section='bots'] .locked").show();
     }
 }
 
 export function update_bot_permissions_ui(): void {
     update_bot_settings_tip($("#admin-bot-settings-tip"));
+    update_bot_settings_tip($("#personal-bot-settings-tip"));
     update_add_bot_button();
     update_lock_icon_in_sidebar();
 }
@@ -465,30 +492,42 @@ export function toggle_bot_config_download_container(): void {
         return elem.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT && is_active;
     });
     $("#admin-bot-list .config-download-text").toggle(bots.length > 0);
+    $("#personal-bot-list .config-download-text").toggle(bots.length > 0);
 }
 
 export function redraw_all_bots_list(): void {
     // In order to properly redraw after a user may have been added,
     // we need to update the all_bots_section.list_widget with the new
     // set of bot user IDs to display.
-    if (!org_all_bots_section.list_widget) {
+    if (!org_all_bots_section.list_widget && !personal_all_bots_section.list_widget) {
         return;
     }
 
     const bot_user_ids = people.get_bot_ids();
-    org_all_bots_section.list_widget.replace_list_data(bot_user_ids);
+    if (org_all_bots_section.list_widget) {
+        org_all_bots_section.list_widget.replace_list_data(bot_user_ids);
+    }
+
+    if (personal_all_bots_section.list_widget) {
+        personal_all_bots_section.list_widget.replace_list_data(bot_user_ids);
+    }
 }
 
 export function redraw_your_bots_list(): void {
     // In order to properly redraw after a user may have been added,
     // we need to update the your_bots_list_widget with the new set of bot
     // user IDs to display.
-    if (!org_your_bots_section.list_widget) {
+    if (!org_your_bots_section.list_widget && !personal_your_bots_section.list_widget) {
         return;
     }
 
     const bot_user_ids_for_current_owner = bot_data.get_all_bots_ids_for_current_user();
-    org_your_bots_section.list_widget.replace_list_data(bot_user_ids_for_current_owner);
+    if (org_your_bots_section.list_widget) {
+        org_your_bots_section.list_widget.replace_list_data(bot_user_ids_for_current_owner);
+    }
+    if (personal_your_bots_section.list_widget) {
+        personal_your_bots_section.list_widget.replace_list_data(bot_user_ids_for_current_owner);
+    }
 }
 
 function add_value_to_filters(
@@ -672,6 +711,14 @@ export function update_bot_data(bot_user_id: number): void {
     if (org_your_bots_section.list_widget) {
         org_your_bots_section.list_widget.render_item(bot_info(bot_user_id));
     }
+
+    if (personal_all_bots_section.list_widget) {
+        personal_all_bots_section.list_widget.render_item(bot_info(bot_user_id));
+    }
+
+    if (personal_your_bots_section.list_widget) {
+        personal_your_bots_section.list_widget.render_item(bot_info(bot_user_id));
+    }
 }
 
 function handle_events($tbody: JQuery, section: BotSettingsSection): void {
@@ -743,6 +790,28 @@ export function set_up_bots(): void {
 
     create_status_filter_dropdown($("#admin-all-bots-list"), org_all_bots_section);
     create_status_filter_dropdown($("#admin-your-bots-list"), org_your_bots_section);
+
+    toggle_bot_config_download_container();
+}
+
+export function set_up_bots_for_personal_tab(): void {
+    handle_events($("#personal_all_bots_table"), personal_all_bots_section);
+    handle_events($("#personal_your_bots_table"), personal_your_bots_section);
+    create_all_bots_table(
+        personal_all_bots_section,
+        $("#personal-all-bots-list"),
+        "personal_all_bot_list",
+    );
+    create_your_bots_table(
+        personal_your_bots_section,
+        $("#personal-your-bots-list"),
+        "personal_your_bot_list",
+    );
+
+    set_up_bot_handlers($("#personal-bot-list"));
+
+    create_status_filter_dropdown($("#personal-all-bots-list"), personal_all_bots_section);
+    create_status_filter_dropdown($("#personal-your-bots-list"), personal_your_bots_section);
 
     toggle_bot_config_download_container();
 }
