@@ -30,7 +30,7 @@ from zerver.actions.reactions import check_add_reaction, do_remove_reaction
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import JsonableError, ReactionDoesNotExistError, ReactionExistsError
 from zerver.lib.markdown import render_message_markdown
-from zerver.lib.message import access_message, messages_for_ids
+from zerver.lib.message import access_message, get_recent_private_conversations, messages_for_ids
 from zerver.lib.rate_limiter import RateLimitedObject, RedisRateLimiterBackend
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.types import StreamMessageEditRequest
@@ -819,6 +819,9 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
 
     GET /api/v1/dm/conversations
 
+    Uses Zulip's get_recent_private_conversations() which correctly queries
+    UserMessage with is_private flag instead of Subscription table.
+
     Response:
     {
         "result": "success",
@@ -839,7 +842,7 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
         ]
     }
     """
-    from zerver.models import DirectMessageGroup, Subscription, Recipient
+    from zerver.models import Recipient
 
     if request.method != "GET":
         return JsonResponse(
@@ -850,31 +853,13 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
     user: UserProfile = request.user_profile  # type: ignore[attr-defined]
 
     try:
-        # Get all DM recipients the user is subscribed to
-        dm_subscriptions = Subscription.objects.filter(
-            user_profile=user,
-            active=True,
-            recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
-        ).select_related("recipient")
+        # Use Zulip's proven function that queries UserMessage with is_private flag
+        recipient_map = get_recent_private_conversations(user)
 
         conversations = []
 
-        for sub in dm_subscriptions:
-            recipient = sub.recipient
-
-            # Get the participant user IDs
-            if recipient.type == Recipient.PERSONAL:
-                # 1:1 DM - the other user is the type_id
-                participant_ids = [recipient.type_id]
-                if recipient.type_id == user.id:
-                    # This is a self-DM - skip or handle specially
-                    continue
-            else:
-                # Group DM - need to get all members
-                from zerver.models.recipients import get_direct_message_group_user_ids
-                all_member_ids = get_direct_message_group_user_ids(recipient)
-                participant_ids = [uid for uid in all_member_ids if uid != user.id]
-
+        for recipient_id, data in recipient_map.items():
+            participant_ids = data["user_ids"]
             if not participant_ids:
                 continue
 
@@ -894,10 +879,10 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
                 for u in participant_users
             ]
 
-            # Get the last message in this conversation
-            last_message = Message.objects.filter(
-                recipient=recipient,
-            ).order_by("-id").first()
+            # Get last message using the max_message_id from recipient_map
+            last_message = Message.objects.select_related("sender").filter(
+                id=data["max_message_id"]
+            ).first()
 
             last_message_data = None
             if last_message:
@@ -910,6 +895,7 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
                 }
 
             # Get unread count
+            recipient = Recipient.objects.get(id=recipient_id)
             unread_count = UserMessage.objects.filter(
                 user_profile=user,
                 message__recipient=recipient,
