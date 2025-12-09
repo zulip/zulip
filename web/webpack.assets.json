@@ -42,7 +42,7 @@
     "portico": ["./src/bundles/legacy_portico_bundle.ts"],
     "error-styles": [
         "./third/bootstrap/css/bootstrap.portico.css",
-        "./styles/portico/portico_styles.css"
+        "./styles/portico/legacy_portico_styles_bundle.css"
     ],
     "common": ["./src/bundles/common.ts"],
     "help": [
