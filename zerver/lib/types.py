@@ -436,3 +436,9 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+
+
+@dataclass
+class SentMessageResult:
+    message_id: int
+    automatic_new_visibility_policy: int | None = None
