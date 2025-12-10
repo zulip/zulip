@@ -127,14 +127,12 @@
                                 </div>
                             </div>
                         </div>
-                        {{#if show_user_subscribe_widget}}
-                            <div class="stream-list-bottom-section">
-                                <div class="header-section">
-                                    <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
-                                </div>
-                                {{> user_profile_subscribe_widget}}
+                        <div class="stream-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
                             </div>
-                        {{/if}}
+                            {{> user_profile_subscribe_widget}}
+                        </div>
                     </div>
 
                     <div class="tabcontent" id="user-profile-groups-tab">
