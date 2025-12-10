@@ -19,14 +19,21 @@ import _ from "lodash";
     whether you type "+" as a prefix for "+1"
     or "th" as a prefix for "thumbs up".
 */
-export const popular_emojis = [
-    "1f44d", // +1
-    "1f389", // tada
-    "1f642", // slight_smile
-    "2764", // heart
-    "1f6e0", // working_on_it
-    "1f419", // octopus
+export type EmojiItem = {
+    emoji_name: string;
+    emoji_code: string;
+};
+
+export const popular_emojis: EmojiItem[] = [
+    {emoji_name: "+1", emoji_code: "1f44d"},
+    {emoji_name: "tada", emoji_code: "1f389"},
+    {emoji_name: "slight_smile", emoji_code: "1f642"},
+    {emoji_name: "heart", emoji_code: "2764"},
+    {emoji_name: "working_on_it", emoji_code: "1f6e0"},
+    {emoji_name: "octopus", emoji_code: "1f419"},
 ];
+
+export let frequently_used_emojis: EmojiItem[] = [...popular_emojis];
 
 export type Emoji =
     | {
@@ -379,6 +386,10 @@ export function triage<T>(
     };
 }
 
+export function set_frequently_used_emojis(frequently_used: EmojiItem[]): void {
+    frequently_used_emojis = frequently_used;
+}
+
 export function sort_emojis<T extends BaseEmoji>(objs: T[], query: string): T[] {
     // replace spaces with underscores for emoji matching
     query = query.replaceAll(" ", "_");
@@ -389,7 +400,7 @@ export function sort_emojis<T extends BaseEmoji>(objs: T[], query: string): T[] 
         return pieces.some((piece) => piece.startsWith(query));
     }
 
-    const popular_set = new Set(popular_emojis);
+    const popular_set = new Set(frequently_used_emojis.map((e) => e.emoji_code));
 
     function is_popular(obj: BaseEmoji): boolean {
         return (
