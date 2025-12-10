@@ -17,10 +17,10 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
+    get_data_file,
     validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.data_import.slack import get_data_file
 from zerver.lib.export import do_common_export_processes
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
