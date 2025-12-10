@@ -565,6 +565,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         {name: "translated: Admins and moderators", unique_id: 4},
         {name: "translated: Admins", unique_id: 3},
         {name: "translated: Owners", unique_id: 2},
+        {name: "Students", unique_id: 9},
     ];
 
     user_groups.initialize({
