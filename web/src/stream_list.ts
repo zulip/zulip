@@ -1117,7 +1117,23 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     update_inbox_channel_view_callback(stream_id);
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
     topic_list.topic_state_typeahead?.lookup(true);
+
+    // If we're updating a view for a highlighted stream, it's possible
+    // that we now need to hide the topic bracket (e.g. navigating to the
+    // channel view when the channel view is set to be 'list of topics').
+    maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
+
     return $stream_li;
+}
+
+export let get_section_id_for_stream_li = function ($stream_li: JQuery): string {
+    return $stream_li.parents(".stream-list-section-container").attr("data-section-id")!;
+};
+
+export function rewire_get_section_id_for_stream_li(
+    value: typeof get_section_id_for_stream_li,
+): void {
+    get_section_id_for_stream_li = value;
 }
 
 export function handle_narrow_activated(

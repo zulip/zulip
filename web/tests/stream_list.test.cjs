@@ -449,6 +449,8 @@ test_ui("narrowing", ({override_rewire}) => {
     override_rewire(stream_list, "scroll_stream_into_view", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "get_section_id_for_stream_li", () => "normal");
+    override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "set_sections_states", noop);
 
