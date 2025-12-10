@@ -1283,4 +1283,27 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         assert.equal(user_groups.is_direct_member_of(10, 300), false);
         assert.ok(user_groups.is_direct_member_of(11, 300));
     });
+
+    run_test("subgroup_management", () => {
+        const raw_group = {
+            name: "parent_group",
+            id: 400,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Group to manage",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(raw_group);
+        user_groups.add_subgroups(400, [55, 66]);
+        const group = user_groups.get_user_group_from_id(400);
+        assert.ok(group.direct_subgroup_ids.has(55));
+        assert.ok(group.direct_subgroup_ids.has(66));
+        user_groups.remove_subgroups(400, [55]);
+        assert.equal(group.direct_subgroup_ids.has(55), false);
+        assert.ok(group.direct_subgroup_ids.has(66));
+    });
 });
