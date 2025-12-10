@@ -1,0 +1,15 @@
+<span class="reply">
+    <i class="zulip-icon zulip-icon-reply reply-icon" aria-hidden="true"></i>
+    {{#if show_topic_url}}
+    <a href={{topic_url}} class="reference-message-topic-link">{{topic_url_text}}</a>
+    {{/if}}
+    {{{reply_content}}}
+    {{#if include_reply_action_buttons}}
+    {{#if silent_mention}}
+    {{> components/icon_button custom_classes="mention-button reply-action-button" intent="neutral" icon="at-sign"}}
+    {{else}}
+    {{> components/icon_button custom_classes="mention-button reply-action-button" intent="neutral" icon="at-sign-crossed"}}
+    {{/if}}
+    {{> components/icon_button custom_classes="remove-reply-button reply-action-button" intent="neutral" icon="close-small"}}
+    {{/if}}
+</span>

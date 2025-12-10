@@ -25,7 +25,7 @@
     /* The spacing between two paragraphs is double the usual value.
        We coordinate this spacing matches so that it matches the
        spacing between paragraphs in two consecutive 1-line messages. */
-    & p + p {
+    & p:not(:has(> .reply:first-child)) + p {
         margin-top: var(--markdown-interelement-doubled-space-px);
     }
 
