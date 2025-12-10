@@ -17,7 +17,6 @@ from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_user_setting
-from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
@@ -661,7 +660,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertGreater(len(result["realm_bots"]), 2)
