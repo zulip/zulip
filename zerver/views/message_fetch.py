@@ -141,9 +141,9 @@ def get_messages_backend(
     elif client_requested_message_ids is not None:
         include_anchor = False
 
-    anchor = None
+    anchor_info = None
     if client_requested_message_ids is None:
-        anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
+        anchor_info = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
 
     realm = get_valid_realm_from_request(request)
     narrow = clean_narrow_for_message_fetch(narrow, realm, maybe_user_profile)
@@ -242,7 +242,7 @@ def get_messages_backend(
             user_profile=user_profile,
             realm=realm,
             is_web_public_query=is_web_public_query,
-            anchor=anchor,
+            anchor_info=anchor_info,
             include_anchor=include_anchor,
             num_before=num_before,
             num_after=num_after,
