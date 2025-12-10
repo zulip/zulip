@@ -82,10 +82,10 @@ class Command(ZulipBaseCommand):
                     "--dbname=" + settings.DATABASES["default"]["NAME"],
                     "--no-password",
                 ]
-                if settings.DATABASES["default"]["HOST"] != "":
+                if settings.DATABASES["default"].get("HOST"):
                     pg_dump_command += ["--host=" + settings.DATABASES["default"]["HOST"]]
-                if settings.DATABASES["default"]["PORT"] != "":
-                    pg_dump_command += ["--port=" + settings.DATABASES["default"]["PORT"]]
+                if settings.DATABASES["default"].get("PORT"):
+                    pg_dump_command += ["--port=" + str(settings.DATABASES["default"]["PORT"])]
 
                 os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
 
