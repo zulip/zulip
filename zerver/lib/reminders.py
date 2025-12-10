@@ -10,6 +10,7 @@ from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.lib.url_encoding import message_link_url
 from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def normalize_note_text(body: str) -> str:
@@ -107,3 +108,12 @@ def access_reminder(user_profile: UserProfile, reminder_id: int) -> ScheduledMes
         )
     except ScheduledMessage.DoesNotExist:
         raise ResourceNotFoundError(_("Reminder does not exist"))
+
+
+def notify_remove_reminder(user_profile: UserProfile, reminder_id: int) -> None:
+    event = {
+        "type": "reminders",
+        "op": "remove",
+        "reminder_id": reminder_id,
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
