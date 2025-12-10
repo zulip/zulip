@@ -6,6 +6,7 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
 import SaveChanges from "../include/_SaveChanges.mdx";
 import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
@@ -19,6 +20,11 @@ italics, and is translated into [your language](/help/change-your-language).
 
 Users won't need to enter a topic when sending a message to a “*general chat*”
 channel.
+
+<ZulipTip>
+  You can also allow topics, but [configure who can start new
+  ones](/help/configure-who-can-start-new-topics).
+</ZulipTip>
 
 ## Configure a channel to have only the “*general chat*” topic
 
@@ -44,3 +50,4 @@ channel.
 * [Introduction to topics](/help/introduction-to-topics)
 * [“*General chat*” topic](/help/general-chat-topic)
 * [Require topics in channel messages](/help/require-topics)
+* [Configure who can start new ones](/help/configure-who-can-start-new-topics)
