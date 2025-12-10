@@ -1501,7 +1501,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Test for not allowing a non-owner user to make assign a bot an owner role
         desdemona = self.example_user("desdemona")
-        do_change_user_role(desdemona, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(desdemona, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
 

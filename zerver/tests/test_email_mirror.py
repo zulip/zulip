@@ -22,7 +22,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
-from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.email_mirror import (
     RateLimitedRealmMirror,
     create_missed_message_address,
@@ -698,7 +698,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         realm = get_realm("zulip")
         channel = get_stream("Denmark", realm)
 
-        do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(hamlet, UserProfile.ROLE_MODERATOR)
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
@@ -753,7 +753,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         )
 
         # Sender is a bot owned by the current user + has the post permission.
-        do_change_user_role(bot, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(bot, UserProfile.ROLE_MODERATOR)
         incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
 
         with self.assertLogs(logger_name, level="INFO") as m:
@@ -770,7 +770,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         realm = get_realm("zulip")
         channel = get_stream("Denmark", realm)
 
-        do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(hamlet, UserProfile.ROLE_MODERATOR)
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
@@ -825,7 +825,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         )
 
         # Sender is a bot owned by the current user + has the post permission.
-        do_change_user_role(bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(bot, UserProfile.ROLE_REALM_ADMINISTRATOR)
         incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
 
         with self.assertLogs(logger_name, level="INFO") as m:
