@@ -1,16 +1,15 @@
-
 const assert = require("node:assert/strict");
 
-const { make_user_group } = require("./lib/example_group.cjs");
-const { make_realm } = require("./lib/example_realm.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
-const { zrequire } = require("./lib/namespace.cjs");
-const { run_test } = require("./lib/test.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
+const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
 const group_permission_settings = zrequire("group_permission_settings");
 const user_groups = zrequire("user_groups");
-const { set_realm } = zrequire("state_data");
+const {set_realm} = zrequire("state_data");
 
 const realm = make_realm();
 set_realm(realm);
@@ -478,7 +477,7 @@ run_test("is_user_in_group", () => {
     assert.equal(user_groups.is_user_in_group(admins.id, 6), false);
 });
 
-run_test("get_realm_user_groups_for_dropdown_list_widget", ({ override }) => {
+run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
     const nobody = make_user_group({
         name: "role:nobody",
         description: "foo",
@@ -558,12 +557,12 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({ override }) => {
     );
 
     let expected_groups_list = [
-        { name: "translated: Admins, moderators, members and guests", unique_id: 6 },
-        { name: "translated: Admins, moderators and members", unique_id: 5 },
-        { name: "translated: Admins, moderators and full members", unique_id: 7 },
-        { name: "translated: Admins and moderators", unique_id: 4 },
-        { name: "translated: Admins", unique_id: 3 },
-        { name: "translated: Owners", unique_id: 2 },
+        {name: "translated: Admins, moderators, members and guests", unique_id: 6},
+        {name: "translated: Admins, moderators and members", unique_id: 5},
+        {name: "translated: Admins, moderators and full members", unique_id: 7},
+        {name: "translated: Admins and moderators", unique_id: 4},
+        {name: "translated: Admins", unique_id: 3},
+        {name: "translated: Owners", unique_id: 2},
     ];
 
     user_groups.initialize({
@@ -589,8 +588,8 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({ override }) => {
     );
 
     expected_groups_list = [
-        { name: "translated: Admins, moderators, members and guests", unique_id: 6 },
-        { name: "translated: Admins, moderators and members", unique_id: 5 },
+        {name: "translated: Admins, moderators, members and guests", unique_id: 6},
+        {name: "translated: Admins, moderators and members", unique_id: 5},
     ];
 
     assert.deepEqual(
@@ -856,7 +855,7 @@ run_test("group_has_permission", () => {
     assert.ok(user_groups.group_has_permission(setting_value, group_id));
 });
 
-run_test("get_assigned_group_permission_object", ({ override }) => {
+run_test("get_assigned_group_permission_object", ({override}) => {
     const admins = make_user_group({
         name: "Administrators",
         id: 1,
@@ -1220,12 +1219,9 @@ run_test("get_assigned_group_permission_object", ({ override }) => {
             ),
             true,
         );
-
-
     });
 
     run_test("add_user_group", () => {
-
         const raw_group = {
             name: "test_group",
             id: 100,
@@ -1236,8 +1232,8 @@ run_test("get_assigned_group_permission_object", ({ override }) => {
             creator_id: 1,
             date_created: 10000,
             deactivated: false,
-            can_mention_group: 1
-        }
+            can_mention_group: 1,
+        };
         const group = user_groups.add(raw_group);
         assert.equal(group.id, 100);
         assert.ok(group.members.has(1));
@@ -1256,7 +1252,7 @@ run_test("get_assigned_group_permission_object", ({ override }) => {
             date_created: 10000,
             deactivated: false,
             can_mention_group: 1,
-        }
+        };
 
         const group = user_groups.add(raw_group);
         user_groups.remove(group);
