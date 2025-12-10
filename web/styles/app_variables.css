@@ -427,7 +427,7 @@
     --opacity-left-sidebar-muted-mentions: 0.3;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
-    --opacity-readonly-modal-input: 0.7;
+    --opacity-readonly-modal-input: 0.5;
 
     /*
     Message box elements and values.
