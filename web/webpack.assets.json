@@ -53,19 +53,19 @@
     ],
     "landing-page": [
         "./src/bundles/legacy_portico_bundle.ts",
-        "./src/portico/landing-page.ts",
-        "./styles/portico/landing_page.css"
+        "./src/portico/legacy_landing_page.ts",
+        "./styles/portico/legacy_landing_page.css"
     ],
     "landing-page-with-pricing": [
         "./src/bundles/legacy_portico_bundle.ts",
-        "./src/portico/landing-page.ts",
-        "./styles/portico/landing_page.css",
+        "./src/portico/legacy_landing_page.ts",
+        "./styles/portico/legacy_landing_page.css",
         "./styles/portico/pricing_plans.css"
     ],
     "landing-page-hello": [
         "./src/bundles/hello.ts",
         "./src/portico/hello.ts",
-        "./src/portico/landing-page.ts",
+        "./src/portico/legacy_landing_page.ts",
         "./src/portico/header.ts",
         "./styles/portico/svg_icons.css",
         "./styles/portico/hello.css",
@@ -74,7 +74,7 @@
     ],
     "plans-page": [
         "./src/bundles/hello.ts",
-        "./src/portico/landing-page.ts",
+        "./src/portico/legacy_landing_page.ts",
         "./src/portico/header.ts",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
@@ -86,14 +86,14 @@
     "integrations": [
         "./src/bundles/legacy_portico_bundle.ts",
         "./src/portico/integrations.ts",
-        "./styles/portico/landing_page.css",
+        "./styles/portico/legacy_landing_page.css",
         "./styles/portico/integrations.css",
         "./src/portico/help.ts"
     ],
     "communities": [
         "./src/bundles/legacy_portico_bundle.ts",
         "./src/portico/communities.ts",
-        "./styles/portico/landing_page.css",
+        "./styles/portico/legacy_landing_page.css",
         "./styles/portico/integrations.css"
     ],
     "signup": [
