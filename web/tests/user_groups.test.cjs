@@ -1192,27 +1192,24 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         allowed_system_groups: [],
     };
 
-    // 2. Test Scenario A: Internet group should be blocked
-    // The function signature is: (group_name, settings, for_new_settings_ui)
+
     assert.equal(
         user_groups.check_system_user_group_allowed_for_setting("role:internet", settings, false),
         false
     );
 
-    // 3. Test Scenario B: Nobody group should be blocked
-    // YOUR TURN: Write the assert.equal for "role:nobody" using the settings above.
+
     assert.equal(
         user_groups.check_system_user_group_allowed_for_setting("role:nobody",settings,false ),false
         
     );
     
-    // 4. Test Scenario C: Everyone group should be blocked
-    // YOUR TURN: Write the assert.equal for "role:everyone" using the settings above.
+ 
 assert.equal(
 user_groups.check_system_user_group_allowed_for_setting("role:everyone" , settings,false),false
 )
 
-    // 5. Happy Path: A random group should be ALLOWED (return true)
+  
     assert.equal(
         user_groups.check_system_user_group_allowed_for_setting("role:members", settings, false),
         true
