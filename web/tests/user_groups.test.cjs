@@ -1244,7 +1244,7 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         const raw_group = {
             name: "to_delete",
             id: 200,
-            memebrs: [1],
+            members: [1],
             is_system_group: false,
             direct_subgroup_ids: [],
             description: "Group to Delete",
