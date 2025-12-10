@@ -1,6 +1,3 @@
-"use strict";
-
-
 
 const assert = require("node:assert/strict");
 
@@ -1245,5 +1242,25 @@ run_test("get_assigned_group_permission_object", ({ override }) => {
         assert.equal(group.id, 100);
         assert.ok(group.members.has(1));
         assert.equal(user_groups.get_user_group_from_id(100), group);
+    });
+
+    run_test("remove_user_group", () => {
+        const raw_group = {
+            name: "to_delete",
+            id: 200,
+            memebrs: [1],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Group to Delete",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        }
+
+        const group = user_groups.add(raw_group);
+        user_groups.remove(group);
+        assert.equal(group.id, 200);
+        assert.equal(user_groups.maybe_get_user_group_from_id(200), undefined);
     });
 });
