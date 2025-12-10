@@ -695,6 +695,12 @@ ul.popover-group-menu-member-list {
     }
 }
 
+.modal__overlay #set-user-status-modal + .emoji-popover-root {
+    /* Micromodal prevents pointer events to elements outside the content.
+       We need to re-enable pointer events for the emoji popover to work. */
+    pointer-events: auto;
+}
+
 .gif-grid-in-popover {
     /* 300px of GIPHY grid + 5px is the extra gutter space
      * + 1px for outline.
