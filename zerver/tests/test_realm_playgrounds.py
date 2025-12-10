@@ -88,6 +88,27 @@ class RealmPlaygroundTests(ZulipTestCase):
         resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(resp, 'Missing the required variable "code" in the URL template')
 
+    def test_add_realm_playground_validation(self) -> None:
+        iago = self.example_user("iago")
+
+        # Test to check that spaces are rejected
+        payload = {
+            "name": "Bad Name",
+            "pygments_language": "rust lang",
+            "url_template": "https://example.com",
+        }
+        resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(resp, "Language name cannot contain spaces.")
+
+        # Test to check that restricted keywords are rejected
+        payload = {
+            "name": "Bad Keyword",
+            "pygments_language": "math",
+            "url_template": "https://example.com",
+        }
+        resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(resp, "This is a special keyword and cannot be used.")
+
     def test_create_already_existing_playground(self) -> None:
         iago = self.example_user("iago")
 
