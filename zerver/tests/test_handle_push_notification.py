@@ -566,7 +566,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             ).values_list("token", flat=True)
         )
 
-        def test_end_to_end(missed_message: dict[str, Any], db_query_count: int) -> None:
+        def test_end_to_end(missed_message: dict[str, Any], *, db_query_count: int) -> None:
             with (
                 mock.patch(
                     "zerver.lib.push_notifications.push_notifications_configured", return_value=True
@@ -620,7 +620,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         )
         UserMessage.objects.create(user_profile=self.user_profile, message=message)
         missed_message = {"message_id": message.id, "trigger": NotificationTriggers.DIRECT_MESSAGE}
-        test_end_to_end(missed_message, 7)
+        test_end_to_end(missed_message, db_query_count=7)
 
         # Group DM
         # 1 extra query than prev for `get_display_recipient` in `get_message_payload`.
@@ -633,7 +633,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         )
         UserMessage.objects.create(user_profile=self.user_profile, message=message)
         missed_message = {"message_id": message.id, "trigger": NotificationTriggers.DIRECT_MESSAGE}
-        test_end_to_end(missed_message, 8)
+        test_end_to_end(missed_message, db_query_count=8)
 
         # Channel message
         # 3 extra queries than 1:1 DM
@@ -644,7 +644,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         message = self.get_message(Recipient.STREAM, channel.id, realm.id)
         UserMessage.objects.create(user_profile=self.user_profile, message=message)
         missed_message = {"message_id": message.id, "trigger": NotificationTriggers.STREAM_PUSH}
-        test_end_to_end(missed_message, 10)
+        test_end_to_end(missed_message, db_query_count=10)
 
         # Channel message: private channel + user-group mention
         # 3 extra queries than prev:
@@ -660,7 +660,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             "trigger": NotificationTriggers.MENTION,
             "mentioned_user_group_id": user_group.id,
         }
-        test_end_to_end(missed_message, 13)
+        test_end_to_end(missed_message, db_query_count=13)
 
     def test_send_remove_notifications_to_bouncer(self) -> None:
         self.setup_apns_tokens()
