@@ -4,12 +4,18 @@ title: Channel posting policy
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
 import SaveChanges from "../include/_SaveChanges.mdx";
 import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
 You can restrict who can send messages to a channel. For example,
 you can set up an announcement channel where only a specific
 [group](/help/user-groups) of users can send messages.
+
+<ZulipTip>
+  You can also [configure who can start new
+  topics](/help/configure-who-can-start-new-topics).
+</ZulipTip>
 
 <FlattenedSteps>
   <NavigationSteps target="relative/channel/all" />
