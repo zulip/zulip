@@ -25,7 +25,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.message import SendMessageRequest, access_message, truncate_topic
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
-from zerver.lib.reminders import get_reminder_formatted_content
+from zerver.lib.reminders import get_reminder_formatted_content, notify_remove_reminder
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_global_time
@@ -324,6 +324,7 @@ def send_reminder(scheduled_message: ScheduledMessage) -> None:
     scheduled_message.delivered_message_id = message_id
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
+    notify_remove_reminder(current_user, scheduled_message.id)
 
 
 def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
