@@ -398,13 +398,15 @@ export function get_request_data_for_stream_privacy(selected_val: string): {
                 is_web_public: false,
             };
         }
-        default: {
+        case settings_config.stream_privacy_policy_values.web_public.code: {
             return {
                 is_private: false,
                 history_public_to_subscribers,
                 is_web_public: true,
             };
         }
+        default:
+            throw new Error("Invalid value for channel privacy: " + selected_val);
     }
 }
 
