@@ -88,7 +88,7 @@ def update_message_flags_for_narrow(
     num_before: Json[NonNegativeInt],
     operation: Annotated[str, ApiParamConfig("op")],
 ) -> HttpResponse:
-    anchor = parse_anchor_value(anchor_val, use_first_unread_anchor=False)
+    anchor_info = parse_anchor_value(anchor_val, use_first_unread_anchor=False)
 
     if num_before > 0 and num_after > 0 and not include_anchor:
         raise JsonableError(_("The anchor can only be excluded at an end of the range"))
@@ -106,7 +106,7 @@ def update_message_flags_for_narrow(
         user_profile=user_profile,
         realm=user_profile.realm,
         is_web_public_query=False,
-        anchor=anchor,
+        anchor_info=anchor_info,
         include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,
