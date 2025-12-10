@@ -41,6 +41,25 @@ const channel_incompatible_patterns: TermPattern[] = [
     {operator: "channels"},
 ];
 
+// TODO: Expand this to support all available filters and its description
+// when we move away from description_html and calculate description on the
+// fly by directly looking into this. We can ultimately support i18n too.
+const descriptions: Record<string, string> = {
+    "is:resolved": "resolved topics",
+    "-is:resolved": "unresolved topics",
+    "is:dm": "direct messages",
+    "is:starred": "starred messages",
+    "is:mentioned": "messages that mention you",
+    "is:followed": "followed topics",
+    "is:alerted": "alerted messages",
+    "is:unread": "unread messages",
+    "is:muted": "muted messages",
+    "has:link": "messages with links",
+    "has:image": "messages with images",
+    "has:attachment": "messages with attachments",
+    "has:reaction": "messages with reactions",
+};
+
 const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[]>> &
     Record<
         | "is:resolved"
@@ -702,7 +721,7 @@ function get_special_filter_suggestions(
         return (
             s.search_string.toLowerCase().startsWith(last_string) ||
             show_operator_suggestions ||
-            s.description_html?.toLowerCase().startsWith(last_string)
+            descriptions[s.search_string]?.toLowerCase().startsWith(last_string)
         );
     });
     const filtered_suggestions = suggestions.map(({incompatible_patterns, ...s}) => s);
