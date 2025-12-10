@@ -1,3 +1,5 @@
+"use strict";
+
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
@@ -1258,5 +1260,27 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         user_groups.remove(group);
         assert.equal(group.id, 200);
         assert.equal(user_groups.maybe_get_user_group_from_id(200), undefined);
+    });
+
+    run_test("member_management", () => {
+        const raw_group = {
+            name: "member_test",
+            id: 300,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Group to manage",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(raw_group);
+        user_groups.add_members(300, [10, 11]);
+        assert.ok(user_groups.is_direct_member_of(10, 300));
+        assert.ok(user_groups.is_direct_member_of(11, 300));
+        user_groups.remove_members(300, [10]);
+        assert.equal(user_groups.is_direct_member_of(10, 300), false);
+        assert.ok(user_groups.is_direct_member_of(11, 300));
     });
 });
