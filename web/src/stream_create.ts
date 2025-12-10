@@ -602,7 +602,7 @@ export function set_up_handlers(): void {
             return;
         }
 
-        if (principals.length >= 50) {
+        if (principals.length >= 10) {
             const html_body = render_subscription_invites_warning_modal({
                 channel_name: stream_name,
                 count: principals.length,
@@ -610,7 +610,7 @@ export function set_up_handlers(): void {
 
             confirm_dialog.launch({
                 html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
-                html_body,
+                html_subheader: html_body,
                 on_click() {
                     create_stream();
                 },

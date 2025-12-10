@@ -2,10 +2,14 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    {{ _('Configure email address privacy') }}
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        {{ _('Configure email address privacy') }}
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>
@@ -18,9 +22,9 @@
                         <option value="{{ value }}" {% if value == default_email_address_visibility %}selected{% endif %}>{{name}}</option>
                     {% endfor %}
                 </select>
-                <p>
+                <div>
                     {% trans %}You can also change this setting <a href="{{ root_domain_url }}/help/configure-email-visibility" target="_blank" rel="noopener noreferrer">after you join</a>.{% endtrans %}
-                </p>
+                </div>
             </main>
             <footer class="modal__footer">
                 <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Cancel') }}</button>
