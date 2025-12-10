@@ -151,13 +151,15 @@ def _get_message_flags(user: UserProfile, message_id: int) -> list[str]:
 def _build_dm_recipient_query(user: UserProfile, user_ids: list[int]):
     """Build a query for DM messages to/from specific users.
 
-    For 1:1 DMs, this finds messages where:
-    - The recipient is a direct message group containing exactly user + target user
+    For 1:1 DMs using Recipient.PERSONAL, we need a BIDIRECTIONAL query because:
+    - When User A sends to User B: recipient_id = User B's personal recipient
+    - When User B sends to User A: recipient_id = User A's personal recipient
 
-    For group DMs, this finds messages where:
-    - The recipient is a direct message group containing all specified users + sender
+    For group DMs (Recipient.DIRECT_MESSAGE_GROUP), a simple recipient filter works
+    because all messages share the same recipient_id.
     """
-    from zerver.models import DirectMessageGroup
+    from django.db.models import Q
+    from zerver.models import DirectMessageGroup, Recipient
     from zerver.lib.recipient_users import recipient_for_user_profiles
 
     # Include current user in the lookup
@@ -177,11 +179,67 @@ def _build_dm_recipient_query(user: UserProfile, user_ids: list[int]):
             forwarded_mirror_message=False,
             forwarder_user_profile=None,
             sender=user,
+            create=False,  # Don't create if doesn't exist
         )
-        return Message.objects.filter(
-            realm_id=user.realm_id,
-            recipient=recipient,
-        )
+
+        # Group DM (DIRECT_MESSAGE_GROUP) - simple query by recipient_id
+        # All messages in a group DM share the same recipient
+        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            return Message.objects.filter(
+                realm_id=user.realm_id,
+                recipient_id=recipient.id,
+            )
+
+        # 1:1 DM using PERSONAL recipient - need bidirectional query
+        # Find the other participant
+        other_participant = None
+        for profile in user_profiles:
+            if profile.id != user.id:
+                other_participant = profile
+                break
+
+        if other_participant:
+            # Bidirectional query: messages in BOTH directions
+            # 1. Messages sent BY the other person TO me (recipient = my personal recipient)
+            # 2. Messages sent BY me TO the other person (recipient = their personal recipient)
+            return Message.objects.filter(
+                realm_id=user.realm_id,
+            ).filter(
+                Q(sender_id=other_participant.id, recipient_id=user.recipient_id) |
+                Q(sender_id=user.id, recipient_id=other_participant.recipient_id)
+            )
+        else:
+            # Self DM (messaging yourself)
+            return Message.objects.filter(
+                realm_id=user.realm_id,
+                sender_id=user.id,
+                recipient_id=user.recipient_id,
+            )
+
+    except DirectMessageGroup.DoesNotExist:
+        # No existing DirectMessageGroup, fall back to personal recipients for 1:1 DM
+        try:
+            # Get the other user (excluding current user from the list)
+            other_user_ids = [uid for uid in user_ids if uid != user.id]
+            if not other_user_ids:
+                # Self DM case
+                return Message.objects.filter(
+                    realm_id=user.realm_id,
+                    sender_id=user.id,
+                    recipient_id=user.recipient_id,
+                )
+
+            other_user = UserProfile.objects.get(id=other_user_ids[0], realm=user.realm)
+
+            # Bidirectional query using personal recipients
+            return Message.objects.filter(
+                realm_id=user.realm_id,
+            ).filter(
+                Q(sender_id=other_user.id, recipient_id=user.recipient_id) |
+                Q(sender_id=user.id, recipient_id=other_user.recipient_id)
+            )
+        except (IndexError, UserProfile.DoesNotExist):
+            return None
     except Exception:
         return None
 
