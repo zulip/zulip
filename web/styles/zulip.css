@@ -1560,7 +1560,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-right: 0;
 }
 
-/* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;
     height: 10px;
