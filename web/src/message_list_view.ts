@@ -75,11 +75,9 @@ export type MessageContainer = {
     small_avatar_url: string;
     status_message: string | false;
     stream_url?: string;
-    subscribed?: boolean;
     pm_with_url?: string;
     timestr: string;
     topic_url?: string;
-    unsubscribed?: boolean;
     want_date_divider: boolean;
 };
 
@@ -784,8 +782,6 @@ export class MessageListView {
 
             // These will be used to build the message container
             let include_recipient = false;
-            let subscribed;
-            let unsubscribed;
             let stream_url;
             let topic_url;
             let pm_with_url;
@@ -813,8 +809,6 @@ export class MessageListView {
                 want_date_divider = false;
                 date_divider_html = undefined;
                 include_recipient = true;
-                subscribed = false;
-                unsubscribed = false;
 
                 if (message.type === "stream") {
                     stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
@@ -842,8 +836,6 @@ export class MessageListView {
             const message_container = {
                 msg: message,
                 include_recipient,
-                ...(subscribed && {subscribed}),
-                ...(unsubscribed && {unsubscribed}),
                 ...(stream_url && {stream_url}),
                 ...(topic_url && {topic_url}),
                 ...(pm_with_url && {pm_with_url}),
