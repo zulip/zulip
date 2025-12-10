@@ -1182,37 +1182,44 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         can_edit: true,
     });
 
-
     run_test("check_system_user_group_allowed_for_setting", () => {
-    
-    const settings = {
-        allow_internet_group: false,
-        allow_nobody_group: false,
-        allow_everyone_group: false,
-        allowed_system_groups: [],
-    };
+        const settings = {
+            allow_internet_group: false,
+            allow_nobody_group: false,
+            allow_everyone_group: false,
+            allowed_system_groups: [],
+        };
 
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting(
+                "role:internet",
+                settings,
+                false,
+            ),
+            false,
+        );
 
-    assert.equal(
-        user_groups.check_system_user_group_allowed_for_setting("role:internet", settings, false),
-        false
-    );
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting("role:nobody", settings, false),
+            false,
+        );
 
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting(
+                "role:everyone",
+                settings,
+                false,
+            ),
+            false,
+        );
 
-    assert.equal(
-        user_groups.check_system_user_group_allowed_for_setting("role:nobody",settings,false ),false
-        
-    );
-    
- 
-assert.equal(
-user_groups.check_system_user_group_allowed_for_setting("role:everyone" , settings,false),false
-)
-
-  
-    assert.equal(
-        user_groups.check_system_user_group_allowed_for_setting("role:members", settings, false),
-        true
-    );
-});
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting(
+                "role:members",
+                settings,
+                false,
+            ),
+            true,
+        );
+    });
 });
