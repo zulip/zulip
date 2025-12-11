@@ -1404,4 +1404,53 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         const system_found = all_list.find((g) => g.id === 1002);
         assert.equal(system_found, undefined);
     });
+
+    run_test("is_empty_group", () => {
+        user_groups.init();
+        const empty_group = {
+            name: "empty_group",
+            id: 10,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Empty group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(empty_group);
+
+        const has_members = {
+            name: "populated_group",
+            id: 11,
+            members: [99],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Has members",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(has_members);
+
+        const has_subgroup = {
+            name: "parent_group",
+            id: 12,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [11],
+            description: "Has subgroup",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(has_subgroup);
+
+        assert.ok(user_groups.is_empty_group(10));
+        assert.equal(user_groups.is_empty_group(11), false);
+        assert.equal(user_groups.is_empty_group(12), false);
+    });
 });
