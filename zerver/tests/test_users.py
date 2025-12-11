@@ -864,6 +864,7 @@ class PermissionTest(ZulipTestCase):
             "Biography": "long text data",
             "Favorite food": "short text data",
             "Favorite editor": "0",
+            "Programming languages": ["0", "1"],
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": [cordelia.id],
@@ -902,6 +903,7 @@ class PermissionTest(ZulipTestCase):
             "Biography": "long text data",
             "Favorite food": "short text data",
             "Favorite editor": "Vim",  # SELECT field: "0" -> "Vim"
+            "Programming languages": "Python, Rust",
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": silent_mention_syntax_for_user(cordelia),
@@ -952,6 +954,11 @@ class PermissionTest(ZulipTestCase):
             ("Birthday", "1909-34-55", "Birthday is not a date"),
             ("Favorite website", "not url", "Favorite website is not a URL"),
             ("Mentor", "not list of user ids", "User IDs is not a list"),
+            (
+                "Programming languages",
+                ["99"],
+                "'99' is not a valid choice for 'Programming languages'.",
+            ),
         ]
 
         for field_name, field_value, error_msg in invalid_fields:
@@ -1003,6 +1010,8 @@ class PermissionTest(ZulipTestCase):
             value: str | list[Any] | None = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
+            elif field.field_type == CustomProfileField.CHECKBOXES:
+                value = []
             empty_profile_data.append(
                 {
                     "id": field.id,
@@ -1025,6 +1034,7 @@ class PermissionTest(ZulipTestCase):
             "Biography": "A test user",
             "Favorite food": None,
             "Favorite editor": None,
+            "Programming languages": ["0"],
             "Birthday": None,
             "Favorite website": "https://zulip.github.io",
             "Mentor": [hamlet.id],

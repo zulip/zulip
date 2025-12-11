@@ -854,6 +854,17 @@ class Command(ZulipBaseCommand):
             favorite_editor = try_add_realm_custom_profile_field(
                 zulip_realm, "Favorite editor", CustomProfileField.DROPDOWN, field_data=field_data
             )
+            prog_field_data: ProfileFieldData = {
+                "0": {"text": "Python", "order": "1"},
+                "1": {"text": "Rust", "order": "2"},
+                "2": {"text": "C++", "order": "3"},
+            }
+            prog_languages = try_add_realm_custom_profile_field(
+                zulip_realm,
+                "Programming languages",
+                CustomProfileField.CHECKBOXES,
+                field_data=prog_field_data,
+            )
             birthday = try_add_realm_custom_profile_field(
                 zulip_realm, "Birthday", CustomProfileField.DATE
             )
@@ -883,6 +894,7 @@ class Command(ZulipBaseCommand):
                     {"id": biography.id, "value": "Betrayer of Othello."},
                     {"id": favorite_food.id, "value": "Apples"},
                     {"id": favorite_editor.id, "value": "1"},
+                    {"id": prog_languages.id, "value": '["0", "1"]'},
                     {"id": birthday.id, "value": "2000-01-01"},
                     {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
                     {"id": mentor.id, "value": [hamlet.id]},
@@ -902,6 +914,7 @@ class Command(ZulipBaseCommand):
                     },
                     {"id": favorite_food.id, "value": "Dark chocolate"},
                     {"id": favorite_editor.id, "value": "0"},
+                    {"id": prog_languages.id, "value": '["0", "1"]'},
                     {"id": birthday.id, "value": "1900-01-01"},
                     {"id": favorite_website.id, "value": "https://blog.zulig.org"},
                     {"id": mentor.id, "value": [iago.id]},

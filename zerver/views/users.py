@@ -226,7 +226,7 @@ def reactivate_user_backend(
 
 class ProfileDataElement(BaseModel):
     id: int
-    value: str | list[int] | None
+    value: str | list[int] | list[str] | None
 
 
 @typed_endpoint
