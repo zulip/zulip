@@ -123,11 +123,17 @@
         }
 
         .exit,
-        .expand {
+        .expand,
+        .toggle-muted-user-icon-container {
+            .reveal-muted-user-pill,
+            .hide-revealed-user-pill {
+                opacity: 0.7;
+            }
             width: var(--length-input-pill-exit);
             height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
+            align-items: center;
             margin-right: 2px;
             border-radius: 2px;
 
@@ -135,7 +141,9 @@
                 background: var(--color-background-input-pill-exit-hover);
 
                 .pill-close-button,
-                .pill-expand-button {
+                .pill-expand-button,
+                .reveal-muted-user-pill,
+                .hide-revealed-user-pill {
                     opacity: 1;
                 }
             }

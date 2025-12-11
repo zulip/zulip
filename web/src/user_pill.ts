@@ -5,8 +5,10 @@ import render_input_pill from "../templates/input_pill.hbs";
 import * as blueslip from "./blueslip.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
+import {$t} from "./i18n.ts";
 import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
+import * as muted_users from "./muted_users.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import type {
@@ -29,6 +31,7 @@ export type UserPill = {
     status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
     is_bot?: boolean;
+    is_muted_user_pill: boolean;
 };
 
 export type UserPillWidget = InputPillContainer<UserPill>;
@@ -57,6 +60,9 @@ export function create_item_from_user_id(
 
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
+    const is_muted_user_pill =
+        muted_users.is_user_muted(user.user_id) &&
+        pill_config?.should_display_muted_user_pill === true;
     const item: UserPill = {
         type: "user",
         full_name: user.full_name,
@@ -67,6 +73,7 @@ export function create_item_from_user_id(
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         is_bot: user.is_bot,
+        is_muted_user_pill,
     };
 
     // We pass deactivated true for a deactivated user
@@ -90,6 +97,7 @@ export function append_person(
     opts: {
         person: User;
         pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer;
+        should_display_muted_user_pill?: boolean;
     },
     execute_oncreate_callback = true,
 ): void {
@@ -97,6 +105,8 @@ export function append_person(
     const pill_widget = opts.pill_widget;
     const avatar_url = people.small_avatar_url_for_person(person);
     const status_emoji_info = user_status.get_status_emoji(opts.person.user_id);
+    const is_muted_user_pill =
+        muted_users.is_user_muted(person.user_id) && opts.should_display_muted_user_pill === true;
 
     const pill_data: UserPill = {
         type: "user",
@@ -107,6 +117,7 @@ export function append_person(
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
         is_bot: person.is_bot,
+        is_muted_user_pill,
     };
 
     pill_widget.appendValidatedData(pill_data, false, !execute_oncreate_callback);
@@ -182,6 +193,9 @@ export function append_user(
 }
 
 export function get_display_value_from_item(item: UserPill): string {
+    if (item.is_muted_user_pill) {
+        return $t({defaultMessage: "Muted user"});
+    }
     return item.full_name ?? item.email;
 }
 
@@ -204,6 +218,7 @@ export function generate_pill_html(item: UserPill, show_user_status_emoji = fals
         has_status,
         status_emoji_info,
         is_bot: item.is_bot,
+        is_muted_user_pill: item.is_muted_user_pill,
     });
 }
 

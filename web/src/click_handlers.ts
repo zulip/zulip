@@ -16,6 +16,7 @@ import * as compose_state from "./compose_state.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import {$t} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -24,6 +25,7 @@ import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
@@ -724,6 +726,21 @@ export function initialize(): void {
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger")!;
         browser_history.go_to_location(target);
+    });
+
+    $("body").on("click", ".reveal-muted-user-pill, .hide-revealed-user-pill", function () {
+        const $pill = $(this).closest(".pill");
+        if ($(this).is(".reveal-muted-user-pill")) {
+            const user_id = Number($pill.data("user-id"));
+            $pill.find(".pill-value").text(people.get_by_user_id(user_id).full_name);
+        } else {
+            $pill.find(".pill-value").text($t({defaultMessage: "Muted user"}));
+        }
+        $pill.find(".pill-image").toggleClass("hide");
+        $pill.find(".pill-image-border").toggleClass("hide");
+        $(this).toggleClass(
+            "zulip-icon-eye zulip-icon-hide reveal-muted-user-pill hide-revealed-user-pill",
+        );
     });
 
     $("body").on("click", ".formatting-control-scroller-button", (e) => {
