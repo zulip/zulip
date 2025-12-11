@@ -275,6 +275,7 @@
         line-height: 1.1;
         margin-top: 4px;
         white-space: pre-wrap;
+        min-width: 12.5em; /* 200px at 16px/1em */
     }
 }
 
