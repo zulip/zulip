@@ -1031,8 +1031,13 @@ export class Filter {
         return safe_to_return;
     }
 
-    terms_with_operator(operator: NarrowCanonicalOperator): NarrowTerm[] {
-        return this._terms.filter((term) => !term.negated && term.operator === operator);
+    terms_with_operator<T extends NarrowCanonicalTerm["operator"]>(
+        operator: T,
+    ): Extract<NarrowCanonicalTerm, {operator: T}>[] {
+        return this._terms.filter(
+            (term): term is Extract<NarrowCanonicalTerm, {operator: T}> =>
+                !term.negated && term.operator === operator,
+        );
     }
 
     has_negated_operand(operator: string, operand: string): boolean {

@@ -3143,6 +3143,6 @@ run_test("get_stringified_narrow_for_server_query", () => {
     const narrow = filter.get_stringified_narrow_for_server_query();
     assert.equal(
         narrow,
-        '[{"negated":false,"operator":"channel","operand":1},{"negated":false,"operator":"topic","operand":"bar"}]',
+        '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
 });
