@@ -132,7 +132,7 @@ class ReportMessageTest(ZulipTestCase):
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
         self.assertEqual(reports[0]["content"], expected_message.strip())
-        expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
+        expected_report_topic = f"{self.reported_user.full_name} moderation"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
 
         # User can report messages in public channels they're not subscribed
@@ -145,7 +145,7 @@ class ReportMessageTest(ZulipTestCase):
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 2
         self.assertEqual(reports[0]["content"], expected_message.strip())
-        expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
+        expected_report_topic = f"{self.reported_user.full_name} moderation"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
 
         # User can't report a message in channels they're not a part of.

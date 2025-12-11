@@ -141,7 +141,7 @@ def send_message_report(
     )
     content += reported_message_preview_block
 
-    topic_name = _("{fullname}'s moderation requests").format(fullname=reported_user.full_name)
+    topic_name = _("{fullname} moderation").format(fullname=reported_user.full_name)
     if moderation_request_channel.topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value:
         topic_name = ""
 
