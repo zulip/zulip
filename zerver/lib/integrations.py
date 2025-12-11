@@ -572,9 +572,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="CircleCI",
     ),
     IncomingWebhookIntegration(
-        "clubhouse", ["project-management"], [WebhookScreenshotConfig("story_create.json")]
-    ),
-    IncomingWebhookIntegration(
         "codeship",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("error_build.json")],
@@ -846,6 +843,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     ),
     IncomingWebhookIntegration(
         "sentry", ["monitoring"], [WebhookScreenshotConfig("event_for_exception_python.json")]
+    ),
+    IncomingWebhookIntegration(
+        "shortcut",
+        ["project-management"],
+        [WebhookScreenshotConfig("story_create.json")],
+        legacy_names=["clubhouse"],
     ),
     IncomingWebhookIntegration(
         "slack",
