@@ -12,6 +12,7 @@ import {
     wrapFieldSelection,
 } from "text-field-edit";
 import * as z from "zod/mini";
+import * as muted_users from "./muted_users.ts";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
@@ -461,6 +462,7 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         }
         const users = people.get_users_from_ids(user_ids);
         const recipient_parts = users.map((user) => {
+            if (muted_users.is_user_muted(user.user_id)) return $t({defaultMessage: "Muted user"});
             if (people.should_add_guest_user_indicator(user.user_id)) {
                 return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
             }
@@ -472,6 +474,12 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             // If it's a single user, display status text if available
             const user = users[0];
             const status = user_status.get_status_text(user.user_id);
+            const is_muted_user = muted_users.is_user_muted(user.user_id);
+            if (is_muted_user) {
+                return $t({
+                    defaultMessage: "Message Muted user",
+                });
+            }
             if (status) {
                 return $t(
                     {defaultMessage: "Message {recipient_name} ({recipient_status})"},
