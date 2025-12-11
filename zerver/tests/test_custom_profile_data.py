@@ -188,6 +188,30 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
+    def test_create_checkboxes_field(self) -> None:
+        self.login("iago")
+        data: dict[str, str | int] = {}
+        data["name"] = "Favorite tools"
+        data["field_type"] = CustomProfileField.CHECKBOXES
+
+        data["field_data"] = orjson.dumps(
+            {
+                "0": {"text": "x" * 51, "order": "1"},
+                "1": {"text": "Git", "order": "2"},
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+        data["field_data"] = orjson.dumps(
+            {
+                "0": {"text": "Docker", "order": "1"},
+                "1": {"text": "Git", "order": "2"},
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
     def test_create_default_external_account_field(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
@@ -898,14 +922,25 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             field_name, [invalid_user_id], f"Invalid user IDs: {invalid_user_id}"
         )
 
+    def test_update_invalid_checkboxes_field(self) -> None:
+        field_name = "Programming languages"
+        self.assert_error_update_invalid_value(field_name, [], f"{field_name} cannot be empty.")
+        self.assert_error_update_invalid_value(
+            field_name, ["0", "0"], f"{field_name} cannot have duplicate choices."
+        )
+        self.assert_error_update_invalid_value(
+            field_name, ["99"], f"'99' is not a valid choice for '{field_name}'."
+        )
+
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        fields: list[tuple[str, str | list[int]]] = [
+        fields: list[tuple[str, str | list[int] | list[str]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
             ("Favorite editor", "0"),
+            ("Programming languages", ["0", "1"]),
             ("Birthday", "1909-03-05"),
             ("Favorite website", "https://zulip.com"),
             ("Mentor", [self.example_user("cordelia").id]),
@@ -979,6 +1014,22 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             {
                 "id": field.id,
                 "value": "1",
+            }
+        ]
+
+        result = self.client_patch(
+            "/json/users/me/profile_data", {"data": orjson.dumps(data).decode()}
+        )
+        self.assert_json_success(result)
+
+    def test_update_checkboxes_field_successfully(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.get(name="Programming languages", realm=realm)
+        data = [
+            {
+                "id": field.id,
+                "value": ["0", "2"],
             }
         ]
 
@@ -1130,6 +1181,45 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             {"field_data": orjson.dumps(changed_long).decode()},
         )
         self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+    def test_remove_checkboxes_field_options(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+        realm = user.realm
+
+        field = CustomProfileField.objects.get(name="Programming languages", realm=realm)
+
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(hamlet, [{"id": field.id, "value": ["0", "1"]}])
+
+        cordelia = self.example_user("cordelia")
+        self.set_user_custom_profile_data(cordelia, [{"id": field.id, "value": ["1"]}])
+
+        aaron = self.example_user("aaron")
+        self.set_user_custom_profile_data(aaron, [{"id": field.id, "value": ["0"]}])
+
+        new_field_data = {
+            "0": {"text": "Python", "order": "1"},
+            "2": {"text": "C++", "order": "3"},
+        }
+
+        payload = {
+            "name": "Programming languages",
+            "field_data": orjson.dumps(new_field_data).decode(),
+        }
+
+        result = self.client_patch(f"/json/realm/profile_fields/{field.id}", payload)
+        self.assert_json_success(result)
+
+        self.assertFalse(
+            CustomProfileFieldValue.objects.filter(user_profile=cordelia, field=field).exists()
+        )
+
+        hamlet_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=field)
+        self.assertEqual(orjson.loads(hamlet_value.value), ["0"])
+
+        aaron_value = CustomProfileFieldValue.objects.get(user_profile=aaron, field=field)
+        self.assertEqual(orjson.loads(aaron_value.value), ["0"])
 
     def test_default_external_account_type_field(self) -> None:
         self.login("iago")

@@ -56,7 +56,7 @@ def validate_custom_field_data(
     existing_field_data: ProfileFieldData | None = None,
 ) -> None:
     try:
-        if field_type == CustomProfileField.DROPDOWN:
+        if field_type in (CustomProfileField.DROPDOWN, CustomProfileField.CHECKBOXES):
             # Choice type field must have at least have one choice
             if len(field_data) < 1:
                 raise JsonableError(_("Field must have at least one choice."))
