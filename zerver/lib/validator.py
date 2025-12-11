@@ -566,6 +566,22 @@ def check_string_or_int(var_name: str, val: object) -> str | int:
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
 
 
+def validate_select_multiple_field(var_name: str, field_data: str, value: object) -> Any:
+    items = check_list(check_string)(var_name, value)
+
+    try:
+        field_data_dict = orjson.loads(field_data)
+    except orjson.JSONDecodeError:
+        raise ValidationError(_("Bad data in custom profile field."))
+
+    for item in items:
+        if item not in field_data_dict:
+            msg = _("'{value}' is not a valid choice for '{field_name}'.")
+            raise ValidationError(msg.format(value=item, field_name=var_name))
+
+    return items
+
+
 @dataclass(eq=False)
 class WildValue:  # noqa: PLW1641
     var_name: str
