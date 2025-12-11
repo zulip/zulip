@@ -1453,4 +1453,61 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         assert.equal(user_groups.is_empty_group(11), false);
         assert.equal(user_groups.is_empty_group(12), false);
     });
+
+    run_test("user_query_helper", () => {
+        user_groups.init();
+
+        const group_10 = {
+            name: "g10",
+            id: 10,
+            members: [99],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "d",
+            creator_id: 1,
+            date_created: 1,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(group_10);
+
+        const group_11 = {
+            name: "g11",
+            id: 11,
+            members: [99],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "d",
+            creator_id: 1,
+            date_created: 1,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(group_11);
+
+        const group_12 = {
+            name: "g12",
+            id: 12,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "d",
+            creator_id: 1,
+            date_created: 1,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(group_12);
+
+        const my_groups = user_groups.get_user_groups_of_user(99);
+        assert.equal(my_groups.length, 2);
+        assert.ok(my_groups.some((g) => g.id === 10));
+        assert.ok(my_groups.some((g) => g.id === 11));
+        assert.equal(
+            my_groups.some((g) => g.id === 12),
+            false,
+        );
+        assert.equal(user_groups.is_user_in_any_group([10, 12], 99), true);
+        assert.equal(user_groups.is_user_in_any_group([12], 99), false);
+    });
 });
