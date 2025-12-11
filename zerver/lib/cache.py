@@ -607,14 +607,16 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id:
     cache_delete_many(user_profile_key_iterator())
 
 
-def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
+def delete_display_recipient_cache(user_profiles: list["UserProfile"]) -> None:
     from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
 
-    recipient_ids = Subscription.objects.filter(user_profile=user_profile).values_list(
+    recipient_ids = Subscription.objects.filter(user_profile__in=user_profiles).values_list(
         "recipient_id", flat=True
     )
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
-    keys.append(single_user_display_recipient_cache_key(user_profile.id))
+    keys.extend(
+        [single_user_display_recipient_cache_key(user_profile.id) for user_profile in user_profiles]
+    )
     cache_delete_many(keys)
 
 
@@ -627,6 +629,38 @@ def changed(update_fields: Sequence[str] | None, fields: list[str]) -> bool:
     return any(f in update_fields_set for f in fields)
 
 
+def bulk_flush_users(
+    *,
+    user_profiles: list["UserProfile"],
+    realm: "Realm",
+    update_fields: Sequence[str] | None = None,
+) -> None:
+    delete_user_profile_caches(user_profiles, realm.id)
+
+    cache_keys_to_delete = set()
+    if changed(update_fields, realm_user_dict_fields):
+        cache_keys_to_delete.add(realm_user_dicts_cache_key(realm.id))
+
+    if changed(update_fields, ["is_active"]):
+        cache_keys_to_delete.add(active_user_ids_cache_key(realm.id))
+        cache_keys_to_delete.add(active_non_guest_user_ids_cache_key(realm.id))
+
+    if changed(update_fields, ["role"]):
+        cache_keys_to_delete.add(active_non_guest_user_ids_cache_key(realm.id))
+
+    # Invalidate our bots_in_realm info dict if any bot has
+    # changed the fields in the dict or become (in)active
+    if changed(update_fields, bot_dict_fields):
+        for user_profile in user_profiles:
+            if user_profile.is_bot:
+                cache_keys_to_delete.add(bot_dicts_in_realm_cache_key(realm.id))
+
+    cache_delete_many(list(cache_keys_to_delete))
+
+    if changed(update_fields, ["email", "full_name", "id", "is_mirror_dummy"]):
+        delete_display_recipient_cache(user_profiles)
+
+
 # Called by models/users.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(
@@ -636,27 +670,9 @@ def flush_user_profile(
     **kwargs: object,
 ) -> None:
     user_profile = instance
-    delete_user_profile_caches([user_profile], user_profile.realm_id)
-
-    # Invalidate our active_users_in_realm info dict if any user has changed
-    # the fields in the dict or become (in)active
-    if changed(update_fields, realm_user_dict_fields):
-        cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
-
-    if changed(update_fields, ["is_active"]):
-        cache_delete(active_user_ids_cache_key(user_profile.realm_id))
-        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
-
-    if changed(update_fields, ["role"]):
-        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
-
-    if changed(update_fields, ["email", "full_name", "id", "is_mirror_dummy"]):
-        delete_display_recipient_cache(user_profile)
-
-    # Invalidate our bots_in_realm info dict if any bot has
-    # changed the fields in the dict or become (in)active
-    if user_profile.is_bot and changed(update_fields, bot_dict_fields):
-        cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm_id))
+    bulk_flush_users(
+        user_profiles=[user_profile], realm=user_profile.realm, update_fields=update_fields
+    )
 
 
 def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None:
