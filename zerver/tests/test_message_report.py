@@ -1,5 +1,9 @@
+from datetime import timedelta
+
+import time_machine
 from django.conf import settings
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from django_stubs_ext import QuerySetAny
 from typing_extensions import Any, override
 
@@ -11,6 +15,7 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import (
     get_message_link_syntax,
     will_produce_broken_stream_topic_link,
@@ -22,6 +27,9 @@ from zerver.models.realms import Realm, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
+
+# Hardcode a specific value to help test end-to-end.
+MOCKED_DATE_SENT = timezone_now() + timedelta(days=1)
 
 
 class ReportMessageTest(ZulipTestCase):
@@ -44,12 +52,13 @@ class ReportMessageTest(ZulipTestCase):
         )
 
         # Send a message to be reported in a public channel
-        self.reported_message_id = self.send_stream_message(
-            self.reported_user,
-            "Denmark",
-            topic_name="civillized discussions",
-            content="I squeeze toothpaste from the middle",
-        )
+        with time_machine.travel(MOCKED_DATE_SENT, tick=False):
+            self.reported_message_id = self.send_stream_message(
+                self.reported_user,
+                "Denmark",
+                topic_name="civillized discussions",
+                content="I squeeze toothpaste from the middle",
+            )
         self.reported_message = self.get_last_message()
         assert self.reported_message.id == self.reported_message_id
 
@@ -65,6 +74,7 @@ class ReportMessageTest(ZulipTestCase):
         assert submitted_report is not None
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         reported_user_mention = silent_mention_syntax_for_user(reported_user)
+        reported_message_date_sent = datetime_to_global_time(reported_message.date_sent)
 
         channel_name = reported_message.recipient.label()
         channel_id = reported_message.recipient.type_id
@@ -73,9 +83,7 @@ class ReportMessageTest(ZulipTestCase):
             channel_id, channel_name, topic_name, reported_message.id
         )
 
-        message_sent_to = (
-            f"{reporting_user_mention} reported a message sent by {reported_user_mention}."
-        )
+        message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} at {reported_message_date_sent}."
         expected_message = """
 {message_sent_to}
 ```quote
@@ -138,12 +146,13 @@ class ReportMessageTest(ZulipTestCase):
         realm = get_realm("zulip")
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         reported_user_mention = silent_mention_syntax_for_user(reported_user)
+        reported_dm_date_sent = datetime_to_global_time(reported_dm.date_sent)
 
         if reported_user != reporting_user:
-            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention}."
+            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} at {reported_dm_date_sent}."
         else:
             dm_recipient_mention = silent_mention_syntax_for_user(dm_recipient)
-            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {dm_recipient_mention}."
+            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {dm_recipient_mention} at {reported_dm_date_sent}."
 
         direct_message_link = pm_message_url(
             realm,
@@ -174,6 +183,7 @@ class ReportMessageTest(ZulipTestCase):
         realm = get_realm("zulip")
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         reported_user_mention = silent_mention_syntax_for_user(reported_user)
+        reported_gdm_date_sent = datetime_to_global_time(reported_gdm.date_sent)
 
         recipient_list = sorted(
             [
@@ -186,7 +196,7 @@ class ReportMessageTest(ZulipTestCase):
         recipient_users: str = ", ".join(recipient_list)
         if len(recipient_list) > 1:
             recipient_users += ","
-        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user}."
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user} at {reported_gdm_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -325,6 +335,7 @@ class ReportMessageTest(ZulipTestCase):
         assert report is not None
         self.assertIn(expected_message_link_syntax, report.content)
 
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_dm_report(self) -> None:
         # Send a DM to be reported
         dm_recipient = self.hamlet
@@ -358,6 +369,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(ZOE, reported_dm_id, report_type, description)
         self.assert_json_error(result, msg="Invalid message(s)")
 
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_dm_to_oneself(self) -> None:
         dm_recipient = self.reported_user
         reported_dm_id = self.send_personal_message(
@@ -387,6 +399,7 @@ class ReportMessageTest(ZulipTestCase):
             submitted_report=reports.last(),
         )
 
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_reporting_own_dm_to_other(self) -> None:
         dm_recipient = self.hamlet
         reported_dm_id = self.send_personal_message(
@@ -416,6 +429,7 @@ class ReportMessageTest(ZulipTestCase):
             submitted_report=reports.last(),
         )
 
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_message_report_using_direct_message_group(self) -> None:
         dm_recipient = self.hamlet
@@ -480,6 +494,7 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(ZOE, reported_gdm_id, report_type, description)
         self.assert_json_error(result, msg="Invalid message(s)")
 
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_gdm_report_with_more_than_3_recipients(self) -> None:
         reported_gdm_id = self.send_group_direct_message(
             self.reported_user,
