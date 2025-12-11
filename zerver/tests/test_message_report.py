@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.test import override_settings
 from typing_extensions import Any, override
@@ -10,6 +12,7 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.topic_link_util import (
     get_message_link_syntax,
@@ -25,6 +28,15 @@ from zerver.models.users import get_system_bot
 
 
 class ReportMessageTest(ZulipTestCase):
+    def check_message_report_template(
+        self, raw_actual_content: str, raw_expected_content: str
+    ) -> None:
+        # Microsecond difference in reported message date sent creates flakey
+        # test.
+        actual_content = re.sub(r"<time:[^>]+>", "", raw_actual_content)
+        expected_content = re.sub(r"<time:[^>]+>", "", raw_expected_content)
+        self.assertTrue(actual_content, expected_content)
+
     @override
     def setUp(self) -> None:
         super().setUp()
@@ -104,9 +116,8 @@ class ReportMessageTest(ZulipTestCase):
         channel_message_link = get_message_link_syntax(
             channel_id, channel_name, topic_name, self.reported_message_id
         )
-        message_sent_to = (
-            f"{reporting_user_mention} reported a message sent by {reported_user_mention}."
-        )
+        reported_message_date_sent = datetime_to_global_time(self.reported_message.date_sent)
+        message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} at {reported_message_date_sent}."
         expected_message = """
 {message_sent_to}
 ```quote
@@ -131,7 +142,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
         expected_report_topic = f"{self.reported_user.full_name} moderation"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
 
@@ -144,7 +155,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 2
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
         expected_report_topic = f"{self.reported_user.full_name} moderation"
         self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
 
@@ -212,10 +223,9 @@ class ReportMessageTest(ZulipTestCase):
         description = "this is crime against food"
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
+        reported_message_date_sent = datetime_to_global_time(self.reported_message.date_sent)
 
-        message_sent_to = (
-            f"{reporting_user_mention} reported a direct message sent by {reported_user_mention}."
-        )
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} at {reported_message_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -245,7 +255,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
 
         # User can't report DM they're not a part of.
         ZOE = self.example_user("ZOE")
@@ -266,8 +276,9 @@ class ReportMessageTest(ZulipTestCase):
         report_type = "harassment"
         description = "just testing"
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
+        reported_message_date_sent = datetime_to_global_time(self.reported_message.date_sent)
 
-        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reporting_user_mention} to {reporting_user_mention}."
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reporting_user_mention} to {reporting_user_mention} at {reported_message_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -297,7 +308,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
 
     def test_reporting_own_dm_to_other(self) -> None:
         reported_dm_id = self.send_personal_message(
@@ -314,7 +325,9 @@ class ReportMessageTest(ZulipTestCase):
         description = "just testing"
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         dm_recipient_user_mention = silent_mention_syntax_for_user(self.hamlet)
-        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reporting_user_mention} to {dm_recipient_user_mention}."
+        reported_message_date_sent = datetime_to_global_time(self.reported_message.date_sent)
+
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reporting_user_mention} to {dm_recipient_user_mention} at {reported_message_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -344,7 +357,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_message_report_using_direct_message_group(self) -> None:
@@ -368,10 +381,9 @@ class ReportMessageTest(ZulipTestCase):
         description = "this is crime against food"
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
+        reported_message_date_sent = datetime_to_global_time(self.reported_message.date_sent)
 
-        message_sent_to = (
-            f"{reporting_user_mention} reported a direct message sent by {reported_user_mention}."
-        )
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} at {reported_message_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -401,7 +413,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
 
         # User can't report DM they're not a part of.
         ZOE = self.example_user("ZOE")
@@ -426,8 +438,9 @@ class ReportMessageTest(ZulipTestCase):
         reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
         iago_user_mention = silent_mention_syntax_for_user(self.example_user("iago"))
         gdm_user_mention = f"{iago_user_mention} and {reporting_user_mention}"
+        reported_message_date_sent = datetime_to_global_time(self.reported_message.date_sent)
 
-        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {gdm_user_mention}."
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {gdm_user_mention} at {reported_message_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -457,7 +470,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
 
         # User can't report group direct messages they're not a part of.
         ZOE = self.example_user("ZOE")
@@ -481,8 +494,10 @@ class ReportMessageTest(ZulipTestCase):
         iago_user_mention = silent_mention_syntax_for_user(self.example_user("iago"))
         reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
         zoe_user_mention = silent_mention_syntax_for_user(self.example_user("ZOE"))
+        reported_message_date_sent = datetime_to_global_time(self.reported_message.date_sent)
+
         gdm_user_mention = f"{iago_user_mention}, {reporting_user_mention}, and {zoe_user_mention}"
-        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {gdm_user_mention}."
+        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {gdm_user_mention} at {reported_message_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
@@ -512,7 +527,7 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
         assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        self.check_message_report_template(reports[0]["content"], expected_message.strip())
 
     def test_truncate_reported_message(self) -> None:
         large_message = "." * (MAX_REPORT_MESSAGE_SNIPPET_LENGTH + 1)
