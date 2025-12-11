@@ -95,7 +95,7 @@ class ReportMessageTest(ZulipTestCase):
         )
 
         self.assertEqual(submitted_report.content, expected_message.strip())
-        expected_report_topic = f"{reported_user.full_name}'s moderation requests"
+        expected_report_topic = f"{reported_user.full_name} moderation"
         self.assertEqual(submitted_report.topic_name(), expected_report_topic)
 
     def build_direct_message_report_template(
