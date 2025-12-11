@@ -131,14 +131,41 @@ class UserSyncService:
                     ).first()
 
                     if existing_user:
-                        # Link existing user to extension and update
-                        logger.info(
-                            "Found existing Zulip user %d for email %s, linking to extension",
-                            existing_user.id,
-                            request.email,
-                        )
-                        extension.zulip_user = existing_user
-                        user = self._update_user(existing_user, request, realm)
+                        # Check if this user is already linked to another extension
+                        # (OneToOne constraint on zulip_user)
+                        existing_extension = NodlUserExtension.objects.filter(
+                            zulip_user=existing_user
+                        ).first()
+
+                        if existing_extension and existing_extension.id != extension.id:
+                            # User already linked to different extension
+                            # Update supabase_user_id on existing extension and delete orphan
+                            logger.info(
+                                "Zulip user %d already linked to extension %d, "
+                                "migrating supabase_user_id %s and deleting orphan extension %d",
+                                existing_user.id,
+                                existing_extension.id,
+                                request.supabase_user_id,
+                                extension.id,
+                            )
+                            # Update the existing extension with current supabase_user_id
+                            existing_extension.supabase_user_id = supabase_uuid
+                            existing_extension.sync_status = SyncStatus.SYNCING
+                            existing_extension.save(update_fields=["supabase_user_id", "sync_status"])
+                            # Delete the orphan extension we created
+                            extension.delete()
+                            # Use the existing extension going forward
+                            extension = existing_extension
+                            user = self._update_user(existing_user, request, realm)
+                        else:
+                            # Link existing user to extension and update
+                            logger.info(
+                                "Found existing Zulip user %d for email %s, linking to extension",
+                                existing_user.id,
+                                request.email,
+                            )
+                            extension.zulip_user = existing_user
+                            user = self._update_user(existing_user, request, realm)
                     else:
                         user = self._create_user(request, realm)
                         extension.zulip_user = user
