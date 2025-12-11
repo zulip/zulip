@@ -26,11 +26,14 @@ from nodl.api.serializers.messages import (
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_send import check_send_message
+from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.reactions import check_add_reaction, do_remove_reaction
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import JsonableError, ReactionDoesNotExistError, ReactionExistsError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.message import access_message, get_recent_private_conversations, messages_for_ids
+from zerver.lib.muted_users import get_mute_object
+from zerver.lib.users import access_user_by_id_including_cross_realm
 from zerver.lib.rate_limiter import RateLimitedObject, RedisRateLimiterBackend
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.types import StreamMessageEditRequest
@@ -1195,6 +1198,129 @@ def mark_messages_as_read(request: HttpRequest) -> HttpResponse:
         logger.exception("Failed to mark messages as read")
         return JsonResponse(
             {"result": "error", "code": "MARK_READ_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
+@csrf_exempt
+@require_jwt_auth
+@rate_limit(key_prefix="dm_write", limit=MESSAGES_WRITE_LIMIT)
+def mute_dm_user(request: HttpRequest, user_id: int) -> HttpResponse:
+    """Mute a user (hide their DMs from conversation list).
+
+    POST /api/v1/dm/{user_id}/mute
+
+    Response:
+    {
+        "result": "success",
+        "msg": "User muted",
+        "muted_user_id": 123
+    }
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    if user.id == user_id:
+        return JsonResponse(
+            {"result": "error", "code": "INVALID_PARAMS", "msg": "Cannot mute yourself"},
+            status=400,
+        )
+
+    try:
+        muted_user = access_user_by_id_including_cross_realm(
+            user, user_id, allow_bots=True, allow_deactivated=True, for_admin=False
+        )
+    except JsonableError:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_FOUND", "msg": "User not found"},
+            status=404,
+        )
+
+    from django.db import IntegrityError
+    from django.utils.timezone import now as timezone_now
+
+    try:
+        date_muted = timezone_now()
+        do_mute_user(user, muted_user, date_muted)
+        return JsonResponse({
+            "result": "success",
+            "msg": "User muted",
+            "muted_user_id": user_id,
+        })
+    except IntegrityError:
+        # Already muted - idempotent success
+        return JsonResponse({
+            "result": "success",
+            "msg": "User already muted",
+            "muted_user_id": user_id,
+        })
+    except Exception as e:
+        logger.exception("Failed to mute user")
+        return JsonResponse(
+            {"result": "error", "code": "MUTE_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
+@csrf_exempt
+@require_jwt_auth
+@rate_limit(key_prefix="dm_write", limit=MESSAGES_WRITE_LIMIT)
+def unmute_dm_user(request: HttpRequest, user_id: int) -> HttpResponse:
+    """Unmute a user (show their DMs in conversation list again).
+
+    POST /api/v1/dm/{user_id}/unmute
+
+    Response:
+    {
+        "result": "success",
+        "msg": "User unmuted",
+        "muted_user_id": 123
+    }
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    try:
+        muted_user = access_user_by_id_including_cross_realm(
+            user, user_id, allow_bots=True, allow_deactivated=True, for_admin=False
+        )
+    except JsonableError:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_FOUND", "msg": "User not found"},
+            status=404,
+        )
+
+    mute_object = get_mute_object(user, muted_user)
+
+    if mute_object is None:
+        # Already unmuted - idempotent success
+        return JsonResponse({
+            "result": "success",
+            "msg": "User not muted",
+            "muted_user_id": user_id,
+        })
+
+    try:
+        do_unmute_user(mute_object)
+        return JsonResponse({
+            "result": "success",
+            "msg": "User unmuted",
+            "muted_user_id": user_id,
+        })
+    except Exception as e:
+        logger.exception("Failed to unmute user")
+        return JsonResponse(
+            {"result": "error", "code": "UNMUTE_FAILED", "msg": str(e)},
             status=500,
         )
 

@@ -51,9 +51,11 @@ class StreamSerializer(BaseModel):
 
 
 class StreamListSerializer(StreamSerializer):
-    """Serializer for stream list with unread counts."""
+    """Serializer for stream list with unread counts and user preferences."""
 
     unread_count: Annotated[int, Field(default=0, description="Number of unread messages")]
+    is_muted: Annotated[bool, Field(default=False, description="Whether the stream is muted for the user")]
+    pin_to_top: Annotated[bool, Field(default=False, description="Whether the stream is pinned to the top")]
     topics: Annotated[
         list[TopicSerializer], Field(default=[], description="Topics in the stream")
     ]
@@ -65,8 +67,10 @@ class StreamListSerializer(StreamSerializer):
         unread_count: int = 0,
         subscribers: Optional[list[int]] = None,
         topics: Optional[list[TopicSerializer]] = None,
+        is_muted: bool = False,
+        pin_to_top: bool = False,
     ) -> "StreamListSerializer":
-        """Create serializer from Stream model with unread count."""
+        """Create serializer from Stream model with unread count and user preferences."""
         return cls(
             id=stream.id,
             name=stream.name,
@@ -78,6 +82,8 @@ class StreamListSerializer(StreamSerializer):
             first_message_id=stream.first_message_id,
             subscribers=subscribers or [],
             unread_count=unread_count,
+            is_muted=is_muted,
+            pin_to_top=pin_to_top,
             topics=topics or [],
         )
 

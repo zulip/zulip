@@ -17,8 +17,10 @@ from nodl.api.views.messages import (
     list_dm_conversations,
     list_messages,
     mark_messages_as_read,
+    mute_dm_user,
     remove_reaction,
     send_message,
+    unmute_dm_user,
 )
 from nodl.api.views.streams import (
     archive_stream,
@@ -26,7 +28,11 @@ from nodl.api.views.streams import (
     get_stream,
     get_stream_topics,
     list_streams,
+    mute_stream,
+    pin_stream,
     subscribe_to_stream,
+    unmute_stream,
+    unpin_stream,
     unsubscribe_from_stream,
     update_stream,
 )
@@ -63,6 +69,10 @@ urlpatterns = [
     path("api/v1/streams/<int:stream_id>/topics", get_stream_topics, name="nodl_get_stream_topics"),
     path("api/v1/streams/<int:stream_id>/subscribe", subscribe_to_stream, name="nodl_subscribe_stream"),
     path("api/v1/streams/<int:stream_id>/unsubscribe", unsubscribe_from_stream, name="nodl_unsubscribe_stream"),
+    path("api/v1/streams/<int:stream_id>/mute", mute_stream, name="nodl_mute_stream"),
+    path("api/v1/streams/<int:stream_id>/unmute", unmute_stream, name="nodl_unmute_stream"),
+    path("api/v1/streams/<int:stream_id>/pin", pin_stream, name="nodl_pin_stream"),
+    path("api/v1/streams/<int:stream_id>/unpin", unpin_stream, name="nodl_unpin_stream"),
     # Message REST API endpoints - authenticated via JWT
     path("api/v1/messages", list_messages, name="nodl_list_messages"),
     path("api/v1/messages/send", send_message, name="nodl_send_message"),
@@ -74,6 +84,8 @@ urlpatterns = [
     path("api/v1/messages/<int:message_id>/reactions/<str:emoji_name>", remove_reaction, name="nodl_remove_reaction"),
     # DM REST API endpoints - authenticated via JWT
     path("api/v1/dm/conversations", list_dm_conversations, name="nodl_list_dm_conversations"),
+    path("api/v1/dm/<int:user_id>/mute", mute_dm_user, name="nodl_mute_dm_user"),
+    path("api/v1/dm/<int:user_id>/unmute", unmute_dm_user, name="nodl_unmute_dm_user"),
     # Unread counts and mark-as-read endpoints - authenticated via JWT
     path("api/v1/unread", get_unread_counts, name="nodl_unread_counts"),
     path("api/v1/messages/read", mark_messages_as_read, name="nodl_mark_read"),

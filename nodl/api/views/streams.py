@@ -26,6 +26,7 @@ from zerver.actions.streams import (
     bulk_remove_subscriptions,
     do_change_stream_description,
     do_change_stream_permission,
+    do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
 )
@@ -210,13 +211,28 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     # Get all unread counts in a single query (fixes N+1 problem)
     unread_by_recipient = _get_unread_counts_for_streams(user, paginated_streams)
 
-    # Build response with unread counts
+    # Get user's subscription preferences (mute, pin) in a single query
+    recipient_ids = [s.recipient_id for s in paginated_streams]
+    subscriptions = Subscription.objects.filter(
+        user_profile=user,
+        recipient_id__in=recipient_ids,
+        active=True,
+    ).values("recipient_id", "is_muted", "pin_to_top")
+    sub_prefs_by_recipient = {
+        sub["recipient_id"]: {"is_muted": sub["is_muted"], "pin_to_top": sub["pin_to_top"]}
+        for sub in subscriptions
+    }
+
+    # Build response with unread counts and subscription preferences
     stream_data = []
     for stream in paginated_streams:
         unread_count = unread_by_recipient.get(stream.recipient_id, 0)
+        sub_prefs = sub_prefs_by_recipient.get(stream.recipient_id, {"is_muted": False, "pin_to_top": False})
         serializer = StreamListSerializer.from_stream_with_unread(
             stream,
             unread_count=unread_count,
+            is_muted=sub_prefs["is_muted"],
+            pin_to_top=sub_prefs["pin_to_top"],
         )
         stream_data.append(serializer.model_dump())
 
@@ -664,5 +680,257 @@ def unsubscribe_from_stream(request: HttpRequest, stream_id: int) -> HttpRespons
         logger.exception("Failed to unsubscribe from stream")
         return JsonResponse(
             {"result": "error", "code": "UNSUBSCRIBE_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
+def _get_user_subscription(user: UserProfile, stream: Stream) -> Subscription | None:
+    """Get the subscription object for user's stream subscription."""
+    try:
+        return Subscription.objects.get(
+            user_profile=user,
+            recipient=stream.recipient,
+            active=True,
+        )
+    except Subscription.DoesNotExist:
+        return None
+
+
+@csrf_exempt
+@require_jwt_auth
+@rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
+def mute_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
+    """Mute a stream for the current user.
+
+    POST /api/v1/streams/{id}/mute
+
+    Response:
+    {
+        "result": "success",
+        "msg": "Stream muted",
+        "is_muted": true
+    }
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    try:
+        stream, _ = access_stream_by_id(user, stream_id)
+    except Exception:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
+            status=404,
+        )
+
+    sub = _get_user_subscription(user, stream)
+    if sub is None:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            status=400,
+        )
+
+    try:
+        do_change_subscription_property(
+            user,
+            sub,
+            stream,
+            "is_muted",
+            True,
+            acting_user=user,
+        )
+        return JsonResponse({
+            "result": "success",
+            "msg": "Stream muted",
+            "is_muted": True,
+        })
+    except Exception as e:
+        logger.exception("Failed to mute stream")
+        return JsonResponse(
+            {"result": "error", "code": "MUTE_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
+@csrf_exempt
+@require_jwt_auth
+@rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
+def unmute_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
+    """Unmute a stream for the current user.
+
+    POST /api/v1/streams/{id}/unmute
+
+    Response:
+    {
+        "result": "success",
+        "msg": "Stream unmuted",
+        "is_muted": false
+    }
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    try:
+        stream, _ = access_stream_by_id(user, stream_id)
+    except Exception:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
+            status=404,
+        )
+
+    sub = _get_user_subscription(user, stream)
+    if sub is None:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            status=400,
+        )
+
+    try:
+        do_change_subscription_property(
+            user,
+            sub,
+            stream,
+            "is_muted",
+            False,
+            acting_user=user,
+        )
+        return JsonResponse({
+            "result": "success",
+            "msg": "Stream unmuted",
+            "is_muted": False,
+        })
+    except Exception as e:
+        logger.exception("Failed to unmute stream")
+        return JsonResponse(
+            {"result": "error", "code": "UNMUTE_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
+@csrf_exempt
+@require_jwt_auth
+@rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
+def pin_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
+    """Pin a stream to top of sidebar for the current user.
+
+    POST /api/v1/streams/{id}/pin
+
+    Response:
+    {
+        "result": "success",
+        "msg": "Stream pinned",
+        "pin_to_top": true
+    }
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    try:
+        stream, _ = access_stream_by_id(user, stream_id)
+    except Exception:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
+            status=404,
+        )
+
+    sub = _get_user_subscription(user, stream)
+    if sub is None:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            status=400,
+        )
+
+    try:
+        do_change_subscription_property(
+            user,
+            sub,
+            stream,
+            "pin_to_top",
+            True,
+            acting_user=user,
+        )
+        return JsonResponse({
+            "result": "success",
+            "msg": "Stream pinned",
+            "pin_to_top": True,
+        })
+    except Exception as e:
+        logger.exception("Failed to pin stream")
+        return JsonResponse(
+            {"result": "error", "code": "PIN_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
+@csrf_exempt
+@require_jwt_auth
+@rate_limit(key_prefix="streams_write", limit=STREAMS_WRITE_LIMIT)
+def unpin_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
+    """Unpin a stream from top of sidebar for the current user.
+
+    POST /api/v1/streams/{id}/unpin
+
+    Response:
+    {
+        "result": "success",
+        "msg": "Stream unpinned",
+        "pin_to_top": false
+    }
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    try:
+        stream, _ = access_stream_by_id(user, stream_id)
+    except Exception:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
+            status=404,
+        )
+
+    sub = _get_user_subscription(user, stream)
+    if sub is None:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            status=400,
+        )
+
+    try:
+        do_change_subscription_property(
+            user,
+            sub,
+            stream,
+            "pin_to_top",
+            False,
+            acting_user=user,
+        )
+        return JsonResponse({
+            "result": "success",
+            "msg": "Stream unpinned",
+            "pin_to_top": False,
+        })
+    except Exception as e:
+        logger.exception("Failed to unpin stream")
+        return JsonResponse(
+            {"result": "error", "code": "UNPIN_FAILED", "msg": str(e)},
             status=500,
         )
