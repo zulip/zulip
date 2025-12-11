@@ -53,11 +53,78 @@ export const narrow_operator_schema = z.union([
 ]);
 export type NarrowOperator = z.output<typeof narrow_operator_schema>;
 
-export const narrow_canonical_term_schema = z.object({
-    negated: z.optional(z.boolean()),
-    operator: narrow_canonical_operator_schema,
-    operand: z.string(),
-});
+export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
+    z.object({
+        operator: z.literal(""),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("channel"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("channels"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("has"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("id"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("in"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("is"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("near"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("search"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("topic"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("with"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("sender"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("dm-including"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("dm"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+]);
 export type NarrowCanonicalTerm = z.output<typeof narrow_canonical_term_schema>;
 
 export const narrow_term_schema = z.union([
