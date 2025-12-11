@@ -7,6 +7,7 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
@@ -50,6 +51,8 @@ have content access in order to change this configuration.
 
       <SaveChanges />
     </FlattenedSteps>
+
+    <ChannelSettingsNavbarTip />
   </TabItem>
 </Tabs>
 
