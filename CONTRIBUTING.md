@@ -164,10 +164,7 @@ especially approachable for new contributors.
 Here are some handy links for issues to look through:
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-- Mobile apps: no "help wanted" label, but see the
-  [project board](https://github.com/orgs/zulip/projects/5/views/4)
-  for the upcoming Flutter-based app. Look for issues up through the
-  "Launch" milestone, and that aren't already assigned.
+- [Mobile app](https://github.com/zulip/zulip-flutter/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Desktop app](https://github.com/zulip/zulip-desktop/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Terminal app](https://github.com/zulip/zulip-terminal/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted")
 - [Python API bindings and bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
