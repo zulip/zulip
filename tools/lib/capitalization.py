@@ -200,6 +200,8 @@ IGNORED_PHRASES = [
     r"strikethrough",
     r"support team",
     r"topic name",
+    # For the muted user placeholder in the compose box textarea.
+    r"Muted user",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

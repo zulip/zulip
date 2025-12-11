@@ -22,6 +22,7 @@ import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
+import * as muted_users from "./muted_users.ts";
 import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
@@ -461,6 +462,9 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         }
         const users = people.get_users_from_ids(user_ids);
         const recipient_parts = users.map((user) => {
+            if (muted_users.is_user_muted(user.user_id)) {
+                return $t({defaultMessage: "Muted user"});
+            }
             if (people.should_add_guest_user_indicator(user.user_id)) {
                 return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
             }
@@ -469,9 +473,15 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
         const recipient_names = util.format_array_as_list(recipient_parts, "long", "conjunction");
 
         if (users.length === 1 && users[0] !== undefined) {
-            // If it's a single user, display status text if available
+            // If it's a single unmuted user, display status text if available
             const user = users[0];
             const status = user_status.get_status_text(user.user_id);
+            const is_muted_user = muted_users.is_user_muted(user.user_id);
+            if (is_muted_user) {
+                return $t({
+                    defaultMessage: "Message Muted user",
+                });
+            }
             if (status) {
                 return $t(
                     {defaultMessage: "Message {recipient_name} ({recipient_status})"},
