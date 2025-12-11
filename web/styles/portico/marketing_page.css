@@ -17,6 +17,7 @@
         since we are only trying to avoid overlap.
     */
     --height-footer: 495px;
+    --padded-content-padding: 50px;
 }
 
 [data-tippy-root] .tippy-box .tippy-content {
@@ -26,16 +27,22 @@
 }
 
 body {
-    background-color: hsl(0deg 0% 98%);
     font-family: "Source Sans 3 VF", sans-serif;
-    line-height: 150%;
     height: 100%;
     font-weight: 300;
     font-size: 17px;
+    margin: 0;
+    line-height: normal;
+    max-width: 100vw;
+
+    background-color: hsl(0deg 0% 100%) !important;
+    color: hsl(0deg 0% 27%);
 }
 
 html {
     height: 100%;
+    width: 100vw;
+    overflow-x: hidden;
 }
 
 .noscroll {
@@ -58,16 +65,10 @@ html {
     margin-bottom: 0;
 }
 
+/* TODO: Remove this from the marketing-page templates instead
+   of just hiding in CSS. */
 .header {
-    position: relative;
-
-    padding: 15px 0;
-    height: 29px;
-
-    background-color: hsl(0deg 0% 100%);
-    box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
-
-    z-index: 100;
+    display: none;
 }
 
 .navbar.footer .nav {
@@ -126,175 +127,6 @@ html {
 
     .hamburger {
         display: none;
-    }
-}
-
-.help {
-    .app-main {
-        padding: 0;
-    }
-
-    /* Markdown processor generates lots of spurious <p></p> */
-    & p:empty {
-        margin: 0;
-    }
-
-    .sidebar {
-        width: 300px;
-        z-index: 1;
-        /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
-        height: calc(100vh - 59px);
-        top: 59px;
-
-        border-right: 1px solid hsl(219deg 10% 97%);
-        position: sticky;
-
-        background-color: hsl(153deg 32% 55%);
-        color: hsl(0deg 0% 100%);
-
-        -webkit-overflow-scrolling: touch;
-
-        --help-sidebar-padding: 20px;
-        --help-sidebar-indent: 12px;
-
-        .content {
-            padding: 10px var(--help-sidebar-padding);
-        }
-
-        & h1 {
-            font-weight: 400;
-            font-size: 1.25em;
-            line-height: 1.5;
-            margin-bottom: 0;
-
-            &.home-link {
-                font-size: 1em;
-                margin-top: 20px;
-                margin-bottom: 17px;
-
-                & a::before {
-                    display: inline-block;
-                    font: normal normal normal 14px/1 FontAwesome;
-                    font-size: inherit;
-
-                    content: "\f0d9";
-                    margin-right: 10px;
-                }
-            }
-        }
-
-        & h1,
-        h2,
-        h3 {
-            &:not(:first-of-type) {
-                margin-top: 0;
-            }
-
-            & a {
-                color: inherit;
-                display: block;
-
-                /* Extend to entire width of sidebar, not just link area */
-                margin-left: calc(0px - var(--help-sidebar-padding));
-                margin-right: calc(0px - var(--help-sidebar-padding));
-                padding-left: calc(var(--help-sidebar-padding));
-                padding-right: calc(var(--help-sidebar-padding));
-            }
-        }
-
-        & h2 {
-            font-weight: 400;
-            font-size: 1.1em;
-            line-height: 1.05;
-            margin-bottom: 5px;
-        }
-
-        &.slide h2 {
-            cursor: pointer;
-
-            &::before {
-                display: block;
-                font: normal normal normal 14px/1 FontAwesome;
-                font-size: inherit;
-
-                content: "\f107";
-                margin-right: 5px;
-                float: right;
-
-                opacity: 0.5;
-            }
-        }
-
-        & ul {
-            margin: 5px 0 10px var(--help-sidebar-indent);
-        }
-
-        &.slide ul {
-            margin-left: 19px;
-            display: none;
-        }
-
-        & li {
-            list-style-type: none;
-            font-size: 0.95em;
-            font-weight: 400;
-            line-height: 1.7;
-
-            cursor: pointer;
-
-            & a {
-                color: inherit;
-                display: block;
-
-                /* Extend to entire width of sidebar, not just link area */
-                margin-left: calc(
-                    0px - var(--help-sidebar-padding) -
-                        var(--help-sidebar-indent)
-                );
-                margin-right: calc(0px - var(--help-sidebar-padding));
-                padding-left: calc(
-                    var(--help-sidebar-padding) + var(--help-sidebar-indent)
-                );
-                padding-right: calc(var(--help-sidebar-padding));
-            }
-        }
-
-        & a {
-            &.highlighted {
-                background-color: hsl(152deg 40% 42%);
-
-                /* Don't show the focus outline for the highlighted page. */
-                outline: 0;
-            }
-        }
-    }
-}
-
-.help .markdown {
-    background-color: hsl(0deg 0% 100%);
-    width: calc(100vw - 300px);
-    height: calc(100% - 59px);
-
-    & :target {
-        scroll-margin-top: 59px;
-    }
-    /* Highlight the headings as well as the first child
-      of any targeted div, as in the API documentation. */
-    & h1:target,
-    & h2:target,
-    & h3:target,
-    & h4:target,
-    & h5:target,
-    & h6:target,
-    & div:target > :first-child {
-        /* Increase the highlighted space around the text... */
-        padding: 6px 8px;
-        border-radius: 7px 7px 0 0;
-        /* ...but maintain apparent top and bottom margin;
-        pull left and right into the gutter. */
-        margin: 20px -8px 10px;
-        /* Derive highlight color from sidebar, here with 30% alpha */
-        background-color: hsl(152deg 70% 50% / 25%);
     }
 }
 
@@ -371,10 +203,6 @@ img.screenshot {
 
 .platform-icon {
     width: 33%;
-}
-
-.portico-page h1 {
-    font-weight: 300;
 }
 
 label.text-error {
@@ -808,14 +636,6 @@ input#terminal:checked ~ #tab-terminal {
     margin: auto;
     text-align: center;
     margin-top: 10px;
-}
-
-.app-main,
-.header-main {
-    min-width: 350px;
-    margin: 0 auto;
-    padding: 0 20px;
-    position: relative;
 }
 
 .hello-main {
@@ -1523,24 +1343,6 @@ label.label-title {
 
 /* BEGIN legacy_landing_page.css */
 
-:root {
-    --padded-content-padding: 50px;
-}
-
-html {
-    width: 100vw;
-    overflow-x: hidden;
-}
-
-body {
-    margin: 0;
-    background-color: hsl(0deg 0% 100%) !important;
-    color: hsl(0deg 0% 27%);
-    line-height: normal;
-
-    max-width: 100vw;
-}
-
 /* -- generic styles -- */
 
 h1,
@@ -1661,10 +1463,6 @@ ol a:hover {
     clear: both;
 }
 
-*::selection {
-    background-color: hsl(31deg 84% 60% / 30%);
-}
-
 .center {
     text-align: center;
 }
@@ -1730,16 +1528,6 @@ button {
 }
 
 /* -- modify legacy_portico.css -- */
-.app-main {
-    max-width: none;
-    min-width: 0;
-    padding: 0 !important;
-}
-
-.header {
-    display: none;
-}
-
 .portico-landing {
     position: relative;
 
@@ -1767,138 +1555,6 @@ button {
         /* Keep elements targeted by URL fragments visible below the
         floating top menu; coordinate the value here with the menu's height. */
         scroll-margin-top: 60px;
-    }
-}
-
-/* -- hello page -- */
-.portico-landing.hello {
-    background-color: transparent;
-    color: hsl(219deg 23% 33%);
-
-    .hero-buttons {
-        margin-top: 40px;
-    }
-}
-
-.portico-landing.hello .hero {
-    position: relative;
-    padding: 60px 50px 30px;
-
-    color: hsl(0deg 0% 100%);
-
-    overflow: hidden;
-
-    .content {
-        position: relative;
-        z-index: 1;
-
-        text-align: center;
-
-        & p {
-            font-weight: 400;
-            opacity: 0.85;
-        }
-    }
-
-    & header {
-        width: 850px;
-        display: inline-block;
-        text-align: left;
-
-        & h1 {
-            font-size: 3em;
-            font-weight: 400;
-
-            text-shadow: 0 0 20px hsl(0deg 0% 100% / 20%);
-        }
-
-        & p {
-            margin: 30px 0;
-
-            font-size: 1.5em;
-            font-weight: 300;
-            line-height: 1.4;
-            text-shadow:
-                0 0 5px hsl(164deg 74% 15% / 30%),
-                0 0 20px hsl(0deg 0% 100% / 20%);
-        }
-
-        & a {
-            display: block;
-            margin: 20px auto 0;
-            text-align: center;
-        }
-
-        & button {
-            margin-top: 0;
-            padding: 12px 20px;
-
-            background-color: hsl(0deg 0% 100%);
-            border: 2px solid hsl(0deg 0% 100%);
-
-            font-size: 1.2em;
-            font-weight: 400;
-            color: hsl(148deg 23% 51%);
-
-            box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
-
-            transition: box-shadow 0.2s ease;
-
-            &:hover {
-                box-shadow: 0 3px 10px hsl(0deg 0% 100% / 20%);
-            }
-
-            &:active {
-                box-shadow: 0 3px 20px hsl(0deg 0% 100% / 50%);
-            }
-        }
-    }
-}
-
-.portico-landing.hello .gradients .gradient {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 1100px;
-
-    &.dark-blue {
-        background: linear-gradient(
-            10deg,
-            hsl(196deg 58% 14% / 0%) 50%,
-            hsl(196deg 58% 14% / 70%)
-        );
-    }
-
-    &.green {
-        background: linear-gradient(
-            -25deg,
-            hsl(156deg 47% 47% / 0%) 40%,
-            hsl(156deg 47% 47%)
-        );
-    }
-
-    &.blue {
-        background: linear-gradient(
-            25deg,
-            hsl(196deg 38% 51% / 0%) 40%,
-            hsl(196deg 38% 51%)
-        );
-    }
-
-    &.sunburst {
-        background: linear-gradient(
-            5deg,
-            hsl(49deg 71% 68% / 0%) 20%,
-            hsl(49deg 71% 68%)
-        );
-    }
-
-    &.white-fade {
-        background: linear-gradient(
-            0deg,
-            hsl(0deg 0% 98%) 0%,
-            hsl(0deg 0% 98% / 0%) 40%
-        );
     }
 }
 
@@ -3923,7 +3579,6 @@ button {
     background: transparent;
     padding: 10px 20px;
     margin: 20px 0;
-    font-style: italic;
     border-left: 6px solid hsl(168.1deg 49.15% 46.27%);
 }
 
