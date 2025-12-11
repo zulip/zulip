@@ -17,6 +17,7 @@
         since we are only trying to avoid overlap.
     */
     --height-footer: 495px;
+    --padded-content-padding: 50px;
 }
 
 [data-tippy-root] .tippy-box .tippy-content {
@@ -26,16 +27,22 @@
 }
 
 body {
-    background-color: hsl(0deg 0% 98%);
     font-family: "Source Sans 3 VF", sans-serif;
-    line-height: 150%;
     height: 100%;
     font-weight: 300;
     font-size: 17px;
+    margin: 0;
+    line-height: normal;
+    max-width: 100vw;
+
+    background-color: hsl(0deg 0% 100%) !important;
+    color: hsl(0deg 0% 27%);
 }
 
 html {
     height: 100%;
+    width: 100vw;
+    overflow-x: hidden;
 }
 
 .noscroll {
@@ -58,16 +65,10 @@ html {
     margin-bottom: 0;
 }
 
+/* TODO: Remove this from the marketing-page templates instead
+   of just hiding in CSS. */
 .header {
-    position: relative;
-
-    padding: 15px 0;
-    height: 29px;
-
-    background-color: hsl(0deg 0% 100%);
-    box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
-
-    z-index: 100;
+    display: none;
 }
 
 .navbar.footer .nav {
@@ -1523,24 +1524,6 @@ label.label-title {
 
 /* BEGIN legacy_landing_page.css */
 
-:root {
-    --padded-content-padding: 50px;
-}
-
-html {
-    width: 100vw;
-    overflow-x: hidden;
-}
-
-body {
-    margin: 0;
-    background-color: hsl(0deg 0% 100%) !important;
-    color: hsl(0deg 0% 27%);
-    line-height: normal;
-
-    max-width: 100vw;
-}
-
 /* -- generic styles -- */
 
 h1,
@@ -1734,10 +1717,6 @@ button {
     max-width: none;
     min-width: 0;
     padding: 0 !important;
-}
-
-.header {
-    display: none;
 }
 
 .portico-landing {
