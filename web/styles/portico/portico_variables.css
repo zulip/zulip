@@ -1,6 +1,13 @@
 :root {
     --color-background-gradient-start: hsl(209deg 40% 50%);
     --color-background-gradient-end: hsl(210deg 48% 69%);
+    /* This is the same color as set on `--color-table-background` in
+       comparison_table.css. */
+    --color-background-marketing-page: hsl(0deg 0% 100% / 80%);
+    /* This is a legacy color previously set on .why-page divs. */
+    --color-text-marketing-page: hsl(223deg 6% 25%);
+    --color-background-solid-hero: var(--color-background-gradient-start);
+    --color-text-hero: hsl(0deg 0% 100%);
     --font-ss3: "Source Sans 3 VF", sans-serif;
     --font-ops: "Open Sans Variable", sans-serif;
     --color-background-box: hsl(210deg 44% 92%);
