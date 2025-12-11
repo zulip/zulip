@@ -179,7 +179,11 @@ def do_delete_user_core(
         # preserving the user's previous personal metadata about
         # channel subscriptions (colors, notification preferences, etc.).
         bulk_remove_subscriptions(
-            realm, [user_profile], get_user_subscribed_streams(user_profile), acting_user=None
+            realm,
+            [user_profile],
+            get_user_subscribed_streams(user_profile),
+            acting_user=None,
+            skip_events_for_removed_user=True,
         )
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.STREAM
