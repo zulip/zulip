@@ -1372,40 +1372,6 @@ ul {
     font-weight: normal;
 }
 
-a {
-    position: relative;
-    cursor: pointer;
-    color: hsl(170deg 47% 33%);
-
-    &:hover,
-    &:visited {
-        color: hsl(170deg 47% 33%);
-    }
-
-    &:hover,
-    &:focus {
-        text-decoration: none;
-    }
-
-    &.arrow {
-        &::after {
-            content: " ";
-            display: inline-block;
-            position: relative;
-            height: 17px;
-            width: 17px;
-            top: 3px;
-            background-image: url("../../images/landing-page/arrow.png");
-            background-size: 100%;
-            margin-left: 5px;
-        }
-    }
-
-    &.silver {
-        text-decoration: underline;
-    }
-}
-
 span a:hover,
 p a:hover,
 ul a:hover,
@@ -1555,6 +1521,23 @@ button {
         /* Keep elements targeted by URL fragments visible below the
         floating top menu; coordinate the value here with the menu's height. */
         scroll-margin-top: 60px;
+    }
+
+    a:not(.button) {
+        color: var(--color-link);
+        text-decoration: underline;
+        text-decoration-color: var(--color-link-underline);
+        text-underline-offset: 4px;
+        /* TODO: Adjust this in the portico markdown.css file,
+           and strike this line once all the marketing pages
+           reflect updated brand colors. */
+        font-weight: inherit !important;
+
+        &:hover {
+            color: var(--color-link-hover);
+            text-decoration: underline;
+            text-decoration-color: var(--color-link-underline-hover);
+        }
     }
 }
 
