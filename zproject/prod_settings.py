@@ -14,6 +14,14 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# CSRF trusted origins for cross-origin requests (Django 4.0+)
+# Must include full scheme (https://) - Railway domain and frontend domain
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
 ################################################################
 # Static Files
 ################################################################
