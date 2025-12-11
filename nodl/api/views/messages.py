@@ -31,6 +31,7 @@ from zerver.actions.reactions import check_add_reaction, do_remove_reaction
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import JsonableError, ReactionDoesNotExistError, ReactionExistsError
 from zerver.lib.markdown import render_message_markdown
+from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import access_message, get_recent_private_conversations, messages_for_ids
 from zerver.lib.muted_users import get_mute_object
 from zerver.lib.users import access_user_by_id_including_cross_realm
@@ -797,6 +798,10 @@ def edit_message(request: HttpRequest, message_id: int) -> HttpResponse:
             # Get prior mention user IDs (for notification handling)
             prior_mention_user_ids: set[int] = set()
 
+            # Create mention data for content editing
+            mention_backend = MentionBackend(user.realm_id)
+            mention_data = MentionData(mention_backend, payload.content, user)
+
             # Perform the update
             do_update_message(
                 user_profile=user,
@@ -806,6 +811,7 @@ def edit_message(request: HttpRequest, message_id: int) -> HttpResponse:
                 send_notification_to_new_thread=False,
                 rendering_result=rendering_result,
                 prior_mention_user_ids=prior_mention_user_ids,
+                mention_data=mention_data,
             )
 
             # Refresh message from DB
