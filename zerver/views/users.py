@@ -461,8 +461,55 @@ def patch_bot_backend(
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
+    short_name: str | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
+
+    # Handle short_name change
+    if short_name is not None:
+        # Extract current short_name from bot email (format: {short_name}-bot@domain)
+        current_email_local = bot.email.split("@")[0]
+        if current_email_local.endswith("-bot"):
+            current_short_name = current_email_local[:-5]  # Remove '-bot' suffix
+        else:
+            # Fallback if email format is unexpected
+            current_short_name = current_email_local
+
+        validated_short_name = check_short_name(short_name)
+
+        # Only proceed if short_name is actually changing
+        if validated_short_name != current_short_name:
+            # Construct new email
+            new_email_local = f"{validated_short_name}-bot"
+            try:
+                new_email = Address(
+                    username=new_email_local, domain=user_profile.realm.get_bot_domain()
+                ).addr_spec
+            except InvalidFakeEmailDomainError:
+                raise JsonableError(
+                    _(
+                        "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                        "Please contact your server administrator."
+                    )
+                )
+            except ValueError:
+                raise JsonableError(_("Bad name or username"))
+
+            # Skip validation if the new email is the same as the current email
+            if new_email != bot.email:
+                # Validate email doesn't already exist
+                try:
+                    validate_email_not_already_in_realm(
+                        user_profile.realm,
+                        new_email,
+                        verbose=False,
+                        allow_inactive_mirror_dummies=False,
+                    )
+                except ValidationError:
+                    raise JsonableError(_("Email address already in use"))
+
+                # Update the bot's email
+                do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
