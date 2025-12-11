@@ -1351,5 +1351,57 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         assert.equal(group.can_mention_group, 70);
     });
 
-    // run_test("")
+    run_test("getters and queries", () => {
+        user_groups.init();
+        const active_group = {
+            name: "active_group",
+            id: 1000,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Normal group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(active_group);
+
+        const deactivated_group = {
+            name: "old_group",
+            id: 1001,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Deleted group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: true,
+            can_mention_group: 1,
+        };
+        user_groups.add(deactivated_group);
+
+        const system_group = {
+            name: "system_group",
+            id: 1002,
+            members: [],
+            is_system_group: true,
+            direct_subgroup_ids: [],
+            description: "System group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(system_group);
+        assert.equal(user_groups.get_user_group_from_name("active_group").id, 1000);
+        assert.equal(user_groups.get_user_group_from_name("non_existent"), undefined);
+        const active_list = user_groups.get_realm_user_groups();
+        assert.equal(active_list.length, 1);
+        assert.equal(active_list[0].id, 1000);
+        const all_list = user_groups.get_realm_user_groups(true);
+        assert.equal(all_list.length, 2);
+        const system_found = all_list.find((g) => g.id === 1002);
+        assert.equal(system_found, undefined);
+    });
 });
