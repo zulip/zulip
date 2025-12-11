@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0767_rename_zoom_token_to_video_call_provider_tokens"),
     ]

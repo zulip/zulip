@@ -3511,15 +3511,10 @@ class SelectMultipleProfileFieldTest(ZulipTestCase):
             }
         ).decode()
 
-        try:
-            field_type_id = CustomProfileField.SELECT_MULTIPLE
-        except AttributeError:
-            field_type_id = 9
-
         field = CustomProfileField.objects.create(
             realm=realm,
             name="Programming Languages",
-            field_type=field_type_id,
+            field_type=CustomProfileField.SELECT_MULTIPLE,
             field_data=field_data,
             hint="Select your languages",
         )

@@ -571,7 +571,7 @@ def validate_select_multiple_field(var_name: str, field_data: str, value: object
 
     try:
         field_data_dict = orjson.loads(field_data)
-    except orjson.JSONDecodeError:
+    except orjson.JSONDecodeError:  # nocoverage
         raise ValidationError(_("Bad data in custom profile field."))
 
     for item in items:

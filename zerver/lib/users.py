@@ -524,7 +524,7 @@ def validate_user_custom_profile_field(
         if isinstance(value, str):
             try:
                 val_to_validate = orjson.loads(value)
-            except orjson.JSONDecodeError:
+            except orjson.JSONDecodeError:  # nocoverage
                 raise ValidationError(_("Invalid value (not valid JSON)."))
         multiselect_validator = cast(
             Callable[[str, str, object], Any],
