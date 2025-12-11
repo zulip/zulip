@@ -8,13 +8,20 @@ import * as stream_topic_history from "./stream_topic_history.ts";
 import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
 
+function get_latest_unread_msg_id(stream_id: number, topic: string): number | undefined {
+    const unread_msg_ids = unread.get_msg_ids_for_topic(stream_id, topic);
+    if (unread_msg_ids.length === 0) {
+        return undefined;
+    }
+    return unread_msg_ids.at(-1);
+}
+
 export function next_topic(
     sorted_channels_info: {
         channel_id: number;
         is_collapsed: boolean;
     }[],
     get_topics: (stream_id: number) => string[],
-    get_latest_unread_msg_id: (stream_id: number, topic: string) => number | undefined,
     curr_stream_id: number | undefined,
     curr_topic: string | undefined,
 ): {stream_id: number; topic: string} | undefined {
@@ -147,31 +154,11 @@ export function get_next_topic(
         return topics;
     }
 
-    function get_latest_unread_msg_id(stream_id: number, topic: string): number | undefined {
-        const unread_msg_ids = unread.get_msg_ids_for_topic(stream_id, topic);
-        if (unread_msg_ids.length === 0) {
-            return undefined;
-        }
-        return unread_msg_ids.at(-1);
-    }
-
     if (only_followed_topics) {
-        return next_topic(
-            sorted_channels_info,
-            get_followed_topics,
-            get_latest_unread_msg_id,
-            curr_stream_id,
-            curr_topic,
-        );
+        return next_topic(sorted_channels_info, get_followed_topics, curr_stream_id, curr_topic);
     }
 
-    return next_topic(
-        sorted_channels_info,
-        get_unmuted_topics,
-        get_latest_unread_msg_id,
-        curr_stream_id,
-        curr_topic,
-    );
+    return next_topic(sorted_channels_info, get_unmuted_topics, curr_stream_id, curr_topic);
 }
 
 export function get_next_unread_pm_string(curr_pm: string | undefined): string | undefined {
