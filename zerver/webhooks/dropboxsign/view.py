@@ -58,7 +58,7 @@ def get_recipients_text(recipients: list[str]) -> str:
 
 @webhook_view("HelloSign")
 @typed_endpoint
-def api_hellosign_webhook(
+def api_dropboxsign_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
