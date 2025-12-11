@@ -8,9 +8,33 @@ import * as stream_topic_history from "./stream_topic_history.ts";
 import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
 
+// Since topics can renamed, we track message IDs to help identify
+// which topics to skip when navigating to the next unread topic.
+//
+// If any of these messages are moved to a different topic, we remove
+// them from the skip to avoid user missing unread topics which they
+// have never seen before.
+export const message_ids_to_skip_once = new Set<number>();
+
+function mark_message_id_to_skip_once(message_id: number): void {
+    message_ids_to_skip_once.add(message_id);
+}
+
+export function unmark_message_ids_to_skip_once(message_id: number): void {
+    message_ids_to_skip_once.delete(message_id);
+}
+
 function get_latest_unread_msg_id(stream_id: number, topic: string): number | undefined {
+    let skip_topic = false;
     const unread_msg_ids = unread.get_msg_ids_for_topic(stream_id, topic);
-    if (unread_msg_ids.length === 0) {
+    for (const msg_id of unread_msg_ids) {
+        if (message_ids_to_skip_once.has(msg_id)) {
+            unmark_message_ids_to_skip_once(msg_id);
+            skip_topic = true;
+        }
+    }
+
+    if (unread_msg_ids.length === 0 || skip_topic) {
         return undefined;
     }
     return unread_msg_ids.at(-1);
@@ -25,6 +49,15 @@ export function next_topic(
     curr_stream_id: number | undefined,
     curr_topic: string | undefined,
 ): {stream_id: number; topic: string} | undefined {
+    if (curr_stream_id !== undefined && curr_topic !== undefined) {
+        const curr_narrow_max_unread_msg_id = unread
+            .get_msg_ids_for_topic(curr_stream_id, curr_topic)
+            .at(-1);
+        if (curr_narrow_max_unread_msg_id !== undefined) {
+            mark_message_id_to_skip_once(curr_narrow_max_unread_msg_id);
+        }
+    }
+
     const curr_stream_index = curr_stream_id
         ? sorted_channels_info.findIndex(({channel_id}) => channel_id === curr_stream_id)
         : -1;
