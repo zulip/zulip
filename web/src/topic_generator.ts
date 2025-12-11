@@ -14,7 +14,7 @@ export function next_topic(
         is_collapsed: boolean;
     }[],
     get_topics: (stream_id: number) => string[],
-    has_unread_messages: (stream_id: number, topic: string) => boolean,
+    get_latest_unread_msg_id: (stream_id: number, topic: string) => number | undefined,
     curr_stream_id: number | undefined,
     curr_topic: string | undefined,
 ): {stream_id: number; topic: string} | undefined {
@@ -30,7 +30,7 @@ export function next_topic(
 
         for (let i = curr_topic_index + 1; i < topics.length; i += 1) {
             const topic = topics[i]!;
-            if (has_unread_messages(channel_id, topic)) {
+            if (get_latest_unread_msg_id(channel_id, topic) !== undefined) {
                 return {stream_id: channel_id, topic};
             }
         }
@@ -43,7 +43,7 @@ export function next_topic(
             continue;
         }
         for (const topic of get_topics(channel_info.channel_id)) {
-            if (has_unread_messages(channel_info.channel_id, topic)) {
+            if (get_latest_unread_msg_id(channel_info.channel_id, topic) !== undefined) {
                 return {stream_id: channel_info.channel_id, topic};
             }
         }
@@ -76,7 +76,7 @@ export function next_topic(
                 }
             }
 
-            if (has_unread_messages(channel_info.channel_id, topic)) {
+            if (get_latest_unread_msg_id(channel_info.channel_id, topic) !== undefined) {
                 return {stream_id: channel_info.channel_id, topic};
             }
         }
@@ -147,11 +147,19 @@ export function get_next_topic(
         return topics;
     }
 
+    function get_latest_unread_msg_id(stream_id: number, topic: string): number | undefined {
+        const unread_msg_ids = unread.get_msg_ids_for_topic(stream_id, topic);
+        if (unread_msg_ids.length === 0) {
+            return undefined;
+        }
+        return unread_msg_ids.at(-1);
+    }
+
     if (only_followed_topics) {
         return next_topic(
             sorted_channels_info,
             get_followed_topics,
-            unread.topic_has_any_unread,
+            get_latest_unread_msg_id,
             curr_stream_id,
             curr_topic,
         );
@@ -160,7 +168,7 @@ export function get_next_topic(
     return next_topic(
         sorted_channels_info,
         get_unmuted_topics,
-        unread.topic_has_any_unread,
+        get_latest_unread_msg_id,
         curr_stream_id,
         curr_topic,
     );
