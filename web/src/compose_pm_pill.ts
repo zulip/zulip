@@ -12,6 +12,7 @@ export let widget: UserPillWidget;
 
 const pill_config: InputPillConfig = {
     exclude_inaccessible_users: true,
+    should_display_muted_user_pill: true,
 };
 
 export function initialize_pill(): UserPillWidget {
@@ -60,6 +61,10 @@ export function set_from_typeahead(person: User): void {
     user_pill.append_person({
         pill_widget: widget,
         person,
+        // This is just to impose consistent behavior in case we
+        // decide to show muted users in the recipient typeahead
+        // in the future.
+        should_display_muted_user_pill: true,
     });
 }
 
@@ -82,6 +87,7 @@ export function set_from_user_ids(value: number[]): void {
         user_pill.append_person({
             pill_widget: widget,
             person,
+            should_display_muted_user_pill: true,
         });
     }
 }

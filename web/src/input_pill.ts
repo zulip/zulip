@@ -16,6 +16,7 @@ export type InputPillConfig = {
     setting_name?: string;
     setting_type?: "realm" | "stream" | "group";
     user_id?: number;
+    should_display_muted_user_pill?: boolean;
 };
 
 type InputPillCreateOptions<ItemType> = {

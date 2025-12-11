@@ -4,8 +4,8 @@
   {{~#if stream_id}}data-stream-id="{{stream_id}}"{{/if~}}
   {{~#if data_syntax}}data-syntax="{{data_syntax}}"{{/if}} tabindex=0>
     {{#if has_image}}
-    <img class="pill-image" src="{{img_src}}" />
-    <div class="pill-image-border"></div>
+    <img class="pill-image {{#if is_muted_user_pill}}hide{{/if}}" src="{{img_src}}" />
+    <div class="pill-image-border {{#if is_muted_user_pill}}hide{{/if}}"></div>
     {{#if deactivated}}
         <span class="fa fa-ban slashed-circle-icon"></span>
     {{/if}}
@@ -38,6 +38,11 @@
         &nbsp;<span class="group-members-count">({{group_members_count}})</span>
         {{~/if~}}
     </span>
+    {{#if is_muted_user_pill}}
+    <div class="toggle-muted-user-icon-container">
+        <i class="zulip-icon zulip-icon-eye reveal-muted-user-pill" aria-hidden="true"></i>
+    </div>
+    {{/if}}
     {{#if show_expand_button}}
     <div class="expand">
         <a role="button" class="zulip-icon zulip-icon-expand-both-diagonals pill-expand-button"></a>
