@@ -958,12 +958,27 @@ def send_subscription_remove_events(
     users: list[UserProfile],
     streams: list[Stream],
     removed_subs: list[tuple[UserProfile, Stream]],
+    skip_events_for_removed_user: bool = False,
 ) -> None:
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     streams_by_user: dict[int, list[Stream]] = defaultdict(list)
     for user, stream in removed_subs:
         streams_by_user[user.id].append(stream)
         altered_user_dict[stream.id].add(user.id)
+
+    send_peer_remove_events(
+        realm=realm,
+        streams=streams,
+        altered_user_dict=altered_user_dict,
+    )
+
+    if skip_events_for_removed_user:
+        # If we don't need to bother sending events or marking messages as read
+        # for the user whose subscriptions are being removed,
+        # we can just return early.
+        # This is used during deletion of a user.
+        assert len(users) == 1
+        return
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
@@ -990,12 +1005,6 @@ def send_subscription_remove_events(
 
             if inaccessible_streams:
                 send_stream_deletion_event(realm, [user_profile.id], inaccessible_streams)
-
-    send_peer_remove_events(
-        realm=realm,
-        streams=streams,
-        altered_user_dict=altered_user_dict,
-    )
 
 
 def send_user_remove_events_on_removing_subscriptions(
@@ -1063,6 +1072,7 @@ def bulk_remove_subscriptions(
     streams: Iterable[Stream],
     *,
     acting_user: UserProfile | None,
+    skip_events_for_removed_user: bool = False,
 ) -> SubAndRemovedT:
     users = list(users)
     streams = list(streams)
@@ -1142,7 +1152,13 @@ def bulk_remove_subscriptions(
         RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
     removed_sub_tuples = [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate]
-    send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
+    send_subscription_remove_events(
+        realm,
+        users,
+        streams,
+        removed_sub_tuples,
+        skip_events_for_removed_user=skip_events_for_removed_user,
+    )
 
     if not all_users_accessible_by_everyone_in_realm(realm):
         altered_user_dict: dict[UserProfile, set[int]] = defaultdict(set)
