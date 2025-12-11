@@ -614,6 +614,19 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "dropbox", ["productivity"], [WebhookScreenshotConfig("file_updated.json")]
     ),
     IncomingWebhookIntegration(
+        "dropboxsign",
+        ["productivity", "hr"],
+        [
+            WebhookScreenshotConfig(
+                "signatures_signed_by_one_signatory.json",
+                payload_as_query_param=True,
+                payload_param_name="json",
+            )
+        ],
+        display_name="Dropbox Sign",
+        legacy_names=["hellosign"],
+    ),
+    IncomingWebhookIntegration(
         "errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
     ),
     IncomingWebhookIntegration(
@@ -709,18 +722,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "harbor",
         ["deployment"],
         [WebhookScreenshotConfig("scanning_completed.json")],
-    ),
-    IncomingWebhookIntegration(
-        "hellosign",
-        ["productivity", "hr"],
-        [
-            WebhookScreenshotConfig(
-                "signatures_signed_by_one_signatory.json",
-                payload_as_query_param=True,
-                payload_param_name="json",
-            )
-        ],
-        display_name="HelloSign",
     ),
     IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"

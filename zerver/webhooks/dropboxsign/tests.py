@@ -3,7 +3,21 @@ from typing_extensions import override
 from zerver.lib.test_classes import WebhookTestCase
 
 
-class HelloSignHookTests(WebhookTestCase):
+class DropboxSignHookTests(WebhookTestCase):
+    def test_legacy_urls(self) -> None:
+        expected_topic_name = "NDA with Acme Co."
+        expected_message = (
+            "The `NDA with Acme Co.` document is awaiting the signature of "
+            "Jack, and was just signed by Jill."
+        )
+
+        legacy_names = ["hellosign"]
+        for legacy_name in legacy_names:
+            self.url = self.build_webhook_url(legacy_name=legacy_name)
+            self.check_webhook(
+                "signatures", expected_topic_name, expected_message, content_type=None
+            )
+
     def test_signatures_message(self) -> None:
         expected_topic_name = "NDA with Acme Co."
         expected_message = (
@@ -52,4 +66,4 @@ class HelloSignHookTests(WebhookTestCase):
 
     @override
     def get_payload(self, fixture_name: str) -> dict[str, str]:
-        return {"json": self.webhook_fixture_data("hellosign", fixture_name, file_type="json")}
+        return {"json": self.webhook_fixture_data("dropboxsign", fixture_name, file_type="json")}
