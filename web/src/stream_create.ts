@@ -557,9 +557,13 @@ function set_up_group_setting_widgets(): void {
 }
 
 export function set_up_handlers(): void {
-    if (current_user.is_guest) {
-        // Guests do not have permission to create streams and
-        // hence cannot access the stream creation UI.
+    if (
+        !settings_data.user_can_create_public_streams() &&
+        !settings_data.user_can_create_web_public_streams() &&
+        !settings_data.user_can_create_private_streams()
+    ) {
+        // Return early if user does not have permission to create
+        // streams at all as they cannot access the stream UI.
         return;
     }
 
