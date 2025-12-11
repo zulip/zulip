@@ -35,8 +35,8 @@ body {
     line-height: normal;
     max-width: 100vw;
 
-    background-color: hsl(0deg 0% 100%) !important;
-    color: hsl(0deg 0% 27%);
+    background-color: var(--color-background-marketing-page);
+    color: var(--color-text-marketing-page);
 }
 
 html {
@@ -2284,7 +2284,6 @@ button {
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
     padding-top: 0;
-    color: hsl(223deg 6% 25%);
 }
 
 .portico-landing.why-page .main {
@@ -2302,8 +2301,8 @@ button {
         padding: 50px 50px 70px;
     }
 
-    background-color: hsl(153deg 32% 55%);
-    color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-solid-hero);
+    color: var(--color-text-hero);
 }
 
 .portico-landing.why-page .hero.small-hero {
