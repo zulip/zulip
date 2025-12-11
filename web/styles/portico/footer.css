@@ -61,6 +61,7 @@
 
     .footer__section ul {
         margin: 20px 0 28px;
+        padding-left: 0;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -84,6 +85,7 @@
         font-weight: 400;
         font-size: 16px;
         color: var(--color-links);
+        text-decoration: none;
     }
 
     & a:hover,

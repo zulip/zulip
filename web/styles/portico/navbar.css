@@ -89,6 +89,7 @@ details summary::-webkit-details-marker {
     &,
     &:visited {
         color: hsl(0deg 0% 100% / 80%);
+        text-decoration: none;
     }
 }
 
