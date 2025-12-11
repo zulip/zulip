@@ -49,6 +49,7 @@ from corporate.models.plans import CustomerPlan
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -2380,6 +2381,10 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         a bit faster.
         """
         do_change_user_role(user, role, acting_user=None)
+
+    def set_user_setting(self, user: UserProfile, setting_name: str, value: bool) -> None:
+        with self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(user, setting_name, value, acting_user=None)
 
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
