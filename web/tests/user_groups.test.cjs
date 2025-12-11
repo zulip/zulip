@@ -1306,4 +1306,30 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         assert.equal(group.direct_subgroup_ids.has(55), false);
         assert.ok(group.direct_subgroup_ids.has(66));
     });
+
+    run_test("update_user_group_properties", () => {
+        const raw_group = {
+            name: "to_update",
+            id: 500,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Old Description",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+            can_join_group: 1,
+        };
+
+        user_groups.add(raw_group);
+        const group = user_groups.get_user_group_from_id(500);
+        user_groups.update({data: {description: "New Description"}}, group);
+        assert.equal(group.description, "New Description");
+        assert.equal(user_groups.get_user_group_from_id(500).description, "New Description");
+        user_groups.update({data: {deactivated: true}}, group);
+        assert.equal(group.deactivated, true);
+        user_groups.update({data: {can_join_group: 20}}, group);
+        assert.equal(group.can_join_group, 20);
+    });
 });
