@@ -247,13 +247,21 @@ issue you're interested in.
 
 #### In other Zulip repositories
 
-There is no bot for other Zulip repositories
-([`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/), etc.). If
-you are interested in claiming an issue in one of these repositories, simply
-post a comment on the issue thread saying that you've started work on the
-issue and would like to claim it. In your comment, describe what part of the
-code you're modifying and how you plan to approach the problem, based on
-what you learned in steps 1–4 [above](#picking-an-issue-to-work-on).
+In other Zulip repositories, including
+[`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/),
+there is no bot.  Instead:
+* Use the steps above to find an issue you'd like to work on
+  and to get started working on it.
+* Post a comment on the issue thread saying that you've started work
+  on the issue and would like to claim it.
+* In your comment, **describe what you learned in steps 1–4
+  [above](#picking-an-issue-to-work-on)**: what part of the code
+  you're modifying and how you plan to approach the problem.
+* Once you've followed these steps, you've successfully claimed the issue.
+  Go ahead and continue work on the issue, and send a PR when ready.
+  Someone might come along and assign the issue to you for better
+  tracking, but there's no need to wait for that or for any other
+  form of permission.
 
 There is no need to @-mention the issue creator in your comment. There is
 also no need to post the same information in multiple places, for example in
