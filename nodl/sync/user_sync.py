@@ -102,8 +102,26 @@ class UserSyncService:
                 if extension.zulip_user:
                     user = self._update_user(extension.zulip_user, request, realm)
                 else:
-                    user = self._create_user(request, realm)
-                    extension.zulip_user = user
+                    # Check if user already exists in this realm (created via workspace sync)
+                    # This prevents duplicate key errors when extension wasn't linked
+                    existing_user = UserProfile.objects.filter(
+                        realm=realm,
+                        delivery_email__iexact=request.email,
+                        is_active=True,
+                    ).first()
+
+                    if existing_user:
+                        # Link existing user to extension and update
+                        logger.info(
+                            "Found existing Zulip user %d for email %s, linking to extension",
+                            existing_user.id,
+                            request.email,
+                        )
+                        extension.zulip_user = existing_user
+                        user = self._update_user(existing_user, request, realm)
+                    else:
+                        user = self._create_user(request, realm)
+                        extension.zulip_user = user
 
                 extension.sync_status = SyncStatus.SYNCED
                 extension.sync_error = None
