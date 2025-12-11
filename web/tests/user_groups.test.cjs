@@ -1320,6 +1320,10 @@ run_test("get_assigned_group_permission_object", ({override}) => {
             deactivated: false,
             can_mention_group: 1,
             can_join_group: 1,
+            can_leave_group: 1,
+            can_remove_members_group: 1,
+            can_add_members_group: 1,
+            can_manage_group: 1,
         };
 
         user_groups.add(raw_group);
@@ -1329,7 +1333,23 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         assert.equal(user_groups.get_user_group_from_id(500).description, "New Description");
         user_groups.update({data: {deactivated: true}}, group);
         assert.equal(group.deactivated, true);
-        user_groups.update({data: {can_join_group: 20}}, group);
+
+        const permission_updates = {
+            can_join_group: 20,
+            can_leave_group: 30,
+            can_remove_members_group: 40,
+            can_add_members_group: 50,
+            can_manage_group: 60,
+            can_mention_group: 70,
+        };
+        user_groups.update({data: permission_updates}, group);
         assert.equal(group.can_join_group, 20);
+        assert.equal(group.can_leave_group, 30);
+        assert.equal(group.can_remove_members_group, 40);
+        assert.equal(group.can_add_members_group, 50);
+        assert.equal(group.can_manage_group, 60);
+        assert.equal(group.can_mention_group, 70);
     });
+
+    // run_test("")
 });
