@@ -361,7 +361,8 @@ p.n-margin {
 /* Adjust width of any fixed / absolute positioned elements that might be visible in
    the background when a overlay / modal is open. */
 #navbar-fixed-container,
-#compose {
+#compose,
+#message_feed_container {
     width: calc(100% - var(--disabled-scrollbar-width));
 }
 
