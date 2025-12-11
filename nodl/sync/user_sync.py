@@ -75,18 +75,38 @@ class UserSyncService:
             defaults={"sync_status": SyncStatus.PENDING},
         )
 
-        # Check retry limit for failed syncs
+        # Check retry limit for failed syncs - but only if we don't have
+        # a linked user AND can't find an existing one to link
+        # This prevents blocking updates when the extension was created
+        # but never successfully linked (e.g., due to previous duplicate key errors)
         if extension.sync_status == SyncStatus.FAILED:
             if extension.sync_attempts >= self.MAX_RETRY_ATTEMPTS:
-                logger.warning(
-                    "Max retry attempts exceeded for user %s",
-                    request.supabase_user_id,
-                )
-                return UserSyncResult(
-                    success=False,
-                    zulip_user_id=None,
-                    error=f"Max retry attempts ({self.MAX_RETRY_ATTEMPTS}) exceeded",
-                )
+                # Before giving up, check if user exists and can be linked
+                realm = self._get_realm_for_workspace(request.workspace_id)
+                if realm:
+                    existing_user = UserProfile.objects.filter(
+                        realm=realm,
+                        delivery_email__iexact=request.email,
+                        is_active=True,
+                    ).first()
+                    if existing_user:
+                        # User exists! Reset attempts and continue with sync
+                        logger.info(
+                            "Resetting sync attempts for user %s - found existing Zulip user %d",
+                            request.supabase_user_id,
+                            existing_user.id,
+                        )
+                        extension.sync_attempts = 0
+                    else:
+                        logger.warning(
+                            "Max retry attempts exceeded for user %s",
+                            request.supabase_user_id,
+                        )
+                        return UserSyncResult(
+                            success=False,
+                            zulip_user_id=None,
+                            error=f"Max retry attempts ({self.MAX_RETRY_ATTEMPTS}) exceeded",
+                        )
 
         # Mark as syncing
         extension.sync_status = SyncStatus.SYNCING
