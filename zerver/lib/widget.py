@@ -7,7 +7,7 @@ from zerver.models import Message, SubMessage
 
 
 def get_widget_data(content: str) -> tuple[str | None, Any]:
-    valid_widget_types = ["poll", "todo"]
+    valid_widget_types = ["poll", "todo", "meeting"]
     tokens = re.split(r"\s+|\n+", content)
 
     # tokens[0] will always exist

@@ -550,6 +550,59 @@ def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 
+def validate_meeting_data(meeting_data: object, is_widget_author: bool) -> None:
+    """Validate meeting widget submessage data for participant updates."""
+    check_dict([("type", check_string)])("meeting data", meeting_data)
+
+    assert isinstance(meeting_data, dict)
+
+    if meeting_data["type"] == "join":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("user_id", check_int),
+                ("user_name", check_string),
+            ]
+        )
+        checker("meeting data", meeting_data)
+        return
+
+    if meeting_data["type"] == "leave":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("user_id", check_int),
+            ]
+        )
+        checker("meeting data", meeting_data)
+        return
+
+    if meeting_data["type"] == "end_meeting":
+        if not is_widget_author:
+            raise ValidationError("Only the meeting host can end the meeting.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("duration_seconds", check_int),
+            ]
+        )
+        checker("meeting data", meeting_data)
+        return
+
+    if meeting_data["type"] == "update_status":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("status", check_string_in(["active", "ended"])),
+            ]
+        )
+        checker("meeting data", meeting_data)
+        return
+
+    raise ValidationError(f"Unknown type for meeting data: {meeting_data['type']}")
+
+
 def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:
     if isinstance(val, str):
         return val

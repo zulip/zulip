@@ -3,6 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_add_meeting_modal from "../templates/add_meeting_modal.hbs";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
@@ -23,6 +24,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
+import * as meeting_modal from "./meeting_modal.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -554,6 +556,31 @@ export function initialize(): void {
                 id: "add-todo-modal",
                 post_render: widget_modal.todo_list_tasks_setup,
                 help_link: "https://zulip.com/help/collaborative-to-do-lists",
+            });
+        },
+    );
+
+    $("body").on(
+        "click",
+        ".compose_control_button_container:not(.disabled) .start-meeting",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            dialog_widget.launch({
+                html_heading: $t_html({defaultMessage: "Start video meeting"}),
+                html_body: render_add_meeting_modal(),
+                html_submit_button: $t_html({defaultMessage: "Start meeting"}),
+                close_on_submit: true,
+                loading_spinner: true,
+                on_click: meeting_modal.start_meeting,
+                on_show() {
+                    setTimeout(() => {
+                        $("#meeting-title-input").trigger("focus");
+                    }, 0);
+                },
+                form_id: "add-meeting-form",
+                id: "add-meeting-modal",
             });
         },
     );

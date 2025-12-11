@@ -2,6 +2,8 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import {meeting_widget_extra_data_schema} from "./meeting_widget.ts";
+import type {MeetingWidgetOutboundData} from "./meeting_widget.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -43,6 +45,10 @@ const widget_data_event_schema = z.object({
         z.object({
             widget_type: z.literal("todo"),
             extra_data: z.nullable(todo_widget_extra_data_schema),
+        }),
+        z.object({
+            widget_type: z.literal("meeting"),
+            extra_data: meeting_widget_extra_data_schema,
         }),
     ]),
 });
@@ -204,11 +210,11 @@ export function make_server_callback(
     message_id: number,
 ): (opts: {
     msg_type: string;
-    data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+    data: string | PollWidgetOutboundData | TodoWidgetOutboundData | MeetingWidgetOutboundData;
 }) => void {
     return function (opts: {
         msg_type: string;
-        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
+        data: string | PollWidgetOutboundData | TodoWidgetOutboundData | MeetingWidgetOutboundData;
     }) {
         const url = "/json/submessage";
 

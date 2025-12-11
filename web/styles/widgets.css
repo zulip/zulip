@@ -342,3 +342,223 @@ input {
         cursor: not-allowed;
     }
 }
+
+/* Meeting widget styles */
+.meeting-widget {
+    border: 1px solid var(--color-border-meeting-card, hsl(210deg 50% 80%));
+    border-radius: 8px;
+    background: linear-gradient(
+        135deg,
+        var(--color-background-meeting-card-start, hsl(210deg 50% 98%)),
+        var(--color-background-meeting-card-end, hsl(210deg 50% 96%))
+    );
+    padding: 12px 16px;
+    max-width: 400px;
+}
+
+.meeting-widget-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.meeting-icon-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.meeting-icon {
+    font-size: 24px;
+    color: var(--color-meeting-icon, hsl(210deg 60% 50%));
+}
+
+.meeting-live-indicator {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: hsl(0deg 80% 50%);
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
+    animation: meeting-pulse 2s infinite;
+}
+
+@keyframes meeting-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.meeting-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.meeting-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0 0 2px;
+    color: var(--color-text-default);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.meeting-host {
+    font-size: 0.85em;
+    color: var(--color-text-default-muted, hsl(0deg 0% 50%));
+}
+
+.meeting-body {
+    margin-bottom: 12px;
+}
+
+.meeting-status-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.meeting-participants,
+.meeting-duration {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+    color: var(--color-text-default-muted, hsl(0deg 0% 50%));
+
+    & i {
+        font-size: 0.9em;
+    }
+}
+
+.meeting-participant-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.meeting-participant-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-background-participant-avatar, hsl(210deg 50% 60%));
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.meeting-ended-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--color-background-meeting-ended, hsl(0deg 0% 95%));
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: var(--color-text-default-muted, hsl(0deg 0% 50%));
+
+    & i {
+        color: hsl(120deg 40% 50%);
+    }
+}
+
+.meeting-final-duration {
+    margin-left: auto;
+    font-size: 0.85em;
+}
+
+.meeting-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.meeting-join-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-background-meeting-join-button, hsl(210deg 60% 50%));
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-decoration: none;
+    transition:
+        background-color 0.2s,
+        transform 0.1s;
+
+    &:hover {
+        background: var(--color-background-meeting-join-button-hover, hsl(210deg 60% 45%));
+        color: white;
+        text-decoration: none;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    & i {
+        font-size: 0.9em;
+    }
+}
+
+.meeting-copy-link,
+.meeting-end-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border-zulip-button);
+    border-radius: 4px;
+    background: var(--color-background-zulip-button);
+    color: var(--color-text-default);
+    font-size: 0.85em;
+    cursor: pointer;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+
+    &:hover {
+        background: var(--color-background-zulip-button-hover);
+        border-color: var(--color-border-zulip-button-interactive);
+    }
+}
+
+.meeting-end-button {
+    color: hsl(0deg 60% 50%);
+    border-color: hsl(0deg 60% 80%);
+
+    &:hover {
+        background: hsl(0deg 60% 95%);
+        border-color: hsl(0deg 60% 60%);
+    }
+}
+
+.meeting-ended-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-default-muted, hsl(0deg 0% 50%));
+    font-size: 0.9em;
+
+    & i {
+        opacity: 0.6;
+    }
+}

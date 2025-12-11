@@ -1,0 +1,70 @@
+<div class="meeting-widget">
+    <div class="meeting-widget-header">
+        <div class="meeting-icon-container">
+            <i class="zulip-icon zulip-icon-video-call meeting-icon"></i>
+            {{#if is_active}}
+            <span class="meeting-live-indicator">{{t "LIVE"}}</span>
+            {{/if}}
+        </div>
+        <div class="meeting-info">
+            <h4 class="meeting-title">{{title}}</h4>
+            <span class="meeting-host">{{t "Hosted by"}} {{host_name}}</span>
+        </div>
+    </div>
+
+    <div class="meeting-body">
+        {{#if is_active}}
+        <div class="meeting-status-row">
+            <div class="meeting-participants">
+                <i class="fa fa-users"></i>
+                <span class="meeting-participant-count">{{participant_count}} {{t "participant(s)"}}</span>
+            </div>
+            <div class="meeting-duration">
+                <i class="fa fa-clock-o"></i>
+                <span class="meeting-duration-time">{{duration_display}}</span>
+            </div>
+        </div>
+        {{#if participants.length}}
+        <div class="meeting-participant-list">
+            {{#each participants}}
+            <span class="meeting-participant-avatar" title="{{user_name}}">
+                {{!-- Show initials --}}
+                {{user_name.[0]}}
+            </span>
+            {{/each}}
+        </div>
+        {{/if}}
+        {{else}}
+        <div class="meeting-ended-status">
+            <i class="fa fa-check-circle"></i>
+            <span>{{t "Meeting ended"}}</span>
+            {{#if duration_display}}
+            <span class="meeting-final-duration">{{t "Duration:"}} {{duration_display}}</span>
+            {{/if}}
+        </div>
+        {{/if}}
+    </div>
+
+    <div class="meeting-actions">
+        {{#if is_active}}
+        <a class="meeting-join-button" href="{{join_url}}" target="_blank" rel="noopener noreferrer">
+            <i class="fa fa-sign-in"></i>
+            {{t "Join Meeting"}}
+        </a>
+        <button class="meeting-copy-link" type="button" title="{{t 'Copy meeting link'}}">
+            <i class="fa fa-link"></i>
+        </button>
+        {{#if is_host}}
+        <button class="meeting-end-button" type="button" title="{{t 'End meeting'}}">
+            <i class="fa fa-stop-circle"></i>
+            {{t "End"}}
+        </button>
+        {{/if}}
+        {{else}}
+        <span class="meeting-ended-label">
+            <i class="fa fa-video-camera"></i>
+            {{t "Meeting has ended"}}
+        </span>
+        {{/if}}
+    </div>
+</div>

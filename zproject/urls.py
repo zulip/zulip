@@ -265,6 +265,7 @@ from zerver.views.users import (
     update_user_by_email_api,
     update_user_by_id_api,
 )
+from zerver.views.meetings import create_instant_meeting
 from zerver.views.video_calls import (
     complete_zoom_user,
     deauthorize_zoom_user,
@@ -596,6 +597,8 @@ v1_api_and_json_patterns = [
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
+    # Used to create a video meeting with nodl-backend JaaS integration
+    rest_path("meetings/create", POST=create_instant_meeting),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
