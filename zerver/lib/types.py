@@ -16,9 +16,13 @@ ResultT = TypeVar("ResultT")
 Validator: TypeAlias = Callable[[str, object], ResultT]
 ExtendedValidator: TypeAlias = Callable[[str, str, object], str]
 RealmUserValidator: TypeAlias = Callable[[int, object, bool], list[int]]
+SelectMultipleValidator = Callable[[str, str, object], list[int]]
+SelectMultipleFieldElement = tuple[
+    int, StrPromise, SelectMultipleValidator, Callable[[Any], Any], str
+]
 
 
-ProfileDataElementValue: TypeAlias = str | list[int]
+ProfileDataElementValue: TypeAlias = str | list[int] | list[str]
 
 
 class ProfileDataElementBase(TypedDict, total=False):

@@ -76,6 +76,7 @@ def try_add_realm_custom_profile_field(
     if custom_profile_field.field_type in (
         CustomProfileField.SELECT,
         CustomProfileField.EXTERNAL_ACCOUNT,
+        CustomProfileField.SELECT_MULTIPLE,
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
@@ -108,7 +109,17 @@ def remove_custom_profile_field_value_if_required(
     removed_values = old_values - new_values
 
     if removed_values:
-        CustomProfileFieldValue.objects.filter(field=field, value__in=removed_values).delete()
+        if field.field_type == CustomProfileField.SELECT:
+            CustomProfileFieldValue.objects.filter(field=field, value__in=removed_values).delete()
+        elif field.field_type == CustomProfileField.SELECT_MULTIPLE:
+            for field_value in CustomProfileFieldValue.objects.filter(field=field):
+                val_list = orjson.loads(field_value.value)
+                new_val_list = [v for v in val_list if str(v) not in removed_values]
+                if not new_val_list:
+                    field_value.delete()
+                elif len(new_val_list) < len(val_list):
+                    field_value.value = orjson.dumps(new_val_list).decode()
+                    field_value.save(update_fields=["value"])
 
 
 @transaction.atomic(durable=True)
@@ -139,10 +150,14 @@ def try_update_realm_custom_profile_field(
     if field.field_type in (
         CustomProfileField.SELECT,
         CustomProfileField.EXTERNAL_ACCOUNT,
+        CustomProfileField.SELECT_MULTIPLE,
     ):
         # If field_data is None, field_data is unchanged and there is no need for
         # comparing field_data values.
-        if field_data is not None and field.field_type == CustomProfileField.SELECT:
+        if field_data is not None and field.field_type in (
+            CustomProfileField.SELECT,
+            CustomProfileField.SELECT_MULTIPLE,
+        ):
             remove_custom_profile_field_value_if_required(field, field_data)
 
         # If field.field_data is the default empty string, we will set field_data
@@ -250,6 +265,11 @@ def get_custom_profile_field_display_value(field_value: CustomProfileFieldValue)
         field_data_dict = orjson.loads(field_value.field.field_data)
         value_key = field_value.value
         return field_data_dict[value_key]["text"]
+
+    if type == CustomProfileField.SELECT_MULTIPLE:
+        field_data_dict = orjson.loads(field_value.field.field_data)
+        value_keys = orjson.loads(field_value.value)
+        return ", ".join(field_data_dict[str(key)]["text"] for key in value_keys)
 
     if type == CustomProfileField.USER:
         user_ids = orjson.loads(field_value.value)

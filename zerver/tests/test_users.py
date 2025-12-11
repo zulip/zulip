@@ -836,6 +836,16 @@ class PermissionTest(ZulipTestCase):
         self.login("iago")
         cordelia = self.example_user("cordelia")
 
+        field_data = orjson.dumps(
+            {"0": {"text": "Python", "order": "1"}, "1": {"text": "Java", "order": "2"}}
+        ).decode()
+        CustomProfileField.objects.create(
+            realm=realm,
+            name="Programming Languages",
+            field_type=CustomProfileField.SELECT_MULTIPLE,
+            field_data=field_data,
+        )
+
         # Setting editable_by_user to false shouldn't affect admin's ability
         # to modify the profile field for other users.
         biography_field = CustomProfileField.objects.get(name="Biography", realm=realm)
@@ -859,6 +869,7 @@ class PermissionTest(ZulipTestCase):
             "Mentor": [cordelia.id],
             "GitHub username": "timabbott",
             "Pronouns": "she/her",
+            "Programming Languages": [0, 1],
         }
 
         new_profile_data = [
@@ -897,6 +908,7 @@ class PermissionTest(ZulipTestCase):
             "Mentor": silent_mention_syntax_for_user(cordelia),
             "GitHub username": "timabbott",
             "Pronouns": "she/her",
+            "Programming Languages": "Python, Java",
         }
 
         for field_name, display_value in expected_display_values.items():
@@ -942,6 +954,11 @@ class PermissionTest(ZulipTestCase):
             ("Birthday", "1909-34-55", "Birthday is not a date"),
             ("Favorite website", "not url", "Favorite website is not a URL"),
             ("Mentor", "not list of user ids", "User IDs is not a list"),
+            (
+                "Programming Languages",
+                [99],
+                "'99' is not a valid choice for 'Programming Languages'.",
+            ),
         ]
 
         for field_name, field_value, error_msg in invalid_fields:
@@ -993,6 +1010,8 @@ class PermissionTest(ZulipTestCase):
             value: str | None | list[Any] = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
+            elif field.field_type == CustomProfileField.SELECT_MULTIPLE:
+                value = []
             empty_profile_data.append(
                 {
                     "id": field.id,
@@ -1020,6 +1039,7 @@ class PermissionTest(ZulipTestCase):
             "Mentor": [hamlet.id],
             "GitHub username": "timabbott",
             "Pronouns": None,
+            "Programming Languages": [0],
         }
         new_profile_data = []
         for field_name in fields:

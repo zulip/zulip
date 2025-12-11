@@ -17,6 +17,8 @@ from zerver.lib.types import (
     ProfileDataElementBase,
     ProfileDataElementValue,
     RealmUserValidator,
+    SelectMultipleFieldElement,
+    SelectMultipleValidator,
     UserFieldElement,
     Validator,
 )
@@ -28,6 +30,7 @@ from zerver.lib.validator import (
     check_short_string,
     check_url,
     validate_select_field,
+    validate_select_multiple_field,
 )
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile
@@ -97,6 +100,7 @@ class CustomProfileField(models.Model):
     USER = 6
     EXTERNAL_ACCOUNT = 7
     PRONOUNS = 8
+    SELECT_MULTIPLE = 9
 
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. SELECT require field_data, USER require
@@ -104,12 +108,26 @@ class CustomProfileField(models.Model):
     SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
         (SELECT, gettext_lazy("Dropdown"), validate_select_field, str, "SELECT"),
     ]
+
+    SELECT_MULTIPLE_FIELD_TYPE_DATA: list[SelectMultipleFieldElement] = [
+        (
+            SELECT_MULTIPLE,
+            gettext_lazy("Checkboxes"),
+            validate_select_multiple_field,
+            orjson.loads,
+            "SELECT_MULTIPLE",
+        ),
+    ]
+
     USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
     ]
 
     SELECT_FIELD_VALIDATORS: dict[int, ExtendedValidator] = {
         item[0]: item[2] for item in SELECT_FIELD_TYPE_DATA
+    }
+    SELECT_MULTIPLE_FIELD_VALIDATORS: dict[int, SelectMultipleValidator] = {
+        item[0]: item[2] for item in SELECT_MULTIPLE_FIELD_TYPE_DATA
     }
     USER_FIELD_VALIDATORS: dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
@@ -132,7 +150,13 @@ class CustomProfileField(models.Model):
     ]
 
     ALL_FIELD_TYPES = sorted(
-        [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1]
+        [
+            *FIELD_TYPE_DATA,
+            *SELECT_FIELD_TYPE_DATA,
+            *SELECT_MULTIPLE_FIELD_TYPE_DATA,
+            *USER_FIELD_TYPE_DATA,
+        ],
+        key=lambda x: x[1],
     )
 
     FIELD_VALIDATORS: dict[int, Validator[ProfileDataElementValue]] = {

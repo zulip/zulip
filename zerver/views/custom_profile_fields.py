@@ -52,7 +52,7 @@ def validate_field_name_and_hint(name: str, hint: str) -> None:
 
 def validate_custom_field_data(field_type: int, field_data: ProfileFieldData) -> None:
     try:
-        if field_type == CustomProfileField.SELECT:
+        if field_type in (CustomProfileField.SELECT, CustomProfileField.SELECT_MULTIPLE):
             # Choice type field must have at least have one choice
             if len(field_data) < 1:
                 raise JsonableError(_("Field must have at least one choice."))
