@@ -16,6 +16,7 @@ from nodl.api.views.messages import (
     get_unread_counts,
     list_dm_conversations,
     list_messages,
+    mark_messages_as_read,
     remove_reaction,
     send_message,
 )
@@ -73,8 +74,9 @@ urlpatterns = [
     path("api/v1/messages/<int:message_id>/reactions/<str:emoji_name>", remove_reaction, name="nodl_remove_reaction"),
     # DM REST API endpoints - authenticated via JWT
     path("api/v1/dm/conversations", list_dm_conversations, name="nodl_list_dm_conversations"),
-    # Unread counts endpoint - authenticated via JWT
+    # Unread counts and mark-as-read endpoints - authenticated via JWT
     path("api/v1/unread", get_unread_counts, name="nodl_unread_counts"),
+    path("api/v1/messages/read", mark_messages_as_read, name="nodl_mark_read"),
 ]
 
 # i18n URL patterns (empty for API endpoints)

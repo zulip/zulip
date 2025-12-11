@@ -1121,6 +1121,84 @@ def remove_reaction(request: HttpRequest, message_id: int, emoji_name: str) -> H
         )
 
 
+@csrf_exempt
+@require_jwt_auth
+@rate_limit(key_prefix="messages_write", limit=MESSAGES_WRITE_LIMIT)
+def mark_messages_as_read(request: HttpRequest) -> HttpResponse:
+    """Mark messages as read.
+
+    POST /api/v1/messages/read
+
+    Request body:
+    {
+        "stream_id": 42,          // Optional: mark all in stream
+        "topic": "welcome",       // Optional: mark all in topic (requires stream_id)
+        "message_ids": [1,2,3]    // Optional: mark specific messages
+    }
+
+    Response:
+    {
+        "result": "success",
+        "messages_marked": 5
+    }
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    try:
+        body = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"result": "error", "code": "INVALID_JSON", "msg": "Invalid JSON body"},
+            status=400,
+        )
+
+    stream_id = body.get("stream_id")
+    topic = body.get("topic")
+    message_ids = body.get("message_ids")
+
+    from zerver.models import Stream
+
+    try:
+        if stream_id:
+            # Mark all messages in a stream (optionally filtered by topic)
+            from zerver.actions.message_flags import do_mark_stream_messages_as_read
+
+            stream = Stream.objects.get(id=stream_id, realm=user.realm)
+            count = do_mark_stream_messages_as_read(user, stream.recipient_id, topic)
+        elif message_ids:
+            # Mark specific messages as read
+            from zerver.actions.message_flags import do_update_message_flags
+
+            count, _ = do_update_message_flags(user, "add", "read", message_ids)
+        else:
+            return JsonResponse(
+                {"result": "error", "code": "INVALID_PARAMS", "msg": "Either stream_id or message_ids required"},
+                status=400,
+            )
+
+        return JsonResponse({
+            "result": "success",
+            "messages_marked": count,
+        })
+    except Stream.DoesNotExist:
+        return JsonResponse(
+            {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found"},
+            status=404,
+        )
+    except Exception as e:
+        logger.exception("Failed to mark messages as read")
+        return JsonResponse(
+            {"result": "error", "code": "MARK_READ_FAILED", "msg": str(e)},
+            status=500,
+        )
+
+
 @require_jwt_auth
 @rate_limit(key_prefix="messages_read", limit=MESSAGES_READ_LIMIT)
 def get_unread_counts(request: HttpRequest) -> HttpResponse:
@@ -1131,11 +1209,9 @@ def get_unread_counts(request: HttpRequest) -> HttpResponse:
     Response:
     {
         "result": "success",
-        "unread_msgs": {
-            "count": 0,
-            "streams": [],
-            "huddles": [],
-            "pms": []
+        "unread_counts": {
+            "123": 5,           // stream_id: count
+            "123:welcome": 2    // stream_id:topic: count
         }
     }
     """
@@ -1147,16 +1223,34 @@ def get_unread_counts(request: HttpRequest) -> HttpResponse:
 
     user: UserProfile = request.user_profile  # type: ignore[attr-defined]
 
-    # Get unread message counts
-    # For now, return empty response structure matching Zulip's format
-    # The frontend expects this structure even if counts are zero
+    try:
+        from zerver.lib.message import get_raw_unread_data
 
-    return JsonResponse({
-        "result": "success",
-        "unread_msgs": {
-            "count": 0,
-            "streams": [],
-            "huddles": [],
-            "pms": []
-        }
-    })
+        raw_unread = get_raw_unread_data(user)
+
+        # Transform to frontend-expected format
+        unread_counts: dict[str, int] = {}
+
+        # Stream unread counts from stream_dict
+        stream_dict = raw_unread.get("stream_dict", {})
+        for stream_id, topic_dict in stream_dict.items():
+            stream_count = 0
+            for topic, msg_ids in topic_dict.items():
+                topic_count = len(msg_ids)
+                stream_count += topic_count
+                # Per-topic count
+                unread_counts[f"{stream_id}:{topic}"] = topic_count
+
+            # Total stream count
+            unread_counts[str(stream_id)] = stream_count
+
+        return JsonResponse({
+            "result": "success",
+            "unread_counts": unread_counts,
+        })
+    except Exception as e:
+        logger.exception("Failed to get unread counts")
+        return JsonResponse({
+            "result": "success",
+            "unread_counts": {},
+        })
