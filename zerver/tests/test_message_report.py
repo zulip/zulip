@@ -90,7 +90,7 @@ class ReportMessageTest(ZulipTestCase):
 **{report_type}**. {description}
 ```
 
-{fence} spoiler **Original message at {channel_message_link}**
+{fence} spoiler Original message at {channel_message_link}
 {reported_message}
 {fence}
 """.format(
@@ -120,7 +120,7 @@ class ReportMessageTest(ZulipTestCase):
 **{report_type}**. {description}
 ```
 
-{fence} spoiler **[Original message]({direct_message_link})**
+{fence} spoiler [Original message]({direct_message_link})
 {reported_message}
 {fence}
 """.format(
