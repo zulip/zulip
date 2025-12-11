@@ -145,6 +145,14 @@ to set up the Zulip Terminal development environment.
 
 ## Finding an issue to work on
 
+::: note
+
+**Note**: Project maintainers are not able to individually recommend issues to new
+contributors. Learning how to find an issue you can tackle is one of the skills
+new contributors need to learn.
+
+:::
+
 ### Where to look for an issue
 
 Now you're ready to pick your first issue! Zulip has several repositories you
