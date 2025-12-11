@@ -83,7 +83,7 @@ Set the remote server's PostgreSQL version in `/etc/zulip/zulip.conf`:
 ```ini
 [postgresql]
 # Set this to match the version running on your remote PostgreSQL server
-version = 17
+version = 18
 ```
 
 Now complete the installation by running the following commands.
@@ -153,7 +153,7 @@ Set the remote server's PostgreSQL version in `/etc/zulip/zulip.conf`:
 ```ini
 [postgresql]
 # Set this to match the version running on your remote PostgreSQL server
-version = 17
+version = 18
 ```
 
 Now complete the installation by running the following commands.
