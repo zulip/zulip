@@ -37,6 +37,7 @@ from zerver.lib.users import access_user_by_id_including_cross_realm
 from zerver.lib.rate_limiter import RateLimitedObject, RedisRateLimiterBackend
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.types import StreamMessageEditRequest
+from zerver.models.streams import get_stream_by_id_in_realm
 from zerver.models import Message, Reaction, UserMessage, UserProfile
 from zerver.models.clients import get_client
 
@@ -773,10 +774,24 @@ def edit_message(request: HttpRequest, message_id: int) -> HttpResponse:
                 realm=user.realm,
             )
 
-            # Create edit request
+            # Get the stream for this message
+            stream = get_stream_by_id_in_realm(message.recipient.type_id, user.realm)
+
+            # Create edit request (content-only edit)
             edit_request = StreamMessageEditRequest(
+                is_content_edited=True,
+                is_topic_edited=False,
+                is_stream_edited=False,
+                is_message_moved=False,
+                topic_resolved=False,
+                topic_unresolved=False,
                 content=payload.content,
-                rendered_content=rendering_result.rendered_content,
+                target_topic_name=message.topic_name(),
+                target_stream=stream,
+                orig_content=message.content,
+                orig_topic_name=message.topic_name(),
+                orig_stream=stream,
+                propagate_mode="change_one",
             )
 
             # Get prior mention user IDs (for notification handling)
