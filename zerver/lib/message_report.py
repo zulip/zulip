@@ -112,7 +112,7 @@ def send_message_report(
 
     # Build report context and message preview block
     if reported_message.is_channel_message:
-        original_message_string = _("**Original message at {channel_message_link}**").format(
+        original_message_string = _("Original message at {channel_message_link}").format(
             channel_message_link=channel_message_link
         )
     else:
@@ -123,7 +123,7 @@ def send_message_report(
                 display_recipient=get_display_recipient(reported_message.recipient),
             ),
         )
-        original_message_string = _("**[Original message]({direct_message_link})**").format(
+        original_message_string = _("[Original message]({direct_message_link})").format(
             direct_message_link=direct_message_link
         )
 
