@@ -1504,8 +1504,10 @@ button {
 
 /* This matches the upgrade-button style from
    pricing_plans.css.
-   TODO: Create variables for all of these colors. */
-.hero-buttons .button {
+   TODO: Create variables for all of these colors.
+   TODO: Better name `register-buttons` and related classes. */
+.hero-buttons .button,
+.register-buttons .button {
     color: hsl(0deg 0% 100%);
     background-color: hsl(219deg 62% 54%);
     /* Legacy margin value. */
@@ -3508,43 +3510,10 @@ button {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    font-size: 15px;
     margin: 10px 20px;
-    float: left;
     width: 200px;
-    border: 2px solid;
-    border-radius: 4px;
-    background: none;
-    color: hsl(169deg 45% 43%);
     vertical-align: middle;
-    position: relative;
-    z-index: 1;
-    backface-visibility: hidden;
-    -moz-osx-font-smoothing: grayscale;
-    letter-spacing: 2px;
-    text-transform: uppercase;
     overflow: hidden;
-    transition:
-        border-color 0.3s,
-        background-color 0.3s;
-    transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
-    font-weight: 700;
-    padding: 15px 5px;
-
-    &:focus {
-        outline: none;
-    }
-
-    & p {
-        font-weight: 600;
-        margin-bottom: 0;
-    }
-
-    &:hover {
-        border-color: hsl(169deg 45% 43%);
-        background-color: hsl(170deg 47% 53%);
-        color: hsl(0deg 0% 100%);
-    }
 }
 
 .quote {
@@ -3846,16 +3815,6 @@ button {
         & a {
             min-height: 40px;
             padding: 7px 0;
-        }
-    }
-
-    @media (width <= 768px) {
-        .register-buttons {
-            & a {
-                margin: 10px calc(5vw - 10px);
-                width: clamp(130px, 40vw, 200px);
-                font-size: 13px;
-            }
         }
     }
 }
