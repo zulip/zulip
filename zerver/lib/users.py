@@ -243,11 +243,13 @@ def bulk_get_cross_realm_bots() -> dict[str, UserProfile]:
 
 
 def user_ids_to_users(
-    user_ids: Sequence[int], realm: Realm, *, allow_deactivated: bool
+    user_ids: Sequence[int], realm: Realm, *, allow_deactivated: bool, allow_bots: bool
 ) -> list[UserProfile]:
     user_query = UserProfile.objects.filter(id__in=user_ids, realm=realm)
     if not allow_deactivated:
         user_query = user_query.filter(is_active=True)
+    if not allow_bots:
+        user_query = user_query.exclude(is_bot=True)
 
     user_profiles = list(user_query.select_related("realm"))
 
