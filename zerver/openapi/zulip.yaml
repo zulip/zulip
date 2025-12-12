@@ -7914,6 +7914,7 @@ paths:
                 - use_first_unread_anchor
                 - include_anchor
                 - message_ids
+                - anchor_date
       parameters:
         - name: anchor
           in: query
@@ -7926,8 +7927,13 @@ paths:
             - `oldest`: The oldest message.
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
+            - `date`: The first message on or after the datetime indicated by the
+              [`anchor_date`](#parameter-anchor_date), if any; otherwise, the most
+              recent message.
 
-            **Changes**: String values are new in Zulip 3.0 (feature level 1). The
+            **Changes**: The `date` value is new in Zulip 12.0 (feature level 445).
+
+            String values are new in Zulip 3.0 (feature level 1). The
             `first_unread` functionality was supported in Zulip 2.1.x
             and older by not sending `anchor` and using `use_first_unread_anchor`.
 
@@ -7949,6 +7955,20 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: anchor_date
+          in: query
+          description: |
+            The date or datetime to use for finding the anchor message when `anchor` is
+            `date`. Accepted formats include ISO 8601 date-only strings
+            (e.g. `2005-04-18`) as well as full datetime strings
+            (e.g. `2005-04-18T12:34:56Z`). If only a date is provided, the datetime is set to
+            midnight (00:00) on that day in UTC. If no timezone is provided, UTC is
+            assumed.
+
+            **Changes**: New in Zulip 12.0 (feature level 445).
+          schema:
+            type: string
+          example: "2005-04-18T12:34:56Z"
         - name: num_before
           in: query
           description: |

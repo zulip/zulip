@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 445**
+
+* [`GET /messages`](/api/get-messages): Added a new `date` value for
+   the `anchor` parameter, and new `anchor_date` parameter, to support
+   fetching messages around a specific date/time.
+
 **Feature level 444**
 
 * [`PATCH /settings`](/api/update-settings): Added support for bulk updating
