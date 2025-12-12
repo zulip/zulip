@@ -658,6 +658,12 @@
     width: 14em;
 }
 
+.email_change_container .settings-field-hint {
+    /* Constrain warning text width to match input field area
+       (input: 14em + suffix text) for proper wrapping. */
+    max-width: 25em;
+}
+
 #add-poll-modal,
 #add-todo-modal {
     /* this height allows 3-4 option rows
