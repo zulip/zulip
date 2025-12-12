@@ -267,15 +267,14 @@ export function quote_message(opts: {
         compose_recipient.toggle_compose_recipient_dropdown();
     } else {
         if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
-            // The user has not started typing a message,
-            // but is quoting into the compose box,
-            // so we will re-open the compose box.
-            // (If you did re-open the compose box, you
-            // are prone to glitches where you select the
-            // text, plus it's a complicated codepath that
-            // can have other unintended consequences.)
+            // Whether or not the compose box is open, it's empty, so
+            // we start a new message replying to the quoted message.
             respond_to_message({
                 ...opts,
+                // Critically, we pass the message_id of the message we
+                // just quoted, to avoid incorrectly replying to an
+                // unrelated selected message in interleaved views.
+                message_id,
                 keep_composebox_empty: true,
             });
         }
@@ -383,7 +382,7 @@ function get_range_intersection_with_element(range: Range, element: Node): Range
     return intersection;
 }
 
-export function get_message_selection(selection = window.getSelection()): string {
+export let get_message_selection = (selection = window.getSelection()): string => {
     assert(selection !== null);
     let selected_message_content_raw = "";
 
@@ -426,6 +425,10 @@ export function get_message_selection(selection = window.getSelection()): string
     }
     selected_message_content_raw = selected_message_content_raw.trim();
     return selected_message_content_raw;
+};
+
+export function rewire_get_message_selection(value: typeof get_message_selection): void {
+    get_message_selection = value;
 }
 
 export function initialize(): void {
