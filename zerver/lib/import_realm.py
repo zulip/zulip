@@ -1389,9 +1389,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         else:
             for setting_name in Stream.stream_permission_group_settings:
                 re_map_foreign_keys(data, "zerver_stream", setting_name, related_table="usergroup")
-        # Handle rendering of stream descriptions for import from non-Zulip
         for stream in data["zerver_stream"]:
-            stream["rendered_description"] = render_stream_description(stream["description"], realm)
             stream["name"] = stream["name"][: Stream.MAX_NAME_LENGTH]
         bulk_import_model(data, Stream)
 
@@ -1435,13 +1433,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     UserProfile.objects.bulk_create(user_profiles)
 
-    # UserProfiles have been loaded, so now we're ready to set .creator_id
-    # for streams based on the mapping we saved earlier.
-    streams = Stream.objects.filter(id__in=stream_id_to_creator_id.keys())
-    for stream in streams:
-        stream.creator_id = stream_id_to_creator_id[stream.id]
-    Stream.objects.bulk_update(streams, ["creator_id"])
-
     channel_folders = ChannelFolder.objects.filter(id__in=channel_folder_id_to_creator_id.keys())
     for channel_folder in channel_folders:
         channel_folder.creator_id = channel_folder_id_to_creator_id[channel_folder.id]
@@ -1480,6 +1471,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             assert first_user_profile is not None
             realm_emoji.author_id = first_user_profile.id
             realm_emoji.save(update_fields=["author_id"])
+
+    channels = Stream.objects.filter(realm=realm)
+    for channel in channels:
+        # render_stream_description requires RealmEmoji in order to work correctly,
+        # so we had to ensure to import emojis first before calling it.
+        channel.rendered_description = render_stream_description(channel.description, realm)
+        # UserProfiles have been loaded, so now we're ready to set .creator_id
+        # for channels based on the mapping we saved earlier.
+        if channel.id in stream_id_to_creator_id:
+            channel.creator_id = stream_id_to_creator_id[channel.id]
+    Stream.objects.bulk_update(channels, ["rendered_description", "creator_id"])
 
     if "zerver_huddle" in data:
         update_model_ids(DirectMessageGroup, data, "huddle")
