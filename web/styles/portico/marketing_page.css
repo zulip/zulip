@@ -2379,12 +2379,13 @@ button {
     font-size: 1.1rem;
 }
 
-.portico-landing.why-page .main blockquote {
+.portico-landing blockquote {
     background-color: var(--color-background-box);
     border-left: 5px solid var(--color-prominent-border);
     padding: 20px 30px;
     margin: 20px 0;
     font-size: 1.05em;
+    font-weight: 400;
 
     & p {
         line-height: 1.5;
@@ -2394,6 +2395,10 @@ button {
 
     & p:last-child {
         margin-top: 10px;
+    }
+
+    .author {
+        padding-top: 20px;
     }
 }
 
@@ -3543,7 +3548,7 @@ button {
 }
 
 .quote {
-    background: hsl(218deg 46% 43%);
+    background: var(--color-background-box);
     padding: 1em;
     border-radius: 1em;
     font-weight: 400;
@@ -3551,29 +3556,20 @@ button {
     display: flex;
     flex-direction: column;
 
-    & a {
-        color: hsl(0deg 0% 100%);
-
-        &.case-study-link {
-            margin-left: 20px;
-            text-decoration: underline;
-        }
-
-        &:hover {
-            text-decoration: underline;
-        }
+    .case-study-link {
+        margin-left: 20px;
+        text-decoration: underline;
     }
 
     .author,
     blockquote {
-        color: hsl(0deg 0% 100%);
         margin: 5px 20px 20px;
     }
 
     & blockquote {
         font-size: 18px;
         padding: 0 0 0 15px;
-        border-left: 5px solid hsl(0deg 0% 93%);
+        border-left: 5px solid var(--color-prominent-border);
     }
 
     & blockquote::before {
@@ -3584,23 +3580,6 @@ button {
 
     & cite {
         font-style: normal;
-    }
-}
-
-.intro_quote {
-    & blockquote {
-        font-size: 17px;
-        font-weight: 400;
-        color: hsl(223deg 6% 25%);
-        border-left: 6px solid hsl(218deg 46% 43%);
-        position: relative;
-        background: hsl(0deg 0% 93%);
-        padding: 20px;
-        margin: 0 0 20px;
-    }
-
-    .author {
-        padding-top: 20px;
     }
 }
 
