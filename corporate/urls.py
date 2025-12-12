@@ -161,6 +161,8 @@ landing_page_urls = [
     path("for/open-source/", landing_view, {"template_name": "corporate/for/open-source.html"}),
     path("for/research/", landing_view, {"template_name": "corporate/for/research.html"}),
     path("for/business/", landing_view, {"template_name": "corporate/for/business.html"}),
+    # /role pages
+    path("role/engineers/", landing_view, {"template_name": "corporate/role/engineers.html"}),
     # case-studies
     path(
         "case-studies/idrift/",
