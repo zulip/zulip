@@ -5,7 +5,12 @@ from typing import Any
 import orjson
 from django.test import override_settings
 
-from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT, build_recipients
+from zerver.data_import.import_util import (
+    SubscriberHandler,
+    UploadRecordData,
+    ZerverFieldsT,
+    build_recipients,
+)
 from zerver.data_import.rocketchat import (
     build_custom_emoji,
     build_reactions,
@@ -929,7 +934,7 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         zerver_attachments: list[ZerverFieldsT] = []
-        uploads_list: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
 
         upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
 
@@ -956,7 +961,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_id"], 3)
+        self.assertEqual(uploads_list[0].user_profile_id, 3)
 
         attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
         self.assertTrue(os.path.exists(attachment_out_path))
