@@ -32,6 +32,8 @@ Come find us on the [development community chat](https://zulip.com/development-c
 
 ## Getting started
 
+> Note: If you're setting up Zulip for development, make sure to read the CONTRIBUTING.md page for detailed environment setup instructions before you begin.
+
 - **Contributing code**. Check out our [guide for new
   contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
   to get started. We have invested in making Zulip’s code highly
