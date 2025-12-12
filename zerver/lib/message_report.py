@@ -156,4 +156,5 @@ def send_message_report(
         stream=moderation_request_channel,
         topic_name=topic_name,
         content=content,
+        acting_user=reporting_user,
     )
