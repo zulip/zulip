@@ -300,7 +300,7 @@ def update_user_backend(
 
             check_spare_license_available_for_changing_guest_user_role(user_profile.realm)
 
-        do_change_user_role(target, role, acting_user=user_profile)
+        do_change_user_role(target, role, acting_user=user_profile, notify=True)
 
     if full_name is not None and target.full_name != full_name and full_name.strip() != "":
         # We don't respect `name_changes_disabled` here because the request
@@ -314,7 +314,9 @@ def update_user_backend(
             assert not isinstance(entry.value, int)
             if entry.value is None or not entry.value:
                 field_id = entry.id
-                check_remove_custom_profile_field_value(target, field_id, acting_user=user_profile)
+                check_remove_custom_profile_field_value(
+                    target, field_id, acting_user=user_profile, notify=True
+                )
             else:
                 clean_profile_data.append(
                     {
@@ -325,7 +327,9 @@ def update_user_backend(
         validate_user_custom_profile_data(
             target.realm.id, clean_profile_data, acting_user=user_profile
         )
-        do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
+        do_update_user_custom_profile_data_if_changed(
+            target, clean_profile_data, user_profile, notify=True
+        )
 
     if new_email is not None and target.delivery_email != new_email:
         assert user_profile.can_change_user_emails and user_profile.is_realm_admin
