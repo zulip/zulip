@@ -120,7 +120,9 @@ def check_short_name(short_name_raw: str) -> str:
     return short_name
 
 
-def validate_and_construct_bot_email(short_name_raw: str, realm: Realm) -> str:
+def validate_and_construct_bot_email(
+    short_name_raw: str, realm: Realm, *, for_editing: bool = False
+) -> str:
     """
     Validate short_name and construct bot email address.
 
@@ -130,6 +132,7 @@ def validate_and_construct_bot_email(short_name_raw: str, realm: Realm) -> str:
     Args:
         short_name_raw: The raw short_name input from the user
         realm: The realm for which to construct the bot email
+        for_editing: If True, use "change" in error messages; otherwise use "create"
 
     Returns:
         The constructed bot email address
@@ -147,12 +150,20 @@ def validate_and_construct_bot_email(short_name_raw: str, realm: Realm) -> str:
     try:
         email = Address(username=short_name, domain=realm.get_bot_domain()).addr_spec
     except InvalidFakeEmailDomainError:
-        raise JsonableError(
-            _(
-                "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-                "Please contact your server administrator."
+        if for_editing:
+            raise JsonableError(
+                _(
+                    "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                    "Please contact your server administrator."
+                )
             )
-        )
+        else:
+            raise JsonableError(
+                _(
+                    "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                    "Please contact your server administrator."
+                )
+            )
     except ValueError:
         raise JsonableError(_("Bad name or username"))
     return email

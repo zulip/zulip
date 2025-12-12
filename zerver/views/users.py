@@ -465,7 +465,9 @@ def patch_bot_backend(
 
     # Handle short_name change
     if short_name is not None:
-        new_email = validate_and_construct_bot_email(short_name, user_profile.realm)
+        new_email = validate_and_construct_bot_email(
+            short_name, user_profile.realm, for_editing=True
+        )
         if new_email != bot.email:
             try:
                 validate_email_not_already_in_realm(
@@ -602,9 +604,8 @@ def add_bot_backend(
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
+    short_name = check_short_name(short_name_raw)
     email = validate_and_construct_bot_email(short_name_raw, user_profile.realm)
-    # Extract short_name from email for service_name logic
-    short_name = email.split("@")[0][:-5]  # Remove '-bot' suffix
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or short_name
     full_name = check_full_name(
