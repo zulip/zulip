@@ -2805,7 +2805,7 @@ button {
                     align-self: center;
 
                     & img {
-                        max-width: 100px;
+                        width: 100px;
                     }
                 }
             }
