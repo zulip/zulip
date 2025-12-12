@@ -49,6 +49,7 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
+from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
 from zerver.lib.export import (
     PRESERVED_AUDIT_LOG_EVENT_TYPES,
     Record,
@@ -112,6 +113,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.messages import ImageAttachment
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realms import get_realm
 from zerver.models.recipients import (
     get_direct_message_group_hash,
@@ -1835,8 +1837,31 @@ class RealmImportExportTest(ExportFile):
 
         all_imported_realm_emoji = RealmEmoji.objects.filter(realm=imported_realm)
         self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
+        imported_realm_emoji_dict = get_all_custom_emoji_for_realm(imported_realm.id)
+        self.assertEqual(all_imported_realm_emoji.count(), len(imported_realm_emoji_dict))
+
         for imported_realm_emoji in all_imported_realm_emoji:
             self.assertNotEqual(imported_realm_emoji.author, None)
+
+            # Check cached realm emoji is not stale.
+            emoji_id = str(imported_realm_emoji.id)
+            self.assertIn(emoji_id, imported_realm_emoji_dict)
+            realm_emoji_info = imported_realm_emoji_dict[emoji_id]
+            self.assertEqual(emoji_id, realm_emoji_info["id"])
+            assert imported_realm_emoji.author is not None
+            assert isinstance(imported_realm_emoji.author.id, int)
+            assert isinstance(realm_emoji_info["author_id"], int)
+            self.assertEqual(imported_realm_emoji.author.id, int(realm_emoji_info["author_id"]))
+            self.assertEqual(imported_realm_emoji.name, realm_emoji_info["name"])
+            imported_emoji_path = os.path.dirname(
+                get_emoji_url(
+                    get_emoji_file_name("image/png", imported_realm_emoji.id), imported_realm.id
+                )
+            )
+            self.assertEqual(
+                imported_emoji_path,
+                os.path.dirname(realm_emoji_info["source_url"]),
+            )
 
         self.assertEqual(
             original_realm.authentication_methods_dict(),
