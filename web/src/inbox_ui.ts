@@ -584,7 +584,9 @@ function format_stream(stream_id: number): StreamContext {
         is_archived: stream_info.is_archived,
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
-        stream_name: stream_info.name,
+        stream_name: stream_info.is_archived
+            ? `${stream_info.name} (archived)`
+            : stream_info.name,
         pin_to_top: stream_info.pin_to_top,
         is_muted: stream_info.is_muted,
         folder_id: get_channel_folder_id({
