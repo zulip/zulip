@@ -276,6 +276,12 @@ export function quote_message(opts: {
             // can have other unintended consequences.)
             respond_to_message({
                 ...opts,
+                // Passing in the `message_id` ensures that trying
+                // to quote a selection from a single message in this
+                // situation will always have the same recipients as
+                // that message regardless of where the pointer is i.e.
+                // which message is selected.
+                message_id,
                 keep_composebox_empty: true,
             });
         }
@@ -383,7 +389,7 @@ function get_range_intersection_with_element(range: Range, element: Node): Range
     return intersection;
 }
 
-export function get_message_selection(selection = window.getSelection()): string {
+export let get_message_selection = (selection = window.getSelection()): string => {
     assert(selection !== null);
     let selected_message_content_raw = "";
 
@@ -426,6 +432,10 @@ export function get_message_selection(selection = window.getSelection()): string
     }
     selected_message_content_raw = selected_message_content_raw.trim();
     return selected_message_content_raw;
+};
+
+export function rewire_get_message_selection(value: typeof get_message_selection): void {
+    get_message_selection = value;
 }
 
 export function initialize(): void {
