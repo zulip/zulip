@@ -120,6 +120,44 @@ def check_short_name(short_name_raw: str) -> str:
     return short_name
 
 
+def validate_and_construct_bot_email(short_name_raw: str, realm: Realm) -> str:
+    """
+    Validate short_name and construct bot email address.
+
+    This function is used by both bot creation and bot editing to ensure
+    consistent validation logic.
+
+    Args:
+        short_name_raw: The raw short_name input from the user
+        realm: The realm for which to construct the bot email
+
+    Returns:
+        The constructed bot email address
+
+    Raises:
+        JsonableError: If short_name is invalid, FAKE_EMAIL_DOMAIN is
+            misconfigured, or email construction fails
+    """
+    from email.headerregistry import Address
+
+    from zerver.models.realms import InvalidFakeEmailDomainError
+
+    short_name = check_short_name(short_name_raw)
+    short_name += "-bot"
+    try:
+        email = Address(username=short_name, domain=realm.get_bot_domain()).addr_spec
+    except InvalidFakeEmailDomainError:
+        raise JsonableError(
+            _(
+                "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                "Please contact your server administrator."
+            )
+        )
+    except ValueError:
+        raise JsonableError(_("Bad name or username"))
+    return email
+
+
 def check_valid_bot_config(
     bot_type: int, service_name: str, config_data: Mapping[str, str]
 ) -> None:

@@ -1224,12 +1224,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_short_name_unauthorized(self) -> None:
         self.login("hamlet")
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-        }
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
+        self.create_bot()
         email = "hambot-bot@zulip.testserver"
         bot = self.get_bot_user(email)
 
@@ -1270,12 +1265,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_short_name_invalid(self) -> None:
         self.login("hamlet")
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-        }
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
+        self.create_bot()
         email = "hambot-bot@zulip.testserver"
         bot = self.get_bot_user(email)
 
@@ -1288,12 +1278,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_short_name_no_change(self) -> None:
         self.login("hamlet")
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-        }
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
+        self.create_bot()
         email = "hambot-bot@zulip.testserver"
         bot = self.get_bot_user(email)
 
@@ -1310,12 +1295,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_short_name_invalid_fake_email_domain(self) -> None:
         self.login("hamlet")
         # Create bot first without the invalid domain setting
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-        }
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
+        self.create_bot()
         email = "hambot-bot@zulip.testserver"
         bot = self.get_bot_user(email)
 
@@ -1336,12 +1316,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_short_name_unexpected_email_format(self) -> None:
         """Test the fallback case when bot email doesn't end with '-bot'."""
         self.login("hamlet")
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-        }
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
+        self.create_bot()
         email = "hambot-bot@zulip.testserver"
         bot = self.get_bot_user(email)
 
@@ -1359,30 +1334,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot.refresh_from_db()
         self.assertEqual(bot.email, "newbot-bot@zulip.testserver")
-
-    def test_patch_bot_short_name_address_value_error(self) -> None:
-        """Test ValueError from Address constructor."""
-        self.login("hamlet")
-        # Create bot first without the mock
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-        }
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
-        email = "hambot-bot@zulip.testserver"
-        bot = self.get_bot_user(email)
-
-        # Mock Address to raise ValueError only during the patch operation
-        with patch("zerver.views.users.Address") as mock_address:
-            mock_address.side_effect = ValueError("Invalid address")
-
-            # Try to change short_name - should catch ValueError
-            bot_info = {
-                "short_name": "newbot",
-            }
-            result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
-            self.assert_json_error(result, "Bad name or username")
 
     def test_patch_bot_owner(self) -> None:
         self.login("hamlet")

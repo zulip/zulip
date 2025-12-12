@@ -1,5 +1,4 @@
 from collections.abc import Mapping
-from email.headerregistry import Address
 from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
@@ -86,12 +85,12 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
-    check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
     get_users_for_api,
     max_message_id_for_user,
+    validate_and_construct_bot_email,
     validate_user_custom_profile_data,
 )
 from zerver.lib.utils import generate_api_key
@@ -100,7 +99,6 @@ from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
-    InvalidFakeEmailDomainError,
     Realm,
 )
 from zerver.models.users import (
@@ -467,49 +465,18 @@ def patch_bot_backend(
 
     # Handle short_name change
     if short_name is not None:
-        # Extract current short_name from bot email (format: {short_name}-bot@domain)
-        current_email_local = bot.email.split("@")[0]
-        if current_email_local.endswith("-bot"):
-            current_short_name = current_email_local[:-5]  # Remove '-bot' suffix
-        else:
-            # Fallback if email format is unexpected
-            current_short_name = current_email_local
-
-        validated_short_name = check_short_name(short_name)
-
-        # Only proceed if short_name is actually changing
-        if validated_short_name != current_short_name:
-            # Construct new email
-            new_email_local = f"{validated_short_name}-bot"
+        new_email = validate_and_construct_bot_email(short_name, user_profile.realm)
+        if new_email != bot.email:
             try:
-                new_email = Address(
-                    username=new_email_local, domain=user_profile.realm.get_bot_domain()
-                ).addr_spec
-            except InvalidFakeEmailDomainError:
-                raise JsonableError(
-                    _(
-                        "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-                        "Please contact your server administrator."
-                    )
+                validate_email_not_already_in_realm(
+                    user_profile.realm,
+                    new_email,
+                    verbose=False,
+                    allow_inactive_mirror_dummies=False,
                 )
-            except ValueError:
-                raise JsonableError(_("Bad name or username"))
-
-            # Skip validation if the new email is the same as the current email
-            if new_email != bot.email:
-                # Validate email doesn't already exist
-                try:
-                    validate_email_not_already_in_realm(
-                        user_profile.realm,
-                        new_email,
-                        verbose=False,
-                        allow_inactive_mirror_dummies=False,
-                    )
-                except ValidationError:
-                    raise JsonableError(_("Email address already in use"))
-
-                # Update the bot's email
-                do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
+            except ValidationError:
+                raise JsonableError(_("Email address already in use"))
+            do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
@@ -635,24 +602,14 @@ def add_bot_backend(
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
-    short_name = check_short_name(short_name_raw)
+    email = validate_and_construct_bot_email(short_name_raw, user_profile.realm)
+    # Extract short_name from email for service_name logic
+    short_name = email.split("@")[0][:-5]  # Remove '-bot' suffix
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or short_name
-    short_name += "-bot"
     full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
     )
-    try:
-        email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
-    except InvalidFakeEmailDomainError:
-        raise JsonableError(
-            _(
-                "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-                "Please contact your server administrator."
-            )
-        )
-    except ValueError:
-        raise JsonableError(_("Bad name or username"))
     form = CreateUserForm({"full_name": full_name, "email": email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
