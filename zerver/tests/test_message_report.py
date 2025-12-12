@@ -20,7 +20,7 @@ from zerver.lib.topic_link_util import (
     get_message_link_syntax,
     will_produce_broken_stream_topic_link,
 )
-from zerver.lib.url_encoding import pm_message_url
+from zerver.lib.url_encoding import pm_message_url, stream_message_url
 from zerver.models import UserProfile
 from zerver.models.messages import Message
 from zerver.models.realms import Realm, get_realm
@@ -105,6 +105,24 @@ class ReportMessageTest(ZulipTestCase):
         self.assertEqual(submitted_report.content, expected_message.strip())
         expected_report_topic = f"{reported_user.full_name} moderation"
         self.assertEqual(submitted_report.topic_name(), expected_report_topic)
+
+        # Make sure channel message link is accessible.
+        message_link = stream_message_url(
+            None,
+            dict(
+                id=reported_message.id,
+                stream_id=channel_id,
+                display_recipient=channel_name,
+                topic=topic_name,
+            ),
+            include_base_url=False,
+        )
+
+        expected_message_link_html = (
+            f'<p>Original message at <a class="message-link" href="/{message_link}">'
+        )
+        assert submitted_report.rendered_content is not None
+        self.assertIn(expected_message_link_html, submitted_report.rendered_content)
 
     def build_direct_message_report_template(
         self,
