@@ -44,7 +44,6 @@ the internet.)
 
 :::{tab-item} Windows
 :sync: os-windows
-:name: windows-10-or-11
 
 - Windows 64-bit (Windows 10 recommended)
 - hardware virtualization enabled (VT-x or AMD-V)
