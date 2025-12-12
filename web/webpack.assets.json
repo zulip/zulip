@@ -57,11 +57,6 @@
         "./styles/portico/portico_variables.css",
         "./styles/portico/marketing_page.css"
     ],
-    "landing-page": [
-        "./src/bundles/legacy_portico_bundle.ts",
-        "./src/portico/legacy_landing_page.ts",
-        "./styles/portico/legacy_landing_page.css"
-    ],
     "landing-page-with-pricing": [
         "./src/bundles/legacy_portico_bundle.ts",
         "./src/portico/legacy_landing_page.ts",
