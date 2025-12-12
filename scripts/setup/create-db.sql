@@ -11,7 +11,7 @@ EXCEPTION WHEN duplicate_object THEN
     RAISE NOTICE 'user already exists';
 END$$, :'dbuser') AS code \gset
 DO :'code';
-ALTER ROLE :"dbuser" SET search_path TO :"dbname",public;
+ALTER ROLE :"dbuser" SET search_path TO zulip,public;
 CREATE DATABASE :"dbname"
     OWNER=:dbuser
     ENCODING=UTF8
