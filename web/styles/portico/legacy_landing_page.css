@@ -1263,11 +1263,15 @@ button {
 }
 
 .portico-landing.why-page .bg-pycon.partners {
-    background-image: url("../../images/landing-page/hands.jpg");
+    background-image: url("../../../static/images/landing-page/hands.jpg");
 }
 
 .portico-landing.why-page .bg-pycon.clouds {
     background-image: url("../../images/landing-page/clouds.jpg");
+}
+
+.portico-landing.why-page .bg-pycon.programmer {
+    background-image: url("../../../static/images/landing-page/engineers/programmer.jpg");
 }
 
 .portico-landing.why-page .bg-dimmer {
@@ -2808,6 +2812,13 @@ button {
                         width: 100px;
                     }
                 }
+
+                .feature-text {
+                    ul li {
+                        line-height: 1.3;
+                        margin-bottom: 5px;
+                    }
+                }
             }
 
             @media (width < 768px) {
@@ -2892,4 +2903,12 @@ button {
 .zulip-cloud-page .man-mobile-image {
     width: auto;
     height: 300px;
+}
+
+#engineers-love-zulip-page .grey-border {
+    border: 1px solid hsl(0deg 0% 80%);
+}
+
+#engineers-love-zulip-page .intro_quote blockquote {
+    max-width: 750px;
 }
