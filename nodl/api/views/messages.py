@@ -617,11 +617,9 @@ def send_message(request: HttpRequest) -> HttpResponse:
             {"result": "error", "code": "INVALID_PARAMS", "msg": "stream_id is required for stream messages"},
             status=400,
         )
-    if not payload.topic:
-        return JsonResponse(
-            {"result": "error", "code": "INVALID_PARAMS", "msg": "topic is required for stream messages"},
-            status=400,
-        )
+
+    # Default topic to "general" if not provided
+    topic = payload.topic or "general"
 
     # Verify user has access to the stream
     try:
@@ -639,7 +637,7 @@ def send_message(request: HttpRequest) -> HttpResponse:
             client=client,
             recipient_type_name="stream",
             message_to=[stream.id],
-            topic_name=payload.topic,
+            topic_name=topic,
             message_content=payload.content,
             realm=user.realm,
         )
