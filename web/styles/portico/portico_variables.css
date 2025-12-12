@@ -24,6 +24,7 @@
     --color-link-underline-hover: hsl(210deg 100% 50%);
     --color-link-underline-alternate: hsl(210deg 94% 100% / 40%);
     --color-link-underline-alternate-hover: hsl(210deg 94% 100% / 80%);
+    --color-prominent-border: var(--color-link);
 
     @media (prefers-color-scheme: dark) {
         --color-background-gradient-start: hsl(209deg 63% 40%);

@@ -2332,8 +2332,8 @@ button {
 }
 
 .portico-landing.why-page .main blockquote {
-    background-color: hsl(0deg 0% 100%);
-    border-left: 5px solid hsl(168deg 24% 51%);
+    background-color: var(--color-background-box);
+    border-left: 5px solid var(--color-prominent-border);
     padding: 20px 30px;
     margin: 20px 0;
     font-size: 1.05em;
@@ -2342,7 +2342,6 @@ button {
         line-height: 1.5;
         margin: 0;
         font-weight: 400;
-        color: hsl(220deg 23% 33%);
     }
 
     & p:last-child {
