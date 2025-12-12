@@ -1434,7 +1434,6 @@ ol a:hover {
 }
 
 /* -- component styling -- */
-.button,
 button {
     padding: 5px 12px;
 
@@ -1484,6 +1483,39 @@ button {
 
     &.bold {
         font-weight: 600;
+    }
+}
+
+/* This is the button component used in `pricing_plans.css`. */
+.button {
+    display: block;
+    font-family: var(--font-ss3);
+    font-weight: 550;
+    font-size: 15px;
+    text-align: center;
+    text-decoration: none;
+    letter-spacing: 0.06ch;
+    padding: 8px 10px;
+    border-radius: 4px;
+    /* Position relatively for discount tab */
+    position: relative;
+    z-index: 5;
+}
+
+/* This matches the upgrade-button style from
+   pricing_plans.css.
+   TODO: Create variables for all of these colors. */
+.hero-buttons .button {
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(219deg 62% 54%);
+    /* Legacy margin value. */
+    margin: 10px;
+    font-weight: 500 !important;
+
+    &:hover {
+        text-decoration: none;
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(219deg 62% 50%);
     }
 }
 
@@ -3581,29 +3613,10 @@ button {
         opacity: 0.9;
     }
 
-    .hero {
-        & a {
-            color: hsl(170deg 76% 64%);
-        }
-    }
-
     .hero-buttons {
         display: flex;
         flex-flow: row wrap;
         justify-content: center;
-
-        & a {
-            color: hsl(170deg 47% 33%);
-            font-weight: 600;
-            font-size: 15px;
-            margin: 10px;
-
-            &:hover {
-                color: hsl(0deg 0% 100%);
-                background-color: hsl(170deg 47% 33%);
-                border-color: hsl(170deg 47% 33%);
-            }
-        }
     }
 
     .feature-end {
