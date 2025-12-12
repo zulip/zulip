@@ -1,4 +1,4 @@
-import {add} from "date-fns";
+import { add } from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -10,7 +10,7 @@ import render_settings_admin_auth_methods_list from "../templates/settings/admin
 import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
-import {csrf_token} from "./csrf.ts";
+import { csrf_token } from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
@@ -18,7 +18,7 @@ import {
     type RealmGroupSettingNameSupportingAnonymousGroups,
     realm_group_setting_name_supporting_anonymous_groups_schema,
 } from "./group_permission_settings.ts";
-import {$t, $t_html} from "./i18n.ts";
+import { $t, $t_html } from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -26,7 +26,7 @@ import * as people from "./people.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import { realm_user_settings_defaults } from "./realm_user_settings_defaults.ts";
 import * as settings_banner from "./settings_banner.ts";
 import {
     type MessageMoveTimeLimitSetting,
@@ -41,17 +41,17 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_ui from "./settings_ui.ts";
-import {current_user, realm, realm_schema} from "./state_data.ts";
-import type {Realm} from "./state_data.ts";
+import { current_user, realm, realm_schema } from "./state_data.ts";
+import type { Realm } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
-import type {StreamSubscription} from "./sub_store.ts";
+import type { StreamSubscription } from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
-import {group_setting_value_schema} from "./types.ts";
-import type {HTMLSelectOneElement} from "./types.ts";
+import { group_setting_value_schema } from "./types.ts";
+import type { HTMLSelectOneElement } from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
-import type {UserGroup} from "./user_groups.ts";
+import type { UserGroup } from "./user_groups.ts";
 import * as util from "./util.ts";
 
 const meta = {
@@ -340,8 +340,8 @@ function set_create_web_public_stream_dropdown_visibility(): void {
     settings_components.change_element_block_display_property(
         "id_realm_can_create_web_public_channel_group",
         realm.server_web_public_streams_enabled &&
-            realm.zulip_plan_is_not_limited &&
-            realm.realm_enable_spectator_access,
+        realm.zulip_plan_is_not_limited &&
+        realm.realm_enable_spectator_access,
     );
 }
 
@@ -413,8 +413,8 @@ function update_view_welcome_bot_custom_message_button_status(
         attention: is_error ? "borderless" : "quiet",
         intent: is_error ? "danger" : "success",
         label: is_error
-            ? $t({defaultMessage: "Error sending message"})
-            : $t({defaultMessage: "View message"}),
+            ? $t({ defaultMessage: "Error sending message" })
+            : $t({ defaultMessage: "View message" }),
         id: "view_welcome_bot_custom_message",
     };
 
@@ -472,7 +472,7 @@ export function check_disable_direct_message_initiator_group_widget(): void {
 }
 
 export function populate_realm_domains_label(
-    realm_domains: {domain: string; allow_subdomains: boolean}[],
+    realm_domains: { domain: string; allow_subdomains: boolean }[],
 ): void {
     if (!meta.loaded) {
         return;
@@ -483,9 +483,9 @@ export function populate_realm_domains_label(
     );
     let domains = util.format_array_as_list(domains_list, "long", "conjunction");
     if (domains.length === 0) {
-        domains = $t({defaultMessage: "None"});
+        domains = $t({ defaultMessage: "None" });
     }
-    $("#allowed_domains_label").text($t({defaultMessage: "Allowed domains: {domains}"}, {domains}));
+    $("#allowed_domains_label").text($t({ defaultMessage: "Allowed domains: {domains}" }, { domains }));
 }
 
 export function populate_auth_methods(auth_method_to_bool_map: Record<string, boolean>): void {
@@ -665,7 +665,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
                     .parse(property_value);
                 settings_components.set_input_element_value($elem, validated_property_value);
             } else {
-                blueslip.error("Element refers to unknown property", {property_name});
+                blueslip.error("Element refers to unknown property", { property_name });
             }
     }
     update_dependent_subsettings(property_name);
@@ -722,7 +722,7 @@ export function discard_stream_property_element_changes(
                     .parse(property_value);
                 settings_components.set_input_element_value($elem, validated_property_value);
             } else {
-                blueslip.error("Element refers to unknown property", {property_name});
+                blueslip.error("Element refers to unknown property", { property_name });
             }
     }
     update_dependent_subsettings(property_name);
@@ -744,7 +744,7 @@ export function discard_group_property_element_changes($elem: JQuery, group: Use
             group_setting_value_schema.parse(property_value),
         );
     } else {
-        blueslip.error("Element refers to unknown property", {property_name});
+        blueslip.error("Element refers to unknown property", { property_name });
     }
     update_dependent_subsettings(property_name);
 }
@@ -810,7 +810,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
                     .parse(property_value);
                 settings_components.set_input_element_value($elem, validated_property_value);
             } else {
-                blueslip.error("Element refers to unknown property", {property_name});
+                blueslip.error("Element refers to unknown property", { property_name });
             }
     }
     update_dependent_subsettings(property_name);
@@ -885,7 +885,7 @@ export function deactivate_organization(e: JQuery.Event): void {
             url: "/json/realm/deactivate",
             data,
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                ui_report.error($t_html({ defaultMessage: "Failed" }), xhr, $("#dialog_error"));
             },
         });
     }
@@ -898,20 +898,20 @@ export function deactivate_organization(e: JQuery.Event): void {
         const delete_data_value = $delete_in.val()!;
 
         if (delete_data_value === "null") {
-            return $t({defaultMessage: "Data will not be automatically deleted"});
+            return $t({ defaultMessage: "Data will not be automatically deleted" });
         }
 
         let time_in_minutes: number;
         if (delete_data_value === "custom") {
             if (!util.validate_custom_time_input(custom_deletion_time_input)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                return $t({ defaultMessage: "Invalid custom time" });
             }
             time_in_minutes = util.get_custom_time_in_minutes(
                 custom_deletion_time_unit,
                 custom_deletion_time_input,
             );
             if (!is_valid_time_period(time_in_minutes)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                return $t({ defaultMessage: "Invalid custom time" });
             }
         } else {
             // These options were already filtered for is_valid_time_period.
@@ -919,13 +919,13 @@ export function deactivate_organization(e: JQuery.Event): void {
         }
 
         if (time_in_minutes === 0) {
-            return $t({defaultMessage: "Data will be deleted immediately"});
+            return $t({ defaultMessage: "Data will be deleted immediately" });
         }
 
         // The below is a duplicate of timerender.get_full_datetime, with a different base string.
-        const valid_to = add(new Date(), {minutes: time_in_minutes});
+        const valid_to = add(new Date(), { minutes: time_in_minutes });
         const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
-        return $t({defaultMessage: "Data will be deleted after {date}"}, {date});
+        return $t({ defaultMessage: "Data will be deleted after {date}" }, { date });
     }
 
     const minimum_allowed_days = realm.server_min_deactivated_realm_deletion_days ?? 0;
@@ -964,13 +964,13 @@ export function deactivate_organization(e: JQuery.Event): void {
                 // If there's no limit at all, avoid showing 0+. It's
                 // not a marginal string for translators, since we use
                 // that string elsewhere.
-                return $t({defaultMessage: "Custom time"});
+                return $t({ defaultMessage: "Custom time" });
             }
-            return $t({defaultMessage: `Custom time ({min}+ days)`}, {min: minimum_allowed_days});
+            return $t({ defaultMessage: `Custom time ({min}+ days)` }, { min: minimum_allowed_days });
         }
         return $t(
-            {defaultMessage: `Custom time ({min}-{max} days)`},
-            {min: minimum_allowed_days, max: maximum_allowed_days},
+            { defaultMessage: `Custom time ({min}-{max} days)` },
+            { min: minimum_allowed_days, max: maximum_allowed_days },
         );
     }
 
@@ -1063,14 +1063,14 @@ export function deactivate_organization(e: JQuery.Event): void {
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate organization"}),
+        html_heading: $t_html({ defaultMessage: "Deactivate organization" }),
         help_link: "/help/deactivate-your-organization",
         html_body,
         id: "deactivate-realm-user-modal",
         on_click: do_deactivate_realm,
         close_on_submit: false,
         focus_submit_on_open: true,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        html_submit_button: $t_html({ defaultMessage: "Confirm" }),
         post_render: deactivate_realm_modal_post_render,
     });
 }
@@ -1125,7 +1125,7 @@ export function save_organization_settings(
         error(xhr) {
             settings_components.change_save_button_state($save_button_container, "failed");
             $save_button.hide();
-            ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, $failed_alert_elem);
+            ui_report.error($t_html({ defaultMessage: "Save failed" }), xhr, $failed_alert_elem);
         },
     });
 }
@@ -1147,7 +1147,7 @@ function set_up_dropdown_widget(
 
     let text_if_current_value_not_in_options;
     if (setting_type === "channel") {
-        text_if_current_value_not_in_options = $t({defaultMessage: "Cannot view channel"});
+        text_if_current_value_not_in_options = $t({ defaultMessage: "Cannot view channel" });
     }
 
     let unique_id_type: dropdown_widget.DataType = "number";
@@ -1170,7 +1170,7 @@ function set_up_dropdown_widget(
         },
         default_id: z.union([z.string(), z.number()]).parse(realm[setting_name]),
         unique_id_type,
-        ...(text_if_current_value_not_in_options && {text_if_current_value_not_in_options}),
+        ...(text_if_current_value_not_in_options && { text_if_current_value_not_in_options }),
         on_mount_callback(dropdown) {
             if (setting_type === "group") {
                 $(dropdown.popper).css("min-width", "300px");
@@ -1213,7 +1213,7 @@ export let init_dropdown_widgets = (): void => {
         show_disabled_icon: true,
         show_disabled_option_name: false,
         unique_id: DISABLED_STATE_ID,
-        name: $t({defaultMessage: "Disabled"}),
+        name: $t({ defaultMessage: "Disabled" }),
     };
 
     const notification_stream_options = (): dropdown_widget.Option[] => {
@@ -1295,7 +1295,7 @@ export const combined_code_language_options = (): dropdown_widget.Option[] => {
         show_disabled_icon: true,
         show_disabled_option_name: false,
         unique_id: "",
-        name: $t({defaultMessage: "No language set"}),
+        name: $t({ defaultMessage: "No language set" }),
     };
 
     return [disabled_option, ...playground_options, ...default_options];
@@ -1482,6 +1482,16 @@ export function build_page(): void {
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();
 
+    // Show yellow outline when organization description is empty.
+    // We use a class-based approach because :empty doesn't work for textareas.
+    function update_description_empty_state(): void {
+        const $textarea = $<HTMLTextAreaElement>("#id_realm_description");
+        const is_empty = $textarea.val()!.trim() === "";
+        $textarea.toggleClass("empty-description", is_empty);
+    }
+    update_description_empty_state();
+    $("#id_realm_description").on("input", update_description_empty_state);
+
     $(".org-permissions-form").on(
         "input change",
         ".time-limit-custom-input",
@@ -1616,7 +1626,7 @@ export function build_page(): void {
                 welcome_message_custom_text,
             },
             success(data) {
-                const {message_id} = z.object({message_id: z.number()}).parse(data);
+                const { message_id } = z.object({ message_id: z.number() }).parse(data);
                 update_view_welcome_bot_custom_message_button_status(message_id, false);
             },
             error() {
@@ -1658,7 +1668,7 @@ export function build_page(): void {
                 dialog_widget.close();
             },
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                ui_report.error($t_html({ defaultMessage: "Failed" }), xhr, $("#dialog_error"));
                 dialog_widget.hide_dialog_spinner();
             },
         });

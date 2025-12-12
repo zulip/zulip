@@ -64,6 +64,7 @@ h3,
 }
 
 .admin_profile_fields_table {
+
     & th.display,
     & th.required,
     td.display_in_profile_summary_cell,
@@ -87,7 +88,8 @@ h3,
 
 #change_password_modal,
 #change_email_modal {
-    width: 34.2857em; /* 480px at 14px/em */
+    width: 34.2857em;
+    /* 480px at 14px/em */
     max-width: 90vw;
 }
 
@@ -137,14 +139,17 @@ h3,
     /* We set the minimum height of textarea to be enough for two lines
     of text. Since box-sizing is set to "border-box", we also add
     2 * var(--input-vertical-padding) + 2 * var(--input-border-width). */
-    min-height: calc(
-        2em * var(--base-line-height-unitless) + 2 *
-            var(--input-vertical-padding) + 2 * var(--input-border-width)
-    );
+    min-height: calc(2em * var(--base-line-height-unitless) + 2 * var(--input-vertical-padding) + 2 * var(--input-border-width));
     width: 500px;
     max-width: 80%;
     min-width: 500px;
     box-sizing: border-box;
+}
+
+/* Show yellow outline when organization description is empty,
+   matching the compose box "approaching limit" warning style. */
+.admin-realm-description.empty-description:not(:disabled) {
+    border-color: var(--color-message-content-container-border-approaching-limit);
 }
 
 .admin-realm-welcome-message-custom-text {
@@ -165,9 +170,11 @@ h3,
 
 .play_notification_sound {
     .notification-sound-icon {
-        font-size: 1.5714em; /* 22px at 14px / em */
+        font-size: 1.5714em;
+        /* 22px at 14px / em */
         /* Visually center with chevron in select */
-        line-height: 1.8571em; /* 26px at 14px / em */
+        line-height: 1.8571em;
+        /* 26px at 14px / em */
         cursor: pointer;
     }
 }
@@ -190,7 +197,7 @@ h3,
 }
 
 #settings_content {
-    & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
+    & table+.progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
     }
 
@@ -199,7 +206,7 @@ h3,
     --column-count: 2;
 }
 
-#uploaded_files_table > tr > td:nth-of-type(1),
+#uploaded_files_table>tr>td:nth-of-type(1),
 #attachments-settings .upload-file-name {
     word-break: break-all;
 }
@@ -210,6 +217,7 @@ h3,
 }
 
 #linkifier-settings {
+
     #linkifier_pattern,
     #linkifier_template {
         width: calc(100% - 10em - 6em);
@@ -217,6 +225,7 @@ h3,
 }
 
 #playground-settings {
+
     #playground_pygments_language,
     #playground_name,
     #playground_url_template {
@@ -278,7 +287,8 @@ h3,
     }
 
     .loading_indicator_text {
-        font-size: 0.8571em; /* 12px at 14px/em */
+        font-size: 0.8571em;
+        /* 12px at 14px/em */
         font-weight: 400;
         vertical-align: middle;
         line-height: inherit;
@@ -316,7 +326,8 @@ h3,
         max-width: 100%;
         padding-top: 4px;
         padding-bottom: 4px;
-        height: 1.4em; /* To match height of input elements */
+        height: 1.4em;
+        /* To match height of input elements */
     }
 
     .account-settings-heading {
@@ -397,14 +408,16 @@ select.settings_select {
         display: flex;
         align-items: center;
         margin: 0;
-        margin-left: 0.5em; /* The spinner is left-justified with a slight left margin to look good. */
+        margin-left: 0.5em;
+        /* The spinner is left-justified with a slight left margin to look good. */
     }
 }
 
 .input-group {
-    margin: 0 0 1.25em; /* 20px at 16px/em */
+    margin: 0 0 1.25em;
+    /* 20px at 16px/em */
 
-    & label.checkbox + label {
+    & label.checkbox+label {
         cursor: pointer;
     }
 
@@ -418,6 +431,7 @@ select.settings_select {
 }
 
 #bot-edit-form {
+
     .api-key-details-container,
     .zuliprc-container {
         display: flex;
@@ -475,7 +489,7 @@ select.settings_select {
 }
 
 input[type="checkbox"] {
-    + .inline-block {
+    +.inline-block {
         margin-left: 10px;
     }
 
@@ -649,7 +663,8 @@ input[type="checkbox"] {
         }
 
         .toggle-advanced-configurations-icon {
-            font-size: 1.4286em; /* 20px at 14px / em */
+            font-size: 1.4286em;
+            /* 20px at 14px / em */
         }
     }
 
@@ -750,8 +765,10 @@ input[type="checkbox"] {
     }
 
     .loading_indicator_spinner {
-        width: 0.9283em; /* 13px at 14px/em */
-        height: 1.4286em; /* 20px at 14px/em */
+        width: 0.9283em;
+        /* 13px at 14px/em */
+        height: 1.4286em;
+        /* 20px at 14px/em */
         margin: 0;
     }
 
@@ -771,7 +788,8 @@ input[type="checkbox"] {
     }
 
     .settings-save-checkmark {
-        width: 0.9285em; /* 13px at 14px/em */
+        width: 0.9285em;
+        /* 13px at 14px/em */
     }
 }
 
@@ -839,6 +857,7 @@ input[type="checkbox"] {
 }
 
 #profile-settings {
+
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
     .timezone-setting-form label {
@@ -864,7 +883,7 @@ input[type="checkbox"] {
     margin-top: 5px;
     max-width: fit-content;
 
-    > .settings_url_input {
+    >.settings_url_input {
         margin-bottom: 0;
     }
 }
@@ -872,7 +891,8 @@ input[type="checkbox"] {
 .settings-profile-user-field.editable-date-field {
     display: grid;
     grid-template-areas: "datepicker close-button";
-    grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
+    grid-template-columns: minmax(0, 1fr) 1.4285em;
+    /* 20px at 14px em */
     align-items: center;
     width: var(--modal-input-width);
 
@@ -967,6 +987,7 @@ input[type="checkbox"] {
     & button {
         margin-left: calc(10em + 20px) !important;
     }
+
     margin-bottom: 15px;
 
     .checkbox {
@@ -1239,7 +1260,7 @@ label.preferences-radio-choice-label {
             cursor: not-allowed;
         }
 
-        &:checked + .preferences-radio-choice-text {
+        &:checked+.preferences-radio-choice-text {
             font-weight: 600;
         }
     }
@@ -1251,7 +1272,8 @@ label.preferences-radio-choice-label {
 }
 
 .emojiset_choices {
-    width: 25em; /* 350px / 14px em */
+    width: 25em;
+    /* 350px / 14px em */
 
     .emoji {
         height: 22px;
@@ -1260,11 +1282,13 @@ label.preferences-radio-choice-label {
 }
 
 .user_list_style_values {
-    max-width: 25em; /* 350px / 14px em */
+    max-width: 25em;
+    /* 350px / 14px em */
 
     .preferences-radio-choice-label {
         display: grid;
-        grid-template-columns: 10.7143em auto; /* 150px / 14px em */
+        grid-template-columns: 10.7143em auto;
+        /* 150px / 14px em */
         justify-content: left;
         margin-right: 6px;
 
@@ -1331,7 +1355,8 @@ label.preferences-radio-choice-label {
 #settings_page {
     height: 95vh;
     width: 97vw;
-    max-width: 73.1429em; /* 1024px at 14px em */
+    max-width: 73.1429em;
+    /* 1024px at 14px em */
     margin: 2.5vh auto;
     overflow: hidden;
     border-radius: 4px;
@@ -1379,7 +1404,8 @@ label.preferences-radio-choice-label {
 
                 .ind-tab {
                     width: auto;
-                    min-width: 6.7857em; /* 95px at 14px em */
+                    min-width: 6.7857em;
+                    /* 95px at 14px em */
                 }
             }
         }
@@ -1412,11 +1438,9 @@ label.preferences-radio-choice-label {
             /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
             /* 2.8571em is 40px at 14px/1em */
             grid-template:
-                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 2.8571em minmax(
-                    0,
+                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 2.8571em minmax(0,
                     1fr
-                )
-                minmax(34px, auto);
+                ) minmax(34px, auto);
             align-items: center;
             outline: none;
             cursor: pointer;
@@ -1460,7 +1484,7 @@ label.preferences-radio-choice-label {
         }
 
         .collapse-settings-button,
-        .collapse-settings-button > #toggle_collapse_chevron {
+        .collapse-settings-button>#toggle_collapse_chevron {
             color: var(--color-text-url);
 
             &:hover {
@@ -1511,7 +1535,8 @@ label.preferences-radio-choice-label {
         .exit {
             font-weight: 600;
             position: absolute;
-            right: 0.7142em; /* 10px at 14px em */
+            right: 0.7142em;
+            /* 10px at 14px em */
             color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
@@ -1616,7 +1641,8 @@ label.preferences-radio-choice-label {
 
         .datepicker {
             cursor: default;
-            padding-right: 1.4285em; /* 20px at 14px em */
+            padding-right: 1.4285em;
+            /* 20px at 14px em */
             /* full input width minus right padding and
                6px left padding from .settings_text_input
                and 1px border on each side */
@@ -1650,18 +1676,13 @@ label.preferences-radio-choice-label {
     .modal-textarea {
         /* Subtract (2 * horizontal padding) + (2 * border width) */
         box-sizing: content-box;
-        width: calc(
-            var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
-                var(--input-border-width)
-        );
-        max-width: calc(
-            100% - 2 * var(--input-horizontal-padding) - 2 *
-                var(--input-border-width)
-        );
+        width: calc(var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 * var(--input-border-width));
+        max-width: calc(100% - 2 * var(--input-horizontal-padding) - 2 * var(--input-border-width));
     }
 }
 
 #manage-profile-tab {
+
     #edit-user-form,
     #bot-edit-form {
         .name-setting {
@@ -1745,12 +1766,12 @@ label.preferences-radio-choice-label {
         }
     }
 
-    > .choice-row:first-of-type {
+    >.choice-row:first-of-type {
         margin-top: 0;
     }
 }
 
-.profile-field-choices-wrapper > .alphabetize-choices-button {
+.profile-field-choices-wrapper>.alphabetize-choices-button {
     display: block;
     margin: 12px 0 0;
 }
@@ -1928,7 +1949,8 @@ label.preferences-radio-choice-label {
             background-color: var(--color-background-modal);
             border: none;
 
-            transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            transition: left 0.3s ease;
+            /* stylelint-disable-line plugin/no-low-performance-animation-properties */
             z-index: 10;
 
             &.show {
@@ -1944,10 +1966,7 @@ label.preferences-radio-choice-label {
             position: absolute;
             width: 100%;
             border: none;
-            height: calc(
-                100% - var(--settings-overlay-header-height) -
-                    var(--settings-overlay-subheader-height)
-            );
+            height: calc(100% - var(--settings-overlay-header-height) - var(--settings-overlay-subheader-height));
         }
     }
 }
@@ -1970,6 +1989,7 @@ label.preferences-radio-choice-label {
     #admin-user-list,
     #admin-bot-list {
         .user_row {
+
             .user_name,
             .email {
                 min-width: 8em;
@@ -1978,6 +1998,7 @@ label.preferences-radio-choice-label {
     }
 
     .admin_profile_fields_table {
+
         .profile_field_name,
         .profile_field_hint {
             min-width: 8em;
@@ -1986,10 +2007,13 @@ label.preferences-radio-choice-label {
 }
 
 @media (width < $sm_min) {
+
     #admin-user-list,
     #admin-bot-list {
+
         .user_row,
         .table-sticky-headers {
+
             .bot_type,
             .last_active {
                 display: none;
@@ -2044,6 +2068,7 @@ label.preferences-radio-choice-label {
     }
 
     .admin_profile_fields_table {
+
         .profile_field_name,
         .profile_field_hint {
             min-width: 8em;
@@ -2052,6 +2077,7 @@ label.preferences-radio-choice-label {
 }
 
 @media (width < $ml_min) {
+
     #api_key_buttons,
     #download_zuliprc {
         flex-direction: column;
@@ -2069,6 +2095,7 @@ label.preferences-radio-choice-label {
 }
 
 #edit-linkifier-form {
+
     #edit-linkifier-pattern,
     #edit-linkifier-url-template {
         width: 400px;
@@ -2165,7 +2192,7 @@ label.preferences-radio-choice-label {
             }
         }
 
-        input.search:placeholder-shown + .clear-filter {
+        input.search:placeholder-shown+.clear-filter {
             display: none;
         }
     }
@@ -2220,10 +2247,7 @@ label.preferences-radio-choice-label {
     margin-bottom: 10px;
 
     /* Subtract (2 * horizontal padding) + (2 * border width) */
-    width: calc(
-        var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
-            var(--input-border-width)
-    );
+    width: calc(var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 * var(--input-border-width));
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
