@@ -85,6 +85,7 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
+    check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
