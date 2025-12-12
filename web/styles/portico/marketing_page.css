@@ -1571,6 +1571,22 @@ button {
             text-decoration-color: var(--color-link-underline-hover);
         }
     }
+
+    /* These are the same link styles as used in pricing_plans.css
+       on the .h1-subheader's links. */
+    .hero a:not(.button) {
+        color: var(--color-text-hero);
+        text-decoration: none;
+        border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
+        transition: border 0.4s ease-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+
+        &:hover {
+            text-decoration: none;
+            color: inherit;
+            border-bottom: 2px solid hsl(0deg 0% 100%);
+            transition: none;
+        }
+    }
 }
 
 @keyframes waves {
