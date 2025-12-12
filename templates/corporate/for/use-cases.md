@@ -30,4 +30,4 @@
 * [Rust language community](/case-studies/rust/)
 * [Recurse Center](/case-studies/recurse-center/)
 * [Rush Stack](/case-studies/rush-stack/)
-* [Mixxx open-source community](/case-studies/mixxx)
+* [Mixxx open-source community](/case-studies/mixxx/)
