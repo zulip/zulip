@@ -10,7 +10,7 @@ from django.utils.timesince import timesince
 from jinja2 import Environment
 from two_factor.plugins.phonenumber.templatetags.phonenumber import device_action
 
-from zerver.context_processors import DEFAULT_PAGE_PARAMS
+from zerver.context_processors import FALLBACK_PAGE_PARAMS
 from zerver.lib.send_email import FromAddress
 from zerver.lib.templates import display_list, render_markdown_path, webpack_entry
 
@@ -25,7 +25,7 @@ def environment(**options: Any) -> Environment:
         # default_page_params is provided here for responses where
         # zulip_default_context is not run, including the 404.html and
         # 500.html error pages.
-        default_page_params=DEFAULT_PAGE_PARAMS,
+        default_page_params=FALLBACK_PAGE_PARAMS,
         static=staticfiles_storage.url,
         url=reverse,
         render_markdown_path=render_markdown_path,

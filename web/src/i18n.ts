@@ -15,7 +15,7 @@ import {page_params} from "./base_page_params.ts";
 const cache = createIntlCache();
 export const intl = createIntl(
     {
-        locale: page_params.request_language,
+        locale: page_params.page_type !== "fallback" ? page_params.request_language : "en",
         defaultLocale: "en",
         messages: "translation_data" in page_params ? page_params.translation_data : {},
         /* istanbul ignore next */
