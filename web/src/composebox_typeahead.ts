@@ -1450,6 +1450,7 @@ export function initialize_topic_edit_typeahead(
     form_field: JQuery<HTMLInputElement>,
     stream_name: string,
     dropup: boolean,
+    disable_topic_creation = false,
 ): Typeahead<string> {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: form_field,
@@ -1457,6 +1458,7 @@ export function initialize_topic_edit_typeahead(
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
+        helpOnEmptyStrings: disable_topic_creation,
         item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
@@ -1673,6 +1675,12 @@ export function initialize({
             return false;
         },
         footer_html: () => get_footer_html_for_topic_typeahead(compose_state.stream_id()),
+    });
+
+    $("input#stream_message_recipient_topic").on("focus", function () {
+        if (stream_message_topic_typeahead.helpOnEmptyStrings && $(this).val() === "") {
+            stream_message_topic_typeahead.lookup(false);
+        }
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {
