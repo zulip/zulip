@@ -735,6 +735,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         `channel:5 topic:team`,
         "channel:5 topic:✔+team+work",
         `channel:5 topic:test`,
+        "channel:6 topic:REXX",
     ];
     assert.deepEqual(suggestions.strings, expected);
     override(narrow_state, "stream_id", () => "");

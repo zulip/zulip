@@ -14,7 +14,6 @@ import {type NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
-import {type StreamSubscription} from "./sub_store.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -512,7 +511,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     const operator = Filter.canonicalize_operator(last.operator);
     const operand = last.operand;
     const negated = operator === "topic" && last.negated;
-    let channel_id: string | undefined;
+    let channel_id_str: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
 
@@ -537,78 +536,58 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     switch (operator) {
         case "channel":
             guess = "";
-            channel_id = operand;
+            channel_id_str = operand;
             break;
         case "topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
-                channel_id = filter.terms_with_operator("channel")[0]!.operand;
+                channel_id_str = filter.terms_with_operator("channel")[0]!.operand;
                 // We want to show topics that belong only to the
                 // channel mentioned in the `channel` operator, if it exists.
                 show_topics_from_other_channels = false;
             } else {
-                channel_id = narrow_state.stream_id()?.toString();
+                channel_id_str = narrow_state.stream_id()?.toString();
             }
             break;
     }
-    if (!channel_id && !show_topics_from_other_channels) {
-        return [];
-    }
-
-    let current_channel_subscription: StreamSubscription | undefined;
-    let other_channel_subscriptions: StreamSubscription[] | undefined;
-
-    if (channel_id) {
-        current_channel_subscription = stream_data.get_sub_by_id_string(channel_id)!;
-    }
-
-    if (show_topics_from_other_channels) {
-        other_channel_subscriptions = stream_data.get_streams_for_user(
-            people.my_current_user_id(),
-        ).subscribed;
-        if (current_channel_subscription) {
-            other_channel_subscriptions = other_channel_subscriptions.filter(
-                (sub) => sub.stream_id !== current_channel_subscription.stream_id,
-            );
-        }
-    }
-
-    if (!current_channel_subscription && !other_channel_subscriptions) {
+    if (!channel_id_str && !show_topics_from_other_channels) {
         return [];
     }
 
     const current_channel_topic_entries: ChannelTopicEntry[] = [];
-    const other_channel_topic_entries: ChannelTopicEntry[] = [];
-    if (
-        current_channel_subscription &&
-        stream_data.can_access_topic_history(current_channel_subscription)
-    ) {
-        stream_topic_history_util.get_server_history(current_channel_subscription.stream_id, () => {
-            // Fetch topic history from the server, in case we will need it.
-            // Note that we won't actually use the results from the server here
-            // for this particular keystroke from the user, because we want to
-            // show results immediately. Assuming the server responds quickly,
-            // as the user makes their search more specific, subsequent calls to
-            // this function will get more candidates from calling
-            // stream_topic_history.get_recent_topic_names.
-        });
-        assert(channel_id !== undefined);
-        for (const topic of stream_topic_history.get_recent_topic_names(
-            current_channel_subscription.stream_id,
-        )) {
-            current_channel_topic_entries.push({channel_id, topic});
+    if (channel_id_str) {
+        // We do this outside the stream_data.subscribed_stream_ids loop,
+        // since we could be viewing a channel we can't read.
+        const sub = stream_data.get_sub_by_id_string(channel_id_str)!;
+        if (sub && stream_data.can_access_topic_history(sub)) {
+            const current_channel_id = sub.stream_id;
+            stream_topic_history_util.get_server_history(current_channel_id, () => {
+                // Fetch topic history from the server, in case we will
+                // need it.  Note that we won't actually use the results
+                // from the server here for this particular keystroke from
+                // the user, because we want to show results immediately.
+            });
+
+            for (const topic of stream_topic_history.get_recent_topic_names(current_channel_id)) {
+                current_channel_topic_entries.push({channel_id: channel_id_str, topic});
+            }
         }
     }
 
-    if (other_channel_subscriptions) {
-        for (const other_sub of other_channel_subscriptions) {
-            for (const topic of stream_topic_history.get_recent_topic_names(other_sub.stream_id)) {
-                other_channel_topic_entries.push({
-                    channel_id: other_sub.stream_id.toString(),
-                    topic,
-                });
-            }
+    const other_channel_topic_entries: ChannelTopicEntry[] = [];
+    for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
+        if (subscribed_channel_id.toString() === channel_id_str) {
+            continue;
+        } else if (!show_topics_from_other_channels) {
+            continue;
+        }
+
+        for (const topic of stream_topic_history.get_recent_topic_names(subscribed_channel_id)) {
+            other_channel_topic_entries.push({
+                channel_id: subscribed_channel_id.toString(),
+                topic,
+            });
         }
     }
 
