@@ -581,7 +581,6 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         reply_type: "personal",
     };
     override(message_lists.current, "selected_id", () => 100);
-    override(message_lists.current, "selected_message", () => selected_message);
 
     selected_message = {
         type: "stream",

@@ -276,6 +276,12 @@ export function quote_message(opts: {
             // can have other unintended consequences.)
             respond_to_message({
                 ...opts,
+                // Passing in the `message_id` ensures that trying
+                // to quote a selection from a single message in this
+                // situation will always have the same recipients as
+                // that message regardless of where the pointer is i.e.
+                // which message is selected.
+                message_id,
                 keep_composebox_empty: true,
             });
         }
