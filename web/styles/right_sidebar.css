@@ -118,7 +118,8 @@
 .buddy-list-section {
     margin: 0;
     overflow-x: hidden;
-    list-style-position: inside; /* Draw the bullets inside our box */
+    list-style-position: inside;
+    /* Draw the bullets inside our box */
     line-height: var(--line-height-sidebar-row);
 
     .user-list-sidebar-menu-icon {
@@ -160,14 +161,7 @@
         }
     }
 
-    .user-circle {
-        grid-area: starting-anchor-element;
-        place-self: center center;
-        /* Tighten the line-height to match the icon's size... */
-        line-height: 1;
-        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
-        font-size: 0.5333em;
-    }
+
 
     .user_sidebar_entry.with_avatar {
         .user-profile-picture-container {
@@ -181,7 +175,8 @@
                 /* The over-avatar user circle width is 15.5px at 20px/1em;
                    we adjust the border radius here to avoid any pixels
                    from the avatar bleeding through. */
-                border-bottom-right-radius: 0.3875em; /* 7.75px at 20px/1em */
+                border-bottom-right-radius: 0.3875em;
+                /* 7.75px at 20px/1em */
             }
         }
 
@@ -192,22 +187,7 @@
             margin-right: 0;
         }
 
-        .user-circle {
-            position: absolute;
-            /* 10px at 16px/1em */
-            font-size: 0.625em;
-            bottom: -0.5px;
-            right: -0.5px;
-            background-color: var(--color-background);
-            /* A 1.5px border provides better results than
-               a 1px border, especially at smaller font sizes. */
-            border: 1.5px solid var(--color-background);
-            border-radius: 50%;
 
-            &.user-circle-offline {
-                display: none;
-            }
-        }
     }
 
     /* Overwrite some stray list rules (including one in left_sidebar.css) to turn color
@@ -255,10 +235,8 @@
     display: grid;
     align-items: center;
     grid-template:
-        "arrow row-content scroll-buffer" var(
-            --line-height-sidebar-row-prominent
-        )
-        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr);
+        "arrow row-content scroll-buffer" var(--line-height-sidebar-row-prominent
+        ) / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr);
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
@@ -323,21 +301,15 @@
     grid-area: row-content;
     display: grid;
     grid-template:
-        "starting-anchor-element row-content markers-and-controls" var(
-            --line-height-sidebar-row
-        )
-        ".                       row-content ." auto / var(
-            --right-sidebar-presence-circle-width
-        )
-        minmax(0, 1fr)
-        minmax(0, auto);
+        "starting-anchor-element row-content markers-and-controls" var(--line-height-sidebar-row
+        ) ".                       row-content ." auto / var(--right-sidebar-presence-circle-width
+        ) minmax(0, 1fr) minmax(0, auto);
     align-items: baseline;
 }
 
 .user_sidebar_entry.with_avatar {
     grid-template:
-        "row-content" var(--line-height-sidebar-row-with-avatars)
-        "row-content" auto / minmax(0, 1fr);
+        "row-content" var(--line-height-sidebar-row-with-avatars) "row-content" auto / minmax(0, 1fr);
 
     .selectable_sidebar_block {
         grid-template-rows: auto;
@@ -374,10 +346,8 @@
     line-height: var(--line-height-sidebar-row-with-avatars);
     display: grid;
     grid-template:
-        "avatar row-content markers-and-controls" var(
-            --right-sidebar-avatar-width
-        )
-        / auto minmax(0, 1fr) minmax(0, auto);
+        "avatar row-content markers-and-controls" var(--right-sidebar-avatar-width
+        ) / auto minmax(0, 1fr) minmax(0, auto);
     justify-content: flex-start;
     align-items: center;
 }
@@ -433,10 +403,10 @@
        is necessary for correct vdots alignment with the
        filter row's vdots. */
     grid-template:
-        "row-content ending-anchor-element" var(--line-height-sidebar-row)
-        "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
+        "row-content ending-anchor-element" var(--line-height-sidebar-row) "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
+
     /* When both the left circle and three dot menu are present, we want
        the space to the left of the circle to be more similar to the space
        to the right of the three dot menu. */
@@ -545,10 +515,8 @@
 
     .right-sidebar-wrappable-text-container {
         display: grid;
-        grid-template-rows: minmax(
-            var(--line-height-sidebar-row-prominent),
-            auto
-        );
+        grid-template-rows: minmax(var(--line-height-sidebar-row-prominent),
+                auto);
         align-items: center;
         color: var(--color-text-sidebar-action-heading);
 
@@ -559,17 +527,14 @@
             font-size: var(--font-size-sidebar-action-heading);
             font-weight: var(--font-weight-sidebar-action-heading);
             font-variant: var(--font-variant-sidebar-action-heading);
-            font-feature-settings: var(
-                --font-feature-settings-sidebar-action-heading
-            );
+            font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
         }
+
         text-transform: var(--text-transform-sidebar-action-heading);
     }
 }
 
-#user-list.with_avatars
-    .buddy-list-user-link
-    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-user-link .right-sidebar-wrappable-text-container,
 #user-list.with_avatars .buddy-list-section .empty-list-message {
     margin-left: var(--right-sidebar-text-indent-with-avatar);
 }
@@ -600,7 +565,7 @@
 }
 
 #buddy-list-actions-menu-popover {
-    .display-style-selector + .invite-user-link-item {
+    .display-style-selector+.invite-user-link-item {
         border-top: 1px solid var(--color-border-sidebar-subheader);
     }
 
@@ -612,8 +577,7 @@
 
     .popover-menu-link:not(.display-style-selector-header) {
         display: grid;
-        grid-template: "left-icon row-content" auto / 18px minmax(
-                max-content,
+        grid-template: "left-icon row-content" auto / 18px minmax(max-content,
                 1fr
             );
         align-items: center;
@@ -634,4 +598,63 @@
     margin: auto;
     padding-right: var(--width-simplebar-scroll-hover);
     padding-top: 30px;
+}
+
+/* Status circles for user sidebar entries */
+.user_sidebar_entry:not(.with_avatar) .selectable_sidebar_block::before {
+    content: "";
+    grid-area: starting-anchor-element;
+    place-self: center center;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.user_sidebar_entry:not(.with_avatar).user-circle-active .selectable_sidebar_block::before {
+    background-color: var(--color-user-circle-active);
+}
+
+.user_sidebar_entry:not(.with_avatar).user-circle-idle .selectable_sidebar_block::before {
+    background: var(--gradient-user-circle-idle);
+}
+
+.user_sidebar_entry:not(.with_avatar).user-circle-offline .selectable_sidebar_block::before {
+    background-color: var(--color-user-circle-offline);
+}
+
+.user_sidebar_entry:not(.with_avatar).user-circle-deactivated .selectable_sidebar_block::before {
+    background-color: var(--color-user-circle-deactivated);
+}
+
+.user_sidebar_entry.with_avatar .user-profile-picture-container {
+    position: relative;
+}
+
+.user_sidebar_entry.with_avatar .user-profile-picture-container::after {
+    content: "";
+    position: absolute;
+    bottom: -0.5px;
+    right: -0.5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-background);
+    background-color: var(--color-background);
+    /* Default fallback */
+}
+
+.user_sidebar_entry.with_avatar.user-circle-active .user-profile-picture-container::after {
+    background-color: var(--color-user-circle-active);
+}
+
+.user_sidebar_entry.with_avatar.user-circle-idle .user-profile-picture-container::after {
+    background: var(--gradient-user-circle-idle-avatar);
+}
+
+.user_sidebar_entry.with_avatar.user-circle-offline .user-profile-picture-container::after {
+    display: none;
+}
+
+.user_sidebar_entry.with_avatar.user-circle-deactivated .user-profile-picture-container::after {
+    background-color: var(--color-user-circle-deactivated);
 }
