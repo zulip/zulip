@@ -22,7 +22,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from lxml.html import builder as e
-from markupsafe import Markup
+from markupsafe import Markup, escape
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
@@ -322,11 +322,11 @@ def build_message_list(
             localized_topic_name = get_topic_display_name(topic_name, user.default_language)
             plain_topic_display = localized_topic_name
             html_topic_display = Markup('<span class="empty-topic-display">{}</span>').format(
-                localized_topic_name
+                escape(localized_topic_name)
             )
         else:
             plain_topic_display = topic_name
-            html_topic_display = Markup(topic_name)  # noqa: S704
+            html_topic_display = Markup("{}").format(escape(topic_name))
 
         header = f"{channel_privacy_icon}{stream.name} > {plain_topic_display}"
         stream_link = stream_narrow_url(user.realm, stream)

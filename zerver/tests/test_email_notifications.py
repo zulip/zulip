@@ -672,3 +672,16 @@ class TestHtmlToMarkdown(ZulipTestCase):
 
         # Verify the stream name is also present
         self.assertIn("test_stream", header_plain)
+
+        # Test with malicious topic name to verify XSS protection
+        malicious_topic = "<script>alert('xss')</script>"
+        message_id_malicious = self.send_stream_message(
+            user, stream.name, content="Test message", topic_name=malicious_topic
+        )
+        message_malicious = Message.objects.get(id=message_id_malicious)
+        result_malicious = build_message_list(user, [message_malicious], stream_id_map)
+
+        # Verify HTML escaping
+        html_content = result_malicious["header"]["html"]
+        self.assertIn("&lt;script&gt;", html_content)
+        self.assertNotIn("<script>", html_content)
