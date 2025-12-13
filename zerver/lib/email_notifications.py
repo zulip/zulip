@@ -22,7 +22,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from lxml.html import builder as e
-from markupsafe import Markup
+from markupsafe import Markup, escape
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
@@ -315,7 +315,18 @@ def build_message_list(
             topic_name=message.topic_name(),
         )
         channel_privacy_icon = get_channel_privacy_icon(stream)
-        header = f"{channel_privacy_icon}{stream.name} > {message.topic_name()}"
+
+        # Handle empty topic display for both plain text and HTML
+        topic_name = message.topic_name()
+        topic_display_name = get_topic_display_name(topic_name, user.default_language)
+        if topic_name == "":
+            html_topic_display = Markup('<span class="empty-topic-display">{}</span>').format(
+                escape(topic_display_name)
+            )
+        else:
+            html_topic_display = escape(topic_name)
+
+        header = f"{channel_privacy_icon}{stream.name} > {topic_display_name}"
         stream_link = stream_narrow_url(user.realm, stream)
         header_html = Markup(
             "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
@@ -324,7 +335,7 @@ def build_message_list(
             channel_privacy_icon=channel_privacy_icon,
             stream_name=stream.name,
             narrow_link=narrow_link,
-            topic_name=message.topic_name(),
+            topic_name=html_topic_display,
         )
         return {
             "plain": header,
