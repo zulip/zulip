@@ -1,6 +1,5 @@
 .recent_view_container {
     padding: 0;
-    border-radius: 4px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -400,8 +399,6 @@
     & thead th {
         background-color: var(--color-background-recent-view-table-thead-th);
         color: inherit;
-        border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
-        border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
         z-index: 1;
 
         .table-sortable-arrow {
