@@ -17,7 +17,8 @@ const user_topics = mock_esm("../src/user_topics");
 const resolved_topic = zrequire("resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-const {Filter} = zrequire("../src/filter");
+const {Filter} = zrequire("filter");
+const filter_util = zrequire("filter_util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const muted_users = zrequire("muted_users");
@@ -991,10 +992,10 @@ test("redundancies", () => {
 });
 
 test("canonicalization", () => {
-    assert.equal(Filter.canonicalize_operator("is"), "is");
-    assert.equal(Filter.canonicalize_operator("stream"), "channel");
-    assert.equal(Filter.canonicalize_operator("subject"), "topic");
-    assert.equal(Filter.canonicalize_operator("from"), "sender");
+    assert.equal(filter_util.canonicalize_operator("is"), "is");
+    assert.equal(filter_util.canonicalize_operator("stream"), "channel");
+    assert.equal(filter_util.canonicalize_operator("subject"), "topic");
+    assert.equal(filter_util.canonicalize_operator("from"), "sender");
 
     let term;
     term = Filter.canonicalize_term({operator: "stream", operand: "Denmark"});
