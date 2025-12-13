@@ -15,6 +15,7 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
+    check_topic_rename,
     get_http_headers_from_filename,
     get_setup_webhook_message,
     validate_extract_webhook_http_header,
@@ -1043,6 +1044,40 @@ def api_github_webhook(
         # See IGNORED_EVENTS, for example.
         return json_success(request)
     topic_name = get_topic_based_on_type(payload, event)
+
+    # Handle topic renaming for issues and pull requests
+    # We check if it's an "edited" event and if the "title" changed.
+    if (
+        header_event in ("issues", "pull_request")
+        and payload.get("action", "").tame(check_string) == "edited"
+    ):
+        changes = payload.get("changes", {})
+        if "title" in changes:
+            old_title = changes["title"]["from"].tame(check_string)
+
+            # Determine if it is a PR or an Issue
+            if header_event == "pull_request":
+                type_str = "PR"
+                obj_id = payload["pull_request"]["number"].tame(check_int)
+            else:
+                # Handle edge case where an issue might be a PR in disguise
+                type_str = "PR" if is_pull_request_comment_event(payload) else "issue"
+                obj_id = payload["issue"]["number"].tame(check_int)
+
+            repo_name = get_repository_name(payload)
+            old_topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+                repo=repo_name,
+                type=type_str,
+                id=obj_id,
+                title=old_title,
+            )
+
+            stream_name = request.GET.get("stream")
+            if not stream_name and user_profile.default_sending_stream:
+                stream_name = user_profile.default_sending_stream.name
+
+            if stream_name:
+                check_topic_rename(user_profile, stream_name, old_topic, topic_name)
 
     body_function = EVENT_FUNCTION_MAPPER[event]
 
