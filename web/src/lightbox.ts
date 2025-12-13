@@ -555,6 +555,10 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     } else if (is_youtube_video) {
         type = "youtube-video";
         source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
+        const start_time = util.parse_youtube_start_time(url);
+        if (start_time !== undefined) {
+            source += "?start=" + start_time;
+        }
     } else if (is_vimeo_video) {
         type = "vimeo-video";
         source = "https://player.vimeo.com/video/" + $parent.attr("data-id");
