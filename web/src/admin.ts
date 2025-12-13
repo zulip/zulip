@@ -153,7 +153,7 @@ export function build_page(): void {
         server_jitsi_server_url: realm.server_jitsi_server_url,
         gif_rating_options: realm.gif_rating_options,
         gif_api_key_empty: realm.giphy_api_key === "" && realm.tenor_api_key === "",
-        realm_description: realm.realm_description,
+        realm_description_text: realm.realm_description,
         realm_description_html: postprocess_content(page_params.realm_rendered_description),
         realm_inline_image_preview: realm.realm_inline_image_preview,
         server_inline_image_preview: realm.server_inline_image_preview,
