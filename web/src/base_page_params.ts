@@ -4,6 +4,12 @@ import {narrow_term_schema, state_data_schema} from "./state_data.ts";
 
 const t1 = performance.now();
 
+// Sync this with zerver.context_processors.FALLBACK_PAGE_PARAMS
+const fallback_params_schema = z.object({
+    page_type: z.literal("fallback"),
+    development_environment: z.boolean(),
+});
+
 // Sync this with zerver.context_processors.zulip_default_context.
 const default_params_schema = z.object({
     page_type: z.literal("default"),
@@ -105,6 +111,7 @@ const upgrade_params_schema = z.object({
 });
 
 const page_params_schema = z.discriminatedUnion("page_type", [
+    fallback_params_schema,
     default_params_schema,
     home_params_schema,
     stats_params_schema,

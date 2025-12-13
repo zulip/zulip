@@ -33,6 +33,12 @@ from zproject.backends import (
 )
 from zproject.config import get_config
 
+# Used at zproject/jinja2/__init__.py for responses where zulip_default_context is not run.
+FALLBACK_PAGE_PARAMS = {
+    "page_type": "fallback",
+    "development_environment": settings.DEVELOPMENT,
+}
+
 DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "page_type": "default",
     "development_environment": settings.DEVELOPMENT,
