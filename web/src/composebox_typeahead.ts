@@ -1515,12 +1515,18 @@ export function initialize_topic_edit_typeahead(
     stream_name: string,
     dropup: boolean,
 ): Typeahead<string> {
+    const stream_id = stream_data.get_stream_id(stream_name);
+    const is_topic_creation_disabled = stream_id
+        ? !stream_data.can_create_new_topics_in_stream(stream_id)
+        : false;
+
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: form_field,
         type: "input",
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
+        helpOnEmptyStrings: is_topic_creation_disabled,
         item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
