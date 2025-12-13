@@ -66,6 +66,7 @@ from zerver.lib.users import (
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
+    CustomProfileFieldValue,
     Message,
     OnboardingStep,
     PreregistrationUser,
@@ -3514,3 +3515,51 @@ class TestBulkRegenerateAPIKey(ZulipTestCase):
         self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)
 
         self.assertEqual(othello_old_api_key, othello.api_key)
+
+
+class SelectMultipleProfileFieldTest(ZulipTestCase):
+    def test_select_multiple_profile_field_flow(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+        realm = user.realm
+
+        field_data = orjson.dumps(
+            {
+                "0": {"text": "Python", "order": "1"},
+                "1": {"text": "Java", "order": "2"},
+                "2": {"text": "Rust", "order": "3"},
+            }
+        ).decode()
+
+        field = CustomProfileField.objects.create(
+            realm=realm,
+            name="Programming Languages",
+            field_type=CustomProfileField.SELECT_MULTIPLE,
+            field_data=field_data,
+            hint="Select your languages",
+        )
+
+        valid_value = orjson.dumps(["0", "2"]).decode()
+        result = self.client_patch(
+            "/json/users/me/profile_data",
+            {"data": orjson.dumps([{"id": field.id, "value": valid_value}]).decode()},
+        )
+        self.assert_json_success(result)
+
+        self.assertEqual(
+            CustomProfileFieldValue.objects.get(field=field, user_profile=user).value, valid_value
+        )
+
+        invalid_choice = orjson.dumps(["0", "99"]).decode()
+        result = self.client_patch(
+            "/json/users/me/profile_data",
+            {"data": orjson.dumps([{"id": field.id, "value": invalid_choice}]).decode()},
+        )
+        self.assert_json_error(result, "'99' is not a valid choice for 'Programming Languages'.")
+
+        not_a_list = orjson.dumps("Hacker").decode()
+        result = self.client_patch(
+            "/json/users/me/profile_data",
+            {"data": orjson.dumps([{"id": field.id, "value": not_a_list}]).decode()},
+        )
+        self.assert_json_error(result, "Programming Languages is not a list")

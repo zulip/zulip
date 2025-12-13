@@ -76,7 +76,7 @@ export type CustomProfileFieldData = {
     type: number;
     display_in_profile_summary: boolean | undefined;
     required: boolean;
-    value: string;
+    value: string | null;
     rendered_value?: string | null | undefined;
     subtype?: string;
     link?: string;
@@ -480,6 +480,33 @@ export function get_custom_profile_field_data(
                 JSON.parse(field.field_data),
             );
             profile_field.value = field_choice_dict[field_value.value]!.text;
+            break;
+        }
+        case field_types.SELECT_MULTIPLE.id: {
+            try {
+                const field_data_schema = z.record(z.string(), z.object({text: z.string()}));
+                const field_data = field_data_schema.parse(JSON.parse(field.field_data));
+                const selected_ids = z.array(z.string()).parse(JSON.parse(field_value.value));
+                const readable_values: string[] = [];
+                for (const id of selected_ids) {
+                    const option = field_data[id];
+                    if (option) {
+                        readable_values.push(option.text);
+                    }
+                }
+                const final_text = readable_values.join(", ");
+                if (!final_text) {
+                    return undefined;
+                }
+                profile_field.value = final_text;
+            } catch {
+                const clean_val = field_value.value.replaceAll(/[[\],"]/g, "");
+
+                if (!clean_val) {
+                    return undefined;
+                }
+                profile_field.value = clean_val;
+            }
             break;
         }
         case field_types.SHORT_TEXT.id:
