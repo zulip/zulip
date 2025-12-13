@@ -89,6 +89,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.messages import SubMessage
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_fake_email_domain, get_realm
@@ -286,7 +287,6 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
-    "zerver_submessage",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
     # The importer cannot trust ImageAttachment objects anyway and needs to check
@@ -320,6 +320,7 @@ MESSAGE_TABLES = {
     # zerver_client is also written after we know what clients got
     # used
     "zerver_client",
+    "zerver_submessage",
 }
 
 # These get their own file as analytics data can be quite large and
@@ -1523,6 +1524,11 @@ def fetch_client_data(response: TableData, client_ids: set[int]) -> None:
     response["zerver_client"] = make_raw(query.iterator())
 
 
+def fetch_submessage_data(response: TableData, message_ids: set[int]) -> None:
+    query = SubMessage.objects.filter(message_id__in=list(message_ids))
+    response["zerver_submessage"] = make_raw(query.iterator())
+
+
 def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:
     realm = context["realm"]
     export_type = context["export_type"]
@@ -2558,6 +2564,8 @@ def do_export_realm(
 
     fetch_client_data(response=response, client_ids=collected_client_ids)
 
+    fetch_submessage_data(response=response, message_ids=message_ids)
+
     # Override the "deactivated" flag on the realm
     if export_as_active is not None:
         assert isinstance(response["zerver_realm"], list)
@@ -2769,6 +2777,15 @@ def get_single_user_config() -> Config:
         model=Reaction,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=False,
+        use_iterator=False,
+    )
+
+    Config(
+        table="zerver_submessage",
+        model=SubMessage,
+        normal_parent=user_profile_config,
+        include_rows="sender_id__in",
         limit_to_consenting_users=False,
         use_iterator=False,
     )
