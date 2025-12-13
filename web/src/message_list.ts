@@ -481,6 +481,8 @@ export class MessageList {
             just_unsubscribed = true;
         }
 
+        const can_subscribe = sub && stream_data.can_toggle_subscription(sub);
+
         this.view.render_trailing_bookend(
             stream_id,
             sub?.name,
@@ -490,6 +492,7 @@ export class MessageList {
             page_params.is_spectator,
             invite_only ?? false,
             is_web_public ?? false,
+            can_subscribe,
         );
     }
 
