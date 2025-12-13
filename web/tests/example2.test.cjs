@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 
 // Hopefully the basic patterns for testing data-oriented modules
 // are starting to become apparent.  To reinforce that, we will present
@@ -62,7 +62,8 @@ people.add_active_user(isaac);
 // This is an example of a deep unit test, where our dependencies
 // are easy to test.
 
-run_test("message_store", () => {
+run_test("message_store", ({override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
     message_store.clear_for_testing();
     stream_data.clear_subscriptions();
     stream_data.add_sub_for_tests(denmark_stream);

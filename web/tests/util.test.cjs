@@ -605,3 +605,18 @@ run_test("sha256_hash", async ({override}) => {
     hash = await util.sha256_hash(data);
     assert.equal(hash, expected_hash);
 });
+
+run_test("unique_array_insert", () => {
+    const array = [{a: "foo", b: "bar"}];
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    util.unique_array_insert(array, {a: "foo", b: "bar"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+});
