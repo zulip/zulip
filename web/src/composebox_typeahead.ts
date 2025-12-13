@@ -1677,6 +1677,12 @@ export function initialize({
         footer_html: () => get_footer_html_for_topic_typeahead(compose_state.stream_id()),
     });
 
+    $("input#stream_message_recipient_topic").on("focus", function () {
+        if (stream_message_topic_typeahead.helpOnEmptyStrings && $(this).val() === "") {
+            stream_message_topic_typeahead.lookup(false);
+        }
+    });
+
     const private_message_typeahead_input: TypeaheadInputElement = {
         $element: $("#private_message_recipient"),
         type: "contenteditable",
