@@ -3556,7 +3556,8 @@ button {
     background: transparent;
     padding: 10px 20px;
     margin: 20px 0;
-    border-left: 6px solid hsl(168.1deg 49.15% 46.27%);
+    /* TODO: Make border widths uniform; I think most are 5px. */
+    border-left: 6px solid var(--color-prominent-border);
 }
 
 .why-page,
@@ -3837,7 +3838,7 @@ button {
             padding: 30px;
 
             &:nth-child(even) {
-                background: hsl(171deg 49% 39% / 21%);
+                background: var(--color-background-box);
                 border-radius: 10px;
             }
         }
@@ -3877,11 +3878,6 @@ button {
         padding: 50px;
         padding-top: 200px;
         border-radius: 0;
-        background: linear-gradient(
-            145deg,
-            hsl(191deg 56% 55%),
-            hsl(169deg 65% 42%)
-        );
 
         & blockquote {
             max-width: 700px;
@@ -3899,7 +3895,7 @@ button {
         flex-direction: column;
         width: 100%;
         margin: 0;
-        background: hsl(171deg 49% 39% / 21%);
+        background: var(--color-background-box);
         padding: 50px 0;
 
         .feature-row {
@@ -3926,7 +3922,7 @@ button {
                 text-align: left;
                 margin: 10px 0;
                 padding: 50px 30px 0;
-                border-top: 5px solid hsl(171deg 49% 39%);
+                border-top: 5px solid var(--color-prominent-border);
 
                 & h1 {
                     font-weight: 600;
