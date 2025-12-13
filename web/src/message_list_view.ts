@@ -75,12 +75,11 @@ export type MessageContainer = {
     small_avatar_url: string;
     status_message: string | false;
     stream_url?: string;
-    subscribed?: boolean;
     pm_with_url?: string;
     timestr: string;
     topic_url?: string;
-    unsubscribed?: boolean;
     want_date_divider: boolean;
+    want_subscription_status_divider: boolean;
 };
 
 export type MessageGroup = {
@@ -784,22 +783,22 @@ export class MessageListView {
 
             // These will be used to build the message container
             let include_recipient = false;
-            let subscribed;
-            let unsubscribed;
             let stream_url;
             let topic_url;
             let pm_with_url;
             let include_sender;
             let want_date_divider;
             let date_divider_html;
+            let want_subscription_status_divider = false;
             const year_changed = !same_year(message, prev_message_container?.msg);
 
             if (
                 prev_message_container &&
                 util.same_recipient(prev_message_container.msg, message) &&
-                this.collapse_messages &&
-                prev_message_container.msg.historical === message.historical
+                this.collapse_messages
             ) {
+                want_subscription_status_divider =
+                    prev_message_container.msg.historical !== message.historical;
                 const date_divider_data = get_message_date_divider_data({
                     prev_message: prev_message_container.msg,
                     curr_message: message,
@@ -813,8 +812,6 @@ export class MessageListView {
                 want_date_divider = false;
                 date_divider_html = undefined;
                 include_recipient = true;
-                subscribed = false;
-                unsubscribed = false;
 
                 if (message.type === "stream") {
                     stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
@@ -842,12 +839,11 @@ export class MessageListView {
             const message_container = {
                 msg: message,
                 include_recipient,
-                ...(subscribed && {subscribed}),
-                ...(unsubscribed && {unsubscribed}),
                 ...(stream_url && {stream_url}),
                 ...(topic_url && {topic_url}),
                 ...(pm_with_url && {pm_with_url}),
                 want_date_divider,
+                want_subscription_status_divider,
                 date_divider_html,
                 year_changed,
                 ...calculated_variables,
@@ -884,11 +880,7 @@ export class MessageListView {
         assert(first_msg_container !== undefined);
 
         // Join two groups into one.
-        if (
-            this.collapse_messages &&
-            same_recipient(last_msg_container, first_msg_container) &&
-            last_msg_container!.msg.historical === first_msg_container.msg.historical
-        ) {
+        if (this.collapse_messages && same_recipient(last_msg_container, first_msg_container)) {
             if (
                 !last_msg_container!.status_message &&
                 !first_msg_container.msg.is_me_message &&
@@ -958,6 +950,8 @@ export class MessageListView {
                 prev_msg_container,
                 curr_msg_container,
             });
+            curr_msg_container.want_subscription_status_divider =
+                prev_msg_container?.msg.historical !== curr_msg_container.msg.historical;
         } else {
             clear_message_date_divider(curr_msg_container);
         }
@@ -1082,8 +1076,16 @@ export class MessageListView {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
         message_container.msg.reminders = message_reminder.get_reminders(message_container.msg.id);
+        let invite_only;
+        let is_web_public;
+        if (message_container.msg.is_stream) {
+            invite_only = stream_data.is_invite_only_by_stream_id(message_container.msg.stream_id);
+            is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
+        }
         const msg_to_render = {
             ...message_container,
+            invite_only,
+            is_web_public,
             message_list_id: this.list.id,
         };
         return render_single_message(msg_to_render);

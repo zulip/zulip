@@ -82,6 +82,7 @@ function get_message_container_for_preview(message: Message): MessageContainer {
         status_message: "",
         timestr: get_timestr(message),
         want_date_divider: false,
+        want_subscription_status_divider: false,
     };
     const unused_variables = {
         date_divider_html: undefined,
