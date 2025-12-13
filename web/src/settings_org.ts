@@ -1482,6 +1482,16 @@ export function build_page(): void {
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();
 
+    // Show yellow outline when organization description is empty.
+    // We use a class-based approach because :empty doesn't work for textareas.
+    function update_description_empty_state(): void {
+        const $textarea = $<HTMLTextAreaElement>("#id_realm_description");
+        const is_empty = $textarea.val()!.trim() === "";
+        $textarea.toggleClass("empty-description", is_empty);
+    }
+    update_description_empty_state();
+    $("#id_realm_description").on("input", update_description_empty_state);
+
     $(".org-permissions-form").on(
         "input change",
         ".time-limit-custom-input",

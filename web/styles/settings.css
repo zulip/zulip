@@ -163,6 +163,13 @@ h3,
         margin-bottom: 0;
     }
 }
+/* Show yellow outline when organization description is empty,
+   matching the compose box "approaching limit" warning style. */
+.admin-realm-description.empty-description:not(:disabled) {
+    border-color: var(
+        --color-message-content-container-border-approaching-limit
+    );
+}
 
 .admin-realm-welcome-message-custom-text {
     margin-bottom: 10px;
