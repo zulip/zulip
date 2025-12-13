@@ -7,7 +7,8 @@ import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
-import {Filter} from "./filter.ts";
+import type {Filter} from "./filter.ts";
+import * as filter_util from "./filter_util.ts";
 import * as message_feed_loading from "./message_feed_loading.ts";
 import * as message_feed_top_notices from "./message_feed_top_notices.ts";
 import * as message_helper from "./message_helper.ts";
@@ -289,7 +290,7 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         const parsed_narrow_operator = narrow_operator_schema.parse(
             raw_term.operator.toLowerCase(),
         );
-        const canonical_operator = Filter.canonicalize_operator(parsed_narrow_operator);
+        const canonical_operator = filter_util.canonicalize_operator(parsed_narrow_operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
             const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);

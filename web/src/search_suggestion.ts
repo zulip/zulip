@@ -5,6 +5,7 @@ import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import {Filter} from "./filter.ts";
+import * as filter_util from "./filter_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -508,7 +509,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         return [];
     }
 
-    const operator = Filter.canonicalize_operator(last.operator);
+    const operator = filter_util.canonicalize_operator(last.operator);
     const operand = last.operand;
     const negated = operator === "topic" && last.negated;
     let channel_id_str: string | undefined;
