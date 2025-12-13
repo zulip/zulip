@@ -14,6 +14,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import {stream_message_topic_typeahead} from "./composebox_typeahead.ts";
 import * as drafts from "./drafts.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
@@ -242,6 +243,13 @@ export let on_compose_select_recipient_update = (): void => {
         // Update stream name in the recipient box.
         const stream_id = compose_state.stream_id();
         update_recipient_label(stream_id);
+
+        if (stream_id) {
+            const can_create_topics = stream_data.can_create_new_topics_in_stream(stream_id);
+            if (stream_message_topic_typeahead) {
+                stream_message_topic_typeahead.helpOnEmptyStrings = !can_create_topics;
+            }
+        }
     }
 
     update_on_recipient_change();
