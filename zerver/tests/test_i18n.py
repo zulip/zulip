@@ -163,6 +163,12 @@ class TranslationTestCase(ZulipTestCase):
         req.META["HTTP_ACCEPT_LANGUAGE"] = "*"
         self.assertIsNone(get_browser_language_code(req))
 
+        # Case when language with percent_translated less than
+        # 5 has higher weight.
+        req = HostRequestMock()
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "no;q=0.9,de;q=0.8"
+        self.assertEqual(get_browser_language_code(req), "de")
+
 
 class JsonTranslationTestCase(ZulipTestCase):
     @override
