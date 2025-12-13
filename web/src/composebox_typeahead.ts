@@ -1803,6 +1803,17 @@ export function initialize({
         },
     });
 
+    // Register the typeahead with compose_recipient so it can update helpOnEmptyStrings
+    compose_recipient.set_stream_message_topic_typeahead(stream_message_topic_typeahead);
+
+    // Auto-open topic typeahead on focus when the input is empty and topic
+    // creation is disabled, helping users select from existing topics.
+    $("input#stream_message_recipient_topic").on("focus", function () {
+        if (stream_message_topic_typeahead.helpOnEmptyStrings && $(this).val() === "") {
+            stream_message_topic_typeahead.lookup(false);
+        }
+    });
+
     const private_message_typeahead_input: TypeaheadInputElement = {
         $element: $("#private_message_recipient"),
         type: "contenteditable",
