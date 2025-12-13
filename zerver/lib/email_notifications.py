@@ -317,6 +317,11 @@ def build_message_list(
         channel_privacy_icon = get_channel_privacy_icon(stream)
         header = f"{channel_privacy_icon}{stream.name} > {message.topic_name()}"
         stream_link = stream_narrow_url(user.realm, stream)
+        display_topic_name = message.topic_name()
+        if display_topic_name == "":
+            display_topic_name = get_topic_display_name(display_topic_name, user.default_language)
+            display_topic_name = Markup("<i>{}</i>").format(display_topic_name)
+
         header_html = Markup(
             "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
         ).format(
@@ -324,7 +329,7 @@ def build_message_list(
             channel_privacy_icon=channel_privacy_icon,
             stream_name=stream.name,
             narrow_link=narrow_link,
-            topic_name=message.topic_name(),
+            topic_name=display_topic_name,
         )
         return {
             "plain": header,
