@@ -259,26 +259,6 @@ test("set_compose_defaults", () => {
     assert.equal(stream_test.stream_id, rome_id);
 });
 
-test("update_email", () => {
-    const steve = {
-        email: "steve@foo.com",
-        user_id: 43,
-        full_name: "Steve",
-    };
-
-    people.add_active_user(steve);
-    set_filter([
-        ["dm", "steve@foo.com"],
-        ["sender", "steve@foo.com"],
-        ["stream", "steve@foo.com"], // try to be tricky
-    ]);
-    narrow_state.update_email(steve.user_id, "showell@foo.com");
-    const filter = narrow_state.filter();
-    assert.deepEqual(filter.terms_with_operator("dm")[0].operand, "showell@foo.com");
-    assert.deepEqual(filter.terms_with_operator("sender")[0].operand, "showell@foo.com");
-    assert.deepEqual(filter.terms_with_operator("channel")[0].operand, "steve@foo.com");
-});
-
 test("topic", () => {
     set_filter([
         ["stream", foo_stream.stream_id.toString()],

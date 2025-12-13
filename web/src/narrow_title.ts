@@ -52,16 +52,8 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("dm")) {
-        const emails = filter.terms_with_operator("dm")[0]!.operand;
-        const user_ids = people.emails_strings_to_user_ids_string(emails);
-
-        if (user_ids !== undefined) {
-            return people.format_recipients(user_ids, "long");
-        }
-        if (emails.includes(",")) {
-            return $t({defaultMessage: "Invalid users"});
-        }
-        return $t({defaultMessage: "Invalid user"});
+        const user_ids = filter.terms_with_operator("dm")[0]!.operand;
+        return people.format_recipients(user_ids.join(","), "long");
     }
 
     return filter_title;

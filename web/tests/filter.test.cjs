@@ -2113,6 +2113,89 @@ test("is_valid_search_term", () => {
     );
 });
 
+test("convert_term_to_suggestion", () => {
+    let narrow_term = {
+        operator: "dm",
+        operand: [1, 2],
+        negated: false,
+    };
+    assert.deepEqual(Filter.convert_term_to_suggestion(narrow_term), {
+        operator: "dm",
+        operand: "1,2",
+        negated: false,
+    });
+
+    narrow_term = {
+        operator: "search",
+        operand: "abcd",
+        negated: false,
+    };
+    assert.deepEqual(Filter.convert_term_to_suggestion(narrow_term), {
+        operator: "search",
+        operand: "abcd",
+        negated: false,
+    });
+});
+
+test("convert_term_to_suggestion", () => {
+    let narrow_term = {
+        operator: "dm",
+        operand: [1, 2],
+        negated: false,
+    };
+    assert.deepEqual(Filter.convert_term_to_suggestion(narrow_term), {
+        operator: "dm",
+        operand: "1,2",
+        negated: false,
+    });
+
+    narrow_term = {
+        operator: "search",
+        operand: "abcd",
+        negated: false,
+    };
+    assert.deepEqual(Filter.convert_term_to_suggestion(narrow_term), {
+        operator: "search",
+        operand: "abcd",
+        negated: false,
+    });
+});
+
+test("convert_suggestion_to_term", () => {
+    let narrow_term = {
+        operator: "dm",
+        operand: "1,2",
+        negated: false,
+    };
+    assert.deepEqual(Filter.convert_suggestion_to_term(narrow_term), {
+        operator: "dm",
+        operand: [1, 2],
+        negated: false,
+    });
+
+    narrow_term = {
+        operator: "sender",
+        operand: "me",
+        negated: false,
+    };
+    assert.deepEqual(Filter.convert_suggestion_to_term(narrow_term), {
+        operator: "sender",
+        operand: me.user_id,
+        negated: false,
+    });
+
+    narrow_term = {
+        operator: "search",
+        operand: "abcd",
+        negated: false,
+    };
+    assert.deepEqual(Filter.convert_suggestion_to_term(narrow_term), {
+        operator: "search",
+        operand: "abcd",
+        negated: false,
+    });
+});
+
 test("update_email", () => {
     const terms = [
         {operator: "dm", operand: "steve@foo.com"},

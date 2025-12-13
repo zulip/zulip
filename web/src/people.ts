@@ -830,7 +830,7 @@ export function user_ids_string_to_slug(user_ids_string: string): string | undef
     return user_ids_to_slug(user_ids);
 }
 
-export function slug_to_emails(slug: string): string | undefined {
+export function slug_to_user_ids(slug: string): number[] | undefined {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
@@ -845,15 +845,14 @@ export function slug_to_emails(slug: string): string | undefined {
     */
     const m = /^([\d,]+)(-.*)?/.exec(slug);
     if (m) {
-        let user_ids_string = m[1]!;
-        user_ids_string = exclude_me_from_string(user_ids_string);
-        return user_ids_string_to_emails_string(user_ids_string);
+        const user_ids_string = m[1]!;
+        return exclude_me_from_string(user_ids_string);
     }
     /* istanbul ignore next */
     return undefined;
 }
 
-export function exclude_me_from_string(user_ids_string: string): string {
+export function exclude_me_from_string(user_ids_string: string): number[] {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
     let user_ids = split_to_ints(user_ids_string);
@@ -862,12 +861,12 @@ export function exclude_me_from_string(user_ids_string: string): string {
         // We either have a message to ourself, an empty
         // slug, or a message to somebody else where we weren't
         // part of the slug.
-        return user_ids.join(",");
+        return user_ids;
     }
 
     user_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
 
-    return user_ids.join(",");
+    return user_ids;
 }
 
 export function sender_is_bot(message: Message): boolean {

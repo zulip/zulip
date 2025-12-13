@@ -320,7 +320,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 
     let narrowed;
 
-    function narrow_by_email(email) {
+    function narrow_by_user_id(email) {
         assert.equal(email, "alice@zulip.com");
         narrowed = true;
     }
@@ -332,7 +332,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         buddy_list.start_scroll_handler = noop;
         override_rewire(util, "call_function_periodically", noop);
         override_rewire(activity, "send_presence_to_server", noop);
-        activity_ui.initialize({narrow_by_email});
+        activity_ui.initialize({narrow_by_user_id});
 
         buddy_list.populate({
             all_user_ids: [me.user_id, alice.user_id, fred.user_id],
@@ -810,7 +810,7 @@ test("initialize", ({override, override_rewire}) => {
     });
 
     activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
+    activity_ui.initialize({narrow_by_user_id() {}});
     payload.success({
         presences: {},
         msg: "",
@@ -833,7 +833,7 @@ test("initialize", ({override, override_rewire}) => {
 
     $(window).off("focus");
     activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
+    activity_ui.initialize({narrow_by_user_id() {}});
     payload.success({
         presences: {},
         msg: "",
