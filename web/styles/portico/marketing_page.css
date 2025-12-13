@@ -1507,7 +1507,8 @@ button {
    TODO: Create variables for all of these colors.
    TODO: Better name `register-buttons` and related classes. */
 .hero-buttons .button,
-.register-buttons .button {
+.register-buttons .button,
+.feature-pricing .button {
     color: hsl(0deg 0% 100%);
     background-color: hsl(219deg 62% 54%);
     /* Legacy margin value. */
@@ -2711,7 +2712,7 @@ button {
 
 .for-education-pricing-model .pricing-container hr {
     border: none;
-    border-bottom: 2px solid hsl(170deg 47% 53%);
+    border-bottom: 2px solid var(--color-prominent-border);
     margin: 15px 0;
 }
 
@@ -2748,7 +2749,8 @@ button {
     background-position: center;
     background-repeat: no-repeat;
 
-    filter: invert(0.3);
+    /* TODO: Adjust checkbox-green.svg so we're not tuning colors like this. */
+    filter: grayscale(1) invert(0.3);
 }
 
 .for-education-pricing-model .pricing-container .bottom {
@@ -2798,21 +2800,6 @@ button {
 
 .for-education-pricing-model .pricing-container .bottom .button {
     margin-top: 24px;
-    display: block;
-    text-align: center;
-
-    font-size: 0.9em;
-
-    transition: background-color 0.3s ease;
-}
-
-.for-education-pricing-model .pricing-container .price-box:focus {
-    outline: none;
-}
-
-.for-education-pricing-model .pricing-container .price-box:focus .button {
-    box-shadow: 0 0 25px hsl(169deg 48% 60%);
-    animation: box-shadow-pulse 2s infinite;
 }
 
 .for-education-pricing-model
@@ -3711,7 +3698,6 @@ button {
                     width: 100%;
                     text-align: center;
                     font-weight: 600;
-                    color: hsl(169deg 46% 33%);
                 }
             }
         }
