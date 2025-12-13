@@ -634,3 +634,41 @@ class TestHtmlToMarkdown(ZulipTestCase):
         self.assertEqual(
             convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
         )
+
+    def test_empty_topic_display_in_digest_email(self) -> None:
+        """Test that empty topics are properly handled in digest emails with correct type annotations."""
+        user = self.example_user("hamlet")
+        stream = self.make_stream("test_stream")
+        self.subscribe(user, stream.name)
+
+        # Create a message with empty topic
+        message_id = self.send_stream_message(
+            user, stream.name, content="Test message", topic_name=""
+        )
+
+        # Get the actual Message object
+        from zerver.models import Message
+
+        message = Message.objects.get(id=message_id)
+
+        # Test build_message_list function with empty topic
+        from zerver.lib.email_notifications import build_message_list
+
+        stream_id_map = {stream.id: stream}
+        result = build_message_list(user, [message], stream_id_map)
+
+        # Verify the result structure
+        self.assertIn("header", result)
+        self.assertIn("html", result["header"])
+        self.assertIn("plain", result["header"])
+
+        # Verify empty topic is handled correctly - should show "general chat" fallback
+        header_html = result["header"]["html"]
+        self.assertIn("general chat", str(header_html))
+
+        # Verify plain text version shows the fallback name
+        header_plain = result["header"]["plain"]
+        self.assertIn("general chat", header_plain)
+
+        # Verify the stream name is also present
+        self.assertIn("test_stream", header_plain)

@@ -315,7 +315,20 @@ def build_message_list(
             topic_name=message.topic_name(),
         )
         channel_privacy_icon = get_channel_privacy_icon(stream)
-        header = f"{channel_privacy_icon}{stream.name} > {message.topic_name()}"
+
+        # Handle empty topic display for both plain text and HTML
+        topic_name = message.topic_name()
+        if topic_name == "":
+            localized_topic_name = get_topic_display_name(topic_name, user.default_language)
+            plain_topic_display = localized_topic_name
+            html_topic_display = Markup('<span class="empty-topic-display">{}</span>').format(
+                localized_topic_name
+            )
+        else:
+            plain_topic_display = topic_name
+            html_topic_display = Markup(topic_name)  # noqa: S704
+
+        header = f"{channel_privacy_icon}{stream.name} > {plain_topic_display}"
         stream_link = stream_narrow_url(user.realm, stream)
         header_html = Markup(
             "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
@@ -324,7 +337,7 @@ def build_message_list(
             channel_privacy_icon=channel_privacy_icon,
             stream_name=stream.name,
             narrow_link=narrow_link,
-            topic_name=message.topic_name(),
+            topic_name=html_topic_display,
         )
         return {
             "plain": header,
