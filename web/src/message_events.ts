@@ -48,6 +48,7 @@ import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
+import * as topic_generator from "./topic_generator.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as util from "./util.ts";
@@ -587,6 +588,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             }
 
             for (const moved_message of event_messages) {
+                topic_generator.unmark_message_ids_to_skip_once(moved_message.id);
                 if (
                     realm.realm_message_edit_history_visibility_policy !==
                     message_edit_history_visibility_policy_values.never.code
