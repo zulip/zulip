@@ -48,6 +48,14 @@ def add_realm_playground(
     ],
     url_template: str,
 ) -> HttpResponse:
+    pygments_language = pygments_language.strip()
+    pygments_language = pygments_language.lower()
+    if " " in pygments_language:
+        raise JsonableError(_("Language name cannot contain spaces."))
+
+    restricted_keywords = {"latex", "math", "quote", "spoiler"}
+    if pygments_language in restricted_keywords:
+        raise JsonableError(_("This is a special keyword and cannot be used."))
     playground_id = check_add_realm_playground(
         realm=user_profile.realm,
         acting_user=user_profile,
