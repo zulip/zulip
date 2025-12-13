@@ -210,8 +210,19 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             return _.isEqual(operand_ids, user_ids);
         }
 
-        case "dm-including": {
-            const operand_ids = people.pm_with_operand_ids(term.operand);
+ case "dm-with":
+case "dm-including": {
+    const operand_ids = people.pm_with_operand_ids(operand);
+    if (!operand_ids) {
+        return false;
+    }
+    const user_ids = people.all_user_ids_in_pm(message);
+    if (!user_ids) {
+        return false;
+    }
+    return user_ids.includes(operand_ids[0]);
+}
+
             if (!operand_ids) {
                 return false;
             }
@@ -221,6 +232,8 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             }
             return operand_ids.every((operand_id) => user_ids.includes(operand_id));
         }
+        case "dm-including":
+            return message_matches_search_term(message, "dm-with", operand);
     }
 
     // We will never get here since operator type validation would fail.
@@ -274,8 +287,12 @@ export class Filter {
         }
 
         if (operator === "group-pm-with") {
-            // "group-pm-with:" was replaced with "dm-including:"
-            return "dm-including";
+            return "dm-with";
+        }
+
+        if (operator === "dm-including") {
+            // old legacy operator → map to new dm-with
+            return "dm-with";
         }
 
         if (operator === "from") {
@@ -334,9 +351,25 @@ export class Filter {
                     narrow_term.operand = people.my_current_email();
                 }
                 break;
+            case "dm-with":
             case "dm-including":
-                narrow_term.operand = narrow_term.operand.toLowerCase();
+                operand = operand.toString().toLowerCase();
                 break;
+         case "dm-with":
+        case "dm-including": {
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.all_user_ids_in_pm(message);
+            if (!user_ids) {
+                return false;
+            }
+            return user_ids.includes(operand_ids[0]);
+        }
+
+        
+
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
                 // quotes when typing in the search bar.  Curly quotes don't trigger our
