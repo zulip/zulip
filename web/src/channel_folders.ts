@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 import type * as z from "zod/mini";
 
+import * as channel from "./channel.ts";
 import {FoldDict} from "./fold_dict.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";
@@ -86,6 +87,41 @@ export function user_has_folders(): boolean {
     }
 
     return false;
+}
+
+export function add_channel_to_folder(
+    stream_id: number,
+    folder_id: number,
+    on_success: () => void,
+    on_error: (xhr: JQuery.jqXHR) => void,
+): void {
+    const url = "/json/streams/" + stream_id.toString();
+    const data = {
+        folder_id: JSON.stringify(folder_id),
+    };
+    void channel.patch({
+        url,
+        data,
+        success: on_success,
+        error: on_error,
+    });
+}
+
+export function remove_channel_from_folder(
+    stream_id: number,
+    on_success: () => void,
+    on_error: (xhr: JQuery.jqXHR) => void,
+): void {
+    const url = "/json/streams/" + stream_id.toString();
+    const data = {
+        folder_id: JSON.stringify(null),
+    };
+    void channel.patch({
+        url,
+        data,
+        success: on_success,
+        error: on_error,
+    });
 }
 
 export function update_channel_folder(
