@@ -13,3 +13,17 @@
     <textarea id="change_user_group_description" class="modal-textarea" name="user_group_description">{{ group_description }}</textarea>
 </div>
 {{/if}}
+
+<div>
+    <label for="change_user_group_color" class="modal-field-label">
+        {{t 'Display color (optional)' }}
+    </label>
+    <div class="user-group-color-edit-container">
+        <input type="color" id="change_user_group_color" class="user-group-color-input" name="user_group_color" value="{{ group_color }}" />
+        <label class="checkbox">
+            <input type="checkbox" id="change_user_group_use_color" {{#if has_color}}checked{{/if}} />
+            <span></span>
+            {{t "Use custom color" }}
+        </label>
+    </div>
+</div>

@@ -108,6 +108,25 @@
     width: calc(100% - 15px);
 }
 
+/* User group color input styling */
+.user-group-color-input {
+    width: 40px;
+    height: 30px;
+    padding: 2px;
+    border: 1px solid var(--color-border-input);
+    border-radius: 4px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+#user-group-color-container,
+.user-group-color-edit-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
 .user_group_creation_error,
 .stream_creation_error,
 #settings-topics-already-exist-error {
