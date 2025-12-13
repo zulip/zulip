@@ -557,7 +557,12 @@ export function unsaved_message_user_mention_event_handler(
     this: HTMLElement,
     e: JQuery.ClickEvent,
 ): void {
-    if (document.getSelection()?.type === "Range") {
+    if (mouse_drag.is_drag(e)) {
+        // We stop propagation because, if this event was fired from drafts,
+        // it would otherwise trigger the handler twice: once from the
+        // `.user-mention` listener for drafts and again from the
+        // `.messagebox .user-mention` click handler.
+        e.stopPropagation();
         return;
     }
 
@@ -691,6 +696,10 @@ function register_click_handlers(): void {
     );
 
     $("#main_div").on("click", ".user-mention", function (this: HTMLElement, e) {
+        if (mouse_drag.is_drag(e)) {
+            e.stopPropagation();
+            return;
+        }
         const id_string = $(this).attr("data-user-id");
         // We fallback to email to handle legacy Markdown that was rendered
         // before we cut over to using data-user-id
