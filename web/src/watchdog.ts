@@ -13,6 +13,12 @@ export function set_suspect_offline(suspected: boolean): void {
     suspect_offline = suspected;
 }
 
+export function _reset_for_testing(): void {
+    unsuspend_callbacks.length = 0;
+    watchdog_time = Date.now();
+    suspect_offline = false;
+}
+
 export function suspects_user_is_offline(): boolean {
     return suspect_offline;
 }
@@ -71,4 +77,30 @@ export function on_unsuspend(f: () => void): void {
     unsuspend_callbacks.push(f);
 }
 
-setInterval(check_for_unsuspend, CHECK_FREQUENCY_MILLISECONDS);
+export function initialize(): void {
+    setInterval(check_for_unsuspend, CHECK_FREQUENCY_MILLISECONDS);
+
+    // The Page Lifecycle API "resume" event.
+    // This handles when the page is "resumed" from a frozen state, such as when
+    // the user switches back to a tab that Chrome has discarded/frozen to save memory.
+    //
+    // We check for `document` existence to avoid breaking Node.js-based tests that
+    // import this module but don't implement the full DOM API.
+    if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+        document.addEventListener("resume", () => {
+            check_for_unsuspend();
+        });
+    }
+
+    // The BFCache "pageshow" event.
+    // This handles when the page is restored from the Back-Forward Cache (BFCache),
+    // e.g. when the user navigates back to this page.
+    // We check for `event.persisted` to ensure we only trigger on a restore, not a fresh load.
+    if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+        window.addEventListener("pageshow", (event) => {
+            if (event.persisted) {
+                check_for_unsuspend();
+            }
+        });
+    }
+}
