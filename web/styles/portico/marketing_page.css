@@ -1521,6 +1521,20 @@ button {
     }
 }
 
+.desktop-download-link.button {
+    color: hsl(219deg 62% 54%);
+    background-color: hsl(0deg 0% 100%);
+    /* Legacy margin value. */
+    margin: 10px;
+    font-weight: 500 !important;
+
+    &:hover {
+        text-decoration: none;
+        color: hsl(219deg 62% 50%);
+        background-color: var(--color-background-box);
+    }
+}
+
 /* -- main panel styling -- */
 .main {
     width: calc(100% - 200px - 20px);
@@ -2197,11 +2211,7 @@ button {
     position: relative;
 
     padding: 100px 50px 50px;
-    background: linear-gradient(
-        35deg,
-        hsl(197deg 100% 16%),
-        hsl(166deg 45% 49%)
-    );
+    background: var(--color-background-solid-hero);
     height: 450px;
 
     color: hsl(0deg 0% 100%);
@@ -2253,10 +2263,6 @@ button {
 
 .portico-landing.apps .hero .info .button {
     display: inline-block;
-    padding: 10px 20px;
-
-    font-size: 1em;
-    font-weight: 600;
 }
 
 .portico-landing.apps .other-apps {
