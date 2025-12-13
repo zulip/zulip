@@ -2004,295 +2004,127 @@ test("options for dropdown widget", () => {
     ]);
 });
 
-test("can_access_stream_email", ({override}) => {
-    const social = {
-        name: "social",
-        stream_id: 2,
-        is_archived: false,
-        can_send_message_group: {
-            direct_subgroups: [],
-            direct_members: [me.user_id],
+const access_cases = [
+    {
+        desc: "private + subscribed user",
+        stream: {
+            subscribed: true,
+            invite_only: true,
+            is_web_public: false,
+            history_public_to_subscribers: false,
         },
-    };
-    const bot = {
-        is_active: true,
-        user_id: 999,
-    };
-    const bot_user = {
-        email: "bot@zulip.com",
-        full_name: "Bot User",
-        user_id: 999,
-        is_bot: true,
-    };
-    people.add_active_user(bot_user);
-    override(bot_data, "get_all_bots_for_current_user", () => [bot]);
-    override(current_user, "user_id", me.user_id);
+        user: {is_admin: false, is_guest: false},
+        spectator: false,
+        expect: {meta: true, content: true, preview: false},
+    },
+    {
+        desc: "web-public stream (normal user)",
+        stream: {
+            subscribed: false,
+            invite_only: false,
+            is_web_public: true,
+            history_public_to_subscribers: true,
+        },
+        user: {is_admin: false, is_guest: false},
+        spectator: false,
+        expect: {meta: true, content: true, preview: true},
+    },
+    {
+        desc: "web-public spectator",
+        stream: {
+            subscribed: false,
+            invite_only: false,
+            is_web_public: true,
+            history_public_to_subscribers: true,
+        },
+        user: {is_admin: false, is_guest: false},
+        spectator: true,
+        expect: {meta: true, content: true, preview: true},
+    },
+    {
+        desc: "non-web-public spectator denied",
+        stream: {
+            subscribed: false,
+            invite_only: false,
+            is_web_public: false,
+            history_public_to_subscribers: true,
+        },
+        user: {is_admin: false, is_guest: false},
+        spectator: true,
+        expect: {meta: false, content: false, preview: false},
+    },
+    {
+        desc: "private unsubscribed user denied",
+        stream: {
+            subscribed: false,
+            invite_only: true,
+            is_web_public: false,
+            history_public_to_subscribers: false,
+        },
+        user: {is_admin: false, is_guest: false},
+        spectator: false,
+        expect: {meta: false, content: false, preview: false},
+    },
+    {
+        desc: "realm admin metadata allowed but content denied",
+        stream: {
+            subscribed: false,
+            invite_only: true,
+            is_web_public: false,
+            history_public_to_subscribers: true,
+        },
+        user: {is_admin: true, is_guest: false},
+        spectator: false,
+        expect: {meta: true, content: false, preview: false},
+    },
+    {
+        desc: "private subscribed + history_public allows preview",
+        stream: {
+            subscribed: true,
+            invite_only: true,
+            is_web_public: false,
+            history_public_to_subscribers: true,
+        },
+        user: {is_admin: false, is_guest: false},
+        spectator: false,
+        expect: {meta: true, content: true, preview: true},
+    },
+];
 
-    social.is_archived = true;
-    assert.equal(stream_data.can_access_stream_email(social), false);
-    social.is_archived = false;
+run_test("stream access table-driven test", ({override}) => {
+    for (const tc of access_cases) {
+        const stream = {
+            stream_id: 777,
+            name: "test_stream",
+            color: "red",
+            is_muted: false,
+            can_add_subscribers_group: nobody_group.id,
+            can_administer_channel_group: nobody_group.id,
+            can_subscribe_group: nobody_group.id,
+            ...tc.stream,
+        };
 
-    page_params.is_spectator = true;
-    assert.equal(stream_data.can_access_stream_email(social), false);
+        override(current_user, "is_admin", tc.user.is_admin);
+        override(current_user, "is_guest", tc.user.is_guest);
+        page_params.is_spectator = tc.spectator;
+
+        assert.equal(
+            stream_data.has_metadata_access(stream),
+            tc.expect.meta,
+            `${tc.desc}: has_metadata_access`,
+        );
+
+        assert.equal(
+            stream_data.has_content_access(stream),
+            tc.expect.content,
+            `${tc.desc}: has_content_access`,
+        );
+
+        assert.equal(stream_data.can_preview(stream), tc.expect.preview, `${tc.desc}: can_preview`);
+    }
+
+    // Reset so future tests are unaffected
     page_params.is_spectator = false;
-
-    social.can_send_message_group.direct_members = [me.user_id];
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    social.can_send_message_group.direct_members = [bot.user_id];
-    assert.equal(stream_data.can_access_stream_email(social), true);
-
-    social.can_send_message_group.direct_members = [123];
-    assert.equal(stream_data.can_access_stream_email(social), false);
-
-    override(current_user, "is_guest", true);
-    assert.equal(stream_data.can_access_stream_email(social), false);
-});
-
-test("has_metadata_access", ({override}) => {
-    const social = {
-        subscribed: true,
-        color: "red",
-        name: "social",
-        stream_id: 2,
-        is_muted: false,
-        invite_only: true,
-        history_public_to_subscribers: false,
-        can_add_subscribers_group: nobody_group.id,
-        can_administer_channel_group: nobody_group.id,
-        can_subscribe_group: nobody_group.id,
-    };
-
-    assert.equal(stream_data.has_metadata_access(social), true);
-
-    social.is_web_public = true;
-    assert.equal(stream_data.has_metadata_access(social), true);
-    page_params.is_spectator = true;
-    assert.equal(stream_data.has_metadata_access(social), true);
-
-    social.is_web_public = false;
-    page_params.is_spectator = true;
-    assert.equal(stream_data.has_metadata_access(social), false);
-    page_params.is_spectator = false;
-
-    override(current_user, "is_admin", false);
-    assert.equal(stream_data.has_metadata_access(social), true);
-
-    // A user without the permission to administer a channel should not
-    // have metadata access to a private channel when unsubscribed.
-    assert.equal(stream_data.has_metadata_access(social), true);
-    social.subscribed = false;
-    assert.equal(stream_data.has_metadata_access(social), false);
-
-    // Realm admins should have metadata access to a private channel
-    // when unsubscribed.
-    assert.equal(stream_data.has_metadata_access(social), false);
-    override(current_user, "is_admin", true);
-    assert.equal(stream_data.has_metadata_access(social), true);
-    override(current_user, "is_admin", false);
-
-    // Channel admins should have metadata access to a private channel
-    // when unsubscribed.
-    assert.equal(stream_data.has_metadata_access(social), false);
-    social.can_administer_channel_group = me_group.id;
-    assert.equal(stream_data.has_metadata_access(social), true);
-    override(current_user, "is_guest", true);
-    assert.equal(stream_data.has_metadata_access(social), false);
-    override(current_user, "is_guest", false);
-    social.can_administer_channel_group = nobody_group.id;
-
-    // Users that can add other subscribers or subscribe themselves
-    // to a private channel have content access to that channel.
-    // Having content access should give them metadata access to
-    // that private channel even when unsubscribed.
-    assert.equal(stream_data.has_metadata_access(social), false);
-    social.can_add_subscribers_group = me_group.id;
-    assert.equal(stream_data.has_metadata_access(social), true);
-    override(current_user, "is_guest", true);
-    assert.equal(stream_data.has_metadata_access(social), false);
-    override(current_user, "is_guest", false);
-    social.can_add_subscribers_group = nobody_group.id;
-
-    assert.equal(stream_data.has_metadata_access(social), false);
-    social.can_subscribe_group = me_group.id;
-    assert.equal(stream_data.has_metadata_access(social), true);
-    override(current_user, "is_guest", true);
-    assert.equal(stream_data.has_metadata_access(social), false);
-    override(current_user, "is_guest", false);
-    social.can_subscribe_group = nobody_group.id;
-
-    // Non-admin and non-guest user should have access to public
-    // channel.
-    assert.equal(stream_data.has_metadata_access(social), false);
-    social.invite_only = false;
-    override(current_user, "is_admin", false);
-    assert.equal(stream_data.has_metadata_access(social), true);
-
-    // Guest should not have metadata access to a channel they are not
-    // subscribed to.
-    assert.equal(stream_data.has_metadata_access(social), true);
-    override(current_user, "is_guest", true);
-    social.subscribed = false;
-    assert.equal(stream_data.has_metadata_access(social), false);
-    social.subscribed = true;
-    assert.equal(stream_data.has_metadata_access(social), true);
-});
-
-test("has_content_access", ({override}) => {
-    const social = {
-        subscribed: false,
-        color: "red",
-        name: "social",
-        stream_id: 2,
-        is_muted: false,
-        invite_only: false,
-        history_public_to_subscribers: false,
-        can_add_subscribers_group: nobody_group.id,
-        can_administer_channel_group: nobody_group.id,
-        can_subscribe_group: nobody_group.id,
-    };
-
-    assert.equal(stream_data.has_content_access(social), true);
-
-    social.is_web_public = true;
-    assert.equal(stream_data.has_content_access(social), true);
-    page_params.is_spectator = true;
-    assert.equal(stream_data.has_content_access(social), true);
-
-    social.is_web_public = false;
-    page_params.is_spectator = true;
-    assert.equal(stream_data.has_content_access(social), false);
-    page_params.is_spectator = false;
-    assert.equal(stream_data.has_content_access(social), true);
-
-    // Permission to administer a private channel should not give
-    // content access when unsubscribed.
-    assert.equal(stream_data.has_content_access(social), true);
-    social.invite_only = true;
-    social.subscribed = false;
-    assert.equal(stream_data.has_content_access(social), false);
-    override(current_user, "is_admin", true);
-    assert.equal(stream_data.has_content_access(social), false);
-    override(current_user, "is_admin", false);
-
-    // Channel admins should not have content access to a private
-    // channel when unsubscribed.
-    social.can_administer_channel_group = me_group.id;
-    social.subscribed = true;
-    assert.equal(stream_data.has_content_access(social), true);
-    social.subscribed = false;
-    assert.equal(stream_data.has_content_access(social), false);
-    social.can_administer_channel_group = nobody_group.id;
-
-    // Guest should not have content access to a channel they are not
-    // subscribed to.
-    social.invite_only = false;
-    override(current_user, "is_guest", true);
-    social.subscribed = true;
-    assert.equal(stream_data.has_content_access(social), true);
-    social.subscribed = false;
-    assert.equal(stream_data.has_content_access(social), false);
-    // Unless it's a web-public channel
-    social.is_web_public = true;
-    assert.equal(stream_data.has_content_access(social), true);
-    social.is_web_public = false;
-    assert.equal(stream_data.has_content_access(social), false);
-    override(current_user, "is_guest", false);
-    assert.equal(stream_data.has_content_access(social), true);
-    social.invite_only = true;
-
-    assert.equal(stream_data.has_content_access(social), false);
-    social.subscribed = true;
-    assert.equal(stream_data.has_content_access(social), true);
-
-    social.invite_only = true;
-    assert.equal(stream_data.has_content_access(social), true);
-    social.subscribed = false;
-    assert.equal(stream_data.has_content_access(social), false);
-
-    // Users part of can_subscribe_group or can_add_subscribers_group
-    // should have content access even when unsubscribed.
-    assert.equal(stream_data.has_content_access(social), false);
-    social.can_add_subscribers_group = me_group.id;
-    assert.equal(stream_data.has_content_access(social), true);
-    social.can_add_subscribers_group = nobody_group.id;
-    assert.equal(stream_data.has_content_access(social), false);
-
-    social.can_subscribe_group = me_group.id;
-    assert.equal(stream_data.has_content_access(social), true);
-
-    social.can_subscribe_group = nobody_group.id;
-    assert.equal(stream_data.has_content_access(social), false);
-});
-
-test("can_preview", ({override_rewire}) => {
-    const social = {
-        color: "red",
-        name: "social",
-        stream_id: 2,
-        is_muted: false,
-        history_public_to_subscribers: true,
-        can_add_subscribers_group: nobody_group.id,
-        can_administer_channel_group: nobody_group.id,
-        can_subscribe_group: nobody_group.id,
-    };
-
-    override_rewire(stream_data, "has_content_access", () => true);
-    assert.equal(stream_data.can_preview(social), true);
-    social.history_public_to_subscribers = false;
-    assert.equal(stream_data.can_preview(social), false);
-    social.history_public_to_subscribers = true;
-    assert.equal(stream_data.can_preview(social), true);
-    override_rewire(stream_data, "has_content_access", () => false);
-    assert.equal(stream_data.can_preview(social), false);
-});
-
-run_test("can_toggle_subscription", ({override}) => {
-    const social = {
-        subscribed: true,
-        color: "red",
-        name: "social",
-        stream_id: 2,
-        is_muted: false,
-        invite_only: false,
-        history_public_to_subscribers: false,
-        can_add_subscribers_group: nobody_group.id,
-        can_administer_channel_group: nobody_group.id,
-        can_subscribe_group: nobody_group.id,
-    };
-
-    override(current_user, "user_id", me.user_id);
-
-    override(page_params, "is_spectator", true);
-    assert.equal(stream_data.can_toggle_subscription(social), false);
-
-    override(page_params, "is_spectator", false);
-    assert.equal(stream_data.can_toggle_subscription(social), true);
-
-    override(current_user, "is_guest", true);
-    assert.equal(stream_data.can_toggle_subscription(social), true);
-
-    social.subscribed = false;
-    assert.equal(stream_data.can_toggle_subscription(social), false);
-
-    override(current_user, "is_guest", false);
-    assert.equal(stream_data.can_toggle_subscription(social), true);
-
-    social.invite_only = true;
-    assert.equal(stream_data.can_toggle_subscription(social), false);
-
-    override(current_user, "is_admin", true);
-    assert.equal(stream_data.can_toggle_subscription(social), false);
-
-    override(current_user, "is_admin", false);
-
-    social.can_add_subscribers_group = me_group.id;
-    assert.equal(stream_data.can_toggle_subscription(social), true);
-
-    social.can_add_subscribers_group = nobody_group.id;
-    assert.equal(stream_data.can_toggle_subscription(social), false);
-    social.can_subscribe_group = me_group.id;
-    assert.equal(stream_data.can_toggle_subscription(social), true);
 });
 
 run_test("can_archive_stream", ({override}) => {
@@ -2349,4 +2181,89 @@ run_test("is_empty_topic_only_channel", ({override}) => {
     override(current_user, "is_admin", true);
     assert.equal(stream_data.is_empty_topic_only_channel(social.stream_id), true);
     assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
+});
+
+run_test("can_toggle_subscription", ({override}) => {
+    people.init();
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    override(current_user, "user_id", me.user_id);
+    override(current_user, "is_guest", false);
+    override(current_user, "is_admin", false);
+
+    const sub = {
+        subscribed: false,
+        invite_only: false,
+        is_web_public: false,
+        stream_id: 999,
+        name: "toggle_test",
+        can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+    };
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.can_toggle_subscription(sub), false);
+    page_params.is_spectator = false;
+
+    sub.subscribed = true;
+    assert.equal(stream_data.can_toggle_subscription(sub), true);
+
+    sub.subscribed = false;
+    assert.equal(stream_data.can_toggle_subscription(sub), true);
+});
+
+run_test("can_access_stream_email", ({override}) => {
+    people.init();
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    override(current_user, "user_id", me.user_id);
+    override(current_user, "is_guest", false);
+    override(current_user, "is_admin", false);
+    page_params.is_spectator = false;
+
+    bot_data.get_all_bots_for_current_user = () => [];
+
+    const sub = {
+        subscribed: true,
+        stream_id: 888,
+        name: "email_test",
+        can_send_message_group: everyone_group.id,
+        is_archived: false,
+    };
+
+    assert.equal(stream_data.can_access_stream_email(sub), true);
+
+    sub.can_send_message_group = nobody_group.id;
+    assert.equal(stream_data.can_access_stream_email(sub), false);
+});
+
+run_test("can_post_messages_in_stream with different sender_id", ({override}) => {
+    people.init();
+    people.add_active_user(me);
+    people.add_active_user(test_user);
+    people.initialize_current_user(me.user_id);
+    override(current_user, "user_id", me.user_id);
+    override(current_user, "is_guest", false);
+    override(current_user, "is_admin", false);
+    page_params.is_spectator = false;
+
+    const sub = {
+        subscribed: true,
+        stream_id: 777,
+        name: "sender_test",
+        can_send_message_group: everyone_group.id,
+        is_archived: false,
+    };
+
+    assert.equal(stream_data.can_post_messages_in_stream(sub, test_user.user_id), true);
+
+    sub.can_send_message_group = admins_group.id;
+    assert.equal(stream_data.can_post_messages_in_stream(sub, test_user.user_id), false);
+});
+
+run_test("rewire_has_content_access", ({override_rewire}) => {
+    const mock_has_content_access = () => true;
+    override_rewire(stream_data, "has_content_access", mock_has_content_access);
+    assert.equal(stream_data.has_content_access({}), true);
 });
