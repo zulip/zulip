@@ -167,6 +167,11 @@ export function initialize(): void {
             return true;
         }
 
+        // Hide button for a revealed message sent by a muted user.
+        if ($target.closest(".rehide-muted-user-message").length > 0) {
+            return true;
+        }
+
         return false;
     }
 
@@ -263,6 +268,20 @@ export function initialize(): void {
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
         e.preventDefault();
+    });
+
+    $("#main_div").on("click", ".rehide-muted-user-message", (e) => {
+        const message_id = Number($(e.currentTarget).attr("data-message-id"));
+        assert(message_lists.current !== undefined);
+        const $row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id($row));
+        assert(message !== undefined);
+        const message_container = message_lists.current.view.message_containers.get(message.id);
+        assert(message_container !== undefined);
+        assert(!message_container.is_hidden);
+        message_lists.current.view.hide_revealed_message(message_id);
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     $("#main_div").on("click", "a.stream", function (this: HTMLAnchorElement, e) {
@@ -777,7 +796,14 @@ export function initialize(): void {
     function handle_compose_click(e: JQuery.ClickEvent): void {
         const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($target.is(".emoji_map, img.emoji, .drag, .compose-gif-icon-giphy")) {
+        if ($target.is(".emoji_map, img.emoji, .drag")) {
+            return;
+        }
+
+        // GIF icon clicks should be handled by the click handlers defined in their
+        // modules.
+        if ($target.is(".compose-gif-icon-giphy, .compose-gif-icon-tenor")) {
+            e.stopPropagation();
             return;
         }
 

@@ -858,3 +858,9 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
 def convert_html_to_text(content: str) -> str:
     # html2text is GPL licensed, so run it as a subprocess.
     return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
+
+
+def get_data_file(path: str) -> Any:
+    with open(path, "rb") as fp:
+        data = orjson.loads(fp.read())
+        return data

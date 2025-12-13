@@ -16,6 +16,7 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 # General configuration
 
 extensions = [
+    "sphinx.ext.autosectionlabel",
     "myst_parser",
     "sphinx_rtd_theme",
     "sphinx_design",
@@ -29,8 +30,12 @@ release = ZULIP_VERSION
 exclude_patterns = ["_build", "README.md"]
 suppress_warnings = [
     "myst.header",
+    "autosectionlabel.git/terminology",  # HEAD vs head
 ]
 pygments_style = "sphinx"
+
+autosectionlabel_prefix_document = True
+autosectionlabel_maxdepth = 2
 
 # Options for Markdown parser
 

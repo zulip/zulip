@@ -7,7 +7,6 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.users import do_change_user_role
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -247,7 +246,7 @@ class TestCreateStreams(ZulipTestCase):
         )
         self.assert_json_error(result, "Insufficient permission")
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.subscribe_via_post(
             user_profile, subscriptions, {"is_default_stream": "true"}, subdomain="zulip"
         )

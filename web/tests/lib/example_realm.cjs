@@ -7,7 +7,7 @@ exports.make_realm = (opts = {}) => {
         custom_profile_fields: [],
         custom_profile_field_types: [],
         giphy_api_key: "giphy-api-key",
-        giphy_rating_options: {disabled: {id: 0, name: ""}},
+        gif_rating_options: {disabled: {id: 0, name: ""}},
         max_avatar_file_size_mib: 0,
         max_channel_folder_description_length: 0,
         max_channel_folder_name_length: 0,

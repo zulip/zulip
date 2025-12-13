@@ -49,6 +49,7 @@ from corporate.models.plans import CustomerPlan
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
+from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
@@ -2366,6 +2367,19 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         return self.build_streams_subscriber_count(
             streams=Stream.objects.exclude(id__in=stream_ids)
         )
+
+    def set_user_role(self, user: UserProfile, role: int) -> None:
+        """
+        Test helper for switching a user to a given role. Hardcodes
+        acting_user=None, which means the change is treated as
+        though it was done by a management command, not another
+        user.
+
+        Tests using this should consider using users who have the
+        appropriate initial role; this is usually more readable and
+        a bit faster.
+        """
+        do_change_user_role(user, role, acting_user=None)
 
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:

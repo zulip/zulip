@@ -1140,31 +1140,39 @@ def find_first_unread_anchor(
     sa_conn: Connection,
     user_profile: UserProfile | None,
     narrow: list[NarrowParameter] | None,
+    query: Select,
+    is_dm_narrow: bool,
+    inner_msg_id_col: ColumnElement[Integer],
+    need_user_message: bool,
 ) -> int:
     # For anonymous web users, all messages are treated as read, and so
     # always return LARGER_THAN_MAX_MESSAGE_ID.
     if user_profile is None:
         return LARGER_THAN_MAX_MESSAGE_ID
 
-    # We always need UserMessage in our query, because it has the unread
-    # flag for the user.
-    need_user_message = True
+    # Looking at the name get_base_query_for_search, one would think that
+    # we can just rebuild the query again with need_user_message set to True
+    # regardless of the existing value of need_user_message. But,
+    # get_base_query_for_search executes 1 query which is getting recursive
+    # user group memberships.
+    if not need_user_message:
+        # We always need UserMessage in our query, because it has the unread
+        # flag for the user.
+        query, inner_msg_id_col = get_base_query_for_search(
+            realm_id=user_profile.realm_id,
+            user_profile=user_profile,
+            need_user_message=True,
+        )
+        query = query.add_columns(column("flags", Integer))
 
-    query, inner_msg_id_col = get_base_query_for_search(
-        realm_id=user_profile.realm_id,
-        user_profile=user_profile,
-        need_user_message=need_user_message,
-    )
-    query = query.add_columns(column("flags", Integer))
-
-    query, _is_search, is_dm_narrow = add_narrow_conditions(
-        user_profile=user_profile,
-        inner_msg_id_col=inner_msg_id_col,
-        query=query,
-        narrow=narrow,
-        is_web_public_query=False,
-        realm=user_profile.realm,
-    )
+        query, _is_search, is_dm_narrow = add_narrow_conditions(
+            user_profile=user_profile,
+            inner_msg_id_col=inner_msg_id_col,
+            query=query,
+            narrow=narrow,
+            is_web_public_query=False,
+            realm=user_profile.realm,
+        )
 
     condition = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
 
@@ -1444,7 +1452,7 @@ def fetch_messages(
     if need_user_message:
         query = query.add_columns(column("flags", Integer))
 
-    query, is_search, _is_dm_narrow = add_narrow_conditions(
+    query, is_search, is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
@@ -1466,6 +1474,10 @@ def fetch_messages(
                     sa_conn,
                     user_profile,
                     narrow,
+                    query,
+                    is_dm_narrow,
+                    inner_msg_id_col,
+                    need_user_message,
                 )
 
             anchored_to_left = anchor == 0

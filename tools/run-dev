@@ -447,7 +447,7 @@ async def serve() -> None:
         # the default/zulip subdomain.
         default_hostname = "zulip." + os.uname()[1].lower()
     else:
-        default_hostname = "localhost.localdomain"
+        default_hostname = "localhost"
 
     external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
     http_protocol = "https" if options.behind_https_proxy else "http"

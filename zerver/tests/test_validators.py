@@ -10,6 +10,7 @@ from zerver.lib.validator import (
     check_anything,
     check_bool,
     check_capped_string,
+    check_date,
     check_dict,
     check_dict_only,
     check_float,
@@ -382,3 +383,19 @@ class ValidatorTestCase(ZulipTestCase):
 
         with self.assertRaisesRegex(InvalidJSONError, r"Malformed JSON"):
             to_wild_value("x", "invalidjson")
+
+    def test_check_date(self) -> None:
+        x: Any = "2024-01-02"
+        self.assertTrue(check_date("x", x))
+
+        x = 123
+        with self.assertRaisesRegex(ValidationError, r"x is not a string"):
+            check_date("x", x)
+
+        x = "2024-13-02"
+        with self.assertRaisesRegex(ValidationError, r"x is not a date"):
+            check_date("x", x)
+
+        x = "2024-1-2"
+        with self.assertRaisesRegex(ValidationError, r"x is not a date"):
+            check_date("x", x)

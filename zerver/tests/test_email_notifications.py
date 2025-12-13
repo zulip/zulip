@@ -7,7 +7,6 @@ import orjson
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
-from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.email_notifications import (
@@ -488,40 +487,6 @@ class TestFollowupEmails(ZulipTestCase):
         message = outbox[0]
         self.assertIn("you have created a new Zulip organization", message.body)
         self.assertNotIn("demo org", message.body)
-
-    def test_followup_emails_for_demo_realms(self) -> None:
-        cordelia = self.example_user("cordelia")
-        cordelia.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(
-            days=30
-        )
-        cordelia.realm.save()
-        with self.captureOnCommitCallbacks(execute=True) as callbacks:
-            send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
-            enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
-
-            scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
-                "scheduled_timestamp"
-            )
-            self.assert_length(scheduled_emails, 2)
-            self.assertEqual(
-                orjson.loads(scheduled_emails[0].data)["template_prefix"],
-                "zerver/emails/onboarding_zulip_guide",
-            )
-            self.assertEqual(
-                orjson.loads(scheduled_emails[1].data)["template_prefix"],
-                "zerver/emails/onboarding_team_to_zulip",
-            )
-
-        # The insert into the deferred_email_senders queue
-        self.assert_length(callbacks, 1)
-
-        # Exiting the block does the email-sending
-        from django.core.mail import outbox
-
-        self.assert_length(outbox, 1)
-
-        message = outbox[0]
-        self.assertIn("you have created a new demo Zulip organization", message.body)
 
     def test_onboarding_zulip_guide_with_invalid_org_type(self) -> None:
         cordelia = self.example_user("cordelia")

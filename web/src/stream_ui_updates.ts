@@ -23,6 +23,7 @@ import * as stream_settings_containers from "./stream_settings_containers.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 export function row_for_stream_id(stream_id: number): JQuery {
@@ -60,28 +61,108 @@ export function set_show_available(value: boolean): void {
     show_available = value;
 }
 
-export function update_history_public_to_subscribers_state($container: JQuery): void {
+export function update_history_public_to_subscribers_state(
+    $container: JQuery,
+    sub?: StreamSubscription,
+): void {
     const is_stream_creation = $container.attr("id") === "stream-creation";
+    if (!is_stream_creation && sub !== undefined && !hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
 
     let stream_privacy_widget;
+    let can_create_topic_group_widget;
     if (is_stream_creation) {
         stream_privacy_widget = stream_settings_components.channel_creation_privacy_widget!;
+        can_create_topic_group_widget =
+            stream_settings_components.get_group_setting_widget_for_new_stream(
+                "can_create_topic_group",
+            )!;
     } else {
         stream_privacy_widget =
             settings_components.get_widget_for_dropdown_list_settings("channel_privacy")!;
+        can_create_topic_group_widget =
+            settings_components.get_group_setting_widget("can_create_topic_group")!;
     }
 
     const is_invite_only = stream_privacy_widget.value() === "invite-only";
 
+    const everyone_group = user_groups.get_user_group_from_name("role:everyone")!;
+    const everyone_can_create_topics =
+        settings_components.get_group_setting_widget_value(can_create_topic_group_widget) ===
+        everyone_group.id;
+
     const $history_public_to_subscribers_container = $container.find(
         ".history-public-to-subscribers",
     );
-    $history_public_to_subscribers_container.find("input").prop("disabled", !is_invite_only);
-    $history_public_to_subscribers_container.toggleClass("control-label-disabled", !is_invite_only);
+    $history_public_to_subscribers_container
+        .find("input")
+        .prop("disabled", !is_invite_only || !everyone_can_create_topics);
+    $history_public_to_subscribers_container.toggleClass(
+        "control-label-disabled",
+        !is_invite_only || !everyone_can_create_topics,
+    );
+
+    // Tooltip is shown only if the checkbox is disabled due to topic creation permission
+    // and not when it is disabled because channel privacy is not set to private.
+    $history_public_to_subscribers_container.toggleClass(
+        "protected_history_with_new_topics_permission_tooltip",
+        is_invite_only && !everyone_can_create_topics,
+    );
+
     if (!is_invite_only) {
         // For public and web-public streams, history_public_to_subscribers should
         // always be true.
         $history_public_to_subscribers_container.find("input").prop("checked", true);
+    }
+}
+
+export function update_history_public_to_subscribers_on_can_create_topic_group_change(
+    sub: StreamSubscription,
+): void {
+    // This function is only used to enable/disable the history_public_to_subscribers
+    // checkbox when can_create_topic_group setting element is changed for an existing
+    // channel.
+    // This is different from update_history_public_to_subscribers_state above because
+    // the history_public_to_subscribers checkbox is enabled only if sub.can_create_topic_group
+    // is set to everyone, i.e. we do not enable the checkbox immediately after the
+    // can_create_topic_group setting element is set to everyone group for a channel
+    // where everyone could not create new topics originally.
+
+    const stream_privacy_widget =
+        settings_components.get_widget_for_dropdown_list_settings("channel_privacy")!;
+    if (stream_privacy_widget.value() !== "invite-only") {
+        // If the history_public_to_subscribers checkbox is already disabled
+        // due to stream not being private, we just return.
+        return;
+    }
+
+    const can_create_topic_group_widget =
+        settings_components.get_group_setting_widget("can_create_topic_group")!;
+    const everyone_group = user_groups.get_user_group_from_name("role:everyone")!;
+    const everyone_can_create_topics =
+        settings_components.get_group_setting_widget_value(can_create_topic_group_widget) ===
+        everyone_group.id;
+
+    const $history_public_to_subscribers_container = $("#stream_settings").find(
+        ".history-public-to-subscribers",
+    );
+
+    if (!everyone_can_create_topics) {
+        $history_public_to_subscribers_container.find("input").prop("disabled", true);
+        $history_public_to_subscribers_container.addClass("control-label-disabled");
+        $history_public_to_subscribers_container.addClass(
+            "protected_history_with_new_topics_permission_tooltip",
+        );
+        return;
+    }
+
+    if (sub.can_create_topic_group === everyone_group.id) {
+        $history_public_to_subscribers_container.find("input").prop("disabled", false);
+        $history_public_to_subscribers_container.removeClass("control-label-disabled");
+        $history_public_to_subscribers_container.removeClass(
+            "protected_history_with_new_topics_permission_tooltip",
+        );
     }
 }
 
@@ -331,6 +412,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
 
     update_default_stream_option_state($("#stream_settings"));
     update_history_public_to_subscribers_state($("#stream_settings"));
+    update_can_create_topic_group_setting_state($("#stream_settings"));
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -578,5 +660,55 @@ export function update_folder_dropdown_visibility(): void {
     const active_stream_id = stream_settings_components.get_active_data().id;
     if (active_stream_id) {
         set_folder_dropdown_visibility($("#stream_settings"));
+    }
+}
+
+export function update_can_create_topic_group_setting_state($container: JQuery): void {
+    const is_history_public = $container.find(".history_public_to_subscribers").is(":checked");
+
+    let $setting_element = $("#id_can_create_topic_group");
+    if (hash_parser.is_create_new_stream_narrow()) {
+        $setting_element = $("#id_new_can_create_topic_group");
+    }
+    if (is_history_public) {
+        settings_components.enable_group_permission_setting($setting_element);
+    } else {
+        settings_components.disable_group_permission_setting($setting_element);
+    }
+    $setting_element
+        .closest(".input-group")
+        .toggleClass("can_create_topic_group_disabled_tooltip", !is_history_public);
+}
+
+export function update_can_create_topic_group_on_history_public_to_subscribers_change(
+    sub: StreamSubscription,
+): void {
+    // This function is only used to enable/disable the can_create_topic_group setting
+    // element when history_public_to_subscribers checkbox is changed for an existing
+    // channel.
+    // This is different from update_can_create_topic_group_setting_state above because
+    // the can_create_topic_group setting element is enabled only if
+    // sub.history_public_to_subscribers is true, i.e. we do not enable the element
+    // immediately after the input is checked for a channel whose history is private
+    // originally.
+
+    const is_history_public = $("#stream_settings")
+        .find(".history_public_to_subscribers")
+        .is(":checked");
+    const $can_create_topic_group_elem = $("#id_can_create_topic_group");
+
+    if (!is_history_public) {
+        settings_components.disable_group_permission_setting($can_create_topic_group_elem);
+        $can_create_topic_group_elem
+            .closest(".input-group")
+            .addClass("can_create_topic_group_disabled_tooltip");
+        return;
+    }
+
+    if (sub.history_public_to_subscribers) {
+        settings_components.enable_group_permission_setting($can_create_topic_group_elem);
+        $can_create_topic_group_elem
+            .closest(".input-group")
+            .removeClass("can_create_topic_group_disabled_tooltip");
     }
 }

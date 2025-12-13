@@ -44,10 +44,7 @@ const home_params_schema = z.looseObject({
     narrow_topic: z.optional(z.string()),
     presence_history_limit_days_for_web_app: z.number(),
     promote_sponsoring_zulip: z.boolean(),
-    // `realm_rendered_description` is only sent for spectators, because
-    // it isn't displayed for logged-in users and requires markdown
-    // processor time to compute.
-    realm_rendered_description: z.optional(z.string()),
+    realm_rendered_description: z.string(),
     show_try_zulip_modal: z.boolean(),
     state_data: z.nullable(state_data_schema),
     translation_data: z.record(z.string(), z.string()),

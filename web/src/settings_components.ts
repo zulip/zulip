@@ -1802,10 +1802,12 @@ export function create_stream_group_setting_widget({
     $pill_container,
     setting_name,
     sub,
+    pill_update_callback,
 }: {
     $pill_container: JQuery;
     setting_name: StreamPermissionGroupSetting;
     sub?: StreamSubscription;
+    pill_update_callback?: () => void;
 }): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "stream");
     const opts: {
@@ -1828,12 +1830,21 @@ export function create_stream_group_setting_widget({
         const $subsection = $pill_container.closest(".settings-subsection-parent");
 
         pill_widget.onTextInputHook(() => {
+            if (pill_update_callback !== undefined) {
+                pill_update_callback();
+            }
             save_discard_stream_settings_widget_status_handler($subsection, sub);
         });
         pill_widget.onPillCreate(() => {
+            if (pill_update_callback !== undefined) {
+                pill_update_callback();
+            }
             save_discard_stream_settings_widget_status_handler($subsection, sub);
         });
         pill_widget.onPillRemove(() => {
+            if (pill_update_callback !== undefined) {
+                pill_update_callback();
+            }
             save_discard_stream_settings_widget_status_handler($subsection, sub);
         });
     } else {

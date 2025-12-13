@@ -227,6 +227,11 @@ landing_page_urls = [
         landing_view,
         {"template_name": "corporate/case-studies/windborne-case-study.html"},
     ),
+    path(
+        "case-studies/mixxx/",
+        landing_view,
+        {"template_name": "corporate/case-studies/mixxx-case-study.html"},
+    ),
     path("communities/", communities_view),
 ]
 

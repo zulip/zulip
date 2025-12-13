@@ -54,7 +54,7 @@ def check_external_host_setting(
 
     errors = []
     hostname = settings.EXTERNAL_HOST
-    if "." not in hostname and os.environ.get("ZULIP_TEST_SUITE") != "true":
+    if "." not in hostname and os.environ.get("ZULIP_TEST_SUITE") != "true" and settings.PRODUCTION:
         suggest = ".localdomain" if hostname == "localhost" else ".local"
         errors.append(
             checks.Error(

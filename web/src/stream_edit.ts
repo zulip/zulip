@@ -48,6 +48,7 @@ import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import {
+    type StreamPermissionGroupSetting,
     stream_permission_group_settings_schema,
     stream_properties_schema,
     stream_specific_notification_settings_schema,
@@ -317,11 +318,24 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
 
 function setup_group_setting_widgets(sub: StreamSubscription): void {
     for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
-        settings_components.create_stream_group_setting_widget({
+        const opts: {
+            $pill_container: JQuery;
+            setting_name: StreamPermissionGroupSetting;
+            sub?: StreamSubscription;
+            pill_update_callback?: () => void;
+        } = {
             $pill_container: $("#id_" + setting_name),
             setting_name: stream_permission_group_settings_schema.parse(setting_name),
             sub,
-        });
+        };
+        if (setting_name === "can_create_topic_group") {
+            opts.pill_update_callback = () => {
+                stream_ui_updates.update_history_public_to_subscribers_on_can_create_topic_group_change(
+                    sub,
+                );
+            };
+        }
+        settings_components.create_stream_group_setting_widget(opts);
     }
 }
 
@@ -478,8 +492,8 @@ export function show_settings_for(node: HTMLElement): void {
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     set_up_channel_privacy_dropdown_widget(undefined, sub);
-    stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
+    stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
     stream_settings_components.set_up_folder_dropdown_widget(sub);
     stream_ui_updates.set_folder_dropdown_visibility($("#stream_settings"));
@@ -992,6 +1006,12 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
+            if ($subsection.attr("id") === "channel-subscription-permissions") {
+                assert(sub !== undefined);
+                stream_ui_updates.update_can_create_topic_group_on_history_public_to_subscribers_change(
+                    sub,
+                );
+            }
             return true;
         },
     );
@@ -1056,6 +1076,12 @@ export function initialize(): void {
                 stream_ui_updates.update_history_public_to_subscribers_state($edit_container);
                 stream_ui_updates.update_default_stream_option_state($edit_container);
                 stream_ui_updates.update_can_subscribe_group_label($edit_container);
+                stream_ui_updates.update_can_create_topic_group_setting_state($edit_container);
+            }
+
+            if ($subsection.attr("id") === "channel-messaging-permissions") {
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                stream_ui_updates.update_history_public_to_subscribers_state($edit_container);
             }
         },
     );

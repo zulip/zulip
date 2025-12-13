@@ -35,6 +35,7 @@ class TestChecks(ZulipTestCase):
             ZULIP_ADMINISTRATOR=None,
         )
 
+    @override_settings(DEVELOPMENT=False, PRODUCTION=True)
     def test_checks_external_host_domain(self) -> None:
         message_re = r"\(zulip\.E002\) EXTERNAL_HOST \(\S+\) does not contain a domain part"
         try:

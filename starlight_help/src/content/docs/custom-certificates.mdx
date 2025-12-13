@@ -7,11 +7,12 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import DesktopSidebarSettingsMenu from "../include/_DesktopSidebarSettingsMenu.mdx";
 
-By default, Zulip generates a signed certificate during the server install
-process. In some cases, a server administrator may choose not to use that
-feature, in which case your Zulip server may be using a self-signed
-certificate. This is most common for Zulip servers not connected to the
-public internet.
+By default, Zulip requests a generally-accepted certificate during the
+server install process, for the server's public hostname. In some
+cases, a server administrator may choose not to use that feature, in
+which case your Zulip server may be using a self-signed
+certificate. This is most common for Zulip servers not connected to
+the public internet.
 
 ## Web
 

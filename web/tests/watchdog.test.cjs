@@ -43,6 +43,8 @@ set_global("window", {
 
 run_test("basics", () => {
     const watchdog = zrequire("watchdog");
+    watchdog._reset_for_testing();
+    watchdog.initialize();
     // Test without callbacks first.
     checker();
     advance_secs(5);
@@ -62,7 +64,7 @@ run_test("basics", () => {
     assert.equal(num_times_called_back, 0);
 
     // Simulate machine going to sleep.
-    advance_secs(21);
+    advance_secs(81);
     checker();
     assert.equal(num_times_called_back, 1);
 
@@ -74,13 +76,13 @@ run_test("basics", () => {
     assert.equal(num_times_called_back, 0);
 
     // Simulate another suspension.
-    advance_secs(21);
+    advance_secs(100);
     watchdog.check_for_unsuspend();
     assert.equal(num_times_called_back, 1);
 
     // Error while executing callback
     num_times_called_back = 0;
-    advance_secs(21);
+    advance_secs(100);
     watchdog.on_unsuspend(() => {
         num_times_called_back += 1;
         throw new Error("Some error while executing");
@@ -95,6 +97,8 @@ run_test("basics", () => {
 
 run_test("suspect_offline", () => {
     const watchdog = zrequire("watchdog");
+    watchdog._reset_for_testing();
+    watchdog.initialize();
     watchdog.set_suspect_offline(true);
     assert.ok(watchdog.suspects_user_is_offline());
 
@@ -103,9 +107,9 @@ run_test("suspect_offline", () => {
 });
 
 run_test("browser_events", () => {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete require.cache[require.resolve("../src/watchdog")];
     const watchdog = zrequire("watchdog");
+    watchdog._reset_for_testing();
+    watchdog.initialize();
     // Verify handlers were registered
     assert.ok(resume_handler);
     assert.ok(pageshow_handler);
@@ -115,13 +119,13 @@ run_test("browser_events", () => {
         num_times_called_back += 1;
     });
 
-    // Simulate resume event (after >20s delay)
-    advance_secs(25);
+    // Simulate resume event (after >75s delay)
+    advance_secs(80);
     resume_handler();
     assert.equal(num_times_called_back, 1);
 
-    // Simulate pageshow event (persisted) (after >20s delay)
-    advance_secs(25);
+    // Simulate pageshow event (persisted) (after >75s delay)
+    advance_secs(80);
     pageshow_handler({persisted: true});
     assert.equal(num_times_called_back, 2);
 
@@ -131,7 +135,7 @@ run_test("browser_events", () => {
     // if (event.persisted) check_for_unsuspend();
     // So if !persisted, check_for_unsuspend is NOT called.
     // Even if we advance time, the callback won't run because the function isn't called.
-    advance_secs(25);
+    advance_secs(80);
     pageshow_handler({persisted: false});
     assert.equal(num_times_called_back, 2);
 });

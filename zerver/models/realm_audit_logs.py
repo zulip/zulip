@@ -259,6 +259,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     event_last_message_id = models.IntegerField(null=True)
+    scrubbed = models.BooleanField(db_default=False, default=False)
 
     class Meta:
         ordering = ["id"]

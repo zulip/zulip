@@ -37,6 +37,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    get_data_file,
     long_term_idle_helper,
     make_subscriber_map,
     process_avatars,
@@ -1837,12 +1838,6 @@ def do_convert_directory(
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
     logging.info("Zulip data dump created at %s", output_dir)
-
-
-def get_data_file(path: str) -> Any:
-    with open(path, "rb") as fp:
-        data = orjson.loads(fp.read())
-        return data
 
 
 def check_slack_token_access(token: str, required_scopes: set[str]) -> None:

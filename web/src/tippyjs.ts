@@ -440,6 +440,30 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".history-public-to-subscribers.protected_history_with_new_topics_permission_tooltip",
+        content: $t({
+            defaultMessage:
+                "This setting can be changed only in channels where everyone including guests can start new topics.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".can_create_topic_group_container.can_create_topic_group_disabled_tooltip",
+        content: $t({
+            defaultMessage:
+                "This setting can be changed only in channels where subscribers can view messages sent before they joined.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".default-stream.default_stream_private_tooltip",
         content: $t({
             defaultMessage: "Private channels cannot be default channels for new users.",
