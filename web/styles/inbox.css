@@ -795,3 +795,7 @@
         }
     }
 }
+
+#inbox-animation-extra-content-blocker {
+    background: var(--color-background-inbox);
+}
