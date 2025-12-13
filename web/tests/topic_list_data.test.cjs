@@ -223,7 +223,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     // When topic search input is not empty, we show topics
     // based on the search term.
-    let search_term = "b,d";
+    let search_term = "b d";
     list_info = get_list_info(zoomed, search_term);
     assert.equal(list_info.items.length, 2);
     assert.equal(list_info.more_topics_unreads, 0);
