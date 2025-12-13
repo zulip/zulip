@@ -14,6 +14,7 @@
     display: flex;
     flex-direction: column;
     border: 0;
+    background-color: var(--color-background);
 }
 
 #recent_view_table .table,
@@ -23,6 +24,13 @@
 
     border-spacing: 0;
     width: 100%;
+}
+
+#recent-view-content-table {
+    border: 1px solid var(--color-border-recent-view-table);
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    overflow: hidden;
 }
 
 #recent_view {
@@ -35,7 +43,6 @@
     & td {
         vertical-align: middle;
         padding: 3px 8px;
-        border-top: 1px solid var(--color-border-recent-view-row);
     }
 
     .recent_view_focusable {
@@ -122,6 +129,10 @@
 
     .table_fix_head {
         padding: 0 !important;
+        border: 1px solid var(--color-border-recent-view-table);
+        border-bottom: none;
+        border-radius: 5px 5px 0 0;
+        overflow: hidden;
     }
 
     .recent-view-load-more-container {
