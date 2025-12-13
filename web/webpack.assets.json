@@ -51,15 +51,11 @@
         "simplebar",
         "./src/portico/help.ts"
     ],
-    "landing-page": [
-        "./src/bundles/legacy_portico_bundle.ts",
+    "marketing-page": [
+        "./src/bundles/marketing_page_bundle.ts",
         "./src/portico/legacy_landing_page.ts",
-        "./styles/portico/legacy_landing_page.css"
-    ],
-    "landing-page-with-pricing": [
-        "./src/bundles/legacy_portico_bundle.ts",
-        "./src/portico/legacy_landing_page.ts",
-        "./styles/portico/legacy_landing_page.css",
+        "./styles/portico/portico_variables.css",
+        "./styles/portico/marketing_page.css",
         "./styles/portico/pricing_plans.css"
     ],
     "landing-page-hello": [
@@ -76,6 +72,7 @@
         "./src/bundles/hello.ts",
         "./src/portico/legacy_landing_page.ts",
         "./src/portico/header.ts",
+        "./styles/portico/portico_variables.css",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css",
