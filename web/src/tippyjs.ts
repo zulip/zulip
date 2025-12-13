@@ -4,6 +4,7 @@ import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
+import render_emoji_tooltip from "../templates/emoji_tooltip.hbs";
 import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
@@ -18,6 +19,7 @@ import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
+import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -632,12 +634,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".user-card-status-area .status-emoji",
-        appendTo: () => document.body,
-    });
-
-    tippy.delegate("body", {
-        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
+        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name), .user-status-emoji .emoji",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
         appendTo: () => document.body,
@@ -650,6 +647,38 @@ export function initialize(): void {
             those regions.
         */
 
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            // Remove native `title` attribute so the browser doesn't show
+            // the default tooltip in addition to our Tippy tooltip.
+            $elem.removeAttr("title");
+            const emoji_name = $elem.attr("data-emoji-name");
+
+            if (!emoji_name) {
+                return false;
+            }
+
+            const emoji_url = $elem.attr("src") ?? $elem.attr("data-animated-url");
+            const emoji_code = $elem.attr("class")?.match(/emoji-(\S+)/)?.[1];
+
+            // Convert emoji code to Unicode character for display
+            let emoji_unicode;
+            if (!emoji_url && emoji_code && instance.reference instanceof HTMLElement) {
+                emoji_unicode = ui_util.convert_emoji_element_to_unicode($(instance.reference));
+            }
+
+            instance.setContent(
+                parse_html(
+                    render_emoji_tooltip({
+                        emoji_name: emoji_name.replaceAll("_", " "),
+                        url: emoji_url,
+                        emoji_code,
+                        emoji_unicode,
+                    }),
+                ),
+            );
+            return undefined;
+        },
         onHidden(instance) {
             instance.destroy();
         },
@@ -667,7 +696,38 @@ export function initialize(): void {
         */
 
         onShow(instance) {
+            const $elem = $(instance.reference);
+            // Remove native `title` attribute so the browser doesn't show
+            // the default tooltip in addition to our Tippy tooltip.
+            $elem.removeAttr("title");
+            const emoji_name = $elem.attr("data-emoji-name");
+
+            if (!emoji_name) {
+                return false;
+            }
+
+            const emoji_url = $elem.attr("src") ?? $elem.attr("data-animated-url");
+            const emoji_code = $elem.attr("class")?.match(/emoji-(\S+)/)?.[1];
+
+            // Convert emoji code to Unicode character for display
+            let emoji_unicode;
+            if (!emoji_url && emoji_code && instance.reference instanceof HTMLElement) {
+                emoji_unicode = ui_util.convert_emoji_element_to_unicode($(instance.reference));
+            }
+
+            instance.setContent(
+                parse_html(
+                    render_emoji_tooltip({
+                        emoji_name: emoji_name.replaceAll("_", " "),
+                        url: emoji_url,
+                        emoji_code,
+                        emoji_unicode,
+                    }),
+                ),
+            );
+
             typeahead_status_emoji_tooltip = instance;
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
