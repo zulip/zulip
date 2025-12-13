@@ -1174,6 +1174,10 @@
         hsl(229deg 9% 36% / 7%),
         hsl(230deg 9% 60% / 14%)
     );
+    --color-text-recent-view-table-thead-th: light-dark(
+        var(--grey-600),
+        var(--grey-300)
+    );
 
     /* Compose box colors */
     --color-compose-box-background: light-dark(
