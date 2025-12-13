@@ -1,0 +1,42 @@
+{
+   "object_kind": "push",
+   "event_name": "push",
+   "before": "5fcdd5551fc3085df79bece2c32b1400802ac407",
+   "after": "eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+   "ref": "refs/heads/tomek",
+   "checkout_sha": "eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+   "message": null,
+   "user_id": 670043,
+   "user_name": "Tomasz Kolek",
+   "user_email": "tomaszkolek0@gmail.com",
+   "user_avatar": "https://secure.gravatar.com/avatar/116a6fdbcfd00466297a39174da11fbb?s=80&d=identicon",
+   "project_id": 1534233,
+   "project": {
+      "name": "my-awesome-project",
+      "description": "",
+      "web_url": "https://gitlab.com/tomaszkolek0/my-awesome-project",
+      "visibility": "private",
+      "public": false,
+      "path_with_namespace": "tomaszkolek0/my-awesome-project",
+      "default_branch": "master"
+   },
+   "commits": [
+      {
+         "id": "eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+         "message": "b\n",
+         "timestamp": "2016-08-17T21:17:54+02:00",
+         "url": "https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+         "author": {
+            "name": "Tomasz Kolek",
+            "email": "tomasz-kolek@o2.pl"
+         }
+      }
+   ],
+   "total_commits_count": 1,
+   "repository": {
+      "name": "my-awesome-project",
+      "homepage": "https://gitlab.com/tomaszkolek0/my-awesome-project",
+      "visibility_level": 0,
+      "public": false
+   }
+}
