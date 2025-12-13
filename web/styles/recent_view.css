@@ -145,8 +145,8 @@
     }
 
     .table_fix_head table th {
-        padding: 8px;
         text-align: left;
+        padding: 0.27em 0 0.27em 0.53em; /* 4px at 15px/1em (Figma design) */
     }
 
     #recent_view_filter_buttons {
