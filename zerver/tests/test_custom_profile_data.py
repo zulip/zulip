@@ -69,6 +69,22 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Field type not supported for display in profile summary.")
 
+        data["name"] = "SSH Key"
+        data["hint"] = "Your SSH public key"
+        data["field_type"] = CustomProfileField.LONG_TEXT
+        data["display_in_profile_summary"] = "false"
+        data["field_data"] = orjson.dumps({"display_on_user_card": "true"}).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        field = CustomProfileField.objects.get(name="SSH Key", realm=realm)
+        self.assertEqual(field.field_type, CustomProfileField.LONG_TEXT)
+        self.assertEqual(field.field_data, '{"display_on_user_card":"true"}')
+
+        del data["field_data"]
+        data["name"] = "Phone"
+        data["hint"] = "Contact number"
+        data["display_in_profile_summary"] = "true"
         data["field_type"] = CustomProfileField.USER
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Field type not supported for display in profile summary.")
@@ -742,6 +758,19 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
         field.refresh_from_db()
         self.assertEqual(field.hint, "new hint")
+
+    def test_update_long_text_field_data(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.get(name="Biography", realm=realm)
+        field_data = orjson.dumps({"display_on_user_card": "true"}).decode()
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={"field_data": field_data},
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.field_data, '{"display_on_user_card":"true"}')
 
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login("iago")

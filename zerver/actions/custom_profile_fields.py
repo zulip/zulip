@@ -72,6 +72,8 @@ def try_add_realm_custom_profile_field(
         CustomProfileField.EXTERNAL_ACCOUNT,
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
+    elif custom_profile_field.field_type == CustomProfileField.LONG_TEXT and field_data is not None:
+        custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
@@ -139,6 +141,9 @@ def try_update_realm_custom_profile_field(
         # If field.field_data is the default empty string, we will set field_data
         # to an empty dict.
         if field_data is not None or field.field_data == "":
+            field.field_data = orjson.dumps(field_data or {}).decode()
+    elif field.field_type == CustomProfileField.LONG_TEXT:
+        if field_data is not None:
             field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
     notify_realm_custom_profile_fields(realm)
