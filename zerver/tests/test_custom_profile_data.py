@@ -203,8 +203,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         # for default custom external account fields.
         with self.assertRaises(CustomProfileField.DoesNotExist):
             field = CustomProfileField.objects.get(name=invalid_field_name, realm=realm)
-        # The field is created with 'Twitter username' name as per values in default fields dict
-        field = CustomProfileField.objects.get(name="Twitter username")
+        # The field is created with 'X username' name as per values in default fields dict
+        field = CustomProfileField.objects.get(name="X username")
         self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].name)
         self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].hint)
 
@@ -218,7 +218,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
 
         # Default external account field data cannot be updated except "display_in_profile_summary" field
-        field = CustomProfileField.objects.get(name="Twitter username", realm=realm)
+        field = CustomProfileField.objects.get(name="X username", realm=realm)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={"name": "Twitter", "field_type": CustomProfileField.EXTERNAL_ACCOUNT},
@@ -243,7 +243,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login("iago")
         realm = get_realm("zulip")
         data: dict[str, str | int | dict[str, str]] = {}
-        data["name"] = "Twitter username"
+        data["name"] = "X username"
         data["field_type"] = CustomProfileField.EXTERNAL_ACCOUNT
 
         data["field_data"] = "invalid"
@@ -270,7 +270,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Invalid external account type")
 
-        non_default_external_account = "linkedin"
+        non_default_external_account = "gitthub"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": non_default_external_account,
@@ -287,20 +287,31 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
-        twitter_field = CustomProfileField.objects.get(name="Twitter username", realm=realm)
+        twitter_field = CustomProfileField.objects.get(name="X username", realm=realm)
         self.assertEqual(twitter_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
-        self.assertEqual(twitter_field.name, "Twitter username")
+        self.assertEqual(twitter_field.name, "X username")
         self.assertEqual(orjson.loads(twitter_field.field_data)["subtype"], "twitter")
 
-        data["name"] = "Reddit"
+        data["name"] = "Reddit without URL"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": "custom",
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Custom external account must define URL pattern")
+        self.assert_json_success(result)
 
+        data["name"] = "Reddit with empty URL"
+        data["field_data"] = orjson.dumps(
+            {
+                "subtype": "custom",
+                "url_pattern": "",
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        data["name"] = "Reddit"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": "custom",
