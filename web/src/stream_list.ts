@@ -295,6 +295,43 @@ function maybe_change_channel_folders_option_visibility(): void {
     }
 }
 
+// The user might already have most of the sections collapsed or uncollapsed
+// when toggling the "show channel folders" setting, and we use that information
+// to decide which sections should be collapsed when this setting is changed.
+// Note that we don't touch the pinned section, since that stays the same when
+// this setting changes.
+// This must be called before `build_stream_list`, so that it has the correct
+// saved collapsed section state.
+export function update_collapsed_state_on_show_channel_folders_change(): void {
+    if (user_settings.web_left_sidebar_show_channel_folders) {
+        // No folders -> folders: If the normal streams (Channels / Other) section was
+        // collapsed, collapse all folders. Otherwise, expand all folders.
+        for (const folder_id of channel_folders.get_active_folder_ids()) {
+            if (collapsed_sections.has("normal-streams")) {
+                collapsed_sections.add(folder_id.toString());
+            } else {
+                collapsed_sections.delete(folder_id.toString());
+            }
+        }
+    } else {
+        // Folders -> no folders: If the normal streams was expanded, keep it expanded.
+        // If normal streams was collapsed but any folder was expanded, expand the normal
+        // streams section. If all folders were also collapsed, keep the normal streams
+        // section collapsed.
+        if (!collapsed_sections.has("normal-streams")) {
+            return;
+        }
+
+        const any_folders_expanded = [...channel_folders.get_active_folder_ids()].some(
+            (folder_id) => !collapsed_sections.has(folder_id.toString()),
+        );
+        if (any_folders_expanded) {
+            collapsed_sections.delete("normal-streams");
+        }
+    }
+    save_collapsed_sections_state();
+}
+
 export function build_stream_list(force_rerender: boolean): void {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -507,10 +544,18 @@ function toggle_section_collapse($container: JQuery): void {
     }
 }
 
+function get_valid_section_ids(): Set<string> {
+    const section_ids = new Set<string>(["pinned-streams", "normal-streams"]);
+    for (const folder_id of channel_folders.get_active_folder_ids()) {
+        section_ids.add(folder_id.toString());
+    }
+    return section_ids;
+}
+
 function save_collapsed_sections_state(): void {
     // Prune any section IDs that no longer exist (e.g., a folder was deleted
     // in another browser) before saving to localStorage.
-    const valid_section_ids = new Set(stream_list_sort.section_ids());
+    const valid_section_ids = get_valid_section_ids();
     for (const section_id of collapsed_sections) {
         if (!valid_section_ids.has(section_id)) {
             collapsed_sections.delete(section_id);
@@ -536,6 +581,11 @@ export let set_sections_states = function (): void {
         // Restore the collapsed state of sections.
         for (const section_id of collapsed_sections) {
             const $container = $(`#stream-list-${section_id}-container`);
+            // This can happen if the section isn't currently visible
+            // (e.g. the setting to show folders is off).
+            if ($container.length === 0) {
+                continue;
+            }
             $container.toggleClass("collapsed", true);
             $container
                 .find(".stream-list-section-toggle")
