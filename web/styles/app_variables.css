@@ -1115,8 +1115,8 @@
         hsl(0deg 0% 0% / 20%)
     );
     --color-border-recent-view-table: light-dark(
-        hsl(0deg 0% 0% / 60%),
-        hsl(0deg 0% 88%)
+        hsl(0deg 0% 0% / 10%),
+        hsl(0deg 0% 0% / 10%)
     );
     --color-background-recent-view-row: light-dark(
         hsl(100deg 11% 96%),
