@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from unittest import mock
 
@@ -4418,6 +4418,27 @@ class GetOldMessagesTest(ZulipTestCase):
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
 
+        # With anchor input as date, see if response anchor value matches
+        # first message on/after date
+        anchor_date = Message.objects.get(id=first_message_id).date_sent
+        query_params = dict(
+            anchor="date",
+            anchor_date=orjson.dumps(anchor_date.isoformat()).decode(),
+            num_before=10,
+            num_after=10,
+            narrow="[]",
+        )
+        request = HostRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(
+            request,
+            user_profile,
+            num_before=10,
+            num_after=10,
+        )
+        result = orjson.loads(payload.content)
+        self.assertEqual(result["anchor"], first_message_id)
+
         # With anchor input negative, see if
         # response anchor value is clamped to 0
         query_params = dict(
@@ -4455,6 +4476,126 @@ class GetOldMessagesTest(ZulipTestCase):
         )
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
+
+    def test_anchor_date_requires_value(self) -> None:
+        self.login("hamlet")
+        result = self.client_get(
+            "/json/messages",
+            dict(anchor="date"),
+        )
+        self.assert_json_error(result, "Missing 'anchor_date' argument.")
+
+    def test_anchor_date_accepts_iso8601_strings(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+
+        message_time = timezone_now().replace(microsecond=123000)
+        message_id = self.send_stream_message(hamlet, "Denmark")
+        Message.objects.filter(id=message_id).update(date_sent=message_time)
+
+        anchor_date_values = [
+            message_time.date().isoformat(),  # e.g. 2024-04-18
+            message_time.isoformat(),  # e.g. 2024-04-18T12:34:56.123000+00:00
+            message_time.astimezone(timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z"),  # e.g. 2024-04-18T12:34:56.123000Z
+            message_time.astimezone(
+                timezone(timedelta(hours=5, minutes=30))
+            ).isoformat(),  # e.g. 2024-04-18T18:04:56.123000+05:30
+            message_time.astimezone(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%MZ"
+            ),  # e.g. 2024-04-18T12:34Z
+        ]
+
+        for anchor_date_value in anchor_date_values:
+            with self.subTest(anchor_date=anchor_date_value):
+                result = self.client_get(
+                    "/json/messages",
+                    {
+                        "anchor": "date",
+                        "anchor_date": orjson.dumps(anchor_date_value).decode(),
+                        "num_before": 0,
+                        "num_after": 1,
+                        "narrow": "[]",
+                    },
+                )
+                self.assert_json_success(result)
+
+    def test_anchor_date_function_to_be_renamed(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(hamlet, "Scotland")
+        sender = self.example_user("othello")
+
+        base_time = timezone_now()
+        older_message_id = self.send_stream_message(sender, "Denmark")
+        anchor_message_id = self.send_stream_message(sender, "Denmark")
+        newer_message_id = self.send_stream_message(sender, "Denmark")
+        Message.objects.filter(id=older_message_id).update(
+            date_sent=base_time - timedelta(minutes=30)
+        )
+        Message.objects.filter(id=anchor_message_id).update(date_sent=base_time)
+        Message.objects.filter(id=newer_message_id).update(
+            date_sent=base_time + timedelta(minutes=30)
+        )
+
+        get_and_check_messages_options: dict[str, str | int] = {
+            "anchor": "date",
+            "anchor_date": orjson.dumps(base_time.isoformat()).decode(),
+            "num_before": 0,
+            "num_after": 0,
+            "narrow": "[]",
+        }
+
+        with self.assert_database_query_count(12):
+            result = self.get_and_check_messages(get_and_check_messages_options)
+
+        self.assertEqual(result["anchor"], anchor_message_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], anchor_message_id)
+        self.assertTrue(result["found_anchor"])
+
+        # In case of multiple messages at the same timestamp,
+        # we should choose the message sent first.
+        first_message_with_same_timestamp_id = anchor_message_id
+        Message.objects.filter(id=newer_message_id).update(date_sent=base_time)
+        with self.assert_database_query_count(12):
+            result = self.get_and_check_messages(get_and_check_messages_options)
+        self.assertEqual(result["anchor"], first_message_with_same_timestamp_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], first_message_with_same_timestamp_id)
+        self.assertTrue(result["found_anchor"])
+
+        # In case of no message at or after the anchor date,
+        # we should fall back to the first unread message.
+        with self.assert_database_query_count(15):
+            result = self.get_and_check_messages(
+                {
+                    **get_and_check_messages_options,
+                    "anchor_date": orjson.dumps(base_time + timedelta(days=1)).decode(),
+                }
+            )
+        self.assertEqual(result["anchor"], older_message_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], older_message_id)
+        self.assertTrue(result["found_anchor"])
+
+        # Narrow conditions should be respected when passing `anchor_date`.
+        scotland_channel_message_id = self.send_stream_message(sender, "Scotland")
+        Message.objects.filter(id=scotland_channel_message_id).update(date_sent=base_time)
+        with self.assert_database_query_count(14):
+            result = self.get_and_check_messages(
+                {
+                    **get_and_check_messages_options,
+                    "narrow": orjson.dumps([dict(operator="channel", operand="Scotland")]).decode(),
+                }
+            )
+        self.assertEqual(result["anchor"], scotland_channel_message_id)
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], scotland_channel_message_id)
+        self.assertTrue(result["found_anchor"])
 
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user("hamlet")
