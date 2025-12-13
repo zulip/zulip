@@ -1,6 +1,5 @@
 .recent_view_container {
     padding: 0;
-    border-radius: 4px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -15,6 +14,7 @@
     display: flex;
     flex-direction: column;
     border: 0;
+    background-color: var(--color-background);
 }
 
 #recent_view_table .table,
@@ -24,6 +24,13 @@
 
     border-spacing: 0;
     width: 100%;
+}
+
+#recent-view-content-table {
+    border: 1px solid var(--color-border-recent-view-table);
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    overflow: hidden;
 }
 
 #recent_view {
@@ -36,7 +43,6 @@
     & td {
         vertical-align: middle;
         padding: 3px 8px;
-        border-top: 1px solid var(--color-border-recent-view-row);
     }
 
     .recent_view_focusable {
@@ -123,6 +129,10 @@
 
     .table_fix_head {
         padding: 0 !important;
+        border: 1px solid var(--color-border-recent-view-table);
+        border-bottom: none;
+        border-radius: 5px 5px 0 0;
+        overflow: hidden;
     }
 
     .recent-view-load-more-container {
@@ -145,8 +155,8 @@
     }
 
     .table_fix_head table th {
-        padding: 8px;
         text-align: left;
+        padding: 0.27em 0 0.27em 0.53em; /* 4px at 15px/1em (Figma design) */
     }
 
     #recent_view_filter_buttons {
@@ -400,8 +410,6 @@
     & thead th {
         background-color: var(--color-background-recent-view-table-thead-th);
         color: inherit;
-        border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
-        border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
         z-index: 1;
 
         .table-sortable-arrow {
