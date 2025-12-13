@@ -417,6 +417,11 @@ class ChangeSettingsTest(ZulipTestCase):
                 "error_msg": "Invalid default_language",
             },
             {
+                "setting_name": "default_language",
+                "value": "pt-br",
+                "error_msg": "Invalid default_language",
+            },
+            {
                 "setting_name": "web_home_view",
                 "value": "invalid_view",
                 "error_msg": "Invalid web_home_view: Value error, Not in the list of possible values",
