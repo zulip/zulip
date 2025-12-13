@@ -579,7 +579,7 @@ export class Filter {
    These are not keys in a JavaScript object, because we
    might need to support multiple terms of the same type.
 */
-    static unparse(search_terms: NarrowTerm[]): string {
+    static unparse(search_terms: NarrowTerm[], is_operator_suggestion = false): string {
         const term_strings = search_terms.map((term) => {
             if (term.operator === "search") {
                 // Search terms are the catch-all case.
@@ -592,7 +592,10 @@ export class Filter {
                 return term.operand;
             }
             const operator = Filter.canonicalize_operator(term.operator);
-            return sign + operator + ":" + Filter.encodeOperand(term.operand, term.operator);
+            const operand = is_operator_suggestion
+                ? ""
+                : Filter.encodeOperand(term.operand, term.operator);
+            return sign + operator + ":" + operand;
         });
         return term_strings.join(" ");
     }
