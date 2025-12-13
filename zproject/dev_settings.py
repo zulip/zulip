@@ -78,7 +78,7 @@ PHYSICAL_ADDRESS = "Zulip Headquarters, 123 Octo Stream, South Pacific Ocean"
 STAFF_SUBDOMAIN = "zulip"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 # Disable Camo in development
-CAMO_URI = ""
+CAMO_URL = ""
 KATEX_SERVER = False
 
 TORNADO_PORTS = [9993]
