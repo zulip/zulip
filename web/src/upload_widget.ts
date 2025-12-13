@@ -180,7 +180,7 @@ function set_up_uppy_widget(): void {
 
 function open_uppy_editor(
     file: File,
-    property_name: "realm_icon" | "realm_logo" | "user_avatar",
+    property_name: "realm_icon" | "realm_logo" | "user_avatar" | "custom_emoji",
     $file_input: JQuery<HTMLInputElement>,
     $upload_button: JQuery,
     upload_function: UploadFunction,
@@ -204,6 +204,7 @@ function open_uppy_editor(
                     cropperOptions: {...cropper_opts, aspectRatio: 8},
                 });
             } else {
+                // For user_avatar, realm_icon, and custom_emoji use 1:1 aspect ratio
                 uppy_widget.getPlugin("ImageEditor")!.setOptions({
                     cropperOptions: {...cropper_opts, aspectRatio: 1},
                 });
@@ -248,7 +249,7 @@ export function build_direct_upload_widget(
     $upload_button: JQuery,
     upload_function: UploadFunction,
     max_file_upload_size: number,
-    property_name: "realm_icon" | "realm_logo" | "user_avatar",
+    property_name: "realm_icon" | "realm_logo" | "user_avatar" | "custom_emoji",
 ): void {
     // default value of max uploaded file size
     function accept(): void {
