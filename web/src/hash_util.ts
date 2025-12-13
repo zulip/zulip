@@ -5,7 +5,7 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
-import {Filter} from "./filter.ts";
+import * as filter_util from "./filter_util.ts";
 import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
@@ -241,7 +241,7 @@ export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined 
             return undefined;
         }
 
-        const canonical_operator = Filter.canonicalize_operator(
+        const canonical_operator = filter_util.canonicalize_operator(
             narrow_operator_schema.parse(operator),
         );
         const operand = decode_operand(canonical_operator, raw_operand);
