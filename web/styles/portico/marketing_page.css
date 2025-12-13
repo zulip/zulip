@@ -1491,7 +1491,7 @@ button {
     display: block;
     font-family: var(--font-ss3);
     font-weight: 550;
-    font-size: 15px;
+    font-size: 18px;
     text-align: center;
     text-decoration: none;
     letter-spacing: 0.06ch;
@@ -3807,7 +3807,7 @@ button {
 
         & a {
             min-height: 40px;
-            padding: 7px 0;
+            padding: 7px;
         }
     }
 }
