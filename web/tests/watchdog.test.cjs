@@ -22,9 +22,27 @@ set_global("setInterval", (f, interval) => {
     assert.equal(interval, 5000);
 });
 
-const watchdog = zrequire("watchdog");
+let resume_handler;
+let pageshow_handler;
+
+set_global("document", {
+    addEventListener(event, handler) {
+        if (event === "resume") {
+            resume_handler = handler;
+        }
+    },
+});
+
+set_global("window", {
+    addEventListener(event, handler) {
+        if (event === "pageshow") {
+            pageshow_handler = handler;
+        }
+    },
+});
 
 run_test("basics", () => {
+    const watchdog = zrequire("watchdog");
     // Test without callbacks first.
     checker();
     advance_secs(5);
@@ -76,11 +94,46 @@ run_test("basics", () => {
 });
 
 run_test("suspect_offline", () => {
+    const watchdog = zrequire("watchdog");
     watchdog.set_suspect_offline(true);
     assert.ok(watchdog.suspects_user_is_offline());
 
     watchdog.set_suspect_offline(false);
     assert.ok(!watchdog.suspects_user_is_offline());
+});
+
+run_test("browser_events", () => {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete require.cache[require.resolve("../src/watchdog")];
+    const watchdog = zrequire("watchdog");
+    // Verify handlers were registered
+    assert.ok(resume_handler);
+    assert.ok(pageshow_handler);
+
+    let num_times_called_back = 0;
+    watchdog.on_unsuspend(() => {
+        num_times_called_back += 1;
+    });
+
+    // Simulate resume event (after >20s delay)
+    advance_secs(25);
+    resume_handler();
+    assert.equal(num_times_called_back, 1);
+
+    // Simulate pageshow event (persisted) (after >20s delay)
+    advance_secs(25);
+    pageshow_handler({persisted: true});
+    assert.equal(num_times_called_back, 2);
+
+    // Simulate pageshow event (not persisted)
+    // Should NOT trigger check_for_unsuspend logic simply because checking persistence
+    // is the only gate. Wait, actually the handler logic is:
+    // if (event.persisted) check_for_unsuspend();
+    // So if !persisted, check_for_unsuspend is NOT called.
+    // Even if we advance time, the callback won't run because the function isn't called.
+    advance_secs(25);
+    pageshow_handler({persisted: false});
+    assert.equal(num_times_called_back, 2);
 });
 
 run_test("reset MockDate", () => {
