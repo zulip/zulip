@@ -164,10 +164,16 @@ export function build_page(): void {
             user_settings.allow_private_data_export || is_export_without_consent_enabled,
         private_data_export_is_disabled: is_export_without_consent_enabled,
         private_data_export_tooltip_text,
+        all_bots_list_dropdown_widget_name:
+            settings_bots.personal_all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name:
+            settings_bots.personal_your_bots_list_dropdown_widget_name,
     });
 
     $(".settings-box").html(rendered_settings_tab);
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
+
+    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"));
 }
 
 export function open_settings_overlay(): void {
@@ -183,12 +189,15 @@ export function open_settings_overlay(): void {
     });
 }
 
-export function launch(section: string): void {
+export function launch(section: string, settings_tab: string | undefined): void {
     settings_sections.reset_sections();
 
     open_settings_overlay();
     if (section !== "") {
         settings_panel_menu.normal_settings.set_current_tab(section);
+    }
+    if (section === "bots") {
+        settings_panel_menu.normal_settings.set_bot_personal_settings_tab(settings_tab);
     }
     settings_toggle.goto("settings");
 }

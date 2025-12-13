@@ -28,11 +28,9 @@
                         <div class="text">{{t "Notifications" }}</div>
                     </li>
                     {{#unless is_guest}}
-                        <li class="redirected-sidebar-item" tabindex="0">
-                            <a href="#organization/bots/your-bots" class="your-bots-link sidebar-item">
-                                <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                                <div class="text">{{t 'Bots'}}</div>
-                            </a>
+                        <li class="sidebar-item" tabindex="0" data-section="bots">
+                            <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                            <div class="text">{{t 'Bots'}}</div>
                         </li>
                     {{/unless}}
                     <li class="sidebar-item" tabindex="0" data-section="alert-words">

@@ -382,7 +382,10 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
                 // hand-typed a hash.
                 blueslip.warn("missing section for settings");
             }
-            settings_panel_menu.normal_settings.activate_section_or_default(section);
+            settings_panel_menu.normal_settings.activate_section_or_default(
+                section,
+                get_settings_tab(section),
+            );
             return;
         }
 
@@ -414,6 +417,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (is_hashchange_internal) {
         if (base === "settings") {
             settings_panel_menu.normal_settings.set_current_tab(section);
+            if (section === "bots") {
+                settings_panel_menu.normal_settings.set_bot_personal_settings_tab(
+                    get_settings_tab(section),
+                );
+            }
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
             if (section === "users") {
@@ -487,7 +495,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "settings") {
         settings.build_page();
         admin.build_page();
-        settings.launch(section);
+        settings.launch(section, get_settings_tab(section));
         return;
     }
 
