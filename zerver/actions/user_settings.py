@@ -415,7 +415,7 @@ def do_change_avatar_fields(
 
 def do_delete_avatar_image(user: UserProfile, *, acting_user: UserProfile | None) -> None:
     old_version = user.avatar_version
-    do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
+    do_change_avatar_fields(user, user.realm.default_avatar_source, acting_user=acting_user)
     delete_avatar_image(user, old_version)
 
 

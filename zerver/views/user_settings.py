@@ -476,7 +476,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     do_change_avatar_fields(
-        user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
+        user_profile, user_profile.realm.default_avatar_source, acting_user=user_profile
     )
     gravatar_url = avatar_url(user_profile)
 

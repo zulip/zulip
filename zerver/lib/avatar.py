@@ -1,3 +1,5 @@
+import os
+import subprocess
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -8,7 +10,7 @@ from zerver.lib.avatar_hash import (
     user_avatar_base_path_from_ids,
     user_avatar_content_hash,
 )
-from zerver.lib.thumbnail import MEDIUM_AVATAR_SIZE
+from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE
 from zerver.lib.upload import get_avatar_url
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
@@ -105,6 +107,9 @@ def get_avatar_field(
     ):
         return None
 
+    if avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        return f"/avatar/{user_id}/medium" if medium else f"/avatar/{user_id}"
+
     """
     If we get this far, we'll compute an avatar URL that may be
     either user-uploaded or a gravatar, and then we'll add version
@@ -173,3 +178,23 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
 
 def get_avatar_for_inaccessible_user() -> str:
     return staticfiles_storage.url("images/unknown-user-avatar.png")
+
+
+def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
+    from zerver.lib.storage import static_path
+    jdenticon_path = (
+        static_path("webpack-bundles/jdenticon.js")
+        if settings.PRODUCTION
+        else os.path.join(settings.DEPLOY_ROOT, "node_modules/jdenticon/bin/jdenticon.js")
+    )
+    size = str(MEDIUM_AVATAR_SIZE if medium else DEFAULT_AVATAR_SIZE)
+    command = ["node", jdenticon_path, input, "-s", size]
+    stdout = subprocess.check_output(command)
+    return stdout
+
+
+def generate_avatar(user_profile: UserProfile, medium: bool) -> bytes:
+    # Generate avatar for sources handled locally.
+    # Jdenticon is currently the only such source.
+    assert user_profile.avatar_source == "J"
+    return generate_avatar_jdenticon(str(user_profile.id), medium)

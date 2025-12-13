@@ -518,7 +518,7 @@ def do_create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str | None = None,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
     default_events_register_stream: Stream | None = None,
