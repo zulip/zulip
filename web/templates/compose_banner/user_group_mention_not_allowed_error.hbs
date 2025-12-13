@@ -1,0 +1,9 @@
+{{#> compose_banner . }}
+    <p class="banner_message">
+        {{#if user_group_name}}
+            {{#tr}}You do not have permission to mention <b>@{user_group_name}</b>.{{/tr}}
+        {{else}}
+            {{#tr}}You do not have permission to mention this group.{{/tr}}
+        {{/if}}
+    </p>
+{{/compose_banner}}
