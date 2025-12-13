@@ -168,11 +168,29 @@ export function filter_topics_by_search_term(
     const empty_string_topic_display_name = util.get_final_topic_display_name("");
     topic_names = topic_names.filter((topic) => {
         const topic_string = topic === "" ? empty_string_topic_display_name : topic;
-        return typeahead.query_matches_string_in_any_order(
-            search_term,
-            topic_string,
-            " ", // To separate words in query
-        );
+
+        const normalize = (s: string): string => s.toLowerCase().replaceAll(/[:/_-]+/g, " ");
+
+        const normalized_topic = normalize(topic_string);
+        const normalized_query = normalize(search_term);
+        const words = normalized_query.split(" ").filter(Boolean);
+
+        const is_abbreviation = words.length > 1 && words.every((w) => w.length === 1);
+        // Search behavior depends on the shape of the query:
+        // If single word search, more strict matching
+        if (words.length === 1) {
+            return normalized_topic
+                .split(" ")
+                .some((topic_word) => topic_word.startsWith(words[0]!));
+        }
+        // If multiple single-letter search less strict (more permissive) matching.
+        if (is_abbreviation) {
+            return words.some((w) =>
+                typeahead.query_matches_string_in_any_order(w, normalized_topic, " "),
+            );
+        }
+        // multi-word → full any-order match.
+        return typeahead.query_matches_string_in_any_order(normalized_query, normalized_topic, " ");
     });
     if (topics_state === "is:resolved") {
         topic_names = topic_names.filter((name) => resolved_topic.is_resolved(name));
