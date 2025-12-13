@@ -167,7 +167,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
             };
         }
         if (search_pill.operator === "search") {
-            let description_html = search_term_description_html(search_pill);
+            let description_html = search_term_description_html(search_pill.operand);
             // We capitalize the beginning of the suggestion line if it's text (not
             // pills), which is only relevant for suggestions with search operators.
             if (index === 0) {

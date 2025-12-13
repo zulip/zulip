@@ -1071,8 +1071,8 @@ class Attacher {
     }
 }
 
-export function search_term_description_html(item: NarrowTerm): string {
-    return `search for ${Handlebars.Utils.escapeExpression(item.operand)}`;
+export function search_term_description_html(operand: string): string {
+    return `search for ${Handlebars.Utils.escapeExpression(operand)}`;
 }
 
 export function get_search_result(
@@ -1129,7 +1129,7 @@ export function get_search_result(
         suggestion_line = [
             {
                 search_string: last.operand,
-                description_html: search_term_description_html(last),
+                description_html: search_term_description_html(last.operand),
             },
         ];
         attacher.push([...attacher.base, ...suggestion_line]);
