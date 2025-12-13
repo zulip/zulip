@@ -1182,4 +1182,333 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         setting_name,
         can_edit: true,
     });
+
+    run_test("check_system_user_group_allowed_for_setting", () => {
+        const settings = {
+            allow_internet_group: false,
+            allow_nobody_group: false,
+            allow_everyone_group: false,
+            allowed_system_groups: [],
+        };
+
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting(
+                "role:internet",
+                settings,
+                false,
+            ),
+            false,
+        );
+
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting("role:nobody", settings, false),
+            false,
+        );
+
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting(
+                "role:everyone",
+                settings,
+                false,
+            ),
+            false,
+        );
+
+        assert.equal(
+            user_groups.check_system_user_group_allowed_for_setting(
+                "role:members",
+                settings,
+                false,
+            ),
+            true,
+        );
+    });
+
+    run_test("add_user_group", () => {
+        const raw_group = {
+            name: "test_group",
+            id: 100,
+            members: [1, 2, 3],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "A Test group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        const group = user_groups.add(raw_group);
+        assert.equal(group.id, 100);
+        assert.ok(group.members.has(1));
+        assert.equal(user_groups.get_user_group_from_id(100), group);
+    });
+
+    run_test("remove_user_group", () => {
+        const raw_group = {
+            name: "to_delete",
+            id: 200,
+            members: [1],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Group to Delete",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+
+        const group = user_groups.add(raw_group);
+        user_groups.remove(group);
+        assert.equal(group.id, 200);
+        assert.equal(user_groups.maybe_get_user_group_from_id(200), undefined);
+    });
+
+    run_test("member_management", () => {
+        const raw_group = {
+            name: "member_test",
+            id: 300,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Group to manage",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(raw_group);
+        user_groups.add_members(300, [10, 11]);
+        assert.ok(user_groups.is_direct_member_of(10, 300));
+        assert.ok(user_groups.is_direct_member_of(11, 300));
+        user_groups.remove_members(300, [10]);
+        assert.equal(user_groups.is_direct_member_of(10, 300), false);
+        assert.ok(user_groups.is_direct_member_of(11, 300));
+    });
+
+    run_test("subgroup_management", () => {
+        const raw_group = {
+            name: "parent_group",
+            id: 400,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Group to manage",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(raw_group);
+        user_groups.add_subgroups(400, [55, 66]);
+        const group = user_groups.get_user_group_from_id(400);
+        assert.ok(group.direct_subgroup_ids.has(55));
+        assert.ok(group.direct_subgroup_ids.has(66));
+        user_groups.remove_subgroups(400, [55]);
+        assert.equal(group.direct_subgroup_ids.has(55), false);
+        assert.ok(group.direct_subgroup_ids.has(66));
+    });
+
+    run_test("update_user_group_properties", () => {
+        const raw_group = {
+            name: "to_update",
+            id: 500,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Old Description",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+            can_join_group: 1,
+            can_leave_group: 1,
+            can_remove_members_group: 1,
+            can_add_members_group: 1,
+            can_manage_group: 1,
+        };
+
+        user_groups.add(raw_group);
+        const group = user_groups.get_user_group_from_id(500);
+        user_groups.update({data: {description: "New Description"}}, group);
+        assert.equal(group.description, "New Description");
+        assert.equal(user_groups.get_user_group_from_id(500).description, "New Description");
+        user_groups.update({data: {deactivated: true}}, group);
+        assert.equal(group.deactivated, true);
+
+        const permission_updates = {
+            can_join_group: 20,
+            can_leave_group: 30,
+            can_remove_members_group: 40,
+            can_add_members_group: 50,
+            can_manage_group: 60,
+            can_mention_group: 70,
+        };
+        user_groups.update({data: permission_updates}, group);
+        assert.equal(group.can_join_group, 20);
+        assert.equal(group.can_leave_group, 30);
+        assert.equal(group.can_remove_members_group, 40);
+        assert.equal(group.can_add_members_group, 50);
+        assert.equal(group.can_manage_group, 60);
+        assert.equal(group.can_mention_group, 70);
+    });
+
+    run_test("getters and queries", () => {
+        user_groups.init();
+        const active_group = {
+            name: "active_group",
+            id: 1000,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Normal group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(active_group);
+
+        const deactivated_group = {
+            name: "old_group",
+            id: 1001,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Deleted group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: true,
+            can_mention_group: 1,
+        };
+        user_groups.add(deactivated_group);
+
+        const system_group = {
+            name: "system_group",
+            id: 1002,
+            members: [],
+            is_system_group: true,
+            direct_subgroup_ids: [],
+            description: "System group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(system_group);
+        assert.equal(user_groups.get_user_group_from_name("active_group").id, 1000);
+        assert.equal(user_groups.get_user_group_from_name("non_existent"), undefined);
+        const active_list = user_groups.get_realm_user_groups();
+        assert.equal(active_list.length, 1);
+        assert.equal(active_list[0].id, 1000);
+        const all_list = user_groups.get_realm_user_groups(true);
+        assert.equal(all_list.length, 2);
+        const system_found = all_list.find((g) => g.id === 1002);
+        assert.equal(system_found, undefined);
+    });
+
+    run_test("is_empty_group", () => {
+        user_groups.init();
+        const empty_group = {
+            name: "empty_group",
+            id: 10,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Empty group",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(empty_group);
+
+        const has_members = {
+            name: "populated_group",
+            id: 11,
+            members: [99],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "Has members",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(has_members);
+
+        const has_subgroup = {
+            name: "parent_group",
+            id: 12,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [11],
+            description: "Has subgroup",
+            creator_id: 1,
+            date_created: 10000,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(has_subgroup);
+
+        assert.ok(user_groups.is_empty_group(10));
+        assert.equal(user_groups.is_empty_group(11), false);
+        assert.equal(user_groups.is_empty_group(12), false);
+    });
+
+    run_test("user_query_helper", () => {
+        user_groups.init();
+
+        const group_10 = {
+            name: "g10",
+            id: 10,
+            members: [99],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "d",
+            creator_id: 1,
+            date_created: 1,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(group_10);
+
+        const group_11 = {
+            name: "g11",
+            id: 11,
+            members: [99],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "d",
+            creator_id: 1,
+            date_created: 1,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(group_11);
+
+        const group_12 = {
+            name: "g12",
+            id: 12,
+            members: [],
+            is_system_group: false,
+            direct_subgroup_ids: [],
+            description: "d",
+            creator_id: 1,
+            date_created: 1,
+            deactivated: false,
+            can_mention_group: 1,
+        };
+        user_groups.add(group_12);
+
+        const my_groups = user_groups.get_user_groups_of_user(99);
+        assert.equal(my_groups.length, 2);
+        assert.ok(my_groups.some((g) => g.id === 10));
+        assert.ok(my_groups.some((g) => g.id === 11));
+        assert.equal(
+            my_groups.some((g) => g.id === 12),
+            false,
+        );
+        assert.equal(user_groups.is_user_in_any_group([10, 12], 99), true);
+        assert.equal(user_groups.is_user_in_any_group([12], 99), false);
+    });
 });
