@@ -10,7 +10,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {RESOLVED_TOPIC_PREFIX} from "./resolved_topic.ts";
-import {type NarrowTerm} from "./state_data.ts";
+import type {NarrowOperator, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
@@ -152,14 +152,14 @@ function match_criteria(terms: NarrowTerm[], criteria: TermPattern[]): boolean {
 }
 
 function check_validity(
-    last: NarrowTerm,
+    last_operator: NarrowOperator,
     terms: NarrowTerm[],
     valid: string[],
     incompatible_patterns: TermPattern[],
 ): boolean {
     // valid: list of strings valid for the last operator
     // incompatible_patterns: list of terms incompatible for any previous terms except last.
-    if (!valid.includes(last.operator)) {
+    if (!valid.includes(last_operator)) {
         return false;
     }
     if (match_criteria(terms, incompatible_patterns)) {
@@ -213,7 +213,7 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
-    if (!check_validity(last, terms, valid, incompatible_patterns.channel!)) {
+    if (!check_validity(last.operator, terms, valid, incompatible_patterns.channel!)) {
         return [];
     }
 
@@ -253,7 +253,7 @@ function get_group_suggestions(
         // have group direct message suggestions with "dm:" operator.
         const valid_terms = group_operator === "dm" ? ["dm", "pm-with"] : [group_operator];
         if (
-            !check_validity(last_complete_term, terms.slice(-1), valid_terms, [
+            !check_validity(last_complete_term.operator, terms.slice(-1), valid_terms, [
                 {operator: "channel"},
             ])
         ) {
@@ -399,7 +399,9 @@ function get_person_suggestions(
 
     const valid = ["search", autocomplete_operator];
 
-    if (!check_validity(last, terms, valid, incompatible_patterns[autocomplete_operator]!)) {
+    if (
+        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator]!)
+    ) {
         return [];
     }
 
@@ -503,7 +505,12 @@ function ignore_resolved_topic_prefix(entry: ChannelTopicEntry, case_insensitive
 
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
     if (
-        !check_validity(last, terms, ["channel", "topic", "search"], incompatible_patterns.topic!)
+        !check_validity(
+            last.operator,
+            terms,
+            ["channel", "topic", "search"],
+            incompatible_patterns.topic!,
+        )
     ) {
         return [];
     }
