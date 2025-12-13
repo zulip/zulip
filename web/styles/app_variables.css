@@ -1107,12 +1107,12 @@
         hsl(0deg 0% 0% / 10%)
     );
     --color-background-recent-view-row: light-dark(
-        hsl(100deg 11% 96%),
-        hsl(0deg 0% 11%)
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 14%)
     );
     --color-background-recent-view-row-hover: light-dark(
-        hsl(210deg 100% 97%),
-        hsl(208deg 26% 11% / 60%)
+        hsl(220deg, 12%, 5% / 5%),
+        hsl(220deg, 12%, 95.1% / 5%)
     );
     --color-background-recent-view-unread-row: light-dark(
         hsl(0deg 0% 100%),
@@ -1155,12 +1155,12 @@
         hsl(228deg 11% 17%)
     );
     --color-background-recent-view-table-thead-th: light-dark(
-        hsl(0deg 0% 100%),
-        hsl(228deg 11% 17%)
+        var(--grey-50),
+        hsl(0deg 0% 100% / 10%)
     );
     --color-background-recent-view-table-thead-sort-header: light-dark(
-        hsl(0deg 0% 95%),
-        hsl(211deg 29% 14%)
+        hsl(229deg 9% 36% / 7%),
+        hsl(230deg 9% 60% / 14%)
     );
 
     /* Compose box colors */
