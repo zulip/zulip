@@ -347,10 +347,10 @@
 #message-content-container {
     grid-area: message-content-container;
     display: grid;
-    grid-template: minmax(0, 1fr) / minmax(0, 1fr) var(
+    grid-template: auto minmax(0, 1fr) / minmax(0, 1fr) var(
             --composebox-buttons-width
         );
-    grid-template-areas: "message-content composebox-buttons";
+    grid-template-areas: "reply-container reply-container" "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
 
@@ -552,6 +552,73 @@
     &:focus {
         outline: 0;
     }
+}
+
+.reply {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: auto auto auto 1fr auto auto;
+    grid-template-areas: "reply-icon topic-link user message-link mention-button close-button";
+    gap: 5px;
+    padding: 3px;
+
+    .user-mention {
+        grid-area: user;
+    }
+
+    .user-mention + * {
+        grid-area: message-link;
+    }
+
+    .reply-icon,
+    .reply-action-button {
+        opacity: 0.5;
+        font-size: 1.25em;
+    }
+
+    .reply-icon {
+        grid-area: reply-icon;
+    }
+
+    .mention-button {
+        grid-area: mention-button;
+    }
+
+    .remove-reply-button {
+        grid-area: close-button;
+    }
+
+    .reply-action-button {
+        padding: 0;
+    }
+
+    a {
+        opacity: 0.5;
+        max-width: fit-content;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%)) !important;
+        text-decoration: underline !important;
+
+        &:hover {
+            opacity: 0.75;
+        }
+
+        &:active {
+            opacity: 0.85;
+        }
+    }
+
+    .reference-message-topic-link {
+        max-width: 8.57em;
+        grid-area: topic-link;
+    }
+}
+
+.reply-container {
+    background-color: var(--color-compose-message-content-background);
+    grid-area: reply-container;
 }
 
 .formatting-scroller-backward {

@@ -159,6 +159,7 @@ function clear_box(): void {
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     clear_textarea();
+    $("#compose-reply-container").find(".reply").remove();
     compose_validate.check_overflow_text($("#send_message_form"));
     drafts.set_compose_draft_id(undefined);
     $("textarea#compose-textarea").toggleClass("invalid", false);
@@ -450,14 +451,20 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             // from the restored draft. This won't result in a long trail of
             // spaces if a draft is restored several times, because we trim
             // whitespace whenever we save drafts.
-            opts.content = possible_last_draft.content + " ";
+            opts.content = compose_state.render_reply_and_get_parsed_message(
+                possible_last_draft.content + " ",
+                $("#compose-reply-container"),
+            );
         }
     }
 
     if (opts.content !== undefined) {
         const replace_all_without_undo_support = true;
         compose_ui.insert_and_scroll_into_view(
-            opts.content,
+            compose_state.render_reply_and_get_parsed_message(
+                opts.content,
+                $("#compose-reply-container"),
+            ),
             $("textarea#compose-textarea"),
             false,
             replace_all_without_undo_support,

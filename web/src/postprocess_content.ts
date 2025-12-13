@@ -1,13 +1,25 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_message_reply from "../templates/message_reply.hbs";
+
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
+import * as stream_data from "./stream_data.ts";
 import * as thumbnail from "./thumbnail.ts";
+import * as topic_link_util from "./topic_link_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 
-export function postprocess_content(html: string): string {
+export function postprocess_content(
+    html: string,
+    stream?: string,
+    topic?: string,
+    include_reply_action_buttons?: boolean,
+): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
@@ -345,6 +357,108 @@ export function postprocess_content(html: string): string {
 
         // Finally, the media element gets moved into the current gallery
         gallery_element?.append(elt);
+    }
+
+    // Check the first <p> tag for any valid reply syntax in message.
+    // Also, if there is only one node in the message, we skip this step.
+    const first_element = template.content.firstElementChild;
+    if (
+        template.content.childNodes.length > 1 &&
+        first_element?.tagName === "P" &&
+        first_element.children.length === 2
+    ) {
+        const [first_child, second_child] = first_element.children;
+
+        // Check whether the first block contains only the following two element nodes,
+        // which constitute valid reply syntax:
+        //  - a user mention
+        //  - a link to the referenced message
+        let extra_nodes_exist = false;
+        for (const node of first_element.childNodes) {
+            if (node === first_child || node === second_child) {
+                continue;
+            }
+            if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim() !== "") {
+                extra_nodes_exist = true;
+                break;
+            }
+        }
+        if (
+            !extra_nodes_exist &&
+            first_child?.classList.contains("user-mention") &&
+            second_child?.tagName === "A"
+        ) {
+            const topic_url_info = {
+                show_topic_url: false,
+                topic_url: "",
+                topic_url_text: "",
+            };
+            // URL of the message which is being replied to.
+            const reference_message_url = second_child.getAttribute("href");
+            assert(reference_message_url !== null);
+            const reference_message_stream_topic =
+                hash_util.decode_stream_topic_from_url(reference_message_url);
+            let is_message_url_valid = false;
+            if (
+                reference_message_stream_topic?.topic_name !== undefined &&
+                reference_message_stream_topic.message_id !== undefined
+            ) {
+                // Here we extract the channel and topic which contains the referenced message.
+                // The topic URL of referenced message will only be shown when:
+                //  1. Referenced message is a channel message
+                //  2. The locations of referenced and reply message are different.
+
+                // If the referenced message has been moved, we attempt to
+                // get the correct channel and topic name for the message.
+                // If the message hasn't been locally fetched, we will fallback to the channel
+                // and topic extracted from the message URL.
+                let reference_message_stream_id = reference_message_stream_topic.stream_id;
+                let reference_message_topic = reference_message_stream_topic.topic_name;
+                let reference_message_id: string | undefined =
+                    reference_message_stream_topic.message_id;
+
+                const reference_message = message_store.get(
+                    Number.parseInt(reference_message_id, 10),
+                );
+                if (reference_message?.is_stream) {
+                    reference_message_stream_id = reference_message.stream_id;
+                    reference_message_topic = reference_message.topic;
+                    reference_message_id = undefined;
+                }
+                if (
+                    stream !== stream_data.get_stream_name_from_id(reference_message_stream_id) ||
+                    topic !== reference_message_topic
+                ) {
+                    const {text, url} = topic_link_util.get_topic_link_content_with_stream_id({
+                        stream_id: reference_message_stream_id,
+                        topic_name: reference_message_topic,
+                        message_id: reference_message_id,
+                    });
+                    topic_url_info.show_topic_url = true;
+                    topic_url_info.topic_url = url;
+                    topic_url_info.topic_url_text = text;
+                }
+                is_message_url_valid = true;
+            } else if (
+                hash_util.decode_dm_recipient_user_ids_from_narrow_url(reference_message_url) !==
+                null
+            ) {
+                is_message_url_valid = true;
+            }
+
+            // Add the reply UI only when the reference message URL is actually
+            // a valid link to either a topic or direct message feed.
+            if (is_message_url_valid) {
+                $(first_element).html(
+                    render_message_reply({
+                        include_reply_action_buttons,
+                        silent_mention: first_child?.classList.contains("silent"),
+                        reply_content: first_element.innerHTML,
+                        ...topic_url_info,
+                    }),
+                );
+            }
+        }
     }
 
     return template.innerHTML;

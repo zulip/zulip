@@ -3,6 +3,13 @@
         {{!-- Group 1 --}}
         {{#if should_display_quote_message}}
         <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" data-message-id="{{message_id}}" class="reply_button popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-reply" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Reply to message" }}</span>
+                {{popover_hotkey_hints "R"}}
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" data-message-id="{{message_id}}" class="respond_button popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-quote-message" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Quote message" }}</span>
