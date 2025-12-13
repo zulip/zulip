@@ -154,11 +154,6 @@
         }
     }
 
-    .table_fix_head table th {
-        padding: 8px;
-        text-align: left;
-    }
-
     #recent_view_filter_buttons {
         /* This padding-top value aligns the recents filters
            with the filters in the left and right sidebars.
@@ -408,8 +403,15 @@
     }
 
     & thead th {
+        text-align: left;
+        padding: 0.25em 0 0.25em 0.5em; /* 4px at 16px/1em */
         background-color: var(--color-background-recent-view-table-thead-th);
-        color: inherit;
+        overflow: hidden;
+        color: var(--color-text-recent-view-table-thead-th);
+        font-size: 0.9375em; /* 15px at 16px/1em */
+        text-transform: uppercase;
+        font-weight: 600;
+        line-height: 1.25em; /* 20px at 16px/1em */
         z-index: 1;
 
         .table-sortable-arrow {
