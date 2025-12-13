@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 443**
+
+* [`POST /register`](/api/register-queue): The `unread_msgs` object now includes
+  a `watched_phrases` array, parallel to the `mentions` array, containing the
+  message IDs of all unread messages that have the user's configured watched
+  phrases (alert words).
+* [`GET /events`](/api/get-events): The `message_details` object in
+  `update_message_flags` events with `op: "remove"` and `flag: "read"`
+  now includes a `has_watched_phrase` boolean field, alongside the existing
+  `mentioned` field.
+
 **Feature level 442**
 
 * [`GET /events`](/api/get-events): `giphy_rating` is now used to denote
