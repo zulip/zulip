@@ -76,7 +76,7 @@ export type CustomProfileFieldData = {
     type: number;
     display_in_profile_summary: boolean | undefined;
     required: boolean;
-    value: string;
+    value: string | null;
     rendered_value?: string | null | undefined;
     subtype?: string;
     link?: string;
@@ -506,6 +506,46 @@ export function get_custom_profile_field_data(
                 JSON.parse(field.field_data),
             );
             profile_field.value = field_choice_dict[field_value.value]!.text;
+            break;
+        }
+        case field_types.SELECT_MULTIPLE.id: {
+            let field_data_json: unknown;
+            let field_value_json: unknown;
+
+            try {
+                field_data_json = JSON.parse(field.field_data);
+                field_value_json = JSON.parse(field_value.value);
+            } catch {
+                return undefined;
+            }
+
+            // We use safeParse to handle database data that doesn't match
+            // the expected schema (hiding the field in that case), without using a
+            // broad try/catch that might swallow unrelated logic errors.
+            const field_data_schema = z.record(z.string(), z.object({text: z.string()}));
+            const field_data_result = field_data_schema.safeParse(field_data_json);
+            const selected_ids_result = z.array(z.string()).safeParse(field_value_json);
+
+            if (!field_data_result.success || !selected_ids_result.success) {
+                return undefined;
+            }
+
+            const field_data = field_data_result.data;
+            const selected_ids = selected_ids_result.data;
+            const readable_values: string[] = [];
+
+            for (const id of selected_ids) {
+                const option = field_data[id];
+                if (option) {
+                    readable_values.push(option.text);
+                }
+            }
+
+            if (readable_values.length === 0) {
+                return undefined;
+            }
+
+            profile_field.value = util.format_array_as_list(readable_values, "long", "conjunction");
             break;
         }
         case field_types.SHORT_TEXT.id:
