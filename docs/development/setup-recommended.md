@@ -221,7 +221,7 @@ official `docker-ce` package in their repositories. They provide the package
 docker distribution, you can follow
 [their documentation to install Docker on Fedora](https://docs.docker.com/engine/install/fedora/).
 
-```{include} setup/install-docker.md
+```{include} setup/install-docker-fedora.md
 
 ```
 
