@@ -21,7 +21,7 @@ import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
+import * as gif_state from "./gif_state.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
@@ -74,7 +74,6 @@ import * as settings_profile_fields from "./settings_profile_fields.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_streams from "./settings_streams.ts";
-import * as settings_users from "./settings_users.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
@@ -310,6 +309,7 @@ export function dispatch_normal_event(event) {
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
                 message_edit_history_visibility_policy: noop,
+                moderation_request_channel_id: noop,
                 move_messages_between_streams_limit_seconds: noop,
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
@@ -324,12 +324,13 @@ export function dispatch_normal_event(event) {
                 require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
+                send_channel_events_messages: noop,
                 signup_announcements_stream_id: noop,
                 zulip_update_announcements_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
-                giphy_rating: giphy.update_giphy_rating,
+                giphy_rating: gif_state.update_gif_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 welcome_message_custom_text: noop,
@@ -346,12 +347,6 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "name") {
                             electron_bridge?.send_event("realm_name", event.value);
-                        }
-
-                        if (event.property === "enable_spectator_access") {
-                            stream_ui_updates.update_stream_privacy_choices(
-                                "can_create_web_public_channel_group",
-                            );
                         }
                     }
                     break;
@@ -396,20 +391,12 @@ export function dispatch_normal_event(event) {
                                 }
 
                                 if (
-                                    key === "can_create_public_channel_group" ||
-                                    key === "can_create_private_channel_group" ||
-                                    key === "can_create_web_public_channel_group"
-                                ) {
-                                    stream_ui_updates.update_stream_privacy_choices(key);
-                                }
-
-                                if (
                                     key === "direct_message_initiator_group" ||
                                     key === "direct_message_permission_group"
                                 ) {
                                     settings_org.check_disable_direct_message_initiator_group_widget();
                                     compose_closed_ui.maybe_update_buttons_for_dm_recipient();
-                                    compose_recipient.check_posting_policy_for_compose_box();
+                                    compose_validate.validate_and_update_send_button_status();
                                 }
 
                                 if (
@@ -493,15 +480,25 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
-                    settings_bots.render_bots();
+                    if (event.bot.owner_id === current_user.user_id) {
+                        settings_bots.redraw_your_bots_list();
+                        settings_bots.toggle_bot_config_download_container();
+                    }
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
-                    settings_bots.render_bots();
+                    settings_bots.redraw_your_bots_list();
+                    settings_bots.toggle_bot_config_download_container();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    settings_bots.render_bots();
+                    if ("owner_id" in event.bot) {
+                        settings_bots.redraw_your_bots_list();
+                        settings_bots.toggle_bot_config_download_container();
+                    }
+                    if ("is_active" in event.bot) {
+                        settings_bots.toggle_bot_config_download_container();
+                    }
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);
@@ -603,7 +600,7 @@ export function dispatch_normal_event(event) {
                     people.add_active_user(event.person, "server_events");
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
-                        settings_users.redraw_bots_list();
+                        settings_bots.redraw_all_bots_list();
                     }
 
                     if (should_redraw) {
@@ -622,7 +619,7 @@ export function dispatch_normal_event(event) {
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
                     if (people.is_valid_bot_user(event.person.user_id)) {
-                        settings_users.update_bot_data(event.person.user_id);
+                        settings_bots.update_bot_data(event.person.user_id);
                     }
                     break;
                 case "remove": {
@@ -742,6 +739,9 @@ export function dispatch_normal_event(event) {
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream_id);
+                        if (realm.realm_moderation_request_channel_id === stream_id) {
+                            settings_org.sync_realm_settings("moderation_request_channel_id");
+                        }
                         if (realm.realm_new_stream_announcements_stream_id === stream_id) {
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }
@@ -757,6 +757,9 @@ export function dispatch_normal_event(event) {
                         unread_ops.process_read_messages_event(message_ids);
                         message_events.remove_messages(message_ids);
                         stream_topic_history.remove_history_for_stream(stream_id);
+                        user_group_edit.update_group_permissions_panel_on_losing_stream_access(
+                            stream_id,
+                        );
                     }
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
@@ -939,6 +942,7 @@ export function dispatch_normal_event(event) {
                 "web_suggest_update_timezone",
                 "web_left_sidebar_unreads_count_summary",
                 "web_left_sidebar_show_channel_folders",
+                "web_inbox_show_channel_folders",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -952,7 +956,7 @@ export function dispatch_normal_event(event) {
                 // a reload is fundamentally required because we
                 // cannot rerender with the new language the strings
                 // present in the backend/Jinja2 templates.
-                settings_preferences.set_default_language_name(event.language_name);
+                settings_preferences.set_default_language(event.value);
             }
             if (event.property === "web_home_view") {
                 left_sidebar_navigation_area.handle_home_view_changed(event.value);
@@ -982,7 +986,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list_sort.set_filter_out_inactives();
-                stream_list.update_streams_sidebar();
+                stream_list.update_streams_sidebar(true);
             }
             if (event.property === "web_animate_image_previews") {
                 // Rerender the whole message list UI
@@ -1028,6 +1032,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
                 stream_list.build_stream_list(true);
+            }
+            if (event.property === "web_inbox_show_channel_folders") {
+                inbox_ui.complete_rerender();
             }
             if (
                 event.property === "receives_typing_notifications" &&

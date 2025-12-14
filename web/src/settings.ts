@@ -18,7 +18,6 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
-import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -54,7 +53,7 @@ export function update_lock_icon_in_sidebar(): void {
     $(".org-settings-list .locked").show();
 
     if (settings_bots.can_create_incoming_webhooks()) {
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
     }
 
     if (settings_data.user_can_add_custom_emoji()) {
@@ -85,6 +84,14 @@ export function build_page(): void {
         ...settings_config.notification_settings_labels,
         ...settings_config.preferences_settings_labels,
     };
+
+    const is_export_without_consent_enabled = realm.realm_owner_full_content_access;
+    const private_data_export_tooltip_text = is_export_without_consent_enabled
+        ? $t({
+              defaultMessage:
+                  "Administrators of this organization are allowed to export private data for all users.",
+          })
+        : undefined;
 
     const rendered_settings_tab = render_settings_tab({
         full_name: people.my_full_name(),
@@ -132,7 +139,6 @@ export function build_page(): void {
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_can_change_email: settings_data.user_can_change_email(),
         user_role_text: people.get_user_type(current_user.user_id),
-        default_language_name: settings_preferences.user_default_language_name,
         default_language: user_settings.default_language,
         realm_push_notifications_enabled: realm.realm_push_notifications_enabled,
         settings_object: user_settings,
@@ -143,6 +149,7 @@ export function build_page(): void {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         user_can_change_password: user_can_change_password(),
+        user_role_values: settings_config.user_role_values,
         user_has_email_set: !settings_data.user_email_not_configured(),
         automatically_follow_topics_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
@@ -153,10 +160,13 @@ export function build_page(): void {
                 user_settings.web_line_height_percent,
             ),
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
+        private_data_export_is_checked:
+            user_settings.allow_private_data_export || is_export_without_consent_enabled,
+        private_data_export_is_disabled: is_export_without_consent_enabled,
+        private_data_export_tooltip_text,
     });
 
     $(".settings-box").html(rendered_settings_tab);
-    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"));
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
 }
 

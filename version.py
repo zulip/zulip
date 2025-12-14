@@ -3,6 +3,7 @@ import os
 ZULIP_VERSION = "12.0-dev+git"
 
 # Add information on number of commits and commit hash to version, if available
+ZULIP_VERSION_WITHOUT_COMMIT = ZULIP_VERSION
 zulip_git_version_file = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "zulip-git-version"
 )
@@ -14,7 +15,7 @@ ZULIP_VERSION = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "11.0"
-LATEST_RELEASE_VERSION = "11.2"
+LATEST_RELEASE_VERSION = "11.4"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/zulip-server-11-0"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
@@ -34,7 +35,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 427
+API_FEATURE_LEVEL = 442
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +50,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (353, 0)  # bumped 2025-10-07 to rebuild emoji_names
+PROVISION_VERSION = (361, 1)  # bumped 2025-12-03 to add backports-datetime-fromisoformat

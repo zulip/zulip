@@ -82,7 +82,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
     do_regenerate_api_key,
 )
-from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.actions.users import do_change_is_imported_stub, do_change_user_role, do_deactivate_user
 from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
 from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
@@ -349,29 +349,37 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_tos_version(self) -> None:
         now = timezone_now()
         user = self.example_user("hamlet")
+        old_tos_version = user.tos_version
         tos_version = "android"
         do_change_tos_version(user, tos_version)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
-                event_time__gte=now,
-            ).count(),
-            1,
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED, event_time__gte=now
         )
+        self.assertEqual(audit_log_entries.count(), 1)
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: old_tos_version,
+            RealmAuditLog.NEW_VALUE: tos_version,
+        }
+        self.assertEqual(audit_log_entries[0].extra_data, expected_extra_data)
         self.assertEqual(tos_version, user.tos_version)
 
     def test_change_bot_owner(self) -> None:
         now = timezone_now()
         admin = self.example_user("iago")
         bot = self.notification_bot(admin.realm)
+        # Check that original owner of the notification bot is the bot itself.
+        self.assertEqual(bot.bot_owner, bot)
         bot_owner = self.example_user("hamlet")
         do_change_bot_owner(bot, bot_owner, admin)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED, event_time__gte=now
-            ).count(),
-            1,
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED, event_time__gte=now
         )
+        self.assertEqual(audit_log_entries.count(), 1)
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: bot.id,
+            RealmAuditLog.NEW_VALUE: bot_owner.id,
+        }
+        self.assertEqual(audit_log_entries[0].extra_data, expected_extra_data)
         self.assertEqual(bot_owner, bot.bot_owner)
 
     def test_regenerate_api_key(self) -> None:
@@ -388,11 +396,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_get_streams_traffic(self) -> None:
         realm = get_realm("zulip")
-        stream_name = "whatever"
-        stream = self.make_stream(stream_name, realm)
-        stream_ids = {stream.id}
+        stream = self.make_stream("whatever", realm)
+        stream_2 = self.make_stream("whatever_2", realm)
 
-        result = get_streams_traffic(stream_ids, realm)
+        result = get_streams_traffic(realm)
         self.assertEqual(result, {})
 
         StreamCount.objects.create(
@@ -402,9 +409,19 @@ class TestRealmAuditLog(ZulipTestCase):
             end_time=timezone_now(),
             value=999,
         )
+        StreamCount.objects.create(
+            realm=realm,
+            stream=stream_2,
+            property="messages_in_stream:is_bot:day",
+            end_time=timezone_now(),
+            value=23,
+        )
 
-        result = get_streams_traffic(stream_ids, realm)
+        result = get_streams_traffic(realm, {stream.id})
         self.assertEqual(result, {stream.id: 999})
+
+        all_streams_traffic = get_streams_traffic(realm)
+        self.assertEqual(all_streams_traffic, {stream.id: 999, stream_2.id: 23})
 
     def test_subscriptions(self) -> None:
         now = timezone_now()
@@ -1784,3 +1801,21 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 1)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[0].extra_data, {"fragment": "inbox"})
+
+    def test_changing_is_imported_stub(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.is_imported_stub = True
+        hamlet.save()
+
+        now = timezone_now()
+        do_change_is_imported_stub(hamlet)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.USER_IS_IMPORTED_STUB_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(audit_log_entries[0].extra_data, {})

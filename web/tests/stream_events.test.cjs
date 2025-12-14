@@ -50,6 +50,7 @@ mock_esm("../src/user_settings", {
     },
 });
 
+const stream_ui_updates = mock_esm("../src/stream_ui_updates");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");
 
@@ -312,8 +313,15 @@ test("update_property", ({override}) => {
             can_add_subscribers: false,
             ...sub,
         }));
+        const update_add_subscriptions_elements_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_add_subscriptions_elements",
+            update_add_subscriptions_elements_stub.f,
+        );
         stream_events.update_property(stream_id, "can_administer_channel_group", 3);
         assert.equal(stub.num_calls, 1);
+        assert.equal(update_add_subscriptions_elements_stub.num_calls, 1);
         const args = stub.get_args("setting_name", "sub", "val");
         assert.equal(args.setting_name, "can_administer_channel_group");
         assert.equal(args.sub.stream_id, stream_id);
@@ -331,6 +339,21 @@ test("update_property", ({override}) => {
         assert.equal(args.setting_name, "can_resolve_topics_group");
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
+    }
+
+    // Test stream can_create_topic_group change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_stream_permission_group_setting", stub.f);
+        const update_history_public_to_subscribers_state_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_history_public_to_subscribers_state",
+            update_history_public_to_subscribers_state_stub.f,
+        );
+        stream_events.update_property(stream_id, "can_create_topic_group", 3);
+        assert.equal(stub.num_calls, 1);
+        assert.equal(update_history_public_to_subscribers_state_stub.num_calls, 1);
     }
 
     // Test stream can_subscribe_group change event
@@ -597,24 +620,6 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     assert.equal(message_view_header_stub.num_calls, 1);
 
     message_lists.current = undefined;
-});
-
-test("remove_deactivated_user_from_all_streams", () => {
-    stream_data.add_sub_for_tests(dev_help);
-    const subs_stub = make_stub();
-    stream_settings_ui.update_subscribers_ui = subs_stub.f;
-
-    // assert starting state
-    assert.ok(!stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
-
-    // verify that deactivating user should unsubscribe user from all streams
-    peer_data.add_subscriber(dev_help.stream_id, george.user_id);
-    assert.ok(stream_data.is_user_loaded_and_subscribed(dev_help.stream_id, george.user_id));
-
-    stream_events.remove_deactivated_user_from_all_streams(george.user_id);
-
-    // verify that we issue a call to update subscriber count/list UI
-    assert.equal(subs_stub.num_calls, 1);
 });
 
 test("process_subscriber_update", ({override, override_rewire}) => {

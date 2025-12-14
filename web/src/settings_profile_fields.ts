@@ -397,7 +397,7 @@ function disable_submit_button_if_no_property_changed(
         field,
     );
     let save_changes_button_disabled = false;
-    if (Object.keys(data).length === 0 || data.field_data === "{}") {
+    if (Object.keys(data).length === 0 || data["field_data"] === "{}") {
         save_changes_button_disabled = true;
     }
     $("#edit-custom-profile-field-form-modal .dialog_submit_button").prop(
@@ -588,11 +588,11 @@ function open_edit_form_modal(this: HTMLElement): void {
             dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
-        if (field.type === field_types.SELECT.id && data.field_data !== undefined) {
+        if (field.type === field_types.SELECT.id && data["field_data"] !== undefined) {
             const new_values = new Set(
                 Object.keys(
                     settings_components.select_field_data_schema.parse(
-                        JSON.parse(data.field_data.toString()),
+                        JSON.parse(data["field_data"].toString()),
                     ),
                 ),
             );

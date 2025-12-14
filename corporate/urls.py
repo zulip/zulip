@@ -147,6 +147,7 @@ landing_page_urls = [
     path("partners/", landing_view, {"template_name": "corporate/partners.html"}),
     path("why-zulip/", landing_view, {"template_name": "corporate/why-zulip.html"}),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
+    path("zulip-cloud/", landing_view, {"template_name": "corporate/zulip-cloud.html"}),
     path("security/", landing_view, {"template_name": "corporate/security.html"}),
     # /for pages
     path("use-cases/", landing_view, {"template_name": "corporate/for/use-cases.html"}),
@@ -225,6 +226,11 @@ landing_page_urls = [
         "case-studies/windborne/",
         landing_view,
         {"template_name": "corporate/case-studies/windborne-case-study.html"},
+    ),
+    path(
+        "case-studies/mixxx/",
+        landing_view,
+        {"template_name": "corporate/case-studies/mixxx-case-study.html"},
     ),
     path("communities/", communities_view),
 ]

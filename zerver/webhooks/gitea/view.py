@@ -22,7 +22,7 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
         user_name = payload["pull_request"]["merged_by"]["username"].tame(check_string)
         action = "merged"
     else:
-        user_name = payload["pull_request"]["user"]["username"].tame(check_string)
+        user_name = payload["sender"]["username"].tame(check_string)
         action = payload["action"].tame(check_string)
 
     url = payload["pull_request"]["html_url"].tame(check_string)

@@ -1,12 +1,12 @@
 import re
-from typing import Any, TypeAlias
+from typing import Annotated, Any, TypeAlias
 
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
-from zerver.data_import.slack import check_token_access, get_slack_api_data
+from zerver.data_import.slack import check_slack_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
     SLACK_USERMENTION_REGEX,
     convert_slack_formatting,
@@ -17,7 +17,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
@@ -64,7 +64,7 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         token=token,
         user=user_id,
     )
-    return slack_user_data["name"]
+    return slack_user_data["real_name"]
 
 
 def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
@@ -155,12 +155,12 @@ def is_retry_call_from_slack(request: HttpRequest) -> bool:
 
 
 SLACK_INTEGRATION_TOKEN_SCOPES = {
-    "channels:read",
-    "channels:history",
+    # For Slack's users.info endpoint: https://api.slack.com/methods/users.info
     "users:read",
-    "emoji:read",
-    "team:read",
-    "users:read.email",
+    # For Slack's conversations.info endpoint: https://api.slack.com/methods/conversations.info
+    "channels:read",
+    # For Slack's Event's API: https://api.slack.com/events/message.channels
+    "channels:history",
 }
 
 INVALID_SLACK_TOKEN_MESSAGE = """
@@ -184,6 +184,7 @@ def api_slack_webhook(
     *,
     slack_app_token: str = "",
     channels_map_to_topics: str | None = None,
+    map_to_channels: Annotated[str | None, ApiParamConfig("mapping")] = None,
 ) -> HttpResponse:
     if request.content_type != "application/json":
         # Handle Slack's legacy Outgoing Webhook Service payload.
@@ -221,7 +222,7 @@ def api_slack_webhook(
         try:
             if slack_app_token == "":
                 raise ValueError("slack_app_token is missing.")
-            check_token_access(slack_app_token, SLACK_INTEGRATION_TOKEN_SCOPES)
+            check_slack_token_access(slack_app_token, SLACK_INTEGRATION_TOKEN_SCOPES)
         except (ValueError, Exception) as e:
             send_rate_limited_pm_notification_to_bot_owner(
                 user_profile,
@@ -276,6 +277,12 @@ def api_slack_webhook(
         )
     sender = get_slack_sender_name(user_id, slack_app_token)
     content = get_message_body(text, sender, files)
+
+    # channels_map_to_topics=0 is ported to use UrlPreset.CHANNELS_MAPPING
+    # (map_to_channels).
+    if map_to_channels == "channels" and channels_map_to_topics is None:
+        channels_map_to_topics = VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]
+
     channel_id = event_dict.get("channel").tame(check_string)
     channel = (
         get_slack_channel_name(channel_id, slack_app_token) if channels_map_to_topics else None

@@ -47,7 +47,7 @@ def create_if_missing_realm_internal_bots() -> None:
     If that is the case, it creates the missing realm internal bots.
     """
     if missing_any_realm_internal_bots():
-        for realm in Realm.objects.all():
+        for realm in Realm.objects.all().iterator():
             setup_realm_internal_bots(realm)
 
 

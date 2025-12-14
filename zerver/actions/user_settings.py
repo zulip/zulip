@@ -290,6 +290,7 @@ def check_change_bot_full_name(
 
 @transaction.atomic(durable=True)
 def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) -> None:
+    old_value = user_profile.tos_version
     user_profile.tos_version = tos_version
     user_profile.save(update_fields=["tos_version"])
     event_time = timezone_now()
@@ -299,6 +300,10 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
         modified_user=user_profile,
         event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
         event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: tos_version,
+        },
     )
 
 
@@ -501,34 +506,6 @@ def do_change_user_setting(
     transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
 
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
-
-    if setting_name in UserProfile.notification_settings_legacy:
-        # This legacy event format is for backwards-compatibility with
-        # clients that don't support the new user_settings event type.
-        # We only send this for settings added before Feature level 89.
-        legacy_event = {
-            "type": "update_global_notifications",
-            "user": user_profile.email,
-            "notification_name": setting_name,
-            "setting": event_value,
-        }
-        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
-
-    if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
-        # This legacy event format is for backwards-compatibility with
-        # clients that don't support the new user_settings event type.
-        # We only send this for settings added before Feature level 89.
-        legacy_event = {
-            "type": "update_display_settings",
-            "user": user_profile.email,
-            "setting_name": setting_name,
-            "setting": event_value,
-        }
-        if setting_name == "default_language":
-            assert isinstance(db_setting_value, str)
-            legacy_event["language_name"] = get_language_name(db_setting_value)
-
-        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     if setting_name == "allow_private_data_export":
         realm_export_event = {

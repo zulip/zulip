@@ -1,11 +1,12 @@
 {
   "private": true,
-  "packageManager": "pnpm@10.18.1+sha512.77a884a165cbba2d8d1c19e3b4880eee6d2fcabd0d879121e282196b80042351d5eb3ca0935fa599da1dc51265cc68816ad2bddd2a2de5ea9fdf92adbec7cd34",
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b",
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-typescript": "^7.15.0",
+    "@date-fns/tz": "^1.4.1",
     "@fontsource-variable/open-sans": "^5.0.9",
     "@formatjs/intl": "^3.0.1",
     "@gfx/zopfli": "^1.0.15",
@@ -15,7 +16,8 @@
     "@sentry/browser": "^10.5.0",
     "@sentry/core": "^10.5.0",
     "@uppy/core": "^5.0.1",
-    "@uppy/drag-drop": "^5.0.1",
+    "@uppy/dashboard": "^5.0.4",
+    "@uppy/image-editor": "^4.0.2",
     "@uppy/tus": "^5.0.0",
     "@uppy/utils": "^7.0.1",
     "@zxcvbn-ts/core": "^3.0.1",
@@ -30,7 +32,7 @@
     "clipboard": "^2.0.4",
     "colord": "^2.9.3",
     "compression-webpack-plugin": "^11.1.0",
-    "core-js": "^3.45.0",
+    "core-js": "^3.46.0",
     "css-loader": "^7.1.1",
     "css-minimizer-webpack-plugin": "^7.0.0",
     "date-fns": "^4.1.0",
@@ -116,7 +118,7 @@
     "@types/lodash": "^4.14.172",
     "@types/micromodal": "^0.3.3",
     "@types/minimalistic-assert": "^1.0.1",
-    "@types/node": "^22.9.0",
+    "@types/node": "^24.9.2",
     "@types/plotly.js": "^3.0.0",
     "@types/sortablejs": "^1.15.1",
     "@types/textarea-caret": "^3.0.3",
@@ -129,8 +131,8 @@
     "astro-eslint-parser": "^1.2.2",
     "babel-plugin-istanbul": "^7.0.0",
     "callsites": "^4.2.0",
-    "cldr-annotations-derived-full": "^47.0.0",
-    "cldr-annotations-full": "^47.0.0",
+    "cldr-annotations-derived-full": "^48.0.0",
+    "cldr-annotations-full": "^48.0.0",
     "confusing-browser-globals": "^1.0.11",
     "css.escape": "^1.5.1",
     "diff": "^8.0.2",
@@ -145,7 +147,7 @@
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-mdx": "^3.6.2",
     "eslint-plugin-no-jquery": "^3.0.2",
-    "eslint-plugin-unicorn": "^61.0.2",
+    "eslint-plugin-unicorn": "^62.0.0",
     "globals": "^16.0.0",
     "jsdom": "^27.0.0",
     "mockdate": "^3.0.2",
@@ -164,7 +166,7 @@
     "svgo": "^4.0.0",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.13.0",
-    "vnu-jar": "^24.10.17",
+    "vnu-jar": "^25.11.25",
     "webpack-dev-server": "^5.0.2",
     "xvfb": "^0.4.0",
     "yaml": "^2.0.0-8",
@@ -172,17 +174,18 @@
   },
   "pnpm": {
     "overrides": {
-      "@types/eslint": "-",
+      "@types/eslint": "npm:eslint@^9.10.0",
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
+      "@uppy/utils": "patches/@uppy__utils.patch",
+      "eslint-plugin-astro": "patches/eslint-plugin-astro.patch",
       "handlebars": "patches/handlebars.patch",
       "simplebar": "patches/simplebar.patch",
-      "source-sans@3.46.0": "patches/source-sans@3.46.0.patch",
       "stylelint-high-performance-animation": "patches/stylelint-high-performance-animation.patch",
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",
-      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch",
-      "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch"
+      "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch",
+      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
     }
   },
   "nyc": {

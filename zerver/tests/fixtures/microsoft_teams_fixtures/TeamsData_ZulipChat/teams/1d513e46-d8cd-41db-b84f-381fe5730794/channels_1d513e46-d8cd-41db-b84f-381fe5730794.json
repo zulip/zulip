@@ -1,0 +1,26 @@
+[
+  {
+    "Id": "19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2",
+    "CreatedDateTime": "2025-08-12T12:44:49.635Z",
+    "DisplayName": "Text formattings",
+    "Description": null,
+    "IsFavoriteByDefault": true,
+    "Email": null,
+    "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+    "WebUrl": "https://teams.cloud.microsoft/l/channel/19%3Af0088fc2bb264dfe9a7a7924a23c7252%40thread.tacv2/Text%20formattings?groupId=1d513e46-d8cd-41db-b84f-381fe5730794\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026allowXTenantAccess=True\u0026ngc=True",
+    "MembershipType": "standard",
+    "IsArchived": false
+  },
+  {
+    "Id": "19:vYdeQme8PVAnebTgrsgGoC-zluWAfK5Gx_VNtSrLzjQ1@thread.tacv2",
+    "CreatedDateTime": "2025-08-12T05:19:04.08Z",
+    "DisplayName": "General",
+    "Description": "Kandra Labs",
+    "IsFavoriteByDefault": null,
+    "Email": "KandraLabs@ZulipChat.onmicrosoft.com",
+    "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+    "WebUrl": "https://teams.cloud.microsoft/l/channel/19%3AvYdeQme8PVAnebTgrsgGoC-zluWAfK5Gx_VNtSrLzjQ1%40thread.tacv2/Kandra%20Labs?groupId=1d513e46-d8cd-41db-b84f-381fe5730794\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026allowXTenantAccess=True\u0026ngc=True",
+    "MembershipType": "standard",
+    "IsArchived": false
+  }
+]

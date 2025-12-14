@@ -142,7 +142,12 @@ def _get_unversioned_gravatar_url(email: str, medium: bool, realm_id: int) -> st
         return staticfiles_storage.url("images/default-avatar.png")
 
 
-def absolute_avatar_url(user_profile: UserProfile) -> str:
+def absolute_avatar_url(
+    user_profile: UserProfile,
+    # Pass `realm_url` to avoid a DB query when `user_profile.realm` isn't
+    # already loaded but the caller has realm available from another source.
+    realm_url: str | None = None,
+) -> str:
     """
     Absolute URLs are used to simplify logic for applications that
     won't be served by browsers, such as rendering GCM notifications.
@@ -150,7 +155,9 @@ def absolute_avatar_url(user_profile: UserProfile) -> str:
     avatar = avatar_url(user_profile)
     # avatar_url can return None if client_gravatar=True, however here we use the default value of False
     assert avatar is not None
-    return urljoin(user_profile.realm.url, avatar)
+    if realm_url is None:
+        realm_url = user_profile.realm.url
+    return urljoin(realm_url, avatar)
 
 
 def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:

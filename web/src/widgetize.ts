@@ -7,7 +7,7 @@ import type {Event, PollWidgetExtraData, PollWidgetOutboundData} from "./poll_wi
 import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
 import type {ZFormExtraData} from "./zform.ts";
 
-type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
+export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
 type WidgetOptions = {
     widget_type: string;
@@ -21,7 +21,7 @@ type WidgetOptions = {
     }) => void;
 };
 
-type WidgetValue = Record<string, unknown> & {
+export type WidgetValue = Record<string, unknown> & {
     activate: (data: {
         $elem: JQuery;
         callback: (data: string | PollWidgetOutboundData | TodoWidgetOutboundData) => void;
@@ -67,8 +67,14 @@ export function activate(in_opts: WidgetOptions): void {
         });
     };
 
-    if (!$row.attr("id")!.startsWith(`message-row-${message_lists.current?.id}-`)) {
-        // Don't activate widgets for messages that are not in the current view.
+    const is_message_preview = $row.parent()?.attr("id") === "report-message-preview-container";
+
+    if (
+        !$row.attr("id")!.startsWith(`message-row-${message_lists.current?.id}-`) &&
+        !is_message_preview
+    ) {
+        // Don't activate widgets for messages that are not in the current view or
+        // in message report modal.
         return;
     }
 
@@ -83,7 +89,12 @@ export function activate(in_opts: WidgetOptions): void {
         extra_data,
     });
 
-    widget_event_handlers.set(message.id, event_handler);
+    if (!is_message_preview) {
+        // Don't re-register the original message's widget event
+        // handler.
+        widget_event_handlers.set(message.id, event_handler);
+    }
+
     set_widget_in_message($row, $widget_elem);
 
     // Replay any events that already happened.  (This is common

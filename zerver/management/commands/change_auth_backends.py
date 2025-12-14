@@ -17,12 +17,10 @@ class Command(ZulipBaseCommand):
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument(
             "--enable",
-            type=str,
             help="Name of the authentication backend to enable",
         )
         group.add_argument(
             "--disable",
-            type=str,
             help="Name of the authentication backend to disable",
         )
         group.add_argument(

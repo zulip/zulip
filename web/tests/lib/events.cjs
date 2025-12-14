@@ -56,6 +56,7 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_create_topic_group: 2,
         can_delete_any_message_group: 2,
         can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
@@ -82,6 +83,7 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_create_topic_group: 2,
         can_delete_any_message_group: 2,
         can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
@@ -409,6 +411,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__moderation_request_channel_id: {
+        type: "realm",
+        op: "update",
+        property: "moderation_request_channel_id",
+        value: 43,
+    },
+
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -540,6 +549,24 @@ exports.fixtures = {
         bot: {
             user_id: 4321,
             full_name: "The Bot Has A New Name",
+        },
+    },
+
+    realm_bot__update_is_active: {
+        type: "realm_bot",
+        op: "update",
+        bot: {
+            user_id: 4321,
+            is_active: false,
+        },
+    },
+
+    realm_bot__update_owner: {
+        type: "realm_bot",
+        op: "update",
+        bot: {
+            user_id: 4321,
+            owner_id: test_user.user_id,
         },
     },
 
@@ -1241,6 +1268,13 @@ exports.fixtures = {
         op: "update",
         property: "web_home_view",
         value: "recent_topics",
+    },
+
+    user_settings__web_inbox_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_inbox_show_channel_folders",
+        value: false,
     },
 
     user_settings__web_left_sidebar_show_channel_folders: {

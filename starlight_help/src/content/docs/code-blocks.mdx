@@ -5,6 +5,7 @@ title: Code blocks
 import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
@@ -44,6 +45,11 @@ formatting:
       You can also use the **Code** (<CodeIcon />)
       icon to remove existing code formatting from the selected text.
     </ZulipTip>
+
+    <KeyboardTip>
+      You can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+      to insert code formatting.
+    </KeyboardTip>
   </TabItem>
 
   <TabItem label="Via Markdown">

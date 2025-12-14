@@ -8,9 +8,10 @@ import typing
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
+from time import sleep
 from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, cast
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
@@ -84,7 +85,7 @@ from zerver.actions.create_user import (
     do_reactivate_user,
 )
 from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
-from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
@@ -443,8 +444,8 @@ class StripeTestCase(ZulipTestCase):
         # Add hamlet in `can_manage_billing_group` for testing.
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
-        do_change_user_role(hamlet, UserProfile.ROLE_REALM_OWNER, acting_user=None)
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(hamlet, UserProfile.ROLE_REALM_OWNER)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_OWNER)
 
         self.billing_session: (
             RealmBillingSession | RemoteRealmBillingSession | RemoteServerBillingSession
@@ -569,14 +570,34 @@ class StripeTestCase(ZulipTestCase):
         )
         assert response.status_code == 200
 
-    def send_stripe_webhook_events(self, most_recent_event: stripe.Event) -> None:
+    def send_stripe_webhook_events(
+        self, most_recent_event: stripe.Event, must_have_event: str | None = None
+    ) -> None:  # nocoverage
+        # Stripe can delay events showing up in the Event list, so we
+        # keep looking until we find the must_have_event.
+        found_must_have_event = must_have_event is None
+        num_of_attempts_to_look_for_must_have_event = 10
         while True:
             events_old_to_new = list(
                 reversed(stripe.Event.list(ending_before=most_recent_event.id))
             )
+
             if len(events_old_to_new) == 0:
-                break
+                if found_must_have_event:
+                    break
+                else:
+                    num_of_attempts_to_look_for_must_have_event -= 1
+                    if num_of_attempts_to_look_for_must_have_event == 0:
+                        raise AssertionError(
+                            f"Did not find expected event {must_have_event} after looking for it multiple times"
+                        )
+                    sleep(0.2)
+                    continue
+
             for event in events_old_to_new:
+                if event.type == must_have_event:
+                    found_must_have_event = True
+
                 self.send_stripe_webhook_event(event)
             most_recent_event = events_old_to_new[-1]
 
@@ -702,13 +723,14 @@ class StripeTestCase(ZulipTestCase):
         )
 
         if invoice:
+            assert talk_to_stripe is True
             # Mark the invoice as paid via stripe with the `invoice.paid` event.
             stripe.Invoice.pay(last_sent_invoice.stripe_invoice_id, paid_out_of_band=True)
 
-        # Upgrade the organization.
-        # TODO: Fix `invoice.paid` event not being present in the events list even thought the invoice was
-        # paid. This is likely due to a latency between invoice being paid and the event being generated.
-        self.send_stripe_webhook_events(last_event)
+        self.send_stripe_webhook_events(
+            last_event,
+            must_have_event="invoice.paid" if invoice else None,
+        )
         return upgrade_json_response
 
     def add_card_and_upgrade(
@@ -1634,7 +1656,7 @@ class StripeTest(StripeTestCase):
             [invoice_item] = iter(invoice0.lines)
             invoice_item_params = {
                 "amount": 5172,
-                "description": "Additional license (Jan 2, 2013 - Mar 2, 2013)",
+                "description": "Additional Zulip Cloud Standard license",
                 "discountable": False,
                 "quantity": 4,
                 "period": {
@@ -1810,7 +1832,7 @@ class StripeTest(StripeTestCase):
             # Customer pays the invoice
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event)
+            self.send_stripe_webhook_events(last_event, "invoice.paid")
 
             with time_machine.travel(self.now, tick=False):
                 response = self.client_get("/billing/")
@@ -1976,7 +1998,7 @@ class StripeTest(StripeTestCase):
             # Customer pays the invoice
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event)
+            self.send_stripe_webhook_events(last_event, "invoice.paid")
 
             with time_machine.travel(self.now, tick=False):
                 response = self.client_get("/billing/")
@@ -2185,7 +2207,7 @@ class StripeTest(StripeTestCase):
             [last_event] = iter(stripe.Event.list(limit=1))
             assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
-            self.send_stripe_webhook_events(last_event)
+            self.send_stripe_webhook_events(last_event, "invoice.paid")
 
             invoice_plans_as_needed(free_trial_end_date)
             CustomerPlan.objects.get(customer=customer, status=CustomerPlan.ACTIVE)
@@ -2512,7 +2534,7 @@ class StripeTest(StripeTestCase):
         )
         self.assertEqual(
             m.output[0],
-            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (with stripe_customer_id: cus_123) failed because of existing active plan.",
+            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (stripe: cus_123) failed because of existing active plan.",
         )
         self.assert_length(m.output, 1)
 
@@ -3598,7 +3620,7 @@ class StripeTest(StripeTestCase):
         [invoice_item0, invoice_item1] = iter(invoice0.lines)
         annual_plan_invoice_item_params = {
             "amount": 5 * 80 * 100,
-            "description": "Additional license (Feb 2, 2012 - Feb 2, 2013)",
+            "description": "Additional Zulip Cloud Standard license",
             "quantity": 5,
             "discountable": False,
             "period": {
@@ -3625,7 +3647,7 @@ class StripeTest(StripeTestCase):
         [monthly_plan_invoice_item] = iter(invoice1.lines)
         monthly_plan_invoice_item_params = {
             "amount": 14 * 8 * 100,
-            "description": "Additional license (Jan 2, 2012 - Feb 2, 2012)",
+            "description": "Additional Zulip Cloud Standard license",
             "quantity": 14,
             "discountable": False,
             "period": {
@@ -3647,7 +3669,7 @@ class StripeTest(StripeTestCase):
         [monthly_plan_invoice_item] = iter(invoice0.lines)
         monthly_plan_invoice_item_params = {
             "amount": 5 * 7366,
-            "description": "Additional license (Mar 2, 2012 - Feb 2, 2013)",
+            "description": "Additional Zulip Cloud Standard license",
             "quantity": 5,
             "discountable": False,
             "period": {
@@ -3870,7 +3892,7 @@ class StripeTest(StripeTestCase):
         [invoice_item1, invoice_item2] = iter(invoice0.lines)
         annual_plan_invoice_item_params = {
             "amount": 7322 * 5,
-            "description": "Additional license (Feb 2, 2012 - Jan 2, 2013)",
+            "description": "Additional Zulip Cloud Standard license",
             "quantity": 5,
             "discountable": False,
             "period": {
@@ -3884,7 +3906,7 @@ class StripeTest(StripeTestCase):
 
         annual_plan_invoice_item_params = {
             "amount": 14 * 80 * 1 * 100,
-            "description": "Additional license (Jan 2, 2012 - Jan 2, 2013)",
+            "description": "Additional Zulip Cloud Standard license",
             "quantity": 14,
             "discountable": False,
             "period": {
@@ -4419,7 +4441,7 @@ class StripeTest(StripeTestCase):
             )
         self.assertEqual(
             m.output[0],
-            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (with stripe_customer_id: cus_123) failed because of existing active plan.",
+            "WARNING:corporate.stripe:Upgrade of <Realm: zulip 2> (stripe: cus_123) failed because of existing active plan.",
         )
         self.assertEqual(
             context.exception.error_description, "subscribing with existing subscription"
@@ -4554,7 +4576,7 @@ class StripeTest(StripeTestCase):
 
         line_item_params = {
             "amount": 8000 * 50,
-            "description": "Additional license (Jan 2, 2012 - Jan 2, 2013)",
+            "description": "Additional Zulip Cloud Standard license",
             "discountable": False,
             "period": {
                 "end": datetime_to_timestamp(self.next_year),
@@ -6141,9 +6163,9 @@ class LicenseLedgerTest(StripeTestCase):
             acting_user=None,
         )
         # Change guest user role to member
-        do_change_user_role(guest, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(guest, UserProfile.ROLE_MEMBER)
         # Change again to moderator, no LicenseLedger created
-        do_change_user_role(guest, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(guest, UserProfile.ROLE_MODERATOR)
         ledger_entries = list(
             LicenseLedger.objects.values_list(
                 "is_renewal", "licenses", "licenses_at_next_renewal"
@@ -6291,7 +6313,7 @@ class InvoiceTest(StripeTestCase):
         [item0, item1, item2] = iter(invoice0.lines)
         line_item_params = {
             "amount": int(8000 * (1 - ((400 - 366) / 365)) + 0.5),
-            "description": "Additional license (Feb 5, 2013 - Jan 2, 2014)",
+            "description": "Additional Zulip Cloud Standard license",
             "discountable": False,
             "period": {
                 "start": datetime_to_timestamp(self.now + timedelta(days=400)),
@@ -6301,6 +6323,18 @@ class InvoiceTest(StripeTestCase):
         }
         for key, value in line_item_params.items():
             self.assertEqual(item0.get(key), value)
+        line_item_params = {
+            "amount": 3 * int(8000 * (366 - 100) / 366 + 0.5),
+            "description": "Additional Zulip Cloud Standard license",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=100)),
+                "end": datetime_to_timestamp(self.now + timedelta(days=366)),
+            },
+            "quantity": 3,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item1.get(key), value)
         line_item_params = {
             "amount": 8000 * (self.seat_count + 1),
             "description": "Zulip Cloud Standard - renewal",
@@ -6312,19 +6346,120 @@ class InvoiceTest(StripeTestCase):
             "quantity": self.seat_count + 1,
         }
         for key, value in line_item_params.items():
-            self.assertEqual(item1.get(key), value)
+            self.assertEqual(item2.get(key), value)
+
+    @mock_stripe()
+    def test_invoice_plan_bundle_additional_licenses(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with time_machine.travel(self.now, tick=False):
+            self.add_card_and_upgrade(user)
+        realm = get_realm("zulip")
+        billing_session = RealmBillingSession(user=user, realm=realm)
+        # Increase by 300 additional licenses in the first month of the
+        # annual plan.
+        updated_seat_count = self.seat_count
+        for i in range(50):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=10, seconds=i)
+                )
+        for i in range(100):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=15, seconds=i)
+                )
+        for i in range(100):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=20, seconds=i)
+                )
+        # Remove 20 active licenses to confirm we're still handling these ledger entries
+        # correctly when bundling.
+        for i in range(20):
+            updated_seat_count -= 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=22, seconds=i)
+                )
+        for i in range(70):
+            updated_seat_count += 1
+            with patch(
+                "corporate.lib.stripe.get_latest_seat_count", return_value=updated_seat_count
+            ):
+                billing_session.update_license_ledger_if_needed(
+                    self.now + timedelta(days=25, seconds=i)
+                )
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        billing_session.invoice_plan(plan, self.next_month)
+        stripe_customer_id = plan.customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        self.assertIsNotNone(invoice0.status_transitions.finalized_at)
+        [item0, item1, item2, item3] = iter(invoice0.lines.data)
+        # We have to adjust the start datetime for the 20 license ledger
+        # entries (by 20 seconds) that were for licenses that were already
+        # paid for in the billing period.
         line_item_params = {
-            "amount": 3 * int(8000 * (366 - 100) / 366 + 0.5),
-            "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
+            "amount": 50 * int(8000 * (366 - 25) / 366 + 0.5),
+            "description": "Additional Zulip Cloud Standard license",
             "discountable": False,
             "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=100)),
-                "end": datetime_to_timestamp(self.now + timedelta(days=366)),
+                "start": datetime_to_timestamp(self.now + timedelta(days=25, seconds=20)),
+                "end": datetime_to_timestamp(self.next_year),
             },
-            "quantity": 3,
+            "quantity": 50,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item0.get(key), value)
+        line_item_params = {
+            "amount": 100 * int(8000 * (366 - 20) / 366 + 0.5),
+            "description": "Additional Zulip Cloud Standard license",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=20)),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+            "quantity": 100,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item1.get(key), value)
+        line_item_params = {
+            "amount": 100 * int(8000 * (366 - 15) / 366 + 0.5),
+            "description": "Additional Zulip Cloud Standard license",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=15)),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+            "quantity": 100,
         }
         for key, value in line_item_params.items():
             self.assertEqual(item2.get(key), value)
+        line_item_params = {
+            "amount": 50 * int(8000 * (366 - 10) / 366 + 0.5),
+            "description": "Additional Zulip Cloud Standard license",
+            "discountable": False,
+            "period": {
+                "start": datetime_to_timestamp(self.now + timedelta(days=10)),
+                "end": datetime_to_timestamp(self.next_year),
+            },
+            "quantity": 50,
+        }
+        for key, value in line_item_params.items():
+            self.assertEqual(item3.get(key), value)
 
     @mock_stripe()
     def test_fixed_price_plans(self, *mocks: Mock) -> None:
@@ -6378,9 +6513,9 @@ class InvoiceTest(StripeTestCase):
 
         billing_session = RealmBillingSession(user=hamlet, realm=realm)
         next_billing_cycle = billing_session.get_next_billing_cycle(plan)
-        plan_end_date_string = next_billing_cycle.strftime("%Y-%m-%d")
-        plan_end_date = datetime.strptime(plan_end_date_string, "%Y-%m-%d").replace(
-            tzinfo=timezone.utc
+        plan_end_date_string = next_billing_cycle.date().isoformat()
+        plan_end_date = datetime.combine(
+            date.fromisoformat(plan_end_date_string), time(0, 0, 0), tzinfo=timezone.utc
         )
 
         self.logout()
@@ -6528,7 +6663,7 @@ class InvoiceTest(StripeTestCase):
             )
 
         with time_machine.travel(self.now + timedelta(days=10), tick=False):
-            do_change_user_role(user, UserProfile.ROLE_MEMBER, acting_user=None)
+            self.set_user_role(user, UserProfile.ROLE_MEMBER)
 
         billing_session = RealmBillingSession(realm=realm)
         billing_session.invoice_plan(plan, self.next_month)
@@ -6542,7 +6677,7 @@ class InvoiceTest(StripeTestCase):
         [item0] = iter(invoice0.lines)
         line_item_params = {
             "amount": int(8000 * (1 - ((366 - 356) / 366)) + 0.5),
-            "description": "Additional license (Jan 12, 2012 - Jan 2, 2013)",
+            "description": "Additional Zulip Cloud Standard license",
             "quantity": 1,
         }
         for key, value in line_item_params.items():
@@ -7038,7 +7173,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         hamlet_recipient = self.example_user("hamlet").recipient
         message_to_hamlet = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
-        ).first()
+        ).last()
         assert message_to_hamlet is not None
         self.assertEqual(message_to_hamlet.content, expected_message)
         self.assertEqual(message_to_hamlet.recipient.type, Recipient.PERSONAL)
@@ -8035,7 +8170,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         annual_fixed_price = 1200
 
         # Configure complimentary access plan
-        complimentary_access_plan_end = self.next_year.strftime("%Y-%m-%d")
+        complimentary_access_plan_end = self.next_year.date().isoformat()
         billing_session = RemoteRealmBillingSession(remote_realm=self.remote_realm)
         support_request = SupportViewRequest(
             support_type=SupportType.configure_complimentary_access_plan,
@@ -8578,7 +8713,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             message.body,
         )
         self.assertEqual(
-            f"Fixed-price plan for {billing_entity} ends on {end_date.strftime('%Y-%m-%d')}",
+            f"Fixed-price plan for {billing_entity} ends on {end_date.date().isoformat()}",
             message.subject,
         )
 
@@ -8979,9 +9114,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "Unable to verify current licenses in use, which delays invoicing for this customer.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_update.date().isoformat()}", message.body)
 
         # Cron runs again, don't send another email to Zulip team.
         invoice_plans_as_needed(self.next_month + timedelta(days=1))
@@ -9009,10 +9142,10 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             },
         }
         for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+            self.assertEqual(invoice_item2[key], value)
 
         invoice_item_params = {
-            "description": "Additional license (Jan 4, 2012 - Feb 2, 2012)",
+            "description": "Additional Zulip Basic license",
             "quantity": 5,
             "period": {
                 "start": datetime_to_timestamp(self.now + timedelta(days=2)),
@@ -9020,7 +9153,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             },
         }
         for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item2[key], value)
+            self.assertEqual(invoice_item1[key], value)
 
         # Verify Zulip team receives mail for the next cycle.
         invoice_plans_as_needed(add_months(self.next_month, 1))
@@ -10052,9 +10185,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Unable to verify current licenses in use, but invoicing not delayed because customer has a fixed-price plan.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_update.date().isoformat()}", message.body)
 
         # Audit log data is up-to-date when the plan is next invoiced.
         with time_machine.travel(updated_invoice_date, tick=False):
@@ -10566,9 +10697,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Unable to verify current licenses in use, which delays invoicing for this customer.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_upload.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_upload.date().isoformat()}", message.body)
 
         # Cron runs again, don't send another email to Zulip team.
         invoice_plans_as_needed(self.next_month + timedelta(days=1))
@@ -10596,10 +10725,10 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             },
         }
         for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+            self.assertEqual(invoice_item2[key], value)
 
         invoice_item_params = {
-            "description": "Additional license (Jan 4, 2012 - Feb 2, 2012)",
+            "description": "Additional Zulip Basic license",
             "quantity": 5,
             "period": {
                 "start": datetime_to_timestamp(self.now + timedelta(days=2)),
@@ -10607,7 +10736,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             },
         }
         for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item2[key], value)
+            self.assertEqual(invoice_item1[key], value)
 
         # Verify Zulip team receives mail for the next cycle.
         invoice_plans_as_needed(add_months(self.next_month, 1))

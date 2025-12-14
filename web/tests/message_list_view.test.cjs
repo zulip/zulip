@@ -26,6 +26,7 @@ mock_esm("../src/people", {
     sender_is_deactivated: () => false,
     should_add_guest_user_indicator: () => false,
     small_avatar_url: () => "fake/small/avatar/url",
+    get_muted_user_avatar_url: () => "fake/muted_user/avatar/url",
     maybe_get_user_by_id: noop,
 });
 
@@ -132,17 +133,16 @@ test("message_edited_vars", () => {
     //   * message without sender
 
     function build_message_context(message = {}, message_context = {}) {
-        message_context = {
+        return {
             include_sender: true,
             ...message_context,
+            msg: {
+                is_me_message: false,
+                last_edit_timestamp: (next_timestamp += 1),
+                edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
+                ...message,
+            },
         };
-        message_context.msg = {
-            is_me_message: false,
-            last_edit_timestamp: (next_timestamp += 1),
-            edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
-            ...message,
-        };
-        return message_context;
     }
 
     function build_message_group(messages) {
@@ -227,13 +227,7 @@ test("muted_message_vars", () => {
     // correctly.
 
     function build_message_context(message = {}, message_context = {}) {
-        message_context = {
-            ...message_context,
-        };
-        message_context.msg = {
-            ...message,
-        };
-        return message_context;
+        return {...message_context, msg: {...message}};
     }
 
     function build_message_group(messages) {
@@ -317,14 +311,17 @@ test("muted_message_vars", () => {
         muted_users.add_muted_user(10);
         result = calculate_variables(list, messages);
 
-        // Check that `is_hidden` is true and `include_sender` is false on all messages.
+        // Check that `is_hidden` is true on all messages and `include_sender` is true for the first one.
         assert.equal(result[0].is_hidden, true);
         assert.equal(result[1].is_hidden, true);
         assert.equal(result[2].is_hidden, true);
 
-        assert.equal(result[0].include_sender, false);
+        assert.equal(result[0].include_sender, true);
         assert.equal(result[1].include_sender, false);
         assert.equal(result[2].include_sender, false);
+
+        // Ensure that `small_avatar_url` is the Muted sender avatar URL.
+        assert.equal(result[0].small_avatar_url, "fake/muted_user/avatar/url");
 
         // Additionally test that, both there is no mention classname even on that message
         // which has a mention, since we don't want to display muted mentions so visibly.
@@ -343,6 +340,9 @@ test("muted_message_vars", () => {
         assert.equal(result[1].include_sender, true);
         assert.equal(result[2].include_sender, true);
 
+        // Ensure that `small_avatar_url` is now set to the sender's avatar URL.
+        assert.equal(result[0].small_avatar_url, "fake/small/avatar/url");
+
         // Additionally test that the message with a mention is marked as such.
         assert.equal(result[1].mention_classname, "group_mention");
 
@@ -350,14 +350,19 @@ test("muted_message_vars", () => {
         is_revealed = false;
         result = calculate_variables(list, messages, is_revealed);
 
-        // Check that `is_hidden` is false and `include_sender` is false on all messages.
+        // Check that `is_hidden` is true and `include_sender` is true on all messages.
         assert.equal(result[0].is_hidden, true);
         assert.equal(result[1].is_hidden, true);
         assert.equal(result[2].is_hidden, true);
 
-        assert.equal(result[0].include_sender, false);
-        assert.equal(result[1].include_sender, false);
-        assert.equal(result[2].include_sender, false);
+        assert.equal(result[0].include_sender, true);
+        assert.equal(result[1].include_sender, true);
+        assert.equal(result[2].include_sender, true);
+
+        // Ensure that `small_avatar_url` is the Muted sender avatar URL.
+        assert.equal(result[0].small_avatar_url, "fake/muted_user/avatar/url");
+        assert.equal(result[1].small_avatar_url, "fake/muted_user/avatar/url");
+        assert.equal(result[2].small_avatar_url, "fake/muted_user/avatar/url");
 
         // Additionally test that, both there is no mention classname even on that message
         // which has a mention, since we don't want to display hidden mentions so visibly.
@@ -367,25 +372,25 @@ test("muted_message_vars", () => {
 
 test("merge_message_groups", ({mock_template}) => {
     mock_template("message_list.hbs", false, () => "<message-list-stub>");
+    mock_template("bookend.hbs", false, () => "<bookend-stub>");
     // MessageListView has lots of DOM code, so we are going to test the message
     // group merging logic on its own.
 
     function build_message_context(message = {}, message_context = {}) {
-        message_context = {
+        return {
             include_sender: true,
             ...message_context,
+            msg: {
+                id: _.uniqueId("test_message_"),
+                status_message: false,
+                type: "stream",
+                stream_id: 2,
+                topic: "Test topic 1",
+                sender_email: "test@example.com",
+                timestamp: (next_timestamp += 1),
+                ...message,
+            },
         };
-        message_context.msg = {
-            id: _.uniqueId("test_message_"),
-            status_message: false,
-            type: "stream",
-            stream_id: 2,
-            topic: "Test topic 1",
-            sender_email: "test@example.com",
-            timestamp: (next_timestamp += 1),
-            ...message,
-        };
-        return message_context;
     }
 
     function build_message_group(messages) {

@@ -452,6 +452,14 @@ export class MessageList {
         // If user narrows to a stream, don't update
         // trailing bookend if user is subscribed.
         const sub = stream_data.get_sub_by_id(stream_id);
+
+        if (sub && !stream_data.can_toggle_subscription(sub)) {
+            // If the user is not subscribed and cannot subscribe
+            // (e.g., they don't have content access to the channel),
+            // then we don't show a trailing bookend.
+            return;
+        }
+
         if (
             sub &&
             sub.subscribed &&
@@ -513,16 +521,18 @@ export class MessageList {
         }
     }
 
-    show_edit_message($row: JQuery, $form: JQuery): void {
+    show_edit_message($row: JQuery, $form: JQuery, do_autosize: boolean): void {
         if ($row.find(".message_edit_form form").length > 0) {
             return;
         }
         $row.find(".messagebox-content").append($form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".messagebox-content").addClass("content_edit_mode");
-        // autosize will not change the height of the textarea if the `$row` is not
-        // rendered in DOM yet. So, we call `autosize.update` post render.
-        autosize($row.find(".message_edit_content"));
+        if (do_autosize) {
+            // autosize will not change the height of the textarea if the `$row` is not
+            // rendered in DOM yet. So, we call `autosize.update` post render.
+            autosize($row.find(".message_edit_content"));
+        }
         compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
     }
 
@@ -614,7 +624,7 @@ export class MessageList {
     }
 
     all_messages(): Message[] {
-        return this.data.all_messages();
+        return this.data.all_messages_after_mute_filtering();
     }
 
     first_unread_message_id(): number | undefined {

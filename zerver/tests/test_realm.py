@@ -402,7 +402,10 @@ class RealmTest(ZulipTestCase):
             event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=iago
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {"old_subdomain": "zulip", "new_subdomain": "newzulip"}
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: "zulip",
+            RealmAuditLog.NEW_VALUE: "newzulip",
+        }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
 
@@ -1366,8 +1369,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": Realm.ORG_TYPES["business"]["id"],
-            "new_value": Realm.ORG_TYPES["government"]["id"],
+            RealmAuditLog.OLD_VALUE: Realm.ORG_TYPES["business"]["id"],
+            RealmAuditLog.NEW_VALUE: Realm.ORG_TYPES["government"]["id"],
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
@@ -1386,8 +1389,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
-            "new_value": 1,
+            RealmAuditLog.OLD_VALUE: settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            RealmAuditLog.NEW_VALUE: 1,
             "property": "max_invites",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
@@ -1401,7 +1404,11 @@ class RealmTest(ZulipTestCase):
             event_type=AuditLogEventType.REALM_PROPERTY_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {"old_value": 1, "new_value": None, "property": "max_invites"}
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: 1,
+            RealmAuditLog.NEW_VALUE: None,
+            "property": "max_invites",
+        }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
@@ -1417,8 +1424,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
-            "new_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            RealmAuditLog.OLD_VALUE: settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            RealmAuditLog.NEW_VALUE: Realm.INVITES_STANDARD_REALM_DAILY_MAX,
             "property": "max_invites",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
@@ -1436,8 +1443,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
-            "new_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            RealmAuditLog.OLD_VALUE: Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            RealmAuditLog.NEW_VALUE: settings.INVITES_DEFAULT_REALM_DAILY_MAX,
             "property": "max_invites",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
@@ -1455,8 +1462,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": settings.INVITES_DEFAULT_REALM_DAILY_MAX,
-            "new_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            RealmAuditLog.OLD_VALUE: settings.INVITES_DEFAULT_REALM_DAILY_MAX,
+            RealmAuditLog.NEW_VALUE: Realm.INVITES_STANDARD_REALM_DAILY_MAX,
             "property": "max_invites",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
@@ -1474,8 +1481,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
-            "new_value": 50000,
+            RealmAuditLog.OLD_VALUE: Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            RealmAuditLog.NEW_VALUE: 50000,
             "property": "max_invites",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
@@ -1490,8 +1497,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": 50000,
-            "new_value": Realm.INVITES_STANDARD_REALM_DAILY_MAX,
+            RealmAuditLog.OLD_VALUE: 50000,
+            RealmAuditLog.NEW_VALUE: Realm.INVITES_STANDARD_REALM_DAILY_MAX,
             "property": "max_invites",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
@@ -1536,8 +1543,8 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            "old_value": Realm.PLAN_TYPE_SELF_HOSTED,
-            "new_value": Realm.PLAN_TYPE_STANDARD,
+            RealmAuditLog.OLD_VALUE: Realm.PLAN_TYPE_SELF_HOSTED,
+            RealmAuditLog.NEW_VALUE: Realm.PLAN_TYPE_STANDARD,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
@@ -1545,7 +1552,8 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(
-            realm.upload_quota_gb, get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB
+            realm.upload_quota_gb,
+            get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD,
         )
         everyone_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm_for_sharding=realm
@@ -1575,7 +1583,8 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(
-            realm.upload_quota_gb, get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB
+            realm.upload_quota_gb,
+            get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_PLUS,
         )
 
         do_change_realm_permission_group_setting(
@@ -1587,7 +1596,8 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(
-            realm.upload_quota_gb, get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB
+            realm.upload_quota_gb,
+            get_seat_count(realm) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD,
         )
         self.assertEqual(realm.can_access_all_users_group_id, everyone_system_group.id)
 
@@ -2071,8 +2081,8 @@ class RealmAPITest(ZulipTestCase):
             ],
             jitsi_server_url=["https://example.jit.si"],
             giphy_rating=[
-                Realm.GIPHY_RATING_OPTIONS["y"]["id"],
-                Realm.GIPHY_RATING_OPTIONS["r"]["id"],
+                Realm.GIF_RATING_OPTIONS["g"]["id"],
+                Realm.GIF_RATING_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             message_content_edit_limit_seconds=[1000, 1100, 1200],

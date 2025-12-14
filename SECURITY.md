@@ -32,6 +32,6 @@ reason to run older major releases.
 See also our documentation on the [Zulip release
 lifecycle][release-lifecycle].
 
-[securing-your-zulip-server]: https://zulip.readthedocs.io/en/latest/production/security-model.html
+[securing-your-zulip-server]: https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html
 [upgrades]: https://zulip.readthedocs.io/en/stable/production/upgrade.html#upgrading-to-a-release
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html

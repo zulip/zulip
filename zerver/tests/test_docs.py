@@ -13,12 +13,18 @@ from django.utils.timezone import now as timezone_now
 from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from zerver.context_processors import get_apps_page_url
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
+from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.url_redirects import INTEGRATION_CATEGORY_SLUGS
 from zerver.models import Realm
 from zerver.models.realms import get_realm
 from zerver.views.documentation import add_api_url_context
+
+
+def get_canonical_url(path: str) -> str:
+    return f'<link rel="canonical" href="https://zulip.com{path}" />'
+
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -26,8 +32,6 @@ if TYPE_CHECKING:
 
 class DocPageTest(ZulipTestCase):
     def get_doc(self, url: str, subdomain: str) -> "TestHttpResponse":
-        if url[0:23] == "/integrations/doc-html/":
-            return self.client_get(url, subdomain=subdomain, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         return self.client_get(url, subdomain=subdomain)
 
     def print_msg_if_error(self, url: str, response: "TestHttpResponse") -> None:  # nocoverage
@@ -63,11 +67,6 @@ class DocPageTest(ZulipTestCase):
         expected_strings: Sequence[str],
         allow_robots: bool,
     ) -> "TestHttpResponse":
-        # For whatever reason, we have some urls that don't follow
-        # the same policies as the majority of our urls.
-        if url.startswith("/integrations/doc-html"):
-            allow_robots = True
-
         if url.startswith("/attribution/"):
             allow_robots = False
 
@@ -138,9 +137,8 @@ class DocPageTest(ZulipTestCase):
             "/errors/404/",
             "/errors/5xx/",
             "/integrations/",
-            "/integrations/bots",
-            "/integrations/doc-html/asana",
-            "/integrations/doc/github",
+            "/integrations/category/bots",
+            "/integrations/github",
             "/team/",
         ]
 
@@ -218,6 +216,8 @@ class DocPageTest(ZulipTestCase):
             with mock.patch(
                 "zerver.lib.html_to_text.html_to_text", return_value="This is an API doc"
             ) as m:
+                # Test that canonical URL points to zulip.com
+                expected_strings.append(get_canonical_url(url))
                 self._test(
                     url=url,
                     expected_strings=expected_strings,
@@ -244,9 +244,17 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
+        result = self.client_get(
+            # Non-root API docs pages do not have a trailing slash.
+            "/api/changelog/",
+            follow=True,
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(result.status_code, 404)
+
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", ["Normal users"])
-        self._test("/devtools/", ["Useful development URLs"])
+        self._test("/devtools/", ["Development tools"])
         self._test("/emails/", ["Manually generate most emails"])
 
     def test_dev_help_default_page_endpoints(self) -> None:
@@ -310,6 +318,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/features/", ["Organized team chat solution"])
         self._test("/jobs/", ["Work with us"])
         self._test("/self-hosting/", ["Self-host Zulip"])
+        self._test("/zulip-cloud/", ["Zulip Cloud"])
         self._test("/security/", ["TLS encryption"])
         self._test("/use-cases/", ["Use cases and customer stories"])
         self._test("/why-zulip/", ["Why Zulip?"])
@@ -383,28 +392,105 @@ class DocPageTest(ZulipTestCase):
         for image in re.findall(r"/static/images/integrations/(logos/.*)\"", page):
             images_in_docs.add(image)
 
-        for integration in INTEGRATIONS:
-            url = f"/integrations/doc-html/{integration}"
-            response = self._test(url, expected_strings=[])
-            doc = response.content.decode("utf-8")
-            for image in re.findall(r"/static/images/integrations/(.*)\"", doc):
-                images_in_docs.add(image)
-
         result = self.client_get(
-            "/integrations/doc-html/nonexistent_integration",
+            "/integrations/category/nonexistent_category",
             follow=True,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(result.status_code, 404)
 
-        directory = "static/images/integrations"
+        for category_name in INTEGRATION_CATEGORY_SLUGS:
+            legacy_category_response = self.client_get(
+                f"/integrations/{category_name}",
+                follow=False,
+            )
+            self.assertEqual(legacy_category_response.status_code, 301)
+            self.assertEqual(
+                legacy_category_response["Location"], f"/integrations/category/{category_name}"
+            )
+
+        legacy_doc_response = self.client_get(
+            "/integrations/doc/asana?category=project-management",
+            follow=False,
+        )
+        self.assertEqual(legacy_doc_response.status_code, 301)
+        self.assertEqual(
+            legacy_doc_response["Location"], "/integrations/asana?category=project-management"
+        )
+
+        legacy_doc_with_trailing_slash_response = self.client_get(
+            "/integrations/doc/asana/",
+            follow=False,
+        )
+        self.assertEqual(legacy_doc_with_trailing_slash_response.status_code, 301)
+        self.assertEqual(legacy_doc_with_trailing_slash_response["Location"], "/integrations/asana")
+
+        result = self.client_get(
+            "/integrations/nonexistent_integration",
+            follow=True,
+        )
+        self.assertEqual(result.status_code, 404)
+
+        result = self._test(
+            "/integrations/asana?category=project-management",
+            expected_strings=[
+                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
+            ],
+        )
+
+        result = self.client_get(
+            "/integrations/asana?category=nonexistent_category",
+        )
+        self.assert_not_in_success_response(
+            [
+                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
+            ],
+            response,
+        )
+
+        # Mismatched category should also return back to all.
+        result = self.client_get(
+            "/integrations/asana?category=communication",
+        )
+        self.assert_not_in_success_response(
+            [
+                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
+            ],
+            response,
+        )
+
+        bot_subdirs = [integration.name for integration in BOT_INTEGRATIONS]
+        for integration in INTEGRATIONS:
+            url = f"/integrations/{integration}"
+            response = self._test(url, expected_strings=[])
+            doc = response.content.decode("utf-8")
+
+            patterns = [r"/static/images/integrations/(.*?)\""] + [
+                rf"/static/generated/bots/{bot_dir}/(.*?)\"" for bot_dir in bot_subdirs
+            ]
+            for pattern in patterns:
+                for image in re.findall(pattern, doc):
+                    images_in_docs.add(image)
+
         images_in_dir = {
             image_path
+            for directory, exclude_md in [
+                ("static/images/integrations", False),
+            ]
+            + [(f"static/generated/bots/{bot_dir}", True) for bot_dir in bot_subdirs]
             for root, _, files in os.walk(directory)
             for file in files
             if "bot_avatars"
             not in (image_path := os.path.relpath(os.path.join(root, file), directory))
+            and (not exclude_md or not image_path.endswith(".md"))
         }
+
+        # The integration docs and the screenshot images are in different repos
+        # for the PythonAPIIntegrations, so we cannot avoid going out of sync
+        # when adding/deleting screenshots.
+        # Use this set to temporarily add exclusions to this test.
+        exception_images: set[str] = {"jira-plugin/001.png", "git/001.png"}
+        images_in_dir.update(exception_images)
+        images_in_docs.update(exception_images)
 
         self.assertEqual(
             images_in_dir,
@@ -427,44 +513,44 @@ class DocPageTest(ZulipTestCase):
         og_description = '<meta property="og:description" content="Zulip comes with over'
 
         # Test a particular integration page
-        url = "/integrations/doc/github"
+        url = "/integrations/github"
         title = '<meta property="og:title" content="GitHub | Zulip integrations" />'
         description = '<meta property="og:description" content="Zulip comes with over'
-        self._test(url, [title, description])
+        self._test(url, [title, description, get_canonical_url(url)])
 
         # Test category pages
         for category in CATEGORIES:
-            url = f"/integrations/{category}"
+            url = f"/integrations/category/{category}"
             if category in META_CATEGORY:
                 title = f"<title>{CATEGORIES[category]} | Zulip integrations</title>"
                 og_title = f'<meta property="og:title" content="{CATEGORIES[category]} | Zulip integrations" />'
             else:
                 title = f"<title>{CATEGORIES[category]} tools | Zulip integrations</title>"
                 og_title = f'<meta property="og:title" content="{CATEGORIES[category]} tools | Zulip integrations" />'
-            self._test(url, [title, og_title, og_description])
+            self._test(url, [title, og_title, og_description, get_canonical_url(url)])
 
         # Test integrations index page
         url = "/integrations/"
         og_title = '<meta property="og:title" content="Zulip integrations" />'
-        self._test(url, [og_title, og_description])
+        self._test(url, [og_title, og_description, get_canonical_url(url)])
 
     def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-                url = f"/en/integrations/doc-html/{integration}"
+                url = f"/en/integrations/{integration}"
                 result = self.client_get(url, subdomain="", follow=True)
                 self.assertEqual(result.status_code, 404)
                 result = self.client_get(url, subdomain="zephyr", follow=True)
                 self.assertEqual(result.status_code, 404)
 
-            url = f"/en/integrations/doc-html/{integration}"
+            url = f"/en/integrations/{integration}"
             result = self.client_get(url, subdomain="", follow=True)
             self.assertEqual(result.status_code, 404)
             result = self.client_get(url, subdomain="zephyr", follow=True)
             self.assertEqual(result.status_code, 404)
 
-        result = self.client_get("/integrations/doc-html/nonexistent_integration", follow=True)
+        result = self.client_get("/integrations/nonexistent_integration", follow=True)
         self.assertEqual(result.status_code, 404)
 
     def test_electron_detection(self) -> None:
@@ -744,6 +830,14 @@ class PrivacyTermsTest(ZulipTestCase):
             response = self.client_get("/policies/")
         self.assert_in_success_response(["Terms and policies"], response)
 
+        # Test that canonical URL points to zulip.com
+        self.assert_in_success_response([get_canonical_url("/policies/")], response)
+
+        # We don't add a rel-canonical link to self-hosted server policies docs.
+        with self.settings(POLICIES_DIRECTORY="corporate/policies", CORPORATE_ENABLED=False):
+            response = self.client_get("/policies/")
+        self.assert_not_in_success_response([get_canonical_url("/policies/")], response)
+
     def test_custom_terms_of_service_template(self) -> None:
         not_configured_message = "This server is an installation"
         with self.settings(POLICIES_DIRECTORY="zerver/policies_absent"):
@@ -753,6 +847,8 @@ class PrivacyTermsTest(ZulipTestCase):
         with self.settings(POLICIES_DIRECTORY="zerver/policies_minimal"):
             response = self.client_get("/policies/terms")
         self.assert_in_success_response(["These are the custom terms and conditions."], response)
+        # Test that canonical URL points to zulip.com
+        self.assert_in_success_response([get_canonical_url("/policies/terms")], response)
 
         with self.settings(POLICIES_DIRECTORY="corporate/policies"):
             response = self.client_get("/policies/terms")

@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import timezones from "../generated/timezones.json";
 import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
@@ -9,20 +10,22 @@ import render_settings_api_key_modal from "../templates/settings/api_key_modal.h
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import {csrf_token} from "./csrf.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import type {CustomProfileFieldData, PillUpdateField} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import * as settings_bots from "./settings_bots.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_ui from "./settings_ui.ts";
@@ -40,6 +43,7 @@ let password_quality:
     | ((password: string, $bar: JQuery | undefined, $password_field: JQuery) => boolean)
     | undefined; // Loaded asynchronously
 let user_avatar_widget_created = false;
+let user_timezone_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
 export function update_email(new_email: string): void {
     const $email_input = $("#email_field_container");
@@ -93,30 +97,22 @@ export function update_email_change_display(): void {
     }
 }
 
-function display_avatar_upload_complete(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
-    $("#user-avatar-upload-widget .image-upload-text").show();
-    $("#user-avatar-upload-widget .image-delete-button").show();
+export function update_role_text(): void {
+    if ($("#user_role_details").length === 0) {
+        return;
+    }
+
+    const role_text = people.get_user_type(current_user.user_id)!;
+    $("#user_role_details .user-details-desc").text(role_text);
 }
 
-function display_avatar_upload_started(): void {
-    $("#user-avatar-source").hide();
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
-    $("#user-avatar-upload-widget .image-upload-text").hide();
-    $("#user-avatar-upload-widget .image-delete-button").hide();
-}
-
-function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
+function upload_avatar(file: File): void {
     const form_data = new FormData();
 
     assert(csrf_token !== undefined);
     form_data.append("csrfmiddlewaretoken", csrf_token);
-    const files = util.the($file_input).files;
-    assert(files !== null);
-    for (const [i, file] of [...files].entries()) {
-        form_data.append("file-" + i, file);
-    }
-    display_avatar_upload_started();
+    form_data.append("file", file);
+    $("#user-avatar-upload-widget-error").hide();
     channel.post({
         url: "/json/users/me/avatar",
         data: form_data,
@@ -124,22 +120,16 @@ function upload_avatar($file_input: JQuery<HTMLInputElement>): void {
         processData: false,
         contentType: false,
         success() {
-            display_avatar_upload_complete();
-            $("#user-avatar-upload-widget .image_file_input_error").hide();
+            dialog_widget.close();
+            $("#user-avatar-upload-widget .image-delete-button").show();
             $("#user-avatar-source").hide();
             // Rest of the work is done via the user_events -> avatar_url event we will get
         },
         error(xhr) {
-            display_avatar_upload_complete();
             if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();
             }
-            const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-            if (parsed.success) {
-                const $error = $("#user-avatar-upload-widget .image_file_input_error");
-                $error.text(parsed.data.msg);
-                $error.show();
-            }
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
         },
     });
 }
@@ -236,6 +226,7 @@ export function add_custom_profile_fields_to_settings(): void {
     custom_profile_fields_ui.initialize_custom_date_type_fields(
         element_id,
         people.my_current_user_id(),
+        true,
     );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
 }
@@ -245,6 +236,52 @@ export function hide_confirm_email_banner(): void {
         return;
     }
     $("#account-settings-status").hide();
+}
+
+export function set_user_own_role_dropdown_value(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const current_user_role = people.get_by_user_id(current_user.user_id).role;
+    $("select#user-self-role-select").val(current_user_role);
+}
+
+export function update_user_own_role_dropdown_state(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const $select_elem = $("select#user-self-role-select");
+    if (people.user_can_change_their_own_role()) {
+        ui_util.enable_element_and_remove_tooltip($select_elem);
+        return;
+    }
+    if (current_user.is_owner) {
+        ui_util.disable_element_and_add_tooltip(
+            $select_elem,
+            "Because you are the only organization owner, you cannot change your role.",
+        );
+    } else {
+        $select_elem.attr("disabled", "true");
+    }
+}
+
+export function add_or_remove_owner_from_role_dropdown(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    if (!current_user.is_owner) {
+        $("#user-self-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .hide();
+    } else {
+        $("#user-self-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .show();
+    }
 }
 
 // TODO/typescript: Move these to server_events_dispatch when it's converted to typescript.
@@ -266,6 +303,47 @@ export function update_privacy_settings_box(property: PrivacySettingName): void 
     const $container = $("#account-settings");
     const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
     settings_components.set_input_element_value($input_elem, user_settings[property]);
+}
+
+export function render_user_timezone_dropdown_widget(): void {
+    const timezone_items = timezones.timezones.map((tz: {name: string; utc_offset: string}) => ({
+        name: `${tz.name} (${tz.utc_offset})`,
+        unique_id: tz.name,
+    }));
+
+    const opts: dropdown_widget.DropdownWidgetOptions = {
+        widget_name: "user_timezone",
+        get_options: () => timezone_items,
+        item_click_callback(event, dropdown, widget) {
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+            const selected = widget.value()!;
+
+            widget.render(selected);
+            settings_ui.do_settings_change(
+                channel.patch,
+                "/json/settings",
+                {timezone: selected},
+                $(".timezone-setting-status").expectOne(),
+                {
+                    error_continuation() {
+                        widget.render(user_settings.timezone);
+                    },
+                },
+            );
+        },
+        $events_container: $("#profile-settings"),
+        default_id: user_settings.timezone,
+        unique_id_type: "string",
+        search_placeholder_text: $t({defaultMessage: "Your time zone"}),
+        text_if_current_value_not_in_options: $t({
+            defaultMessage: "Select a time zone",
+        }),
+    };
+
+    user_timezone_dropdown_widget = new dropdown_widget.DropdownWidget(opts);
+    user_timezone_dropdown_widget.setup();
 }
 
 export function set_up(): void {
@@ -368,8 +446,8 @@ export function set_up(): void {
                 email: current_user.delivery_email,
                 api_key: $("#api_key_value").text(),
             };
-            const data = settings_bots.generate_zuliprc_content(bot_object);
-            $(this).attr("href", settings_bots.encode_zuliprc_as_url(data));
+            const data = bot_helper.generate_zuliprc_content(bot_object);
+            $(this).attr("href", bot_helper.encode_zuliprc_as_url(data));
         });
 
         $("#api_key_modal [data-micromodal-close]").on("click", () => {
@@ -630,6 +708,7 @@ export function set_up(): void {
         const data = {
             email: $<HTMLInputElement>("input#demo_organization_add_email").val(),
             full_name: $("#demo_organization_update_full_name").val(),
+            email_address_visibility: $("#demo_owner_email_address_visibility").val(),
         };
 
         const opts = {
@@ -668,6 +747,9 @@ export function set_up(): void {
         e.stopPropagation();
 
         function demo_organization_add_email_post_render(): void {
+            // Set email address visibility to current user setting.
+            $("#demo_owner_email_address_visibility").val(user_settings.email_address_visibility);
+
             // Disable submit button if either input is an empty string.
             const $add_email_element = $<HTMLInputElement>("input#demo_organization_add_email");
             const $add_name_element = $<HTMLInputElement>(
@@ -698,6 +780,8 @@ export function set_up(): void {
                 html_body: render_demo_organization_add_email_modal({
                     delivery_email: current_user.delivery_email,
                     full_name: current_user.full_name,
+                    email_address_visibility_values:
+                        settings_config.email_address_visibility_values,
                 }),
                 html_submit_button: $t_html({defaultMessage: "Add"}),
                 loading_spinner: true,
@@ -830,21 +914,7 @@ export function set_up(): void {
         user_avatar_widget_created = true;
     }
 
-    $("#user_timezone").val(user_settings.timezone);
-
-    $<HTMLSelectElement>("select#user_timezone").on("change", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const data = {timezone: this.value};
-
-        settings_ui.do_settings_change(
-            channel.patch,
-            "/json/settings",
-            data,
-            $(".timezone-setting-status").expectOne(),
-        );
-    });
+    render_user_timezone_dropdown_widget();
 
     $<HTMLInputElement>("#automatically_offer_update_time_zone").on("change", function (e) {
         e.preventDefault();
@@ -889,6 +959,24 @@ export function set_up(): void {
             "/json/settings",
             data,
             $("#account-settings .privacy-setting-status").expectOne(),
+        );
+    });
+
+    add_or_remove_owner_from_role_dropdown();
+    set_user_own_role_dropdown_value();
+    update_user_own_role_dropdown_state();
+
+    $<HTMLSelectElement>("select#user-self-role-select").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {role: this.value};
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/users/" + encodeURIComponent(current_user.user_id),
+            data,
+            $("#account-settings #account-settings-status").expectOne(),
         );
     });
 }

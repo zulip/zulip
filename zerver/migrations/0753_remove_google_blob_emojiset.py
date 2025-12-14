@@ -15,7 +15,7 @@ def remove_google_blob(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0752_remove_stream_is_in_zephyr_realm"),
+        ("zerver", "0751_externalauthid_zerver_user_externalauth_uniq"),
     ]
 
     operations = [

@@ -51,12 +51,7 @@ people.add_active_user(bob);
 
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
-    const $widget = {};
-
-    $widget.s = s;
-    $widget.length = 1;
-    $widget[0] = "textarea";
-    $widget.focused = false;
+    const $widget = {s, length: 1, [0]: "textarea", focused: false};
 
     $widget.caret = function (arg) {
         if (typeof arg === "number") {
@@ -1210,6 +1205,15 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         event.shiftKey = true;
         compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "link");
+        format_text_type = undefined;
+
+        // Test code block insertion:
+        // Mac = Cmd+Shift+C
+        // Windows/Linux = Ctrl+Shift+C
+        event.key = "c";
+        event.shiftKey = true;
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
+        assert.equal(format_text_type, "code");
         format_text_type = undefined;
     }
 

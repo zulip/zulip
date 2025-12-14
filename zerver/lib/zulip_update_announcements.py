@@ -517,6 +517,43 @@ feature highlights in Zulip Server 11.0, and other Zulip project updates.
             blog_post_11_0_url="https://blog.zulip.com/zulip-server-11-0",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=22,
+        message="""
+The [help center]({help_url}) has a new, modernized design, complete with
+light and dark theme. A search bar makes it easier to find the information you
+need, whether it's how to get started, specific features, best practices, or
+administrative capabilities.
+
+**Mobile updates**
+- You can now [browse]({browse_and_subscribe_url}) channels you're not
+  subscribed to, and subscribe.
+- You can now [delete messages]({delete_message_completely}), if you have
+  permission to do so.
+- Android users can now paste an image into a message, or insert a sticker from
+  the keyboard.
+""".format(
+            browse_and_subscribe_url="/help/introduction-to-channels#browse-and-subscribe-to-channels",
+            delete_message_completely="/help/delete-a-message#delete-a-message-completely",
+            help_url="/help/",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=23,
+        message="""
+**Web and desktop updates**
+- You can now [report]({report_a_message_url}) problematic messages if
+moderation requests are [enabled]({enable_moderation_requests_url}).
+- You can now [expand or collapse]({expand_or_collapse_sections_url}) all sections in the left sidebar, and
+[configure]({configure_inbox_folders_url}) whether channels are grouped by
+folder in the inbox view.
+""".format(
+            report_a_message_url="/help/report-a-message",
+            enable_moderation_requests_url="/help/enable-moderation-requests",
+            expand_or_collapse_sections_url="/help/left-sidebar#expand-or-collapse-sections",
+            configure_inbox_folders_url="/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-inbox-view",
+        ),
+    ),
 ]
 
 

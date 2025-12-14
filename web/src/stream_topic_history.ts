@@ -1,10 +1,9 @@
 import assert from "minimalistic-assert";
 
-import * as resolved_topics from "../shared/src/resolved_topic.ts";
-
 import * as echo_state from "./echo_state.ts";
 import {FoldDict} from "./fold_dict.ts";
 import * as message_util from "./message_util.ts";
+import * as resolved_topics from "./resolved_topic.ts";
 import * as sub_store from "./sub_store.ts";
 import * as unread from "./unread.ts";
 

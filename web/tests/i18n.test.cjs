@@ -65,7 +65,6 @@ run_test("t_tag", ({mock_template}) => {
         message_id: "99",
         should_display_quote_message: true,
         editability_menu_item: true,
-        should_display_hide_option: true,
         conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",
     };
@@ -124,27 +123,57 @@ run_test("language_list", () => {
             name: "Bahasa Indonesia",
             percent_translated: 32,
         },
+        {
+            code: "mn",
+            locale: "mn",
+            name: "Mongolian",
+            percent_translated: 53,
+        },
+        {
+            code: "bqi",
+            locale: "bqi",
+            name: "Luri (Bakhtiari)",
+            percent_translated: 5,
+        },
+        {
+            code: "zh-hans",
+            locale: "zh_Hans",
+            name: "简体中文",
+            percent_translated: 86,
+        },
     ];
     initialize({language_list});
     assert.equal(get_language_name("en"), "English");
 
     const successful_formatted_list = [
         {
-            name: "English",
             code: "en",
-            name_with_percent: "English",
+            name_with_percent: "English (United States)",
             selected: true,
         },
         {
-            name: "British English",
             code: "en-gb",
-            name_with_percent: "British English (99%)",
+            name_with_percent: "English (United Kingdom) (99%)",
             selected: false,
         },
         {
-            name: "Bahasa Indonesia",
             code: "id",
-            name_with_percent: "Bahasa Indonesia (32%)",
+            name_with_percent: "Indonesia (32%)",
+            selected: false,
+        },
+        {
+            code: "mn",
+            name_with_percent: "Монгол (53%)",
+            selected: false,
+        },
+        {
+            code: "bqi",
+            name_with_percent: "Bakhtiari (5%)",
+            selected: false,
+        },
+        {
+            code: "zh-hans",
+            name_with_percent: "中文 (简体) (86%)",
             selected: false,
         },
     ];

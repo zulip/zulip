@@ -1,0 +1,43 @@
+{{#if unusable_user_count}}
+    <p>
+        {{#tr}}
+            You don't have permission to <z-help-link>access</z-help-link> the
+            email {unusable_user_count, plural, one {address} other {addresses}}
+            of {unusable_user_count, plural, one {# user} other {# users}}.
+            {{#*inline "z-help-link"}}
+                <a target="_blank" rel="noopener noreferrer"
+                  href="#/help/configure-email-visibility">
+                    {{> @partial-block}}
+                </a>
+            {{/inline}}
+        {{/tr}}
+
+        {{#tr}}
+            Accounts for users whose emails you can't access will be created
+            with placeholder email addresses. A placeholder email must be
+            updated by an administrator for the user to be able to log in.
+        {{/tr}}
+    </p>
+
+    {{#if unusable_admin_user_count}}
+        <p>
+            {{#tr}}
+                The following {unusable_admin_user_count, plural, one
+                {administrator} other {administrators}} will be unable to
+                log in: <z-user-pills></z-user-pills>
+
+                {{#*inline "z-user-pills"}}
+                    {{#each unusable_admin_users}}
+                        {{> ./user_display_only_pill
+                          user_id= this.user_id
+                          display_value= this.full_name
+                          img_src= this.avatar_url
+                          is_active= true
+                          }}
+                        {{#unless @last}}, {{/unless}}
+                    {{/each}}
+                {{/inline}}
+            {{/tr}}
+        </p>
+    {{/if}}
+{{/if}}

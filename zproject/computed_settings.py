@@ -64,7 +64,6 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_ENABLED_IDPS,
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
-    SOCIAL_AUTH_SYNC_ATTRS_DICT,
     STATIC_URL,
     SUBMIT_USAGE_STATISTICS,
     TORNADO_PORTS,
@@ -177,6 +176,8 @@ if len(sys.argv) > 2 and sys.argv[0].endswith("manage.py") and sys.argv[1] == "p
 else:
     IS_WORKER = False
 
+# This should primarily be used to customize error messages
+RUNNING_IN_DOCKER = os.path.exists("/.dockerenv")
 
 # This is overridden in test_settings.py for the test suites
 PUPPETEER_TESTS = False
@@ -383,10 +384,7 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"].update(
             PASSWORD=get_secret("postgres_password"),
         )
-    if REMOTE_POSTGRES_SSLMODE != "":
-        DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
-    else:
-        DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
+    DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
 elif (
     get_config("postgresql", "database_user", "zulip") != "zulip"
     and get_secret("postgres_password") is not None
@@ -395,7 +393,6 @@ elif (
         PASSWORD=get_secret("postgres_password"),
         HOST="localhost",
     )
-POSTGRESQL_MISSING_DICTIONARIES = get_config("postgresql", "missing_dictionaries", False)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -535,14 +532,6 @@ if LOCAL_UPLOADS_DIR is None and S3_REGION is None:
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
-
-# Twitter API credentials
-# Secrecy not required because its only used for R/O requests.
-# Please don't make us go over our rate limit.
-TWITTER_CONSUMER_KEY = get_secret("twitter_consumer_key")
-TWITTER_CONSUMER_SECRET = get_secret("twitter_consumer_secret")
-TWITTER_ACCESS_TOKEN_KEY = get_secret("twitter_access_token_key")
-TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
 
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [
@@ -1132,6 +1121,11 @@ SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = [
     "mobile_flow_otp",
     "desktop_flow_otp",
     "multiuse_object_key",
+    # Include "next" so python-social-auth treats it like other session fields
+    # and clears it when absent in subsequent auth requests. Otherwise,
+    # it saves it in the session due to its being the redirect field,
+    # but doesn't clear it from the session when the "next" is absent.
+    "next",
 ]
 SOCIAL_AUTH_LOGIN_ERROR_URL = "/login/"
 
@@ -1209,23 +1203,6 @@ for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
         path = f"/etc/zulip/saml/idps/{idp_name}.crt"
     idp_dict["x509cert"] = get_from_file_if_exists(path)
 
-    if "zulip_groups" in idp_dict.get("extra_attrs", []):
-        raise AssertionError("zulip_groups can't be listed in extra_attrs in the IdP config.")
-
-
-def ensure_dict_path(d: dict[str, Any], keys: list[str]) -> None:
-    for key in keys:
-        if key not in d:
-            d[key] = {}
-        d = d[key]
-
-
-for dict_for_subdomain in SOCIAL_AUTH_SYNC_ATTRS_DICT.values():
-    for attrs_map in dict_for_subdomain.values():
-        if "zulip_groups" in attrs_map.values():
-            raise AssertionError(
-                "zulip_groups can't be listed as a SAML attribute in SOCIAL_AUTH_SYNC_ATTRS_DICT"
-            )
 
 SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_details",

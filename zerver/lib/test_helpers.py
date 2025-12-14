@@ -35,7 +35,7 @@ from zerver.lib import cache
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, Query, TimeTrackingCursor
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
@@ -400,10 +400,16 @@ class HostRequestMock(HttpRequest):
         self.content_type = ""
         self.session = SessionBase()
 
+        # Mock parse_client() in middleware.py
+        if meta_data and "HTTP_USER_AGENT" in meta_data:
+            client = meta_data["HTTP_USER_AGENT"]
+        else:
+            client = ""
+
         RequestNotes.set_notes(
             self,
             RequestNotes(
-                client_name="",
+                client_name=client,
                 log_data={},
                 tornado_handler_id=None if tornado_handler is None else tornado_handler.handler_id,
                 client=get_client(client_name) if client_name is not None else None,
@@ -565,7 +571,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # This endpoint only returns 500 and 404 codes, so it doesn't get picked up
             # by find_pattern above and therefore needs to be exempt.
             "self-hosted-billing/not-configured/",
-            *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
+            *(webhook.url for webhook in INCOMING_WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
         untested_patterns -= exempt_patterns

@@ -1,0 +1,32 @@
+[
+    {
+        "text": "random message but it is too long for the thread topic name",
+        "user": "U061A5N1G",
+        "ts": "1439868294.000008",
+        "thread_ts": "1439868294.000008",
+        "channel_name": "random"
+    },
+    {
+        "text": "replying to the second thread :)",
+        "user": "U061A1R2R",
+        "ts": "1439869294.000008",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "1439868294.000008",
+        "channel_name": "random"
+    },
+    {
+        "text": "random message but it is too long for the thread two electric boogaloo",
+        "user": "U061A1R2R",
+        "ts": "1439868294.000008",
+        "thread_ts": "1439868294.000008",
+        "channel_name": "random"
+    },
+    {
+        "text": "second thread",
+        "user": "U061A5N1G",
+        "ts": "1439869294.000008",
+        "parent_user_id": "U061A1R2R",
+        "thread_ts": "1439868294.000008",
+        "channel_name": "random"
+    }
+]

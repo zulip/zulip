@@ -1,9 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as typing_status from "../shared/src/typing_status.ts";
-import type {EditingStatusWorker, Recipient} from "../shared/src/typing_status.ts";
-
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
@@ -13,6 +10,8 @@ import * as people from "./people.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import type {EditingStatusWorker, Recipient} from "./typing_status.ts";
+import * as typing_status from "./typing_status.ts";
 import {user_settings} from "./user_settings.ts";
 
 let edit_box_worker: EditingStatusWorker;

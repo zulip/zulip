@@ -175,10 +175,6 @@ export function maybe_show_scrolling_formatting_buttons(container_selector: stri
 
     // Set these values as data attributes for ready access by
     // other scrolling logic
-    //
-    // TODO: Modify eslint config, if we wish to avoid dataset
-    //
-    /* eslint unicorn/prefer-dom-node-dataset: "off" */
     button_container.setAttribute("data-button-container-width", button_container_width.toString());
     button_container.setAttribute("data-button-bar-width", button_bar_width.toString());
     button_container.setAttribute(
@@ -218,7 +214,8 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         if (
             opts.trigger === "clear topic button" ||
             opts.trigger === "compose_hotkey" ||
-            opts.trigger === "inbox_nofocus"
+            opts.trigger === "inbox_nofocus" ||
+            opts.trigger === "zoomed new topic"
         ) {
             return "input#stream_message_recipient_topic";
         }
@@ -601,6 +598,8 @@ export function handle_keydown(
         type = "italic";
     } else if (key === "l" && event.shiftKey) {
         type = "link";
+    } else if (key === "c" && event.shiftKey) {
+        type = "code";
     }
 
     // detect Cmd and Ctrl key
@@ -622,6 +621,46 @@ export function handle_keyup(
     }
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
+}
+
+/**
+ * True if the cursor in `$textarea` for the current line sits between an opening run
+ * of backticks (`, ```, ...) and its still‑missing matching closer
+ * where the cursor is placed.
+ */
+export function cursor_inside_inline_code_span($textarea: JQuery<HTMLTextAreaElement>): boolean {
+    const text_area_element = $textarea[0];
+    if (!text_area_element) {
+        return false;
+    }
+    // jQuery.val() can be string | number | string[] | undefined.
+    const val = $textarea.val();
+    assert(typeof val === "string");
+    const caret = text_area_element.selectionStart;
+
+    const last_newline = val.lastIndexOf("\n", caret - 1);
+    const line_start = last_newline === -1 ? 0 : last_newline + 1;
+    const current_line_prefix = val.slice(line_start, caret);
+
+    let open_backtick_count = 0;
+    for (let i = 0; i < current_line_prefix.length; i += 1) {
+        if (current_line_prefix[i] === "`") {
+            let consecutive_count = 1;
+            while (i + 1 < current_line_prefix.length && current_line_prefix[i + 1] === "`") {
+                consecutive_count += 1;
+                i += 1;
+            }
+
+            // A code span can be opened with any number of consecutive backticks,
+            // and can only be closed with the same number of consecutive backticks.
+            if (open_backtick_count === 0) {
+                open_backtick_count = consecutive_count;
+            } else if (consecutive_count === open_backtick_count) {
+                open_backtick_count = 0;
+            }
+        }
+    }
+    return open_backtick_count > 0;
 }
 
 export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
@@ -1209,6 +1248,7 @@ export let format_text = (
             break;
         }
         case "code": {
+            // Ctrl + Shift + C: Toggle code syntax on selection.
             const inline_code_syntax = "`";
             let block_code_syntax_start = "```\n";
             let block_code_syntax_end = "\n```";

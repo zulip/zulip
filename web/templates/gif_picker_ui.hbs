@@ -1,0 +1,35 @@
+<div class="gif-grid-in-popover">
+    <div class="arrow"></div>
+    <div class="popover-inner">
+        <div class="popover-filter-input-wrapper">
+            {{#if is_giphy}}
+                <input type="text" id="gif-search-query" class="popover-filter-input filter_text_input" autocomplete="off" placeholder="{{t 'Filter' }}" autofocus/>
+            {{else}}
+                <input type="text" id="gif-search-query" class="popover-filter-input filter_text_input" autocomplete="off" placeholder="{{t 'Search Tenor' }}" autofocus/>
+            {{/if}}
+            <button type="button" class="clear-search-button" id="gif-search-clear" tabindex="-1">
+                <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="gif-scrolling-container" data-simplebar data-simplebar-tab-index="-1">
+            {{! We need a container we can replace
+            without removing the simplebar wrappers.
+            We replace the `giphy-content`/`tenor-content` when
+            searching for GIFs. }}
+            {{#if is_giphy}}
+                <div class="giphy-content"></div>
+            {{else}}
+                <div class="tenor-content"></div>
+            {{/if}}
+        </div>
+        {{!-- We are required to include the
+        "Powered By GIPHY" banner, which isn't mandatory
+        for Tenor. So we avoid including one for Tenor
+        to save space. --}}
+        {{#if is_giphy}}
+            <div class="popover-footer">
+                <img src="../images/giphy/GIPHY_attribution.png" alt="{{t 'GIPHY attribution' }}" />
+            </div>
+        {{/if}}
+    </div>
+</div>

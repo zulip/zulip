@@ -9,10 +9,10 @@ Zulip:
   or cases where the third-party tool wants to control the formatting
   of the messages in Zulip.
 * Use one of our supported [integration
-  frameworks](/integrations/meta-integration), such as the
-  [Slack-compatible incoming webhook](/integrations/doc/slack_incoming),
-  [Zapier integration](/integrations/doc/zapier), or
-  [IFTTT integration](/integrations/doc/ifttt).
+  frameworks](/integrations/category/meta-integration), such as the
+  [Slack-compatible incoming webhook](/integrations/slack_incoming),
+  [Zapier integration](/integrations/zapier), or
+  [IFTTT integration](/integrations/ifttt).
 * Implementing an incoming webhook integration (detailed on this page),
   where all the logic for formatting the Zulip messages lives in the
   Zulip server.  This is how most of [Zulip's official
@@ -36,15 +36,14 @@ process.
 * Set up the
   [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html).
 
-* Use [Zulip's JSON integration](/integrations/doc/json),
+* Use [Zulip's JSON integration](/integrations/json),
   <https://webhook.site/>, or a similar site to capture an example
   webhook payload from the third-party service. Create a
   `zerver/webhooks/<mywebhook>/fixtures/` directory, and add the
   captured JSON payload as a test fixture.
 
-* Create an `Integration` object, and add it to the `WEBHOOK_INTEGRATIONS`
-  list in `zerver/lib/integrations.py`. Search for `WebhookIntegration` in that
-  file to find an existing one to copy.
+* Create an `IncomingWebhookIntegration` object, and add it to the
+  `INCOMING_WEBHOOK_INTEGRATIONS` list in `zerver/lib/integrations.py`.
 
 * Write a draft webhook handler in `zerver/webhooks/<mywebhook>/view.py`. There
   are a lot of examples in the `zerver/webhooks/` directory that you can copy.
@@ -107,13 +106,10 @@ below are for a webhook named `MyWebHook`.
 ### Files that need to be updated
 
 * `zerver/lib/integrations.py`: Add your integration to
-  `WEBHOOK_INTEGRATIONS`. This will automatically register a
+  `INCOMING_WEBHOOK_INTEGRATIONS`. This will automatically register a
   URL for the incoming webhook of the form `api/v1/external/mywebhook` and
   associate it with the function called `api_mywebhook_webhook` in
-  `zerver/webhooks/mywebhook/view.py`. Also add your integration to
-  `DOC_SCREENSHOT_CONFIG`. This will allow you to automatically generate
-  a screenshot for the documentation by running
-  `tools/screenshots/generate-integration-docs-screenshot --integration mywebhook`.
+  `zerver/webhooks/mywebhook/view.py`.
 
 ## Common Helpers
 
@@ -169,7 +165,7 @@ integration, is:
 
 The list of existing webhook integrations can be found by browsing the
 [Integrations documentation](/integrations/) or in
-`zerver/lib/integrations.py` at `WEBHOOK_INTEGRATIONS`.
+`zerver/lib/integrations.py` at `INCOMING_WEBHOOK_INTEGRATIONS`.
 
 Parameters accepted in the URL include:
 

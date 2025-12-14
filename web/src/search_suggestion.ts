@@ -9,6 +9,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import {RESOLVED_TOPIC_PREFIX} from "./resolved_topic.ts";
 import {type NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -24,9 +25,14 @@ export type UserPillItem = {
     should_add_guest_user_indicator: boolean;
 };
 
+type ChannelTopicEntry = {
+    channel_id: string;
+    topic: string;
+};
+
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-const channel_incompatible_patterns = [
+const channel_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
     {operator: "dm-including"},
@@ -35,7 +41,23 @@ const channel_incompatible_patterns = [
     {operator: "channels"},
 ];
 
-const incompatible_patterns: Record<string, TermPattern[]> = {
+const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[]>> &
+    Record<
+        | "is:resolved"
+        | "-is:resolved"
+        | "is:dm"
+        | "is:starred"
+        | "is:mentioned"
+        | "is:followed"
+        | "is:alerted"
+        | "is:unread"
+        | "is:muted"
+        | "has:link"
+        | "has:image"
+        | "has:attachment"
+        | "has:reaction",
+        TermPattern[]
+    > = {
     channel: channel_incompatible_patterns,
     stream: channel_incompatible_patterns,
     streams: channel_incompatible_patterns,
@@ -208,7 +230,7 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
         const description_html = verb + prefix + Handlebars.Utils.escapeExpression(channel_name);
         const channel = stream_data.get_sub_by_name(channel_name);
         assert(channel !== undefined);
-        const term = {
+        const term: NarrowTerm = {
             operator: "channel",
             operand: channel.stream_id.toString(),
             negated: last.negated,
@@ -218,114 +240,116 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
     });
 }
 
-function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    // We only suggest groups once a term with a valid user already exists
-    if (terms.length === 0) {
-        return [];
-    }
-    const last_complete_term = terms.at(-1)!;
-    // For users with "pm-with" in their muscle memory, still
-    // have group direct message suggestions with "dm:" operator.
-    if (
-        !check_validity(
-            last_complete_term,
-            terms.slice(-1),
-            ["dm", "pm-with"],
-            [{operator: "channel"}],
-        )
-    ) {
-        return [];
-    }
-
-    // If they started typing since a user pill, we'll parse that as "search"
-    // but they might actually want to parse that as a user instead to add to
-    // the most recent pill. So we shuffle some things around to support that.
-    if (last.operator === "search") {
-        const text_input = last.operand;
-        const operand = `${last_complete_term.operand},${text_input}`;
-        last = {
-            ...last_complete_term,
-            operand,
-        };
-        terms = terms.slice(-1);
-    } else if (last.operator === "") {
-        last = last_complete_term;
-    } else {
-        // If they already started another term with an other operator, we're
-        // no longer dealing with a group DM situation.
-        return [];
-    }
-
-    const operand = last.operand;
-    const negated = last.negated;
-
-    // The operand has the form "part1,part2,pa", where all but the last part
-    // are emails, and the last part is an arbitrary query.
-    //
-    // We only generate group suggestions when there's more than one part, and
-    // we only use the last part to generate suggestions.
-
-    const last_comma_index = operand.lastIndexOf(",");
-    let all_but_last_part;
-    let last_part;
-    if (last_comma_index === -1) {
-        all_but_last_part = operand;
-        last_part = "";
-    } else {
-        // Neither all_but_last_part nor last_part include the final comma.
-        all_but_last_part = operand.slice(0, last_comma_index);
-        last_part = operand.slice(last_comma_index + 1);
-    }
-
-    // We don't suggest a person if their email is already present in the
-    // operand (not including the last part).
-    const parts = [...all_but_last_part.split(","), people.my_current_email()];
-
-    const all_users_but_last_part = [];
-    for (const email of all_but_last_part.split(",")) {
-        const user = people.get_by_email(email);
-        // Somehow an invalid email is showing up earlier in the group.
-        // This can happen if e.g. the user manually enters multiple emails.
-        // We won't have group suggestions built from an invalid user, so
-        // return an empty list.
-        if (user === undefined) {
+function get_group_suggestions(
+    group_operator: "dm" | "dm-including",
+): (last: NarrowTerm, terms: NarrowTerm[]) => Suggestion[] {
+    return (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
+        // We only suggest groups once a term with a valid user already exists
+        if (terms.length === 0) {
             return [];
         }
-        all_users_but_last_part.push(user);
-    }
-
-    const person_matcher = people.build_person_matcher(last_part);
-    let persons = people.filter_all_persons((person) => {
-        if (parts.includes(person.email)) {
-            return false;
-        }
-        return last_part === "" || person_matcher(person);
-    });
-
-    persons.sort(compare_by_direct_message_group(parts));
-
-    // Take top 15 persons, since they're ordered by pm_recipient_count.
-    persons = persons.slice(0, 15);
-
-    const prefix = Filter.operator_to_prefix("dm", negated);
-
-    return persons.map((person) => {
-        const term = {
-            operator: "dm",
-            operand: all_but_last_part + "," + person.email,
-            negated,
-        };
-
-        let terms: NarrowTerm[] = [term];
-        if (negated) {
-            terms = [{operator: "is", operand: "dm"}, term];
+        const last_complete_term = terms.at(-1)!;
+        // For users with "pm-with" in their muscle memory, still
+        // have group direct message suggestions with "dm:" operator.
+        const valid_terms = group_operator === "dm" ? ["dm", "pm-with"] : [group_operator];
+        if (
+            !check_validity(last_complete_term, terms.slice(-1), valid_terms, [
+                {operator: "channel"},
+            ])
+        ) {
+            return [];
         }
 
-        return {
-            description_html: prefix,
-            search_string: Filter.unparse(terms),
-        };
-    });
+        // If they started typing since a user pill, we'll parse that as "search"
+        // but they might actually want to parse that as a user instead to add to
+        // the most recent pill. So we shuffle some things around to support that.
+        if (last.operator === "search") {
+            const text_input = last.operand;
+            const operand = `${last_complete_term.operand},${text_input}`;
+            last = {
+                ...last_complete_term,
+                operand,
+            };
+            terms = terms.slice(-1);
+        } else if (last.operator === "") {
+            last = last_complete_term;
+        } else {
+            // If they already started another term with an other operator, we're
+            // no longer dealing with a group DM situation.
+            return [];
+        }
+
+        const operand = last.operand;
+        const negated = last.negated;
+
+        // The operand has the form "part1,part2,pa", where all but the last part
+        // are emails, and the last part is an arbitrary query.
+        //
+        // We only generate group suggestions when there's more than one part, and
+        // we only use the last part to generate suggestions.
+
+        const last_comma_index = operand.lastIndexOf(",");
+        let all_but_last_part;
+        let last_part;
+        if (last_comma_index === -1) {
+            all_but_last_part = operand;
+            last_part = "";
+        } else {
+            // Neither all_but_last_part nor last_part include the final comma.
+            all_but_last_part = operand.slice(0, last_comma_index);
+            last_part = operand.slice(last_comma_index + 1);
+        }
+
+        // We don't suggest a person if their email is already present in the
+        // operand (not including the last part).
+        const parts = [...all_but_last_part.split(","), people.my_current_email()];
+
+        const all_users_but_last_part = [];
+        for (const email of all_but_last_part.split(",")) {
+            const user = people.get_by_email(email);
+            // Somehow an invalid email is showing up earlier in the group.
+            // This can happen if e.g. the user manually enters multiple emails.
+            // We won't have group suggestions built from an invalid user, so
+            // return an empty list.
+            if (user === undefined) {
+                return [];
+            }
+            all_users_but_last_part.push(user);
+        }
+
+        const person_matcher = people.build_person_matcher(last_part);
+        let persons = people.filter_all_persons((person) => {
+            if (parts.includes(person.email)) {
+                return false;
+            }
+            return last_part === "" || person_matcher(person);
+        });
+
+        persons.sort(compare_by_direct_message_group(parts));
+
+        // Take top 15 persons, since they're ordered by pm_recipient_count.
+        persons = persons.slice(0, 15);
+
+        const prefix = Filter.operator_to_prefix(group_operator, negated);
+
+        return persons.map((person) => {
+            const term: NarrowTerm = {
+                operator: group_operator,
+                operand: all_but_last_part + "," + person.email,
+                negated,
+            };
+
+            let terms: NarrowTerm[] = [term];
+            if (group_operator === "dm" && negated) {
+                terms = [{operator: "is", operand: "dm"}, term];
+            }
+
+            return {
+                description_html: prefix,
+                search_string: Filter.unparse(terms),
+            };
+        });
+    };
 }
 
 function make_people_getter(last: NarrowTerm): () => User[] {
@@ -361,7 +385,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowTerm,
     terms: NarrowTerm[],
-    autocomplete_operator: string,
+    autocomplete_operator: NarrowTerm["operator"],
 ): Suggestion[] {
     if ((last.operator === "is" && last.operand === "dm") || last.operator === "pm-with") {
         // Interpret "is:dm" or "pm-with:" operator as equivalent to "dm:".
@@ -426,12 +450,12 @@ function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
 }
 
 export function get_topic_suggestions_from_candidates({
-    candidate_topics,
+    candidate_topic_entries,
     guess,
 }: {
-    candidate_topics: string[];
+    candidate_topic_entries: ChannelTopicEntry[];
     guess: string;
-}): string[] {
+}): ChannelTopicEntry[] {
     // This function is exported for unit testing purposes.
     const max_num_topics = 10;
 
@@ -439,7 +463,7 @@ export function get_topic_suggestions_from_candidates({
         // In the search UI, once you autocomplete the channel,
         // we just show you the most recent topics before you even
         // need to start typing any characters.
-        return candidate_topics.slice(0, max_num_topics);
+        return candidate_topic_entries.slice(0, max_num_topics);
     }
 
     // Once the user starts typing characters for a topic name,
@@ -450,18 +474,31 @@ export function get_topic_suggestions_from_candidates({
     // The following loop can be expensive if you have lots
     // of topics in a channel, so we try to exit the loop as
     // soon as we find enough matches.
-    const topics: string[] = [];
-    for (const topic of candidate_topics) {
-        const topic_display_name = util.get_final_topic_display_name(topic);
+    const topic_entries: ChannelTopicEntry[] = [];
+    for (const candidate_topic_entry of candidate_topic_entries) {
+        const topic_name = candidate_topic_entry.topic;
+
+        const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (common.phrase_match(guess, topic_display_name)) {
-            topics.push(topic);
-            if (topics.length >= max_num_topics) {
+            topic_entries.push({channel_id: candidate_topic_entry.channel_id, topic: topic_name});
+            if (topic_entries.length >= max_num_topics) {
                 break;
             }
         }
     }
 
-    return topics;
+    return topic_entries;
+}
+
+function ignore_resolved_topic_prefix(entry: ChannelTopicEntry, case_insensitive = false): string {
+    let topic_name = entry.topic;
+    if (topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
+        topic_name = topic_name.slice(2);
+    }
+    if (case_insensitive) {
+        return topic_name.toLowerCase();
+    }
+    return topic_name;
 }
 
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
@@ -474,10 +511,9 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     const operator = Filter.canonicalize_operator(last.operator);
     const operand = last.operand;
     const negated = operator === "topic" && last.negated;
-    let channel_id: string | undefined;
+    let channel_id_str: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
-    const suggest_terms: NarrowTerm[] = [];
 
     // channel:Rome -> show all Rome topics
     // channel:Rome topic: -> show all Rome topics
@@ -486,7 +522,8 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // channel:Rome topic:f -> show all Rome topics with a word starting in f
 
     // When narrowed to a channel:
-    //   topic: -> show all topics in current channel
+    //   topic: -> show topics from all subscribed channels with the current channel's
+    //   matching topics listed first.
     //   foo -> show all topics in current channel with words starting with foo
 
     // If somebody explicitly types search:, then we might
@@ -494,65 +531,118 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // minor issue, and Filter.parse() is currently lossy
     // in terms of telling us whether they provided the operator,
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
+
+    let show_topics_from_other_channels = true;
     switch (operator) {
         case "channel":
             guess = "";
-            channel_id = operand;
-            suggest_terms.push(last);
+            channel_id_str = operand;
             break;
         case "topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
-                channel_id = filter.operands("channel")[0];
+                channel_id_str = filter.terms_with_operator("channel")[0]!.operand;
+                // We want to show topics that belong only to the
+                // channel mentioned in the `channel` operator, if it exists.
+                show_topics_from_other_channels = false;
             } else {
-                channel_id = narrow_state.stream_id()?.toString();
-                if (channel_id) {
-                    suggest_terms.push({operator: "channel", operand: channel_id});
-                }
+                channel_id_str = narrow_state.stream_id()?.toString();
             }
             break;
     }
-
-    if (!channel_id) {
+    if (!channel_id_str && !show_topics_from_other_channels) {
         return [];
     }
 
-    const subscription = stream_data.get_sub_by_id_string(channel_id);
-    if (!subscription) {
-        return [];
+    const current_channel_topic_entries: ChannelTopicEntry[] = [];
+    if (channel_id_str) {
+        // We do this outside the stream_data.subscribed_stream_ids loop,
+        // since we could be viewing a channel we can't read.
+        const sub = stream_data.get_sub_by_id_string(channel_id_str)!;
+        if (sub && stream_data.can_access_topic_history(sub)) {
+            const current_channel_id = sub.stream_id;
+            stream_topic_history_util.get_server_history(current_channel_id, () => {
+                // Fetch topic history from the server, in case we will
+                // need it.  Note that we won't actually use the results
+                // from the server here for this particular keystroke from
+                // the user, because we want to show results immediately.
+            });
+
+            for (const topic of stream_topic_history.get_recent_topic_names(current_channel_id)) {
+                current_channel_topic_entries.push({channel_id: channel_id_str, topic});
+            }
+        }
     }
 
-    if (stream_data.can_access_topic_history(subscription)) {
-        stream_topic_history_util.get_server_history(subscription.stream_id, () => {
-            // Fetch topic history from the server, in case we will need it.
-            // Note that we won't actually use the results from the server here
-            // for this particular keystroke from the user, because we want to
-            // show results immediately. Assuming the server responds quickly,
-            // as the user makes their search more specific, subsequent calls to
-            // this function will get more candidates from calling
-            // stream_topic_history.get_recent_topic_names.
-        });
-    }
+    const other_channel_topic_entries: ChannelTopicEntry[] = [];
+    for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
+        if (subscribed_channel_id.toString() === channel_id_str) {
+            continue;
+        } else if (!show_topics_from_other_channels) {
+            continue;
+        }
 
-    const candidate_topics = stream_topic_history.get_recent_topic_names(subscription.stream_id);
-
-    if (!candidate_topics?.length) {
-        return [];
+        for (const topic of stream_topic_history.get_recent_topic_names(subscribed_channel_id)) {
+            other_channel_topic_entries.push({
+                channel_id: subscribed_channel_id.toString(),
+                topic,
+            });
+        }
     }
 
     assert(guess !== undefined);
-    const topics = get_topic_suggestions_from_candidates({candidate_topics, guess});
 
-    // Just use alphabetical order.  While recency and read/unreadness of
-    // topics do matter in some contexts, you can get that from the left sidebar,
-    // and I'm leaning toward high scannability for autocompletion.  I also don't
-    // care about case.
-    topics.sort();
+    let current_channel_topic_suggestion_entries = get_topic_suggestions_from_candidates({
+        candidate_topic_entries: current_channel_topic_entries,
+        guess,
+    });
+    let other_channel_topic_suggestion_entries = get_topic_suggestions_from_candidates({
+        candidate_topic_entries: other_channel_topic_entries,
+        guess,
+    });
 
+    // When the guess is non-empty, we rely on `typeaheader_helper.sorter` to give the same
+    // experience as composebox_typeahead.
+    // Else we sort in a case-insensitive fashion.
+    if (guess.length > 0) {
+        current_channel_topic_suggestion_entries = typeahead_helper.sorter(
+            guess,
+            current_channel_topic_suggestion_entries,
+            ignore_resolved_topic_prefix,
+        );
+        other_channel_topic_suggestion_entries = typeahead_helper.sorter(
+            guess,
+            other_channel_topic_suggestion_entries,
+            ignore_resolved_topic_prefix,
+        );
+    } else {
+        current_channel_topic_suggestion_entries =
+            current_channel_topic_suggestion_entries.toSorted((a, b) =>
+                ignore_resolved_topic_prefix(a, true).localeCompare(
+                    ignore_resolved_topic_prefix(b, true),
+                ),
+            );
+        other_channel_topic_suggestion_entries = other_channel_topic_suggestion_entries.toSorted(
+            (a, b) =>
+                ignore_resolved_topic_prefix(a, true).localeCompare(
+                    ignore_resolved_topic_prefix(b, true),
+                ),
+        );
+    }
+    // We want to rank topics from the current channel higher
+    const topics = [
+        ...current_channel_topic_suggestion_entries,
+        ...other_channel_topic_suggestion_entries,
+    ];
     return topics.map((topic) => {
-        const topic_term = {operator: "topic", operand: topic, negated};
-        const terms = [...suggest_terms, topic_term];
+        const topic_term: NarrowTerm = {operator: "topic", operand: topic.topic, negated};
+        const terms: NarrowTerm[] = [{operator: "channel", operand: topic.channel_id}, topic_term];
+        // We don't want to have two channel pills in the search suggestion.
+        if (filter.has_operator("channel")) {
+            terms.splice(0, 1);
+        }
+
         return format_as_suggestion(terms);
     });
 }
@@ -647,12 +737,12 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             {
                 search_string: "is:resolved",
                 description_html: "resolved topics",
-                incompatible_patterns: incompatible_patterns["is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["is:resolved"],
             },
             {
                 search_string: "-is:resolved",
                 description_html: "unresolved topics",
-                incompatible_patterns: incompatible_patterns["-is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["-is:resolved"],
             },
         ];
     } else {
@@ -660,47 +750,47 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             {
                 search_string: "is:dm",
                 description_html: "direct messages",
-                incompatible_patterns: incompatible_patterns["is:dm"]!,
+                incompatible_patterns: incompatible_patterns["is:dm"],
             },
             {
                 search_string: "is:starred",
                 description_html: "starred messages",
-                incompatible_patterns: incompatible_patterns["is:starred"]!,
+                incompatible_patterns: incompatible_patterns["is:starred"],
             },
             {
                 search_string: "is:mentioned",
                 description_html: "messages that mention you",
-                incompatible_patterns: incompatible_patterns["is:mentioned"]!,
+                incompatible_patterns: incompatible_patterns["is:mentioned"],
             },
             {
                 search_string: "is:followed",
                 description_html: "followed topics",
-                incompatible_patterns: incompatible_patterns["is:followed"]!,
+                incompatible_patterns: incompatible_patterns["is:followed"],
             },
             {
                 search_string: "is:alerted",
                 description_html: "alerted messages",
-                incompatible_patterns: incompatible_patterns["is:alerted"]!,
+                incompatible_patterns: incompatible_patterns["is:alerted"],
             },
             {
                 search_string: "is:unread",
                 description_html: "unread messages",
-                incompatible_patterns: incompatible_patterns["is:unread"]!,
+                incompatible_patterns: incompatible_patterns["is:unread"],
             },
             {
                 search_string: "is:muted",
                 description_html: "muted messages",
-                incompatible_patterns: incompatible_patterns["is:muted"]!,
+                incompatible_patterns: incompatible_patterns["is:muted"],
             },
             {
                 search_string: "is:resolved",
                 description_html: "resolved topics",
-                incompatible_patterns: incompatible_patterns["is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["is:resolved"],
             },
             {
                 search_string: "-is:resolved",
                 description_html: "unresolved topics",
-                incompatible_patterns: incompatible_patterns["-is:resolved"]!,
+                incompatible_patterns: incompatible_patterns["-is:resolved"],
             },
         ];
     }
@@ -726,22 +816,22 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
         {
             search_string: "has:link",
             description_html: "messages with links",
-            incompatible_patterns: incompatible_patterns["has:link"]!,
+            incompatible_patterns: incompatible_patterns["has:link"],
         },
         {
             search_string: "has:image",
             description_html: "messages with images",
-            incompatible_patterns: incompatible_patterns["has:image"]!,
+            incompatible_patterns: incompatible_patterns["has:image"],
         },
         {
             search_string: "has:attachment",
             description_html: "messages with attachments",
-            incompatible_patterns: incompatible_patterns["has:attachment"]!,
+            incompatible_patterns: incompatible_patterns["has:attachment"],
         },
         {
             search_string: "has:reaction",
             description_html: "messages with reactions",
-            incompatible_patterns: incompatible_patterns["has:reaction"]!,
+            incompatible_patterns: incompatible_patterns["has:reaction"],
         },
     ];
     return get_special_filter_suggestions(last, terms, suggestions);
@@ -793,7 +883,7 @@ function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugges
         last_operand = last_operand.slice(1);
     }
 
-    let choices;
+    let choices: NarrowTerm["operator"][];
 
     if (last.operator === "") {
         choices = ["channels", "channel", "streams", "stream"];
@@ -938,7 +1028,8 @@ class Attacher {
                 const last_base_string = last_base_term.search_string;
                 const new_search_string = suggestion.search_string;
                 if (
-                    new_search_string.startsWith("dm:") &&
+                    (new_search_string.startsWith("dm:") ||
+                        new_search_string.startsWith("dm-including:")) &&
                     new_search_string.includes(last_base_string)
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];
@@ -1047,7 +1138,7 @@ export function get_search_result(
     const people_getter = make_people_getter(last);
 
     function get_people(
-        flavor: string,
+        flavor: NarrowTerm["operator"],
     ): (last: NarrowTerm, base_terms: NarrowTerm[]) => Suggestion[] {
         return function (last: NarrowTerm, base_terms: NarrowTerm[]): Suggestion[] {
             return get_person_suggestions(people_getter, last, base_terms, flavor);
@@ -1060,7 +1151,8 @@ export function get_search_result(
         // because both are valid suggestions for typing a user's
         // name, and if there's already has a DM pill then the
         // searching user probably is looking to make a group DM.
-        get_group_suggestions,
+        get_group_suggestions("dm"),
+        get_group_suggestions("dm-including"),
         get_channels_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,

@@ -31,7 +31,7 @@ class ErrorCode(Enum):
     INVALID_MARKDOWN_INCLUDE_STATEMENT = auto()
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
-    INVALID_ZOOM_TOKEN = auto()
+    INVALID_VIDEO_CALL_PROVIDER_TOKEN = auto()
     UNKNOWN_ZOOM_USER = auto()
     UNAUTHENTICATED_USER = auto()
     NONEXISTENT_SUBDOMAIN = auto()
@@ -268,7 +268,9 @@ class RateLimitedError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("API usage exceeded rate limit")
+        return _(
+            "API usage exceeded rate limit; see https://zulip.com/api/http-headers#rate-limiting-response-headers"
+        )
 
     @property
     @override

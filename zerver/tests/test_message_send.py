@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import (
     build_message_send_dict,
     check_message,
@@ -79,7 +80,12 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
-from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
+from zerver.models.users import (
+    get_system_bot,
+    get_user,
+    get_user_by_delivery_email,
+    is_cross_realm_bot_email,
+)
 from zerver.views.message_send import InvalidMirrorInputError
 
 
@@ -91,10 +97,14 @@ class MessagePOSTTest(ZulipTestCase):
         error_msg: str | None = None,
         *,
         allow_unsubscribed_sender: bool = False,
+        topic_name: str = "test",
     ) -> None:
         if error_msg is None:
             msg_id = self.send_stream_message(
-                user, stream_name, allow_unsubscribed_sender=allow_unsubscribed_sender
+                user,
+                stream_name,
+                allow_unsubscribed_sender=allow_unsubscribed_sender,
+                topic_name=topic_name,
             )
             result = self.api_get(user, "/api/v1/messages/" + str(msg_id))
             self.assert_json_success(result)
@@ -532,6 +542,217 @@ class MessagePOSTTest(ZulipTestCase):
             allow_unsubscribed_sender=True,
         )
 
+    def test_can_create_topic_group_permission(self) -> None:
+        realm = get_realm("zulip")
+
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+
+        desdemona_owned_bot = self.create_test_bot(
+            short_name="whatever1",
+            full_name="whatever1",
+            user_profile=desdemona,
+        )
+        iago_owned_bot = self.create_test_bot(
+            short_name="whatever2",
+            full_name="whatever2",
+            user_profile=iago,
+        )
+        cordelia_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=cordelia,
+        )
+        othello_owned_bot = self.create_test_bot(
+            short_name="whatever4",
+            full_name="whatever4",
+            user_profile=othello,
+        )
+        notification_bot = get_system_bot("notification-bot@zulip.com", realm.id)
+
+        bot_without_owner = do_create_user(
+            email="free-bot@zulip.testserver",
+            password="",
+            realm=realm,
+            full_name="freebot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
+        )
+        can_create_topic_error_msg = (
+            "You do not have permission to create new topics in this channel."
+        )
+
+        stream_name = "Verona"
+        stream = get_stream(stream_name, realm)
+
+        def check_sending_message_for_can_create_topic_group(
+            sender: UserProfile,
+            topic_name: str = "new_topic",
+            expect_fail: bool = False,
+        ) -> None:
+            if expect_fail:
+                self._send_and_verify_message(
+                    sender,
+                    stream_name,
+                    can_create_topic_error_msg,
+                    topic_name=topic_name,
+                )
+                return
+
+            if is_cross_realm_bot_email(sender.delivery_email):
+                internal_send_stream_message(
+                    notification_bot, stream, topic_name, "Message from notification bot."
+                )
+                message = self.get_last_message()
+                self.assertEqual(message.content, "Message from notification bot.")
+            else:
+                self._send_and_verify_message(sender, stream_name, topic_name=topic_name)
+
+            sent_message = self.get_last_message()
+            # Delete last sent message, so that the topic used for testing
+            # new topics is empty.
+            do_delete_messages(realm, [sent_message], acting_user=None)
+
+        self._send_and_verify_message(desdemona, stream_name, topic_name="existing topic")
+
+        # Set topic creation settings to nobody group.
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", nobody_group, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(desdemona, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(desdemona, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            desdemona_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(cordelia, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", owners_group, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(iago, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        check_sending_message_for_can_create_topic_group(desdemona)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(iago, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            iago_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", hamletcharacters_group, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(desdemona, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        check_sending_message_for_can_create_topic_group(hamlet)
+        check_sending_message_for_can_create_topic_group(cordelia)
+        check_sending_message_for_can_create_topic_group(cordelia_owned_bot)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(desdemona, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            desdemona_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(iago, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            iago_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[othello.id], direct_subgroups=[owners_group.id]
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", setting_group_member_dict, acting_user=iago
+        )
+
+        check_sending_message_for_can_create_topic_group(iago, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(hamlet, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(cordelia, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(cordelia_owned_bot, expect_fail=True)
+        check_sending_message_for_can_create_topic_group(bot_without_owner, expect_fail=True)
+
+        check_sending_message_for_can_create_topic_group(desdemona)
+        check_sending_message_for_can_create_topic_group(desdemona_owned_bot)
+        check_sending_message_for_can_create_topic_group(othello)
+        check_sending_message_for_can_create_topic_group(othello_owned_bot)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
+        # Sending message to an existing topic should be allowed.
+        check_sending_message_for_can_create_topic_group(iago, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            iago_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(hamlet, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(cordelia, topic_name="existing topic")
+        check_sending_message_for_can_create_topic_group(
+            cordelia_owned_bot, topic_name="existing topic"
+        )
+        check_sending_message_for_can_create_topic_group(
+            bot_without_owner, topic_name="existing topic"
+        )
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", everyone_group, acting_user=iago
+        )
+        check_sending_message_for_can_create_topic_group(othello)
+        check_sending_message_for_can_create_topic_group(othello_owned_bot)
+        check_sending_message_for_can_create_topic_group(iago)
+        check_sending_message_for_can_create_topic_group(iago_owned_bot)
+        check_sending_message_for_can_create_topic_group(polonius)
+        check_sending_message_for_can_create_topic_group(bot_without_owner)
+
+        # Cross realm bots should be allowed
+        check_sending_message_for_can_create_topic_group(notification_bot)
+
     def test_api_message_with_default_to(self) -> None:
         """
         Sending messages without a to field should be sent to the default
@@ -566,7 +787,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "nonexistent_stream",
+                "to": orjson.dumps("nonexistent_stream").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -583,7 +804,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": """&<"'><non-existent>""",
+                "to": orjson.dumps("""&<"'><non-existent>""").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -766,7 +987,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "direct",
                 "content": "Test message",
-                "to": "nonexistent",
+                "to": orjson.dumps(["nonexistent"]).decode(),
             },
         )
         self.assert_json_error(result, "Invalid email 'nonexistent'")
@@ -880,7 +1101,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "invalid type",
                 "content": "Test message",
-                "to": othello.email,
+                "to": orjson.dumps([othello.email]).decode(),
             },
         )
         self.assert_json_error(result, "Invalid type")
@@ -893,7 +1114,7 @@ class MessagePOSTTest(ZulipTestCase):
         othello = self.example_user("othello")
         result = self.client_post(
             "/json/messages",
-            {"type": "direct", "content": " ", "to": othello.email},
+            {"type": "direct", "content": " ", "to": orjson.dumps([othello.email]).decode()},
         )
         self.assert_json_error(result, "Message must not be empty")
 
@@ -904,7 +1125,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         result = self.client_post(
             "/json/messages",
-            {"type": "channel", "to": "Verona", "content": "Test message"},
+            {"type": "channel", "to": orjson.dumps("Verona").decode(), "content": "Test message"},
         )
         self.assert_json_error(result, "Missing topic")
 
@@ -918,7 +1139,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "topic": "Test\n\rTopic",
                 "content": "Test message",
             },
@@ -930,7 +1151,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "topic": "Test\ufffeTopic",
                 "content": "Test message",
             },
@@ -943,7 +1164,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "topic": f"{Message.DM_TOPIC}",
                 "content": "Test message",
             },
@@ -959,7 +1180,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "invalid",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -973,7 +1194,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         result = self.client_post(
             "/json/messages",
-            {"type": "direct", "content": "Test content", "to": ""},
+            {"type": "direct", "content": "Test content", "to": orjson.dumps("").decode()},
         )
         self.assert_json_error(result, "Message must have recipients")
 
@@ -1028,7 +1249,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "irc_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
             },
             subdomain="zephyr",
         )
@@ -1046,7 +1267,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "irc_mirror",
-                "to": self.mit_email("espuser"),
+                "to": orjson.dumps([self.mit_email("espuser")]).decode(),
             },
             subdomain="zephyr",
         )
@@ -1059,7 +1280,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         post_data = {
             "type": "channel",
-            "to": "Verona",
+            "to": orjson.dumps("Verona").decode(),
             "content": "  I like null bytes \x00 in my content",
             "topic": "Test topic",
         }
@@ -1144,7 +1365,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
                 "forged": "true",
@@ -1160,7 +1381,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "type": "direct",
                 "content": "Test message",
                 "client": "irc_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
             },
             subdomain="zephyr",
         )
@@ -1175,7 +1396,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "irc_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
             },
             subdomain="zephyr",
         )
@@ -1194,7 +1415,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "irc_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
             },
             subdomain="zephyr",
         )
@@ -2385,7 +2606,7 @@ class StreamMessagesTest(ZulipTestCase):
             "/api/v1/messages",
             {
                 "type": "channel",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "sender": self.mit_email("sipbtest"),
                 "client": "irc_mirror",
                 "topic": "announcement",
@@ -2449,6 +2670,28 @@ class StreamMessagesTest(ZulipTestCase):
         )
         self.assertEqual(recent_conversation["max_message_id"], message2_id)
 
+    def test_get_raw_unread_data_for_1_to_1_dms_using_group_direct_message(self) -> None:
+        sender = self.example_user("hamlet")
+        receiver = self.example_user("cordelia")
+        receiver.recipient = None
+        receiver.save()
+
+        message1_id = self.send_personal_message(sender, receiver, "test content 1")
+        message2_id = self.send_personal_message(sender, receiver, "test content 2")
+
+        msg_data = get_raw_unread_data(receiver)
+
+        self.assert_length(msg_data["pm_dict"].keys(), 2)
+        self.assert_length(msg_data["huddle_dict"].keys(), 0)
+
+        self.assertIn(message1_id, msg_data["pm_dict"].keys())
+        self.assertIn(message2_id, msg_data["pm_dict"].keys())
+
+        recent_conversations = get_recent_private_conversations(receiver)
+        [recent_conversation] = recent_conversations.values()
+        self.assertEqual(set(recent_conversation["user_ids"]), {sender.id})
+        self.assertEqual(recent_conversation["max_message_id"], message2_id)
+
     def test_stream_becomes_active_on_message_send(self) -> None:
         # Mark a stream as inactive
         stream = self.make_stream("inactive_stream")
@@ -2498,6 +2741,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_to_self_using_direct_message_group(self) -> None:
         """
         If you send a personal to yourself using direct_message_group, only you see it.
@@ -2543,10 +2787,11 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(message_stream_count(receiver), receiver_messages + 1)
 
         direct_message_group = get_direct_message_group([sender.id, receiver.id])
-        if direct_message_group:
-            recipient = Recipient.objects.get(
-                type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
-            )
+        has_none_recipient = receiver.recipient is None or sender.recipient is None
+        if has_none_recipient:
+            recipient = get_or_create_direct_message_group([sender.id, receiver.id]).recipient
+        elif settings.PREFER_DIRECT_MESSAGE_GROUP and direct_message_group:
+            recipient = direct_message_group.recipient
         else:
             recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
 
@@ -2565,6 +2810,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=self.example_user("othello"),
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_using_direct_message_group(self) -> None:
         """
         If you send a personal using direct_message_group, only you and the recipient see it.
@@ -2579,6 +2825,26 @@ class PersonalMessageSendTest(ZulipTestCase):
             sender=sender,
             receiver=receiver,
         )
+
+    def test_personal_when_personal_recipient_is_none(self) -> None:
+        """
+        If you send a personal using direct_message_group, only you and the recipient see it.
+        """
+        sender = self.example_user("hamlet")
+        receiver = self.example_user("othello")
+
+        # Removing the personal recipient to ensure a new direct message group is created.
+        receiver.recipient = None
+        receiver.save()
+
+        self.login("hamlet")
+        self.assert_personal(
+            sender=sender,
+            receiver=receiver,
+        )
+
+        message = most_recent_message(sender)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_direct_message_initiator_group_setting(self) -> None:
         """
@@ -2620,7 +2886,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # Have the administrator send a message, and verify that allows the user to reply.
         self.send_personal_message(admin, user_profile)
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             self.send_personal_message(user_profile, admin)
 
         # Tests that user cannot initiate direct message thread in groups.
@@ -2656,7 +2922,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             user_group,
             acting_user=None,
         )
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             self.send_personal_message(user_profile, cordelia)
 
         # Test that query count decreases if setting is set to a system group.
@@ -2670,7 +2936,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         othello = self.example_user("othello")
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(15):
             self.send_personal_message(user_profile, othello)
 
     def test_direct_message_permission_group_setting(self) -> None:
@@ -2698,7 +2964,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         # Tests if the user is allowed to send to administrators.
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             self.send_personal_message(user_profile, admin)
         self.send_personal_message(admin, user_profile)
         # Tests if we can send messages to self irrespective of the value of the setting.
@@ -2748,7 +3014,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         with self.assertRaises(DirectMessagePermissionError):
             self.send_personal_message(cordelia, polonius)
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             self.send_personal_message(user_profile, cordelia)
 
         # Test that query count decreases if setting is set to a system group.
@@ -2761,7 +3027,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             members_group,
             acting_user=None,
         )
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(15):
             self.send_personal_message(user_profile, cordelia)
 
         do_change_realm_permission_group_setting(
@@ -3646,3 +3912,36 @@ class CheckMessageTest(ZulipTestCase):
             "Only the general chat topic is allowed in this channel.",
         ):
             check_message(sender, client, addressee_named_topic, message_content, realm)
+
+
+class SendToStrTest(ZulipTestCase):
+    """
+    The OpenAPI documentation specifies that the `to` parameter for
+    the send message endpoint has to be Json encoded, however to maintain compatibility
+    with older API clients, the endpoint also accepts a `str` value for the `to` parameter.
+    These tests verify this legacy behavior.
+    """
+
+    def test_message_send_to_str_channel(self) -> None:
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "channel",
+                "to": "Denmark",
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+            intentionally_undocumented=True,
+        )
+        self.assert_json_success(result)
+
+    def test_message_send_to_str_direct(self) -> None:
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        result = self.client_post(
+            "/json/messages",
+            {"type": "direct", "content": "Hello", "to": orjson.dumps([othello.email]).decode()},
+            intentionally_undocumented=True,
+        )
+        self.assert_json_success(result)

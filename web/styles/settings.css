@@ -105,8 +105,11 @@ h3,
     cursor: not-allowed;
 }
 
-#account-settings .deactivate_realm_button {
-    margin-left: 10px;
+#account-settings .deactivate-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-wrap: wrap;
 }
 
 #change_email_button,
@@ -131,10 +134,34 @@ h3,
 
 .admin-realm-description,
 .admin-realm-welcome-message-custom-text {
-    height: 12em;
-    width: 100%;
-    max-width: 500px;
+    /* We set the minimum height of textarea to be enough for two lines
+    of text. Since box-sizing is set to "border-box", we also add
+    2 * var(--input-vertical-padding) + 2 * var(--input-border-width). */
+    min-height: calc(
+        2em * var(--base-line-height-unitless) + 2 *
+            var(--input-vertical-padding) + 2 * var(--input-border-width)
+    );
+    width: 500px;
+    max-width: 80%;
+    min-width: 500px;
     box-sizing: border-box;
+}
+
+.admin-realm-description.rendered_markdown {
+    /* 5px at 16px and 10px at 16px */
+    padding: 0.3125em 0.625em;
+    width: fit-content;
+    /* 500px at 16px */
+    max-width: 31.25em;
+    min-width: 0;
+
+    & > p:first-child {
+        padding-top: 0;
+    }
+
+    & > p:last-child {
+        margin-bottom: 0;
+    }
 }
 
 .admin-realm-welcome-message-custom-text {
@@ -183,6 +210,10 @@ h3,
     & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
     }
+
+    /* This variable allows JavaScript to detect whether we are showing both
+    the left sidebar and settings content for the current screen width or not. */
+    --column-count: 2;
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
@@ -352,6 +383,20 @@ select.settings_select {
     .table tr:first-of-type td {
         border-top: none;
     }
+
+    .tab-switcher {
+        margin-left: 0;
+        margin-top: 1em;
+    }
+}
+
+#admin-bot-list .user-status-settings {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.config-download-text {
+    margin-top: 10px;
 }
 
 .user_role,
@@ -382,6 +427,30 @@ select.settings_select {
 
     .message_count {
         margin: 10px 0 0;
+    }
+}
+
+.settings-checkbox-wrapper {
+    width: fit-content;
+}
+
+#bot-edit-form {
+    .api-key-details-container,
+    .zuliprc-container {
+        display: flex;
+        align-items: center;
+        gap: 0.25em;
+
+        .buttons-container {
+            display: flex;
+            align-items: center;
+        }
+    }
+}
+
+#zuliprc-section {
+    .modal-field-label {
+        margin-bottom: 0;
     }
 }
 
@@ -608,6 +677,10 @@ input[type="checkbox"] {
     }
 }
 
+.channel-permissions .admin-permissions-tip {
+    margin-bottom: 1em;
+}
+
 .organization-settings-parent {
     padding-top: 5px;
 }
@@ -628,9 +701,11 @@ input[type="checkbox"] {
     margin-top: 0;
 }
 
-.language_selection_widget .language_selection_button {
-    text-decoration: none;
-    min-width: 0;
+.realm_default_language-dropdown-list-container,
+.default_language-dropdown-list-container {
+    /* This is same as saved snippets dropdown's width and
+    also makes all language names fit in the same line. */
+    width: 17.8571em;
 }
 
 #user_enter_sends_label kbd,
@@ -776,6 +851,10 @@ input[type="checkbox"] {
     border: none;
 }
 
+.user_timezone-dropdown-list-container {
+    width: calc(var(--modal-input-width));
+}
+
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
@@ -788,7 +867,7 @@ input[type="checkbox"] {
         min-width: calc(var(--modal-input-width) - 6px);
     }
 
-    & textarea {
+    .settings-textarea {
         /* Subtract 6px of padding from side */
         width: calc(var(--modal-input-width) - 12px);
     }
@@ -813,6 +892,11 @@ input[type="checkbox"] {
     grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
     align-items: center;
     width: var(--modal-input-width);
+
+    .flatpickr-wrapper {
+        grid-column: datepicker-start / close-button-end;
+        grid-row: close-button;
+    }
 }
 
 .control-label-disabled {
@@ -967,154 +1051,6 @@ input[type="checkbox"] {
 
 #admin-default-channels-list .progressive-table-wrapper {
     max-height: calc(95vh - 280px);
-}
-
-#bot-settings {
-    .add-a-new-bot {
-        margin-bottom: 2px;
-        margin-top: 10px;
-    }
-
-    hr {
-        margin: 10px 0;
-        border-color: hsl(0deg 0% 85%);
-    }
-
-    .config-download-text {
-        margin-left: 5px;
-    }
-
-    .ind-tab {
-        width: auto;
-        min-width: 90px;
-    }
-}
-
-.bots_list {
-    list-style-type: none;
-    margin-left: 0;
-
-    .bot-card-image {
-        vertical-align: top;
-    }
-
-    .bot-card-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin: 7px 5px;
-
-        overflow: hidden;
-        line-height: 1.3em;
-        text-overflow: ellipsis;
-        white-space: pre;
-    }
-
-    .bot-card-regenerate-bot-api-key {
-        position: relative;
-        margin-left: 5px;
-        color: hsl(0deg 0% 67%);
-        transition: color 0.3s ease;
-
-        &:hover {
-            color: hsl(0deg 0% 27%);
-        }
-    }
-
-    .edit-bot-buttons {
-        padding-top: 5px;
-
-        & button {
-            background-color: transparent;
-        }
-
-        .bootstrap-btn {
-            padding: 4px;
-        }
-
-        .sea-green {
-            color: hsl(177deg 70% 46%);
-        }
-
-        .blue {
-            color: hsl(203deg 77% 56%);
-        }
-
-        .danger-red {
-            color: hsl(0deg 56% 73%);
-        }
-
-        .copy_zuliprc {
-            color: hsl(51deg 90% 50%);
-        }
-
-        .purple {
-            color: hsl(278deg 62% 68%);
-        }
-
-        .steel-blue {
-            color: hsl(207deg 44% 49%);
-        }
-    }
-
-    .bot-information-box {
-        position: relative;
-        display: inline-block;
-        width: calc(50% - 10px);
-        margin: 5px;
-
-        border-radius: 4px;
-        box-sizing: border-box;
-
-        overflow: auto;
-
-        .bot-card-details {
-            display: inline-block;
-            width: calc(100% - 75px);
-        }
-    }
-
-    & img.bot-card-avatar {
-        margin: 10px 5px 0 10px;
-        height: 50px;
-        width: 50px;
-        border-radius: 4px;
-        vertical-align: top;
-        box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
-    }
-
-    .bot-card-email,
-    .bot-card-type {
-        margin-bottom: 5px;
-    }
-
-    .bot-card-email .bot-card-value,
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        display: block;
-        margin-left: 0;
-        overflow-wrap: break-word;
-        word-break: break-all;
-        white-space: normal;
-    }
-
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        font-family: "Source Code Pro", monospace;
-        font-size: 0.85em;
-        display: flex;
-    }
-
-    .bot-card-info {
-        padding: 10px;
-    }
-
-    .bot-card-field {
-        text-transform: uppercase;
-        font-weight: 600;
-        color: hsl(0deg 0% 67%);
-    }
-}
-
-#inactive_bots_list .bot_info .reactivate_bot {
-    margin-top: 5px;
 }
 
 .edit_bot_form {
@@ -1471,6 +1407,11 @@ label.preferences-radio-choice-label {
         overflow-y: auto;
         border-right: 1px solid var(--color-border-modal);
 
+        .your-bots-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
         .header {
             height: auto;
             position: relative;
@@ -1509,6 +1450,12 @@ label.preferences-radio-choice-label {
                 /* TODO: Check with Vlad about highlight
                    colors such as this. */
                 background-color: var(--color-active-row-modal);
+            }
+
+            &:focus-visible {
+                border-radius: 4px;
+                outline: 1px solid var(--color-outline-focus);
+                outline-offset: -2px;
             }
 
             .sidebar-item-icon {
@@ -1625,17 +1572,13 @@ label.preferences-radio-choice-label {
             background-color: hsl(0deg 0% 0% / 2%);
         }
     }
-
-    .preferences-settings-form select {
-        width: var(--modal-input-width);
-    }
 }
 
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
@@ -1664,8 +1607,12 @@ label.preferences-radio-choice-label {
     .custom_user_field {
         padding-bottom: 20px;
 
-        & textarea {
+        .settings-textarea,
+        .modal-textarea {
             height: 80px;
+            /* We set the minimum height of textarea to be enough for two lines of text. */
+            min-height: calc(2em * var(--base-line-height-unitless));
+            resize: vertical;
         }
 
         &:hover .remove_date {
@@ -1713,12 +1660,21 @@ label.preferences-radio-choice-label {
 #edit-user-form {
     .person_picker {
         /* Subtract (1px border and 2px of padding) on each side */
-        min-width: calc(var(--modal-input-width) - 6px);
+        width: calc(var(--modal-input-width) - 6px);
+        max-width: calc(100% - 6px);
     }
 
-    & textarea {
-        /* Subtract (1px border and 6px padding) on each side */
-        width: calc(var(--modal-input-width) - 14px);
+    .modal-textarea {
+        /* Subtract (2 * horizontal padding) + (2 * border width) */
+        box-sizing: content-box;
+        width: calc(
+            var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
+        max-width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
     }
 }
 
@@ -1732,7 +1688,7 @@ label.preferences-radio-choice-label {
 
     & input,
     input[type="url"],
-    & textarea,
+    .modal-textarea,
     & select {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
@@ -1843,10 +1799,6 @@ label.preferences-radio-choice-label {
     margin-top: 13px;
     display: block;
 
-    .upgrade-tip {
-        width: auto;
-    }
-
     .tip::before {
         content: "\f135";
         margin-right: 8px;
@@ -1857,21 +1809,26 @@ label.preferences-radio-choice-label {
     margin-bottom: 20px;
 }
 
-.settings_textarea {
+.settings-textarea,
+.modal-textarea {
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--background-color-textarea);
     border-radius: 4px;
     vertical-align: middle;
-    border: 1px solid hsl(0deg 0% 80%);
-    padding: 4px 6px;
+    border: var(--input-border-width) solid var(--border-color-textarea);
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
-        border-color: hsl(206.5deg 80% 62% / 80%);
+        border-color: var(--focus-border-color-textarea);
         outline: 0;
 
         box-shadow:
@@ -1881,8 +1838,16 @@ label.preferences-radio-choice-label {
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
     }
+}
+
+.settings-textarea:disabled {
+    background-color: var(--background-color-disabled-textarea);
+    opacity: 0.5;
+}
+
+.modal-textarea:disabled {
+    background-color: var(--background-color-readonly-modal-input);
 }
 
 @media (width < $lg_min) {
@@ -1921,9 +1886,10 @@ label.preferences-radio-choice-label {
         }
     }
 
-    #settings_overlay_container {
-        /* this variable allows JavaScript to detect this media query */
-        --single-column: yes;
+    #settings_content {
+        /* This variable allows JavaScript to detect whether we are showing both
+        the left sidebar and settings content for the current screen width or not. */
+        --column-count: 1;
     }
 
     #settings_page {
@@ -2109,12 +2075,6 @@ label.preferences-radio-choice-label {
         margin-top: 5px;
     }
 
-    #edit-user-form {
-        .custom_user_field textarea {
-            width: calc(100% - 25px);
-        }
-    }
-
     .topic_date_updated {
         display: none;
     }
@@ -2122,21 +2082,6 @@ label.preferences-radio-choice-label {
     #change_password_modal,
     #change_email_modal {
         width: 300px;
-    }
-}
-
-@media (width < $mm_min) {
-    .deactivate_realm_button {
-        margin-top: 20px;
-    }
-}
-
-@media only screen and (width < $lg_min) {
-    /* Show bot-information-box at full width on small
-       screen sizes. Not having this media query breaks the
-       information box */
-    .bots_list .bot-information-box {
-        width: calc(100% - 10px);
     }
 }
 
@@ -2171,7 +2116,8 @@ label.preferences-radio-choice-label {
         display: inline-block;
     }
 
-    .user_filters {
+    .user_filters,
+    .bot-filters {
         display: flex;
         flex-wrap: wrap;
         margin-top: auto;
@@ -2280,18 +2226,21 @@ label.preferences-radio-choice-label {
 
 .settings_url_input,
 .settings_text_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
     margin-bottom: 10px;
 
-    /* Subtract 2 * 6px (padding) + 2 * 1px (border) */
-    width: calc(var(--modal-input-width) - 14px);
+    /* Subtract (2 * horizontal padding) + (2 * border width) */
+    width: calc(
+        var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -2308,7 +2257,8 @@ label.preferences-radio-choice-label {
 
     .settings_url_input,
     .settings_text_input,
-    .settings_textarea,
+    .settings-textarea,
+    .modal-textarea,
     .pill-container {
         margin-bottom: 0;
 

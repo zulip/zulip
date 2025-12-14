@@ -39,6 +39,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
 import {raw_message_schema} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
+import type {Message} from "./message_store.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
@@ -90,7 +91,7 @@ export function reset_ui_state(opts: {trigger?: string}): void {
     // Most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
     let skip_automatic_new_visibility_policy_banner = false;
-    if (opts && opts.trigger === "outside_current_view") {
+    if (opts?.trigger === "outside_current_view") {
         skip_automatic_new_visibility_policy_banner = true;
     }
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
@@ -312,7 +313,7 @@ export function try_rendering_locally_for_same_narrow(
         target_id = opts.then_select_id;
         target_scroll_offset = opts.then_select_offset;
     } else if (filter.has_operator("near")) {
-        target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+        target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
     } else if (filter.equals(current_filter)) {
         // The caller doesn't want to force rerender and the filter is the same.
         // Also, we don't have a specific message id we want to select, so we
@@ -484,10 +485,24 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         // These two narrowing operators specify what message should be
         // selected and should be the center of the narrow.
         if (filter.has_operator("near")) {
-            id_info.target_id = Number.parseInt(filter.operands("near")[0]!, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
         }
         if (filter.has_operator("id")) {
-            id_info.target_id = Number.parseInt(filter.operands("id")[0]!, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
+        }
+
+        if (
+            // Filter has `with` operator but we don't have message locally.
+            filter.requires_adjustment_for_moved_with_target &&
+            opts.then_select_id !== -1
+        ) {
+            // We have a specific message ID to select, but we cannot do so until
+            // we know user is in the correct narrow and that `then_select_id` is
+            // still in that narrow. So, we need to fetch `with` operator message
+            // from server first and then try to select `then_select_id` message.
+            // There is no risk of this hack causing any issues since the `id_info`
+            // will be reset after we fetch the `with` operator message.
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("with")[0]!.operand, 10);
         }
 
         // Narrow with near / id operator. There are two possibilities:
@@ -509,9 +524,9 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 // the stream/topic pair that was requested to some other
                 // location, then we should retarget this narrow operation
                 // to where the message is located now.
-                const narrow_topic = filter.operands("topic")[0]!;
+                const narrow_topic = filter.terms_with_operator("topic")[0]!.operand;
                 const narrow_stream_data = stream_data.get_sub_by_id_string(
-                    filter.operands("channel")[0]!,
+                    filter.terms_with_operator("channel")[0]!.operand,
                 );
                 if (!narrow_stream_data) {
                     // The stream id is invalid or incorrect in the URL.
@@ -820,7 +835,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                     ) {
                         // We convert the current narrow into a `near` narrow so that
                         // user doesn't accidentally mark msgs read which they haven't seen.
-                        let terms = [
+                        let terms: NarrowTerm[] = [
                             ...msg_list.data.filter.terms(),
                             {
                                 operator: "near",
@@ -1008,7 +1023,7 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
     // cases when our local cache (superset_data) has at least
     // one message the user will expect to see in the new narrow.
 
-    const in_msgs = superset_data.all_messages();
+    const in_msgs = superset_data.all_messages_after_mute_filtering();
     const is_contiguous_history = true;
     msg_data.add_messages(in_msgs, is_contiguous_history);
 
@@ -1252,7 +1267,7 @@ export function render_message_list_with_selected_message(opts: {
 
 function activate_stream_for_cycle_hotkey(stream_id: number): void {
     // This is the common code for A/D hotkeys.
-    const filter_expr = [{operator: "channel", operand: stream_id.toString()}];
+    const filter_expr: NarrowTerm[] = [{operator: "channel", operand: stream_id.toString()}];
     show(filter_expr, {});
 }
 
@@ -1298,6 +1313,7 @@ export function narrow_to_next_topic(opts: {trigger: string; only_followed_topic
         curr_info.stream_id,
         curr_info.topic,
         opts.only_followed_topics,
+        stream_list.get_sorted_channel_ids_for_next_unread_navigation(),
     );
 
     if (!next_narrow && opts.only_followed_topics) {
@@ -1322,7 +1338,7 @@ export function narrow_to_next_topic(opts: {trigger: string; only_followed_topic
         return;
     }
 
-    const filter_expr = [
+    const filter_expr: NarrowTerm[] = [
         {operator: "channel", operand: next_narrow.stream_id.toString()},
         {operator: "topic", operand: next_narrow.topic},
     ];
@@ -1349,7 +1365,7 @@ export function narrow_to_next_pm_string(opts = {}): void {
     const direct_message = people.user_ids_string_to_emails_string(next_direct_message);
     assert(direct_message !== undefined);
 
-    const filter_expr = [{operator: "dm", operand: direct_message}];
+    const filter_expr: NarrowTerm[] = [{operator: "dm", operand: direct_message}];
 
     // force_close parameter is true to not auto open compose_box
     const updated_opts = {
@@ -1387,7 +1403,7 @@ export function narrow_by_topic(
         unread_ops.notify_server_message_read(original);
     }
 
-    const search_terms = [
+    const search_terms: NarrowTerm[] = [
         {operator: "channel", operand: original.stream_id.toString()},
         {operator: "topic", operand: original.topic},
     ];
@@ -1464,7 +1480,7 @@ export function to_compose_target(): void {
         }
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
-        const terms = [{operator: "channel", operand: stream_id.toString()}];
+        const terms: NarrowTerm[] = [{operator: "channel", operand: stream_id.toString()}];
         const topic = compose_state.topic();
         if (topic !== "" || stream_data.can_use_empty_topic(stream_id)) {
             terms.push({operator: "topic", operand: topic});
@@ -1533,4 +1549,33 @@ export function rerender_combined_feed(combined_feed_msg_list: MessageList): voi
         trigger: "stream / topic visibility policy change",
         force_rerender: true,
     });
+}
+
+export function narrow_to_message_near(message: Message, trigger: string): void {
+    // The following code is essentially equivalent to
+    // `window.location.href = hashutil.by_conversation_and_time_url(msg)`
+    // but we use `show` to pass in the `trigger` parameter.
+    switch (message.type) {
+        case "private":
+            show(
+                [
+                    {operator: "dm", operand: message.reply_to},
+                    {operator: "near", operand: String(message.id)},
+                ],
+                {trigger},
+            );
+            return;
+        case "stream":
+            show(
+                [
+                    {
+                        operator: "channel",
+                        operand: message.stream_id.toString(),
+                    },
+                    {operator: "topic", operand: message.topic},
+                    {operator: "near", operand: String(message.id)},
+                ],
+                {trigger},
+            );
+    }
 }

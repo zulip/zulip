@@ -16,12 +16,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
@@ -51,17 +49,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
-      - name: Add required permissions
-        run: chmod +x ./tools/notify-if-api-docs-changed
+      - name: Run tools/github-changes-contain-file
+        run: ./tools/github-changes-contain-file api_docs/changelog.md
 
       - name: Run tools/notify-if-api-docs-changed
         id: run_check

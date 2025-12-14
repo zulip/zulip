@@ -150,14 +150,31 @@ export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void
 }
 
 export function is_in_focus(): boolean {
+    let can_current_view_steal_focus = true;
+    const focused_element = document.activeElement;
+    if (
+        focused_element instanceof HTMLElement &&
+        // Pill input elements.
+        (focused_element.isContentEditable ||
+            // `<input>` elements.
+            focused_element.classList.contains("input-element")) &&
+        // The input element is outside the current view.
+        // We already check for compose box via compose_state.composing().
+        focused_element.closest(".app .column-middle") === null
+    ) {
+        // If the user is focused on an input element
+        // and it is not handled by current view,
+        // then we should not steal focus from them.
+        can_current_view_steal_focus = false;
+    }
+
     return (
         !compose_state.composing() &&
         !popovers.any_active() &&
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active_or_animating() &&
-        !$(".input-element:not(#recent_view_search):not(#inbox-search)").is(":focus") &&
-        !$("#search_query").is(":focus") &&
+        can_current_view_steal_focus &&
         !$(".navbar-item").is(":focus")
     );
 }

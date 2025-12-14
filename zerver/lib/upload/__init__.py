@@ -18,7 +18,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.thumbnail import (
     MAX_EMOJI_GIF_FILE_SIZE_BYTES,
@@ -59,20 +59,35 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
     ):
         return content_type
 
+    early_abort = False
     if isinstance(file_data, bytes):
         detected = chardet.detect(file_data)
     else:
+        chunk_size = 4096
         reader = file_data.reader()
         detector = chardet.universaldetector.UniversalDetector()
+        total_read = 0
         while True:
-            data = reader.read(4096)
+            data = reader.read(chunk_size)
             detector.feed(data)
-            if detector.done or len(data) < 4096:
+            if detector.done or len(data) < chunk_size:
+                break
+            total_read += chunk_size
+            if total_read >= 32 * 1024:
+                # If there's no BOM and no high bytes, the detector
+                # never says "done" before EOF -- we bail out
+                # arbitrarily at 32k.
+                early_abort = True
                 break
         detector.close()
         reader.close()
         detected = detector.result
-    if detected["confidence"] >= 0.90 and detected["encoding"]:
+    if early_abort and detected["confidence"] == 1.0 and detected["encoding"] == "ascii":
+        # An early abort which didn't see high-byte characters is not
+        # a confident "ASCII", as they may come later in the file; we
+        # would prefer to leave off the charset rather than be wrong.
+        pass
+    elif detected["confidence"] >= 0.90 and detected["encoding"]:
         fake_msg.set_param("charset", detected["encoding"], replace=True)
     elif detected["confidence"] >= 0.73 and detected["encoding"] == "ISO-8859-1":
         # ISO-8859-1 detection maxes out at 73%, so if that's what
@@ -104,7 +119,6 @@ def create_attachment(
         file_size = file_data.size
         file_vips_data = file_data.vips_source
 
-    content_type = maybe_add_charset(content_type, file_data)
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -207,6 +221,7 @@ def upload_message_attachment(
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
+    content_type = maybe_add_charset(content_type, file_data)
 
     with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
@@ -215,6 +230,7 @@ def upload_message_attachment(
             content_type,
             file_data,
             user_profile,
+            target_realm,
         )
         create_attachment(
             uploaded_file_name,
@@ -426,6 +442,7 @@ def upload_emoji_image(
     # a format which is widespread enough that we're willing to inline
     # it.  The latter contains non-image formats, but the former
     # limits to only images.
+    content_type = bare_content_type(content_type)
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
         raise BadImageError(_("Invalid image format"))
 

@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
@@ -19,17 +18,20 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
+import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as stream_data from "./stream_data.ts";
@@ -116,6 +118,7 @@ export function initialize(): void {
     });
 
     resize.watch_manual_resize("#compose-textarea");
+    message_viewport.register_resize_handler(message_edit.maybe_autosize_message_edit_box);
 
     // Updates compose max-height and scroll to bottom button position when
     // there is a change in compose height like when a compose banner is displayed.
@@ -150,7 +153,7 @@ export function initialize(): void {
             compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
             if (is_edit_input) {
                 void message_edit.save_message_row_edit($row);
-            } else if (event.target.dataset.validationTrigger === "schedule") {
+            } else if (event.target.getAttribute("data-validation-trigger") === "schedule") {
                 compose_send_menu_popover.open_schedule_message_menu(
                     undefined,
                     util.the($("#send_later i")),
@@ -601,9 +604,12 @@ export function initialize(): void {
         // To shortcut a delay otherwise introduced when the topic
         // input is blurred, we immediately update the topic's
         // displayed text and compose-area placeholder when the
-        // compose textarea is focused.
-        const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
-        compose_recipient.update_topic_displayed_text($input.val());
+        // compose textarea is focused. We only do this in channels
+        // that allow topics.
+        if (!stream_data.is_empty_topic_only_channel(compose_state.stream_id())) {
+            const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
+            compose_recipient.update_topic_displayed_text($input.val());
+        }
         compose_recipient.update_compose_area_placeholder_text();
         compose_fade.do_update_all();
         if (narrow_state.narrowed_by_reply()) {
@@ -631,6 +637,20 @@ export function initialize(): void {
         // chat* is permitted.
         compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
+        const stream_id = compose_state.stream_id()!;
+        if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+            // Open the typahead so that user can select an existing topic.
+            composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
+        }
+    });
+
+    $("#compose-direct-recipient").on("click", "#compose-new-direct-recipient-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $input = $("#private_message_recipient");
+        $input.trigger("focus");
+        composebox_typeahead.private_message_recipient_typeahead.lookup(false, true);
     });
 
     // To track delayed effects originating from the "blur" event

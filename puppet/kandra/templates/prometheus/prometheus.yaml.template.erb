@@ -13,6 +13,12 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:3000"]
 
+  - job_name: "pushgateway"
+    scrape_interval: 2m
+    honor_labels: true
+    static_configs:
+      - targets: ["localhost:9091"]
+
   - job_name: "node"
     ec2_sd_configs:
       - region: us-east-1
@@ -278,12 +284,6 @@ scrape_configs:
         target_label: bucket
       - target_label: __address__
         replacement: localhost:9188
-
-  - job_name: "weblate"
-    scrape_interval: 15m
-    scrape_timeout: 120s
-    static_configs:
-      - targets: ["localhost:9189"]
 
   - job_name: "vector"
     scrape_interval: 30s

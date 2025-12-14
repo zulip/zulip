@@ -1,3 +1,5 @@
+# See the Zulip URL spec at https://zulip.com/api/zulip-urls
+#
 # Keep this synchronized with web/src/topic_link_util.ts
 
 import re

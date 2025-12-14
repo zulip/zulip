@@ -1,11 +1,14 @@
 import json
 import re
+from datetime import datetime, timezone
 from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
 
 import regex
 from django.core.exceptions import ValidationError
+from requests.utils import requote_uri
 
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
     WildValue,
@@ -256,11 +259,35 @@ def render_block(block: WildValue) -> str:
     # https://api.slack.com/reference/block-kit/blocks
     block_type = block["type"].tame(
         check_string_in(
-            ["actions", "context", "divider", "header", "image", "input", "section", "rich_text"]
+            [
+                "actions",
+                "context",
+                "call",
+                "contact_card",
+                "condition",
+                "divider",
+                "file",
+                "header",
+                "image",
+                "input",
+                "section",
+                "table",
+                "rich_text",
+            ]
         )
     )
 
     unhandled_types = [
+        # `call` is a block type we've observed in the wild in a Slack export,
+        # despite not being documented in
+        # https://docs.slack.dev/reference/block-kit/blocks/
+        # It likes maps to a request for a Slack call. If we can verify that,
+        # probably it would be worth replacing with a string indicating a Slack
+        # call occurred.
+        "call",
+        "contact_card",
+        "file",
+        "table",
         # The "actions" block is used to format literal in-message clickable
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block
@@ -405,8 +432,13 @@ def render_attachment(attachment: WildValue) -> str:
         pieces.append("\n".join(fields))
     if attachment.get("blocks"):
         pieces += map(render_block, attachment["blocks"])
-    if attachment.get("image_url"):
-        pieces.append("[]({})".format(attachment["image_url"].tame(check_url)))
+    if image_url_wv := attachment.get("image_url"):
+        try:
+            image_url = image_url_wv.tame(check_url)
+        except ValidationError:  # nocoverage
+            image_url = image_url_wv.tame(check_string)
+            image_url = requote_uri(image_url)
+        pieces.append(f"[]({image_url})")
     if attachment.get("footer"):
         pieces.append(attachment["footer"].tame(check_string))
     if attachment.get("ts"):
@@ -423,7 +455,7 @@ def render_attachment(attachment: WildValue) -> str:
                 raise e
 
             time = int(ts_float)
-        pieces.append(f"<time:{time}>")
+        pieces.append(datetime_to_global_time(datetime.fromtimestamp(time, timezone.utc)))
 
     return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 

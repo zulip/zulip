@@ -68,7 +68,23 @@
                 {{/if}}
             </form>
 
-            <div class="input-group">
+            <form class="user-self-role-change-form grid">
+                <div class="input-group">
+                    <label for="user-self-role-select" class="settings-field-label">
+                        {{t 'Role' }}
+                        {{> ../help_link_widget link="/help/user-roles" }}
+                    </label>
+                    <select name="user-self-role-select"
+                      class="prop-element settings_select bootstrap-focus-style"
+                      id="user-self-role-select"
+                      data-setting-widget-type="number"
+                      >
+                        {{> dropdown_options_widget option_values=user_role_values}}
+                    </select>
+                </div>
+            </form>
+
+            <div class="input-group deactivate-buttons-group">
                 <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
                     {{> ../components/action_button
                       label=(t "Deactivate account")
@@ -83,7 +99,7 @@
                       label=(t "Deactivate organization")
                       attention="quiet"
                       intent="danger"
-                      custom_classes="deactivate_realm_button inline-block"
+                      custom_classes="deactivate_realm_button"
                       }}
                 {{/if}}
             </div>

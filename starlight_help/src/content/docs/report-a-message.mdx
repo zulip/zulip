@@ -1,0 +1,41 @@
+---
+title: Report a message
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import MessageActions from "../include/_MessageActions.mdx";
+
+import FlagIcon from "~icons/zulip-icon/flag";
+
+When moderation requests are enabled, you can report problematic messages. This
+sends a message to a private channel, where moderators can review the report.
+
+Keep in mind that reporting a message does not grant anyone access to see the
+rest of the conversation. For example, moderators will see only direct messages
+that you report, not other DMs in the same thread.
+
+## Report a message
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <MessageActions />
+
+      1. Select **report message**. If you do not see this option, moderation requests
+         are [disabled](/help/enable-moderation-requests) in this organization.
+      1. Fill out the requested information. Moderators will see the message
+         you're reporting when they review your report.
+      1. Click **Submit** to report the message.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Enable moderation requests](/help/enable-moderation-requests)
+* [Delete a message](/help/delete-a-message)
+* [Mute a user](/help/mute-a-user)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Community moderation toolkit](/help/moderating-open-organizations)

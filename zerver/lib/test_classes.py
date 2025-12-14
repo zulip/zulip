@@ -49,6 +49,7 @@ from corporate.models.plans import CustomerPlan
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
+from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
@@ -922,7 +923,7 @@ Output:
             "source_realm_id": source_realm_id,
             "is_demo_organization": is_demo_organization,
             "how_realm_creator_found_zulip": "other",
-            "how_realm_creator_found_zulip_extra_context": "I found it on the internet.",
+            "how_realm_creator_found_zulip_other_text": "I found it on the internet.",
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
@@ -970,6 +971,29 @@ Output:
             payload["realm_in_root_domain"] = realm_in_root_domain
         return self.client_post(
             "/new/",
+            payload,
+        )
+
+    def submit_demo_creation_form(
+        self,
+        demo_name: str,
+        *,
+        org_type: int = Realm.ORG_TYPES["business"]["id"],
+        language: str = "en",
+        captcha: str | None = None,
+    ) -> "TestHttpResponse":
+        payload = {
+            "realm_name": demo_name,
+            "realm_type": org_type,
+            "realm_default_language": language,
+            "how_realm_creator_found_zulip": "ai_chatbot",
+            "how_realm_creator_found_zulip_which_ai_chatbot": "I don't remember.",
+            "terms": True,
+        }
+        if captcha is not None:
+            payload["captcha"] = captcha
+        return self.client_post(
+            "/new/demo/",
             payload,
         )
 
@@ -1521,7 +1545,7 @@ Output:
             realm = get_realm("zulip")
 
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-            realm, invite_only, history_public_to_subscribers
+            invite_only, history_public_to_subscribers
         )
 
         try:
@@ -1927,7 +1951,7 @@ Output:
             push_account_id=10,
             bouncer_device_id=1,
             token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key=base64.b64decode("MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"),
         )
 
     def register_push_device_token(self, user_profile_id: int) -> None:
@@ -2013,7 +2037,7 @@ Output:
         """
         dct = {}
 
-        for realm_emoji in RealmEmoji.objects.all():
+        for realm_emoji in RealmEmoji.objects.all().iterator():
             dct[realm_emoji.id] = realm_emoji
 
         if not dct:
@@ -2344,6 +2368,19 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             streams=Stream.objects.exclude(id__in=stream_ids)
         )
 
+    def set_user_role(self, user: UserProfile, role: int) -> None:
+        """
+        Test helper for switching a user to a given role. Hardcodes
+        acting_user=None, which means the change is treated as
+        though it was done by a management command, not another
+        user.
+
+        Tests using this should consider using users who have the
+        appropriate initial role; this is usually more readable and
+        a bit faster.
+        """
+        do_change_user_role(user, role, acting_user=None)
+
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
@@ -2462,7 +2499,7 @@ class WebhookTestCase(ZulipTestCase):
             if all_event_types is None:
                 return  # nocoverage
 
-            def side_effect(*args: Any, **kwargs: Any) -> None:
+            def side_effect(*args: Any, **kwargs: Any) -> int | None:
                 complete_event_type = (
                     kwargs.get("complete_event_type")
                     if len(args) < 5
@@ -2482,7 +2519,7 @@ self-documenting the supported event types for this integration.
 You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
 """.strip()
                     )
-                check_send_webhook_message(*args, **kwargs)
+                return check_send_webhook_message(*args, **kwargs)
 
             self.patch = mock.patch(
                 f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.check_send_webhook_message",
@@ -2912,14 +2949,14 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
             push_account_id=10,
             bouncer_device_id=1,
             token_kind=PushDevice.TokenKind.APNS,
-            push_public_key="9VvW7k59AET0v3+VFCkKTrNm5DJQ7JTKdvUjZInZZ0Y=",
+            push_key=base64.b64decode("MXPC4WK2YfyfCBdK6ElnzSpKJtcpFSZrYiJto4YCETzx"),
         )
         PushDevice.objects.create(
             user=hamlet,
             push_account_id=20,
             bouncer_device_id=2,
             token_kind=PushDevice.TokenKind.FCM,
-            push_public_key="n4WTVqj8KH6u0vScRycR4TqRaHhFeJ0POvMb8LCu8iI=",
+            push_key=base64.b64decode("Mc3u6xraEI79aGk6Nd+boqi/ODfT+JcsEIATzG7C/m+V"),
         )
 
         realm_and_remote_realm_fields: dict[str, Realm | RemoteRealm | None] = {

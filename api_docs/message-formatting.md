@@ -26,7 +26,9 @@ features.
 ## Links to channels, topics, and messages
 
 Zulip's markup supports special readable Markdown syntax for [linking
-to channels, topics, and messages](/help/link-to-a-message-or-conversation).
+to channels, topics, and
+messages](/help/link-to-a-message-or-conversation). See also [Zulip
+URLs](/api/zulip-urls)
 
 Sample HTML formats are as follows:
 ``` html
@@ -121,31 +123,85 @@ the href for those is the default behavior of the link that also
 encodes the channel alongside the data-stream-id field, but clients
 can override that default based on `web_channel_default_view` setting.
 
-## Image previews
+## Emoji
+
+Zulip's [emoji][help-emoji] support includes standard Unicode emoji, a
+built-in Zulip custom emoji like `:zulip:` and [custom realm
+emoji][help-custom-emoji]. To maximize legibility, emoji should be
+displayed inline with text, at the maximum size that does not
+interfere with line spacing.
+
+**Large emoji**. Clients are recommended to display single-paragraph
+messages that contain only emoji elements with a greatly increased
+size. For example, Zulip the web app scales large emoji to be 2x the
+size of other message emoji.
+
+Unicode emoji, such as `:smiling_face:` (☺️ / `263a`), are represented
+in the HTML by spans with the following format:
+
+```html
+<span aria-label="smiling face" class="emoji emoji-263a" role="img"
+  title="smiling face">:smiling_face:</span>
+```
+
+Note that Unicode emoji in messages that were originally sent on Zulip
+versions older than Zulip 1.9.2 will not have the `role` or
+`aria-label` attributes. Thus, clients should not rely on those fields
+existing.
+
+The `server_emoji_data_url` key in the [`POST
+/register`](/api/register-queue) response contains the server's
+mapping between Unicode codepoints and emoji names.
+
+Custom emoji are represented in the HTML by image tags that also use
+the `.emoji` class. The `src` URL should be resolved with respect to
+the Zulip server's hostname:
+
+```html
+<-- Configured realm-specific custom emoji -->
+<img alt=":example_custom_emoji:" class="emoji" title="example_custom_emoji"
+  src="/user_avatars/2/emoji/images/dbe43627.png">
+
+<-- Built-in custom emoji like :zulip: -->
+<img alt=":zulip:" class="emoji" title="zulip"
+  src="/static/generated/emoji/images/emoji/unicode/zulip.png">
+```
+
+**Changes**: Large emoji are new in Zulip 12.0 (feature level 436).
+
+## Images
 
 When a Zulip message is sent linking to an uploaded image, Zulip will
-generate an image preview element with the following format.
+generate an image preview element with the following format:
 
 ``` html
 <div class="message_inline_image">
-    <a href="/user_uploads/path/to/image.png" title="image.png">
+    <a href="/user_uploads/path/to/example.png" title="example.png">
         <img data-original-dimensions="1920x1080"
           data-original-content-type="image/png"
-          src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">
+          src="/user_uploads/thumbnail/path/to/example.png/840x560.webp">
     </a>
 </div>
 ```
 
-If the server has not yet generated thumbnails for the image yet at
-the time the message is sent, the `img` element will be a temporary
-loading indicator image and have the `image-loading-placeholder`
+Clients can recognize if an image was thumbnailed by its `src`
+attribute starting with `/user_uploads/thumbnail/`.  The `href` will
+always link to the originally-uploaded file.
+
+**Changes**: See [Changes to image formatting](#changes-to-image-formatting).
+
+### Image-loading placeholders
+
+If the server has yet to generate thumbnails for the image by
+the time the message is sent, the `img` element will temporarily
+reference a loading indicator image and have the `image-loading-placeholder`
 class, which clients can use to identify loading indicators and
 replace them with a more native loading indicator element if
 desired. For example:
 
 ``` html
 <div class="message_inline_image">
-    <a href="/user_uploads/path/to/image.png" title="image.png">
+    <a href="/user_uploads/path/to/example.png" title="example.png">
         <img class="image-loading-placeholder"
           data-original-dimensions="1920x1080"
           data-original-content-type="image/png"
@@ -167,6 +223,35 @@ Note that in the uncommon situation that the thumbnailing system is
 backlogged, an individual message containing multiple image previews
 may be re-rendered multiple times as each image finishes thumbnailing
 and triggers a message update.
+
+Clients displaying message-edit history should rewrite image-loading
+placeholder images in edit history to the generic deleted-file image
+(`/static/images/errors/file-not-exist.png`).
+
+### Transcoded images
+
+Image elements whose formats are not widely supported by web browsers
+(e.g., HEIC and TIFF) may contain a `data-transcoded-image` attribute,
+which specifies a high-resolution thumbnail format that clients may
+opt to present instead of the original image. If the
+`data-transcoded-image` attribute is present, clients should use the
+`data-original-content-type` attribute to decide whether to display the
+original image or use the transcoded version.
+
+Transcoded images are presented with this structure in image previews:
+
+``` html
+<div class="message_inline_image">
+    <a href="/user_uploads/path/to/example.heic" title="example.heic">
+        <img data-original-dimensions="1920x1080"
+          data-original-content-type="image/heic"
+          data-transcoded-image="1920x1080.webp"
+          src="/user_uploads/thumbnail/path/to/example.heic/840x560.webp">
+    </a>
+</div>
+```
+
+### Recommended client processing of image previews
 
 Clients are recommended to do the following when processing image
 previews:
@@ -217,16 +302,18 @@ previews:
   format match what they requested.
 - No other processing of the URLs is recommended.
 
-**Changes**: In Zulip 10.0 (feature level 336), added
+### Changes to image formatting
+
+**In Zulip 10.0** (feature level 336), added
 `data-original-content-type` attribute to convey the type of the
 original image, and optional `data-transcoded-image` attribute for
 images with formats which are not widely supported by browsers.
 
-**Changes**: In Zulip 9.2 (feature levels 278-279, and 287+), added
+**In Zulip 9.2** (feature levels 278-279, and 287+), added
 `data-original-dimensions` to the `image-loading-placeholder` spinner
 images, containing the dimensions of the original image.
 
-In Zulip 9.0 (feature level 276), added `data-original-dimensions`
+**In Zulip 9.0** (feature level 276), added `data-original-dimensions`
 attribute to images that have been thumbnailed, containing the
 dimensions of the full-size version of the image. Thumbnailing itself
 was reintroduced at feature level 275.
@@ -439,6 +526,8 @@ inconsistent syntax, were removed.
 * [Render a message](/api/render-message)
 
 [help-code]: /help/code-blocks
+[help-emoji]: /help/emoji-and-emoticons
+[help-custom-emoji]: /help/custom-emoji
 [help-playgrounds]: /help/code-blocks#code-playgrounds
 [help-spoilers]: /help/spoilers
 [help-global-time]: /help/global-times

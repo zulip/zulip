@@ -666,7 +666,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         topic_name: "REXX",
     });
 
-    for (const topic_name of ["team", "ignore", "test"]) {
+    for (const topic_name of ["team", "ignore", "✔ ice cream", "✔ team work", "test"]) {
         stream_topic_history.add_message({
             stream_id: office_id,
             topic_name,
@@ -680,6 +680,7 @@ test("topic_suggestions", ({override, mock_template}) => {
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
         `channel:${office_id} topic:team`,
+        `channel:${office_id} topic:✔+team+work`,
         `channel:${office_id} topic:test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -706,6 +707,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     expected = [
         "-topic:te",
         `channel:${office_id} -topic:team`,
+        `channel:${office_id} -topic:✔+team+work`,
         `channel:${office_id} -topic:test`,
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -724,27 +726,111 @@ test("topic_suggestions", ({override, mock_template}) => {
     suggestions = get_suggestions(`topic:REXX channel:${devel_id} topic:`);
     expected = [`topic:REXX channel:${devel_id} topic:`];
     assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions("topic:");
+    expected = [
+        "topic:",
+        "channel:5 topic:✔+ice+cream",
+        "channel:5 topic:ignore",
+        `channel:5 topic:team`,
+        "channel:5 topic:✔+team+work",
+        `channel:5 topic:test`,
+        "channel:6 topic:REXX",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+    override(narrow_state, "stream_id", () => "");
+
+    for (const topic_name of ["a", "b", "c", "trap", "talks", "tower"]) {
+        stream_topic_history.add_message({
+            stream_id: devel_id,
+            topic_name,
+        });
+    }
+
+    stream_data.subscribe_myself(stream_data.get_sub("devel"));
+    stream_data.subscribe_myself(stream_data.get_sub("office"));
+    suggestions = get_suggestions("topic:");
+    expected = [
+        "topic:",
+        "channel:6 topic:a",
+        "channel:6 topic:b",
+        "channel:6 topic:c",
+        "channel:5 topic:✔+ice+cream",
+        "channel:5 topic:ignore",
+        "channel:6 topic:REXX",
+        "channel:5 topic:team",
+        "channel:5 topic:✔+team+work",
+        "channel:5 topic:test",
+        "channel:6 topic:trap",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions("topic:t");
+    expected = [
+        "topic:t",
+        "channel:5 topic:team",
+        "channel:5 topic:✔+team+work",
+        "channel:5 topic:test",
+        "channel:6 topic:trap",
+        "channel:6 topic:talks",
+        "channel:6 topic:tower",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Prioritize topics from currently narrowed channel
+    override(narrow_state, "stream_id", () => devel_id);
+    suggestions = get_suggestions("topic:t");
+    expected = [
+        "topic:t",
+        "channel:6 topic:trap",
+        "channel:6 topic:talks",
+        "channel:6 topic:tower",
+        "channel:5 topic:team",
+        "channel:5 topic:✔+team+work",
+        "channel:5 topic:test",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    override(narrow_state, "stream_id", () => office_id);
+    suggestions = get_suggestions("topic:t");
+    expected = [
+        "topic:t",
+        "channel:5 topic:team",
+        "channel:5 topic:✔+team+work",
+        "channel:5 topic:test",
+        "channel:6 topic:trap",
+        "channel:6 topic:talks",
+        "channel:6 topic:tower",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 });
 
 test("topic_suggestions (limits)", () => {
-    let candidate_topics = [];
+    let candidate_topic_entries = [];
 
-    function assert_result(guess, expected_topics) {
+    function wrap(topics) {
+        return topics.map((t) => ({channel_id: "1", topic: t}));
+    }
+
+    function assert_result(guess, expected_topic_strings) {
         assert.deepEqual(
-            search.get_topic_suggestions_from_candidates({candidate_topics, guess}),
-            expected_topics,
+            search.get_topic_suggestions_from_candidates({
+                candidate_topic_entries,
+                guess,
+            }),
+            wrap(expected_topic_strings),
         );
     }
 
     assert_result("", []);
     assert_result("zzz", []);
 
-    candidate_topics = ["a", "b", "c"];
+    candidate_topic_entries = wrap(["a", "b", "c"]);
     assert_result("", ["a", "b", "c"]);
     assert_result("b", ["b"]);
     assert_result("z", []);
 
-    candidate_topics = [
+    candidate_topic_entries = wrap([
         "a1",
         "a2",
         "b1",
@@ -761,7 +847,8 @@ test("topic_suggestions (limits)", () => {
         "a10",
         "a11",
         "a12",
-    ];
+    ]);
+
     // We max out at 10 topics, so as not to overwhelm the user.
     assert_result("", ["a1", "a2", "b1", "b2", "a3", "a4", "a5", "c1", "a6", "a7"]);
     assert_result("a", ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10"]);

@@ -124,10 +124,10 @@ def check_valid_bot_config(
     bot_type: int, service_name: str, config_data: Mapping[str, str]
 ) -> None:
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
-        from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+        from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 
         config_options = None
-        for integration in WEBHOOK_INTEGRATIONS:
+        for integration in INCOMING_WEBHOOK_INTEGRATIONS:
             if integration.name == service_name:
                 # key: validator
                 config_options = {
@@ -583,6 +583,7 @@ class APIUserDict(TypedDict):
     profile_data: NotRequired[dict[str, Any] | None]
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
+    is_imported_stub: bool
 
 
 def format_user_row(
@@ -627,6 +628,7 @@ def format_user_row(
         if acting_user is None
         else row["date_joined"].isoformat(timespec="minutes"),
         delivery_email=delivery_email,
+        is_imported_stub=row["is_imported_stub"],
     )
 
     if acting_user is None:
@@ -684,11 +686,19 @@ def all_users_accessible_by_everyone_in_realm(realm: Realm) -> bool:
     return False
 
 
-def user_access_restricted_in_realm(target_user: UserProfile) -> bool:
+def user_access_restricted_in_realm(
+    target_user: UserProfile,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
+) -> bool:
     if target_user.is_bot:
         return False
 
-    if all_users_accessible_by_everyone_in_realm(target_user.realm):
+    if realm is None:
+        realm = target_user.realm
+
+    if all_users_accessible_by_everyone_in_realm(realm):
         return False
 
     return True
@@ -715,9 +725,13 @@ def check_user_can_access_all_users(acting_user: UserProfile | None) -> bool:
 
 
 def check_can_access_user(
-    target_user: UserProfile, user_profile: UserProfile | None = None
+    target_user: UserProfile,
+    user_profile: UserProfile | None = None,
+    # Pass `realm` to avoid a DB query when `target_user.realm` isn't already
+    # loaded but the caller has realm available from another source.
+    realm: Realm | None = None,
 ) -> bool:
-    if not user_access_restricted_in_realm(target_user):
+    if not user_access_restricted_in_realm(target_user, realm):
         return True
 
     if check_user_can_access_all_users(user_profile):
@@ -743,8 +757,10 @@ def check_can_access_user(
     ).exists():
         return True
 
-    assert user_profile.recipient_id is not None
-    assert target_user.recipient_id is not None
+    if user_profile.recipient_id is None or target_user.recipient_id is None:
+        # If either user does not have a recipient_id, they rely on
+        # direct message groups for 1:1 or self DMs.
+        return False
 
     # Querying the "Message" table is expensive so we do this last.
     direct_message_query = Message.objects.filter(
@@ -795,6 +811,11 @@ def get_inaccessible_user_ids(
     possible_inaccessible_user_ids = set(target_human_user_ids) - set(common_subscription_user_ids)
     if not possible_inaccessible_user_ids:
         return set()
+
+    if not acting_user.recipient_id:
+        # If the acting user does not have a recipient_id, they only rely on
+        # direct message groups for 1:1 or self DMs.
+        return possible_inaccessible_user_ids
 
     target_user_recipient_ids = UserProfile.objects.filter(
         id__in=possible_inaccessible_user_ids
@@ -934,7 +955,9 @@ def get_users_involved_in_dms_with_target_users(
 
         direct_message_participants_dict[sender_id] = recipient_user_ids
 
-    personal_recipient_ids_for_target_users = [user.recipient_id for user in target_users]
+    personal_recipient_ids_for_target_users = [
+        user.recipient_id for user in target_users if user.recipient_id is not None
+    ]
     direct_message_senders_query = Message.objects.filter(
         realm=realm,
         recipient_id__in=personal_recipient_ids_for_target_users,
@@ -976,6 +999,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         bot_type=user_profile.bot_type,
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
+        is_imported_stub=user_profile.is_imported_stub,
     )
 
 
@@ -1029,6 +1053,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         delivery_email=None,
         avatar_url=get_avatar_for_inaccessible_user(),
         profile_data={},
+        is_imported_stub=False,
     )
     return user_dict
 
@@ -1108,7 +1133,7 @@ def get_users_for_api(
     client_gravatar: bool,
     user_avatar_url_field_optional: bool,
     include_custom_profile_fields: bool = True,
-    user_list_incomplete: bool = False,
+    user_list_incomplete: bool = True,
     user_ids: list[int] | None = None,
 ) -> dict[int, APIUserDict]:
     """Fetches data about the target user(s) appropriate for sending to

@@ -36,8 +36,10 @@ from zerver.lib.narrow import (
     BadNarrowOperatorError,
     NarrowBuilder,
     NarrowParameter,
+    add_narrow_conditions,
     exclude_muting_conditions,
     find_first_unread_anchor,
+    get_base_query_for_search,
     is_spectator_compatible,
     ok_to_include_history,
     post_process_limited_query,
@@ -425,6 +427,19 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_add_term_using_dm_operator_the_same_user_as_operand_when_direct_message_group_exists(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Make the direct message group for self messages
+        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        term = NarrowParameter(operator="dm", operand=hamlet.email)
+        params = {"recipient_id_1": direct_message_group.recipient_id}
+        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
+
     def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
         myself_and_other = (
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
@@ -434,6 +449,20 @@ class NarrowBuilderTest(ZulipTestCase):
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Make the direct message group for 1:1 messages between hamlet and othello
+        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
+
+        term = NarrowParameter(operator="dm", operand=f"{hamlet.email},{othello.email}")
+        params = {"recipient_id_1": direct_message_group.recipient_id}
+        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group(
         self,
@@ -533,6 +562,18 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
+        )
+
+    def test_add_term_using_dm_including_operator_without_personal_recipient(self) -> None:
+        # Dropping the personal recipient for Othello
+        othello = self.example_user("othello")
+        othello.recipient = None
+        othello.save()
+
+        term = NarrowParameter(operator="dm-including", operand=self.othello_email)
+        self._do_add_term_test(
+            term,
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
     def test_add_term_using_id_operator_integer(self) -> None:
@@ -1161,6 +1202,18 @@ class IncludeHistoryTest(ZulipTestCase):
         # Negated -channels:public searches should not include history.
         narrow = [
             NarrowParameter(operator="channels", operand="public", negated=True),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
+        # channels:web-public searches should include history for non-guest members.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Negated -channels:web-public searches should not include history.
+        narrow = [
+            NarrowParameter(operator="channels", operand="web-public", negated=True),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -2471,6 +2524,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertNotEqual(result["messages"], [])
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_1_to_1_messages_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
         other_user = self.example_user("iago")
@@ -2495,6 +2549,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], message_ids)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_messages_to_self_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
 
@@ -4211,25 +4266,57 @@ class GetOldMessagesTest(ZulipTestCase):
 
         user_profile = hamlet
 
-        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
-            anchor = find_first_unread_anchor(
-                sa_conn=sa_conn,
+        def test_find_first_unread_anchor(
+            narrow: list[NarrowParameter], need_user_message: bool
+        ) -> tuple[int, list[Any]]:
+            query, inner_msg_id_col = get_base_query_for_search(
+                realm_id=user_profile.realm_id,
                 user_profile=user_profile,
-                narrow=[],
+                need_user_message=need_user_message,
             )
+            query = query.add_columns(column("flags", Integer))
+            query, _is_search, is_dm_narrow = add_narrow_conditions(
+                user_profile=user_profile,
+                inner_msg_id_col=inner_msg_id_col,
+                query=query,
+                narrow=narrow,
+                realm=user_profile.realm,
+                is_web_public_query=False,
+            )
+
+            with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
+                anchor = find_first_unread_anchor(
+                    sa_conn=sa_conn,
+                    user_profile=user_profile,
+                    narrow=narrow,
+                    query=query,
+                    is_dm_narrow=is_dm_narrow,
+                    inner_msg_id_col=inner_msg_id_col,
+                    need_user_message=need_user_message,
+                )
+            return anchor, queries
+
+        anchor, queries = test_find_first_unread_anchor([], need_user_message=False)
         self.assert_length(queries, 4)
+        self.assertEqual(anchor, first_message_id)
+
+        # If need_user_message is set to True, we don't need to call
+        # get_base_query_for_search inside find_first_unread_anchor.
+        # This saves us an extra call that get_base_query_for_search
+        # makes to get_recursive_membership_groups in case of
+        # need_user_message being True.
+        anchor, queries = test_find_first_unread_anchor([], need_user_message=True)
+        self.assert_length(queries, 3)
         self.assertEqual(anchor, first_message_id)
 
         # Looking for the first-unread in DMs leaves off the muted
         # topics queries and limits
-        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
-            anchor = find_first_unread_anchor(
-                sa_conn=sa_conn,
-                user_profile=user_profile,
-                narrow=[NarrowParameter(operator="is", operand="dm")],
-            )
-        self.assert_length(queries, 2)
-        self.assertTrue("muted" not in queries[1].sql)
+        anchor, queries = test_find_first_unread_anchor(
+            [NarrowParameter(operator="is", operand="dm")],
+            need_user_message=True,
+        )
+        self.assert_length(queries, 1)
+        self.assertTrue("muted" not in queries[0].sql)
         self.assertEqual(anchor, dm_message_id)
 
         # With the same data setup, we now want to test that a reasonable

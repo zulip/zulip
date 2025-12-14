@@ -1,15 +1,15 @@
 import autosize from "autosize";
+import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as internal_url from "../shared/src/internal_url.ts";
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_bookend from "../templates/bookend.hbs";
 import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
 import render_message_group from "../templates/message_group.hbs";
 import render_message_list from "../templates/message_list.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
+import render_revealed_message_hide_button from "../templates/revealed_message_hide_button.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity.ts";
@@ -18,10 +18,12 @@ import * as compose_fade from "./compose_fade.ts";
 import * as condense from "./condense.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as internal_url from "./internal_url.ts";
 import * as message_edit from "./message_edit.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -33,17 +35,18 @@ import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
-import {is_same_day} from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
 import * as typing_events from "./typing_events.ts";
+import * as ui_util from "./ui_util.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -137,11 +140,9 @@ function same_day(earlier_msg: Message | undefined, later_msg: Message | undefin
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    return is_same_day(
-        earlier_msg.timestamp * 1000,
-        later_msg.timestamp * 1000,
-        timerender.display_time_zone,
-    );
+    return isSameDay(earlier_msg.timestamp * 1000, later_msg.timestamp * 1000, {
+        in: timerender.display_tz,
+    });
 }
 
 function same_year(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {
@@ -232,7 +233,7 @@ function get_message_date_divider_data(opts: {
     };
 }
 
-function get_timestr(message: Message): string {
+export function get_timestr(message: Message): string {
     const time = new Date(message.timestamp * 1000);
     return timerender.stringify_time(time);
 }
@@ -355,7 +356,7 @@ type SubscriptionMarkers = {
     subscribed?: boolean;
     just_unsubscribed?: boolean;
 };
-function populate_group_from_message(
+export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
@@ -602,7 +603,7 @@ export class MessageListView {
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:
-            1. Hide the sender avatar and name.
+            1. Replace the sender's avatar with that of a muted sender and name them as "Muted sender".
             2. Hide reactions on that message.
             3. Do not give a background color to that message even if it mentions the
                current user.
@@ -649,7 +650,7 @@ export class MessageListView {
         } else {
             mention_classname = undefined;
         }
-        let include_sender = existing_include_sender && !is_hidden;
+        let include_sender = existing_include_sender;
         if (is_revealed) {
             // If the message is to be revealed, we show the sender anyways, because the
             // the first message in the group (which would hold the sender) can still be
@@ -664,7 +665,9 @@ export class MessageListView {
             message.sender_id,
         );
 
-        const small_avatar_url = people.small_avatar_url(message);
+        const small_avatar_url = is_hidden
+            ? people.get_muted_user_avatar_url()
+            : people.small_avatar_url(message);
         let background_color;
         if (message.type === "stream") {
             background_color = stream_data.get_color(message.stream_id);
@@ -777,6 +780,7 @@ export class MessageListView {
         for (const message of messages) {
             const message_reactions = reactions.get_message_reactions(message);
             message.message_reactions = message_reactions;
+            message.reminders = message_reminder.get_reminders(message.id);
 
             // These will be used to build the message container
             let include_recipient = false;
@@ -983,6 +987,11 @@ export class MessageListView {
                 update_group_date(second_group, curr_msg_container.msg, prev_msg_container?.msg);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
+            } else if (second_group.bookend_top) {
+                // We know there was no bookend_top before since we
+                // are adding messages to the top.
+                const rendered_bookend_html = render_bookend(second_group);
+                this.$list.prepend($(rendered_bookend_html));
             }
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = [...new_message_groups, ...this._message_groups];
@@ -1072,6 +1081,7 @@ export class MessageListView {
     _get_message_template(message_container: MessageContainer): string {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
+        message_container.msg.reminders = message_reminder.get_reminders(message_container.msg.id);
         const msg_to_render = {
             ...message_container,
             message_list_id: this.list.id,
@@ -1697,6 +1707,29 @@ export class MessageListView {
             message_content_edited: false,
             is_revealed: true,
         });
+
+        const rendered_markdown = this._rows.get(message_id)!.find(".rendered_markdown")[0];
+        assert(rendered_markdown !== undefined);
+
+        // Me messages do not have a child element in `.rendered_markdown`,
+        // so we append the "Hide" button to the `.rendered_markdown` element.
+        const last_ele = rendered_markdown?.lastElementChild ?? rendered_markdown;
+        assert(last_ele instanceof Element);
+
+        // If the last element in the message row contains text, we add the hide button
+        // inline to the same element.
+        const should_display_inline = last_ele.nodeName === "P" || last_ele.nodeName === "SPAN";
+        const hide_button_fragment = ui_util.parse_html(
+            render_revealed_message_hide_button({
+                message_id,
+                is_inline_hide_button: should_display_inline,
+            }),
+        );
+        if (should_display_inline) {
+            last_ele.append(hide_button_fragment);
+        } else {
+            rendered_markdown.append(hide_button_fragment);
+        }
     }
 
     hide_revealed_message(message_id: number): void {
@@ -2176,7 +2209,6 @@ export class MessageListView {
 
     show_messages_as_unread(message_ids: number[]): void {
         const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
-            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
             const message_id = Number.parseFloat($row.getAttribute("data-message-id")!);
             return message_ids.includes(message_id);
         });

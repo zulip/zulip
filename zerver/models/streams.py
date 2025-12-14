@@ -129,6 +129,9 @@ class Stream(models.Model):
     can_administer_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_create_topic_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_delete_any_message_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
@@ -172,6 +175,11 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name="channel_creator",
+        ),
+        "can_create_topic_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
         ),
         "can_delete_any_message_group": GroupPermissionSetting(
             allow_nobody_group=True,
@@ -272,6 +280,7 @@ class Stream(models.Model):
         "subscriber_count",
         "can_add_subscribers_group_id",
         "can_administer_channel_group_id",
+        "can_create_topic_group_id",
         "can_delete_any_message_group_id",
         "can_delete_own_message_group_id",
         "can_move_messages_out_of_channel_group_id",
@@ -325,13 +334,21 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
 
 def get_stream_by_name_for_sending_message(stream_name: str, realm: Realm) -> Stream:
     return Stream.objects.select_related(
-        "can_send_message_group", "can_send_message_group__named_user_group"
+        "can_send_message_group",
+        "can_send_message_group__named_user_group",
+        "can_create_topic_group",
+        "can_create_topic_group__named_user_group",
     ).get(name__iexact=stream_name.strip(), realm_id=realm.id)
 
 
 def get_stream_by_id_for_sending_message(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related(
-        "realm", "recipient", "can_send_message_group", "can_send_message_group__named_user_group"
+        "realm",
+        "recipient",
+        "can_send_message_group",
+        "can_send_message_group__named_user_group",
+        "can_create_topic_group",
+        "can_create_topic_group__named_user_group",
     ).get(id=stream_id, realm=realm)
 
 

@@ -35,12 +35,15 @@
         {% set realm = user.realm %}
         <div class="support-query-result user-support-container">
             <div class="user-information-section">
-                <span class="cloud-label">Cloud user</span>
+                <span class="cloud-label">Cloud {% if user.is_bot%}bot{% else %}user{% endif %}</span>
                 <h3>{{ user.full_name }}</h3>
                 <b>Email</b>: {{ user.delivery_email }}<br />
                 <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
                 <b>Is active</b>: {{ user.is_active }}<br />
                 <b>Role</b>: {{ user.get_role_name() }}<br />
+                {% if user.is_bot and user.bot_owner %}
+                <b>Bot owner</b>: {{ user.bot_owner.delivery_email }}<br />
+                {% endif %}
                 <form method="POST" class="delete-user-form">
                     {{ csrf_input }}
                     <input type="hidden" name="realm_id" value="{{ realm.id }}" />

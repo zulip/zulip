@@ -87,10 +87,6 @@ class Recipient(models.Model):
         else:
             return str(get_display_recipient(self))
 
-    def type_name(self) -> str:
-        # Raises KeyError if invalid
-        return self._type_names[self.type]
-
 
 def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
     from zerver.models import Subscription
@@ -177,6 +173,7 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
     """
     from zerver.models import Subscription, UserProfile
 
+    assert len(id_list) == len(set(id_list))
     direct_message_group_hash = get_direct_message_group_hash(id_list)
     with transaction.atomic(savepoint=False):
         (direct_message_group, created) = DirectMessageGroup.objects.get_or_create(

@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_bot} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 /*
 
@@ -59,6 +60,7 @@ const {run_test, noop} = require("./lib/test.cjs");
 const activity_ui = mock_esm("../src/activity_ui");
 const message_live_update = mock_esm("../src/message_live_update");
 const pm_list = mock_esm("../src/pm_list");
+const settings_bots = mock_esm("../src/settings_bots");
 const settings_users = mock_esm("../src/settings_users");
 const user_profile = mock_esm("../src/user_profile");
 
@@ -88,7 +90,7 @@ run_test("add users with event", ({override}) => {
 
     // We need to override a stub here before dispatching the event.
     // Keep reading to see how overriding works!
-    override(settings_users, "redraw_bots_list", noop);
+    override(settings_bots, "redraw_all_bots_list", noop);
     override(activity_ui, "check_should_redraw_new_user", noop);
     // Let's simulate dispatching our event!
     server_events_dispatch.dispatch_normal_event(event);
@@ -119,6 +121,12 @@ run_test("update user with event", ({override}) => {
     people.init();
     people.add_active_user(bob);
 
+    set_current_user({user_id: bob.user_id});
+
+    const $select = $.create("#user-self-role-select");
+    const $option = $.create('option[value="100"]');
+    $select.set_find_results('option[value="100"]', $option);
+
     const new_bob = make_bot({
         email: "bob@example.com",
         user_id: bob.user_id,
@@ -140,7 +148,7 @@ run_test("update user with event", ({override}) => {
     override(message_live_update, "update_user_full_name", noop);
     override(pm_list, "update_private_messages", noop);
     override(settings_users, "update_user_data", noop);
-    override(settings_users, "update_bot_data", noop);
+    override(settings_bots, "update_bot_data", noop);
     override(user_profile, "update_profile_modal_ui", noop);
 
     // Dispatch the realm_user/update event, which will update

@@ -157,3 +157,31 @@ run_test("stream_topic_link_syntax_test", () => {
         "$$MONEY$$",
     );
 });
+
+run_test("get_topic_link_content_with_stream_name", () => {
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_name({
+            stream_name: sweden_stream.name,
+            topic_name: "abc",
+            message_id: 123,
+        }),
+        {
+            text: "#Sweden > abc @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
+    );
+});
+
+run_test("get_topic_link_content_with_stream_id", () => {
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: sweden_stream.stream_id,
+            topic_name: "abc",
+            message_id: 123,
+        }),
+        {
+            text: "#Sweden > abc @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
+    );
+});

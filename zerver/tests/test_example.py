@@ -137,6 +137,7 @@ class TestFullStack(ZulipTestCase):
                 role=UserProfile.ROLE_MEMBER,
                 timezone="Etc/UTC",
                 user_id=cordelia.id,
+                is_imported_stub=False,
             ),
         )
 
@@ -363,7 +364,7 @@ class TestQueryCounts(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             self.send_personal_message(
                 from_user=hamlet,
                 to_user=cordelia,

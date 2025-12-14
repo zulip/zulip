@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -442,11 +442,7 @@ def get_access_token_page_url(payload: WildValue) -> str:
 def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
     access_token = payload["object_attributes"]
     expiry_date = access_token["expires_at"].tame(check_string)
-    formatted_date = (
-        datetime.strptime(expiry_date, "%Y-%m-%d")
-        .replace(tzinfo=timezone.utc)
-        .strftime("%b %d, %Y")
-    )
+    formatted_date = datetime.fromisoformat(expiry_date).strftime("%b %d, %Y")
 
     return ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE.format(
         name=access_token["name"].tame(check_string),

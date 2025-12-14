@@ -168,7 +168,7 @@
     This is the header, aka the navbar.
     */
     --header-height: 2.5em; /* 40px at 16px em */
-
+    --header-line-height: 40px;
     /*
     At 600px, the header starts taking up more than 5%
     of the screen. We make it shorter to leave more space
@@ -427,6 +427,7 @@
     --opacity-left-sidebar-muted-mentions: 0.3;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
+    --opacity-readonly-modal-input: 0.7;
 
     /*
     Message box elements and values.
@@ -475,6 +476,7 @@
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
+    --last-message-row-border-radius: 0 0 7px 7px;
 
     /* This length is the primary reference for height
        and image width on URL preview embeds. 112px
@@ -589,11 +591,11 @@
     /* Pill dimensions. */
     /* 1.5714em is 22px (border-inclusive) at 14px/1em */
     --height-input-pill: 1.5714em;
-    /* Reduce user pill image lengths by 2px to
-       preserve an apparent border around
-       them, and a square aspect-ratio, even under
-       `box-sizing: border-box` in the area. */
-    --length-search-input-pill-image: calc(var(--height-input-pill) - 2px);
+    /* Reduce user pill height by 2px to preserve an apparent border
+       around them even under `box-sizing: border-box` in the area. */
+    --length-user-pill-height: calc(var(--height-input-pill) - 2px);
+    /* Fills whole pill height. */
+    --length-search-pill-image: var(--length-user-pill-height);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
@@ -626,6 +628,9 @@
     /* Dropdown menu width. This is a legacy value that comes from bootstrap.
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
+    /* User profile modal */
+    --user-profile-modal-body-height: 60vh;
+    --user-profile-modal-body-margin-bottom: 20px;
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
@@ -700,6 +705,11 @@
     --input-button-width: 1.5em; /* 24px at 16px/1em */
     --input-button-ending-offset: 0.125em; /* 2px at 16px/1em */
 
+    /* Input padding and border variables */
+    --input-horizontal-padding: 6px;
+    --input-vertical-padding: 4px;
+    --input-border-width: 1px;
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(
@@ -717,6 +727,14 @@
     --color-selected-message-outline: light-dark(
         hsl(217deg 64% 59% / 60%),
         hsl(217deg 64% 59% / 70%)
+    );
+    --color-selected-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59%),
+        hsl(217deg 95% 59%)
+    );
+    --color-hovered-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59% / 50%),
+        hsl(217deg 95% 59% / 60%)
     );
     --color-message-list-border: light-dark(
         hsl(0deg 0% 0% / 16%),
@@ -775,6 +793,14 @@
     --color-shadow-sidebar-row-hover: light-dark(
         hsl(0deg 0% 0% / 30%),
         hsl(0deg 0% 100% / 30%)
+    );
+    --color-sidebar-action: light-dark(
+        hsl(240deg 30% 40%),
+        hsl(240deg 35% 68%)
+    );
+    --color-sidebar-action-hover: light-dark(
+        hsl(240deg 100% 15%),
+        hsl(240deg 100% 90%)
     );
     --color-background-sidebar-action-hover: light-dark(
         hsl(240deg 100% 93%),
@@ -839,6 +865,26 @@
     --background-color-modal-selectable-icon-hover: light-dark(
         hsl(240deg 100% 50% / 7%),
         hsl(240deg 100% 75% / 20%)
+    );
+    --background-color-readonly-modal-input: light-dark(
+        hsl(240deg 7% 93%),
+        hsl(240deg 7% 17%)
+    );
+    --background-color-textarea: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --background-color-disabled-textarea: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --border-color-textarea: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 60%)
+    );
+    --focus-border-color-textarea: light-dark(
+        hsl(206.5deg 80% 62% / 80%),
+        hsl(0deg 0% 0% / 90%)
     );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
@@ -1472,6 +1518,22 @@
         hsl(0deg 0% 87%),
         hsl(0deg 0% 100% / 20%)
     );
+    --color-border-user-profile-list-container: light-dark(
+        hsl(0deg 0% 0% / 35%),
+        hsl(0deg 0% 100% / 30%)
+    );
+    --background-color-user-profile-list-container: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 17%)
+    );
+    --color-user-profile-list-item-hover: light-dark(
+        hsl(0deg 0% 97%),
+        hsl(0deg 0% 21%)
+    );
+    --color-outline-user-profile-list-item: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
 
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
@@ -1730,21 +1792,9 @@
         hsl(240deg 30% 40%),
         hsl(240deg 35% 68%)
     );
-    --color-left-sidebar-heads-up-icon: light-dark(
-        hsl(240deg 30% 40%),
-        hsl(240deg 35% 68%)
-    );
-    --color-left-sidebar-heads-up-icon-hover: light-dark(
-        hsl(240deg 100% 15%),
-        hsl(240deg 100% 90%)
-    );
     --color-left-sidebar-dm-partners-icon: light-dark(
         hsl(240deg 30% 60%),
         hsl(240deg 35% 58%)
-    );
-    --background-color-left-sidebar-heads-up-icon-hover: light-dark(
-        hsl(240deg 100% 50% / 7%),
-        hsl(240deg 100% 75% / 20%)
     );
     --color-vdots-hint: light-dark(hsl(240deg 30% 80%), hsl(240deg 35% 38%));
     --color-vdots-visible: light-dark(hsl(240deg 30% 40%), hsl(240deg 35% 68%));
@@ -2017,7 +2067,7 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --width-inbox-search: 29.0625em; /* 465px / 16px em */
+    --width-inbox-search: calc(27.4375em); /* 439px / 16px em */
     --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: light-dark(
         hsl(147deg 57% 25%),
@@ -2213,6 +2263,9 @@
 
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-black.svg");
+
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-black.svg");
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: light-dark(
@@ -2821,10 +2874,6 @@
         color-mix(in oklch, hsl(228deg 10% 20%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
     );
-    --color-border-settings-radio-input-parent: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 0% / 20%)
-    );
 
     /* .main-view-banner colors */
     --color-success-main-view-banner: light-dark(
@@ -2997,7 +3046,7 @@
         hsl(0deg 0% 0% / 20%),
         hsl(0deg 0% 90% / 20%)
     );
-    --color-info-denisty-button-icon: light-dark(
+    --color-info-density-button-icon: light-dark(
         hsl(229deg 9% 36%),
         hsl(0deg 0% 100% / 80%)
     );
@@ -3051,6 +3100,9 @@
 
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-white.svg");
+
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-white.svg");
 }
 
 @media screen {

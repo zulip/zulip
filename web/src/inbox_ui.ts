@@ -40,7 +40,7 @@ import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
-import {TopicListWidget} from "./topic_list.ts";
+import * as topic_list from "./topic_list.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -318,8 +318,7 @@ export function show(filter?: Filter): void {
     const is_new_filter_channel_view = filter?.is_channel_view();
     if (was_inbox_channel_view && is_new_filter_channel_view) {
         assert(filter !== undefined);
-        const filter_channel_id_string = filter.operands("channel")[0];
-        assert(filter_channel_id_string !== undefined);
+        const filter_channel_id_string = filter.terms_with_operator("channel")[0]!.operand;
         const filter_channel_id = Number.parseInt(filter_channel_id_string, 10);
 
         if (inbox_util.get_channel_id() === filter_channel_id) {
@@ -566,6 +565,9 @@ function get_channel_folder_id(info: {folder_id: number | null; is_pinned: boole
         return PINNED_CHANNEL_FOLDER_ID;
     }
     if (info.folder_id === null) {
+        return OTHER_CHANNELS_FOLDER_ID;
+    }
+    if (!user_settings.web_inbox_show_channel_folders) {
         return OTHER_CHANNELS_FOLDER_ID;
     }
     return info.folder_id;
@@ -859,6 +861,12 @@ function get_folder_name_from_id(folder_id: number): string {
     }
 
     if (folder_id === OTHER_CHANNELS_FOLDER_ID) {
+        if (channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID)?.name !== undefined) {
+            // To avoid unnecessary UI updates, we return the existing name as we
+            // update the name at the end when we have data for all the channels.
+            // See `update_name_of_other_channels_folder`.
+            return channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID)!.name;
+        }
         return $t({defaultMessage: "OTHER CHANNELS"});
     }
 
@@ -896,6 +904,40 @@ function update_channel_folder_data(channel_context: StreamContext): void {
             folder_context.is_header_visible || !channel_context.is_hidden;
         folder_context.has_unread_mention =
             folder_context.has_unread_mention || channel_context.mention_in_unread;
+    }
+}
+
+function update_name_of_other_channels_folder({
+    should_update_ui,
+}: {
+    should_update_ui: boolean;
+}): void {
+    // Update name of OTHER_CHANNELS_FOLDER_ID in case
+    // `is_other_channels_only_visible_folder` changed.
+    const other_channels_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID);
+    if (other_channels_folder !== undefined) {
+        let updated_name = $t({defaultMessage: "OTHER CHANNELS"});
+        if (is_other_channels_only_visible_folder()) {
+            updated_name = $t({defaultMessage: "CHANNELS"});
+        }
+
+        if (other_channels_folder.name === updated_name) {
+            // No changes needed.
+            return;
+        }
+
+        other_channels_folder.name = updated_name;
+    }
+
+    if (should_update_ui) {
+        const $other_channels_folder_header = $(
+            `#${CSS.escape(get_channel_folder_header_id(OTHER_CHANNELS_FOLDER_ID))}`,
+        );
+        if ($other_channels_folder_header.length > 0) {
+            $other_channels_folder_header
+                .find(".inbox-header-name-text")
+                .text(other_channels_folder!.name);
+        }
     }
 }
 
@@ -959,12 +1001,9 @@ function reset_data(): {
         update_channel_folder_data(channel_context);
     }
 
-    if (is_other_channels_only_visible_folder()) {
-        const other_channels_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID);
-        if (other_channels_folder !== undefined) {
-            other_channels_folder.name = $t({defaultMessage: "CHANNELS"});
-        }
-    }
+    update_name_of_other_channels_folder({
+        should_update_ui: false,
+    });
 
     sort_channel_folders();
 
@@ -1082,7 +1121,7 @@ function hide_channel_view_loading_indicator(): void {
     loading.destroy_indicator($("#inbox-loading-indicator #loading_more_indicator"));
 }
 
-class InboxTopicListWidget extends TopicListWidget {
+class InboxTopicListWidget extends topic_list.TopicListWidget {
     override topic_list_class_name = "inbox-channel-topic-list";
     topics_widget?: list_widget.ListWidget<topic_list_data.TopicInfo>;
 
@@ -1126,6 +1165,8 @@ class InboxTopicListWidget extends TopicListWidget {
                 }
 
                 channel_view_topic_widget.build();
+                // Also, update the left sidebar topics list for this channel.
+                topic_list.update_widget_for_stream(this.my_stream_id);
             });
         } else {
             show_empty_inbox_channel_view_text(this.is_empty());
@@ -1154,6 +1195,7 @@ function render_channel_view(channel_id: number): void {
             normal_view: false,
             search_val: search_keyword,
             INBOX_SEARCH_ID,
+            show_channel_folder_toggle: false,
         }),
     );
     // Hide any empty inbox text by default.
@@ -1194,6 +1236,7 @@ export function complete_rerender(coming_from_other_views = false): void {
                     $("#inbox-pane").html(
                         render_inbox_view({
                             unknown_channel: true,
+                            show_channel_folder_toggle: false,
                         }),
                     );
                     return;
@@ -1215,6 +1258,7 @@ export function complete_rerender(coming_from_other_views = false): void {
                     topics_dict,
                     streams_dict,
                     channel_folders_dict,
+                    show_channel_folder_toggle: channel_folders.user_has_folders(),
                     ...additional_context,
                 }),
             );
@@ -1341,25 +1385,30 @@ export function collapse_or_expand(container_id: string): void {
 
 // We show the note "All of your unread conversations are hidden.
 // Click on a section, folder, or channel to see what's inside" for
-// the following situations:
+// the following situations in the non-channel inbox view:
 //   - All folders collapsed.
 //   - If all folders are not collapsed, all visible channels are collapsed.
 // For all other cases, the note is hidden.
 function should_show_all_folders_collapsed_note(): boolean {
+    if (inbox_util.is_channel_view()) {
+        return false;
+    }
     // TODO: Ideally this would read from internal structures, not the DOM.
     const has_visible_dm_folder = !$("#inbox-dm-header").hasClass("hidden_by_filters");
     if (has_visible_dm_folder && !collapsed_containers.has("inbox-dm-header")) {
         // Some DM content is visible.
         return false;
     }
+    // Defined just for code reading clarity.
+    const has_visible_but_collapsed_dm_folder = has_visible_dm_folder;
 
     const visible_folders = [...channel_folders_dict.values()].filter(
         (folder) => folder.is_header_visible,
     );
     if (visible_folders.length === 0) {
-        // Nothing at all is visible; the empty inbox message takes
-        // precedence.
-        return false;
+        // Nothing at all is visible; unless there is a visible but collapsed
+        // DM folder, we show the empty inbox message.
+        return has_visible_but_collapsed_dm_folder;
     }
 
     // At least one uncollapsed row is visible in some folder.
@@ -1566,16 +1615,17 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
 }
 
 export function toggle_topic_visibility_policy(): boolean {
+    // Since this function is only called from `hotkey`, we don't
+    // need to move the focus as it is already on the correct row.
+
     const inbox_message = get_focused_row_message();
-    if (inbox_message.message !== undefined) {
-        user_topics_ui.toggle_topic_visibility_policy(inbox_message.message);
-        if (inbox_message.message.type === "stream") {
-            // means mute/unmute action is taken
-            const $elt = $(".inbox-header"); // Select the element with class "inbox-header"
-            const $focusElement = $elt.find(get_focus_class_for_header()).first();
-            focus_clicked_list_element($focusElement);
-            return true;
-        }
+    if (inbox_message.msg_type === "stream" && inbox_message.topic !== undefined) {
+        user_topics_ui.toggle_topic_visibility_policy({
+            stream_id: inbox_message.stream_id,
+            topic: inbox_message.topic,
+            type: "stream",
+        });
+        return true;
     }
     return false;
 }
@@ -2076,13 +2126,9 @@ export function update(): void {
 
     bulk_insert_channel_folders(channel_folders_to_insert);
 
-    // Set name of other channels folder to CHANNELS if it is the only folder.
-    if (is_other_channels_only_visible_folder()) {
-        const channel_folder = channel_folders_dict.get(OTHER_CHANNELS_FOLDER_ID)!;
-        channel_folder.name = $t({defaultMessage: "CHANNELS"});
-        const $channel_folder_header = $(`#${CSS.escape(OTHER_CHANNEL_HEADER_ID)}`);
-        $channel_folder_header.find(".inbox-header-name a").text(channel_folder.name);
-    }
+    update_name_of_other_channels_folder({
+        should_update_ui: true,
+    });
 
     const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
     show_empty_inbox_text(has_visible_unreads);

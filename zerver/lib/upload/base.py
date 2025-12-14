@@ -37,6 +37,7 @@ class ZulipUploadBackend:
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
+        target_realm: Realm | None,
     ) -> None:
         raise NotImplementedError
 

@@ -31,7 +31,6 @@ initialize_user_settings({user_settings: {}});
 
 function init_simulated_scrolling() {
     const elem = {
-        dataset: {},
         scrollTop: 0,
         scrollHeight: 0,
     };

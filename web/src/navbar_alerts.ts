@@ -1,4 +1,4 @@
-import {addDays} from "date-fns";
+import {addDays, differenceInCalendarDays} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -18,7 +18,6 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as time_zone_util from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
@@ -131,11 +130,7 @@ export function should_show_organization_profile_incomplete_banner(timestamp: nu
 
     const today = new Date(Date.now());
     const time = new Date(timestamp * 1000);
-    const days_old = time_zone_util.difference_in_calendar_days(
-        today,
-        time,
-        timerender.display_time_zone,
-    );
+    const days_old = differenceInCalendarDays(today, time, {in: timerender.display_tz});
 
     if (days_old >= 15) {
         return true;
@@ -430,7 +425,7 @@ export function initialize(): void {
         if (should_show_server_upgrade_banner(ls)) {
             open_navbar_banner_and_resize(SERVER_NEEDS_UPGRADE_BANNER);
         }
-    } else if (page_params.warn_no_email === true && current_user.is_admin) {
+    } else if (page_params.warn_no_email && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
         open_navbar_banner_and_resize(CONFIGURE_OUTGOING_MAIL_BANNER);
@@ -522,7 +517,7 @@ export function initialize(): void {
     });
 
     $("#navbar_alerts_wrapper").on("click", ".download-latest-zulip-version", () => {
-        window.open("https://zulip.com/download", "_blank", "noopener,noreferrer");
+        window.open("https://zulip.com/apps/", "_blank", "noopener,noreferrer");
     });
 
     $("#navbar_alerts_wrapper").on("click", ".edit-profile-required-fields", () => {

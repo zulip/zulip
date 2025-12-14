@@ -67,6 +67,12 @@
             cursor: pointer;
         }
     }
+
+    #report-message-preview-container & {
+        /* A message preview only contains a single row of message */
+        border-radius: var(--last-message-row-border-radius);
+        border: 1px solid var(--color-message-list-border);
+    }
 }
 
 .messagebox {
@@ -84,6 +90,25 @@
             visibility: visible;
         }
     }
+
+    &:hover .reveal-hidden-message {
+        opacity: 1;
+    }
+}
+
+.reveal-hidden-message {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 0.1em;
+    /* This is meant to offset the vertical padding of 0.125rem introduced
+    by the action button, which otherwise makes this button look at a
+    slightly lower height than the muted message notice. */
+    margin-top: -0.125em;
+    /* Source : https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/hover */
+    @media (hover: none) {
+        opacity: 1;
+        transition: none;
+    }
 }
 
 .messagebox-content {
@@ -100,7 +125,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
+        minmax(var(--message-box-sender-line-height), auto) repeat(4, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
@@ -109,7 +134,16 @@
         "edited message   controls . time"
         ".      message   .        . .   "
         ".      more      .        . .   "
-        ".      reactions .        . .   ";
+        ".      reactions .        . .   "
+        ".      reminders .        . .   ";
+
+    &:has(.message-reminders) {
+        .message_reactions {
+            margin-bottom: calc(
+                var(--message-box-markdown-aligned-vertical-space) / 2
+            );
+        }
+    }
 
     &.content_edit_mode {
         cursor: default;
@@ -121,6 +155,12 @@
                 var(--message-box-timestamp-column-width),
                 max-content
             );
+
+        /* Hide reactions, scheduled reminders in edit mode. */
+        .message_reactions,
+        .message-reminders {
+            display: none;
+        }
     }
 
     .message_edit_notice {
@@ -190,6 +230,37 @@
         }
     }
 
+    .muted-message-notice-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.2em;
+
+        > .muted-message-notice {
+            opacity: 0.5;
+            user-select: none;
+        }
+    }
+
+    /* Leading whitespaces are collapsed if they are at the start of a line.
+    This lets us conditionally add a space to the left of `.inline-hide-button`,
+    only when there is some preceding text on the same line before the button.
+    */
+    .inline-hide-button-space-wrapper {
+        margin-right: 0.2em;
+    }
+
+    .rehide-muted-user-message {
+        &.inline-hide-button {
+            display: inline-flex;
+        }
+
+        &.block-hide-button {
+            display: flex;
+            margin-bottom: var(--markdown-interelement-space-px);
+        }
+        align-items: center;
+    }
+
     .message_reactions {
         grid-area: reactions;
         display: flex;
@@ -201,6 +272,16 @@
         align-items: flex-start;
         /* Control reaction spacing with a gap */
         gap: 4px;
+    }
+
+    .message-reminders {
+        grid-area: reminders;
+        font-style: italic;
+        color: hsl(0deg 0% 53%);
+
+        .message-reminder {
+            margin-bottom: 0.1875em; /* 3px at 16px/1em */
+        }
     }
 
     .message_edit {
@@ -242,6 +323,9 @@
         border-radius: 4px;
         border: none;
         outline: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        overflow-wrap: normal;
         font-variant: all-small-caps;
 
         &:hover {
@@ -274,7 +358,8 @@
             "avatar sender    controls . time"
             "avatar message   .        . .   "
             ".      more      .        . .   "
-            ".      reactions .        . .   ";
+            ".      reactions .        . .   "
+            ".      reminders .        . .   ";
 
         .message_edit {
             /* No top margin when there's a sender row */
@@ -285,14 +370,12 @@
             grid-template-areas:
                 ".      .         .        . .   "
                 "avatar sender    controls . time"
-                "avatar sender    .        . .   "
                 ".      more      .        . .   "
-                ".      reactions .        . .   ";
+                ".      reactions .        . .   "
+                ".      reminders .        . .   ";
             grid-template-rows:
-                var(--message-box-vertical-margin) var(
-                    --message-box-avatar-height
-                )
-                minmax(0, auto) repeat(3, auto);
+                var(--message-box-vertical-margin)
+                minmax(var(--message-box-avatar-height), auto) repeat(3, auto);
             /* We align items to the baseline on me messages,
                and unset the align-content property. */
             align-items: baseline;
@@ -320,6 +403,11 @@
                    available grid row height on me-messages, we
                    align to center here. */
                 align-self: center;
+                /* But, we need to adjust the bottom margin by the
+                   message box's vertical margin so that the controls
+                   appear properly aligned with both the time stamp
+                   and any me-message content--including inline images. */
+                margin-bottom: var(--message-box-vertical-margin);
             }
 
             .message_edit_notice {
@@ -381,6 +469,10 @@
                    sender-line elements on the .messagebox-content
                    grid. */
                 margin-top: var(--message-box-vertical-margin);
+            }
+
+            .muted-sender-avatar {
+                opacity: 0.5;
             }
         }
 
@@ -463,6 +555,10 @@
                     .user-name {
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .muted {
+                        opacity: 0.5;
                     }
                 }
             }
@@ -815,12 +911,11 @@
     min-width: 206px;
     min-height: 52px;
     box-sizing: border-box;
-    /* Setting resize as none hides the bottom right diagonal box
-       (which even has a background color of its own!). */
-    resize: none !important;
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 3px;
+    background-color: var(--background-color-textarea);
+    /* Flatten the bottom edge of the textarea to
+    merge with the flat top edge of the buttons row */
+    border-radius: 3px 3px 0 0;
     vertical-align: middle;
     border: none;
     /* Match textarea padding to compose box and
@@ -830,20 +925,22 @@
 
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
         outline: 0;
+    }
+
+    &:read-write {
+        resize: vertical !important;
     }
 
     &:read-only,
     &:disabled {
         cursor: not-allowed;
     }
-}
-
-/* The selector needs to be written this way to override the specificity
-of the base style defined for a read-only textarea in dark mode. */
-.message_edit_form .edit-controls textarea.message_edit_content:read-only {
-    opacity: 1;
 }
 
 .message-editing-animation {
@@ -1153,4 +1250,32 @@ of the base style defined for a read-only textarea in dark mode. */
 .date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
+}
+
+#report-message-preview-container {
+    /* Hide most UI for interacting with a message in the report message preview UI. */
+    .add-task-bar,
+    .change_visibility_policy,
+    .recipient-row-topic-menu,
+    .todo-edit-task-list-title,
+    .message_controls,
+    .message-reminders,
+    .message_reactions {
+        display: none;
+    }
+}
+
+@container message-lists (width < $cq_ml_min) {
+    .muted-message-notice {
+        display: none;
+    }
+}
+
+/* Fallback for hiding the muted message notice. */
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .muted-message-notice {
+            display: none;
+        }
+    }
 }

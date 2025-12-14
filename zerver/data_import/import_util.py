@@ -2,10 +2,10 @@ import logging
 import os
 import random
 import shutil
+import subprocess
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -18,7 +18,8 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.message import normalize_body_for_import
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_extension
+from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
@@ -127,6 +128,7 @@ def build_user_profile(
         timezone=timezone,
         is_bot=is_bot,
         bot_type=bot_type,
+        is_imported_stub=True,
     )
     dct = model_to_dict(obj)
 
@@ -142,7 +144,6 @@ def build_user_profile(
 def build_avatar(
     zulip_user_id: int,
     realm_id: int,
-    email: str,
     avatar_url: str,
     timestamp: Any,
     avatar_list: list[ZerverFieldsT],
@@ -154,7 +155,6 @@ def build_avatar(
         avatar_version=1,
         user_profile_id=zulip_user_id,
         last_modified=timestamp,
-        user_profile_email=email,
         s3_path="",
         size="",
     )
@@ -590,7 +590,7 @@ def process_avatars(
     avatar_list: list[ZerverFieldsT],
     avatar_dir: str,
     realm_id: int,
-    threads: int,
+    processes: int,
     size_url_suffix: str = "",
 ) -> list[ZerverFieldsT]:
     """
@@ -634,36 +634,16 @@ def process_avatars(
         avatar_original_list.append(avatar_original)
 
     # Run downloads in parallel
-    run_parallel_wrapper(
-        partial(get_avatar, avatar_dir, size_url_suffix), avatar_upload_list, threads=threads
+    run_parallel(
+        partial(get_avatar, avatar_dir, size_url_suffix),
+        avatar_upload_list,
+        processes=processes,
+        catch=True,
+        report=lambda count: logging.info("Finished %s items", count),
     )
 
     logging.info("######### GETTING AVATARS FINISHED #########\n")
     return avatar_list + avatar_original_list
-
-
-ListJobData = TypeVar("ListJobData")
-
-
-def wrapping_function(f: Callable[[ListJobData], None], item: ListJobData) -> None:
-    try:
-        f(item)
-    except Exception:
-        logging.exception("Error processing item: %s", item, stack_info=True)
-
-
-def run_parallel_wrapper(
-    f: Callable[[ListJobData], None], full_items: list[ListJobData], threads: int = 6
-) -> None:
-    logging.info("Distributing %s items across %s threads", len(full_items), threads)
-
-    with ProcessPoolExecutor(max_workers=threads) as executor:
-        for count, future in enumerate(
-            as_completed(executor.submit(wrapping_function, f, item) for item in full_items), 1
-        ):
-            future.result()
-            if count % 1000 == 0:
-                logging.info("Finished %s items", count)
 
 
 def get_uploads(upload_dir: str, upload: list[str]) -> None:
@@ -678,7 +658,7 @@ def get_uploads(upload_dir: str, upload: list[str]) -> None:
 
 
 def process_uploads(
-    upload_list: list[ZerverFieldsT], upload_dir: str, threads: int
+    upload_list: list[ZerverFieldsT], upload_dir: str, processes: int
 ) -> list[ZerverFieldsT]:
     """
     This function downloads the uploads and saves it in the realm's upload directory.
@@ -697,7 +677,13 @@ def process_uploads(
         upload["path"] = upload_s3_path
 
     # Run downloads in parallel
-    run_parallel_wrapper(partial(get_uploads, upload_dir), upload_url_list, threads=threads)
+    run_parallel(
+        partial(get_uploads, upload_dir),
+        upload_url_list,
+        processes=processes,
+        catch=True,
+        report=lambda count: logging.info("Finished %s items", count),
+    )
 
     logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
     return upload_list
@@ -729,7 +715,7 @@ def process_emojis(
     zerver_realmemoji: list[ZerverFieldsT],
     emoji_dir: str,
     emoji_url_map: ZerverFieldsT,
-    threads: int,
+    processes: int,
 ) -> list[ZerverFieldsT]:
     """
     This function downloads the custom emojis and saves in the output emoji folder.
@@ -759,14 +745,15 @@ def process_emojis(
         # Directly download the emoji and patch the file_name with the correct extension
         # based on the content-type returned by the server. This is needed because Slack
         # sometimes returns an emoji url with .png extension despite the file being a gif.
-        content_type = get_emojis(emoji_dir, emoji_url, emoji_path)
-        if content_type is None:
+        content_type_raw = get_emojis(emoji_dir, emoji_url, emoji_path)
+        if content_type_raw is None:
             logging.warning(
                 "Emoji %s has an unspecified content type. Using the original file extension.",
                 emoji["name"],
             )
             continue
 
+        content_type = bare_content_type(content_type_raw)
         if (
             content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES
             or content_type not in INLINE_MIME_TYPES
@@ -866,3 +853,14 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
             f"Invalid email format, please fix the following email(s) and try again: {details}"
         )
         raise ValidationError(error_log)
+
+
+def convert_html_to_text(content: str) -> str:
+    # html2text is GPL licensed, so run it as a subprocess.
+    return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
+
+
+def get_data_file(path: str) -> Any:
+    with open(path, "rb") as fp:
+        data = orjson.loads(fp.read())
+        return data

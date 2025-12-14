@@ -797,6 +797,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_error_update_invalid_value(
             field_name, "1909-3-5", f"{field_name} is not a date"
         )
+        self.assert_error_update_invalid_value(
+            field_name, "19090305", f"{field_name} is not a date"
+        )
         self.assert_error_update_invalid_value(field_name, [123], f"{field_name} is not a string")
 
     def test_update_invalid_url(self) -> None:
@@ -1171,6 +1174,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "is_active",
             "date_joined",
             "profile_data",
+            "is_imported_stub",
         }
         self.assertEqual(set(iago_raw_data.keys()), expected_keys_for_iago)
         self.assertNotEqual(iago_raw_data["profile_data"], {})
@@ -1192,6 +1196,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "date_joined",
             "bot_type",
             "bot_owner_id",
+            "is_imported_stub",
         }
         self.assertEqual(set(test_bot_raw_data.keys()), expected_keys_for_test_bot)
         self.assertEqual(test_bot_raw_data["bot_type"], 1)
@@ -1230,6 +1235,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "is_active",
             "is_guest",
             "date_joined",
+            "is_imported_stub",
         }
 
         url = "/json/users/me"

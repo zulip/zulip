@@ -20,6 +20,122 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 442**
+
+* [`GET /events`](/api/get-events): `giphy_rating` is now used to denote
+  the common rating configured for both Tenor and GIPHY integrations.
+* [`POST /register`](/api/register-queue): Added new `tenor_api_key`
+  field, which is required to fetch GIFs using the Tenor API.
+* [`POST /register`](/api/register-queue): Renamed
+  `giphy_rating_options` to `gif_rating_options` to generalize the
+  ratings for both GIPHY and Tenor integrations. `realm_giphy_rating`
+  is now used for both the Tenor and GIPHY integrations.
+
+**Feature level 441**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_create_topic_group`
+  field which is a [group-setting value](/api/group-setting-values) describing
+  the set of users with permissions to create new topics in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_create_topic_group`
+  parameter to support setting and changing the user group whose members can create
+  new topics in the specified channel.
+
+**Feature level 440**
+
+* [`GET users/<user_id>/channels`](/api/get-user-channels)
+  Added a new endpoint to get the channels another user is subscribed to.
+
+**Feature level 439**
+
+* [`GET /events`](/api/get-events): The deprecated `update_display_settings`
+  and `update_global_notifications` event types are no longer sent to any
+  clients. These legacy event types were deprecated in Zulip 5.0 (feature
+  level 89) and replaced by the `user_settings` event type.
+
+**Feature level 438**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_owner_full_content_access` field indicating whether the
+  organization's security model allows owners to access all private
+  content in this organization.
+
+**Feature level 437**
+
+* [`GET /users`](/api/get-users), [`GET
+  /users/{user_id}`](/api/get-user), [`GET
+  /users/{email}`](/api/get-user-by-email): Fixed a bug dating to
+  feature level 232, where guest users might incorrectly receive fake
+  backwards-compatibility users in the format intended for clients
+  using `POST /register` without the `user_list_incomplete` client
+  capability.
+
+**Feature level 436**
+
+* [Message formatting](/api/message-formatting): Added new
+  specification that emoji-only messages should show enlarged emoji.
+
+**Feature level 435**
+
+* [`POST /register`](/api/register-queue): Added `server_report_message_types`
+  field which contains a list of supported report types for the [message
+  report](/help/report-a-message) feature.
+
+**Feature level 434**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added a new `send_channel_events_messages` realm setting indicating
+  whether channel event messages are sent in the organization.
+
+**Feature level 433**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `is_imported_stub` field to
+  returned user objects.
+* [`POST /register`](/api/register-queue): Added `is_imported` field
+  in the user objects returned in the `realm_users` field and in the bot
+  objects returned in `cross_realm_bots` field.
+* [`GET /events`](/api/get-events): Added `is_imported_stub` field to
+  user objects sent in `realm_user` events.
+
+**Feature level 432**
+
+* [`POST /mobile_push/register`](/api/register-push-device): Replaced
+  `push_public_key` parameter with `push_key`.
+
+**Feature level 431**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_inbox_show_channel_folders` display setting,
+  controlling whether any [channel folders](/help/channel-folders)
+  configured by the organization are used to organize how conversations
+  with unread messages are displayed in the web/desktop application's
+  Inbox view.
+
+**Feature level 430**
+
+* [`GET /export/realm/consents`](/api/get-realm-export-consents): Added an
+  integer field `email_address_visibility` to the objects in the
+  `export_consents` array.
+
+**Feature level 429**
+
+* Replaced the `pm_users` field with `recipient_user_ids` in
+[E2EE mobile push notifications payload](/api/mobile-notifications)
+for group direct message. Previously, `pm_users` was included only
+for group DMs; `recipient_user_ids` is present for both 1:1 and
+group DM conversations.
+
+**Feature level 428**
+
+* [`GET /events`](/api/get-events): When a user is deactivated,
+  `peer_remove` events are now sent for archived streams as well,
+  not just unarchived ones.
+
 **Feature level 427**
 
 * [`POST /register`](/api/register-queue): `stream_creator_or_nobody`
@@ -138,7 +254,8 @@ No changes; API feature level used for the Zulip 11.0 release.
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new `web_left_sidebar_show_channel_folders` display setting,
   controlling whether any [channel folders](/help/channel-folders)
-  configured by the organization are displayed in the left sidebar.
+  configured by the organization are used to organize how channels
+  are displayed in the web/desktop application's left sidebar.
 
 **Feature level 410**
 
@@ -866,7 +983,7 @@ deactivated groups.
 
 **Feature level 336**
 
-* [Markdown message formatting](/api/message-formatting#image-previews): Added
+* [Markdown message formatting](/api/message-formatting#images): Added
   `data-original-content-type` attribute to convey the type of the original
   image, and optional `data-transcoded-image` attribute for images with formats
   which are not widely supported by browsers.
@@ -1435,7 +1552,7 @@ deactivated groups.
 **Feature level 287**
 
 * [Markdown message
-  formatting](/api/message-formatting#image-previews): Added
+  formatting](/api/message-formatting#images): Added
   `data-original-dimensions` attributes to placeholder images
   (`image-loading-placeholder`), containing the dimensions of the
   original image. This change was also backported to the Zulip 9.x
@@ -1457,10 +1574,10 @@ deactivated groups.
 
 * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
   [`GET /messages/{message_id}`](/api/get-message),
-  [`POST /zulip-outgoing-webhook`](/api/zulip-outgoing-webhooks): Removed
-  the `prev_rendered_content_version` field from the `edit_history` object
-  within message objects and the `update_message` event type as it is an
-  internal server implementation detail not used by any client.
+  [outgoing webhook payloads](/api/outgoing-webhook-payload#zulip-format):
+  Removed the `prev_rendered_content_version` field from the `edit_history`
+  object within message objects and the `update_message` event type as it
+  is an internal server implementation detail not used by any client.
 
 **Feature level 283**
 
@@ -1511,7 +1628,7 @@ releases.
 **Feature level 278**
 
 * [Markdown message
-  formatting](/api/message-formatting#image-previews): Added
+  formatting](/api/message-formatting#images): Added
   `data-original-dimensions` attributes to placeholder images
   (`image-loading-placeholder`), containing the dimensions of the
   original image. Backported change from feature level 287.
@@ -1524,7 +1641,7 @@ No changes; feature level used for Zulip 9.0 release.
 
 **Feature level 276**
 
-* [Markdown message formatting](/api/message-formatting#image-previews):
+* [Markdown message formatting](/api/message-formatting#images):
   Image preview elements not contain a `data-original-dimensions`
   attribute containing the dimensions of the original image.
 

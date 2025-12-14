@@ -118,6 +118,12 @@ class PreregistrationUser(models.Model):
 
     include_realm_default_subscriptions = models.BooleanField(default=True)
 
+    # Used in realm import flow to allow importer (the person
+    # whose email is set as PreregistrationRealm.email) to create
+    # a new user if a imported user with the matching
+    # email was not found.
+    is_realm_importer = models.BooleanField(default=False)
+
     class Meta:
         indexes = [
             models.Index(Upper("email"), name="upper_preregistration_email_idx"),

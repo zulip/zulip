@@ -322,7 +322,7 @@ export const update_elements = ($content: JQuery): void => {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
         const fenced_code_lang = $codehilite.attr("data-code-language");
-        let playground_info;
+        let playground_info: realm_playground.RealmPlayground[] | undefined;
         if (fenced_code_lang !== undefined) {
             playground_info = realm_playground.get_playground_info_for_languages(fenced_code_lang);
         }
@@ -339,11 +339,7 @@ export const update_elements = ($content: JQuery): void => {
             // popover listing the options.
             let title = $t({defaultMessage: "View in playground"});
             const $view_in_playground_button = $buttonContainer.find(".code_external_link");
-            if (
-                playground_info &&
-                playground_info.length === 1 &&
-                playground_info[0] !== undefined
-            ) {
+            if (playground_info?.length === 1 && playground_info[0] !== undefined) {
                 title = $t(
                     {defaultMessage: "View in {playground_name}"},
                     {playground_name: playground_info[0].name},

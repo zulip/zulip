@@ -275,6 +275,7 @@
         line-height: 1.1;
         margin-top: 4px;
         white-space: pre-wrap;
+        min-width: 12.5em; /* 200px at 16px/1em */
     }
 }
 
@@ -404,7 +405,7 @@ ul.popover-group-menu-member-list {
 #user-profile-modal {
     .modal__body {
         box-sizing: border-box;
-        height: 60vh;
+        height: var(--user-profile-modal-body-height);
         padding-left: 16px;
         padding-right: 16px;
 
@@ -535,34 +536,40 @@ ul.popover-group-menu-member-list {
             display: block;
         }
 
-        margin-bottom: 20px;
+        margin-bottom: var(--user-profile-modal-body-margin-bottom);
     }
 
     .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
         display: inline-block;
-        font-weight: inherit;
-        /* 21px at 14px/1em */
-        font-size: 1.5em;
+        font-weight: 600;
+        /* 18px at 16px/1em */
+        font-size: 1.125em;
     }
 
+    #user-profile-groups-tab,
     #user-profile-streams-tab {
-        .stream_list_info {
-            margin-bottom: 8px;
-        }
+        height: calc(
+            var(--user-profile-modal-body-height) -
+                var(--user-profile-modal-body-margin-bottom)
+        );
+        display: grid;
+        grid-template:
+            "alert" auto
+            "top" minmax(0, 1fr)
+            "bottom" auto
+            / minmax(0, 1fr);
 
+        .stream_list_info,
         .user-profile-group-list-alert {
+            grid-area: alert;
             margin-bottom: 8px;
         }
 
-        .stream-privacy {
-            display: flex;
-            align-items: center;
-        }
-
-        .filter-icon i {
-            padding-right: 3px;
+        .stream-list-bottom-section,
+        .group-list-bottom-section {
+            grid-area: bottom;
         }
 
         .user_profile_subscribe_widget {
@@ -570,6 +577,7 @@ ul.popover-group-menu-member-list {
             justify-content: space-between;
             align-items: baseline;
             padding-top: 2px;
+            gap: 10px;
         }
 
         .dropdown_widget_value {
@@ -581,92 +589,9 @@ ul.popover-group-menu-member-list {
 
     .group-list-top-section,
     .stream-list-top-section {
-        display: flex;
-        margin-top: 12px;
-        align-items: center;
-        margin-bottom: 5px;
-
-        .group-search-container,
-        .stream-search-container {
-            margin-left: auto;
-            display: grid;
-            grid-template:
-                "search-input clear-search" auto / minmax(0, 1fr)
-                30px;
-        }
-
-        .group-search,
-        .stream-search {
-            grid-column: search-input-start / clear-search-end;
-            grid-row: search-input;
-            padding-right: 28px;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            margin-bottom: 0;
-            /* Override default modal input width, since that overflows.
-               This is 185px (the default "width: unset" width) at 14px/em */
-            width: 13.2142em;
-        }
-
-        .group-search:placeholder-shown + #clear_groups_search,
-        .stream-search:placeholder-shown + #clear_stream_search {
-            visibility: hidden;
-        }
-    }
-
-    .subscription-group-list,
-    .subscription-stream-list {
-        border: 1px solid var(--color-border-user-profile-table);
-        border-radius: 4px;
-        overflow: auto;
-        text-align: left;
-        margin-bottom: 5px;
-        -webkit-overflow-scrolling: touch;
-
-        .user-stream-list,
-        .user-group-list {
-            width: 100%;
-            margin: auto;
-            border-radius: 6px;
-            border-collapse: collapse;
-
-            & tr {
-                border-bottom: 1px solid var(--color-border-user-profile-table);
-                /* Ensure equal height for rows with a remove-subscription-button and
-                   those without one. */
-                height: 34px;
-
-                &:last-of-type {
-                    border-bottom: none;
-                }
-
-                & td {
-                    padding: 4px 0;
-
-                    &.remove_subscription,
-                    &.remove_member {
-                        padding-right: 10px;
-                    }
-
-                    &.user-profile-channel-row,
-                    &.user-profile-group-row {
-                        text-align: left;
-                        padding-left: 10px;
-
-                        & .user-profile-channel-container {
-                            display: flex;
-                            gap: 3px;
-                        }
-                    }
-                }
-            }
-
-            .remove-button-wrapper {
-                display: flex;
-                justify-content: flex-end;
-            }
-        }
+        grid-area: top;
+        margin-top: 0.3125em;
+        margin-bottom: 0.75em;
     }
 
     .manage-profile-tab-footer {
@@ -687,14 +612,6 @@ ul.popover-group-menu-member-list {
                 padding-top: unset;
                 padding-bottom: unset;
             }
-        }
-    }
-
-    .empty-list {
-        border: none;
-
-        .empty-table-message {
-            padding: 3em 1em;
         }
     }
 }
@@ -742,16 +659,6 @@ ul.popover-group-menu-member-list {
             .header-section {
                 width: 100%;
             }
-
-            .group-search,
-            .stream-search {
-                margin-bottom: 8px;
-            }
-
-            #clear_groups_search,
-            #clear_stream_search {
-                padding-top: 1px;
-            }
         }
     }
 }
@@ -761,10 +668,11 @@ ul.popover-group-menu-member-list {
 }
 
 .giphy-popover,
+.tenor-popover,
 .emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
-           as it is not necessary for the Giphy popover. */
+           as it is not necessary for the Giphy and Tenor popovers. */
         padding: 0;
 
         /* By resetting to the default color from the `body`,
@@ -789,28 +697,86 @@ ul.popover-group-menu-member-list {
     }
 }
 
-#giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 5px is the extra gutter space
-     * + 1px for outline.
+.modal__overlay #set-user-status-modal + .emoji-popover-root {
+    /* Micromodal prevents pointer events to elements outside the content.
+       We need to re-enable pointer events for the emoji popover to work. */
+    pointer-events: auto;
+}
+
+.gif-grid-in-popover {
+    /* 300px of GIF grid + 5px is the extra gutter space
+     * + 1px for outline + 4px padding.
      * between gif columns. */
-    width: 306px;
+    width: 310px;
     border: 0;
     padding: 0;
 
-    .giphy-gif {
+    .popover-filter-input-wrapper {
+        position: relative;
+    }
+
+    .clear-search-button {
+        position: absolute;
+        /* The 60% instead of the usual 50% makes this
+        `x` button appear vertically centered inside the
+        input instead of the wrapper. */
+        top: 60%;
+        transform: translateY(-50%);
+        right: 0.5em;
+        font-size: 1em;
+        outline: none;
+        background: none;
+        border: none;
+        padding: 0;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .tenor-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-auto-rows: auto;
+        gap: 6px;
+    }
+
+    /* Meant to prevent outline overflow when the GIF
+       is focused. */
+    .tenor-content,
+    .giphy-content {
+        padding: 0 2px;
+    }
+
+    .giphy-gif,
+    .tenor-gif {
         cursor: pointer;
     }
 
-    .giphy-gif:focus {
-        /* Red outline for clear visibility
-         * of which image is in focus.
-         */
-        outline: 1px solid hsl(0deg 100% 50%);
+    .tenor-gif {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
     }
 
-    .giphy-scrolling-container {
+    .giphy-gif:focus,
+    .tenor-gif:focus {
+        /* Blue outline for clear visibility
+         * of which image is in focus.
+         */
+        outline: 2px solid var(--color-selected-gif-in-grid-picker);
+    }
+
+    .giphy-gif:hover,
+    .tenor-gif:hover {
+        outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+    }
+
+    .gif-scrolling-container {
         overflow: hidden auto;
-        height: 200px;
+        height: 300px;
         margin: 2px 3px;
         padding: 5px 0;
     }
@@ -831,6 +797,7 @@ ul.popover-group-menu-member-list {
     }
 }
 
+#message_report_modal,
 #move_topic_modal {
     /* Modals have a 16px/1em base font-size. */
     & form {
@@ -852,6 +819,7 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    #report_type_options_widget_wrapper,
     #move_topic_to_stream_widget_wrapper {
         display: flex;
         /* 230px at 16px/1em */
@@ -905,6 +873,9 @@ ul.popover-group-menu-member-list {
             box-sizing: border-box;
             width: 100%;
             height: auto;
+            /* Unset max-width set using modal_text_input selector as box-sizing
+            is set to border-box here and we already set width to 100%. */
+            max-width: unset;
 
             &.empty-topic-display::placeholder {
                 color: inherit;
@@ -912,6 +883,11 @@ ul.popover-group-menu-member-list {
 
             &.empty-topic-only {
                 cursor: default;
+            }
+
+            &.invalid-topic-input {
+                border-color: var(--color-invalid-input-border);
+                box-shadow: var(--invalid-input-box-shadow);
             }
         }
     }
@@ -981,6 +957,10 @@ ul.popover-group-menu-member-list {
             display: inline-block;
             margin-right: 10px;
         }
+    }
+
+    .new-topic-name-error {
+        color: hsl(0deg 100% 50%);
     }
 }
 

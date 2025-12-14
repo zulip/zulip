@@ -187,6 +187,12 @@ class SendMessageRequest:
     reminder_note: str | None = None
 
 
+@dataclass
+class OnlyMessageFields:
+    select_related: list[str]
+    fields: list[str]
+
+
 # We won't try to fetch more unread message IDs from the database than
 # this limit.  The limit is super high, in large part because it means
 # client-side code mostly doesn't need to think about the case that a
@@ -420,10 +426,18 @@ def access_message_and_usermessage(
     lock_message: bool = False,
     *,
     is_modifying_message: bool,
+    # Fetches only specified fields from Message and related models.
+    # Use for performance-critical paths.
+    only_message_fields: OnlyMessageFields | None = None,
 ) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:
-        base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
+        if only_message_fields is None:
+            base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
+        else:
+            base_query = Message.objects.select_related(*only_message_fields.select_related).only(
+                *only_message_fields.fields
+            )
         if lock_message:
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.
@@ -1399,7 +1413,9 @@ def get_recent_conversations_recipient_id(
     return recipient_id
 
 
-def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dict[str, Any]]:
+def _get_recent_conversations_via_legacy_personal_recipient(
+    user_profile_id: int, recipient_id: int
+) -> list[tuple[int, int]]:
     """This function uses some carefully optimized SQL queries, designed
     to use the UserMessage index on private_messages.  It is
     somewhat complicated by the fact that for 1:1 direct
@@ -1412,16 +1428,8 @@ def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dic
     It may be possible to write this query directly in Django, however
     it is made much easier by using CTEs, which Django does not
     natively support.
-
-    We return a dictionary structure for convenient modification
-    below; this structure is converted into its final form by
-    post_process.
-
     """
     RECENT_CONVERSATIONS_LIMIT = 1000
-
-    recipient_map = {}
-    my_recipient_id = user_profile.recipient_id
 
     query = SQL(
         """
@@ -1435,12 +1443,12 @@ def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dic
         message AS (
             SELECT message_id,
                    CASE
-                          WHEN m.recipient_id = %(my_recipient_id)s
+                          WHEN m.recipient_id = %(recipient_id)s
                           THEN m.sender_id
                           ELSE NULL
                    END AS sender_id,
                    CASE
-                          WHEN m.recipient_id <> %(my_recipient_id)s
+                          WHEN m.recipient_id <> %(recipient_id)s
                           THEN m.recipient_id
                           ELSE NULL
                    END AS outgoing_recipient_id
@@ -1466,29 +1474,64 @@ def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dic
         cursor.execute(
             query,
             {
-                "user_profile_id": user_profile.id,
+                "user_profile_id": user_profile_id,
                 "conversation_limit": RECENT_CONVERSATIONS_LIMIT,
-                "my_recipient_id": my_recipient_id,
+                "recipient_id": recipient_id,
             },
         )
-        rows = cursor.fetchall()
+        return cursor.fetchall()
 
-    # The resulting rows will be (recipient_id, max_message_id)
-    # objects for all parties we've had recent (group?) private
-    # message conversations with, including direct messages with
-    # yourself (those will generate an empty list of user_ids).
-    for recipient_id, max_message_id in rows:
-        recipient_map[recipient_id] = dict(
-            max_message_id=max_message_id,
-            user_ids=[],
+
+def _get_recent_conversations_via_direct_message_group(
+    user_profile_id: int,
+) -> list[tuple[int, int]]:
+    """
+    This functions fetches the most recent conversations given that all
+    private messages of this user are through direct message groups.
+    """
+    RECENT_CONVERSATIONS_LIMIT = 1000
+
+    recent_pm_message_ids = (
+        UserMessage.objects.filter(user_profile_id=user_profile_id)
+        .extra(where=[UserMessage.where_flag_is_present(UserMessage.flags.is_private)])  # noqa: S610
+        .order_by("-message_id")
+        .values_list("message_id", flat=True)[:RECENT_CONVERSATIONS_LIMIT]
+    )
+
+    return list(
+        Message.objects.filter(id__in=recent_pm_message_ids)
+        .values("recipient_id")
+        .annotate(max_message_id=Max("id"))
+        .values_list("recipient_id", "max_message_id")
+    )
+
+
+def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dict[str, Any]]:
+    """
+    We return a dictionary structure for convenient modification
+    below; this structure is converted into its final form by
+    post_process.
+    """
+    # Step 1: Collect recent message info
+    if user_profile.recipient_id is not None:
+        recent_conversations = _get_recent_conversations_via_legacy_personal_recipient(
+            user_profile.id, user_profile.recipient_id
         )
+    else:
+        recent_conversations = _get_recent_conversations_via_direct_message_group(user_profile.id)
+
+    recipient_map: dict[int, dict[str, Any]] = {
+        recipient_id: {"max_message_id": max_message_id, "user_ids": []}
+        for recipient_id, max_message_id in recent_conversations
+    }
 
     # Now we need to map all the recipient_id objects to lists of user IDs
-    for recipient_id, user_profile_id in (
+    subscriptions = (
         Subscription.objects.filter(recipient_id__in=recipient_map.keys())
         .exclude(user_profile_id=user_profile.id)
         .values_list("recipient_id", "user_profile_id")
-    ):
+    )
+    for recipient_id, user_profile_id in subscriptions:
         recipient_map[recipient_id]["user_ids"].append(user_profile_id)
 
     # Sort to prevent test flakes and client bugs.

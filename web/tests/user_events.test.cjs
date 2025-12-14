@@ -14,8 +14,13 @@ const settings_account = mock_esm("../src/settings_account", {
     update_email() {},
     update_full_name() {},
     update_account_settings_display() {},
+    update_role_text() {},
+    set_user_own_role_dropdown_value() {},
+    add_or_remove_owner_from_role_dropdown() {},
+    update_user_own_role_dropdown_state() {},
 });
-const settings_users = mock_esm("../src/settings_users", {
+const settings_bots = mock_esm("../src/settings_bots");
+mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
     update_view_on_reactivate() {},
@@ -24,7 +29,6 @@ mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
 });
-const stream_events = mock_esm("../src/stream_events");
 
 const buddy_list = mock_esm("../src/buddy_list", {
     BuddyList: class {
@@ -271,23 +275,15 @@ run_test("updates", ({override}) => {
     person = people.get_by_email(test_bot.email);
     assert.equal(person.bot_owner_id, me.user_id);
 
-    let user_removed_from_streams = false;
-    stream_events.remove_deactivated_user_from_all_streams = (user_id) => {
-        assert.equal(user_id, isaac.user_id);
-        user_removed_from_streams = true;
-    };
     buddy_list.BuddyList.insert_or_move = noop;
     user_events.update_person({user_id: isaac.user_id, is_active: false});
     assert.ok(!people.is_person_active(isaac.user_id));
-    assert.ok(user_removed_from_streams);
 
     user_events.update_person({user_id: isaac.user_id, is_active: true});
     assert.ok(people.is_person_active(isaac.user_id));
 
-    stream_events.remove_deactivated_user_from_all_streams = noop;
-
     let bot_data_updated = false;
-    settings_users.update_bot_data = (user_id) => {
+    settings_bots.update_bot_data = (user_id) => {
         assert.equal(user_id, test_bot.user_id);
         bot_data_updated = true;
     };

@@ -1,0 +1,28 @@
+<div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        {{#if show_collapse_expand_all_options }}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="left_sidebar_expand_all" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-expand" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Expand all sections" }}</span>
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="left_sidebar_collapse_all" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-collapse" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Collapse all sections" }}</span>
+            </a>
+        </li>
+        {{/if}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="{{channel_folders_id}}" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-folder" aria-hidden="true"></i>
+                {{#if show_channel_folders}}
+                <span class="popover-menu-label">{{t "Don't group channels by folder" }}</span>
+                {{else}}
+                <span class="popover-menu-label">{{t "Group channels by folder" }}</span>
+                {{/if}}
+            </a>
+        </li>
+    </ul>
+</div>

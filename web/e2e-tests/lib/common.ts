@@ -7,7 +7,7 @@ import * as url from "node:url";
 import "css.escape";
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
-import puppeteer from "puppeteer";
+import * as puppeteer from "puppeteer";
 import StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 import * as z from "zod/mini";
@@ -23,11 +23,12 @@ type Message = Record<string, string | boolean> & {
     recipient?: string;
     content: string;
     stream_name?: string;
+    topic?: string;
 };
 
 let browser: Browser | null = null;
 let screenshot_id = 0;
-export const is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
+export const is_firefox = process.env["PUPPETEER_PRODUCT"] === "firefox";
 let realm_url = "http://zulip.zulipdev.com:9981/";
 const gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
 
@@ -227,7 +228,7 @@ export async function check_compose_state(
         );
     }
     if (params.topic) {
-        form_params.stream_message_recipient_topic = params.topic;
+        form_params["stream_message_recipient_topic"] = params.topic;
     }
     await check_form_contents(page, "form#send_message_form", form_params);
 }
@@ -440,7 +441,7 @@ export async function send_message(
     }
 
     if (params.topic) {
-        params.stream_message_recipient_topic = params.topic;
+        params["stream_message_recipient_topic"] = params.topic;
         delete params.topic;
     }
 
@@ -672,25 +673,31 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
     });
 
     let page_errored = false;
-    page.on("pageerror", (error: Error) => {
+    page.on("pageerror", (error: unknown) => {
         page_errored = true;
 
         const console_ready1 = console_ready;
         console_ready = (async () => {
-            const frames = await Promise.all(
-                ErrorStackParser.parse(error).map(async (frame) => {
-                    try {
-                        frame = await gps.getMappedLocation(frame);
-                    } catch {
-                        // Ignore source mapping errors
-                    }
-                    return `\n    at ${String(frame.functionName)} (${String(
-                        frame.fileName,
-                    )}:${String(frame.lineNumber)}:${String(frame.columnNumber)})`;
-                }),
-            );
+            let message;
+            if (error instanceof Error) {
+                const frames = await Promise.all(
+                    ErrorStackParser.parse(error).map(async (frame) => {
+                        try {
+                            frame = await gps.getMappedLocation(frame);
+                        } catch {
+                            // Ignore source mapping errors
+                        }
+                        return `\n    at ${String(frame.functionName)} (${String(
+                            frame.fileName,
+                        )}:${String(frame.lineNumber)}:${String(frame.columnNumber)})`;
+                    }),
+                );
+                message = error.toString() + frames.join("");
+            } else {
+                message = String(error);
+            }
             await console_ready1;
-            console.error("Page error:", error.message + frames.join(""));
+            console.error("Page error:", message);
         })();
 
         const console_ready2 = console_ready;

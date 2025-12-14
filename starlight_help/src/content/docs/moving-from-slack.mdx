@@ -1,0 +1,158 @@
+---
+title: Moving from Slack
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedList from "../../components/FlattenedList.astro";
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import CommunicationPoliciesIntro from "../include/_CommunicationPoliciesIntro.mdx";
+import CommunicationPoliciesList from "../include/_CommunicationPoliciesList.mdx";
+import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
+import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
+import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
+import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
+import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
+import SignUpForAPlan from "../include/_SignUpForAPlan.mdx";
+import TopicsIntro from "../include/_TopicsIntro.mdx";
+
+<MovingToZulipIntro />
+
+If you're moving from other communication tools, check out the [general
+guide on moving to Zulip](/help/moving-to-zulip).
+
+The following steps are described in more detail below:
+
+<Steps>
+  1. [Import or create your organization](#import-or-create-your-organization).
+  1. [Sign up for a plan](#sign-up-for-a-plan).
+  1. [Configure your organization](#configure-your-organization).
+  1. [Review and update communication
+     policies](#review-and-update-communication-policies).
+  1. [Prepare users for the transition](#prepare-users-for-the-transition).
+  1. [Invite users to join](#invite-users-to-join).
+</Steps>
+
+Each organization is unique, but we hope these common practices will help you
+think through the transition process in your own context.
+
+## Import or create your organization
+
+You can import your organization's Slack data, including message history, users,
+channels, and custom emoji. Data is imported into Zulip as a new organization,
+so the best time to import is when your team is about to start using Zulip for
+day-to-day work. This may be part of your evaluation process, or after you've
+made the decision to move to Zulip.
+
+<Tabs>
+  <TabItem label="Import from Slack">
+    <Steps>
+      1. If you plan to self-host, [set up your Zulip
+         server](https://zulip.readthedocs.io/en/stable/production/install.html). You
+         can self-host Zulip directly on Ubuntu or Debian Linux, in
+         [Docker](https://github.com/zulip/docker-zulip), or with prebuilt images for
+         [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
+         [Render](https://render.com/docs/deploy-zulip).
+      1. Follow the steps in the [Slack import guide](/help/import-from-slack).
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Create a new organization">
+    <Steps>
+      1. If you plan to self-host, [set up your Zulip
+         server](https://zulip.readthedocs.io/en/stable/production/install.html). You
+         can self-host Zulip directly on Ubuntu or Debian Linux, in
+         [Docker](https://github.com/zulip/docker-zulip), or with prebuilt images for
+         [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
+         [Render](https://render.com/docs/deploy-zulip).
+      1. Create a Zulip organization [on Zulip Cloud](https://zulip.com/new/) or
+         [on your self-hosted
+         server](https://zulip.readthedocs.io/en/stable/production/install.html#step-3-create-a-zulip-organization-and-log-in).
+         You can create a new Zulip Cloud organization in less than two minutes.
+         Setting up a self-hosted server will take a bit longer, but is easy to
+         do with Zulip's [robust
+         installer](https://zulip.readthedocs.io/en/stable/production/install.html).
+    </Steps>
+  </TabItem>
+</Tabs>
+
+## Sign up for a plan
+
+<SignUpForAPlan />
+
+## Configure your organization
+
+<FlattenedSteps>
+  <ConfigureYourOrganization />
+
+  1. [Create channels](/help/create-channels) if you decided not to import your
+     Slack workspace. Zulip's [topics](/help/introduction-to-topics) give each
+     conversation its own space, so one channel per team should be enough to get
+     you started.
+  1. Move your integrations using Zulip's [Slack-compatible incoming
+     webhook](/integrations/slack_incoming). You can transition to
+     Zulip-native [integrations](/integrations) over time.
+</FlattenedSteps>
+
+## Review and update communication policies
+
+<CommunicationPoliciesIntro />
+
+<FlattenedList>
+  <CommunicationPoliciesList />
+
+  * Zulip makes it easy to find conversations and follow up. To avoid disrupting
+    focus work, @-mentions in Zulip should generally be reserved for
+    time-sensitive messages. [Silent
+    mentions](/help/mention-a-user-or-group#silently-mention-a-user) make it easy
+    to refer to someone without calling for their attention.
+</FlattenedList>
+
+## Prepare users for the transition
+
+Prepare an introduction to Zulip for your organization. It often works well to
+combine a written announcement with a live presentation. Recommended topics to
+cover include:
+
+<FlattenedSteps>
+  <PrepareForTransition1 />
+
+  1. Pointers to additional resources, such as Zulip's [getting started
+     guide](/help/getting-started-with-zulip), and [the guide on how threading
+     works in Zulip](/help/introduction-to-topics#what-about-threads) for folks
+     who are used to Slack's threads.
+
+  <PrepareForTransition2 />
+</FlattenedSteps>
+
+## Invite users to join
+
+If you imported your organization from Slack, [decide how users will log
+in](/help/import-from-slack#decide-how-users-will-log-in) for the first time.
+Otherwise:
+
+<Tabs>
+  <HowToInviteUsersToJoinImport />
+
+  <HowToInviteUsersToJoinNoImport />
+</Tabs>
+
+<ZulipTip>
+  Remember to update links and login instructions to point to Zulip.
+</ZulipTip>
+
+Congratulations on making the move! If you have any questions or feedback
+throughout this process, please [reach out](/help/contact-support) to the Zulip
+team.
+
+## Related articles
+
+* [Import from Slack](/help/import-from-slack)
+* [Slack-compatible incoming webhook](/integrations/slack_incoming)
+* [Trying out Zulip](/help/trying-out-zulip)
+* [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
+* [Getting started with Zulip](/help/getting-started-with-zulip)

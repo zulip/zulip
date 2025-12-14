@@ -1,0 +1,21 @@
+<form id="message_report_form">
+    <p>
+        {{t "Your report will be sent to the private moderation requests channel for this organization." }}
+    </p>
+    <div id="report-message-preview-container" class="input-group">
+        {{> recipient_row recipient_row_data}}
+        {{> single_message message_container_data}}
+    </div>
+    <div class="input-group">
+        <label class="report-type-wrapper modal-field-label">
+            {{t "What's the problem with this message?" }}
+        </label>
+        {{> dropdown_widget_wrapper widget_name="report_type_options"}}
+    </div>
+    <div class="input-group">
+        <label for="message-report-description" class="modal-field-label">
+            {{t "Can you provide more details?" }}
+        </label>
+        <textarea id="message-report-description" class="modal-textarea" rows="4" maxlength=1000></textarea>
+    </div>
+</form>

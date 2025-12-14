@@ -3,6 +3,7 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
+import render_export_modal_warning_notes from "../templates/export_modal_warning_notes.hbs";
 import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.hbs";
 import render_admin_export_consent_list from "../templates/settings/admin_export_consent_list.hbs";
 import render_admin_export_list from "../templates/settings/admin_export_list.hbs";
@@ -30,6 +31,7 @@ import {user_settings} from "./user_settings.ts";
 export const export_consent_schema = z.object({
     user_id: z.number(),
     consented: z.boolean(),
+    email_address_visibility: z.number(),
 });
 type ExportConsent = z.output<typeof export_consent_schema>;
 
@@ -92,10 +94,10 @@ export function populate_exports_table(exports: RealmExport[]): void {
                 );
             }
 
-            let export_type = settings_config.export_type_values.export_public.description;
-            if (data.export_type !== settings_config.export_type_values.export_public.value) {
-                export_type =
-                    settings_config.export_type_values.export_full_with_consent.description;
+            let export_type_description = settings_config.export_type_values.public.description;
+            if (data.export_type !== settings_config.export_type_values.public.value) {
+                export_type_description =
+                    settings_config.export_type_values.full_with_consent.description;
             }
 
             return render_admin_export_list({
@@ -110,7 +112,7 @@ export function populate_exports_table(exports: RealmExport[]): void {
                     time_failed: failed_timestamp,
                     pending: data.pending,
                     time_deleted: deleted_timestamp,
-                    export_type,
+                    export_type_description,
                 },
             });
         },
@@ -152,8 +154,11 @@ function sort_user_by_name(a: ExportConsent, b: ExportConsent): number {
     }
     return -1;
 }
-
-const export_consents = new Map<number, boolean>();
+type UserConsentInfo = {
+    consented: boolean;
+    email_address_visibility: number;
+};
+const export_consents = new Map<number, UserConsentInfo>();
 const queued_export_consents: (ExportConsent | number)[] = [];
 let export_consent_list_widget: ListWidgetType<ExportConsent>;
 let filter_by_consent_dropdown_widget: DropdownWidget;
@@ -170,9 +175,33 @@ const filter_by_consent_options: Option[] = [
 
 function get_export_consents_having_consent_value(consent: boolean): ExportConsent[] {
     const export_consent_list: ExportConsent[] = [];
-    for (const [user_id, consented] of export_consents.entries()) {
-        if (consent === consented) {
-            export_consent_list.push({user_id, consented});
+    for (const [user_id, user_consent_info] of export_consents.entries()) {
+        const consented = user_consent_info.consented;
+        const email_address_visibility = user_consent_info.email_address_visibility;
+        if (consent === user_consent_info.consented) {
+            export_consent_list.push({
+                user_id,
+                consented,
+                email_address_visibility,
+            });
+        }
+    }
+    return export_consent_list;
+}
+
+function get_export_consents_having_email_visibility_value(
+    email_address_visibility_code: number,
+): ExportConsent[] {
+    const export_consent_list: ExportConsent[] = [];
+    for (const [user_id, user_consent_info] of export_consents.entries()) {
+        const consented = user_consent_info.consented;
+        const email_address_visibility = user_consent_info.email_address_visibility;
+        if (email_address_visibility_code === email_address_visibility) {
+            export_consent_list.push({
+                user_id,
+                consented,
+                email_address_visibility,
+            });
         }
     }
     return export_consent_list;
@@ -281,10 +310,53 @@ export function refresh_allow_private_data_export_banner(): void {
         maybe_show_allow_private_data_export_banner();
         const $export_type = $<HTMLSelectOneElement>("select:not([multiple])#export_type");
         const selected_export_type = Number.parseInt($export_type.val()!, 10);
-        if (selected_export_type === settings_config.export_type_values.export_public.value) {
+        if (selected_export_type === settings_config.export_type_values.public.value) {
             $(".allow_private_data_export_warning").hide();
         }
     }
+}
+
+function maybe_show_notes_about_unusable_users_if_exported(export_type: number): void {
+    // Show warnings if there are users whose accounts will be inaccessible
+    // once exported. A user account will be inaccessible if they:
+    //  - Don’t consent to their private data being exported and “Standard
+    //    export” is selected.
+    //  - Have set their email visibility to “nobody” and “Public export”
+    //    is selected.
+    let unusable_user_ids: number[] = [];
+    const $warning_container = $("div#unusable-user-accounts-warning");
+    $warning_container.empty();
+    if (export_type === settings_config.export_type_values.full_with_consent.value) {
+        const non_consenting_users = get_export_consents_having_consent_value(false);
+        unusable_user_ids = non_consenting_users.map((user) => user.user_id);
+    } else if (export_type === settings_config.export_type_values.public.value) {
+        const users_with_inaccessible_email = get_export_consents_having_email_visibility_value(
+            settings_config.email_address_visibility_values.nobody.code,
+        );
+        unusable_user_ids = users_with_inaccessible_email.map((user) => user.user_id);
+    } else {
+        return;
+    }
+
+    if (unusable_user_ids.length === 0) {
+        return;
+    }
+
+    // List admins/owners who won’t be able to log in.
+    const admins_or_owners_with_unusable_account = people.get_users_that_match_role_ids(
+        new Set(unusable_user_ids),
+        new Set([
+            settings_config.user_role_values.admin.code,
+            settings_config.user_role_values.owner.code,
+        ]),
+    );
+
+    const $export_warnings = render_export_modal_warning_notes({
+        unusable_user_count: unusable_user_ids.length,
+        unusable_admin_users: admins_or_owners_with_unusable_account,
+        unusable_admin_user_count: admins_or_owners_with_unusable_account.length,
+    });
+    $warning_container.append($export_warnings);
 }
 
 function show_start_export_modal(): void {
@@ -340,8 +412,7 @@ function show_start_export_modal(): void {
         $export_type.on("change", () => {
             const selected_export_type = Number.parseInt($export_type.val()!, 10);
             if (
-                selected_export_type ===
-                settings_config.export_type_values.export_full_with_consent.value
+                selected_export_type === settings_config.export_type_values.full_with_consent.value
             ) {
                 $("#allow_private_data_export_stats").show();
                 $(".allow_private_data_export_warning").show();
@@ -349,7 +420,9 @@ function show_start_export_modal(): void {
                 $("#allow_private_data_export_stats").hide();
                 $(".allow_private_data_export_warning").hide();
             }
+            maybe_show_notes_about_unusable_users_if_exported(selected_export_type);
         });
+        $export_type.trigger("change");
     }
 
     dialog_widget.launch({
@@ -390,7 +463,10 @@ export function set_up(): void {
                 .parse(raw_data);
 
             for (const export_consent of data.export_consents) {
-                export_consents.set(export_consent.user_id, export_consent.consented);
+                export_consents.set(export_consent.user_id, {
+                    consented: export_consent.consented,
+                    email_address_visibility: export_consent.email_address_visibility,
+                });
             }
 
             // Apply queued_export_consents on top of the received response.
@@ -400,7 +476,10 @@ export function set_up(): void {
                     export_consents.delete(item);
                     continue;
                 }
-                export_consents.set(item.user_id, item.consented);
+                export_consents.set(item.user_id, {
+                    consented: item.consented,
+                    email_address_visibility: item.email_address_visibility,
+                });
             }
             queued_export_consents.length = 0;
 
@@ -503,7 +582,10 @@ export function update_export_consent_data_and_redraw(export_consent: ExportCons
         return;
     }
 
-    export_consents.set(export_consent.user_id, export_consent.consented);
+    export_consents.set(export_consent.user_id, {
+        consented: export_consent.consented,
+        email_address_visibility: export_consent.email_address_visibility,
+    });
     redraw_export_consents_list();
     update_start_export_modal_stats();
 }

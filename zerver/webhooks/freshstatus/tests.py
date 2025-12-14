@@ -17,7 +17,7 @@ class FreshstatusHookTests(WebhookTestCase):
         expected_message = """
 The following incident has been opened: **Degradation of Multiple Servers**
 **Description:** This issue is being investigated.
-**Start Time:** 2021-04-12 16:29 UTC
+**Start Time:** <time:2021-04-12T16:29:00+00:00>
 **Affected Services:**
 * Database Server
 * Web Server
@@ -35,7 +35,7 @@ The following incident has been opened: **Degradation of Multiple Servers**
         expected_message = """
 The following incident has been opened: **Degradation of Multiple Servers**
 **Description:** This issue is being investigated.
-**Start Time:** 2021-04-12 16:29 UTC
+**Start Time:** <time:2021-04-12T16:29:00+00:00>
 **Affected Services:**
 * Database Server
 * Web Server
@@ -58,7 +58,7 @@ The following incident has been opened: **Degradation of Multiple Servers**
         expected_message = """
 The following incident has been opened: **Degradation of Database Server**
 **Description:** This issue is being investigated.
-**Start Time:** 2021-04-12 16:29 UTC
+**Start Time:** <time:2021-04-12T16:29:00+00:00>
 **Affected Services:**
 * Database Server
         """.strip()
@@ -96,8 +96,8 @@ The following incident has been closed: **Degradation of Database Server**
         expected_message = """
 The following scheduled maintenance has been opened: **Expect some services downtime due to server maintenance**
 **Description:** As part of the upgrade routine, we will be carrying out server maintenance work for this Service. This work will affect the Service to be unavailable during the maintenance window. We apologize for any inconvenience this may cause. Please do not hesitate to contact our support team at support@example.com if you have any questions regarding this server upgrading exercise.
-**Scheduled Start Time:** 2021-04-12 17:08 UTC
-**Scheduled End Time:** 2021-04-12 18:08 UTC
+**Scheduled Start Time:** <time:2021-04-12T17:08:00+00:00>
+**Scheduled End Time:** <time:2021-04-12T18:08:00+00:00>
 **Affected Services:**
 * Sample Service
         """.strip()
@@ -113,8 +113,8 @@ The following scheduled maintenance has been opened: **Expect some services down
         expected_message = """
 The following scheduled maintenance has been opened: **Expect some services downtime due to server maintenance**
 **Description:** As part of the upgrade routine, we will be carrying out server maintenance work for this Service. This work will affect the Service to be unavailable during the maintenance window. We apologize for any inconvenience this may cause. Please do not hesitate to contact our support team at support@example.com if you have any questions regarding this server upgrading exercise.
-**Scheduled Start Time:** 2021-04-12 17:08 UTC
-**Scheduled End Time:** 2021-04-12 18:08 UTC
+**Scheduled Start Time:** <time:2021-04-12T17:08:00+00:00>
+**Scheduled End Time:** <time:2021-04-12T18:08:00+00:00>
 **Affected Services:**
 * Sample Service
 * Sample Service 2
@@ -133,8 +133,8 @@ The following scheduled maintenance has been opened: **Expect some services down
         expected_message = """
 The following scheduled maintenance has been opened: **Expect some services downtime due to server maintenance**
 **Description:** As part of the upgrade routine, we will be carrying out server maintenance work for this Service. This work will affect the Service to be unavailable during the maintenance window. We apologize for any inconvenience this may cause. Please do not hesitate to contact our support team at support@example.com if you have any questions regarding this server upgrading exercise.
-**Scheduled Start Time:** 2021-04-12 17:08 UTC
-**Scheduled End Time:** 2021-04-12 18:08 UTC
+**Scheduled Start Time:** <time:2021-04-12T17:08:00+00:00>
+**Scheduled End Time:** <time:2021-04-12T18:08:00+00:00>
 **Affected Services:**
 * Sample Service
 * Sample Service 2

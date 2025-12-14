@@ -1,27 +1,33 @@
 import $ from "jquery";
+import * as z from "zod/mini";
 
-import {PollData} from "../shared/src/poll_data.ts";
-import type {
-    InboundData,
-    NewOptionOutboundData,
-    QuestionOutboundData,
-    VoteOutboundData,
-} from "../shared/src/poll_data.ts";
+import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
+import type {
+    InboundData,
+    NewOptionOutboundData,
+    QuestionOutboundData,
+    VoteOutboundData,
+} from "./poll_data.ts";
+import {PollData} from "./poll_data.ts";
+import type {WidgetExtraData} from "./widgetize.ts";
 
 export type Event = {sender_id: number; data: InboundData};
 
-export type PollWidgetExtraData = {
-    question?: string | undefined;
-    options?: string[] | undefined;
-};
+export const poll_widget_extra_data_schema = z.object({
+    question: z.optional(z.string()),
+    options: z.optional(z.array(z.string())),
+});
+
+export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
 
 export type PollWidgetOutboundData =
     | NewOptionOutboundData
@@ -31,24 +37,34 @@ export type PollWidgetOutboundData =
 export function activate({
     $elem,
     callback,
-    extra_data: {question = "", options = []} = {},
+    extra_data,
     message,
 }: {
     $elem: JQuery;
-    callback: (data: PollWidgetOutboundData | undefined) => void;
-    extra_data: PollWidgetExtraData;
+    callback: (data: PollWidgetOutboundData) => void;
+    extra_data: WidgetExtraData;
     message: Message;
 }): (events: Event[]) => void {
     const is_my_poll = people.is_my_user_id(message.sender_id);
+    const parse_result = poll_widget_extra_data_schema.safeParse(extra_data);
+    if (!parse_result.success) {
+        blueslip.error("invalid poll widget extra data", {issues: parse_result.error.issues});
+        return (_events: Event[]): void => {
+            /* noop */
+        };
+    }
+    const parsed_extra_data = parse_result.data;
+
     const poll_data = new PollData({
         message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
         is_my_poll,
-        question,
-        options,
+        question: parsed_extra_data.question ?? "",
+        options: parsed_extra_data.options ?? [],
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
+    const message_container = message_lists.current?.view.message_containers.get(message.id);
 
     function update_edit_controls(): void {
         const has_question =
@@ -110,7 +126,9 @@ export function activate({
 
         // Broadcast the new question to our peers.
         const data = poll_data.handle.question.outbound(new_question);
-        callback(data);
+        if (data) {
+            callback(data);
+        }
     }
 
     function submit_option(): void {
@@ -230,6 +248,12 @@ export function activate({
     }
 
     const handle_events = function (events: Event[]): void {
+        // We don't have to handle events now since we go through
+        // handle_event loop again when we unmute the message.
+        if (message_container?.is_hidden) {
+            return;
+        }
+
         for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
         }
@@ -238,9 +262,14 @@ export function activate({
         render_results();
     };
 
-    build_widget();
-    render_question();
-    render_results();
+    if (message_container?.is_hidden) {
+        const html = render_message_hidden_dialog();
+        $elem.html(html);
+    } else {
+        build_widget();
+        render_question();
+        render_results();
+    }
 
     return handle_events;
 }

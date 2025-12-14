@@ -16,7 +16,7 @@ const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const message_view = zrequire("message_view");
 const message_lists = zrequire("message_lists");
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 
 function verify_fixture(fixture, override_rewire) {
     const msg_list = make_message_list(fixture.filter_terms);
@@ -50,7 +50,7 @@ function verify_fixture(fixture, override_rewire) {
             has_found_newest: () => fixture.has_found_newest,
         },
         visibly_empty: () => fixture.visibly_empty,
-        all_messages() {
+        all_messages_after_mute_filtering() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
         },
@@ -74,7 +74,7 @@ function verify_fixture(fixture, override_rewire) {
 
     assert.deepEqual(id_info, fixture.expected_id_info);
 
-    const msgs = msg_data.all_messages();
+    const msgs = msg_data.all_messages_after_mute_filtering();
     const msg_ids = msgs.map((message) => message.id);
     assert.deepEqual(msg_ids, fixture.expected_msg_ids);
 }

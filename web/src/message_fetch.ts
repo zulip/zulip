@@ -5,7 +5,7 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
-import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import {Filter} from "./filter.ts";
 import * as message_feed_loading from "./message_feed_loading.ts";
@@ -23,8 +23,8 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
-import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
@@ -129,7 +129,7 @@ export function fetch_more_if_required_for_current_msg_list(
         narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
         message_lists.current.update_trailing_bookend();
         compose_closed_ui.maybe_update_buttons_for_dm_recipient();
-        compose_recipient.check_posting_policy_for_compose_box();
+        compose_validate.validate_and_update_send_button_status();
     }
 
     if (looking_for_old_msgs && !has_found_oldest) {
@@ -261,7 +261,14 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     // operators, such as "pm-with" and "stream", are not included here.
     const operators_supporting_ids = new Set(["dm"]);
     const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
-    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
+    const raw_narrow_term_array_schema = z.array(
+        z.object({
+            negated: z.optional(z.boolean()),
+            operator: z.string(),
+            operand: z.string(),
+        }),
+    );
+    const parsed_narrow_data = raw_narrow_term_array_schema.parse(JSON.parse(narrow_parameter));
 
     const narrow_terms: {
         operator: string;
@@ -269,13 +276,20 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         negated?: boolean | undefined;
     }[] = [];
     for (const raw_term of parsed_narrow_data) {
+        // NOTE: `narrow_term` should be of type `NarrowTerm` but
+        // before we enforce that we need to add type support for
+        // different `operand` types in `NarrowTerm` which will eventually
+        // lead to most of the type conversion below becoming unnecessary.
         const narrow_term: {
             operator: string;
             operand: number[] | number | string;
             negated?: boolean | undefined;
         } = raw_term;
 
-        const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
+        const parsed_narrow_operator = narrow_operator_schema.parse(
+            raw_term.operator.toLowerCase(),
+        );
+        const canonical_operator = Filter.canonicalize_operator(parsed_narrow_operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
             const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
@@ -319,7 +333,20 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 }
 
 export function get_narrow_for_message_fetch(filter: Filter): string {
-    let narrow_data = filter.public_terms();
+    let narrow_data: NarrowTerm[] = [];
+    for (const term of filter.public_terms()) {
+        if (term.operator === "dm-including") {
+            for (const operand of term.operand.split(",")) {
+                narrow_data.push({
+                    ...term,
+                    operand,
+                });
+            }
+        } else {
+            narrow_data.push(term);
+        }
+    }
+
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }

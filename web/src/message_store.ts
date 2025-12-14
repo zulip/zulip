@@ -3,7 +3,8 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {RawLocalMessage} from "./echo.ts";
-import type {NewMessage, ProcessedMessage} from "./message_helper.ts";
+import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.ts";
+import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -183,12 +184,24 @@ export type Message = (
     // `convert_raw_message_to_message_with_booleans`
     flags?: string[];
 
-    small_avatar_url?: string | null; // Used in `message_avatar.hbs`
-    status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
+    // Used in `message_avatar.hbs` to render sender avatar in
+    // message list.
+    small_avatar_url?: string | null;
 
-    local_edit_timestamp?: number; // Used for edited messages
+    // Used in `message_body.hbs` to show sender status emoji alongside
+    // their name in message list.
+    status_emoji_info?: UserStatusEmojiInfo | undefined;
 
-    notification_sent?: boolean; // Used in message_notifications
+    // Used for edited messages to show their last edit time.
+    local_edit_timestamp?: number;
+
+    // Used in message_notifications to track if a notification has already
+    // been sent for this message.
+    notification_sent?: boolean;
+
+    // Added during message rendering in message_list_view.ts. Should
+    // never be accessed outside rendering, as the value may be stale.
+    reminders?: TimeFormattedReminder[] | undefined;
 } & (
         | {
               type: "private";
@@ -389,11 +402,31 @@ export function update_status_emoji_info(
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
     const message_data = stored_messages.get(old_id);
     if (message_data !== undefined) {
-        message_data.message.id = new_id;
-        message_data.message.locally_echoed = false;
-        stored_messages.set(new_id, message_data);
+        const server_message: Message & Partial<LocalMessage> = message_data.message;
+        if (message_data.type === "local_message") {
+            // Important: Messages are managed as singletons, so
+            // MessageListData objects may already have pointers to
+            // the LocalMessage object for this message. So we must
+            // convert the LocalMessage into a Message by dropping the
+            // extra local echo/drafts fields, not by constructing a
+            // new object with the new type.
+
+            delete server_message.queue_id;
+            delete server_message.draft_id;
+            delete server_message.to;
+            if (server_message.type === "private") {
+                delete server_message.topic;
+            }
+        }
+        server_message.id = new_id;
+        server_message.locally_echoed = false;
+        stored_messages.set(new_id, {type: "server_message", message: server_message});
         stored_messages.delete(old_id);
     }
+}
+
+export function update_message_content(message: Message, new_content: string): void {
+    message.content = new_content;
 }
 
 export function remove(message_ids: number[]): void {

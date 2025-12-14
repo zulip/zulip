@@ -33,7 +33,8 @@ type PopoverName =
     | "buddy_list"
     | "stream_actions_popover"
     | "color_picker_popover"
-    | "show_channels_sidebar"
+    | "show_folders_sidebar"
+    | "show_folders_inbox"
     | "send_later_options";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
@@ -56,7 +57,8 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     buddy_list: null,
     stream_actions_popover: null,
     color_picker_popover: null,
-    show_channels_sidebar: null,
+    show_folders_sidebar: null,
+    show_folders_inbox: null,
     send_later_options: null,
 };
 
@@ -221,12 +223,8 @@ export const default_popover_props: Partial<tippy.Props> = {
                     const instance = (state.elements.popper as tippy.PopperElement)._tippy!;
                     const $popover = $(state.elements.popper);
                     const $tippy_box = $popover.find(".tippy-box");
-                    // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
-                    // but linter wants us to write it like this.
-                    const is_reference_outside_window = Object.hasOwn(
-                        util.the($tippy_box).dataset,
-                        "referenceHidden",
-                    );
+                    const is_reference_outside_window =
+                        $tippy_box.attr("data-reference-hidden") !== undefined;
 
                     if ($tippy_box.hasClass("show-when-reference-hidden")) {
                         // Show user card popover as an overlay if we are not sure about position of the

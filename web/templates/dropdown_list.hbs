@@ -10,6 +10,9 @@
                         {{#if has_edit_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=edit_icon_label }}
                         {{/if}}
+                        {{#if has_manage_folder_icon}}
+                            {{> components/icon_button custom_classes="dropdown-list-manage-folder dropdown-list-control-button" intent="neutral" icon="folder-cog" aria-label=manage_folder_icon_label }}
+                        {{/if}}
                         {{#if has_delete_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=delete_icon_label }}
                         {{/if}}
@@ -24,25 +27,23 @@
             </span>
         </a>
         {{else}}
-        <a class="dropdown-list-item-common-styles">
+        <a class="dropdown-list-item-common-styles {{#if is_setting_disabled}}setting-disabled-option{{/if}}">
             {{#if stream}}
                 {{> inline_decorated_channel_name stream=stream show_colored_icon=true}}
             {{else if is_direct_message}}
                 <i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> <span class="decorated-dm-name">{{name}}</span>
             {{else if is_setting_disabled}}
-                <span class="setting-disabled-option">
-                    {{#if show_disabled_icon}}
-                        <i class="setting-disabled-option-icon fa fa-ban" aria-hidden="true"></i>
-                    {{/if}}
-                    {{#if show_disabled_option_name}}
-                        <span class="dropdown-list-text-neutral">{{name}}</span>
-                    {{else}}
-                        <span class="dropdown-list-text-neutral">{{t "Disable" }}</span>
-                    {{/if}}
-                </span>
+                {{#if show_disabled_icon}}
+                    <i class="setting-disabled-option-icon zulip-icon zulip-icon-deactivated-circle" aria-hidden="true"></i>
+                {{/if}}
+                {{#if show_disabled_option_name}}
+                    <span class="setting-disabled-option-text dropdown-list-text-neutral">{{name}}</span>
+                {{else}}
+                    <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
+                {{/if}}
             {{else if (eq unique_id -2)}}
-                {{!-- This is the option for PresetUrlOption.MAPPING --}}
-                <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon" aria-hidden="true"></i> <span class="dropdown-list-text-neutral">{{name}}</span>
+                {{!-- This is the option for PresetUrlOption.CHANNEL_MAPPING --}}
+                <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i> <span class="dropdown-list-text-neutral">{{name}}</span>
             {{else}}
                 <span class="dropdown-list-item-name">
                     {{#if bold_current_selection}}
@@ -54,6 +55,9 @@
                     <span class="dropdown-list-buttons">
                         {{#if has_edit_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=(t "Edit folder") }}
+                        {{/if}}
+                        {{#if has_manage_folder_icon}}
+                            {{> components/icon_button custom_classes="dropdown-list-manage-folder dropdown-list-control-button" intent="neutral" icon="folder-cog" aria-label=manage_folder_icon_label }}
                         {{/if}}
                         {{#if has_delete_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-delete dropdown-list-control-button" intent="danger" icon="trash" aria-label=(t "Delete folder") }}

@@ -19,6 +19,7 @@ exports.make_stream = (opts = {}) => {
          * fix without assuming groups exist in the data set. */
         can_remove_subscribers_group: 0,
         can_administer_channel_group: 2,
+        can_create_topic_group: 2,
         color: "abcd12",
         /* This is rarely going to be the case, but a valid possibility. */
         creator_id: null,
@@ -48,6 +49,7 @@ exports.make_stream = (opts = {}) => {
         /* Most tests want to work with a channel the current user is subscribed to. */
         subscribed: true,
         wildcard_mentions_notify: false,
+        folder_id: null,
     };
 
     return {...default_channel, ...opts};

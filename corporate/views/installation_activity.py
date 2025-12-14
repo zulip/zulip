@@ -328,7 +328,7 @@ def realm_summary_table(export: bool) -> str:
             rows=rows,
             totals=total_row,
             num_active_sites=num_active_sites,
-            utctime=now.strftime("%Y-%m-%d %H:%M %Z"),
+            utctime=now.isoformat(" ", "minutes"),
             billing_enabled=settings.BILLING_ENABLED,
             export=export,
         ),

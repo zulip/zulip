@@ -43,7 +43,7 @@ from zerver.lib.email_validation import (
 )
 from zerver.lib.exceptions import JsonableError, RateLimitedError, UserDeactivatedError
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.rate_limiter import RateLimitedUser
+from zerver.lib.rate_limiter import RateLimitedUser, should_rate_limit
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
@@ -332,6 +332,7 @@ def json_change_settings(
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     web_font_size_px: Json[int] | None = None,
     web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
+    web_inbox_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,
@@ -414,11 +415,12 @@ def json_change_settings(
         if user_profile.delivery_email != new_email:
             validate_email_change_request(user_profile, new_email)
 
-            ratelimited, time_until_free = RateLimitedUser(
-                user_profile, domain="email_change_by_user"
-            ).rate_limit()
-            if ratelimited:
-                raise RateLimitedError(time_until_free)
+            if should_rate_limit(request):
+                ratelimited, time_until_free = RateLimitedUser(
+                    user_profile, domain="email_change_by_user"
+                ).rate_limit()
+                if ratelimited:
+                    raise RateLimitedError(time_until_free)
 
             do_start_email_change_process(user_profile, new_email)
 

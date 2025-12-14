@@ -652,6 +652,13 @@ class UserMessage(AbstractUserMessage):
                 ),
                 name="zerver_usermessage_active_mobile_push_notification_id",
             ),
+            models.Index(
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.active_mobile_push_notification.mask
+                ),
+                name="zerver_usermessage_message_active_mobile_push_notification_idx",
+            ),
         ]
 
     @override

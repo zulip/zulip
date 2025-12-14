@@ -265,6 +265,5 @@ footer {
     height: 1em;
     margin-left: 0.4em;
     background: currentcolor;
-    mask: url("../../../web/shared/icons/external-link.svg") no-repeat center /
-        contain;
+    mask: url("../../../web/icons/external-link.svg") no-repeat center / contain;
 }

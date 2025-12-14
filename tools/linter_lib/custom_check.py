@@ -127,6 +127,7 @@ js_rules = RuleList(
                 "web/src/message_events_util.ts",
                 "web/src/message_helper.ts",
                 "web/src/server_message.ts",
+                "web/src/state_data.ts",
                 "web/tests/",
             },
             "exclude_pattern": "emails",
@@ -257,6 +258,7 @@ python_rules = RuleList(
                     "zerver/lib/message_cache.py",
                     'obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME',
                 ),
+                ("zerver/lib/push_notifications.py", '"subject",'),
             },
             "include_only": {
                 "zerver/data_import/",
@@ -561,6 +563,7 @@ html_rules: list["Rule"] = [
         "exclude": {
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
+            "templates/corporate/zulip-cloud.html",
             "templates/corporate/for/business.html",
             "templates/corporate/support/support_request.html",
             "templates/corporate/support/support_request_thanks.html",
@@ -575,7 +578,10 @@ html_rules: list["Rule"] = [
         "pattern": r'placeholder="[^{#](?:(?!\.com).)+$',
         "description": "`placeholder` value should be translatable.",
         "exclude_line": {
-            ("templates/zerver/realm_creation_form.html", 'placeholder="acme"'),
+            (
+                "templates/zerver/create_realm/realm_creation_subdomain_form_field.html",
+                'placeholder="acme"',
+            ),
             ("templates/zerver/slack_import.html", 'placeholder="xoxb-…"'),
         },
         "exclude": {
@@ -719,13 +725,12 @@ html_rules: list["Rule"] = [
             "templates/zerver/email.html",
             "templates/zerver/development/email_log.html",
             # Social backend logos are dynamically loaded
-            "templates/zerver/accounts_home.html",
+            "templates/zerver/create_user/accounts_home.html",
             "templates/zerver/login.html",
             # Needs the width cleaned up; display: none is fine
             "web/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
             "web/templates/user_profile_modal.hbs",
-            "web/templates/pm_list_item.hbs",
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
             "templates/corporate/features.html",
@@ -738,9 +743,8 @@ html_rules: list["Rule"] = [
             "templates/zerver/config_error/container.html",
             "templates/zerver/dev_env_email_access_details.html",
             "templates/zerver/confirm_continue_registration.html",
-            "templates/zerver/register.html",
+            "templates/zerver/create_user/register.html",
             "templates/zerver/accounts_send_confirm.html",
-            "templates/zerver/integrations/index.html",
             "templates/zerver/documentation_main.html",
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
@@ -904,7 +908,7 @@ help_markdown_rules = RuleList(
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
             "include_only": {"starlight_help/src/content/docs/"},
-            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip",
+            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip|Directory.Read.All|RoleManagement.Read.Directory|User.Read.All",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",
@@ -967,42 +971,42 @@ svg_rules = RuleList(
         {
             "pattern": r"fill=(['\"])(.*?)\1",
             "description": "System icons ignore fill values, so do not include the fill property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
             # This file needs the fill property to define the fill as
             # a linear gradient. We cannot define the gradient in CSS
             # in a clean way and thus we have decided to define the
             # gradient in the SVG itself.
-            "exclude": {"web/shared/icons/user-circle-idle.svg"},
+            "exclude": {"web/icons/user-circle-idle.svg"},
         },
         {
             "pattern": "fill:",
             "description": "System icons ignore fill values, so do not include the fill property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": r"fill-rule=(['\"])(.*?)\1",
             "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": "fill-rule:",
             "description": "System icons ignore fill-rule values, so do not include the fill-rule property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": r"stroke=(['\"])(.*?)\1",
             "description": "System icons ignore stroke values, so do not include the stroke property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": "stroke:",
             "description": "System icons ignore stroke values, so do not include the stroke property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
         {
             "pattern": "class=",
             "description": "System icons ignore class values, so do not include the class property.",
-            "include_only": {"web/shared/icons/", "web/images/icons/"},
+            "include_only": {"web/icons/"},
         },
     ],
 )

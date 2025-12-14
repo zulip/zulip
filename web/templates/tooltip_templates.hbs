@@ -28,6 +28,10 @@
     {{t 'New topic' }}
     {{tooltip_hotkey_hints "C"}}
 </template>
+<template id="new_message_button_tooltip_template">
+    {{t 'New message'}}
+    {{tooltip_hotkey_hints "C"}}
+</template>
 <template id="new_stream_message_button_tooltip_template">
     {{t 'New channel message' }}
     {{tooltip_hotkey_hints "C"}}
@@ -93,6 +97,10 @@
 <template id="italic-tooltip">
     {{t 'Italic' }}
     {{tooltip_hotkey_hints "Ctrl" "I"}}
+</template>
+<template id="code-tooltip">
+    {{t 'Code' }}
+    {{tooltip_hotkey_hints "Ctrl" "Shift" "C"}}
 </template>
 <template id="delete-draft-tooltip-template">
     {{t 'Delete draft' }}
@@ -295,7 +303,7 @@
     {{t 'Filter left sidebar' }}
     {{tooltip_hotkey_hints "Q"}}
 </template>
-<template id="inbox-channel-mute-toogle-tooltip-template">
+<template id="inbox-channel-mute-toggle-tooltip-template">
     <div>
         <div>{{t "You have muted this channel." }}</div>
         <div class="italic">

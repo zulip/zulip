@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from typing import TypedDict
 
+from zerver.lib.timestamp import datetime_to_global_time
+
 # For integrations that don't have example webhook fixtures/payloads,
 # we create an Zulip notification message content and topic here in
 # order to generate an example screenshot to include in the documentation
@@ -14,9 +16,11 @@ THREE_DIGIT_NUMBER = "492"
 
 # Example user content
 BO_NAME = "Bo Williams"
+BO_EMAIL = "bwilliams@example.com"
 BO_GIT_NAME = "bo-williams"
 
 KEVIN_NAME = "Kevin Lin"
+KEVIN_EMAIL = "klin@example.com"
 
 # Example project content
 PROJECT_NAME = "Example Project"
@@ -48,10 +52,9 @@ TICKET_NUMBER = THREE_DIGIT_NUMBER
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
 
-DATETIME_STAMP = _DT.strftime("%Y-%m-%d %H:%M:%S")
-DATETIME_GLOBAL = f"<time:{_DT.strftime('%Y-%m-%dT%H:%M:%S%z')}>"
+DATETIME_GLOBAL = datetime_to_global_time(_DT)
 
-DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
+DATE_ISO_8601 = _DT.date().isoformat()
 DATE_LONG = _DT.strftime("%A, %B %d, %Y")
 
 
@@ -85,9 +88,17 @@ DISCOURSE = ScreenshotContent(
 > {COMMIT_BODY_A}""",
 )
 
+GIT = ScreenshotContent(
+    topic=BRANCH_GIT,
+    content=f"""`{DEPLOYMENT_HASH[:12]}` was deployed to `{BRANCH_GIT}` with:
+* {KEVIN_EMAIL} - {COMMIT_HASH_A[:7]}: {COMMIT_MESSAGE_A}
+* {BO_EMAIL} - {COMMIT_HASH_B[:7]}: {COMMIT_MESSAGE_B}
+""",
+)
+
 GITHUB_ACTIONS = ScreenshotContent(
     topic="scheduled backups",
-    content=f"""Backup [failed]() at {DATETIME_STAMP}.
+    content=f"""Backup [failed]() at {DATETIME_GLOBAL}.
 > Unable to connect.""",
 )
 
@@ -102,6 +113,13 @@ GOOGLE_CALENDAR = ScreenshotContent(
 JENKINS = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"**Build:** [#{REVISION_NUMBER}](): FAILURE :cross_mark:",
+)
+
+JIRA_PLUGIN = ScreenshotContent(
+    topic=f"{TICKET_NUMBER}: {TASK_TITLE}",
+    content=f"""{BO_NAME} **created** [{TICKET_NUMBER}]() - priority Medium, assigned to @**{KEVIN_NAME}**:
+
+> {TASK_DESCRIPTION}""",
 )
 
 MASTODON = ScreenshotContent(
@@ -138,7 +156,7 @@ Can we reschedule this to next week?""",
 
 OPENSHIFT = ScreenshotContent(
     topic=PROJECT_NAME,
-    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH_GIT}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_STAMP} has **failed**.""",
+    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH_GIT}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_GLOBAL} has **failed**.""",
 )
 
 PERFORCE = ScreenshotContent(

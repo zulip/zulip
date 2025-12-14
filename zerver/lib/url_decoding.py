@@ -1,3 +1,5 @@
+# See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
 from urllib.parse import unquote, urlsplit
 
 from django.conf import settings

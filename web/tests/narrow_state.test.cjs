@@ -274,9 +274,9 @@ test("update_email", () => {
     ]);
     narrow_state.update_email(steve.user_id, "showell@foo.com");
     const filter = narrow_state.filter();
-    assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
+    assert.deepEqual(filter.terms_with_operator("dm")[0].operand, "showell@foo.com");
+    assert.deepEqual(filter.terms_with_operator("sender")[0].operand, "showell@foo.com");
+    assert.deepEqual(filter.terms_with_operator("channel")[0].operand, "steve@foo.com");
 });
 
 test("topic", () => {
@@ -376,7 +376,7 @@ test("inbox_view_visible", () => {
     const filter = new Filter([
         {
             operator: "channel",
-            operand: 10,
+            operand: "10",
         },
     ]);
     inbox_util.set_filter(filter);

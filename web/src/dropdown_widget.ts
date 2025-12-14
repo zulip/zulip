@@ -35,8 +35,10 @@ export type Option = {
     bold_current_selection?: boolean;
     has_delete_icon?: boolean;
     has_edit_icon?: boolean;
+    has_manage_folder_icon?: boolean;
     delete_icon_label?: string;
     edit_icon_label?: string;
+    manage_folder_icon_label?: string;
 };
 
 export type DropdownWidgetOptions = {
@@ -83,6 +85,7 @@ export type DropdownWidgetOptions = {
     dropdown_triggered_via_keyboard?: boolean;
     // When this is set, pressing tab will move focus to the target element.
     tab_moves_focus_to_target?: string | (() => string);
+    search_placeholder_text?: string;
 };
 
 export class DropdownWidget {
@@ -125,6 +128,7 @@ export class DropdownWidget {
     // TODO: This is only used in one widget, with no implementation
     // here, so should be generalized or reworked.
     item_clicked = false;
+    search_placeholder_text: string;
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
@@ -160,6 +164,7 @@ export class DropdownWidget {
         this.keep_focus_on_search = !this.hide_search_box;
         this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
         this.current_hover_index = 0;
+        this.search_placeholder_text = options.search_placeholder_text ?? "";
     }
 
     init(): void {
@@ -335,6 +340,11 @@ export class DropdownWidget {
                 const $search_input = $popper.find<HTMLInputElement>(
                     "input.dropdown-list-search-input",
                 );
+
+                if (this.search_placeholder_text) {
+                    $search_input.attr("placeholder", this.search_placeholder_text);
+                }
+
                 const selected_item_unique_id = this.current_value;
 
                 this.list_widget = ListWidget.create(

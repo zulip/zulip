@@ -22,7 +22,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
-from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.email_mirror import (
     RateLimitedRealmMirror,
     create_missed_message_address,
@@ -54,7 +54,7 @@ from zerver.models import Attachment, Recipient, Stream, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 
 logger_name = "zerver.lib.email_mirror"
@@ -384,6 +384,36 @@ class TestStreamEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.topic_name(), "Email with no subject")
 
+    def test_receive_stream_email_messages_subject_channel_no_topics(
+        self,
+    ) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream.topics_policy = StreamTopicsPolicyEnum.empty_topic_only.value
+        stream.save()
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+
+        incoming_valid_message["Subject"] = "Test subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.topic_name(), "")
+        self.assertEqual(
+            message.content, "**Subject:** Test subject\n\nTestStreamEmailMessages body"
+        )
+
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -481,7 +511,7 @@ class TestStreamEmailMessages(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(self.example_email("hamlet"), msgtext),
+            "**From:** {}\n\n{}".format(self.example_email("hamlet"), msgtext),
         )
         self.assert_message_stream_name(message, stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
@@ -513,7 +543,7 @@ and other things
             )
             process_message(incoming_valid_message)
             message = most_recent_message(user_profile)
-            expected = "From: {}\n{}".format(self.example_email("hamlet"), expected_body)
+            expected = "**From:** {}\n\n{}".format(self.example_email("hamlet"), expected_body)
             self.assertEqual(message.content, expected.strip())
             self.assert_message_stream_name(message, stream.name)
             self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
@@ -554,7 +584,7 @@ and other things
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(
+            "**From:** {}\n\n{}".format(
                 "Test Useróąę <hamlet_ę@zulip.com>", "TestStreamEmailMessages body"
             ),
         )
@@ -668,7 +698,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         realm = get_realm("zulip")
         channel = get_stream("Denmark", realm)
 
-        do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(hamlet, UserProfile.ROLE_MODERATOR)
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
@@ -723,7 +753,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         )
 
         # Sender is a bot owned by the current user + has the post permission.
-        do_change_user_role(bot, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(bot, UserProfile.ROLE_MODERATOR)
         incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
 
         with self.assertLogs(logger_name, level="INFO") as m:
@@ -740,7 +770,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         realm = get_realm("zulip")
         channel = get_stream("Denmark", realm)
 
-        do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(hamlet, UserProfile.ROLE_MODERATOR)
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
@@ -795,7 +825,7 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
         )
 
         # Sender is a bot owned by the current user + has the post permission.
-        do_change_user_role(bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(bot, UserProfile.ROLE_REALM_ADMINISTRATOR)
         incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
 
         with self.assertLogs(logger_name, level="INFO") as m:
@@ -1274,7 +1304,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(17):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
