@@ -114,6 +114,25 @@ function on_pill_exit(
 // search pill, and remove `description_html` from the `Suggestion` type.
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
     const search_terms = Filter.parse(suggestion.search_string);
+    const channel_term = search_terms.find((t) => t.operator === "channel" && t.operand !== "");
+    const topic_term = search_terms.find((t) => t.operator === "topic");
+
+    if (channel_term && topic_term) {
+    const channel_name = stream_data.get_valid_sub_by_id_string(channel_term.operand).name;
+    const topic_name = util.get_final_topic_display_name(topic_term.operand);
+
+    return render_search_list_item({
+        pills: [
+            {
+                type: "generic_operator",
+                operator: "channel",
+                operand: channel_term.operand,
+                negated: false,
+                display_value: `#${channel_name} > ${topic_name}`,
+            },
+        ],
+    });
+}
 
     const pill_render_data = search_terms.map((term, index) => {
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
