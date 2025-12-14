@@ -210,31 +210,22 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             return _.isEqual(operand_ids, user_ids);
         }
 
- case "dm-with": {
-    const operand_ids = people.pm_with_operand_ids(term.operand);
-    if (!operand_ids) {
-        return false;
-    }
+        case "dm-with":
+        case "dm-including": {
+            // dm-including is legacy name for dm-with, kept for backward compatibility
+            const operand_ids = people.pm_with_operand_ids(term.operand);
+            if (!operand_ids) {
+                return false;
+            }
 
-    const user_ids = people.all_user_ids_in_pm(message);
-    if (!user_ids) {
-        return false;
-    }
+            const user_ids = people.all_user_ids_in_pm(message);
+            if (!user_ids) {
+                return false;
+            }
 
-    return operand_ids.every((operand_id) => user_ids.includes(operand_id));
-}
-
-case "dm-including": {
-    const operand_ids = people.pm_with_operand_ids(term.operand);
-    if (!operand_ids) {
-        return false;
+            return operand_ids.every((operand_id) => user_ids.includes(operand_id));
+        }
     }
-    const user_ids = people.all_user_ids_in_pm(message);
-    if (!user_ids) {
-        return false;
-    }
-    return operand_ids.every((operand_id) => user_ids.includes(operand_id));
-}
 
     // We will never get here since operator type validation would fail.
     // istanbul ignore next
@@ -256,6 +247,7 @@ export function create_user_pill_context(user: User): UserPillItem {
 
 const USER_OPERATORS = new Set([
     "dm-including",
+    "dm-with",
     "dm",
     "sender",
     "from",
@@ -352,11 +344,8 @@ export class Filter {
                 }
                 break;
             case "dm-with":
-    narrow_term.operand = narrow_term.operand.toLowerCase();
-    break;
-        
-
-        
+                narrow_term.operand = narrow_term.operand.toLowerCase();
+                break;
 
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -472,7 +461,7 @@ export class Filter {
         // Match all operands that either have no spaces, or are surrounded by
         // quotes, preceded by an optional operator.
         // TODO: rewrite this using `str.matchAll` to get out the match objects
-        // with individual capture groups, so we don’t need to write a separate
+        // with individual capture groups, so we don't need to write a separate
         // parser with `.split`.
         const matches = str.match(/([^\s:]+:)?("[^"]+"?|\S+)/g);
         if (matches === null) {
@@ -578,7 +567,7 @@ export class Filter {
                 return true;
             case "sender":
             case "dm":
-            case "dm-including":
+            case "dm-with":
                 return term.operand
                     .split(",")
                     .every((email) => people.get_by_email(email) !== undefined);
@@ -644,7 +633,7 @@ export class Filter {
             "channel",
             "topic",
             "dm",
-            "dm-including",
+            "dm-with",
             "with",
             "sender",
             "near",
@@ -715,7 +704,7 @@ export class Filter {
             case "dm":
                 return verb + "direct messages with";
 
-            case "dm-including":
+            case "dm-with":
                 return verb + "direct messages including";
 
             case "in":
@@ -816,7 +805,7 @@ export class Filter {
             if (
                 term.operator === "sender" ||
                 term.operator === "dm" ||
-                term.operator === "dm-including"
+                term.operator === "dm-with"
             ) {
                 const user_emails = term.operand.split(",");
                 const users: ValidOrInvalidUser[] = user_emails.map((email) => {
@@ -1122,7 +1111,7 @@ export class Filter {
     is_search_for_specific_group_or_user(): boolean {
         return (
             this.has_operator("dm") ||
-            this.has_operator("dm-including") ||
+            this.has_operator("dm-with") ||
             this.has_operator("sender")
         );
     }
@@ -1143,8 +1132,8 @@ export class Filter {
             "topic",
             "not-topic",
             "dm",
-            "dm-including",
-            "not-dm-including",
+            "dm-with",
+            "not-dm-with",
             "is-dm",
             "not-is-dm",
             "is-resolved",
@@ -1611,7 +1600,7 @@ export class Filter {
         return (
             (this.has_operator("is") && this.terms_with_operator("is")[0]!.operand === "dm") ||
             this.has_operator("dm") ||
-            this.has_operator("dm-including")
+            this.has_operator("dm-with")
         );
     }
 
@@ -1753,7 +1742,7 @@ export class Filter {
     update_email(user_id: number, new_email: string): void {
         for (const term of this._terms) {
             switch (term.operator) {
-                case "dm-including":
+                case "dm-with":
                 case "dm":
                 case "sender":
                     term.operand = people.update_email_in_reply_to(
