@@ -210,17 +210,18 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             return _.isEqual(operand_ids, user_ids);
         }
 
- case "dm-with":
-case "dm-including": {
-    const operand_ids = people.pm_with_operand_ids(operand);
+ case "dm-with": {
+    const operand_ids = people.pm_with_operand_ids(term.operand);
     if (!operand_ids) {
         return false;
     }
+
     const user_ids = people.all_user_ids_in_pm(message);
     if (!user_ids) {
         return false;
     }
-    return user_ids.includes(operand_ids[0]);
+
+    return operand_ids.every((operand_id) => user_ids.includes(operand_id));
 }
 
             if (!operand_ids) {
@@ -352,9 +353,8 @@ export class Filter {
                 }
                 break;
             case "dm-with":
-            case "dm-including":
-                operand = operand.toString().toLowerCase();
-                break;
+    narrow_term.operand = narrow_term.operand.toLowerCase();
+    break;
         
 
         
