@@ -1166,6 +1166,10 @@
         var(--grey-600),
         var(--grey-300)
     );
+    --color-arrow-recent-view-table-thead-th: light-dark(
+        hsl(229deg 9% 36% / 50%),
+        hsl(229deg 10% 70% / 50%)
+    );
 
     /* Compose box colors */
     --color-compose-box-background: light-dark(

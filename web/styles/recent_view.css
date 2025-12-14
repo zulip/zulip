@@ -422,6 +422,7 @@
             transform: rotate(180deg);
             opacity: 0;
             transition: opacity 100ms ease-out;
+            color: var(--color-arrow-recent-view-table-thead-th);
         }
 
         &.descend .table-sortable-arrow {
@@ -429,7 +430,7 @@
         }
 
         &:not(.active)[data-sort]:hover .table-sortable-arrow {
-            opacity: 0.3;
+            opacity: 0.7;
         }
 
         &.active .table-sortable-arrow {
