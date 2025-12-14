@@ -25,7 +25,7 @@ export const narrow_canonical_operator_schema = z.enum([
     "channel",
     "channels",
     "dm",
-    "dm-including",
+    "dm-with",
     "has",
     "id",
     "in",
@@ -41,6 +41,7 @@ export type NarrowCanonicalOperator = z.output<typeof narrow_canonical_operator_
 const narrow_legacy_operator_schema = z.enum([
     "pm-with",
     "group-pm-with",
+    "dm-including",
     "from",
     "stream",
     "streams",
@@ -115,7 +116,7 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
         negated: z.optional(z.boolean()),
     }),
     z.object({
-        operator: z.literal("dm-including"),
+        operator: z.literal("dm-with"),
         operand: z.string(),
         negated: z.optional(z.boolean()),
     }),
