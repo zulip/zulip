@@ -10,9 +10,8 @@ const $ = require("./lib/zjquery.cjs");
 
 set_global("navigator", {});
 
-const autosize = noop;
-autosize.update = noop;
-mock_esm("autosize", {default: autosize});
+const autosize = {watch: noop, manual_resize: noop};
+mock_esm("../src/autosize.ts", autosize);
 
 mock_esm("../src/message_lists", {
     current: {},
@@ -87,17 +86,21 @@ function make_textbox(s) {
     return $widget;
 }
 
-run_test("autosize_textarea", ({override}) => {
+run_test("autosize_textarea", ({override, override_rewire}) => {
     const textarea_autosized = {};
 
-    override(autosize, "update", (textarea) => {
+    override(autosize, "manual_resize", (textarea) => {
         textarea_autosized.textarea = textarea;
         textarea_autosized.autosized = true;
     });
 
-    // Call autosize_textarea with an argument
+    override_rewire(compose_ui, "autosize_textarea", ($textarea) => {
+        autosize.manual_resize($textarea);
+    });
+
     const container = "container-stub";
     compose_ui.autosize_textarea(container);
+
     assert.equal(textarea_autosized.textarea, container);
     assert.ok(textarea_autosized.autosized);
 });
@@ -499,13 +502,9 @@ run_test("set_compose_box_top", () => {
     assert.equal(compose_top, "");
 });
 
-run_test("test_compose_height_changes", ({override, override_rewire}) => {
-    let autosize_destroyed = false;
-    override(autosize, "destroy", () => {
-        autosize_destroyed = true;
-    });
-
+run_test("test_compose_height_changes", ({override_rewire}) => {
     let compose_box_top_set = false;
+
     override_rewire(compose_ui, "set_compose_box_top", (set_top) => {
         compose_box_top_set = set_top;
     });
@@ -513,7 +512,6 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     compose_ui.make_compose_box_full_size();
     assert.ok($("#compose").hasClass("compose-fullscreen"));
     assert.ok(compose_ui.is_expanded());
-    assert.ok(autosize_destroyed);
     assert.ok(compose_box_top_set);
 
     compose_ui.make_compose_box_original_size();

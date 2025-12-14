@@ -771,7 +771,7 @@ export function paste_handler(
                     // and also is required for undo, see above.
                     $banner.remove();
                 });
-            }, 0);
+            }, 100);
         }
 
         // Only intervene to generate formatted links when dealing

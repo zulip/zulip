@@ -1,4 +1,3 @@
-import autosize from "autosize";
 import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
@@ -13,6 +12,7 @@ import render_revealed_message_hide_button from "../templates/revealed_message_h
 import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity.ts";
+import * as autosize from "./autosize.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as condense from "./condense.ts";
@@ -1285,7 +1285,7 @@ export class MessageListView {
         }
 
         // After all the messages are rendered, resize any message edit textarea if required.
-        autosize.update(this.$list.find(".message_edit_content"));
+        autosize.manual_resize(this.$list.find(".message_edit_content"));
         maybe_restore_focus_to_message_edit_form();
 
         restore_scroll_position();
