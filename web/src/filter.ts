@@ -224,18 +224,17 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
     return operand_ids.every((operand_id) => user_ids.includes(operand_id));
 }
 
-            if (!operand_ids) {
-                return false;
-            }
-            const user_ids = people.all_user_ids_in_pm(message);
-            if (!user_ids) {
-                return false;
-            }
-            return operand_ids.every((operand_id) => user_ids.includes(operand_id));
-        }
-        case "dm-including":
-            return message_matches_search_term(message, "dm-with", operand);
+case "dm-including": {
+    const operand_ids = people.pm_with_operand_ids(term.operand);
+    if (!operand_ids) {
+        return false;
     }
+    const user_ids = people.all_user_ids_in_pm(message);
+    if (!user_ids) {
+        return false;
+    }
+    return operand_ids.every((operand_id) => user_ids.includes(operand_id));
+}
 
     // We will never get here since operator type validation would fail.
     // istanbul ignore next
