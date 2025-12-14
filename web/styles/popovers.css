@@ -177,6 +177,10 @@
         margin: 0;
     }
 
+    .custom-profile-field-value.popover-checkboxes-value {
+        display: block;
+    }
+
     .custom-profile-field-link {
         color: var(--color-text-item);
 
