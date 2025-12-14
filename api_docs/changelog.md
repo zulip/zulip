@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 443**
+
+* [`GET /thumbnail/status/{realm_id_str}/{filename}`](/api/check-thumbnail-status): Added
+  a new endpoint to check whether thumbnails have been generated for an
+  uploaded image. Returns `has_thumbnail: true` if all thumbnail formats
+  are ready, `false` otherwise. Only the file owner can query this endpoint.
+
 **Feature level 442**
 
 * [`GET /events`](/api/get-events): `giphy_rating` is now used to denote
