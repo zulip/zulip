@@ -429,3 +429,16 @@ def get_temporary_url_for_uploaded_file() -> dict[str, object]:
         realm_id = upload_path_parts[1]
         filename = upload_path_parts[2]
     return {"realm_id_str": realm_id, "filename": filename}
+
+
+@openapi_param_value_generator(["/thumbnail/status/{realm_id_str}/{filename}:get"])
+def check_thumbnail_status_for_uploaded_file() -> dict[str, object]:
+    realm_id = ""
+    filename = ""
+    user_profile = helpers.example_user("iago")
+    url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
+    upload_path_parts = re.match(r"/user_uploads/(\d+)/(.*)", url)
+    if upload_path_parts:
+        realm_id = upload_path_parts[1]
+        filename = upload_path_parts[2]
+    return {"realm_id_str": realm_id, "filename": filename}
