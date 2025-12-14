@@ -68,7 +68,7 @@ function get_base_payload(): TenorPayload {
     return {
         key: realm.tenor_api_key,
         client_key: "ZulipWeb",
-        limit: "10",
+        limit: "15",
         // We use the tinygif size for the picker UI, and the mediumgif size
         // for what gets actually uploaded.
         media_filter: "tinygif,mediumgif",
