@@ -2,9 +2,14 @@ import re
 
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponseBase, HttpResponseForbidden
+from django.utils.translation import gettext as _
 
-from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.models import UserProfile
+from zerver.lib.attachments import validate_attachment_request
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.response import json_success
+from zerver.lib.thumbnail import missing_thumbnails
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.models import ImageAttachment, UserProfile
 from zerver.views.upload import serve_file
 
 
@@ -34,3 +39,32 @@ def backend_serve_thumbnail(
     # we cannot serve a "new" thumbnail for these requests; serve the
     # full-size file.
     return serve_file(request, maybe_user_profile, realm_id_str, path_id)
+
+
+@typed_endpoint
+def check_thumbnail_status(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    realm_id_str: PathOnly[str],
+    filename: PathOnly[str],
+) -> HttpResponseBase:
+    path_id = f"{realm_id_str}/{filename}"
+
+    if not validate_attachment_request(user_profile, path_id)[0]:
+        # Technically, there are 2 cases here:
+        # * The user put something in their compose box that has the form
+        # of an upload URL, but does not actually correspond to a previously
+        # uploaded file.  validate_attachment_request will return None.
+        # * The user is polling thumbnail status for a file they don't have
+        # permission to access.  validate_attachment_request will return False.
+        raise JsonableError(_("Invalid attachment"))
+
+    try:
+        image_attachment = ImageAttachment.objects.get(path_id=path_id)
+    except ImageAttachment.DoesNotExist:
+        raise JsonableError(_("Invalid attachment"))
+
+    needed_thumbnails = missing_thumbnails(image_attachment)
+
+    return json_success(request, data={"has_thumbnail": len(needed_thumbnails) == 0})

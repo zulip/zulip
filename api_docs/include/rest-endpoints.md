@@ -19,6 +19,7 @@
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
 * [Get temporary URL for an uploaded file](/api/get-file-temporary-url)
+* [Check thumbnail status](/api/check-thumbnail-status)
 * [Report a message](/api/report-message)
 
 #### Scheduled messages

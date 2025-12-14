@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 479**
+
+* [`GET /thumbnail/status/{realm_id_str}/{filename}`](/api/check-thumbnail-status): Added
+  a new endpoint to check whether thumbnails have been generated for an
+  uploaded image.
+
 **Feature level 478**
 
 * [`POST /realm/filters`](/api/add-linkifier),
