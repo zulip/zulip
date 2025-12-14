@@ -355,18 +355,7 @@ export class Filter {
             case "dm-including":
                 operand = operand.toString().toLowerCase();
                 break;
-         case "dm-with":
-        case "dm-including": {
-            const operand_ids = people.pm_with_operand_ids(operand);
-            if (!operand_ids) {
-                return false;
-            }
-            const user_ids = people.all_user_ids_in_pm(message);
-            if (!user_ids) {
-                return false;
-            }
-            return user_ids.includes(operand_ids[0]);
-        }
+        
 
         
 
