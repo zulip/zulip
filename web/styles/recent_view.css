@@ -98,10 +98,6 @@
     & a {
         color: var(--color-recent-view-link);
         text-decoration: none;
-
-        &:hover {
-            color: var(--color-recent-view-link-hover);
-        }
     }
 
     .white-space-preserve-wrap {
