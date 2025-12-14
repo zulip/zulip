@@ -799,8 +799,7 @@ No changes; feature level used for Zulip 10.0 release.
   edit messages they have posted in unsubscribed private channels that
   are accessible only via groups that grant content access.
 * [`POST
-  /message_edit_typing`](/api/set-typing-status-for-message-edit):
-  Users can generate typing notifications when editing messages in
+  /message_edit_typing`](/api/set-typing-status-for-message-edit): Users can generate typing notifications when editing messages in
   unsubscribed private channels that are accessible only via groups
   that grant content access.
 * [`POST /messages`](/api/send-message): Users can send messages to
@@ -2222,7 +2221,7 @@ No changes; feature level used for Zulip 8.0 release.
   for the `"stream"` type. Previously, in the case of the `"stream"` type, it
   accepted a single-element list containing the ID of the stream. Added an
   optional parameter, `stream_id`. Now, `to` is used only for `"direct"` type.
-  In the case of `"stream"` type, `stream_id` and `topic` are used.
+  In the case of the `"stream"` type, `stream_id` and `topic` are used.
 
 * Note that stream typing notifications were not enabled in any Zulip client
   prior to feature level 215.
@@ -2338,7 +2337,7 @@ No changes; feature level used for Zulip 8.0 release.
   `server_typing_started_wait_period_milliseconds`,
   `server_typing_stopped_wait_period_milliseconds`, and
   `server_typing_started_expiry_period_milliseconds` fields
-  for clients to use when implementing [typing
+  for clients to use when implementing the [typing
   notifications](/api/set-typing-status) protocol.
 
 **Feature level 203**
@@ -2348,7 +2347,7 @@ No changes; feature level used for Zulip 8.0 release.
 
 **Feature level 202**
 
-* [`PATCH /realm/linkifiers`](/api/reorder-linkifiers): Added new endpoint
+* [`PATCH /realm/linkifiers`](/api/reorder-linkifier): Added new endpoint
   to support changing the order in which linkifiers will be processed.
 
 **Feature level 201**
@@ -2412,13 +2411,20 @@ No changes; feature level used for Zulip 8.0 release.
 
 **Feature level 194**
 
-* [`GET /messages`](/api/get-messages),
-  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
-  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
-  [`POST /register`](/api/register-queue):
-  For [search/narrow filters](/api/construct-narrow#message-ids) with the
-  `id` operator, added support for encoding the message ID operand as either
-  a string or an integer. Previously, only string encoding was supported.
+* [`GET /messages`](/api/get-messages), [`GET
+  /events`](/api/get-events): Improved the format of the
+  `edit_history` object within message objects. Entries for stream
+  edits now include a both a `prev_stream` and `stream` field to
+  indicate the previous and current stream IDs. Prior to this feature
+  level, only the `prev_stream` field was present. Entries for topic
+  edits now include both a `prev_topic` and `topic` field to indicate
+  the previous and current topic, replacing the `prev_subject`
+  field. These changes substantially simplify client complexity for
+  processing historical message edits.
+
+* [`GET /messages/{message_id}/history`](/api/get-message-history):
+  Added `stream` field to message history `snapshot` indicating
+  the updated stream ID of messages moved to a new stream.
 
 **Feature level 193**
 
@@ -2461,8 +2467,7 @@ No changes; feature level used for Zulip 8.0 release.
   Added new boolean user settings  `enable_followed_topic_email_notifications`,
   `enable_followed_topic_push_notifications`,
   `enable_followed_topic_wildcard_mentions_notify`,
-  `enable_followed_topic_desktop_notifications`
-  and `enable_followed_topic_audible_notifications` to control whether a user
+  `enable_followed_topic_desktop_notifications` and `enable_followed_topic_audible_notifications` to control whether a user
   receives email, push, wildcard mention, visual desktop and audible desktop
   notifications, respectively, for messages sent to followed topics.
 
@@ -2563,8 +2568,7 @@ No changes; feature level used for Zulip 7.0 release.
 **Feature level 176**
 
 * [`POST /realm/filters`](/api/add-linkifier),
-  [`PATCH /realm/filters/<int:filter_id>`](/api/update-linkifier):
-  The `url_format_string` parameter is replaced by `url_template`.
+  [`PATCH /realm/filters/<int:filter_id>`](/api/update-linkifier): The `url_format_string` parameter is replaced by `url_template`.
   [Linkifiers](/help/add-a-custom-linkifier) now only accept
   [RFC 6570][rfc6570] compliant URL templates. The old URL format
   strings are no longer supported.
@@ -2758,7 +2762,7 @@ releases.
 
 * [`POST /invites`](/api/send-invites): Added support for invitations specifying
   the empty list as the user's initial stream subscriptions. Previously, this
-  returned an error. This change was backported from the Zulip 7.0
+  returned an error. This change was also backported from the Zulip 7.0
   branch, and thus is available at feature levels 157-158 and 180+.
 
 ## Changes in Zulip 6.0
@@ -3059,8 +3063,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 118**
 
-* [`GET /messages`](/api/get-messages), [`GET
-  /events`](/api/get-events): Improved the format of the
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events): Improved the format of the
   `edit_history` object within message objects. Entries for stream
   edits now include a both a `prev_stream` and `stream` field to
   indicate the previous and current stream IDs. Prior to this feature
@@ -3171,12 +3174,13 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 103**
 
-* [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
-  policy for which users can create web-public streams.
-* [`GET /events`](/api/get-events), `PATCH /realm`: Added support for updating
-  `create_web_public_stream_policy`.
-* [`POST /register`](/api/register-queue): Added `can_create_web_public_streams` boolean
-  field to the response.
+* [`POST /register`](/api/register-queue): Added `zulip_version` and
+  `zulip_feature_level` to endpoint response.
+* [`GET /events`](/api/get-events): Added `zulip_version` and
+  `zulip_feature_level` fields to the `restart` event.
+* [`GET /server_settings`](/api/get-server-settings): Added
+  `zulip_merge_base` to the responses which can be used to
+  make "About Zulip" widgets in clients.
 
 **Feature level 102**
 
@@ -3355,17 +3359,11 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 84**
 
-* [`POST /register`](/api/register-queue): The `enter_sends` setting
-  is now sent when `update_display_setting` is present in
-  `fetch_event_types` instead of `realm_user`.
-
-**Feature level 83**
-
 * [`POST /register`](/api/register-queue): The `cross_realm_bots`
   section of the response now uses the `is_system_bot` flag to
   indicate whether the bot is a system bot.
 
-**Feature level 82**
+**Feature level 83**
 
 * [`PATCH /settings`](/api/update-settings) now accepts a new
   `email_notifications_batching_period_seconds` field for setting the
@@ -3444,11 +3442,11 @@ No changes; feature level used for Zulip 5.0 release.
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
   [`GET /users/{email}`](/api/get-user-by-email) and
-  [`GET /users/me`](/api/get-own-user): Added is `user_billing_admin` field to
-  returned user objects.
-* [`GET /events`](/api/get-events): Added `is_billing_admin` field to
+  [`GET /users/me`](/api/get-own-user): Added `role` field to returned
+  user objects.
+* [`GET /events`](/api/get-events): Added `role` field to
   user objects sent in `realm_user` events.
-* [`POST /register`](/api/register-queue): Added `is_billing_admin` field
+* [`POST /register`](/api/register-queue): Added `role` field
   in the user objects returned in the `realm_users` field.
 
 **Feature level 72**
@@ -3512,8 +3510,8 @@ No changes; feature level used for Zulip 4.0 release.
 **Feature level 60**
 
 * [`POST /register`](/api/register-queue): Added a new boolean field
-  `is_moderator`, similar to the existing `is_admin`, `is_owner` and
-  `is_guest` fields, to the response.
+  `is_moderator`, similar to the existing `is_admin` and `is_guest` fields, to
+  the response.
 * [`PATCH /users/{user_id}`](/api/update-user): Added support for
   changing a user's organization-level role to moderator.
 * API endpoints that return `role` values can now return `300`, the
@@ -3534,20 +3532,35 @@ No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 58**
 
-* [`POST /register`](/api/register-queue): Added the new
-  `stream_typing_notifications` property to supported
-  `client_capabilities`.
-* [`GET /events`](/api/get-events): Extended format for `typing`
-  events to support typing notifications in stream messages. These new
-  events are only sent to clients with `client_capabilities`
-  showing support for `stream_typing_notifications`.
-* [`POST /typing`](/api/set-typing-status): Added support
-  for sending typing notifications for stream messages.
+* [`POST /register`](/api/register-queue): Added `zulip_merge_base`
+  field to the response.
+* [`GET /events`](/api/get-events): Added new `zulip_merge_base`
+  field to the `restart` event.
+* [`GET /server_settings`](/api/get-server-settings): Added
+  `zulip_merge_base` to the responses which can be used to
+  make "About Zulip" widgets in clients.
 
 **Feature level 57**
 
-* [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier): New
-  endpoint added to update a realm linkifier.
+* [`PATCH /settings`](/api/update-settings): Added a new
+  `enable_drafts_synchronization` setting, which controls whether the
+  syncing drafts between different clients is enabled.
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Added new `enable_drafts_synchronization` setting under
+  `update_display_settings`.
+
+* [`GET /drafts`](/api/get-drafts): Added new endpoint to fetch user's
+  synced drafts from the server.
+
+* [`POST /drafts`](/api/create-drafts): Added new endpoint to create
+  drafts when syncing has been enabled.
+
+* [`PATCH /drafts/{draft_id}`](/api/edit-draft): Added new endpoint
+  to edit a draft already owned by the user.
+
+* [`DELETE /drafts/{draft_id}`](/api/delete-draft): Added new endpoint
+  to delete a draft already owned by the user.
 
 **Feature level 56**
 
@@ -3969,27 +3982,6 @@ No changes; feature level used for Zulip 3.0 release.
 * [`PATCH /messages/{message_id}`](/api/update-message): Added the
   `stream_id` parameter to support moving messages between streams.
 * [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
-  Added `prev_stream` as a potential property of the `edit_history` object
-  within message objects to indicate when a message was moved to another
-  stream.
-* [`GET /messages/{message_id}/history`](/api/get-message-history):
-  `prev_stream` is present in `snapshot` objects within `message_history`
-  object when a message was moved to another stream.
-* [`GET /server_settings`](/api/get-server-settings): Added
-  `zulip_feature_level`, which can be used by clients to detect which
-  of the features described in this changelog are supported.
-* [`POST /register`](/api/register-queue): Added `zulip_feature_level`
-  to the response if `zulip_version` is among the requested
-  `event_types`.
-* [`GET /users`](/api/get-users): User objects for bots now
-  contain a `bot_owner_id`, replacing the previous `bot_owner` field
-  (which had the email address of the bot owner).
-* [`GET /users/{user_id}`](/api/get-user): New endpoint added to get
-  a single user's details by the user's ID.
-* [`GET /messages`](/api/get-messages): Add support for string-format
-  values for the `anchor` parameter, deprecating and replacing the
-  `use_first_unread_anchor` parameter.
-* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
   Message objects now use `topic_links` rather than `subject_links` to
   indicate links either present in the topic or generated by linkifiers
   applied to the topic.
@@ -4018,72 +4010,6 @@ No changes; feature level used for Zulip 3.0 release.
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   `PATCH /realm`: None added as an option for the realm setting
   `video_chat_provider` to disable video call UI.
-
-## Changes in Zulip 2.1
-
-* [`POST /register`](/api/register-queue): Added
-  `realm_default_external_accounts` to endpoint response.
-* [`GET /messages`](/api/get-messages): Added support for
-  [search/narrow options](/api/construct-narrow#changes) that use stream/user
-  IDs to specify a message's sender, its stream, and/or its recipient(s).
-* [`GET /users`](/api/get-users): Added `include_custom_profile_fields`
-  to request custom profile field data.
-* [`GET /users/me`](/api/get-own-user): Added `avatar_url` field,
-  containing the user's avatar URL, to the response.
-* [`GET /users/me/subscriptions`](/api/get-subscriptions): Added
-  `include_subscribers` parameter controlling whether data on the
-  other subscribers is included.  Previous behavior was to always send
-  subscriber data.
-* [`GET /users/me/subscriptions`](/api/get-subscriptions):
-  Stream-level notification settings like `push_notifications` were
-  changed to be nullable boolean fields (`true`/`false`/`null`), with
-  `null` meaning that the stream inherits the organization-level default.
-  Previously, the only values were `true` or `false`. A client communicates
-  support for this feature using `client_capabilities`.
-* [`GET /users/me/subscriptions`](/api/get-subscriptions): Added
-  `wildcard_mentions_notify` notification setting, with the same
-  global-plus-stream-level-override model as other notification settings.
-* [`GET /server_settings`](/api/get-server-settings): Added
-  `external_authentication_methods` structure, used to display login
-  buttons nicely in the mobile apps.
-* Added `first_message_id` field to Stream objects.  This is helpful
-  for determining whether the stream has any messages older than a
-  window cached in a client.
-* Added `is_web_public` field to Stream objects.  This field is
-  intended to support web-public streams.
-* [`GET /export/realm`](/api/get-realm-exports): Added endpoint for
-  fetching public data exports.
-  [`POST /export/realm`](/api/export-realm): Added endpoint for
-  triggering a public data export.
-* `PATCH /realm`: Added `invite_to_stream_policy`,
-  `create_stream_policy`, `digest_emails_enabled`, `digest_weekday`,
-  `user_group_edit_policy`, and `avatar_changes_disabled` organization settings.
-* Added `fluid_layout_width`, `desktop_icon_count_display`, and
-  `demote_inactive_streams` display settings.
-* `enable_stream_sounds` was renamed to
-  `enable_stream_audible_notifications`.
-* [`POST /users/me/subscriptions/properties`](/api/update-subscription-settings):
-  Deprecated `in_home_view`, replacing it with the more readable
-  `is_muted` (with the opposite meaning).
-* Custom profile fields: Added `EXTERNAL_ACCOUNT` field type.
-
-## Changes in Zulip 2.0
-
-* [`PATCH /users/me/subscriptions/muted_topics`](/api/mute-topic):
-  Added support for using stream IDs to specify the stream in which to
-  mute/unmute a topic.
-* [`POST /messages`](/api/send-message): Added support for using user
-  IDs and stream IDs for specifying the recipients of a message.
-* [`POST /messages`](/api/send-message), [`POST
-  /messages/{message_id}`](/api/update-message): Added support for
-  encoding topics using the `topic` parameter name.  The previous
-  `subject` parameter name was deprecated but is still supported for
-  backwards-compatibility.
-* [`POST /typing`](/api/set-typing-status): Added support for specifying the
-  recipients with user IDs, deprecating the original API of specifying
-  them using email addresses.
-
-------------------
 
 ## Changes not yet stabilized
 

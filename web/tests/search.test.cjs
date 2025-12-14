@@ -132,10 +132,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const search_suggestions = {
                 lookup_table: new Map([
                     [
-                        "dm-including:zo",
+                        "dm-with:zo",
                         {
                             description_html: "group direct messages including",
-                            search_string: "dm-including:user7@zulipdev.com",
+                            search_string: "dm-with:user7@zulipdev.com",
                         },
                     ],
                     [
@@ -160,7 +160,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                         },
                     ],
                 ]),
-                strings: ["zo", "sender:zo", "dm:zo", "dm-including:zo"],
+                strings: ["zo", "sender:zo", "dm:zo", "dm-with:zo"],
             };
 
             /* Test source */
@@ -186,7 +186,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-with:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html(source[3]), expected_value);
 
             /* Test sorter */

@@ -210,19 +210,15 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             return _.isEqual(operand_ids, user_ids);
         }
 
-        case "dm-with":
-        case "dm-including": {
-            // dm-including is legacy name for dm-with, kept for backward compatibility
+        case "dm-with": {
             const operand_ids = people.pm_with_operand_ids(term.operand);
             if (!operand_ids) {
                 return false;
             }
-
             const user_ids = people.all_user_ids_in_pm(message);
             if (!user_ids) {
                 return false;
             }
-
             return operand_ids.every((operand_id) => user_ids.includes(operand_id));
         }
     }
@@ -246,8 +242,8 @@ export function create_user_pill_context(user: User): UserPillItem {
 }
 
 const USER_OPERATORS = new Set([
-    "dm-including",
     "dm-with",
+    "dm-including", // legacy alias
     "dm",
     "sender",
     "from",
@@ -279,11 +275,12 @@ export class Filter {
         }
 
         if (operator === "group-pm-with") {
+            // "group-pm-with:" was replaced with "dm-with:"
             return "dm-with";
         }
 
         if (operator === "dm-including") {
-            // old legacy operator → map to new dm-with
+            // Legacy alias: "dm-including:" was renamed to "dm-with:"
             return "dm-with";
         }
 
@@ -346,7 +343,6 @@ export class Filter {
             case "dm-with":
                 narrow_term.operand = narrow_term.operand.toLowerCase();
                 break;
-
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
                 // quotes when typing in the search bar.  Curly quotes don't trigger our
@@ -461,7 +457,7 @@ export class Filter {
         // Match all operands that either have no spaces, or are surrounded by
         // quotes, preceded by an optional operator.
         // TODO: rewrite this using `str.matchAll` to get out the match objects
-        // with individual capture groups, so we don't need to write a separate
+        // with individual capture groups, so we don’t need to write a separate
         // parser with `.split`.
         const matches = str.match(/([^\s:]+:)?("[^"]+"?|\S+)/g);
         if (matches === null) {
