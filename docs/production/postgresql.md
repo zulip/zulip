@@ -23,8 +23,8 @@ server onto a separate (but still Zulip-managed) server for scaling purposes.
 You can use a database-as-a-service like Amazon RDS for the Zulip database. The
 experience is slightly degraded, in that most providers don't include useful
 dictionary files in their installations, and don't provide a way to provide them
-yourself, resulting in a degraded [full-text search][fts] experience around
-issues dictionary files are relevant (e.g., stemming).
+yourself. [Full-text search][fts] will be less useful, due to the inferior
+stemming rules that the built-in dictionaries provide.
 
 [fts]: ../subsystems/full-text-search.md
 
