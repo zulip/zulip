@@ -101,9 +101,10 @@ class ZulipMessageHandler(MessageHandler):
                 lambda a: decode_stream_email_address(a)[0].realm
             )(address)
             logger.warning(
-                "Rejecting a MAIL FROM: %s to realm: %s - rate limited.",
+                "Rejecting a MAIL FROM: %s to realm: %s via %s - rate limited.",
                 envelope.mail_from,
                 recipient_realm.name,
+                str(session.peer),
             )
             return "550 4.7.0 Rate-limited due to too many emails on this realm."
 
