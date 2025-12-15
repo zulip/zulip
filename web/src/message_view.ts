@@ -818,6 +818,17 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                         first_unread_message_id <
                         id_info.first_unread_msg_id_pending_server_verification
                     ) {
+                        // Do nothing if top of the first unread message is fully on screen
+                        // so that we don't annoyingly retarget the user.
+                        const $row = msg_list.get_row(first_unread_message_id);
+                        if ($row.length > 0) {
+                            const row_rect = util.the($row).getBoundingClientRect();
+                            const viewport_info = message_viewport.message_viewport_info();
+                            if (row_rect.top >= viewport_info.visible_top) {
+                                return;
+                            }
+                        }
+
                         // We convert the current narrow into a `near` narrow so that
                         // user doesn't accidentally mark msgs read which they haven't seen.
                         let terms = [
