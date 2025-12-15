@@ -2711,7 +2711,19 @@ button {
         }
 
         .feature-icon img {
+            /* Once Bootstrap is removed, we'll need to keep these
+               images displaying as blocks, so that control over
+               their height and width remains possible. */
+            display: block;
             width: 100%;
+            /* This is roughly the visual value of the features
+               SVGs in use, prior to their having proper height
+               and width attributes. Given their placement in
+               the layout, we're generally more concerned about
+               keeping their height sensible, rather than their
+               width, though the 100% width value maintains the
+               correct aspect ratio. */
+            max-height: 300px;
         }
     }
 
