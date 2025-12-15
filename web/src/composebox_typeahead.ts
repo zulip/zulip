@@ -1630,6 +1630,7 @@ export function initialize({
         type: "input",
     };
     stream_message_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
+        dropup: true,
         source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
