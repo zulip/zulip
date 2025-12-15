@@ -247,7 +247,7 @@ class ReportMessageTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Message reporting is not enabled in this organization.")
 
-    def test_channel_message_report(self) -> None:
+    def test_public_channel_message_report(self) -> None:
         reporting_user = self.example_user("hamlet")
         report_type = "harassment"
         description = "this is crime against food"
@@ -285,17 +285,45 @@ class ReportMessageTest(ZulipTestCase):
             submitted_report=reports.last(),
         )
 
-        # User can't report a message in channels they're not a part of.
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
+    def test_private_channel_message_report(self) -> None:
+        reporting_user = self.example_user("hamlet")
+        report_type = "harassment"
+        description = "this is crime against food"
         private_channel = self.make_stream("private channel", self.realm, invite_only=True)
-        self.subscribe(self.reported_user, private_channel.name, True)
-        self.reported_message_id = self.send_stream_message(
+        self.subscribe(reporting_user, private_channel.name)
+        self.subscribe(self.reported_user, private_channel.name)
+
+        reported_private_channel_message_id = self.send_stream_message(
             self.reported_user,
             private_channel.name,
-            topic_name="private discussions",
-            content="foo bar",
+            content="I dip fries in ice cream",
         )
-        private_message = self.get_last_message()
-        result = self.report_message(reporting_user, private_message.id, report_type, description)
+        reported_private_channel_message = self.get_last_message()
+        assert reported_private_channel_message.id == reported_private_channel_message_id
+
+        result = self.report_message(
+            reporting_user, reported_private_channel_message_id, report_type, description
+        )
+        self.assert_json_success(result)
+        reports = self.get_submitted_moderation_requests()
+        assert reports.count() == 1
+        self.check_channel_message_report_details(
+            report_description=description,
+            report_type=report_type,
+            reported_message=reported_private_channel_message,
+            reported_user=self.reported_user,
+            reporting_user=reporting_user,
+            submitted_report=reports.last(),
+        )
+
+        # User can't report a message in channels they're not a part of.
+        result = self.report_message(
+            self.example_user("ZOE"),
+            reported_private_channel_message_id,
+            report_type,
+            description,
+        )
         self.assert_json_error(result, msg="Invalid message(s)")
 
     def test_reported_channel_message_narrow_link(self) -> None:
