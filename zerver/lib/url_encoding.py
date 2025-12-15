@@ -153,8 +153,14 @@ def message_link_url(
 
 
 def stream_message_url(
-    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+    realm: Realm | None,
+    message: dict[str, Any],
+    *,
+    conversation_link: bool = False,
+    include_base_url: bool = True,
 ) -> str:
+    if include_base_url and realm is None:
+        raise ValueError("realm is required when include_base_url=True")
     if conversation_link:
         with_or_near = "with"
     else:
@@ -166,18 +172,13 @@ def stream_message_url(
     encoded_topic_name = encode_hash_component(topic_name)
     encoded_stream = encode_channel(stream_id, stream_name)
 
-    parts = [
-        realm.url,
-        "#narrow",
-        "channel",
-        encoded_stream,
-        "topic",
-        encoded_topic_name,
-        with_or_near,
-        message_id,
-    ]
-    full_url = "/".join(parts)
-    return full_url
+    narrow_fragments = (
+        f"#narrow/channel/{encoded_stream}/topic/{encoded_topic_name}/{with_or_near}/{message_id}"
+    )
+    if include_base_url is True:
+        assert realm is not None
+        return f"{realm.url}/{narrow_fragments}"
+    return narrow_fragments
 
 
 def pm_message_url(
