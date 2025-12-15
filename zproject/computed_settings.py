@@ -353,7 +353,6 @@ DATABASES: dict[str, dict[str, Any]] = {
         "PASSWORD": "",
         # Host = '' => connect to localhost by default
         "HOST": "",
-        "SCHEMA": "zulip",
         "CONN_MAX_AGE": 600,
         "OPTIONS": {
             "connection_factory": TimeTrackingConnection,
