@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 448**
+
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Users have access to a channel's email address only if they have permission
+  to post messages in the channel.
+
 **Feature level 447**
 
 * `PATCH /bots/{bot_id}`: Added `short_name` parameter to support updating bot's email.

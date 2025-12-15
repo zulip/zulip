@@ -23034,7 +23034,14 @@ paths:
       description: |
         Get email address of a channel.
 
-        **Changes**: New in Zulip 8.0 (feature level 226).
+        Note that only users with permission to post messages in the channel
+        can access the channel's email address.
+
+        **Changes**: Prior to Zulip 12.0 (feature level 448), users without
+        permission to post messages in the channel could access the channel's email
+        if they had metadata access.
+
+        New in Zulip 8.0 (feature level 226).
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
         - name: sender_id
