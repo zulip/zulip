@@ -1195,18 +1195,6 @@ button {
     border: none;
 }
 
-.portico-landing.why-page .main .slack-image {
-    width: 500px;
-}
-
-.portico-landing.why-page .main .zulip-topics-image {
-    width: 300px;
-}
-
-.portico-landing.why-page .main .zulip-reply-later-image {
-    width: 600px;
-}
-
 .portico-landing.why-page .photo-description {
     position: relative;
     top: 10px; /* Place in padding gap below photo */
