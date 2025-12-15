@@ -2723,7 +2723,13 @@ button {
         }
 
         .feature-icon img {
-            width: 100%;
+            width: auto;
+            height: 300px;
+
+            @media (width > 768px) {
+                width: 300px;
+                height: auto;
+            }
         }
     }
 
@@ -2887,9 +2893,4 @@ button {
     @media (width <= 768px) {
         font-size: 2em !important;
     }
-}
-
-.zulip-cloud-page .man-mobile-image {
-    width: auto;
-    height: 300px;
 }
