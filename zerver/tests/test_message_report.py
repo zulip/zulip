@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.test import override_settings
+from django_stubs_ext import QuerySetAny
 from typing_extensions import Any, override
 
 from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
@@ -10,7 +11,6 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.topic_link_util import (
     get_message_link_syntax,
     will_produce_broken_stream_topic_link,
@@ -53,6 +53,51 @@ class ReportMessageTest(ZulipTestCase):
         self.reported_message = self.get_last_message()
         assert self.reported_message.id == self.reported_message_id
 
+    def check_channel_message_report_details(
+        self,
+        report_description: str,
+        report_type: str,
+        reported_message: Message,
+        reported_user: UserProfile,
+        reporting_user: UserProfile,
+        submitted_report: Message | None,
+    ) -> None:
+        assert submitted_report is not None
+        reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
+        reported_user_mention = silent_mention_syntax_for_user(reported_user)
+
+        channel_name = reported_message.recipient.label()
+        channel_id = reported_message.recipient.type_id
+        topic_name = reported_message.topic_name()
+        channel_message_link = get_message_link_syntax(
+            channel_id, channel_name, topic_name, reported_message.id
+        )
+
+        message_sent_to = (
+            f"{reporting_user_mention} reported a message sent by {reported_user_mention}."
+        )
+        expected_message = """
+{message_sent_to}
+```quote
+**{report_type}**. {description}
+```
+
+{fence} spoiler **Original message at {channel_message_link}**
+{reported_message}
+{fence}
+""".format(
+            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
+            description=report_description,
+            channel_message_link=channel_message_link,
+            message_sent_to=message_sent_to,
+            reported_message=reported_message.content,
+            fence=get_unused_fence(reported_message.content),
+        )
+
+        self.assertEqual(submitted_report.content, expected_message.strip())
+        expected_report_topic = f"{reported_user.full_name}'s moderation requests"
+        self.assertEqual(submitted_report.topic_name(), expected_report_topic)
+
     def report_message(
         self,
         user_profile: UserProfile,
@@ -65,18 +110,14 @@ class ReportMessageTest(ZulipTestCase):
             report_info["description"] = description
         return self.api_post(user_profile, f"/api/v1/messages/{msg_id}/report", report_info)
 
-    def get_submitted_moderation_requests(self) -> list[dict[str, Any]]:
+    def get_submitted_moderation_requests(self) -> QuerySetAny[Message]:
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
 
-        return (
-            Message.objects.filter(
-                realm_id=self.realm.id,
-                sender_id=notification_bot.id,
-                recipient=self.moderation_request_channel.recipient,
-            )
-            .order_by("-id")
-            .values(*["id", "content", DB_TOPIC_NAME])
-        )
+        return Message.objects.filter(
+            realm_id=self.realm.id,
+            sender_id=notification_bot.id,
+            recipient=self.moderation_request_channel.recipient,
+        ).order_by("-id")
 
     def test_disabled_moderation_request_feature(self) -> None:
         # Disable moderation request feature
@@ -96,44 +137,20 @@ class ReportMessageTest(ZulipTestCase):
         report_type = "harassment"
         description = "this is crime against food"
 
-        reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
-        reported_user_mention = silent_mention_syntax_for_user(self.reported_user)
-        channel_name = self.reported_message.recipient.label()
-        channel_id = self.reported_message.recipient.type_id
-        topic_name = self.reported_message.topic_name()
-        channel_message_link = get_message_link_syntax(
-            channel_id, channel_name, topic_name, self.reported_message_id
-        )
-        message_sent_to = (
-            f"{reporting_user_mention} reported a message sent by {reported_user_mention}."
-        )
-        expected_message = """
-{message_sent_to}
-```quote
-**{report_type}**. {description}
-```
-
-{fence} spoiler **Original message at {channel_message_link}**
-{reported_message}
-{fence}
-""".format(
-            report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
-            description=description,
-            channel_message_link=channel_message_link,
-            message_sent_to=message_sent_to,
-            reported_message=self.reported_message.content,
-            fence=get_unused_fence(self.reported_message.content),
-        )
-
         result = self.report_message(
             reporting_user, self.reported_message_id, report_type, description
         )
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
-        expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
-        self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
+        assert reports.count() == 1
+        self.check_channel_message_report_details(
+            report_description=description,
+            report_type=report_type,
+            reported_message=self.reported_message,
+            reported_user=self.reported_user,
+            reporting_user=reporting_user,
+            submitted_report=reports.last(),
+        )
 
         # User can report messages in public channels they're not subscribed
         # to.
@@ -143,10 +160,15 @@ class ReportMessageTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 2
-        self.assertEqual(reports[0]["content"], expected_message.strip())
-        expected_report_topic = f"{self.reported_user.full_name}'s moderation requests"
-        self.assertEqual(reports[0][DB_TOPIC_NAME], expected_report_topic)
+        assert reports.count() == 2
+        self.check_channel_message_report_details(
+            report_description=description,
+            report_type=report_type,
+            reported_message=self.reported_message,
+            reported_user=self.reported_user,
+            reporting_user=reporting_user,
+            submitted_report=reports.last(),
+        )
 
         # User can't report a message in channels they're not a part of.
         private_channel = self.make_stream("private channel", self.realm, invite_only=True)
@@ -193,8 +215,10 @@ class ReportMessageTest(ZulipTestCase):
             message_id,
         )
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertIn(expected_message_link_syntax, reports[0]["content"])
+        assert reports.count() == 1
+        report = reports.last()
+        assert report is not None
+        self.assertIn(expected_message_link_syntax, report.content)
 
     def test_dm_report(self) -> None:
         # Send a DM to be reported
@@ -244,8 +268,10 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        assert reports.count() == 1
+        report = reports.last()
+        assert report is not None
+        self.assertEqual(expected_message.strip(), report.content)
 
         # User can't report DM they're not a part of.
         ZOE = self.example_user("ZOE")
@@ -296,8 +322,10 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        assert reports.count() == 1
+        report = reports.last()
+        assert report is not None
+        self.assertEqual(expected_message.strip(), report.content)
 
     def test_reporting_own_dm_to_other(self) -> None:
         reported_dm_id = self.send_personal_message(
@@ -343,8 +371,10 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        assert reports.count() == 1
+        report = reports.last()
+        assert report is not None
+        self.assertEqual(expected_message.strip(), report.content)
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_message_report_using_direct_message_group(self) -> None:
@@ -400,8 +430,9 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_dm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        report = reports.last()
+        assert report is not None
+        self.assertEqual(expected_message.strip(), report.content)
 
         # User can't report DM they're not a part of.
         ZOE = self.example_user("ZOE")
@@ -456,8 +487,10 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_gdm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        assert reports.count() == 1
+        report = reports.last()
+        assert report is not None
+        self.assertEqual(expected_message.strip(), report.content)
 
         # User can't report group direct messages they're not a part of.
         ZOE = self.example_user("ZOE")
@@ -511,8 +544,10 @@ class ReportMessageTest(ZulipTestCase):
         result = self.report_message(reporting_user, reported_gdm_id, report_type, description)
         self.assert_json_success(result)
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertEqual(reports[0]["content"], expected_message.strip())
+        assert reports.count() == 1
+        report = reports.last()
+        assert report is not None
+        self.assertEqual(expected_message.strip(), report.content)
 
     def test_truncate_reported_message(self) -> None:
         large_message = "." * (MAX_REPORT_MESSAGE_SNIPPET_LENGTH + 1)
@@ -531,13 +566,15 @@ class ReportMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         reports = self.get_submitted_moderation_requests()
-        assert len(reports) == 1
-        self.assertNotIn(large_message, reports[0]["content"])
+        assert reports.count() == 1
+        report = reports.last()
+        assert report is not None
+        self.assertNotIn(large_message, report.content)
 
         expected_truncated_message = truncate_content(
             large_message, MAX_REPORT_MESSAGE_SNIPPET_LENGTH, "\n[message truncated]"
         )
-        self.assertIn(expected_truncated_message, reports[0]["content"])
+        self.assertIn(expected_truncated_message, report.content)
 
     def test_other_report_type_with_no_description(self) -> None:
         result = self.report_message(self.hamlet, self.reported_message_id, report_type="other")
