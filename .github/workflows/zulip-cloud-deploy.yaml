@@ -75,6 +75,7 @@ jobs:
     needs: build-messages
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix:
         filename: ${{ fromJson(needs.build-messages.outputs.filenames) }}
     if: ${{ success() && github.repository == 'zulip/zulip' }}
