@@ -103,7 +103,7 @@ class ZulipMessageHandler(MessageHandler):
             logger.warning(
                 "Rejecting a MAIL FROM: %s to realm: %s via %s - rate limited.",
                 envelope.mail_from,
-                recipient_realm.name,
+                recipient_realm.string_id,
                 str(session.peer),
             )
             return "550 4.7.0 Rate-limited due to too many emails on this realm."
