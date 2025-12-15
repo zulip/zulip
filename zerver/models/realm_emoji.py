@@ -85,13 +85,22 @@ def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInf
         assert realm_emoji.file_name is not None
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
 
+        # Construct the still_url: first try with still=True
+        still_url = None
+        if realm_emoji.is_animated:
+            still_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id, still=True)
+
+        # Fallback: if still_url is not defined (old emojis), use source_url
+        if still_url is None:
+            still_url = emoji_url
+
         emoji_dict: EmojiInfo = dict(
             id=str(realm_emoji.id),
             name=realm_emoji.name,
             source_url=emoji_url,
             deactivated=realm_emoji.deactivated,
             author_id=author_id,
-            still_url=None,
+            still_url=still_url,
         )
 
         if realm_emoji.is_animated:

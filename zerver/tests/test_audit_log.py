@@ -83,7 +83,7 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.users import do_change_is_imported_stub, do_change_user_role, do_deactivate_user
-from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
+from zerver.lib.emoji import get_emoji_url
 from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
@@ -1176,15 +1176,17 @@ class TestRealmAuditLog(ZulipTestCase):
                 content_type="image/png",
             )
 
+        # Use the actual file_name assigned during emoji creation
+        if realm_emoji.file_name is None:
+            raise AssertionError("Emoji file_name must be set after upload")
+        emoji_url = get_emoji_url(realm_emoji.file_name, user.realm_id)
         added_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(
-                get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
-            ),
+            source_url=emoji_url,
             deactivated=False,
             author_id=user.id,
-            still_url=None,
+            still_url=emoji_url,
         )
         realm_emoji_dict[str(realm_emoji.id)] = added_emoji
         expected_extra_data = {
@@ -1209,12 +1211,10 @@ class TestRealmAuditLog(ZulipTestCase):
         deactivated_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(
-                get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
-            ),
+            source_url=emoji_url,
             deactivated=True,
             author_id=user.id,
-            still_url=None,
+            still_url=emoji_url,
         )
         realm_emoji_dict[str(realm_emoji.id)] = deactivated_emoji
 
