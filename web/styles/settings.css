@@ -979,6 +979,16 @@ input[type="checkbox"] {
     vertical-align: middle;
 }
 
+.emoji-override-warning {
+    vertical-align: middle;
+    margin-left: 3px;
+    opacity: 0.7;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
 .add-new-linkifier-box,
 .add-new-playground-box {
     & button {
