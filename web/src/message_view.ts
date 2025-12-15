@@ -836,10 +836,11 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                             trigger: "old_unreads_missing",
                         };
                         show(terms, opts);
+                        const new_message_list_id = message_lists.current?.id;
 
                         const on_jump_to_first_unread = (): void => {
                             // This is a no-op if the user has already switched narrow.
-                            if (msg_list.id !== message_lists.current?.id) {
+                            if (new_message_list_id !== message_lists.current?.id) {
                                 return;
                             }
 
