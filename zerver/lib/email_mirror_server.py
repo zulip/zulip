@@ -100,7 +100,7 @@ class ZulipMessageHandler(MessageHandler):
             recipient_realm = await sync_to_async(
                 lambda a: decode_stream_email_address(a)[0].realm
             )(address)
-            logger.warning(
+            logger.info(
                 "Rejecting a MAIL FROM: %s to realm: %s via %s - rate limited.",
                 envelope.mail_from,
                 recipient_realm.string_id,
