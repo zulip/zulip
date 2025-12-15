@@ -56,7 +56,7 @@ jobs:
           mkdir closed-by-commits-output
           ./tools/closed-by-commits "$BASE" "$HEAD" \
             | perl -ple 'undef $/;s/\n\n/\x00/g' \
-            | split -t '\0' -C 5000 -d - closed-by-commits-output/message-
+            | split -t '\0' -C 8000 -d - closed-by-commits-output/message-
           perl -pi -e 's/\00/\n\n/g' closed-by-commits-output/message-*
 
       - name: Upload messages as artifacts
