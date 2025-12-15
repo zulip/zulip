@@ -120,6 +120,12 @@ class ZulipMessageHandler(MessageHandler):
     def handle_message(self, message: email.message.Message) -> None:
         msg_base64 = base64.b64encode(bytes(message))
 
+        logger.info(
+            "Received email to %s, from %s via %s",
+            message["X-RcptTo"],
+            message["X-MailFrom"],
+            message["X-Peer"],
+        )
         for address in message["X-RcptTo"].split(", "):
             if address == "postmaster":
                 send_to_postmaster(message)
