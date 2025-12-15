@@ -21,6 +21,7 @@ import * as people from "./people.ts";
 import {update_elements} from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import {process_submessages} from "./submessage.ts";
 import * as ui_report from "./ui_report.ts";
 import {toggle_user_card_popover_for_message} from "./user_card_popover.ts";
@@ -82,6 +83,7 @@ function get_message_container_for_preview(message: Message): MessageContainer {
         status_message: "",
         timestr: get_timestr(message),
         want_date_divider: false,
+        want_subscription_status_divider: false,
     };
     const unused_variables = {
         date_divider_html: undefined,
@@ -119,6 +121,15 @@ function post_process_message_preview($row: JQuery): void {
 }
 
 export function show_message_report_modal(message: Message): void {
+    let invite_only;
+    let is_web_public;
+    let is_archived;
+    if (message.is_stream) {
+        const stream_id = message.stream_id;
+        invite_only = stream_data.is_invite_only_by_stream_id(stream_id);
+        is_web_public = stream_data.is_web_public(stream_id);
+        is_archived = stream_data.is_stream_archived_by_id(stream_id);
+    }
     const message_preview_body_args = get_message_container_for_preview(message);
     const html_body = render_report_message_modal({
         recipient_row_data: get_message_group_for_message_preview(message),
@@ -126,6 +137,9 @@ export function show_message_report_modal(message: Message): void {
             ...message_preview_body_args,
             message_list_id: "",
         },
+        invite_only,
+        is_web_public,
+        is_archived,
     });
     let report_type_dropdown_widget: dropdown_widget.DropdownWidget;
     let $message_report_description: JQuery<HTMLTextAreaElement>;
