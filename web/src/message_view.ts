@@ -97,8 +97,12 @@ export function reset_ui_state(opts: {trigger?: string}): void {
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
 }
 
-export function changehash(newhash: string, trigger: string): void {
-    if (browser_history.state.changing_hash) {
+export function changehash(
+    newhash: string,
+    trigger: string,
+    remove_current_hash_from_history = false,
+): void {
+    if (browser_history.state.changing_hash || remove_current_hash_from_history) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
         if (trigger === "retarget message location") {
@@ -122,12 +126,16 @@ export function changehash(newhash: string, trigger: string): void {
     }
 }
 
-export function update_hash_to_match_filter(filter: Filter, trigger: string): void {
+export function update_hash_to_match_filter(
+    filter: Filter,
+    trigger: string,
+    remove_current_hash_from_history = false,
+): void {
     if (browser_history.state.changing_hash && trigger !== "retarget message location") {
         return;
     }
     const new_hash = hash_util.search_terms_to_hash(filter.terms());
-    changehash(new_hash, trigger);
+    changehash(new_hash, trigger, remove_current_hash_from_history);
 
     if (stream_list.is_zoomed_in()) {
         browser_history.update_current_history_state_data({show_more_topics: true});
@@ -244,7 +252,21 @@ function create_and_update_message_list(
     // the current message list as we are trying to emulate the `hashchange`
     // workflow we have which calls `message_view.show` after hash is updated.
     if (opts.change_hash) {
-        update_hash_to_match_filter(filter, opts.trigger ?? "unknown");
+        let remove_current_hash_from_history = false;
+        let trigger = opts.trigger ?? "unknown";
+        if (opts.trigger === "old_unreads_missing") {
+            // We are not navigating user to a different place but want to
+            // keep user at the same place but avoid marking messages as read.
+            // Assuming current narrow doesn't have a `near` term,
+            // we replace the current history entry with
+            // the new hash which has a `near` term.
+            assert(!narrow_state.filter()!.has_operator("near"));
+            assert(msg_list.data.filter.has_operator("near"));
+            remove_current_hash_from_history = true;
+            trigger = "retarget message location";
+        }
+
+        update_hash_to_match_filter(filter, trigger, remove_current_hash_from_history);
         opts.show_more_topics = browser_history.get_current_state_show_more_topics() ?? false;
     }
 
