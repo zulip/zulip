@@ -36,7 +36,8 @@ arguments:
 ```bash
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
-    --puppet-classes=zulip::profile::standalone_nodb,zulip::process_fts_updates
+    --puppet-classes=zulip::profile::standalone_nodb,zulip::process_fts_updates \
+    --postgresql-version=YOUR_SERVERS_POSTGRESQL_VERSION
 ```
 
 #### Step 2: Create the PostgreSQL database
@@ -76,14 +77,6 @@ follows:
 
 ```ini
 postgres_password = abcd1234
-```
-
-Set the remote server's PostgreSQL version in `/etc/zulip/zulip.conf`:
-
-```ini
-[postgresql]
-# Set this to match the version running on your remote PostgreSQL server
-version = 18
 ```
 
 Now complete the installation by running the following commands.
