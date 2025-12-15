@@ -1020,6 +1020,7 @@ button#register_auth_button_gitlab {
             }
 
             & textarea {
+                resize: vertical;
                 color: hsl(0deg 0% 33%);
                 vertical-align: middle;
                 background-color: hsl(0deg 0% 100%);
