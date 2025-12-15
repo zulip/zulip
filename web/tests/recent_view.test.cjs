@@ -198,6 +198,9 @@ mock_esm("../src/unread", {
 mock_esm("../src/resize", {
     update_recent_view: noop,
 });
+mock_esm("../src/popup_banners", {
+    close_found_missing_unreads_banner: noop,
+});
 const dropdown_widget = mock_esm("../src/dropdown_widget");
 dropdown_widget.DropdownWidget = function DropdownWidget() {
     this.setup = noop;
