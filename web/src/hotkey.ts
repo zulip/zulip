@@ -419,6 +419,14 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    if (giphy.is_popped_from_edit_message()) {
+        giphy.focus_current_edit_message();
+        // Hide after setting focus so that `edit_message_id` is
+        // still set in giphy.
+        giphy.hide_giphy_popover();
+        return true;
+    }
+
     if (popovers.any_active()) {
         popovers.hide_all();
         return true;
@@ -453,14 +461,6 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         // Emoji picker goes before compose so compose emoji picker is closed properly.
         if (emoji_picker.is_open()) {
             emoji_picker.hide_emoji_popover();
-            return true;
-        }
-
-        if (giphy.is_popped_from_edit_message()) {
-            giphy.focus_current_edit_message();
-            // Hide after setting focus so that `edit_message_id` is
-            // still set in giphy.
-            giphy.hide_giphy_popover();
             return true;
         }
 
