@@ -64,6 +64,15 @@ type TenorPayload = {
     q?: string;
 };
 
+export function is_popped_from_edit_message(): boolean {
+    return tenor_popover_instance !== undefined && edit_message_id !== undefined;
+}
+
+export function focus_current_edit_message(): void {
+    assert(edit_message_id !== undefined);
+    $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`).trigger("focus");
+}
+
 function get_base_payload(): TenorPayload {
     return {
         key: realm.tenor_api_key,
@@ -144,7 +153,7 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     }
 }
 
-function hide_tenor_popover(): boolean {
+export function hide_tenor_popover(): boolean {
     // Returns `true` if the popover was open.
     if (tenor_popover_instance) {
         tenor_popover_instance.destroy();

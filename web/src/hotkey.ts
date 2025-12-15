@@ -59,6 +59,7 @@ import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
+import * as tenor from "./tenor.ts";
 import * as topic_list from "./topic_list.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_card_popover from "./user_card_popover.ts";
@@ -424,6 +425,14 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         // Hide after setting focus so that `edit_message_id` is
         // still set in giphy.
         giphy.hide_giphy_popover();
+        return true;
+    }
+
+    if (tenor.is_popped_from_edit_message()) {
+        tenor.focus_current_edit_message();
+        // Hide after setting focus so that `edit_message_id` is
+        // still set in giphy.
+        tenor.hide_tenor_popover();
         return true;
     }
 
