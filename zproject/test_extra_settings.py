@@ -31,7 +31,6 @@ DATABASES["default"] = {
     "USER": "zulip_test",
     "PASSWORD": LOCAL_DATABASE_PASSWORD,
     "HOST": "localhost",
-    "SCHEMA": "zulip",
     "ENGINE": "django.db.backends.postgresql",
     "TEST_NAME": "django_zulip_tests",
     "OPTIONS": {
