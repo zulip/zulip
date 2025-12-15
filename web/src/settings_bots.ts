@@ -751,11 +751,24 @@ export function set_up_bots(): void {
         })();
     });
 
-    $("#admin-bot-list").on("click", ".generate-integration-url-button", (e) => {
-        const $row = $(e.target).closest(".user_row");
-        const bot_id = Number.parseInt($row.attr("data-user-id")!, 10);
-        const current_bot_data = bot_data.get(bot_id);
-        assert(current_bot_data !== undefined);
-        integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
-    });
+    $("#admin-bot-list").on(
+        "click",
+        ".generate-integration-url-button",
+        function (this: HTMLElement) {
+            const $button = $(this);
+            const $row = $button.closest(".user_row");
+            const bot_id = Number.parseInt($row.attr("data-user-id")!, 10);
+            void (async () => {
+                const api_key = await bot_helper.fetch_bot_api_key(
+                    bot_id,
+                    $row.closest(".bot-settings-section").find(".bot-list-error"),
+                    $button,
+                );
+                if (!api_key) {
+                    return;
+                }
+                integration_url_modal.show_generate_integration_url_modal(api_key);
+            })();
+        },
+    );
 }

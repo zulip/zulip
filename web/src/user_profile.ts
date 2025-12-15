@@ -44,6 +44,7 @@ import * as modals from "./modals.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -1111,14 +1112,31 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
         });
 
-        $("#bot-edit-form").on("click", ".generate_url_for_integration", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            assert(bot !== undefined);
-            const current_bot_data = bot_data.get(bot.user_id);
-            assert(current_bot_data !== undefined);
-            integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
-        });
+        $("#bot-edit-form").on(
+            "click",
+            ".generate_url_for_integration",
+            function (this: HTMLElement, e) {
+                e.preventDefault();
+                e.stopPropagation();
+                assert(bot !== undefined);
+                const $button = $(this);
+                void (async () => {
+                    const api_key = await bot_helper.fetch_bot_api_key(
+                        bot.user_id,
+                        $("#bot-edit-form-error"),
+                        $button,
+                    );
+                    if (!api_key) {
+                        scroll_util.scroll_element_into_container(
+                            $("#bot-edit-form-error"),
+                            $("#user-profile-modal .modal__body"),
+                        );
+                        return;
+                    }
+                    integration_url_modal.show_generate_integration_url_modal(api_key);
+                })();
+            },
+        );
 
         $("#bot-edit-form").on("click", ".show-api-key", (e) => {
             e.preventDefault();
