@@ -586,6 +586,17 @@ input.settings_text_input {
     }
 }
 
+.table-sortable-arrow {
+    display: inline-block;
+    transform: scaleY(-1);
+    opacity: 0;
+    transition: opacity 100ms ease-out;
+}
+
+.descend .table-sortable-arrow {
+    transform: scaleY(1);
+}
+
 .table-striped {
     table-layout: auto;
     border-collapse: separate;
@@ -617,19 +628,6 @@ input.settings_text_input {
         white-space: nowrap;
         color: inherit;
         word-break: normal;
-
-        .table-sortable-arrow {
-            /* Sub alignment works perfectly in this context,
-               where the table header is a text node. */
-            vertical-align: sub;
-            transform: rotate(180deg);
-            opacity: 0;
-            transition: opacity 100ms ease-out;
-        }
-
-        &.descend .table-sortable-arrow {
-            transform: rotate(0deg);
-        }
 
         &:not(.active)[data-sort]:hover .table-sortable-arrow {
             opacity: 0.3;

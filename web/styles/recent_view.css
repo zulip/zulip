@@ -412,17 +412,7 @@
         z-index: 1;
 
         .table-sortable-arrow {
-            /* Sub alignment works perfectly in this context,
-               where the table header is a text node. */
-            vertical-align: sub;
-            transform: rotate(180deg);
-            opacity: 0;
-            transition: opacity 100ms ease-out;
             color: var(--color-arrow-recent-view-table-thead-th);
-        }
-
-        &.descend .table-sortable-arrow {
-            transform: rotate(0deg);
         }
 
         &:not(.active)[data-sort]:hover .table-sortable-arrow {
