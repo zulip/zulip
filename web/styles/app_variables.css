@@ -503,10 +503,6 @@
     */
     --unread-marker-left: -1px;
 
-    /* Used by upload overlay to show compose box above it. */
-    --compose-default-z-index: 4;
-    --upload-overlay-z-index: 10000;
-    --compose-with-upload-overlay-z-index: 10001;
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
     allow elements like DM pills to stack without breaking out of their
@@ -731,6 +727,14 @@
     --color-selected-message-outline: light-dark(
         hsl(217deg 64% 59% / 60%),
         hsl(217deg 64% 59% / 70%)
+    );
+    --color-selected-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59%),
+        hsl(217deg 95% 59%)
+    );
+    --color-hovered-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59% / 50%),
+        hsl(217deg 95% 59% / 60%)
     );
     --color-message-list-border: light-dark(
         hsl(0deg 0% 0% / 16%),
@@ -2869,10 +2873,6 @@
     --color-box-shadow-input-focus: light-dark(
         color-mix(in oklch, hsl(228deg 10% 20%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
-    );
-    --color-border-settings-radio-input-parent: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 0% / 20%)
     );
 
     /* .main-view-banner colors */

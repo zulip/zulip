@@ -31,7 +31,7 @@ export function mobile_activate_section(): void {
 }
 
 function two_column_mode(): boolean {
-    return $("#settings_overlay_container").css("--single-column") === undefined;
+    return Number.parseInt($("#settings_content").css("--column-count"), 10) === 2;
 }
 
 function set_settings_header(key: string): void {

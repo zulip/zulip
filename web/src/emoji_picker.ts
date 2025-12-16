@@ -882,7 +882,8 @@ function register_click_handlers(): void {
         function (this: HTMLElement, e): void {
             e.preventDefault();
             e.stopPropagation();
-            toggle_emoji_popover(this, undefined, {placement: "bottom"});
+            const micromodal = $("#set-user-status-modal").closest(".modal__overlay")[0]!;
+            toggle_emoji_popover(this, undefined, {placement: "bottom", appendTo: micromodal});
             if (is_open()) {
                 // Because the emoji picker gets drawn on top of the user
                 // status modal, we need this hack to make clicking outside

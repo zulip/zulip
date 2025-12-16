@@ -68,7 +68,7 @@ jobs:
       HOME: /home/github/
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Create cache directories
         run: |
@@ -228,7 +228,7 @@ jobs:
         # Only upload coverage when both frontend and backend
         # tests are run.
         if: ${{ matrix.include_frontend_tests }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: var/coverage.xml,var/node-coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -236,7 +236,7 @@ jobs:
       - name: Store Puppeteer artifacts
         # Upload these on failure, as well
         if: ${{ always() && matrix.include_frontend_tests }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: puppeteer
           path: ./var/puppeteer

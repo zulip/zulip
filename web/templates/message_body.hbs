@@ -4,7 +4,7 @@
 <span class="message_sender">
     {{#if include_sender}}
         <span class="sender_info_hover sender_name" role="button" tabindex="0">
-            <span class="{{#unless is_hidden}}view_user_card_tooltip{{/unless}} sender_name_text" data-is-bot="{{sender_is_bot}}">
+            <span class="view_user_card_tooltip sender_name_text" data-is-bot="{{sender_is_bot}}">
                 {{> user_full_name name=msg/sender_full_name should_add_guest_user_indicator=should_add_guest_indicator_for_sender is_hidden=is_hidden}}
             </span>
             {{#unless status_message}}

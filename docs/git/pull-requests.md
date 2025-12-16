@@ -1,4 +1,4 @@
-# Create a pull request
+# Pull requests
 
 When you're ready for feedback, submit a pull request. Pull requests
 are a feature specific to GitHub. They provide a simple, web-based way

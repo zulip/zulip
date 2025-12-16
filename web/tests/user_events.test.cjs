@@ -15,6 +15,9 @@ const settings_account = mock_esm("../src/settings_account", {
     update_full_name() {},
     update_account_settings_display() {},
     update_role_text() {},
+    set_user_own_role_dropdown_value() {},
+    add_or_remove_owner_from_role_dropdown() {},
+    update_user_own_role_dropdown_state() {},
 });
 const settings_bots = mock_esm("../src/settings_bots");
 mock_esm("../src/settings_users", {

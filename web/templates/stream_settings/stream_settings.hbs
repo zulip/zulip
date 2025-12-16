@@ -89,27 +89,16 @@
                     {{> ../settings/settings_save_discard_widget section_name="channel-general-settings"}}
                 </div>
 
-                <div class="default-stream">
-                    {{> ../settings/settings_checkbox
-                      prefix="id_"
-                      setting_name="is_default_stream"
-                      is_checked=check_default_stream
-                      label=(t "Default channel for new users")
-                      help_link="/help/set-default-channels-for-new-users"
-                      }}
-                </div>
-
                 {{> channel_folder .
                   is_stream_edit=true
                   channel_folder_widget_name="folder_id"
                   }}
 
                 <div class="input-group stream-email-box">
-                    <label for="copy_stream_email_button" class="title inline-block">Email address</label>
-                    <p class="field-hint">
-                        {{t "You can use email to send messages to Zulip channels."}}
+                    <label for="copy_stream_email_button" class="settings-field-label">
+                        {{t "Email address" }}
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
-                    </p>
+                    </label>
                     <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
                         {{> ../components/action_button
                           label=(t "Generate email address")
@@ -198,6 +187,7 @@
             {{> channel_permissions .
               prefix="id_"
               is_stream_edit=true
+              history_public_to_subscribers=sub.history_public_to_subscribers
               }}
         </div>
     </div>

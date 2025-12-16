@@ -35,7 +35,7 @@ from zerver.lib import cache
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, Query, TimeTrackingCursor
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
@@ -571,7 +571,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # This endpoint only returns 500 and 404 codes, so it doesn't get picked up
             # by find_pattern above and therefore needs to be exempt.
             "self-hosted-billing/not-configured/",
-            *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
+            *(webhook.url for webhook in INCOMING_WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
         untested_patterns -= exempt_patterns

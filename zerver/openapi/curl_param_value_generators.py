@@ -8,7 +8,7 @@
 import re
 from collections.abc import Callable
 from functools import wraps
-from typing import Any
+from typing import Any, cast
 
 from django.utils.timezone import now as timezone_now
 
@@ -112,6 +112,7 @@ def fetch_api_key() -> dict[str, object]:
         "/messages/{message_id}/history:get",
         "/messages/{message_id}:patch",
         "/messages/{message_id}:delete",
+        "/messages/{message_id}/reactions:post",
     ]
 )
 def iago_message_id() -> dict[str, object]:
@@ -126,9 +127,9 @@ def iago_message_id() -> dict[str, object]:
 def add_emoji_to_message() -> dict[str, object]:
     user_profile = helpers.example_user("iago")
 
-    # The message ID here is hardcoded based on the corresponding value
-    # for the example message IDs we use in zulip.yaml.
-    message_id = 48
+    # Get a message ID by calling the message generator
+    message_id = cast(int, iago_message_id()["message_id"])
+
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
@@ -136,7 +137,9 @@ def add_emoji_to_message() -> dict[str, object]:
     message = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED).get(id=message_id)
     do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
 
-    return {}
+    return {
+        "message_id": message_id,
+    }
 
 
 @openapi_param_value_generator(["/messages/flags:post"])

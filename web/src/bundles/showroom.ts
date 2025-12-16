@@ -1,4 +1,4 @@
-import "./portico.ts";
+import "./legacy_portico_bundle.ts";
 import "../templates.ts";
 import "../inputs.ts";
 import "../portico/showroom.ts";

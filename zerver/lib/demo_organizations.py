@@ -1,7 +1,19 @@
+import os
+from functools import lru_cache
+
+import orjson
+from django.conf import settings
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models.realms import Realm
+
+
+@lru_cache(None)
+def get_demo_organization_wordlists() -> dict[str, list[str]]:
+    path = os.path.join(settings.DEPLOY_ROOT, "zerver/lib", "demo_organization_words.json")
+    with open(path, "rb") as reader:
+        return orjson.loads(reader.read())
 
 
 def demo_organization_owner_email_exists(realm: Realm) -> bool:

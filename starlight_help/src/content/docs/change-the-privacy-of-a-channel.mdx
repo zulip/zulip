@@ -7,12 +7,11 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
-import AutomatedNoticeChannelEvent from "../include/_AutomatedNoticeChannelEvent.mdx";
 import ChannelPrivacyTypes from "../include/_ChannelPrivacyTypes.mdx";
-import ChannelSettingsGeneralTabTip from "../include/_ChannelSettingsGeneralTabTip.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import ContentAccessDefinition from "../include/_ContentAccessDefinition.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
-import SelectChannelViewGeneral from "../include/_SelectChannelViewGeneral.mdx";
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
 <ChannelPrivacyTypes />
 
@@ -35,14 +34,14 @@ web-public if they have content access to it:
 
       1. Select a channel.
 
-      <SelectChannelViewGeneral />
+      <SelectChannelViewPermissions />
 
-      1. Under **Channel permissions**, configure **Who can access the channel**.
+      1. Under **Subscription permissions**, configure **Who can access this channel**.
 
       <SaveChanges />
     </FlattenedSteps>
 
-    <ChannelSettingsGeneralTabTip />
+    <ChannelSettingsNavbarTip />
   </TabItem>
 
   <TabItem label="Mobile">
@@ -56,10 +55,9 @@ web-public if they have content access to it:
   </TabItem>
 </Tabs>
 
-<AutomatedNoticeChannelEvent />
-
 ## Related articles
 
 * [Channel permissions](/help/channel-permissions)
 * [Channel posting policy](/help/channel-posting-policy)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
+* [Configure automated notices for channel events](/help/configure-automated-notices#channel-events)

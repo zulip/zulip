@@ -1,3 +1,5 @@
+// See the Zulip URL spec at https://zulip.com/api/zulip-urls
+//
 // Keep this synchronized with zerver/lib/topic_link_util.py
 
 import assert from "minimalistic-assert";

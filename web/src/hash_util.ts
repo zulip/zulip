@@ -1,3 +1,5 @@
+// See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 

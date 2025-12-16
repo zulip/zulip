@@ -115,11 +115,13 @@ def format_none_as_zero(value: int | None) -> int:
         return 0
 
 
-def user_activity_link(email: str, user_profile_id: int) -> Markup:
+def user_activity_link(link_text: str, user_profile_id: int) -> Markup:
     from corporate.views.user_activity import get_user_activity
 
     url = reverse(get_user_activity, kwargs=dict(user_profile_id=user_profile_id))
-    return Markup('<a href="{url}">{email}</a>').format(url=url, email=email)
+    if link_text == "":
+        return Markup('<a href="{url}"><i class="fa fa-user-circle"></i></a>').format(url=url)
+    return Markup('<a href="{url}">{link_text}</a>').format(url=url, link_text=link_text)
 
 
 def realm_activity_link(realm_str: str) -> Markup:

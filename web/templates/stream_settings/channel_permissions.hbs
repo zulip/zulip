@@ -8,7 +8,18 @@
 
     {{#if is_stream_edit}}
         <div class="stream-permissions-warning-banner"></div>
-        {{> channel_type .}}
+        {{> channel_type .
+          channel_privacy_widget_name="channel_privacy" }}
+
+        <div class="default-stream">
+            {{> ../settings/settings_checkbox
+              prefix=prefix
+              setting_name="is_default_stream"
+              is_checked=check_default_stream
+              label=(t "Default channel for new users")
+              help_link="/help/set-default-channels-for-new-users"
+              }}
+        </div>
     {{/if}}
 
     {{> ../settings/group_setting_value_pill_input
@@ -40,6 +51,12 @@
       label=group_setting_labels.can_send_message_group
       prefix=prefix
       help_link="/help/channel-posting-policy" }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_create_topic_group"
+      label=group_setting_labels.can_create_topic_group
+      prefix=prefix
+      help_link="/help/configure-who-can-start-new-topics" }}
 
     <div class="input-group">
         <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>

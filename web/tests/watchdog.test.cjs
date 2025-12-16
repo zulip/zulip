@@ -44,7 +44,7 @@ run_test("basics", () => {
     assert.equal(num_times_called_back, 0);
 
     // Simulate machine going to sleep.
-    advance_secs(21);
+    advance_secs(81);
     checker();
     assert.equal(num_times_called_back, 1);
 
@@ -56,13 +56,13 @@ run_test("basics", () => {
     assert.equal(num_times_called_back, 0);
 
     // Simulate another suspension.
-    advance_secs(21);
+    advance_secs(100);
     watchdog.check_for_unsuspend();
     assert.equal(num_times_called_back, 1);
 
     // Error while executing callback
     num_times_called_back = 0;
-    advance_secs(21);
+    advance_secs(100);
     watchdog.on_unsuspend(() => {
         num_times_called_back += 1;
         throw new Error("Some error while executing");

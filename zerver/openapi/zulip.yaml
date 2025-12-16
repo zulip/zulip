@@ -5081,9 +5081,13 @@ paths:
                                     giphy_rating:
                                       type: integer
                                       description: |
-                                        Maximum rating of the GIFs that will be retrieved from GIPHY.
+                                        Maximum rating of the GIFs that will be retrieved by the
+                                        GIPHY and Tenor integrations in this organization.
 
-                                        **Changes**: New in Zulip 4.0 (feature level 55).
+                                        **Changes**: In Zulip 12.0 (feature level 442), is now used for
+                                        both the Tenor and GIPHY integrations.
+
+                                        New in Zulip 4.0 (feature level 55).
                                     icon_source:
                                       type: string
                                       description: |
@@ -12090,6 +12094,8 @@ paths:
                   $ref: "#/components/schemas/CanSubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
+                can_create_topic_group:
+                  $ref: "#/components/schemas/CanCreateTopicGroup"
                 folder_id:
                   description: |
                     This parameter adds the newly created channel to the specified
@@ -12140,6 +12146,8 @@ paths:
               can_subscribe_group:
                 contentType: application/json
               can_resolve_topics_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
               folder_id:
                 contentType: application/json
@@ -13380,6 +13388,51 @@ paths:
                           Whether the user is subscribed to the channel.
                     example:
                       {"msg": "", "result": "success", "is_subscribed": false}
+  /users/{user_id}/channels:
+    get:
+      operationId: get-user-channels
+      summary: Get a user's subscribed channels
+      tags: ["channels"]
+      description: |
+        Gets the list of channels that the target user is subscribed to.
+
+        The [channel security model](/help/channel-permissions) means only those
+        subscribed channels to which the acting user has metadata access are
+        returned.
+
+        For organization administrators, this is guaranteed to be all channels
+        the target user is subscribed to, since organization administrators
+        implicitly have metadata access to all channels.
+
+        **Changes**: New in Zulip 12.0 (feature level 440).
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      subscribed_channel_ids:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          IDs of the channels that the target user is subscribed to
+                          (limited by the acting user's permissions to view subscribers).
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "subscribed_channel_ids": [3, 5, 10],
+                      }
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload-custom-emoji
@@ -17335,6 +17388,7 @@ paths:
                                 can_send_message_group: {}
                                 can_subscribe_group: {}
                                 can_resolve_topics_group: {}
+                                can_create_topic_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -18245,6 +18299,23 @@ paths:
                           before using this API key.
 
                           **Changes**: Added in Zulip 4.0 (feature level 47).
+                      tenor_api_key:
+                        type: string
+                        description: |
+                          Present if `tenor` is present in `fetch_event_types`.
+
+                          Tenor API keys are meant to be sent to the clients, see the
+                          examples in the [Tenor Endpoints documentation](https://developers.google.com/tenor/guides/endpoints).
+                          Please don't use our API key for an app unrelated to Zulip.
+
+                          Developers of clients are recommended to use their Zulip client string,
+                          like `ZulipFlutter`, as the `client` in the Tenor API to differentiate
+                          across clients as per the [Tenor Endpoints documentation](https://developers.google.com/tenor/guides/endpoints).
+
+                          Developers of clients should also read the
+                          [Tenor API TOS](https://developers.google.com/tenor/guides/api-terms).
+
+                          **Changes**: New in Zulip 12.0 (feature level 442).
                       push_devices:
                         type: object
                         description: |
@@ -19029,9 +19100,13 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The configured GIPHY rating for the organization.
+                          Maximum rating of the GIFs that will be retrieved by the
+                          GIPHY and Tenor integrations in this organization.
 
-                          **Changes**: New in Zulip 4.0 (feature level 55).
+                          **Changes**: In Zulip 12.0 (feature level 442), is now used for
+                          both the Tenor and GIPHY integrations.
+
+                          New in Zulip 4.0 (feature level 55).
                       realm_waiting_period_threshold:
                         type: integer
                         description: |
@@ -19625,17 +19700,23 @@ paths:
                           This Zulip server's configured minimum `zxcvbn` minimum guesses.
                           Necessary for password change UI to show whether the password
                           will be accepted.
-                      giphy_rating_options:
+                      gif_rating_options:
                         type: object
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Dictionary where each entry describes a valid rating
-                          that is configured on this server and could be selected by an
+                          Dictionary where each entry describes a valid rating configuration
+                          that is available on this server and could be selected by an
                           organization administrator.
 
                           Useful for administrative settings UI that allows changing the
                           allowed rating of GIFs.
+
+                          **Changes**: New in Zulip 12.0 (feature level 442). Previously,
+                          this was called `giphy_rating_options` and only supported the
+                          original GIPHY gif picker integration.
+
+                          `giphy_rating_options` was new in Zulip 4.0 (feature level 55).
                         additionalProperties:
                           description: |
                             `{rating_name}`: Dictionary containing the details of the
@@ -22189,6 +22270,7 @@ paths:
                                 can_send_message_group: {}
                                 can_resolve_topics_group: {}
                                 can_subscribe_group: {}
+                                can_create_topic_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -22476,9 +22558,14 @@ paths:
                     It's an error for this parameter to be false for a public or
                     web-public channel and when is_private is false.
 
+                    This can only be `false` if `can_create_topic_group` for the channel
+                    is the `role:everyone` [system group][system-groups].
+
                     **Changes**: Before Zulip 6.0 (feature level 136), `history_public_to_subscribers`
                     was silently ignored unless the request also contained either `is_private` or
                     `is_web_public`.
+
+                    [system-groups]: /api/group-setting-values#system-groups
                   type: boolean
                   example: false
                 is_default_stream:
@@ -22726,6 +22813,9 @@ paths:
                         Note that a user must have metadata access to a channel and permission
                         to administer the channel in order to modify this setting.
 
+                        Note that using this permission to send a message to a new topic requires
+                        also having permission to create new topics in the channel.
+
                         **Changes**: New in Zulip 10.0 (feature level 333). Previously
                         `stream_post_policy` field used to control the permission to
                         post in the channel.
@@ -22781,6 +22871,30 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_create_topic_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to create new topics in this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        Note that using this permission requires also having permission to send
+                        messages in the channel.
+
+                        For [private channels with protected history](/help/channel-permissions#private-channels),
+                        this setting can only be set to `role:everyone` [system group][system-groups].
+
+                        **Changes**: New in Zulip 12.0 (feature level 441). Previously, if you
+                        could send messages in a channel, you could create topics in the channel.
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+                        [system-groups]: /api/group-setting-values#system-groups
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
 
             encoding:
               is_private:
@@ -22812,6 +22926,8 @@ paths:
               can_subscribe_group:
                 contentType: application/json
               can_resolve_topics_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
       responses:
         "200":
@@ -23364,6 +23480,8 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 can_add_subscribers_group:
                   $ref: "#/components/schemas/ChannelCanAddSubscribersGroup"
+                can_create_topic_group:
+                  $ref: "#/components/schemas/CanCreateTopicGroup"
                 can_delete_any_message_group:
                   $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
                 can_delete_own_message_group:
@@ -23389,6 +23507,8 @@ paths:
               announce:
                 contentType: application/json
               can_add_subscribers_group:
+                contentType: application/json
+              can_create_topic_group:
                 contentType: application/json
               can_administer_channel_group:
                 contentType: application/json
@@ -25091,6 +25211,7 @@ components:
             can_send_message_group: {}
             can_subscribe_group: {}
             can_resolve_topics_group: {}
+            can_create_topic_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
               type: integer
@@ -25300,6 +25421,8 @@ components:
           $ref: "#/components/schemas/CanSubscribeGroup"
         can_resolve_topics_group:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
+        can_create_topic_group:
+          $ref: "#/components/schemas/CanCreateTopicGroup"
         subscriber_count:
           type: number
           description: |
@@ -26455,6 +26578,8 @@ components:
           $ref: "#/components/schemas/CanSubscribeGroup"
         can_resolve_topics_group:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
+        can_create_topic_group:
+          $ref: "#/components/schemas/CanCreateTopicGroup"
         is_archived:
           type: boolean
           description: |
@@ -28634,6 +28759,9 @@ components:
             Note that a user must have metadata access to a channel and permission
             to administer the channel in order to modify this setting.
 
+            Note that using this permission to send a message to a new topic requires
+            also having permission to create new topics in the channel.
+
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to
             post in the channel.
@@ -28671,6 +28799,26 @@ components:
             **Changes**: New in Zulip 11.0 (feature level 402).
 
             [setting-values]: /api/group-setting-values
+    CanCreateTopicGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to create a new topic in this channel.
+
+            Note that using this permission requires also having permission to
+            send messages in the channel.
+
+            Note that this must be the `role:everyone` [system group][system-groups]
+            for [private channels with protected history][private-channels].
+
+            **Changes**: New in Zulip 12.0 (feature level 441). Previously,
+            if you could send messages in a channel, you could create topics in
+            the channel.
+
+            [setting-values]: /api/group-setting-values
+            [private-channels]: /help/channel-permissions/#private-channels
+            [system-groups]: /api/group-setting-values#system-groups
     LinkifierPattern:
       description: |
         The [Python regular

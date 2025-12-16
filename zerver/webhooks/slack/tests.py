@@ -14,9 +14,10 @@ EXPECTED_TOPIC = "Message from Slack"
 MESSAGE_WITH_NORMAL_TEXT = "Hello, this is a normal text message"
 USER = "John Doe"
 CHANNEL = "general"
+API_CHANNEL_NAME = "Slack general"
 EXPECTED_MESSAGE = "**{user}**: {message}"
 TOPIC_WITH_CHANNEL = "channel: {channel}"
-
+DEFAULT_TOPIC_NAME = "Message from Slack"
 LEGACY_USER = "slack_user"
 
 ParamT = ParamSpec("ParamT")
@@ -28,6 +29,7 @@ def mock_slack_api_calls(
     @wraps(test_func)
     @responses.activate
     def _wrapped(self: "SlackWebhookTests", /, *args: ParamT.args, **kwargs: ParamT.kwargs) -> None:
+        self.make_stream(API_CHANNEL_NAME)
         responses.add(
             responses.GET,
             "https://slack.com/api/users.info",
@@ -74,7 +76,7 @@ class SlackWebhookTests(WebhookTestCase):
     def test_slack_channels_map_to_topics_true(self) -> None:
         self.url = self.build_webhook_url(channels_map_to_topics="1")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
-        expected_topic_name = TOPIC_WITH_CHANNEL.format(channel=CHANNEL)
+        expected_topic_name = TOPIC_WITH_CHANNEL.format(channel=API_CHANNEL_NAME)
         self.check_webhook(
             "message_with_normal_text",
             expected_topic_name,
@@ -96,7 +98,7 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_slack_channels_map_to_topics_false(self) -> None:
-        self.CHANNEL_NAME = CHANNEL
+        self.CHANNEL_NAME = API_CHANNEL_NAME
         self.url = self.build_webhook_url(channels_map_to_topics="0")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
         self.check_webhook(
@@ -107,10 +109,36 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     @mock_slack_api_calls
+    def test_url_options_channels_mapping_true(self) -> None:
+        self.CHANNEL_NAME = API_CHANNEL_NAME
+        self.url = self.build_webhook_url(mapping="channels")
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
+        expected_topic_name = DEFAULT_TOPIC_NAME
+        self.check_webhook(
+            "message_with_normal_text",
+            expected_topic_name,
+            expected_message,
+            content_type="application/json",
+        )
+
+    @mock_slack_api_calls
     def test_slack_channels_map_to_topics_false_and_user_specified_topic(self) -> None:
-        self.CHANNEL_NAME = CHANNEL
+        self.CHANNEL_NAME = API_CHANNEL_NAME
         expected_topic_name = "test"
         self.url = self.build_webhook_url(topic=expected_topic_name, channels_map_to_topics="0")
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
+        self.check_webhook(
+            "message_with_normal_text",
+            expected_topic_name,
+            expected_message,
+            content_type="application/json",
+        )
+
+    @mock_slack_api_calls
+    def test_url_options_map_to_channels_and_user_specified_topic(self) -> None:
+        self.CHANNEL_NAME = API_CHANNEL_NAME
+        expected_topic_name = DEFAULT_TOPIC_NAME
+        self.url = self.build_webhook_url(topic=expected_topic_name, mapping="channels")
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=MESSAGE_WITH_NORMAL_TEXT)
         self.check_webhook(
             "message_with_normal_text",

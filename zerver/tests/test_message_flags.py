@@ -9,6 +9,7 @@ from typing_extensions import override
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
@@ -30,6 +31,7 @@ from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import (
     Message,
+    PushDevice,
     Recipient,
     Stream,
     Subscription,
@@ -951,6 +953,54 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
         mock_push_notifications.assert_called()
         mock_send_push_notifications.assert_called()
+
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications")
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
+    def test_skip_clear_notification_for_user_without_push_device(
+        self,
+        mock_push_notifications: mock.MagicMock,
+        mock_send_push_notifications: mock.MagicMock,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+        self.register_push_device(cordelia.id)
+        do_change_user_setting(cordelia, "enable_stream_push_notifications", True, acting_user=None)
+
+        # Initially, no active push notifications.
+        self.assertEqual(self.get_mobile_push_notification_ids(cordelia), [])
+
+        verona = self.subscribe(cordelia, "Verona")
+        message_ids = [self.send_stream_message(hamlet, "Verona", str(i)) for i in range(10)]
+
+        # Verify push notifications sent to `cordelia` for `message_ids`
+        self.assertEqual(
+            self.get_mobile_push_notification_ids(cordelia),
+            message_ids,
+        )
+
+        # Device unregistered. Verify that no event to revoke notifications gets
+        # enqueued to `missedmessage_mobile_notifications` and `active_mobile_push_notification`
+        # flag is unset.
+        PushDevice.objects.all().delete()
+        with (
+            mock.patch(
+                "zerver.actions.message_flags.queue_event_on_commit"
+            ) as mock_queue_event_on_commit,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_post(
+                "/json/mark_stream_as_read",
+                {
+                    "stream_id": str(verona.id),
+                },
+            )
+        self.assert_json_success(result)
+        mock_queue_event_on_commit.assert_not_called()
+        self.assertEqual(
+            self.get_mobile_push_notification_ids(cordelia),
+            [],
+        )
 
 
 class MarkAllAsReadEndpointTest(ZulipTestCase):

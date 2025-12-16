@@ -92,6 +92,7 @@ const devel = {
     subscribed: true,
     pin_to_top: true,
     is_recently_active: false,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -101,6 +102,7 @@ const social = {
     color: "green",
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -205,7 +207,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     const $social_li = $("<social-sidebar-row-stub>");
     const stream_id = social.stream_id;
 
-    $social_li.length = 0;
+    $social_li.length = 1;
 
     const $privacy_elem = $.create("privacy-stub");
     $social_li.set_find_results(".stream-privacy", $privacy_elem);
@@ -308,6 +310,7 @@ const develSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -318,6 +321,7 @@ const RomeSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -328,6 +332,7 @@ const testSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
     is_muted: true,
 };
@@ -339,6 +344,7 @@ const announceSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -349,6 +355,7 @@ const DenmarkSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -359,6 +366,7 @@ const carSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: false,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
 };
 
@@ -619,7 +627,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
     stream_data.rename_sub(sub, new_name);
 
     const $li_stub = $.create("li stub");
-    $li_stub.length = 0;
+    $li_stub.length = 1;
 
     mock_template("stream_sidebar_row.hbs", false, (payload) => {
         assert.deepEqual(payload, {
@@ -633,6 +641,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
             pin_to_top: true,
             can_post_messages: true,
             is_empty_topic_only_channel: false,
+            cannot_create_topics_in_channel: false,
         });
         return {to_$: () => $li_stub};
     });
@@ -651,7 +660,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
     develSub.name = "devel"; // Resets
 });
 
-test_ui("refresh_pin", ({override_rewire, mock_template}) => {
+test_ui("refresh_pin", ({override_rewire}) => {
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
@@ -665,6 +674,7 @@ test_ui("refresh_pin", ({override_rewire, mock_template}) => {
         color: "blue",
         pin_to_top: false,
         subscribed: true,
+        can_create_topic_group: everyone_group.id,
         can_send_message_group: everyone_group.id,
     };
 
@@ -677,19 +687,14 @@ test_ui("refresh_pin", ({override_rewire, mock_template}) => {
         pin_to_top: true,
     };
 
-    const $li_stub = $.create("li stub");
-    $li_stub.length = 1;
-
-    mock_template("stream_sidebar_row.hbs", false, () => ({to_$: () => $li_stub}));
-
     override_rewire(stream_list, "update_count_in_dom", noop);
     $("#stream_filters").append = noop;
 
     let scrolled;
-    override_rewire(stream_list, "scroll_stream_into_view", ($li) => {
-        if ($li === $li_stub) {
-            scrolled = true;
-        }
+    override_rewire(stream_list, "scroll_stream_into_view", () => {
+        // We already passed the test of `stream_sidebar.get_row` to
+        // reach this point.
+        scrolled = true;
     });
 
     stream_list.refresh_pinned_or_unpinned_stream(pinned_sub);

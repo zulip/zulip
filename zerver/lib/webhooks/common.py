@@ -57,7 +57,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
-    MAPPING = "mapping"
+    CHANNEL_MAPPING = "mapping"
 
 
 @dataclass
@@ -95,7 +95,7 @@ class WebhookUrlOption:
                     label="Exclude notifications from private repositories",
                     validator=check_bool,
                 )
-            case PresetUrlOption.MAPPING:  # nocoverage # Not used yet
+            case PresetUrlOption.CHANNEL_MAPPING:
                 return cls(
                     name=config.value,
                     label="",
@@ -150,7 +150,7 @@ def check_send_webhook_message(
     exclude_events: Json[list[str]] | None = None,
     unquote_url_parameters: bool = False,
     no_previews: bool = False,
-) -> None:
+) -> int | None:
     if complete_event_type is not None and (
         # Here, we implement Zulip's generic support for filtering
         # events sent by the third-party service.
@@ -171,13 +171,13 @@ def check_send_webhook_message(
             and any(fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events)
         )
     ):
-        return
+        return None
 
     client = RequestNotes.get_notes(request).client
     assert client is not None
     if stream is None:
         assert user_profile.bot_owner is not None
-        check_send_private_message(
+        return check_send_private_message(
             user_profile, client, user_profile.bot_owner, body, no_previews=no_previews
         )
     else:
@@ -195,11 +195,11 @@ def check_send_webhook_message(
 
         try:
             if stream.isdecimal():
-                check_send_stream_message_by_id(
+                return check_send_stream_message_by_id(
                     user_profile, client, int(stream), topic, body, no_previews=no_previews
                 )
             else:
-                check_send_stream_message(
+                return check_send_stream_message(
                     user_profile, client, stream, topic, body, no_previews=no_previews
                 )
         except StreamDoesNotExistError:
@@ -207,7 +207,7 @@ def check_send_webhook_message(
             # notifying that the webhook bot just tried to send a message to a
             # non-existent stream, so we don't need to re-raise it since it
             # clutters up webhook-errors.log
-            pass
+            return None
 
 
 def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:

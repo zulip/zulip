@@ -70,6 +70,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.thumbnail import BadImageError
+from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
 from zerver.lib.utils import assert_is_not_none, get_fk_field_name
 from zerver.models import (
@@ -109,7 +110,7 @@ from zerver.models import (
 )
 from zerver.models.clients import Client, get_client
 from zerver.models.groups import SystemGroups
-from zerver.models.messages import ImageAttachment
+from zerver.models.messages import ImageAttachment, SubMessage
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
@@ -1518,6 +1519,32 @@ class RealmImportExportTest(ExportFile):
         special_characters_message = "```\n'\n```\n@**Polonius**"
         self.send_stream_message(self.example_user("iago"), "Denmark", special_characters_message)
 
+        todo_message_topic = "TODO message"
+        todo_message_sender_name = "iago"
+        todo_widget_message = "/todo Example Task List Title\n\n    task without description\ntask: with description    \n\n - task as list : also with description"
+        todo_message_id = self.send_stream_message(
+            self.example_user(todo_message_sender_name),
+            "Denmark",
+            todo_widget_message,
+            todo_message_topic,
+        )
+        todo_submessage = SubMessage.objects.get(message_id=todo_message_id)
+        todo_message = Message.objects.get(id=todo_message_id, realm=original_realm)
+
+        poll_message_topic = "Poll message"
+        poll_message_sender_name = "hamlet"
+        poll_widget_message = (
+            "/poll What is your favorite color?\n\nRed\nGreen  \n\n   Blue\n - Yellow"
+        )
+        poll_message_id = self.send_stream_message(
+            self.example_user(poll_message_sender_name),
+            "Denmark",
+            poll_widget_message,
+            poll_message_topic,
+        )
+        poll_submessage = SubMessage.objects.get(message_id=poll_message_id)
+        poll_message = Message.objects.get(id=poll_message_id, realm=original_realm)
+
         sample_user = self.example_user("hamlet")
 
         check_add_reaction(
@@ -1917,6 +1944,62 @@ class RealmImportExportTest(ExportFile):
 
         imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
         self.assertIsNotNone(imported_prospero_user.recipient)
+
+        # SubMessage table is imported and message with widgets are rendered properly.
+        todo_message_sender = UserProfile.objects.get(
+            realm=imported_realm, delivery_email=self.example_user_map[todo_message_sender_name]
+        )
+        imported_todo_message = Message.objects.get(
+            realm=imported_realm,
+            sender=todo_message_sender,
+            **{
+                DB_TOPIC_NAME: todo_message_topic,
+            },
+        )
+
+        poll_message_sender = UserProfile.objects.get(
+            realm=imported_realm, delivery_email=self.example_user_map[poll_message_sender_name]
+        )
+        imported_poll_message = Message.objects.get(
+            realm=imported_realm,
+            sender=poll_message_sender,
+            **{
+                DB_TOPIC_NAME: poll_message_topic,
+            },
+        )
+
+        self.assert_length(
+            SubMessage.objects.filter(
+                message_id__in=[imported_poll_message.id, imported_todo_message.id]
+            ),
+            2,
+        )
+
+        imported_todo_submessage = SubMessage.objects.get(message_id=imported_todo_message.id)
+        self.assertEqual(imported_todo_submessage.sender, todo_message_sender)
+        self.assertDictEqual(
+            orjson.loads(imported_todo_submessage.content),
+            orjson.loads(todo_submessage.content),
+        )
+        assert imported_todo_message.rendered_content is not None
+        assert todo_message.rendered_content is not None
+        self.assertHTMLEqual(
+            imported_todo_message.rendered_content,
+            todo_message.rendered_content,
+        )
+
+        imported_poll_submessage = SubMessage.objects.get(message_id=imported_poll_message.id)
+        self.assertEqual(imported_poll_submessage.sender, poll_message_sender)
+        self.assertDictEqual(
+            orjson.loads(imported_poll_submessage.content),
+            orjson.loads(poll_submessage.content),
+        )
+        assert imported_poll_message.rendered_content is not None
+        assert poll_message.rendered_content is not None
+        self.assertHTMLEqual(
+            imported_poll_message.rendered_content,
+            poll_message.rendered_content,
+        )
 
     def test_import_message_edit_history(self) -> None:
         realm = get_realm("zulip")
@@ -3201,6 +3284,27 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(last_recipient.type, Recipient.STREAM)
             stream_id = last_recipient.type_id
             self.assertEqual(stream_id, get_stream("Scotland", realm).id)
+
+        widget_message_id = self.send_stream_message(
+            cordelia,
+            "Scotland",
+            "/todo Example Task List Title",
+        )
+        submessage = SubMessage.objects.filter(message_id=widget_message_id).last()
+
+        @checker
+        def zerver_submessage(records: list[Record]) -> None:
+            assert submessage
+            self.assertEqual(
+                records[-1],
+                dict(
+                    id=submessage.id,
+                    sender=submessage.sender.id,
+                    msg_type="widget",
+                    content='{"widget_type": "todo", "extra_data": {"task_list_title": "Example Task List Title", "tasks": []}}',
+                    message=widget_message_id,
+                ),
+            )
 
         UserActivity.objects.create(
             user_profile_id=cordelia.id,

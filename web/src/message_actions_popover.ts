@@ -199,24 +199,6 @@ export function initialize({
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            $popper.one("click", ".rehide_muted_user_message", (e) => {
-                const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                assert(message_lists.current !== undefined);
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                assert(message !== undefined);
-                const message_container = message_lists.current.view.message_containers.get(
-                    message.id,
-                );
-                assert(message_container !== undefined);
-                if ($row && !message_container.is_hidden) {
-                    message_lists.current.view.hide_revealed_message(message_id);
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-
             $popper.one("click", ".view_read_receipts", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 read_receipts.show_user_list(message_id);

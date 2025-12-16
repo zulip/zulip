@@ -74,8 +74,8 @@ as well as those mentioned in the
 [install](install.md#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
-  installed. We currently support PostgreSQL 14, 15, 16, and 17, with 17
-  being the default.
+  installed. We currently support PostgreSQL 14, 15, 16, 17, and 18,
+  with 18 being the default.
 
 - `--postgresql-database-name=exampledbname`: With this option, you
   can customize the default database name. If you do not set this. The

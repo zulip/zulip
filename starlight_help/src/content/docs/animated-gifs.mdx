@@ -1,0 +1,86 @@
+---
+title: Animated GIFs
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import StartComposing from "../include/_StartComposing.mdx";
+
+import GifIcon from "~icons/zulip-icon/gif";
+
+<ZulipNote>
+  On self-hosted servers, this feature need to be
+  [configured][configure-gifs] by a server administrator.
+</ZulipNote>
+
+Zulip integrates with [GIPHY](https://giphy.com) and [Tenor](https://tenor.com/), allowing you to
+conveniently search for animated GIFs and include them in your
+messages.
+
+Organization administrators can [disable previews of linked
+images](/help/image-video-and-website-previews#configure-whether-image-and-video-previews-are-shown),
+including GIFs. When previews are enabled, everyone can
+[customize](/help/image-video-and-website-previews#configure-how-animated-images-are-played)
+how animated images are played.
+
+## Insert a GIF
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Click the **add GIF** (<GifIcon />) icon at
+         the bottom of the compose box.
+      1. Find a GIF you'd like to use.
+      1. Click on an image to insert it in the compose box.
+    </Steps>
+
+    <ZulipTip>
+      You can [preview your message](/help/preview-your-message-before-sending)
+      before sending.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Restrict maximum rating of GIFs retrieved
+
+<AdminOnly />
+
+By default, the GIPHY and Tenor integrations are configured to only retrieve GIFs
+that they categorize as rated G (General audience). You can change
+this rating configuration or disable your GIF integration entirely:
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Compose settings**, select a rating for **GIF integration**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Privacy
+
+Zulip’s GIF picker supports third-party services, currently GIPHY
+and Tenor. Any text you enter into the GIF search box will be
+sent from your browser directly to the corresponding service’s API.
+Because these requests are made client-side, the service you are
+querying (GIPHY or Tenor) will be able to see your IP address
+and may use that data for tracking, similar to if you visited their
+website and performed the same search there.
+
+Zulip proxies all external images in messages through the server,
+including those from GIPHY and Tenor, to prevent images from being used to track
+recipients of GIFs from both the integrations.
+
+[configure-gifs]: https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
+
+## Related articles
+
+* [Image, video and website previews](/help/image-video-and-website-previews)
+* [Share and upload files](/help/share-and-upload-files)
+* [Insert a link](/help/insert-a-link)

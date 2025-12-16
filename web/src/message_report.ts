@@ -18,7 +18,10 @@ import {
 } from "./message_list_view.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
+import {update_elements} from "./rendered_markdown.ts";
+import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
+import {process_submessages} from "./submessage.ts";
 import * as ui_report from "./ui_report.ts";
 import {toggle_user_card_popover_for_message} from "./user_card_popover.ts";
 
@@ -100,6 +103,21 @@ function get_message_container_for_preview(message: Message): MessageContainer {
     };
 }
 
+function post_process_message_preview($row: JQuery): void {
+    const $content = $row.find(".message_content");
+    update_elements($content);
+    const id = rows.id($row);
+    process_submessages({
+        $row,
+        message_id: id,
+    });
+    // Disable most UI for interacting with message widget in the report
+    // message preview UI.
+    const $widget_content = $content.find(".widget-content");
+    $widget_content.find("button, input, select").prop("disabled", true);
+    $widget_content.find(".poll-edit-question, .poll-option-bar").hide();
+}
+
 export function show_message_report_modal(message: Message): void {
     const message_preview_body_args = get_message_container_for_preview(message);
     const html_body = render_report_message_modal({
@@ -132,6 +150,7 @@ export function show_message_report_modal(message: Message): void {
             message.sender_id,
         );
 
+        post_process_message_preview($report_message_preview_container.find(".message_row"));
         // Condense the message preview, the main motivation is to hide the
         // potentially unpleasant message content.
         $report_message_preview_container.find(".message_content").addClass("collapsed");

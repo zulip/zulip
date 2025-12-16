@@ -10,7 +10,6 @@ import {$t} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
-import * as muted_users from "./muted_users.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -36,7 +35,6 @@ type ActionPopoverContext = {
     editability_menu_item: string | undefined;
     move_message_menu_item: string | undefined;
     view_source_menu_item: string | undefined;
-    should_display_hide_option: boolean;
     should_display_mark_as_unread: boolean;
     should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
@@ -149,12 +147,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(message_id);
     assert(message !== undefined);
-    const message_container = message_lists.current.view.message_containers.get(message.id)!;
     const not_spectator = !page_params.is_spectator;
-    const should_display_hide_option =
-        muted_users.is_user_muted(message.sender_id) &&
-        !message_container.is_hidden &&
-        not_spectator;
     const is_content_editable = message_edit.is_content_editable(message);
     const can_move_message = message_edit.can_move_message(message);
 
@@ -256,7 +249,6 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_collapse,
         should_display_uncollapse,
         should_display_add_reaction_option,
-        should_display_hide_option,
         conversation_time_url,
         should_display_delete_option,
         should_display_read_receipts_option,

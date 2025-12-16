@@ -9,6 +9,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import {RESOLVED_TOPIC_PREFIX} from "./resolved_topic.ts";
 import {type NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -22,6 +23,11 @@ export type UserPillItem = {
     has_image: boolean;
     img_src: string;
     should_add_guest_user_indicator: boolean;
+};
+
+type ChannelTopicEntry = {
+    channel_id: string;
+    topic: string;
 };
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
@@ -444,12 +450,12 @@ function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
 }
 
 export function get_topic_suggestions_from_candidates({
-    candidate_topics,
+    candidate_topic_entries,
     guess,
 }: {
-    candidate_topics: string[];
+    candidate_topic_entries: ChannelTopicEntry[];
     guess: string;
-}): string[] {
+}): ChannelTopicEntry[] {
     // This function is exported for unit testing purposes.
     const max_num_topics = 10;
 
@@ -457,7 +463,7 @@ export function get_topic_suggestions_from_candidates({
         // In the search UI, once you autocomplete the channel,
         // we just show you the most recent topics before you even
         // need to start typing any characters.
-        return candidate_topics.slice(0, max_num_topics);
+        return candidate_topic_entries.slice(0, max_num_topics);
     }
 
     // Once the user starts typing characters for a topic name,
@@ -468,18 +474,31 @@ export function get_topic_suggestions_from_candidates({
     // The following loop can be expensive if you have lots
     // of topics in a channel, so we try to exit the loop as
     // soon as we find enough matches.
-    const topics: string[] = [];
-    for (const topic of candidate_topics) {
-        const topic_display_name = util.get_final_topic_display_name(topic);
+    const topic_entries: ChannelTopicEntry[] = [];
+    for (const candidate_topic_entry of candidate_topic_entries) {
+        const topic_name = candidate_topic_entry.topic;
+
+        const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (common.phrase_match(guess, topic_display_name)) {
-            topics.push(topic);
-            if (topics.length >= max_num_topics) {
+            topic_entries.push({channel_id: candidate_topic_entry.channel_id, topic: topic_name});
+            if (topic_entries.length >= max_num_topics) {
                 break;
             }
         }
     }
 
-    return topics;
+    return topic_entries;
+}
+
+function ignore_resolved_topic_prefix(entry: ChannelTopicEntry, case_insensitive = false): string {
+    let topic_name = entry.topic;
+    if (topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
+        topic_name = topic_name.slice(2);
+    }
+    if (case_insensitive) {
+        return topic_name.toLowerCase();
+    }
+    return topic_name;
 }
 
 function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
@@ -492,10 +511,9 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     const operator = Filter.canonicalize_operator(last.operator);
     const operand = last.operand;
     const negated = operator === "topic" && last.negated;
-    let channel_id: string | undefined;
+    let channel_id_str: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
-    const suggest_terms: NarrowTerm[] = [];
 
     // channel:Rome -> show all Rome topics
     // channel:Rome topic: -> show all Rome topics
@@ -504,7 +522,8 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // channel:Rome topic:f -> show all Rome topics with a word starting in f
 
     // When narrowed to a channel:
-    //   topic: -> show all topics in current channel
+    //   topic: -> show topics from all subscribed channels with the current channel's
+    //   matching topics listed first.
     //   foo -> show all topics in current channel with words starting with foo
 
     // If somebody explicitly types search:, then we might
@@ -512,65 +531,118 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // minor issue, and Filter.parse() is currently lossy
     // in terms of telling us whether they provided the operator,
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
+
+    let show_topics_from_other_channels = true;
     switch (operator) {
         case "channel":
             guess = "";
-            channel_id = operand;
-            suggest_terms.push(last);
+            channel_id_str = operand;
             break;
         case "topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
-                channel_id = filter.terms_with_operator("channel")[0]!.operand;
+                channel_id_str = filter.terms_with_operator("channel")[0]!.operand;
+                // We want to show topics that belong only to the
+                // channel mentioned in the `channel` operator, if it exists.
+                show_topics_from_other_channels = false;
             } else {
-                channel_id = narrow_state.stream_id()?.toString();
-                if (channel_id) {
-                    suggest_terms.push({operator: "channel", operand: channel_id});
-                }
+                channel_id_str = narrow_state.stream_id()?.toString();
             }
             break;
     }
-
-    if (!channel_id) {
+    if (!channel_id_str && !show_topics_from_other_channels) {
         return [];
     }
 
-    const subscription = stream_data.get_sub_by_id_string(channel_id);
-    if (!subscription) {
-        return [];
+    const current_channel_topic_entries: ChannelTopicEntry[] = [];
+    if (channel_id_str) {
+        // We do this outside the stream_data.subscribed_stream_ids loop,
+        // since we could be viewing a channel we can't read.
+        const sub = stream_data.get_sub_by_id_string(channel_id_str)!;
+        if (sub && stream_data.can_access_topic_history(sub)) {
+            const current_channel_id = sub.stream_id;
+            stream_topic_history_util.get_server_history(current_channel_id, () => {
+                // Fetch topic history from the server, in case we will
+                // need it.  Note that we won't actually use the results
+                // from the server here for this particular keystroke from
+                // the user, because we want to show results immediately.
+            });
+
+            for (const topic of stream_topic_history.get_recent_topic_names(current_channel_id)) {
+                current_channel_topic_entries.push({channel_id: channel_id_str, topic});
+            }
+        }
     }
 
-    if (stream_data.can_access_topic_history(subscription)) {
-        stream_topic_history_util.get_server_history(subscription.stream_id, () => {
-            // Fetch topic history from the server, in case we will need it.
-            // Note that we won't actually use the results from the server here
-            // for this particular keystroke from the user, because we want to
-            // show results immediately. Assuming the server responds quickly,
-            // as the user makes their search more specific, subsequent calls to
-            // this function will get more candidates from calling
-            // stream_topic_history.get_recent_topic_names.
-        });
-    }
+    const other_channel_topic_entries: ChannelTopicEntry[] = [];
+    for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
+        if (subscribed_channel_id.toString() === channel_id_str) {
+            continue;
+        } else if (!show_topics_from_other_channels) {
+            continue;
+        }
 
-    const candidate_topics = stream_topic_history.get_recent_topic_names(subscription.stream_id);
-
-    if (!candidate_topics?.length) {
-        return [];
+        for (const topic of stream_topic_history.get_recent_topic_names(subscribed_channel_id)) {
+            other_channel_topic_entries.push({
+                channel_id: subscribed_channel_id.toString(),
+                topic,
+            });
+        }
     }
 
     assert(guess !== undefined);
-    const topics = get_topic_suggestions_from_candidates({candidate_topics, guess});
 
-    // Just use alphabetical order.  While recency and read/unreadness of
-    // topics do matter in some contexts, you can get that from the left sidebar,
-    // and I'm leaning toward high scannability for autocompletion.  I also don't
-    // care about case.
-    topics.sort();
+    let current_channel_topic_suggestion_entries = get_topic_suggestions_from_candidates({
+        candidate_topic_entries: current_channel_topic_entries,
+        guess,
+    });
+    let other_channel_topic_suggestion_entries = get_topic_suggestions_from_candidates({
+        candidate_topic_entries: other_channel_topic_entries,
+        guess,
+    });
 
+    // When the guess is non-empty, we rely on `typeaheader_helper.sorter` to give the same
+    // experience as composebox_typeahead.
+    // Else we sort in a case-insensitive fashion.
+    if (guess.length > 0) {
+        current_channel_topic_suggestion_entries = typeahead_helper.sorter(
+            guess,
+            current_channel_topic_suggestion_entries,
+            ignore_resolved_topic_prefix,
+        );
+        other_channel_topic_suggestion_entries = typeahead_helper.sorter(
+            guess,
+            other_channel_topic_suggestion_entries,
+            ignore_resolved_topic_prefix,
+        );
+    } else {
+        current_channel_topic_suggestion_entries =
+            current_channel_topic_suggestion_entries.toSorted((a, b) =>
+                ignore_resolved_topic_prefix(a, true).localeCompare(
+                    ignore_resolved_topic_prefix(b, true),
+                ),
+            );
+        other_channel_topic_suggestion_entries = other_channel_topic_suggestion_entries.toSorted(
+            (a, b) =>
+                ignore_resolved_topic_prefix(a, true).localeCompare(
+                    ignore_resolved_topic_prefix(b, true),
+                ),
+        );
+    }
+    // We want to rank topics from the current channel higher
+    const topics = [
+        ...current_channel_topic_suggestion_entries,
+        ...other_channel_topic_suggestion_entries,
+    ];
     return topics.map((topic) => {
-        const topic_term: NarrowTerm = {operator: "topic", operand: topic, negated};
-        const terms = [...suggest_terms, topic_term];
+        const topic_term: NarrowTerm = {operator: "topic", operand: topic.topic, negated};
+        const terms: NarrowTerm[] = [{operator: "channel", operand: topic.channel_id}, topic_term];
+        // We don't want to have two channel pills in the search suggestion.
+        if (filter.has_operator("channel")) {
+            terms.splice(0, 1);
+        }
+
         return format_as_suggestion(terms);
     });
 }

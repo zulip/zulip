@@ -9,6 +9,9 @@ import {$t} from "../i18n.ts";
 
 $(() => {
     if ($("#slack-import-dashboard").length > 0) {
+        const max_file_upload_size_mib = Number(
+            $("#slack-import-dashboard").attr("data-max-file-size"),
+        );
         const key = $<HTMLInputElement>("#auth_key_for_file_upload").val();
         const uppy = new Uppy({
             autoProceed: true,
@@ -16,6 +19,7 @@ $(() => {
                 maxNumberOfFiles: 1,
                 minNumberOfFiles: 1,
                 allowedFileTypes: [".zip", "application/zip"],
+                maxFileSize: max_file_upload_size_mib * 1024 * 1024,
             },
             meta: {
                 key,
@@ -24,6 +28,10 @@ $(() => {
                 strings: {
                     youCanOnlyUploadFileTypes: $t({
                         defaultMessage: "Upload your Slack export zip file.",
+                    }),
+                    exceedsSize: $t({
+                        defaultMessage:
+                            "Uploaded file exceeds maximum size for self-serve imports.",
                     }),
                 },
                 // Copied from
@@ -40,6 +48,8 @@ $(() => {
         });
         uppy.use(Dashboard, {
             target: "#slack-import-dashboard",
+            // This will be replace by an HTML note after being mounted.
+            note: "...",
         });
         uppy.use(Tus, {
             endpoint: "/api/v1/tus/",
@@ -60,6 +70,14 @@ $(() => {
             $("#slack-import-uploaded-file-name").text(file.name);
             $("#slack-import-file-upload-error").text("");
             $("#realm-creation-form-slack-import .register-button").prop("disabled", false);
+        });
+        uppy.on("dashboard:modal-open", () => {
+            // Replace the note with the actual content after the dashboard is mounted.
+            $(".uppy-Dashboard-note").text(
+                $t({
+                    defaultMessage: "Upload your Slack export zip file.",
+                }),
+            );
         });
 
         $(".slack-import-upload-file").on("click", (e) => {

@@ -29,13 +29,14 @@ Typically, the documentation process involves the following steps:
   See [Markdown macros](#markdown-macros) for further details.
 
 - Make sure you've added your integration to `zerver/lib/integrations.py` in
-  the `WEBHOOK_INTEGRATIONS` section (or `INTEGRATIONS` if not a
-  webhook).
+  the relevant `*_INTEGRATIONS` list, such as the
+  `INCOMING_WEBHOOK_INTEGRATIONS` list for incoming webhook integrations.
 
-  This registry configures your integration to appear on the
-  `/integrations` page, and makes it possible to automatically generate the
-  screenshot of an example message, which is important for the screenshots
-  to be updated as Zulip's design changes.
+  These lists get aggregated into the `INTEGRATIONS` registry which
+  configures your integration to appear on the `/integrations` page, and
+  makes it possible to automatically generate the screenshot of an example
+  message, which is important so that these screenshots can be easily
+  updated as Zulip's design changes.
 
 - You'll need to add an SVG graphic of your integration's logo under the
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
@@ -54,14 +55,14 @@ Typically, the documentation process involves the following steps:
   generate a screenshot of the message to provide an example message in the
   integration's documentation.
 
-  If your new integration is not a webhook and does not have fixtures, add a
+  If your new integration is not an incoming webhook and does not have fixtures, add a
   message template and topic to `zerver/webhooks/fixtureless_integrations.py`.
   Then, add your integration's name to `FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS`
   in `zerver/lib/integrations.py`. See [this commit][example-commit] for an
   example.
 
   Otherwise, you should have already added your integration along with its
-  screenshot config to `WEBHOOK_INTEGRATIONS`.
+  screenshot config to `INCOMING_WEBHOOK_INTEGRATIONS`.
 
   Generate the screenshot using `tools/screenshots/generate-integration-docs-screenshot`,
   where `integrationname` is the name of the integration:
@@ -114,7 +115,7 @@ Here are a few common macros used to document Zulip's integrations:
 
 - `{!generate-integration-url.md!}` - Instructs user how to get the URL for a
   bot for a given integration. An example URL is generated automatically for
-  every incoming webhook by using attributes in the `WebhookIntegration` class
+  every incoming webhook by using attributes in the `IncomingWebhookIntegration` class
   in [zerver/lib/integrations.py][integrations-file].
 
   **Note:** If special configuration is required to set up the URL and you can't

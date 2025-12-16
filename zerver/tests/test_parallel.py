@@ -3,9 +3,9 @@ import logging
 import os
 import shutil
 import tempfile
-import time
 from collections import Counter
-from multiprocessing import current_process
+from multiprocessing import Manager, current_process
+from threading import Barrier
 
 from django.db import connection
 
@@ -155,30 +155,30 @@ class RunNotParallelTest(ZulipTestCase):
 
 
 def write_number(
-    output_dir: str, total_processes: int, fail: set[int], item: int
+    output_dir: str, barrier: Barrier, fail: set[int], item: int
 ) -> None:  # nocoverage
     if item in fail:
         raise Exception("Whoops")
 
-    with open(f"{output_dir}/{os.getpid()}.output", "a") as fh:
+    output_file = f"{output_dir}/{os.getpid()}.output"
+    first_time = not os.path.exists(output_file)
+    with open(output_file, "a") as fh:
         fh.write(f"{item}\n")
-    # We wait to exit until we see total_processes unique files in the
-    # output directory, so we ensure that every PID got a chance to
-    # run.
-    slept = 0
-    while len(glob.glob(f"{output_dir}/*.output")) < total_processes and slept < 5:
-        time.sleep(1)
-        slept += 1
+    # If this is our first time through, we wait until every PID has
+    # gotten a chance to consume one value before carrying on to
+    # consume our second.
+    if first_time:
+        barrier.wait(60)
 
 
-def db_query(output_dir: str, total_processes: int, item: int) -> None:  # nocoverage
+def db_query(output_dir: str, barrier: Barrier, item: int) -> None:  # nocoverage
     connection.connect()
-    with open(f"{output_dir}/{os.getpid()}.output", "a") as fh:
+    output_file = f"{output_dir}/{os.getpid()}.output"
+    first_time = not os.path.exists(output_file)
+    with open(output_file, "a") as fh:
         fh.write(f"{Realm.objects.count()}\n")
-    slept = 0
-    while len(glob.glob(f"{output_dir}/*.output")) < total_processes and slept < 5:
-        time.sleep(1)
-        slept += 1
+    if first_time:
+        barrier.wait(60)
 
 
 class RunParallelTest(ZulipTestCase):
@@ -192,8 +192,9 @@ class RunParallelTest(ZulipTestCase):
         output_dir = tempfile.mkdtemp()
         report_lines = []
         try:
+            barrier = Manager().Barrier(4)
             run_parallel(
-                partial(write_number, output_dir, 4, set()),
+                partial(write_number, output_dir, barrier, set()),
                 range(100, 110),
                 processes=4,
                 report_every=3,
@@ -223,9 +224,10 @@ class RunParallelTest(ZulipTestCase):
         output_dir = tempfile.mkdtemp()
         report_lines = []
         try:
+            barrier = Manager().Barrier(2)
             with self.assertRaisesMessage(Exception, "Whoops"):
                 run_parallel(
-                    partial(write_number, output_dir, 4, {103}),
+                    partial(write_number, output_dir, barrier, {103}),
                     range(100, 105),
                     processes=2,
                     report_every=5,
@@ -260,8 +262,9 @@ class RunParallelTest(ZulipTestCase):
             )
 
         try:
+            barrier = Manager().Barrier(2)
             run_parallel(
-                partial(write_number, output_dir, 4, {103}),
+                partial(write_number, output_dir, barrier, {103}),
                 range(100, 105),
                 processes=2,
                 report_every=5,
@@ -292,8 +295,9 @@ class RunParallelTest(ZulipTestCase):
     def test_parallel_reconnect(self) -> None:  # nocoverage
         self.skip_in_parallel_harness()
         output_dir = tempfile.mkdtemp()
+        barrier = Manager().Barrier(2)
         run_parallel(
-            partial(db_query, output_dir, 2),
+            partial(db_query, output_dir, barrier),
             range(100, 105),
             processes=2,
         )

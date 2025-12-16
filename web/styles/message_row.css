@@ -55,16 +55,6 @@
         }
     }
 
-    &.muted-message-sender {
-        .sender_info_hover {
-            pointer-events: none;
-        }
-
-        .inline-profile-picture-wrapper {
-            pointer-events: none;
-        }
-    }
-
     &.sender_info_hovered {
         .sender_name {
             cursor: pointer;
@@ -249,6 +239,26 @@
             opacity: 0.5;
             user-select: none;
         }
+    }
+
+    /* Leading whitespaces are collapsed if they are at the start of a line.
+    This lets us conditionally add a space to the left of `.inline-hide-button`,
+    only when there is some preceding text on the same line before the button.
+    */
+    .inline-hide-button-space-wrapper {
+        margin-right: 0.2em;
+    }
+
+    .rehide-muted-user-message {
+        &.inline-hide-button {
+            display: inline-flex;
+        }
+
+        &.block-hide-button {
+            display: flex;
+            margin-bottom: var(--markdown-interelement-space-px);
+        }
+        align-items: center;
     }
 
     .message_reactions {
@@ -549,8 +559,6 @@
 
                     .muted {
                         opacity: 0.5;
-                        user-select: none;
-                        cursor: default;
                     }
                 }
             }
@@ -895,11 +903,6 @@
             );
         }
     }
-}
-
-.upload-overlay-visible .edit-form {
-    position: relative;
-    z-index: var(--compose-with-upload-overlay-z-index);
 }
 
 .message_edit_content {
@@ -1251,8 +1254,10 @@
 
 #report-message-preview-container {
     /* Hide most UI for interacting with a message in the report message preview UI. */
+    .add-task-bar,
     .change_visibility_policy,
     .recipient-row-topic-menu,
+    .todo-edit-task-list-title,
     .message_controls,
     .message-reminders,
     .message_reactions {

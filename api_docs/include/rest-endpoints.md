@@ -59,6 +59,7 @@
 * [Unsubscribe from a channel](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
 * [Get channel subscribers](/api/get-subscribers)
+* [Get a user's subscribed channels](/api/get-user-channels)
 * [Update subscription settings](/api/update-subscription-settings)
 * [Get all channels](/api/get-streams)
 * [Get a channel by ID](/api/get-stream-by-id)
@@ -168,3 +169,4 @@
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Outgoing webhook payloads](/api/outgoing-webhook-payload)

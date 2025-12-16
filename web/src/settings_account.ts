@@ -238,6 +238,52 @@ export function hide_confirm_email_banner(): void {
     $("#account-settings-status").hide();
 }
 
+export function set_user_own_role_dropdown_value(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const current_user_role = people.get_by_user_id(current_user.user_id).role;
+    $("select#user-self-role-select").val(current_user_role);
+}
+
+export function update_user_own_role_dropdown_state(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const $select_elem = $("select#user-self-role-select");
+    if (people.user_can_change_their_own_role()) {
+        ui_util.enable_element_and_remove_tooltip($select_elem);
+        return;
+    }
+    if (current_user.is_owner) {
+        ui_util.disable_element_and_add_tooltip(
+            $select_elem,
+            "Because you are the only organization owner, you cannot change your role.",
+        );
+    } else {
+        $select_elem.attr("disabled", "true");
+    }
+}
+
+export function add_or_remove_owner_from_role_dropdown(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    if (!current_user.is_owner) {
+        $("#user-self-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .hide();
+    } else {
+        $("#user-self-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .show();
+    }
+}
+
 // TODO/typescript: Move these to server_events_dispatch when it's converted to typescript.
 export const privacy_setting_name_schema = z.enum([
     "send_stream_typing_notifications",
@@ -913,6 +959,24 @@ export function set_up(): void {
             "/json/settings",
             data,
             $("#account-settings .privacy-setting-status").expectOne(),
+        );
+    });
+
+    add_or_remove_owner_from_role_dropdown();
+    set_user_own_role_dropdown_value();
+    update_user_own_role_dropdown_state();
+
+    $<HTMLSelectElement>("select#user-self-role-select").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {role: this.value};
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/users/" + encodeURIComponent(current_user.user_id),
+            data,
+            $("#account-settings #account-settings-status").expectOne(),
         );
     });
 }

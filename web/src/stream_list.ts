@@ -43,7 +43,6 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
-import * as user_topics from "./user_topics.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -89,30 +88,20 @@ export function zoom_out(): void {
     if (pending_stream_list_rerender) {
         update_streams_sidebar(true);
     }
-    const $stream_li = topic_list.get_stream_li();
-
     popovers.hide_all();
     topic_list.zoom_out();
     zoom_out_topics();
-
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
+    scroll_stream_into_view();
 
     zoomed_in = false;
 }
 
 export function clear_topics(): void {
-    const $stream_li = topic_list.get_stream_li();
-
     topic_list.close();
 
     if (zoomed_in) {
         zoom_out_topics();
-
-        if ($stream_li) {
-            scroll_stream_into_view($stream_li);
-        }
+        scroll_stream_into_view();
     }
 
     zoomed_in = false;
@@ -304,6 +293,43 @@ function maybe_change_channel_folders_option_visibility(): void {
     } else {
         $channel_folders_sidebar_option.hide();
     }
+}
+
+// The user might already have most of the sections collapsed or uncollapsed
+// when toggling the "show channel folders" setting, and we use that information
+// to decide which sections should be collapsed when this setting is changed.
+// Note that we don't touch the pinned section, since that stays the same when
+// this setting changes.
+// This must be called before `build_stream_list`, so that it has the correct
+// saved collapsed section state.
+export function update_collapsed_state_on_show_channel_folders_change(): void {
+    if (user_settings.web_left_sidebar_show_channel_folders) {
+        // No folders -> folders: If the normal streams (Channels / Other) section was
+        // collapsed, collapse all folders. Otherwise, expand all folders.
+        for (const folder_id of channel_folders.get_active_folder_ids()) {
+            if (collapsed_sections.has("normal-streams")) {
+                collapsed_sections.add(folder_id.toString());
+            } else {
+                collapsed_sections.delete(folder_id.toString());
+            }
+        }
+    } else {
+        // Folders -> no folders: If the normal streams was expanded, keep it expanded.
+        // If normal streams was collapsed but any folder was expanded, expand the normal
+        // streams section. If all folders were also collapsed, keep the normal streams
+        // section collapsed.
+        if (!collapsed_sections.has("normal-streams")) {
+            return;
+        }
+
+        const any_folders_expanded = [...channel_folders.get_active_folder_ids()].some(
+            (folder_id) => !collapsed_sections.has(folder_id.toString()),
+        );
+        if (any_folders_expanded) {
+            collapsed_sections.delete("normal-streams");
+        }
+    }
+    save_collapsed_sections_state();
 }
 
 export function build_stream_list(force_rerender: boolean): void {
@@ -518,10 +544,18 @@ function toggle_section_collapse($container: JQuery): void {
     }
 }
 
+function get_valid_section_ids(): Set<string> {
+    const section_ids = new Set<string>(["pinned-streams", "normal-streams"]);
+    for (const folder_id of channel_folders.get_active_folder_ids()) {
+        section_ids.add(folder_id.toString());
+    }
+    return section_ids;
+}
+
 function save_collapsed_sections_state(): void {
     // Prune any section IDs that no longer exist (e.g., a folder was deleted
     // in another browser) before saving to localStorage.
-    const valid_section_ids = new Set(stream_list_sort.section_ids());
+    const valid_section_ids = get_valid_section_ids();
     for (const section_id of collapsed_sections) {
         if (!valid_section_ids.has(section_id)) {
             collapsed_sections.delete(section_id);
@@ -547,6 +581,11 @@ export let set_sections_states = function (): void {
         // Restore the collapsed state of sections.
         for (const section_id of collapsed_sections) {
             const $container = $(`#stream-list-${section_id}-container`);
+            // This can happen if the section isn't currently visible
+            // (e.g. the setting to show folders is off).
+            if ($container.length === 0) {
+                continue;
+            }
             $container.toggleClass("collapsed", true);
             $container
                 .find(".stream-list-section-toggle")
@@ -573,7 +612,7 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
     }
 
     const $li = row.get_li();
-    if (!$li) {
+    if ($li.length === 0) {
         blueslip.error("Cannot find li", {stream_id});
         return undefined;
     }
@@ -672,6 +711,9 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
         color: sub.color,
         pin_to_top: sub.pin_to_top,
         can_post_messages,
+        cannot_create_topics_in_channel: !stream_data.can_create_new_topics_in_stream(
+            sub.stream_id,
+        ),
         is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
     };
     const $list_item = $(render_stream_sidebar_row(args));
@@ -1010,16 +1052,15 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
         maybe_hide_topic_bracket(section_id);
     }
 
-    // Only scroll pinned topics into view.  If we're unpinning
+    // Only scroll pinned topics into view. If we're unpinning
     // a topic, we may be literally trying to get it out of
     // our sight.
     if (sub.pin_to_top) {
-        const $stream_li = get_stream_li(sub.stream_id);
-        if (!$stream_li) {
+        if (!stream_sidebar.get_row(sub.stream_id)) {
             blueslip.error("passed in bad stream id", {stream_id: sub.stream_id});
             return;
         }
-        scroll_stream_into_view($stream_li);
+        scroll_stream_into_view();
     }
 }
 
@@ -1123,20 +1164,15 @@ export function handle_narrow_activated(
     show_more_topics: boolean,
 ): void {
     const $stream_li = update_stream_sidebar_for_narrow(filter);
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-        if (!change_hash) {
-            if (!is_zoomed_in() && show_more_topics) {
-                zoom_in();
-            } else if (is_zoomed_in() && !show_more_topics) {
-                zoom_out();
-            }
+    if ($stream_li && !change_hash) {
+        if (!is_zoomed_in() && show_more_topics) {
+            zoom_in();
+        } else if (is_zoomed_in() && !show_more_topics) {
+            zoom_out();
         }
     }
 
-    if (is_zoomed_in()) {
-        topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
-    }
+    scroll_stream_into_view();
 }
 
 export function handle_message_view_deactivated(): void {
@@ -1283,15 +1319,16 @@ export function on_sidebar_channel_click(
     let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
     const navigate_to_stream = (): void => {
+        // Muted topics are not included in the unzoomed topic list
+        // information.
         const topic_list_info = topic_list_data.get_list_info(
             stream_id,
             false,
             (topic_names: string[]) => topic_names,
         );
-        // This initial value handles both the
-        // top_topic_in_channel mode as well as the
-        // top_unread_topic_in_channel fallback when there are no
-        // (unmuted) unreads in the channel.
+        // This initial value handles both the top_topic_in_channel
+        // mode as well as the top_unread_topic_in_channel fallback
+        // when there are no (unmuted) unreads in the channel.
         let topic_item = topic_list_info.items[0];
 
         if (
@@ -1299,10 +1336,7 @@ export function on_sidebar_channel_click(
             web_channel_default_view_values.top_unread_topic_in_channel.code
         ) {
             for (const topic_list_item of topic_list_info.items) {
-                if (
-                    unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
-                    !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
-                ) {
+                if (topic_list_item.unread > 0) {
                     topic_item = topic_list_item;
                     break;
                 }
@@ -1310,11 +1344,7 @@ export function on_sidebar_channel_click(
         }
 
         if (topic_item !== undefined) {
-            const destination_url = hash_util.by_channel_topic_permalink(
-                stream_id,
-                topic_item.topic_name,
-            );
-            browser_history.go_to_location(destination_url);
+            browser_history.go_to_location(topic_item.url);
         } else {
             show_channel_feed(stream_id, "sidebar");
             return;
@@ -1468,23 +1498,35 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-export let scroll_stream_into_view = function ($stream_li: JQuery): void {
+export let scroll_stream_into_view = function ($stream_li: JQuery | undefined = undefined): void {
+    if ($stream_li === undefined) {
+        if (narrow_state.filter()?.terms_with_operator("topic").length === 1) {
+            topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
+            return;
+        }
+
+        $stream_li = get_current_stream_li();
+        if ($stream_li === undefined) {
+            return;
+        }
+    }
+
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_filter_height = $("#left-sidebar-search").outerHeight()!;
-    const header_height = $stream_li
-        .closest(".stream-list-section-container")
-        .children(".stream-list-subsection-header")
-        .outerHeight()!;
-    scroll_util.scroll_element_into_container(
-        $stream_li,
-        $container,
-        stream_filter_height + header_height,
-    );
+
+    // Get the element with the channel name which we want to
+    // be visible.
+    const $stream_header = $stream_li.find(".subscription_block");
+    const header_height =
+        $stream_li
+            .closest(".stream-list-section-container")
+            .children(".stream-list-subsection-header")
+            .outerHeight()! + 2; // + 2px for top border
+    scroll_util.scroll_element_into_container($stream_header, $container, header_height);
     // Note: If the stream is in a collapsed folder, we don't uncollapse
     // the folder. We do uncollapse when the user clicks on the channel,
     // but that's handled elsewhere.
@@ -1500,10 +1542,7 @@ export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean
         return;
     }
 
-    const $stream_li = get_current_stream_li();
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
+    scroll_stream_into_view();
 }
 
 export function get_current_stream_li(): JQuery | undefined {
@@ -1543,4 +1582,32 @@ export function collapse_all_stream_sections(): void {
             }
         }
     }
+}
+
+export function get_sorted_channel_ids_for_next_unread_navigation(): {
+    channel_id: number;
+    is_collapsed: boolean;
+}[] {
+    // Get sorted section ids.
+    const sections = stream_list_sort.get_current_sections().map((section) => ({
+        id: section.id,
+        channels: section.streams,
+        is_collapsed: collapsed_sections.has(section.id),
+    }));
+
+    function score(section: {id: string; is_collapsed: boolean}): number {
+        // Prioritize uncollapsed sections over collapsed sections.
+        if (!section.is_collapsed) {
+            return 1;
+        }
+        return 0;
+    }
+
+    sections.sort((a, b) => score(b) - score(a));
+    return sections.flatMap((section) =>
+        section.channels.map((channel_id) => ({
+            channel_id,
+            is_collapsed: section.is_collapsed,
+        })),
+    );
 }

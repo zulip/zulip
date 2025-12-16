@@ -570,6 +570,7 @@ const sweden_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: admins.id,
     can_subscribe_group: support.id,
 });
 const denmark_stream = stream_item({
@@ -579,6 +580,7 @@ const denmark_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const netherland_stream = stream_item({
@@ -588,6 +590,7 @@ const netherland_stream = stream_item({
     subscribed: false,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const mobile_stream = stream_item({
@@ -597,6 +600,7 @@ const mobile_stream = stream_item({
     subscribed: false,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const mobile_team_stream = stream_item({
@@ -606,6 +610,7 @@ const mobile_team_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const broken_link_stream = stream_item({
@@ -615,6 +620,7 @@ const broken_link_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
 });
 
 stream_data.add_sub_for_tests(sweden_stream);
@@ -1255,11 +1261,18 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(actual_value, expected_value);
 
                 // The sorter should return the query as the first element if there
-                // isn't a topic with such name.
+                // isn't a topic with such name only if user has permission to
+                // create new topics.
                 // This only happens if typeahead is providing other suggestions.
+                override(current_user, "user_id", 102);
                 query = "e"; // Letter present in "furniture" and "ice"
                 actual_value = options.sorter(["furniture", "ice"], query);
                 expected_value = ["e", "furniture", "ice"];
+                assert.deepEqual(actual_value, expected_value);
+
+                override(current_user, "user_id", 100);
+                actual_value = options.sorter(["furniture", "ice"], query);
+                expected_value = ["furniture", "ice"];
                 assert.deepEqual(actual_value, expected_value);
 
                 // Suggest the query if this query doesn't match any existing topic.

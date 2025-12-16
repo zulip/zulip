@@ -22,14 +22,17 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
+from zerver.actions.user_settings import (
+    bulk_regenerate_api_keys,
+    do_change_full_name,
+    do_change_user_setting,
+)
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_change_user_emails,
     do_change_can_create_users,
     do_change_can_forge_sender,
-    do_change_user_role,
     do_deactivate_user,
     do_delete_user,
     do_delete_user_preserving_messages,
@@ -157,21 +160,21 @@ class PermissionTest(ZulipTestCase):
 
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_MEMBER)
         self.assertFalse(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertFalse(user_profile in admin_users)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertFalse(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertTrue(user_profile in admin_users)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
         self.assertTrue(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
@@ -203,7 +206,7 @@ class PermissionTest(ZulipTestCase):
     def test_updating_non_existent_user(self) -> None:
         self.login("hamlet")
         admin = self.example_user("hamlet")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         invalid_user_id = 1000
         result = self.client_patch(f"/json/users/{invalid_user_id}", {})
@@ -251,7 +254,7 @@ class PermissionTest(ZulipTestCase):
         iago = self.example_user("iago")
         realm = iago.realm
 
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_OWNER)
 
         result = self.client_get("/json/users")
         members = self.assert_json_success(result)["members"]
@@ -297,7 +300,7 @@ class PermissionTest(ZulipTestCase):
             result, "The owner permission cannot be removed from the only organization owner."
         )
 
-        do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login("iago")
         with self.capture_send_event_calls(expected_num_events=0):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
@@ -737,7 +740,7 @@ class PermissionTest(ZulipTestCase):
     def test_change_owner_to_guest(self) -> None:
         self.login("desdemona")
         iago = self.example_user("iago")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_OWNER)
         self.check_user_role_change("iago", UserProfile.ROLE_GUEST)
 
     def test_change_guest_to_owner(self) -> None:
@@ -749,12 +752,12 @@ class PermissionTest(ZulipTestCase):
     def test_change_owner_to_admin(self) -> None:
         self.login("desdemona")
         iago = self.example_user("iago")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_OWNER)
         self.check_user_role_change("iago", UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_change_owner_to_moderator(self) -> None:
         iago = self.example_user("iago")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_OWNER)
         self.check_user_role_change("iago", UserProfile.ROLE_MODERATOR)
 
     def test_change_moderator_to_owner(self) -> None:
@@ -1210,11 +1213,11 @@ class AdminChangeUserEmailTest(ZulipTestCase):
 
         do_change_can_change_user_emails(realm_admin, True)
         # can_change_user_emails is insufficient without being a realm administrator:
-        do_change_user_role(realm_admin, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(realm_admin, UserProfile.ROLE_MEMBER)
         result = self.client_patch(f"/json/users/{cordelia.id}", valid_params)
         self.assert_json_error(result, "Insufficient permission")
 
-        do_change_user_role(realm_admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(realm_admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_patch(
             f"/json/users/{cordelia.id}",
             dict(new_email="invalid"),
@@ -1256,7 +1259,7 @@ class AdminCreateUserTest(ZulipTestCase):
         admin = self.example_user("hamlet")
         realm = admin.realm
         self.login_user(admin)
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
         do_set_realm_property(realm, "default_language", "ja", acting_user=None)
         valid_params = dict(
             email="romeo@zulip.net",
@@ -1270,11 +1273,11 @@ class AdminCreateUserTest(ZulipTestCase):
 
         do_change_can_create_users(admin, True)
         # can_create_users is insufficient without being a realm administrator:
-        do_change_user_role(admin, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(admin, UserProfile.ROLE_MEMBER)
         result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result, "Must be an organization administrator")
 
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         result = self.client_post("/json/users", {})
         self.assert_json_error(result, "Missing 'email' argument")
@@ -1811,6 +1814,41 @@ class UserProfileTest(ZulipTestCase):
         )
         self.assertFalse(result["is_subscribed"])
 
+    def test_get_user_channels(self) -> None:
+        self.login("hamlet")
+        iago = self.example_user("iago")
+        stream = get_stream("Rome", iago.realm)
+
+        # Invalid user ID.
+        result = self.client_get("/json/users/25/channels")
+        self.assert_json_error(result, "No such user")
+
+        result = orjson.loads(self.client_get(f"/json/users/{iago.id}/channels").content)
+        self.assertFalse(stream.id in result["subscribed_channel_ids"])
+
+        # Subscribe to the stream.
+        self.subscribe(iago, stream.name)
+        result = orjson.loads(self.client_get(f"/json/users/{iago.id}/channels").content)
+        self.assertTrue(stream.id in result["subscribed_channel_ids"])
+
+        # Test access of a Guest user.
+        polonius = self.example_user("polonius")
+        self.assertTrue(polonius.is_guest)
+        self.assertTrue(stream.is_web_public)
+
+        with self.assert_database_query_count(6):
+            result = orjson.loads(
+                self.api_get(polonius, f"/api/v1/users/{iago.id}/channels").content
+            )
+        self.assertTrue(stream.id in result["subscribed_channel_ids"])
+
+        # Test case when guest cannot access all users in the realm.
+        self.set_up_db_for_testing_user_access()
+        cordelia = self.example_user("cordelia")
+        with self.assert_database_query_count(7):
+            result = self.api_get(polonius, f"/api/v1/users/{cordelia.id}/channels")
+        self.assert_json_error(result, "Insufficient permission")
+
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -1838,7 +1876,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api(self) -> None:
         admin = self.example_user("othello")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login("othello")
 
         user = self.example_user("hamlet")
@@ -1859,7 +1897,7 @@ class ActivateTest(ZulipTestCase):
         # We use the api here as we want this to be end-to-end.
 
         admin = self.example_user("othello")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login("othello")
         user = self.example_user("hamlet")
 
@@ -1901,7 +1939,7 @@ class ActivateTest(ZulipTestCase):
         # We use the api here as we want this to be end-to-end.
 
         admin = self.example_user("othello")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login("othello")
         user = self.example_user("hamlet")
 
@@ -1988,7 +2026,7 @@ class ActivateTest(ZulipTestCase):
 
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_OWNER)
 
         # Cannot deactivate a user with the bot api
         result = self.client_delete("/json/bots/{}".format(self.example_user("hamlet").id))
@@ -2029,7 +2067,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api_with_insufficient_permissions(self) -> None:
         non_admin = self.example_user("othello")
-        do_change_user_role(non_admin, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(non_admin, UserProfile.ROLE_MEMBER)
         self.login("othello")
 
         # Cannot deactivate a user with the users api
@@ -3274,13 +3312,18 @@ class DeleteUserTest(ZulipTestCase):
         hamlet_user_id = hamlet.id
         hamlet_date_joined = hamlet.date_joined
 
+        denmark = get_stream("Denmark", hamlet.realm)
+        self.subscribe(hamlet, denmark.name)
+        denmark_original_sub_count = denmark.subscriber_count
+
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
             realm_id=realm.id, recipient=hamlet_personal_recipient
         ).values_list("id", flat=True)
-        self.assertGreater(len(personal_message_ids_to_hamlet), 0)
+        personal_message_ids_to_hamlet_original_count = len(personal_message_ids_to_hamlet)
+        self.assertGreater(personal_message_ids_to_hamlet_original_count, 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())
 
         group_direct_message_ids_from_cordelia = [
@@ -3297,18 +3340,36 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertGreater(len(direct_message_group_with_hamlet_recipient_ids), 0)
 
+        do_change_full_name(hamlet, "some new name", acting_user=hamlet)
+        name_change_log = RealmAuditLog.objects.last()
+        assert name_change_log is not None
+        self.assertEqual(name_change_log.event_type, AuditLogEventType.USER_FULL_NAME_CHANGED)
+        self.assertEqual(name_change_log.modified_user, hamlet)
+
+        send_future_email(
+            "zerver/emails/onboarding_zulip_topics",
+            realm,
+            to_user_ids=[hamlet.id],
+            delay=timedelta(hours=1),
+        )
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
+
         do_delete_user(hamlet, acting_user=None)
 
-        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+        hamlet.refresh_from_db()
 
+        self.assertEqual(hamlet.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver")
+        self.assertEqual(hamlet.is_mirror_dummy, True)
+        self.assertEqual(hamlet.is_active, False)
+        self.assertEqual(hamlet.date_joined, hamlet_date_joined)
+
+        # Messages that were sent TO the user are preserved. They'll just appear
+        # to the senders as sent to a deleted dummy user.
         self.assertEqual(
-            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
+            Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(),
+            personal_message_ids_to_hamlet_original_count,
         )
-        self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
-        self.assertEqual(replacement_dummy_user.is_active, False)
-        self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 
-        self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
         # Group direct messages from hamlet should have been deleted, but messages of other
         # participants should be kept.
         self.assertEqual(
@@ -3323,18 +3384,34 @@ class DeleteUserTest(ZulipTestCase):
         )
 
         # Verify that the dummy user is subscribed to the deleted user's direct message groups,
-        #  to keep direct message group's data in a correct state.
+        # to keep direct message group's data in a correct state.
         for recipient_id in direct_message_group_with_hamlet_recipient_ids:
             self.assertTrue(
-                Subscription.objects.filter(
-                    user_profile=replacement_dummy_user, recipient_id=recipient_id
-                ).exists()
+                Subscription.objects.filter(user_profile=hamlet, recipient_id=recipient_id).exists()
             )
+
+        # Make sure the subscriber count was decremented correctly.
+        denmark.refresh_from_db()
+        self.assertEqual(denmark.subscriber_count, denmark_original_sub_count - 1)
+
+        # Ensure we don't lose audit logs tied to the user.
+        self.assertTrue(RealmAuditLog.objects.filter(id=name_change_log.id).exists())
+        name_change_log.refresh_from_db()
+        self.assertEqual(name_change_log.modified_user, hamlet)
+        self.assertEqual(name_change_log.acting_user, hamlet)
+        # We do scrub private information out of extra_data however.
+        self.assertEqual(name_change_log.extra_data, {})
+        self.assertEqual(name_change_log.scrubbed, True)
+
+        self.assertEqual(ScheduledEmail.objects.count(), 0)
 
     def test_do_delete_user_preserving_messages(self) -> None:
         """
-        This test is extremely similar to the one for do_delete_user, with the only difference being
-        that Messages are supposed to be preserved. All other effects should be identical.
+        Since do_delete_user and do_delete_user_preserving_messages share the same
+        code, besides the latter skipping message deletion, we don't repeat the various
+        assertions from test_do_delete_user here. Instead, we just want to make sure
+        the user gets replaced with a deleted dummy as expected and that messages are
+        preserved.
         """
 
         realm = get_realm("zulip")
@@ -3343,7 +3420,6 @@ class DeleteUserTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         hamlet_personal_recipient = hamlet.recipient
         hamlet_user_id = hamlet.id
-        hamlet_date_joined = hamlet.date_joined
 
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
@@ -3361,28 +3437,16 @@ class DeleteUserTest(ZulipTestCase):
             self.send_group_direct_message(hamlet, [cordelia, othello]) for i in range(3)
         ]
 
-        direct_message_group_with_hamlet_recipient_ids = list(
-            Subscription.objects.filter(
-                user_profile=hamlet, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
-            ).values_list("recipient_id", flat=True)
-        )
-        self.assertGreater(len(direct_message_group_with_hamlet_recipient_ids), 0)
-
         original_messages_from_hamlet_count = Message.objects.filter(
             realm_id=realm.id, sender_id=hamlet_user_id
         ).count()
         self.assertGreater(original_messages_from_hamlet_count, 0)
 
-        do_delete_user_preserving_messages(hamlet)
+        do_delete_user_preserving_messages(hamlet, acting_user=None)
 
-        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+        hamlet.refresh_from_db()
 
-        self.assertEqual(
-            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
-        )
-        self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
-        self.assertEqual(replacement_dummy_user.is_active, False)
-        self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
+        self.assertEqual(hamlet.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver")
 
         # All messages should have been preserved:
         self.assertEqual(
@@ -3402,15 +3466,6 @@ class DeleteUserTest(ZulipTestCase):
             Message.objects.filter(realm_id=realm.id, sender_id=hamlet_user_id).count(),
             original_messages_from_hamlet_count,
         )
-
-        # Verify that the dummy user is subscribed to the deleted user's direct message groups,
-        # to keep direct message group's data in a correct state.
-        for recipient_id in direct_message_group_with_hamlet_recipient_ids:
-            self.assertTrue(
-                Subscription.objects.filter(
-                    user_profile=replacement_dummy_user, recipient_id=recipient_id
-                ).exists()
-            )
 
 
 class FakeEmailDomainTest(ZulipTestCase):

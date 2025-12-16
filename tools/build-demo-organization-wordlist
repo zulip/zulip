@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+import re
+
+import orjson
+import requests
+
+EXCLUDED_NOUNS = [
+    "Fightings",
+    "Followings",
+    "Harassments",
+    "Injustices",
+    "Insults",
+    "Outrages",
+    "Pleas",
+    "Poisons",
+    "Prejudices",
+    "Punishments",
+    "Robberies",
+    "Sins",
+    "Softwares",
+    "Steams",
+    "Theses",
+]
+
+EXCLUDED_ADVERBS = [
+    "Obnoxiously",
+    "Rudely",
+    "Ruthlessly",
+    "Scornfully",
+    "Selfishly",
+]
+
+EXCLUDED_ADJECTIVES = [
+    "Cruel",
+    "Destructive",
+    "Dishonest",
+    "Illegal",
+    "Infamous",
+    "Shocking",
+]
+
+
+def clean_word(word: str) -> str:
+    return word.replace("\\n", "").replace("'", "").replace("]", "").replace("[", "").strip()
+
+
+def run() -> None:
+    url = "https://raw.githubusercontent.com/jitsi/js-utils/refs/heads/master/random/roomNameGenerator.ts"
+    response = requests.get(url)
+    content = str(response.content)
+
+    raw_plural_nouns = re.findall(r"const _PLURALNOUN_.*?=\s*(.*?);", content)
+    plural_nouns = raw_plural_nouns[0].split(",")
+    cleaned_nouns: list[str] = [
+        clean_word(noun).lower() for noun in plural_nouns if clean_word(noun) not in EXCLUDED_NOUNS
+    ]
+
+    raw_adverbs = re.findall(r"const _ADVERB_.*?=\s*(.*?);", content)
+    adverbs = raw_adverbs[0].split(",")
+    cleaned_adverbs: list[str] = [
+        clean_word(adverb).lower()
+        for adverb in adverbs
+        if clean_word(adverb) not in EXCLUDED_ADVERBS
+    ]
+
+    raw_adjectives = re.findall(r"const _ADJECTIVE_.*?=\s*(.*?);", content)
+    adjectives = raw_adjectives[0].split(",")
+    cleaned_adjectives: list[str] = [
+        clean_word(adjective).lower()
+        for adjective in adjectives
+        if clean_word(adjective) not in EXCLUDED_ADJECTIVES
+    ]
+
+    word_map = {
+        "nouns": cleaned_nouns,
+        "adverbs": cleaned_adverbs,
+        "adjectives": cleaned_adjectives,
+    }
+
+    file_path = "zerver/lib/demo_organization_words.json"
+    with open(file_path, "wb+") as f:
+        f.write(
+            orjson.dumps(
+                word_map,
+                option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS,
+            )
+        )
+
+
+if __name__ == "__main__":
+    run()

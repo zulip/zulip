@@ -41,6 +41,7 @@ from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
+from zerver.lib.digest import DIGEST_CUTOFF
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
@@ -160,6 +161,10 @@ def clear_database() -> None:
 def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) -> None:
     subscriptions_to_add = []
     event_time = timezone_now()
+    # Backdate few channel subscriptions to support digest previews in dev.
+    # This ensures sample data appears in `/digest` by making subscriptions
+    # appear old enough to pass the cutoff check in `get_user_stream_map`.
+    event_time_for_digest = event_time - timedelta(days=DIGEST_CUTOFF)
     all_subscription_logs = []
     subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
@@ -184,7 +189,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 modified_stream=stream,
                 event_last_message_id=0,
                 event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
-                event_time=event_time,
+                event_time=event_time_for_digest if i < 4 else event_time,
             )
             all_subscription_logs.append(log)
     bulk_create_stream_subscriptions(subs=subscriptions_to_add, streams=subscriber_count_changes)

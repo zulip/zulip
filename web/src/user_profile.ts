@@ -127,6 +127,8 @@ export function update_user_profile_streams_list_for_users(user_ids: number[]): 
         const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
+        const user = people.get_by_user_id(user_id);
+        render_or_update_user_streams_tab(user);
     }
 }
 
@@ -136,6 +138,8 @@ export function update_user_profile_groups_list_for_users(user_ids: number[]): v
         const user_groups_list = user_groups.get_user_groups_of_user(user_id);
         user_groups_list.sort(compare_by_name);
         user_groups_list_widget.replace_list_data(user_groups_list);
+        const user = people.get_by_user_id(user_id);
+        render_or_update_user_groups_tab(user);
     }
 }
 
@@ -325,6 +329,37 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     });
 }
 
+function render_or_update_user_streams_tab(user: User): void {
+    if (!user_streams_list_widget) {
+        const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
+        render_user_stream_list(user_streams, user);
+    }
+    // We only show the subscribe widget if the user is an admin, the user has opened
+    // their own profile, or if the user profile belongs to a bot whose owner has opened
+    // the user profile. However, we don't want to show the subscribe widget for generic
+    // bots since they are system bots and for deactivated users. Therefore, we also check
+    // for that condition.
+    // We also don't show the widget if there are no channels the user is currently
+    // unsubscribed from and could become subscribed to (i.e. nothing to show in the widget).
+    const user_unsub_streams = get_user_unsub_streams(user.user_id);
+    const show_user_subscribe_widget =
+        (people.can_admin_user(user) || current_user.is_admin) &&
+        user_unsub_streams.length > 0 &&
+        !user.is_system_bot &&
+        people.is_person_active(user.user_id);
+
+    if (show_user_subscribe_widget && user_profile_subscribe_widget === undefined) {
+        reset_subscribe_widget();
+        render_user_profile_subscribe_widget();
+    }
+
+    if (show_user_subscribe_widget) {
+        $("#user-profile-streams-tab .stream-list-bottom-section").show();
+    } else {
+        $("#user-profile-streams-tab .stream-list-bottom-section").hide();
+    }
+}
+
 function render_user_stream_list(streams: StreamSubscription[], user: User): void {
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
@@ -343,6 +378,30 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });
+}
+
+function render_or_update_user_groups_tab(user: User): void {
+    if (!user_groups_list_widget) {
+        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+        render_user_group_list(groups_of_user, user);
+        const $user_group_pill_container = $("#user-group-to-add .pill-container");
+        user_group_pill_widget = user_group_picker_pill.create(
+            $user_group_pill_container,
+            user.user_id,
+        );
+    }
+
+    const user_groups_allowed_to_add_members =
+        user_group_picker_pill.get_user_groups_allowed_to_add_members();
+    const show_user_group_widget =
+        user_groups_allowed_to_add_members.some(
+            (group) => !user_groups.is_direct_member_of(user.user_id, group.id),
+        ) && people.is_person_active(user.user_id);
+    if (show_user_group_widget) {
+        $(".group-list-bottom-section").show();
+    } else {
+        $(".group-list-bottom-section").hide();
+    }
 }
 
 function render_user_group_list(groups: UserGroup[], user: User): void {
@@ -466,11 +525,7 @@ export function update_user_custom_profile_fields(user: User): void {
 
     const profile_data = {profile_fields};
     $custom_profile_field.html(render_user_custom_profile_fields(profile_data));
-    custom_profile_fields_ui.initialize_custom_user_type_fields(
-        "#user-profile-modal #content",
-        user.user_id,
-        false,
-    );
+    custom_profile_fields_ui.initialize_profile_user_type_pills(user.user_id);
 }
 
 export function hide_user_profile(): void {
@@ -496,11 +551,7 @@ function initialize_user_type_fields(user: User): void {
     // Avoid duplicate pill fields, by removing existing ones.
     $("#user-profile-modal .pill").remove();
     if (!user.is_bot) {
-        custom_profile_fields_ui.initialize_custom_user_type_fields(
-            "#user-profile-modal #content",
-            user.user_id,
-            false,
-        );
+        custom_profile_fields_ui.initialize_profile_user_type_pills(user.user_id);
     } else {
         initialize_bot_owner("#user-profile-modal #content", user.user_id);
     }
@@ -607,18 +658,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     original_values = {
         user_id: user.user_id.toString(),
     };
-    const user_unsub_streams = get_user_unsub_streams(user.user_id);
-    // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
-    // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
-    // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
-    // Therefore, we also check for that condition.
-    const show_user_subscribe_widget =
-        (people.can_admin_user(user) || user_unsub_streams.length > 0) &&
-        !user.is_system_bot &&
-        people.is_person_active(user.user_id);
-    const show_user_group_container =
-        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
-        people.is_person_active(user.user_id);
+
     // We currently have the main UI for editing your own profile in
     // settings for non-admins, so can_manage_profile is artificially
     // false for those.
@@ -639,8 +679,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         profile_data,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
-        show_user_subscribe_widget,
-        show_user_group_container,
         user_avatar: people.medium_avatar_url_for_person(user),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         user_id: user.user_id,
@@ -699,22 +737,11 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     }
                     break;
                 case "user-profile-groups-tab": {
-                    if (!user_groups_list_widget) {
-                        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
-                        render_user_group_list(groups_of_user, user);
-                    }
+                    render_or_update_user_groups_tab(user);
                     break;
                 }
                 case "user-profile-streams-tab": {
-                    if (!user_streams_list_widget) {
-                        const user_streams = stream_data.get_streams_for_user(
-                            user.user_id,
-                        ).subscribed;
-                        if (show_user_subscribe_widget) {
-                            render_user_profile_subscribe_widget();
-                        }
-                        render_user_stream_list(user_streams, user);
-                    }
+                    render_or_update_user_streams_tab(user);
                     break;
                 }
                 case "manage-profile-tab":
@@ -749,16 +776,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     setTimeout(() => {
         $(".ind-tab.selected").trigger("focus");
     }, 0);
-    if (show_user_subscribe_widget) {
-        reset_subscribe_widget();
-    }
-    if (show_user_group_container) {
-        const $user_group_pill_container = $("#user-group-to-add .pill-container");
-        user_group_pill_widget = user_group_picker_pill.create(
-            $user_group_pill_container,
-            user.user_id,
-        );
-    }
 }
 
 function handle_remove_stream_subscription(

@@ -159,8 +159,6 @@ Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
 `AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
 `zulip-secrets.conf`. Details are documented in your `settings.py`.
 
-(ldap)=
-
 ## LDAP (including Active Directory)
 
 Zulip supports retrieving information about users via LDAP, and

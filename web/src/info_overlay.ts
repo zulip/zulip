@@ -278,6 +278,9 @@ export function set_up_toggler(): void {
         is_member_of_user_group() {
             return true;
         },
+        stream_hash() {
+            return "";
+        },
         get_stream_by_name(stream_name) {
             return {stream_id: 0, name: stream_name};
         },

@@ -12,6 +12,7 @@ import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
+import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_group_components from "./user_group_components.ts";
@@ -125,6 +126,8 @@ export function toggle_user_group_info_popover(
                     group_members_url: hash_util.group_edit_url(group, "members"),
                     display_all_subgroups_and_members,
                     has_bots,
+                    user_can_access_all_other_users:
+                        settings_data.user_can_access_all_other_users(),
                     displayed_subgroups,
                     displayed_members,
                 };
@@ -197,11 +200,11 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
     return (
         member_ids
             .map((m: number) => people.get_user_by_id_assert_valid(m))
-            // We need to include inaccessible users here separately, since
-            // we do not include them in active_user_dict, but we want to
-            // show them in the popover as "Unknown user".
+            // Only include users that the current user is allowed to see in the popover.
+            // Inaccessible or unknown users should not appear in displayed_members.
             .filter(
-                (m: User) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user,
+                (m: User) =>
+                    people.is_active_user_for_popover(m.user_id) && !m.is_inaccessible_user,
             )
             .map((p: User) => ({
                 ...p,

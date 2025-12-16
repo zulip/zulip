@@ -21,7 +21,7 @@ import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
+import * as gif_state from "./gif_state.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
@@ -330,7 +330,7 @@ export function dispatch_normal_event(event) {
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
-                giphy_rating: giphy.update_giphy_rating,
+                giphy_rating: gif_state.update_gif_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 welcome_message_custom_text: noop,
@@ -347,12 +347,6 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "name") {
                             electron_bridge?.send_event("realm_name", event.value);
-                        }
-
-                        if (event.property === "enable_spectator_access") {
-                            stream_ui_updates.update_stream_privacy_choices(
-                                "can_create_web_public_channel_group",
-                            );
                         }
                     }
                     break;
@@ -394,14 +388,6 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
-                                }
-
-                                if (
-                                    key === "can_create_public_channel_group" ||
-                                    key === "can_create_private_channel_group" ||
-                                    key === "can_create_web_public_channel_group"
-                                ) {
-                                    stream_ui_updates.update_stream_privacy_choices(key);
                                 }
 
                                 if (
@@ -1045,6 +1031,7 @@ export function dispatch_normal_event(event) {
                 stream_list.update_unread_counts_visibility();
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
+                stream_list.update_collapsed_state_on_show_channel_folders_change();
                 stream_list.build_stream_list(true);
             }
             if (event.property === "web_inbox_show_channel_folders") {

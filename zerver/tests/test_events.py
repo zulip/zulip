@@ -160,7 +160,6 @@ from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_is_imported_stub,
-    do_change_user_role,
     do_deactivate_user,
     do_update_outgoing_webhook_service,
 )
@@ -1480,7 +1479,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(event["stream_id"], private_stream.id)
 
     def test_events_on_changing_private_stream_permission_settings(self) -> None:
-        self.make_stream("private_stream", invite_only=True)
+        self.make_stream("private_stream", invite_only=True, history_public_to_subscribers=True)
         self.subscribe(self.example_user("iago"), "private_stream")
         for setting_name in Stream.stream_permission_group_settings:
             if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
@@ -1798,6 +1797,16 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
+        # Test event for updating custom profile data.
+        updated_field: ProfileDataElementUpdateDict = {
+            "id": field_id,
+            "value": [self.example_user("othello").id],
+        }
+        with self.verify_action() as events:
+            do_update_user_custom_profile_data_if_changed(self.user_profile, [updated_field])
+        check_realm_user_update("events[0]", events[0], "custom_profile_field")
+        self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
+
         # Test event for removing custom profile data
         with self.verify_action() as events:
             check_remove_custom_profile_field_value(
@@ -1806,12 +1815,12 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
-        # Test event for updating custom profile data for guests.
+        # Test event for adding custom profile data for guests.
         self.set_up_db_for_testing_user_access()
         self.user_profile = self.example_user("polonius")
         field = {
             "id": field_id,
-            "value": "New value",
+            "value": [self.example_user("iago").id],
         }
         cordelia = self.example_user("cordelia")
         with self.verify_action(num_events=0, state_change_expected=False) as events:
@@ -2484,7 +2493,7 @@ class NormalActionsTest(BaseAction):
         do_create_default_stream_group(self.user_profile.realm, "group1", "This is group1", streams)
         group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST, acting_user=None)
+        self.set_user_role(self.user_profile, UserProfile.ROLE_GUEST)
         venice_stream = get_stream("Venice", self.user_profile.realm)
         with self.verify_action(state_change_expected=False, num_events=0):
             do_add_streams_to_default_stream_group(self.user_profile.realm, group, [venice_stream])
@@ -2499,7 +2508,7 @@ class NormalActionsTest(BaseAction):
         check_default_streams("events[0]", events[0])
 
     def test_default_streams_events_guest(self) -> None:
-        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST, acting_user=None)
+        self.set_user_role(self.user_profile, UserProfile.ROLE_GUEST)
         stream = get_stream("Scotland", self.user_profile.realm)
         with self.verify_action(state_change_expected=False, num_events=0):
             do_add_default_stream(stream)
@@ -2899,10 +2908,10 @@ class NormalActionsTest(BaseAction):
         # has a different shape of arguments and that check will always
         # be required.
         num_events = len(validators) + 1
-        do_change_user_role(self.user_profile, current_role, acting_user=None)
+        self.set_user_role(self.user_profile, current_role)
 
         with self.verify_action(num_events=num_events) as events:
-            do_change_user_role(self.user_profile, new_role, acting_user=None)
+            self.set_user_role(self.user_profile, new_role)
         check_realm_user_update("events[0]", events[0], "role")
         self.assertEqual(events[0]["person"]["role"], new_role)
 
@@ -2913,7 +2922,7 @@ class NormalActionsTest(BaseAction):
             validator(f"events[{i + 1}]", events[i + 1])
 
         # Revert the role back to it's original state.
-        do_change_user_role(self.user_profile, current_role, acting_user=None)
+        self.set_user_role(self.user_profile, current_role)
 
     def test_change_is_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -2970,7 +2979,7 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
 
         self.make_stream("private_stream_1", invite_only=True)
         self.subscribe(self.example_user("othello"), "private_stream_1")
@@ -3094,7 +3103,7 @@ class NormalActionsTest(BaseAction):
                 num_events = 3
 
             with self.verify_action(num_events=num_events) as events:
-                do_change_user_role(cordelia, role, acting_user=None)
+                self.set_user_role(cordelia, role)
 
             check_user_group_remove_members("events[0]", events[0])
             check_user_group_add_members("events[1]", events[1])
@@ -4208,9 +4217,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["upload_space_used"], 0)
 
     def test_notify_realm_export(self) -> None:
-        do_change_user_role(
-            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
-        )
+        self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
         with mock.patch(
@@ -4294,9 +4301,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["error_code"], "INVALID_BOUNCER_PUBLIC_KEY")
 
     def test_notify_realm_export_on_failure(self) -> None:
-        do_change_user_role(
-            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
-        )
+        self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.login_user(self.user_profile)
 
         with (
@@ -4395,7 +4400,7 @@ class RealmPropertyActionTest(BaseAction):
             ],
             jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com", None],
             giphy_rating=[
-                Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
+                Realm.GIF_RATING_OPTIONS["disabled"]["id"],
             ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200, None],
@@ -4914,9 +4919,7 @@ class UserDisplayActionTest(BaseAction):
     def test_set_allow_private_data_export(self) -> None:
         # Verify that both 'user_settings' and 'realm_export_consent' events
         # are received by admins when they change the setting.
-        do_change_user_role(
-            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
-        )
+        self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertFalse(self.user_profile.allow_private_data_export)
 
         num_events = 2
@@ -4962,7 +4965,7 @@ class UserDisplayActionTest(BaseAction):
 
     def test_delivery_email_events_on_changing_email_address_visibility(self) -> None:
         cordelia = self.example_user("cordelia")
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(self.user_profile, UserProfile.ROLE_MODERATOR)
         do_change_user_setting(
             cordelia,
             "email_address_visibility",

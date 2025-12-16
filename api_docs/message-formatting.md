@@ -26,7 +26,9 @@ features.
 ## Links to channels, topics, and messages
 
 Zulip's markup supports special readable Markdown syntax for [linking
-to channels, topics, and messages](/help/link-to-a-message-or-conversation).
+to channels, topics, and
+messages](/help/link-to-a-message-or-conversation). See also [Zulip
+URLs](/api/zulip-urls)
 
 Sample HTML formats are as follows:
 ``` html

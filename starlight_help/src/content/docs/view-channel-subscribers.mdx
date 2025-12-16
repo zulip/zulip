@@ -7,7 +7,7 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-import ChannelMenuSubscribersTabTip from "../include/_ChannelMenuSubscribersTabTip.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SelectChannelViewSubscribers from "../include/_SelectChannelViewSubscribers.mdx";
 
 Who is subscribed to a channel determines who receives the messages sent there.
@@ -28,7 +28,7 @@ unsubscribe other users to channels.
       <SelectChannelViewSubscribers />
     </FlattenedSteps>
 
-    <ChannelMenuSubscribersTabTip />
+    <ChannelSettingsNavbarTip />
   </TabItem>
 
   <TabItem label="Via left sidebar">

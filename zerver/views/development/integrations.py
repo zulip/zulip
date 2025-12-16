@@ -10,7 +10,7 @@ from django.test import Client
 from pydantic import Json
 
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
@@ -24,7 +24,7 @@ ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../
 
 
 def get_webhook_integrations() -> list[str]:
-    return [integration.name for integration in WEBHOOK_INTEGRATIONS]
+    return [integration.name for integration in INCOMING_WEBHOOK_INTEGRATIONS]
 
 
 def get_valid_integration_name(name: str) -> str | None:

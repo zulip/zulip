@@ -25,6 +25,7 @@
 * [Roles and permissions](/api/roles-and-permissions)
 * [Group-setting values](/api/group-setting-values)
 * [Message formatting](/api/message-formatting)
+* [Zulip URLs](/api/zulip-urls)
 * [Client libraries](/api/client-libraries)
 * [API changelog](/api/changelog)
 

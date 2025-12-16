@@ -985,6 +985,13 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertNotEqual(realm.default_language, invalid_lang)
 
+        # Test when language with percent_translated is
+        # less than 5, correct validation error is raised.
+        invalid_lang = "gl"
+        req = dict(default_language=invalid_lang)
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, f"Invalid language '{invalid_lang}'")
+
     def test_deactivate_realm_by_owner(self) -> None:
         self.login("desdemona")
         realm = get_realm("zulip")
@@ -2081,8 +2088,8 @@ class RealmAPITest(ZulipTestCase):
             ],
             jitsi_server_url=["https://example.jit.si"],
             giphy_rating=[
-                Realm.GIPHY_RATING_OPTIONS["g"]["id"],
-                Realm.GIPHY_RATING_OPTIONS["r"]["id"],
+                Realm.GIF_RATING_OPTIONS["g"]["id"],
+                Realm.GIF_RATING_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             message_content_edit_limit_seconds=[1000, 1100, 1200],

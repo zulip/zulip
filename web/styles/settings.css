@@ -147,6 +147,23 @@ h3,
     box-sizing: border-box;
 }
 
+.admin-realm-description.rendered_markdown {
+    /* 5px at 16px and 10px at 16px */
+    padding: 0.3125em 0.625em;
+    width: fit-content;
+    /* 500px at 16px */
+    max-width: 31.25em;
+    min-width: 0;
+
+    & > p:first-child {
+        padding-top: 0;
+    }
+
+    & > p:last-child {
+        margin-bottom: 0;
+    }
+}
+
 .admin-realm-welcome-message-custom-text {
     margin-bottom: 10px;
 }
@@ -193,6 +210,10 @@ h3,
     & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
     }
+
+    /* This variable allows JavaScript to detect whether we are showing both
+    the left sidebar and settings content for the current screen width or not. */
+    --column-count: 2;
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
@@ -407,6 +428,10 @@ select.settings_select {
     .message_count {
         margin: 10px 0 0;
     }
+}
+
+.settings-checkbox-wrapper {
+    width: fit-content;
 }
 
 #bot-edit-form {
@@ -1427,6 +1452,12 @@ label.preferences-radio-choice-label {
                 background-color: var(--color-active-row-modal);
             }
 
+            &:focus-visible {
+                border-radius: 4px;
+                outline: 1px solid var(--color-outline-focus);
+                outline-offset: -2px;
+            }
+
             .sidebar-item-icon {
                 font-size: 1.4em;
                 text-align: center;
@@ -1855,9 +1886,10 @@ label.preferences-radio-choice-label {
         }
     }
 
-    #settings_overlay_container {
-        /* this variable allows JavaScript to detect this media query */
-        --single-column: yes;
+    #settings_content {
+        /* This variable allows JavaScript to detect whether we are showing both
+        the left sidebar and settings content for the current screen width or not. */
+        --column-count: 1;
     }
 
     #settings_page {

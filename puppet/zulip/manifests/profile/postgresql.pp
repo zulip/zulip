@@ -54,7 +54,7 @@ class zulip::profile::postgresql(Boolean $start = true) {
       mode    => '0644',
       content => template("zulip/postgresql/${version}/postgresql.conf.template.erb"),
     }
-  } elsif $version in ['15', '16', '17'] {
+  } elsif $version in ['15', '16', '17', '18'] {
     $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/conf.d/zulip.conf"
     file { $postgresql_conf_file:
       ensure  => file,

@@ -317,7 +317,7 @@ export default defineConfig({
                         "share-and-upload-files",
                         {
                             label: "Animated GIFs",
-                            link: "/animated-gifs-from-giphy",
+                            link: "/animated-gifs",
                         },
                         "text-emphasis",
                         "paragraph-and-section-formatting",
@@ -570,6 +570,7 @@ export default defineConfig({
                         "manage-channel-folders",
                         "channel-permissions",
                         "channel-posting-policy",
+                        "configure-who-can-start-new-topics",
                         "configure-who-can-administer-a-channel",
                         "configure-who-can-create-channels",
                         {
@@ -778,5 +779,6 @@ export default defineConfig({
         "edit-a-bot": "/help/manage-a-bot",
         "reading-dms": "/help/direct-messages",
         "set-up-integrations": "/help/integrations-overview",
+        "animated-gifs-from-giphy": "/help/animated-gifs",
     },
 });
