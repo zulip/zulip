@@ -31,7 +31,8 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
+from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -342,3 +343,37 @@ def validate_webhook_signature(
 
     if signed_payload != signature:
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def guess_zulip_user_from_external_account(
+    realm: Realm,
+    external_username: str,
+    external_account_field_name: str,
+    external_username_case_insensitive: bool,
+) -> UserProfile | None:
+    try:
+        external_account_field = CustomProfileField.objects.get(
+            realm=realm,
+            field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+            name=external_account_field_name,
+        )
+    except CustomProfileField.DoesNotExist:
+        return None
+
+    lookup = "value__iexact" if external_username_case_insensitive else "value__exact"
+
+    try:
+        matching_user = (
+            CustomProfileFieldValue.objects.filter(
+                field=external_account_field,
+                **{lookup: external_username},
+                user_profile__realm=realm,
+                user_profile__is_active=True,
+            )
+            .select_related("user_profile")
+            .only("user_profile__id", "user_profile__full_name")
+            .get()
+        )
+        return matching_user.user_profile
+    except (CustomProfileFieldValue.DoesNotExist, CustomProfileFieldValue.MultipleObjectsReturned):
+        return None
