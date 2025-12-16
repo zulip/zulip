@@ -396,6 +396,10 @@
     .last_msg_time {
         float: left;
         margin-right: 5px;
+
+        .last-msg-link {
+            color: var(--color-text-recent-view-last-msg-time);
+        }
     }
 
     & thead th {
