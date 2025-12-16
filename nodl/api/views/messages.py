@@ -983,12 +983,24 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
                     "timestamp": int(last_message.date_sent.timestamp()),
                 }
 
-            # Get unread count - use flags__andz to check bitmask (flag NOT set)
-            unread_count = UserMessage.objects.filter(
-                user_profile=user,
-                message__recipient_id=recipient_id,
-                flags__andz=UserMessage.flags.read.mask,
-            ).count()
+            # Get unread count - handle both DM models
+            # Legacy PERSONAL: messages TO me have recipient=my.recipient_id
+            # Modern GROUP: all messages share the group recipient_id
+            if user.recipient_id is not None:
+                # Legacy PERSONAL model - filter by MY recipient and sender
+                unread_count = UserMessage.objects.filter(
+                    user_profile=user,
+                    message__recipient_id=user.recipient_id,  # Messages sent TO me
+                    message__sender_id__in=participant_ids,   # From the other user(s)
+                    flags__andz=UserMessage.flags.read.mask,  # Unread
+                ).count()
+            else:
+                # Modern DIRECT_MESSAGE_GROUP model - Stream pattern works
+                unread_count = UserMessage.objects.filter(
+                    user_profile=user,
+                    message__recipient_id=recipient_id,       # Shared group recipient
+                    flags__andz=UserMessage.flags.read.mask,  # Unread
+                ).count()
 
             conversations.append({
                 "user_ids": participant_ids,
