@@ -1589,6 +1589,16 @@ button {
         }
     }
 
+    /* Avoid subtle underline artifacts on the icons
+       for different platform options on /apps/. */
+    a.app-option {
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
     /* These are the same link styles as used in pricing_plans.css
        on the .h1-subheader's links. */
     .hero a:not(.button) {
