@@ -31,7 +31,10 @@ from zerver.actions.realm_settings import (
 )
 from zerver.decorator import require_post, require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
-from zerver.lib.demo_organizations import check_demo_organization_has_set_email
+from zerver.lib.demo_organizations import (
+    check_demo_organization_has_set_email,
+    demo_organization_owner_email_exists,
+)
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success
@@ -567,11 +570,17 @@ def deactivate_realm(
         )
 
     realm = user.realm
+    is_demo_organization = realm.demo_organization_scheduled_deletion_date is not None
+
+    email_owners = True
+    if is_demo_organization:
+        email_owners = demo_organization_owner_email_exists(realm)
+
     do_deactivate_realm(
         realm,
         acting_user=user,
         deactivation_reason="owner_request",
-        email_owners=True,
+        email_owners=email_owners,
         deletion_delay_days=deletion_delay_days,
     )
     return json_success(request)
