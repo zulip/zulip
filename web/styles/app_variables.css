@@ -1178,6 +1178,10 @@
         hsl(229deg 9% 36% / 50%),
         hsl(229deg 10% 70% / 50%)
     );
+    --color-text-recent-view-last-msg-time: light-dark(
+        hsl(0deg 0% 15% / 75%),
+        hsl(0deg 0% 100% / 50%)
+    );
 
     /* Compose box colors */
     --color-compose-box-background: light-dark(
