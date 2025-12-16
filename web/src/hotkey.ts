@@ -447,6 +447,13 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    // Check if the Tenor popover was open using compose box.
+    // Hide Tenor popover if it's open.
+    if (!tenor.is_popped_from_edit_message() && tenor.hide_tenor_popover()) {
+        $("textarea#compose-textarea").trigger("focus");
+        return true;
+    }
+
     if (popovers.any_active()) {
         popovers.hide_all();
         return true;
