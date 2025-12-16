@@ -961,6 +961,7 @@ def do_send_realm_deactivation_email(
 ) -> None:
     shared_context: dict[str, Any] = {
         "realm_name": realm.name,
+        "is_demo_organization": realm.demo_organization_scheduled_deletion_date is not None,
     }
     deactivation_time = timezone_now()
     owners = set(realm.get_human_owner_users())
