@@ -277,6 +277,11 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 } else {
                     edit_message_id = undefined;
                 }
+
+                $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
+                    hide_tenor_popover();
+                });
+
                 $popper.on("keyup", "#gif-search-query", (e) => {
                     assert(e.target instanceof HTMLInputElement);
                     if (e.key === "ArrowDown") {
