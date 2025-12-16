@@ -1613,7 +1613,8 @@ button {
 
     /* These are the same link styles as used in pricing_plans.css
        on the .h1-subheader's links. */
-    .hero a:not(.button) {
+    .hero a:not(.button),
+    .quote:has(.triangle) a {
         color: var(--color-text-hero);
         text-decoration: none;
         border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
@@ -3526,6 +3527,16 @@ button {
     margin: 40px 5px;
     display: flex;
     flex-direction: column;
+
+    &:has(.triangle) {
+        background: var(--color-background-solid-hero);
+
+        blockquote {
+            background: unset;
+            color: var(--color-text-hero);
+            border-left-color: var(--color-text-hero);
+        }
+    }
 
     .case-study-link {
         margin-left: 20px;
