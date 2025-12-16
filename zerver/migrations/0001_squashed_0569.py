@@ -678,6 +678,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(sql="ALTER ROLE CURRENT_USER SET search_path TO zulip,public"),
         migrations.CreateModel(
             name="ArchiveTransaction",
             fields=[
