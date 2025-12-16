@@ -3,14 +3,7 @@
         {{#if this.emoji_alt_code}}
             <div class="emoji_alt_code">&nbsp;:{{this.emoji_name}}:</div>
         {{else if this.is_realm_emoji}}
-            {{#if (and (eq this.emoji_animation_setting "on_hover") this.still_url)}}
-            <img src="{{this.url}}" class="emoji animated-emoji" />
-            <img src="{{this.still_url}}" class="emoji still-emoji" />
-            {{else if (and (eq this.emoji_animation_setting "never") this.still_url)}}
-            <img src="{{this.still_url}}" class="emoji "/>
-            {{else}}
-            <img src="{{this.url}}" class="emoji " />
-            {{/if}}
+            {{> realm_emoji .}}
         {{else}}
             <div class="emoji emoji-{{this.emoji_code}}"></div>
         {{/if}}
