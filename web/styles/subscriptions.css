@@ -1059,7 +1059,7 @@ h4.user_group_setting_subsection_title {
 
     .group_settings_header,
     .stream_settings_header {
-        white-space: nowrap;
+        flex-wrap: wrap;
         display: flex;
         margin-left: 18px;
 
@@ -1397,11 +1397,6 @@ h4.user_group_setting_subsection_title {
 @media (width < $lg_min) {
     .two-pane-settings-container {
         max-width: 95%;
-    }
-
-    #groups_overlay .group_settings_header,
-    #subscription_overlay .stream_settings_header {
-        flex-wrap: wrap;
     }
 }
 
