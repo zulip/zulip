@@ -979,4 +979,14 @@ function register_click_handlers(): void {
 export function initialize(): void {
     register_click_handlers();
     clipboard_enable(".copy_mention_syntax");
+
+    // listen for custom event from DM navbar avatars
+    // this avoids circular import with message_view_header
+    $(document).on(
+        "dm-navbar-avatar-click",
+        (_e, data: {element: HTMLElement; user_id: number}) => {
+            const user = people.get_by_user_id(data.user_id);
+            toggle_user_card_popover(data.element, user);
+        },
+    );
 }

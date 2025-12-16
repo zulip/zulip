@@ -70,6 +70,32 @@
         }
     }
 
+    .dm-navbar-avatars {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 4px;
+    }
+
+    .dm-navbar-avatar {
+        position: relative;
+        cursor: pointer;
+
+        .dm-navbar-avatar-image {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-circle {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            font-size: 10px;
+        }
+    }
+
     .message-header-archived {
         color: var(--color-text-message-header-archived);
         cursor: default;

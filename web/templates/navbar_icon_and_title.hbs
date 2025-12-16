@@ -3,6 +3,16 @@
 {{else if icon}}
 <i class="navbar-icon fa fa-{{icon}}" aria-hidden="true"></i>
 {{/if}}
+{{#if dm_users}}
+<div class="dm-navbar-avatars">
+    {{#each dm_users}}
+        <div class="dm-navbar-avatar" data-user-id="{{user_id}}">
+            <img class="dm-navbar-avatar-image" src="{{avatar_url}}" />
+            <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
+        </div>
+    {{/each}}
+</div>
+{{else}}
 {{#if title}}
 <span class="message-header-navbar-title">{{title}}</span>
 {{/if}}
@@ -10,9 +20,10 @@
 <span class="message-header-navbar-title">{{{title_html}}}</span>
 {{/if}}
 {{#if stream}}
-    {{#if stream.is_archived}}
-    <span class="message-header-archived">
-        <i class="archived-indicator">({{t 'archived' }})</i>
-    </span>
-    {{/if}}
+{{#if stream.is_archived}}
+<span class="message-header-archived">
+    <i class="archived-indicator">({{t 'archived' }})</i>
+</span>
+{{/if}}
+{{/if}}
 {{/if}}

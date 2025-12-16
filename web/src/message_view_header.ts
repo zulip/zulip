@@ -11,12 +11,20 @@ import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as presence from "./presence.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+
+type DmUser = {
+    user_id: number;
+    avatar_url: string;
+    user_circle_class: string;
+};
 
 type MessageViewHeaderContext = {
     title?: string | undefined;
@@ -30,6 +38,7 @@ type MessageViewHeaderContext = {
     is_admin?: boolean;
     stream?: StreamSubscription;
     stream_settings_link?: string;
+    dm_users?: DmUser[];
 } & (
     | {
           zulip_icon: string;
@@ -145,6 +154,38 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
+    if (filter.has_operator("dm")) {
+        const pm_ids_string = narrow_state.pm_ids_string(filter);
+        if (pm_ids_string !== undefined) {
+            const user_ids = people.user_ids_string_to_ids_array(pm_ids_string);
+            const dm_users: DmUser[] = user_ids.map((user_id) => {
+                const person = people.get_by_user_id(user_id);
+                // inline the circle class logic to avoid buddy_data import cycle
+                const status = presence.get_status(user_id);
+                let user_circle_class: string;
+                switch (status) {
+                    case "active":
+                        user_circle_class = "user-circle-active";
+                        break;
+                    case "idle":
+                        user_circle_class = "user-circle-idle";
+                        break;
+                    default:
+                        user_circle_class = "user-circle-offline";
+                }
+                return {
+                    user_id,
+                    avatar_url: people.small_avatar_url_for_person(person),
+                    user_circle_class,
+                };
+            });
+            return {
+                ...context,
+                dm_users,
+            };
+        }
+    }
+
     return context;
 }
 
@@ -185,6 +226,22 @@ function build_message_view_header(filter: Filter | undefined): void {
 
 export function initialize(): void {
     render_title_area();
+
+    // click handler for DM navbar avatars - dispatches custom event
+    // to avoid circular import with user_card_popover
+    $("#message_view_header").on("click", ".dm-navbar-avatar", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        const user_id_str = $(this).attr("data-user-id");
+        if (user_id_str === undefined) {
+            return;
+        }
+        const user_id = Number.parseInt(user_id_str, 10);
+        // dispatch custom event that user_card_popover listens for
+        $(document).trigger("dm-navbar-avatar-click", {
+            element: this,
+            user_id,
+        });
+    });
 
     const hide_stream_settings_button_width_threshold = 620;
     $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
