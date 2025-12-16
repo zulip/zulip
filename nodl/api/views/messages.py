@@ -983,13 +983,11 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
                     "timestamp": int(last_message.date_sent.timestamp()),
                 }
 
-            # Get unread count
-            recipient = Recipient.objects.get(id=recipient_id)
+            # Get unread count - use flags__andz to check bitmask (flag NOT set)
             unread_count = UserMessage.objects.filter(
                 user_profile=user,
-                message__recipient=recipient,
-            ).exclude(
-                flags=UserMessage.flags.read,
+                message__recipient_id=recipient_id,
+                flags__andz=UserMessage.flags.read.mask,
             ).count()
 
             conversations.append({
