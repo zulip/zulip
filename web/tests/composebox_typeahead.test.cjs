@@ -1225,23 +1225,32 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 options.query = "Kro";
                 actual_value = options.item_html("kronor");
                 expected_value =
+                    '<div class="typeahead-row">\n' +
+                    '\n' +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">kronor</strong></div>\n';
+                    '    <strong class="typeahead-strong-section">kronor</strong></div>\n' +
+                    '</div>';
                 assert.equal(actual_value, expected_value);
 
                 // Highlighted content should be escaped.
                 options.query = "<";
                 actual_value = options.item_html("<&>");
                 expected_value =
+                    '<div class="typeahead-row">\n' +
+                    '\n' +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">&lt;&amp;&gt;</strong></div>\n';
+                    '    <strong class="typeahead-strong-section">&lt;&amp;&gt;</strong></div>\n' +
+                    '</div>';
                 assert.equal(actual_value, expected_value);
 
                 options.query = "even m";
                 actual_value = options.item_html("even more ice");
                 expected_value =
+                    '<div class="typeahead-row">\n' +
+                    '\n' +
                     '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">even more ice</strong></div>\n';
+                    '    <strong class="typeahead-strong-section">even more ice</strong></div>\n' +
+                    '</div>';
                 assert.equal(actual_value, expected_value);
 
                 // options.sorter()
