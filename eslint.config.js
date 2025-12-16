@@ -215,6 +215,12 @@ export default defineConfig(
         },
     },
     {
+        files: ["**/*.md"],
+        rules: {
+            "import/unambiguous": "off",
+        },
+    },
+    {
         files: ["web/tests/**"],
         rules: {
             "@typescript-eslint/no-empty-function": "off",
