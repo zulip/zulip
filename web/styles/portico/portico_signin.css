@@ -1686,3 +1686,10 @@ button#register_auth_button_gitlab {
 .slack-import-file-upload-instruction {
     margin-top: 1rem;
 }
+
+#realm-creation-form-slack-import {
+    /* Set a minimum height that's roughly ~2x the height of status page
+       with maximum content in English, to avoid the page height jumping
+       distractingly. */
+    min-height: 400px;
+}
