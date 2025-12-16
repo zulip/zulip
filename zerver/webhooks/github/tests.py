@@ -5,6 +5,8 @@ import orjson
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
+from zerver.models import CustomProfileField
+from zerver.models.realms import get_realm
 
 TOPIC_REPO = "public-repo"
 TOPIC_ISSUE = "public-repo / issue #2 Spelling error in the README file"
@@ -781,6 +783,36 @@ A temporary team so that I can get some webhook fixtures!
             expected_message=None,
             expect_noop=True,
         )
+
+    def test_issue_comment_silent_mention(self) -> None:
+        realm = get_realm("zulip")
+        github_field = CustomProfileField.objects.get(
+            realm=realm,
+            name="GitHub username",
+        )
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": github_field.id, "value": "baxterthehacker"}]
+        )
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
+        self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+    def test_issue_comment_silent_mention_with_multiple_matches(self) -> None:
+        realm = get_realm("zulip")
+        github_field = CustomProfileField.objects.get(
+            realm=realm,
+            name="GitHub username",
+        )
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": github_field.id, "value": "baxterthehacker"}]
+        )
+        cordelia = self.example_user("cordelia")
+        self.set_user_custom_profile_data(
+            cordelia, [{"id": github_field.id, "value": "baxterthehacker"}]
+        )
+        expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
+        self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):
