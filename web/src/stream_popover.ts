@@ -298,7 +298,7 @@ async function get_message_placement_in_conversation(
         // we can find the adjacent messages in the current view
         // through which we can determine if the message is an
         // intermediate message or not.
-        const msg_list = message_lists.current.data.all_messages_after_mute_filtering();
+        const msg_list = message_lists.current.all_messages();
         let found_newer_matching_message = false;
         let found_older_matching_message = false;
         const current_dict = {
