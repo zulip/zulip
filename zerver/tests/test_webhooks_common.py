@@ -9,6 +9,7 @@ from django.test import override_settings
 from django.utils.encoding import force_bytes
 from typing_extensions import override
 
+from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
 from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
@@ -23,10 +24,11 @@ from zerver.lib.webhooks.common import (
     call_fixture_to_headers,
     check_send_webhook_message,
     get_event_header,
+    guess_zulip_user_from_external_account,
     standardize_headers,
     validate_webhook_signature,
 )
-from zerver.models import Client, Message, UserProfile
+from zerver.models import Client, CustomProfileField, Message, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -198,6 +200,81 @@ class WebhooksCommonTestCase(ZulipTestCase):
         assert message_id is not None
         msg = Message.objects.get(id=message_id)
         self.assertEqual(msg.topic_name(), "Test topic")
+
+
+class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.realm = get_realm("zulip")
+        self.hamlet = self.example_user("hamlet")
+        self.othello = self.example_user("othello")
+        self.github_name = "GitHub username"
+
+    def get_github_field(self) -> CustomProfileField:
+        return CustomProfileField.objects.get(
+            realm=self.realm,
+            name=self.github_name,
+        )
+
+    def set_user_external_account(
+        self, user: UserProfile, field: CustomProfileField, value: str
+    ) -> None:
+        self.set_user_custom_profile_data(user, [{"id": field.id, "value": value}])
+
+    def test_single_exact_match(self) -> None:
+        github_field = self.get_github_field()
+        self.set_user_external_account(self.hamlet, github_field, "octocat")
+
+        result = guess_zulip_user_from_external_account(
+            self.realm, "octocat", self.github_name, external_username_case_insensitive=True
+        )
+        self.assertEqual(result, self.hamlet)
+
+        # Test case-sensitive account names
+        result = guess_zulip_user_from_external_account(
+            self.realm, "ocTOcat", self.github_name, external_username_case_insensitive=False
+        )
+        self.assertIsNone(result)
+
+        # Test multiple matching field values found
+        self.set_user_external_account(self.othello, github_field, "octocat")
+
+        result = guess_zulip_user_from_external_account(
+            self.realm, "octocat", self.github_name, external_username_case_insensitive=True
+        )
+        self.assertIsNone(result)
+
+    def test_no_matches_found(self) -> None:
+        # Test no matching field
+        result = guess_zulip_user_from_external_account(
+            self.realm, "someuser", "gitlab", external_username_case_insensitive=True
+        )
+        self.assertIsNone(result)
+
+        # test no matching field value
+        result = guess_zulip_user_from_external_account(
+            self.realm, "nonexistentuser", self.github_name, external_username_case_insensitive=True
+        )
+        self.assertIsNone(result)
+
+    def test_matches_from_custom_external_account_field(self) -> None:
+        external_account_field_name = "Otherhub username"
+        external_account_field = try_add_realm_custom_profile_field(
+            self.realm,
+            external_account_field_name,
+            CustomProfileField.EXTERNAL_ACCOUNT,
+            field_data={"subtype": "custom", "url_pattern": "https://other.com/%(username)s"},
+        )
+        self.set_user_external_account(self.hamlet, external_account_field, "octocat")
+
+        result = guess_zulip_user_from_external_account(
+            self.realm,
+            "octocat",
+            external_account_field_name,
+            external_username_case_insensitive=True,
+        )
+        self.assertEqual(result, self.hamlet)
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):
