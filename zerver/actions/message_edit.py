@@ -37,7 +37,12 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import ChannelTopicInfo, MentionBackend, MentionData, silent_mention_syntax_for_user
+from zerver.lib.mention import (
+    ChannelTopicInfo,
+    MentionBackend,
+    MentionData,
+    silent_mention_syntax_for_user,
+)
 from zerver.lib.message import (
     access_message,
     bulk_access_stream_messages_query,

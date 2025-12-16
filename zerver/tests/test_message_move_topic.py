@@ -1500,7 +1500,9 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         msg_ids = [
             self.send_stream_message(user_profile, stream.name, topic_name="test", content="First"),
-            self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second"),
+            self.send_stream_message(
+                user_profile, stream.name, topic_name="test", content="Second"
+            ),
             self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third"),
         ]
 
