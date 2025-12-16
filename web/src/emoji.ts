@@ -41,6 +41,7 @@ export type EmojiDict = {
 } & (
     | {
           is_realm_emoji: true;
+          still_url: string | null;
           emoji_code?: undefined;
       }
     | {
@@ -221,6 +222,7 @@ function build_emojis_by_name({
             url: realm_emoji.emoji_url,
             has_reacted: false,
             emoji_code: undefined,
+            still_url: realm_emoji.still_url,
         };
 
         // We want the realm emoji to overwrite any existing entry in this map.

@@ -275,6 +275,7 @@ function filter_emojis(): void {
     const $elt = $<HTMLInputElement>("input#emoji-popover-filter").expectOne();
     const query = $elt.val()!.trim().toLowerCase();
     const message_id = Number($(".emoji-search-results-container").attr("data-message-id"));
+    const emoji_animation_setting = user_settings.web_animate_image_previews;
     if (query !== "") {
         const categories = complete_emoji_catalog;
         const search_terms = query.split(" ");
@@ -307,6 +308,7 @@ function filter_emojis(): void {
             search_results: sorted_search_results,
             is_status_emoji_popover: user_status_ui.user_status_picker_open(),
             message_id,
+            emoji_animation_setting,
         });
         $(".emoji-search-results").html(rendered_search_results);
         scroll_util.reset_scrollbar($(".emoji-search-results-container"));
@@ -680,6 +682,7 @@ function get_default_emoji_popover_options(): Partial<tippy.Props> {
         },
         onMount(instance: tippy.Instance) {
             const $popover = $(instance.popper);
+            const emoji_animation_setting = user_settings.web_animate_image_previews;
             // Render the emojis after simplebar has been initialized which
             // saves us ~30% time rendering them.
             $popover.find(".emoji-popover-emoji-map .simplebar-content").html(
@@ -687,6 +690,7 @@ function get_default_emoji_popover_options(): Partial<tippy.Props> {
                     message_id: current_message_id,
                     emoji_categories: complete_emoji_catalog,
                     is_status_emoji_popover: user_status_ui.user_status_picker_open(),
+                    emoji_animation_setting,
                 }),
             );
             refill_section_head_offsets($popover);
