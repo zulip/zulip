@@ -1522,6 +1522,18 @@ button {
     }
 }
 
+/* Buttons in the hero area appear lighter than their
+   content-area counterparts (e.g., the .register-buttons),
+   so we tune them a bit darker to appear uniform.
+   TODO: As above, create variables for these colors. */
+.hero-buttons .button {
+    background-color: hsl(219deg 56% 41%);
+
+    &:hover {
+        background-color: hsl(219deg 56% 37%);
+    }
+}
+
 .desktop-download-link.button {
     color: hsl(219deg 62% 54%);
     background-color: hsl(0deg 0% 100%);
