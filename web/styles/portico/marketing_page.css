@@ -2210,10 +2210,8 @@ button {
 
 .portico-landing.apps .hero {
     position: relative;
-
-    padding: 100px 50px 50px;
+    padding: 200px 50px 120px;
     background: var(--color-background-solid-hero);
-    height: 450px;
 
     color: hsl(0deg 0% 100%);
 
@@ -3093,20 +3091,9 @@ button {
         padding-top: 120px;
     }
 
-    .portico-landing.apps .hero {
-        height: 350px;
-    }
-
     .portico-landing.apps .hero h1 {
         font-size: 1.9em;
         font-weight: 400;
-    }
-
-    .portico-landing.apps .hero .info .flex,
-    .portico-landing.apps .hero .image .flex {
-        height: 200px;
-        min-height: 0;
-        width: 100%;
     }
 
     .portico-landing.apps .other-apps {
