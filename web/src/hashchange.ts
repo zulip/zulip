@@ -6,10 +6,10 @@ import * as admin from "./admin.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
-import {Filter} from "./filter.ts";
+import { Filter } from "./filter.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t_html} from "./i18n.ts";
+import { $t_html } from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as info_overlay from "./info_overlay.ts";
 import * as message_fetch from "./message_fetch.ts";
@@ -17,7 +17,7 @@ import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
-import {page_params} from "./page_params.ts";
+import { page_params } from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
@@ -28,12 +28,13 @@ import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
-import {current_user} from "./state_data.ts";
+import { current_user } from "./state_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
+import * as unsubscribe_suggestion from "./unsubscribe_suggestion.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
-import {user_settings} from "./user_settings.ts";
+import { user_settings } from "./user_settings.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
@@ -58,7 +59,7 @@ function show_all_message_view(narrow_opts?: message_view.ShowMessageViewOpts): 
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
-    message_view.show([{operator: "in", operand: "home"}], {
+    message_view.show([{ operator: "in", operand: "home" }], {
         trigger: "hashchange",
         change_hash: false,
         ...narrow_opts,
@@ -192,7 +193,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 terms = hash_util.parse_narrow(hash);
             } catch {
                 ui_report.error(
-                    $t_html({defaultMessage: "Invalid URL"}),
+                    $t_html({ defaultMessage: "Invalid URL" }),
                     undefined,
                     $("#home-error"),
                     2000,
@@ -438,6 +439,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
     if (!coming_from_overlay) {
         browser_history.set_hash_before_overlay(old_hash);
+    }
+
+    if (base === "channels" && section === "recommendations") {
+        unsubscribe_suggestion.launch();
+        return;
     }
 
     if (base === "channels") {

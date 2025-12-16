@@ -1,0 +1,36 @@
+<div class="micromodal" id="unsubscribe-suggestion-modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="unsubscribe-suggestion-modal-title">
+            <header class="modal__header">
+                <h1 class="modal__title" id="unsubscribe-suggestion-modal-title">
+                    {{t "Manage your channels" }}
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    {{t "You have a high number of subscribed channels. Here are some you might not need to follow closely." }}
+                </p>
+                <div class="recommendation-list">
+                    {{#each streams}}
+                    <div class="recommendation-row" data-stream-id="{{this.stream_id}}">
+                        <div class="stream-info">
+                            <span class="stream-name"># {{this.name}}</span>
+                            <span class="unread-count">{{t "Unread: {count}" count=this.unread_count}}</span>
+                        </div>
+                        <div class="actions">
+                            {{#unless this.is_muted}}
+                            <button class="button small button-warning mute-stream" data-stream-id="{{this.stream_id}}">{{t "Mute" }}</button>
+                            {{/unless}}
+                            <button class="button small button-danger unsubscribe-stream" data-stream-id="{{this.stream_id}}">{{t "Unsubscribe" }}</button>
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn modal__btn-primary" data-micromodal-close aria-label="{{t 'Close this dialog window' }}">{{t "Done" }}</button>
+            </footer>
+        </div>
+    </div>
+</div>
