@@ -61,6 +61,17 @@
                     {% endif %}
                 </div>
 
+                {% if form.show_enable_marketing_emails %}
+                <div class="input-group">
+                    <label for="id_enable_marketing_emails_demo_creator" class="inline-block checkbox marketing_emails_checkbox">
+                        <input id="id_enable_marketing_emails_demo_creator" type="checkbox" name="enable_marketing_emails"
+                          checked="checked" />
+                        <span class="rendered-checkbox"></span>
+                        {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
+                    </label>
+                </div>
+                {% endif %}
+
                 <div class="input-box m-t-30">
                     <div class="centered-button">
                         <button type="submit" class="" value="Submit">Submit</button>

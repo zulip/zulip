@@ -23,7 +23,7 @@ from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationT
 from two_factor.utils import totp_digits
 from typing_extensions import override
 
-from zerver.actions.user_settings import do_change_password
+from zerver.actions.user_settings import do_change_password, do_change_user_setting
 from zerver.actions.users import do_send_password_reset_email
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
@@ -481,6 +481,17 @@ class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
     )
+    enable_marketing_emails = forms.BooleanField(required=False)
+
+    def __init__(self, user: UserProfile, *args: Any, **kwargs: Any) -> None:
+        super().__init__(user, *args, **kwargs)
+        self.show_enable_marketing_emails = False
+        if (
+            settings.CORPORATE_ENABLED
+            and user.realm.demo_organization_scheduled_deletion_date is not None
+            and not user.enable_marketing_emails
+        ):
+            self.show_enable_marketing_emails = user.realm.get_first_human_user() == user
 
     def clean_new_password1(self) -> str:
         new_password = self.cleaned_data["new_password1"]
@@ -494,6 +505,15 @@ class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
     @override
     def save(self, commit: bool = True) -> UserProfile:
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
+        enable_marketing_emails = self.cleaned_data["enable_marketing_emails"]
+        if enable_marketing_emails and not self.user.enable_marketing_emails:
+            do_change_user_setting(
+                self.user,
+                "enable_marketing_emails",
+                enable_marketing_emails,
+                acting_user=self.user,
+            )
+
         return self.user
 
 
