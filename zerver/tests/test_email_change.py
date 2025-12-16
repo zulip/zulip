@@ -6,6 +6,7 @@ import orjson
 import time_machine
 from django.conf import settings
 from django.core import mail
+from django.http import HttpRequest
 from django.utils.html import escape
 from django.utils.timezone import now
 
@@ -463,7 +464,9 @@ class EmailChangeTestCase(ZulipTestCase):
         password_set_url = result["Location"]
         result = self.client_get(password_set_url, subdomain=realm.string_id)
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Set a new password"], result)
+        self.assert_in_success_response(
+            ["Set a new password", "low-traffic newsletter (a few emails a year)"], result
+        )
 
         user_profile.refresh_from_db()
         self.assertEqual(user_profile.delivery_email, "demo-owner@example.com")
@@ -484,3 +487,33 @@ class EmailChangeTestCase(ZulipTestCase):
             orjson.loads(scheduled_emails[2].data)["template_prefix"],
             "zerver/emails/onboarding_team_to_zulip",
         )
+
+        # Set password
+        with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
+            result = self.client_post(
+                password_set_url,
+                {
+                    "new_password1": "f657gdGGk9",
+                    "new_password2": "f657gdGGk9",
+                    "enable_marketing_emails": "true",
+                },
+                subdomain=realm.string_id,
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith("/password/done/"))
+            self.assert_logged_in_user_id(None)
+
+            # Log in with new password
+            request = HttpRequest()
+            request.session = self.client.session
+            self.assertTrue(
+                self.client.login(
+                    request=request,
+                    username="demo-owner@example.com",
+                    password="f657gdGGk9",
+                    realm=realm,
+                ),
+            )
+            self.assert_logged_in_user_id(user_profile.id)
+            user_profile.refresh_from_db()
+            self.assertTrue(user_profile.enable_marketing_emails)

@@ -533,6 +533,10 @@ class PasswordResetTest(ZulipTestCase):
         final_reset_url = result["Location"]
         result = self.client_get(final_reset_url)
         self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Set a new password"], result)
+        self.assert_not_in_success_response(
+            ["low-traffic newsletter (a few emails a year)"], result
+        )
 
         # Reset your password
         with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
