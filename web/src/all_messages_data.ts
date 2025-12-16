@@ -3,6 +3,7 @@ import {MessageListData} from "./message_list_data.ts";
 
 export let all_messages_data = new MessageListData({
     excludes_muted_topics: false,
+    excludes_muted_users: false,
     filter: new Filter([]),
 });
 
