@@ -2,6 +2,12 @@
 
 Get GitHub notifications in Zulip!
 
+!!! tip ""
+
+   When Zulip users add their GitHub username to their profile's "GitHub"
+   field, GitHub notifications will automatically convert GitHub usernames
+   to silent mentions, notifying the relevant Zulip users.
+
 {start_tabs}
 
 1. {!create-an-incoming-webhook.md!}
