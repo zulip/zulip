@@ -440,6 +440,13 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    // Check if the giphy popover was open using compose box.
+    // Hide GIPHY popover if it's open.
+    if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
+        $("textarea#compose-textarea").trigger("focus");
+        return true;
+    }
+
     if (popovers.any_active()) {
         popovers.hide_all();
         return true;
@@ -491,13 +498,6 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         }
 
         if (compose_state.composing()) {
-            // Check if the giphy popover was open using compose box.
-            // Hide GIPHY popover if it's open.
-            if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
-                $("textarea#compose-textarea").trigger("focus");
-                return true;
-            }
-
             // Check for errors in compose box; close errors if they exist
             if ($("main-view-banner").length > 0) {
                 compose_banner.clear_all();
