@@ -47,9 +47,6 @@ run the commands in `scripts/setup/create-db.sql` to:
 
 - Create a database called `zulip` with `C.UTF-8` collation.
 - Create a user called `zulip` with full rights on that database.
-- Log in with the `zulip` user to create a schema called `zulip` in the `zulip`
-  database. You might have to grant `create` privileges first for the `zulip`
-  user to do this.
 
 If you cannot run that SQL directly, you should perform the equivalent actions
 in the service's web UI.
