@@ -281,7 +281,7 @@ export function update_settings_button_for_archive_and_unarchive(sub: StreamSubs
     }
 }
 
-export function update_regular_sub_settings(sub: StreamSubscription): void {
+export function update_channel_email_section(sub: StreamSubscription): void {
     // These are in the right panel.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;

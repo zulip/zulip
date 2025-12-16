@@ -496,7 +496,7 @@ export function show_settings_for(node: HTMLElement): void {
     stream_ui_updates.update_can_subscribe_group_label($edit_container);
     stream_settings_components.set_up_folder_dropdown_widget(sub);
     stream_ui_updates.set_folder_dropdown_visibility($("#stream_settings"));
-    stream_ui_updates.update_regular_sub_settings(sub);
+    stream_ui_updates.update_channel_email_section(sub);
 
     $("#channels_overlay_container").on(
         "click",
@@ -858,7 +858,7 @@ export function initialize(): void {
             if (!sub.subscribed) {
                 open_edit_panel_for_row(util.the($stream_row));
             }
-            stream_ui_updates.update_regular_sub_settings(sub);
+            stream_ui_updates.update_channel_email_section(sub);
 
             e.preventDefault();
             e.stopPropagation();
