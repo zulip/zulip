@@ -217,3 +217,80 @@ run_test("reply_message_errors", () => {
 
     transmit.reply_message(bogus_message, "");
 });
+
+run_test("test_idempotency_key", () => {
+    reload_state.is_pending = () => false;
+    const message_states = {};
+    let options;
+
+    // make get_message_state stateful with regards to local_id
+    sent_messages.get_message_state = (local_id) => {
+        if (local_id === "non-existent") {
+            return undefined;
+        }
+        message_states[local_id] ??= {
+            report_server_ack: noop,
+            report_error: noop,
+            saw_event: true,
+        };
+        return message_states[local_id];
+    };
+
+    channel.post = (opts) => {
+        options = opts;
+    };
+
+    const request_a = {local_id: "1"};
+
+    // Send a message
+    transmit.send_message(request_a, noop, noop);
+    const request_a_key = options.idempotencyKeyManager.getKey();
+
+    // Resend the same message
+    transmit.send_message(request_a, noop, noop);
+
+    // idempotency key should persist when retrying the successful request for the same message.
+    assert.equal(request_a_key, options.idempotencyKeyManager.getKey());
+
+    const request_b = {local_id: "2"};
+
+    // idempotency key should be different for different messages.
+    transmit.send_message(request_b, noop, noop);
+    assert.notEqual(options.idempotencyKeyManager.getKey(), request_a_key);
+
+    // Resend the first message (request_a) to make sure key was NOT overridden.
+    transmit.send_message(request_a, noop, noop);
+    assert.equal(options.idempotencyKeyManager.getKey(), request_a_key);
+
+    // No key is generated when get_message_state is undefined.
+    transmit.send_message({local_id: "non-existent"}, noop, noop);
+    assert.equal(options.idempotencyKeyManager.getKey(), undefined);
+
+    // Error testing
+
+    channel.xhr_error_message = (msg) => msg;
+
+    const request_c = {local_id: "3"};
+    transmit.send_message(request_c, noop, noop);
+    const request_c_key = options.idempotencyKeyManager.getKey();
+
+    // 5xx error
+    channel.post = (opts) => {
+        const xhr = {status: 500, responseJSON: {}};
+        opts.error(xhr, "some error_type");
+    };
+
+    // 5xx error should NOT change key
+    transmit.send_message(request_c, noop, noop);
+    assert.equal(options.idempotencyKeyManager.getKey(), request_c_key);
+
+    // 4xx error
+    channel.post = (opts) => {
+        const xhr = {status: 400, responseJSON: {}};
+        opts.error(xhr, "some error_type");
+    };
+
+    // 4xx error should change key
+    transmit.send_message(request_c, noop, noop);
+    assert.notEqual(options.idempotencyKeyManager.getKey(), request_c_key);
+});

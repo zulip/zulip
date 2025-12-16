@@ -11,6 +11,7 @@ import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import {generate_idempotency_key} from "./util.ts";
 
 type SendMessageData = {
     local_id: string;
@@ -42,9 +43,45 @@ export function send_message(
         });
     }
     sent_messages.wrap_send(request.local_id, () => {
+        const idempotencyKeyManager = {
+            getKey() {
+                const state = sent_messages.get_message_state(request.local_id);
+                if (state === undefined) {
+                    return undefined;
+                }
+                // The same idempotency key is tied to every message,
+                // so the same key can be used in case that same message is retried on error.
+                // This is important in case a request was processed successfully by server
+                // but the server response failed to reach client due to a server-side or network error.
+
+                // Generate a key if it doesn't exist
+                state.idempotency_key ??= generate_idempotency_key();
+                return state.idempotency_key;
+            },
+            changeKey() {
+                const state = sent_messages.get_message_state(request.local_id);
+                if (state !== undefined) {
+                    state.idempotency_key = generate_idempotency_key();
+                }
+            },
+            error(status_code: number) {
+                // We change the key if it's a 4xx.
+                // A 4xx status_code (e.g. bad request) means the request reached the server
+                // and the response returned successfully to the client,
+                // but the request itself is invalid. This can happen in case the client
+                // sends invalid data or because the server's validation for that request changes,
+                // so a request retry in this case should be treated as a
+                // new request, and more importantly to avoid getting the
+                // cached old result of the previous request.
+                if (status_code >= 400 && status_code < 500) {
+                    this.changeKey();
+                }
+            },
+        };
         channel.post({
             url: "/json/messages",
             data: request,
+            idempotencyKeyManager,
             success: function success(data) {
                 // Call back to our callers to do things like closing the compose
                 // box, turning off spinners, reifying locally echoed messages and
@@ -80,6 +117,7 @@ export function send_message(
             },
             error(xhr, error_type) {
                 sent_messages.get_message_state(request.local_id)?.report_error();
+                idempotencyKeyManager.error(xhr.status);
                 if (error_type !== "timeout" && reload_state.is_pending()) {
                     // The error might be due to the server changing
                     reload.initiate({
