@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 
@@ -32,19 +31,6 @@ export type GiphyPayload = {
 
 export function get_giphy_picker_state(): gif_picker_ui.GifPickerState {
     return picker_state;
-}
-
-export function is_popped_from_edit_message(): boolean {
-    return (
-        picker_state.popover_instance !== undefined && picker_state.edit_message_id !== undefined
-    );
-}
-
-export function focus_current_edit_message(): void {
-    assert(picker_state.edit_message_id !== undefined);
-    $(`#edit_form_${CSS.escape(`${picker_state.edit_message_id}`)} .message_edit_content`).trigger(
-        "focus",
-    );
 }
 
 function register_click_handlers(): void {

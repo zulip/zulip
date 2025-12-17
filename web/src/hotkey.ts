@@ -425,20 +425,20 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
-    if (giphy.is_popped_from_edit_message()) {
-        giphy.focus_current_edit_message();
+    const giphy_picker_state = giphy.get_giphy_picker_state();
+    if (gif_picker_ui.is_popped_from_edit_message(giphy_picker_state)) {
+        gif_picker_ui.focus_current_edit_message(giphy_picker_state);
         // Hide after setting focus so that `edit_message_id` is
         // still set in giphy.
-        const giphy_picker_state = giphy.get_giphy_picker_state();
         gif_picker_ui.hide_gif_picker_popover(giphy_picker_state);
         return true;
     }
 
-    if (tenor.is_popped_from_edit_message()) {
-        tenor.focus_current_edit_message();
+    const tenor_picker_state = tenor.get_tenor_picker_state();
+    if (gif_picker_ui.is_popped_from_edit_message(tenor_picker_state)) {
+        gif_picker_ui.focus_current_edit_message(tenor_picker_state);
         // Hide after setting focus so that `edit_message_id` is
         // still set in giphy.
-        const tenor_picker_state = tenor.get_tenor_picker_state();
         gif_picker_ui.hide_gif_picker_popover(tenor_picker_state);
         return true;
     }
@@ -446,8 +446,8 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
     // Check if the giphy popover was open using compose box.
     // Hide GIPHY popover if it's open.
     if (
-        !giphy.is_popped_from_edit_message() &&
-        gif_picker_ui.hide_gif_picker_popover(giphy.get_giphy_picker_state())
+        !gif_picker_ui.is_popped_from_edit_message(giphy_picker_state) &&
+        gif_picker_ui.hide_gif_picker_popover(giphy_picker_state)
     ) {
         $("textarea#compose-textarea").trigger("focus");
         return true;
@@ -456,8 +456,8 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
     // Check if the Tenor popover was open using compose box.
     // Hide Tenor popover if it's open.
     if (
-        !tenor.is_popped_from_edit_message() &&
-        gif_picker_ui.hide_gif_picker_popover(tenor.get_tenor_picker_state())
+        !gif_picker_ui.is_popped_from_edit_message(tenor_picker_state) &&
+        gif_picker_ui.hide_gif_picker_popover(tenor_picker_state)
     ) {
         $("textarea#compose-textarea").trigger("focus");
         return true;

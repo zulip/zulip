@@ -96,6 +96,19 @@ export function hide_gif_picker_popover(picker_state: GifPickerState): boolean {
     return false;
 }
 
+export function is_popped_from_edit_message(picker_state: GifPickerState): boolean {
+    return (
+        picker_state.popover_instance !== undefined && picker_state.edit_message_id !== undefined
+    );
+}
+
+export function focus_current_edit_message(picker_state: GifPickerState): void {
+    assert(picker_state.edit_message_id !== undefined);
+    $(`#edit_form_${CSS.escape(`${picker_state.edit_message_id}`)} .message_edit_content`).trigger(
+        "focus",
+    );
+}
+
 export function handle_gif_click(img_element: HTMLElement, picker_state: GifPickerState): void {
     const insert_url = img_element.dataset["insertUrl"];
     assert(insert_url !== undefined);
