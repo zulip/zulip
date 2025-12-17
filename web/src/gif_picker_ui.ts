@@ -3,8 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
 import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
-import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -84,7 +84,7 @@ export function focus_gif_at_index(index: number, picker_state: TenorPickerState
         return;
     }
 
-    const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
+    const $target_gif = $(`img.gif-picker-gif[data-gif-index='${index}']`);
     $target_gif.trigger("focus");
 }
 
@@ -155,7 +155,7 @@ export function render_gifs_to_grid(
     }
     for (const url of urls) {
         picker_state.last_gif_index += 1;
-        gif_grid_html += render_tenor_gif({
+        gif_grid_html += render_gif_picker_gif({
             preview_url: url.preview_url,
             insert_url: url.insert_url,
             gif_index: picker_state.last_gif_index,
@@ -289,7 +289,7 @@ export function toggle_gif_popover(target: HTMLElement, picker_state: TenorPicke
                     }
                     debounced_search(e.target.value);
                 });
-                $popper.on("click", ".tenor-gif", (e) => {
+                $popper.on("click", ".gif-picker-gif", (e) => {
                     assert(e.currentTarget instanceof HTMLElement);
                     handle_gif_click(e.currentTarget, picker_state);
                 });
@@ -298,7 +298,7 @@ export function toggle_gif_popover(target: HTMLElement, picker_state: TenorPicke
                     $("#gif-search-query").val("");
                     update_grid_with_search_term(picker_state, "");
                 });
-                $popper.on("keydown", ".tenor-gif", (e) => {
+                $popper.on("keydown", ".gif-picker-gif", (e) => {
                     handle_keyboard_navigation_on_gif(e, picker_state);
                 });
             },
