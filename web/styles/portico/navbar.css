@@ -259,11 +259,14 @@ details summary::-webkit-details-marker {
 #case-studies-submenu {
     flex-wrap: wrap;
     width: 1000px;
+    max-height: 80vh;
+    overflow-y: auto;
 
     @media (width <= 1100px) {
         width: 600px;
     }
 }
+
 
 .top-menu-tab .top-menu-tab-user-label {
     max-width: 140px;
