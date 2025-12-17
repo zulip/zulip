@@ -624,13 +624,16 @@ ul {
     .screen-2__desc a,
     .screen-4__desc a {
         font-weight: 550;
-        border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
-        transition: border-bottom-color 0.4s ease-out;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-decoration-color: hsl(0deg 0% 100% / 50%);
+        text-underline-offset: 4px;
+        transition: text-decoration 0.4s ease-out;
     }
 
     .screen-2__desc a:hover,
     .screen-4__desc a:hover {
-        border-bottom-color: hsl(0deg 0% 100%);
+        text-decoration-color: hsl(0deg 0% 100%);
         transition: none;
     }
 
