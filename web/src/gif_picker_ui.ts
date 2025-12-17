@@ -58,6 +58,26 @@ export const tenor_result_schema = z.object({
     next: z.string(),
 });
 
+export const giphy_result_schema = z.object({
+    data: z.array(
+        z.object({
+            images: z.object({
+                downsized_medium: z.object({
+                    url: z.url(),
+                }),
+                fixed_height: z.object({
+                    url: z.url(),
+                }),
+            }),
+        }),
+    ),
+    pagination: z.object({
+        total_count: z.number(),
+        count: z.number(),
+        offset: z.number(),
+    }),
+});
+
 export function hide_gif_picker_popover(picker_state: GifPickerState): boolean {
     // Returns `true` if the popover was open.
     if (picker_state.popover_instance) {
