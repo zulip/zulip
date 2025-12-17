@@ -109,20 +109,6 @@ function get_base_payload(): TenorPayload {
     };
 }
 
-function focus_gif_at_index(index: number): void {
-    if (index < 0 || index > picker_state.last_gif_index) {
-        assert(picker_state.popover_instance !== undefined);
-        const $popper = $(picker_state.popover_instance.popper);
-        // Just trigger focus on the search input because there are no GIFs
-        // above or below.
-        $popper.find("#gif-search-query").trigger("focus");
-        return;
-    }
-
-    const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
-    $target_gif.trigger("focus");
-}
-
 function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     e.stopPropagation();
     assert(e.currentTarget instanceof HTMLElement);
@@ -146,19 +132,19 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
     switch (key) {
         case "ArrowRight": {
-            focus_gif_at_index(curr_gif_index + 1);
+            gif_picker_ui.focus_gif_at_index(curr_gif_index + 1, picker_state);
             break;
         }
         case "ArrowLeft": {
-            focus_gif_at_index(curr_gif_index - 1);
+            gif_picker_ui.focus_gif_at_index(curr_gif_index - 1, picker_state);
             break;
         }
         case "ArrowUp": {
-            focus_gif_at_index(curr_gif_index - 3);
+            gif_picker_ui.focus_gif_at_index(curr_gif_index - 3, picker_state);
             break;
         }
         case "ArrowDown": {
-            focus_gif_at_index(curr_gif_index + 3);
+            gif_picker_ui.focus_gif_at_index(curr_gif_index + 3, picker_state);
             break;
         }
     }
@@ -293,7 +279,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                     if (e.key === "ArrowDown") {
                         // Trigger arrow key based navigation on the grid by focusing
                         // the first grid element.
-                        focus_gif_at_index(0);
+                        gif_picker_ui.focus_gif_at_index(0, picker_state);
                         return;
                     }
                     debounced_search(e.target.value);

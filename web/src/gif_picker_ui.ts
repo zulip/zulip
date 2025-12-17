@@ -32,3 +32,17 @@ export function handle_gif_click(img_element: HTMLElement, picker_state: TenorPi
     compose_ui.insert_syntax_and_focus(`[](${insert_url})`, $textarea, "block", 1);
     hide_gif_picker_popover(picker_state);
 }
+
+export function focus_gif_at_index(index: number, picker_state: TenorPickerState): void {
+    if (index < 0 || index > picker_state.last_gif_index) {
+        assert(picker_state.popover_instance !== undefined);
+        const $popper = $(picker_state.popover_instance.popper);
+        // Just trigger focus on the search input because there are no GIFs
+        // above or below.
+        $popper.find("#gif-search-query").trigger("focus");
+        return;
+    }
+
+    const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
+    $target_gif.trigger("focus");
+}
