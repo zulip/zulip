@@ -204,3 +204,42 @@ export function render_default_gifs(next_page: boolean, picker_state: TenorPicke
             blueslip.log("Error fetching featured Tenor GIFs.");
         });
 }
+
+export function update_grid_with_search_term(
+    picker_state: TenorPickerState,
+    search_term: string,
+    next_page = false,
+): void {
+    if (
+        picker_state.is_loading_more ||
+        (search_term.trim() === picker_state.current_search_term && !next_page)
+    ) {
+        return;
+    }
+    // We set `current_search_term` here to avoid using to a stale
+    // version of the search term in `render_featured_gifs` for return checks
+    // in case the current `search_term` is empty.
+    picker_state.current_search_term = search_term;
+    if (search_term.trim().length === 0) {
+        render_default_gifs(next_page, picker_state);
+        return;
+    }
+    let data: TenorPayload = {
+        q: search_term,
+        ...get_tenor_base_payload(),
+    };
+
+    if (next_page) {
+        picker_state.is_loading_more = true;
+        data = {...data, pos: picker_state.next_pos_identifier};
+    }
+
+    gif_picker_data
+        .fetch_tenor_gifs(data, `${TENOR_BASE_URL}/search`)
+        .then((raw_tenor_result) => {
+            render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
+        })
+        .catch(() => {
+            blueslip.log("Error fetching searched Tenor GIFs.");
+        });
+}

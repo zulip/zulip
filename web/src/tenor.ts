@@ -5,8 +5,6 @@ import type * as tippy from "tippy.js";
 
 import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 
-import * as blueslip from "./blueslip.ts";
-import * as gif_picker_data from "./gif_picker_data.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
@@ -34,8 +32,6 @@ const picker_state: TenorPickerState = {
     // Stores the index of the last GIF that is part of the grid.
     last_gif_index: -1,
 };
-
-const BASE_URL = "https://tenor.googleapis.com/v2";
 
 export type TenorPayload = {
     key: string;
@@ -65,41 +61,6 @@ export function focus_current_edit_message(): void {
     );
 }
 
-function update_grid_with_search_term(search_term: string, next_page = false): void {
-    if (
-        picker_state.is_loading_more ||
-        (search_term.trim() === picker_state.current_search_term && !next_page)
-    ) {
-        return;
-    }
-    // We set `current_search_term` here to avoid using to a stale
-    // version of the search term in `render_featured_gifs` for return checks
-    // in case the current `search_term` is empty.
-    picker_state.current_search_term = search_term;
-    if (search_term.trim().length === 0) {
-        gif_picker_ui.render_default_gifs(next_page, picker_state);
-        return;
-    }
-    let data: TenorPayload = {
-        q: search_term,
-        ...gif_picker_ui.get_tenor_base_payload(),
-    };
-
-    if (next_page) {
-        picker_state.is_loading_more = true;
-        data = {...data, pos: picker_state.next_pos_identifier};
-    }
-
-    gif_picker_data
-        .fetch_tenor_gifs(data, `${BASE_URL}/search`)
-        .then((raw_tenor_result) => {
-            gif_picker_ui.render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
-        })
-        .catch(() => {
-            blueslip.log("Error fetching searched Tenor GIFs.");
-        });
-}
-
 function toggle_tenor_popover(target: HTMLElement): void {
     popover_menus.toggle_popover_menu(
         target,
@@ -114,7 +75,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 picker_state.popover_instance = instance;
                 const $popper = $(instance.popper).trigger("focus");
                 const debounced_search = _.debounce((search_term: string) => {
-                    update_grid_with_search_term(search_term);
+                    gif_picker_ui.update_grid_with_search_term(picker_state, search_term);
                 }, 300);
                 const $click_target = $(instance.reference);
                 if ($click_target.parents(".message_edit_form").length === 1) {
@@ -146,7 +107,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 $popper.on("click", "#gif-search-clear", (e) => {
                     e.stopPropagation();
                     $("#gif-search-query").val("");
-                    update_grid_with_search_term("");
+                    gif_picker_ui.update_grid_with_search_term(picker_state, "");
                 });
                 $popper.on("keydown", ".tenor-gif", (e) => {
                     gif_picker_ui.handle_keyboard_navigation_on_gif(e, picker_state);
@@ -174,7 +135,11 @@ function toggle_tenor_popover(target: HTMLElement): void {
                             gif_picker_ui.render_default_gifs(true, picker_state);
                             return;
                         }
-                        update_grid_with_search_term(picker_state.current_search_term, true);
+                        gif_picker_ui.update_grid_with_search_term(
+                            picker_state,
+                            picker_state.current_search_term,
+                            true,
+                        );
                     }
                 });
             },
