@@ -1693,3 +1693,12 @@ button#register_auth_button_gitlab {
        distractingly. */
     min-height: 400px;
 }
+
+#bottom-hint-slack-import-page {
+    display: flex;
+    justify-content: center;
+
+    .bottom-text {
+        text-align: left;
+    }
+}
