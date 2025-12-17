@@ -1326,14 +1326,14 @@ button {
     .hero a:not(.button),
     .quote:has(.triangle) a {
         color: var(--color-text-hero);
-        text-decoration: none;
-        border-bottom: 1px solid hsl(0deg 0% 100% / 50%);
-        transition: border 0.4s ease-out; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        text-decoration: underline;
+        text-decoration-color: hsl(0deg 0% 100% / 50%);
+        transition: text-decoration 0.4s ease-out;
 
         &:hover {
-            text-decoration: none;
+            text-decoration-color: hsl(0deg 0% 100%);
+            text-decoration-thickness: 2px;
             color: inherit;
-            border-bottom: 2px solid hsl(0deg 0% 100%);
             transition: none;
         }
     }
