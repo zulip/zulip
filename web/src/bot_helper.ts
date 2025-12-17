@@ -15,10 +15,10 @@ import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 
-export function generate_zuliprc_url(bot_id: number): string {
+export function generate_zuliprc_url(bot_id: number, api_key: string): string {
     const bot = bot_data.get(bot_id);
     assert(bot !== undefined);
-    const data = generate_zuliprc_content(bot);
+    const data = generate_zuliprc_content({...bot, api_key});
     return encode_zuliprc_as_url(data);
 }
 
@@ -202,10 +202,11 @@ export function initialize_bot_click_handlers(): void {
             10,
         );
         const bot_email = $(this).closest(".bot-zuliprc-and-api-key-container").attr("data-email");
+        const api_key = $(this).closest(".bot-zuliprc-and-api-key-container").attr("data-api-key")!;
 
         // Select the <a> element by matching data-email.
         const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
-        $zuliprc_link.attr("href", generate_zuliprc_url(bot_id));
+        $zuliprc_link.attr("href", generate_zuliprc_url(bot_id, api_key));
         $zuliprc_link[0]?.click();
     });
 }
