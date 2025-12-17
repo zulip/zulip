@@ -3,6 +3,7 @@ from functools import lru_cache
 
 import orjson
 from django.conf import settings
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
@@ -27,3 +28,9 @@ def check_demo_organization_has_set_email(realm: Realm) -> None:
     assert realm.demo_organization_scheduled_deletion_date is not None
     if not demo_organization_owner_email_exists(realm):
         raise JsonableError(_("Configure owner account email address."))
+
+
+def get_demo_organization_deadline_days_remaining(realm: Realm) -> int:
+    assert realm.demo_organization_scheduled_deletion_date is not None
+    days_remaining = (realm.demo_organization_scheduled_deletion_date - timezone_now()).days
+    return days_remaining
