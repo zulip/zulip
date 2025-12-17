@@ -35,6 +35,7 @@ export type GifPickerState = {
 
 const LIMIT = 15;
 const TENOR_BASE_URL = "https://tenor.googleapis.com/v2";
+const GIPHY_BASE_URL = "https://api.giphy.com/v1/gifs";
 const tenor_rating_map = {
     // Source: https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
     pg: "medium",
@@ -265,15 +266,25 @@ export function render_default_gifs(next_page: boolean, picker_state: GifPickerS
 
     if (next_page) {
         picker_state.is_loading_more = true;
-        data = {...data, pos: picker_state.next_pos_identifier};
+        if (picker_state.gif_provider === "tenor") {
+            data = {...data, pos: picker_state.next_pos_identifier};
+        } else {
+            assert(typeof picker_state.next_pos_identifier === "number");
+            data = {...data, offset: picker_state.next_pos_identifier};
+        }
     }
+
+    const URL =
+        picker_state.gif_provider === "tenor"
+            ? `${TENOR_BASE_URL}/featured`
+            : `${GIPHY_BASE_URL}/trending`;
     gif_picker_data
-        .fetch_gifs(data, TENOR_BASE_URL + "/featured")
-        .then((raw_tenor_result: unknown) => {
-            render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
+        .fetch_gifs(data, URL)
+        .then((raw_gif_provider_result: unknown) => {
+            render_gifs_to_grid(raw_gif_provider_result, next_page, picker_state);
         })
         .catch(() => {
-            blueslip.log("Error fetching featured Tenor GIFs.");
+            blueslip.log(`Error fetching default ${picker_state.gif_provider} GIFs.`);
         });
 }
 
