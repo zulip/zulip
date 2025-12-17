@@ -109,47 +109,6 @@ function get_base_payload(): TenorPayload {
     };
 }
 
-function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
-    e.stopPropagation();
-    assert(e.currentTarget instanceof HTMLElement);
-    const key = e.key;
-    const is_alpha_numeric = /^[a-zA-Z0-9]$/i.test(key);
-    if (is_alpha_numeric) {
-        // This implies that the user is focused on some GIF
-        // but wants to continue searching.
-        assert(picker_state.popover_instance !== undefined);
-        const $popper = $(picker_state.popover_instance.popper);
-        $popper.find("#gif-search-query").trigger("focus");
-        return;
-    }
-    if (key === "Enter" || key === " " || key === "Spacebar") {
-        // Meant to avoid page scroll on pressing space.
-        e.preventDefault();
-        gif_picker_ui.handle_gif_click(e.currentTarget, picker_state);
-        return;
-    }
-
-    const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
-    switch (key) {
-        case "ArrowRight": {
-            gif_picker_ui.focus_gif_at_index(curr_gif_index + 1, picker_state);
-            break;
-        }
-        case "ArrowLeft": {
-            gif_picker_ui.focus_gif_at_index(curr_gif_index - 1, picker_state);
-            break;
-        }
-        case "ArrowUp": {
-            gif_picker_ui.focus_gif_at_index(curr_gif_index - 3, picker_state);
-            break;
-        }
-        case "ArrowDown": {
-            gif_picker_ui.focus_gif_at_index(curr_gif_index + 3, picker_state);
-            break;
-        }
-    }
-}
-
 function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): void {
     // Tenor popover may have been hidden by the
     // time this function is called.
@@ -293,7 +252,9 @@ function toggle_tenor_popover(target: HTMLElement): void {
                     $("#gif-search-query").val("");
                     update_grid_with_search_term("");
                 });
-                $popper.on("keydown", ".tenor-gif", handle_keyboard_navigation_on_gif);
+                $popper.on("keydown", ".tenor-gif", (e) => {
+                    gif_picker_ui.handle_keyboard_navigation_on_gif(e, picker_state);
+                });
             },
             onMount(instance) {
                 render_featured_gifs(false);

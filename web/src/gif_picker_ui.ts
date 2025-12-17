@@ -46,3 +46,47 @@ export function focus_gif_at_index(index: number, picker_state: TenorPickerState
     const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
     $target_gif.trigger("focus");
 }
+
+export function handle_keyboard_navigation_on_gif(
+    e: JQuery.KeyDownEvent,
+    picker_state: TenorPickerState,
+): void {
+    e.stopPropagation();
+    assert(e.currentTarget instanceof HTMLElement);
+    const key = e.key;
+    const is_alpha_numeric = /^[a-zA-Z0-9]$/i.test(key);
+    if (is_alpha_numeric) {
+        // This implies that the user is focused on some GIF
+        // but wants to continue searching.
+        assert(picker_state.popover_instance !== undefined);
+        const $popper = $(picker_state.popover_instance.popper);
+        $popper.find("#gif-search-query").trigger("focus");
+        return;
+    }
+    if (key === "Enter" || key === " " || key === "Spacebar") {
+        // Meant to avoid page scroll on pressing space.
+        e.preventDefault();
+        handle_gif_click(e.currentTarget, picker_state);
+        return;
+    }
+
+    const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
+    switch (key) {
+        case "ArrowRight": {
+            focus_gif_at_index(curr_gif_index + 1, picker_state);
+            break;
+        }
+        case "ArrowLeft": {
+            focus_gif_at_index(curr_gif_index - 1, picker_state);
+            break;
+        }
+        case "ArrowUp": {
+            focus_gif_at_index(curr_gif_index - 3, picker_state);
+            break;
+        }
+        case "ArrowDown": {
+            focus_gif_at_index(curr_gif_index + 3, picker_state);
+            break;
+        }
+    }
+}
