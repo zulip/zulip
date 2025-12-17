@@ -285,6 +285,7 @@ export function initialize(params) {
     });
 
     get_events();
+    watchdog.initialize();
 }
 
 function cleanup_event_queue() {

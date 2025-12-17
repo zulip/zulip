@@ -22,9 +22,10 @@ set_global("setInterval", (f, interval) => {
     assert.equal(interval, 5000);
 });
 
-const watchdog = zrequire("watchdog");
-
 run_test("basics", () => {
+    const watchdog = zrequire("watchdog");
+    watchdog._reset_for_testing();
+    watchdog.initialize();
     // Test without callbacks first.
     checker();
     advance_secs(5);
@@ -76,6 +77,9 @@ run_test("basics", () => {
 });
 
 run_test("suspect_offline", () => {
+    const watchdog = zrequire("watchdog");
+    watchdog._reset_for_testing();
+    watchdog.initialize();
     watchdog.set_suspect_offline(true);
     assert.ok(watchdog.suspects_user_is_offline());
 
