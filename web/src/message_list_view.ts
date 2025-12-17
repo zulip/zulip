@@ -9,6 +9,7 @@ import render_login_to_view_image_button from "../templates/login_to_view_image_
 import render_message_group from "../templates/message_group.hbs";
 import render_message_list from "../templates/message_list.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
+import render_revealed_message_hide_button from "../templates/revealed_message_hide_button.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity.ts";
@@ -45,6 +46,7 @@ import * as timerender from "./timerender.ts";
 import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
 import * as typing_events from "./typing_events.ts";
+import * as ui_util from "./ui_util.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -231,7 +233,7 @@ function get_message_date_divider_data(opts: {
     };
 }
 
-function get_timestr(message: Message): string {
+export function get_timestr(message: Message): string {
     const time = new Date(message.timestamp * 1000);
     return timerender.stringify_time(time);
 }
@@ -354,7 +356,7 @@ type SubscriptionMarkers = {
     subscribed?: boolean;
     just_unsubscribed?: boolean;
 };
-function populate_group_from_message(
+export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
@@ -601,7 +603,7 @@ export class MessageListView {
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:
-            1. Hide the sender avatar and name.
+            1. Replace the sender's avatar with that of a muted sender and name them as "Muted sender".
             2. Hide reactions on that message.
             3. Do not give a background color to that message even if it mentions the
                current user.
@@ -648,7 +650,7 @@ export class MessageListView {
         } else {
             mention_classname = undefined;
         }
-        let include_sender = existing_include_sender && !is_hidden;
+        let include_sender = existing_include_sender;
         if (is_revealed) {
             // If the message is to be revealed, we show the sender anyways, because the
             // the first message in the group (which would hold the sender) can still be
@@ -663,7 +665,9 @@ export class MessageListView {
             message.sender_id,
         );
 
-        const small_avatar_url = people.small_avatar_url(message);
+        const small_avatar_url = is_hidden
+            ? people.get_muted_user_avatar_url()
+            : people.small_avatar_url(message);
         let background_color;
         if (message.type === "stream") {
             background_color = stream_data.get_color(message.stream_id);
@@ -1703,6 +1707,29 @@ export class MessageListView {
             message_content_edited: false,
             is_revealed: true,
         });
+
+        const rendered_markdown = this._rows.get(message_id)!.find(".rendered_markdown")[0];
+        assert(rendered_markdown !== undefined);
+
+        // Me messages do not have a child element in `.rendered_markdown`,
+        // so we append the "Hide" button to the `.rendered_markdown` element.
+        const last_ele = rendered_markdown?.lastElementChild ?? rendered_markdown;
+        assert(last_ele instanceof Element);
+
+        // If the last element in the message row contains text, we add the hide button
+        // inline to the same element.
+        const should_display_inline = last_ele.nodeName === "P" || last_ele.nodeName === "SPAN";
+        const hide_button_fragment = ui_util.parse_html(
+            render_revealed_message_hide_button({
+                message_id,
+                is_inline_hide_button: should_display_inline,
+            }),
+        );
+        if (should_display_inline) {
+            last_ele.append(hide_button_fragment);
+        } else {
+            rendered_markdown.append(hide_button_fragment);
+        }
     }
 
     hide_revealed_message(message_id: number): void {

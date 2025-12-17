@@ -8,8 +8,9 @@ import sys
 import zoneinfo
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from email.headerregistry import Address
+from email.utils import format_datetime as email_format_datetime
 from typing import Any
 
 import lxml.html
@@ -30,7 +31,7 @@ from zerver.lib.message import bulk_access_messages
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
+from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import format_datetime_to_string
@@ -195,7 +196,7 @@ def convert_time_to_local_timezone(fragment: lxml.html.HtmlElement, user: UserPr
             # We expect there to always be a datetime attribute.
             continue  # nocoverage
         try:
-            dt_utc = timezone_now().strptime(datetime_str, "%Y-%m-%dT%H:%M:%S%z")
+            dt_utc = datetime.fromisoformat(datetime_str)
             dt_local = dt_utc.astimezone(zoneinfo.ZoneInfo(canonicalize_timezone(user_tz)))
             formatted_time = format_datetime_to_string(dt_local, user.twenty_four_hour_time)
             time_elem.text = formatted_time
@@ -605,7 +606,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         "from_address": from_address,
         "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         "context": context,
-        "date": local_time.strftime(EMAIL_DATE_FORMAT),
+        "date": email_format_datetime(local_time),
     }
     queue_event_on_commit("email_senders", email_dict)
 
@@ -835,7 +836,6 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
-        is_demo_organization=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
 
     account_registered_context["getting_organization_started_link"] = (

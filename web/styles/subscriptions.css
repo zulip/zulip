@@ -390,14 +390,6 @@ h4.user_group_setting_subsection_title {
 
     .subsection-settings {
         margin-top: 10px;
-
-        .input-group {
-            margin-bottom: 1.25em; /* 20px at 16px/em */
-
-            &.control-label-disabled {
-                width: fit-content;
-            }
-        }
     }
 
     .no-permissions-for-group-text {
@@ -510,6 +502,10 @@ h4.user_group_setting_subsection_title {
     overflow: hidden;
     max-width: 1200px;
     max-height: var(--overlay-container-max-height);
+
+    /* This variable allows JavaScript to detect whether we are showing both
+    the left sidebar and settings content for the current screen width or not. */
+    --column-count: 2;
 
     .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
@@ -1063,7 +1059,7 @@ h4.user_group_setting_subsection_title {
 
     .group_settings_header,
     .stream_settings_header {
-        white-space: nowrap;
+        flex-wrap: wrap;
         display: flex;
         margin-left: 18px;
 
@@ -1258,57 +1254,11 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-div.settings-radio-input-parent {
-    border-bottom: 1px solid var(--color-border-settings-radio-input-parent);
-    margin: 2px 0 2px 5px;
-    padding: 2px 0;
-
-    &:last-of-type {
-        border-bottom: none;
-    }
-
-    & label.radio {
-        display: inline;
-        margin: 5px;
-    }
-
-    & input {
-        float: left;
-        width: auto;
-        cursor: pointer;
-        /* Scale the height with font-size, 14px at 1em */
-        height: 1em;
-        /* This value came from fiddling to find what looked
-           vertically centered at 12px-20px font sizes. */
-        margin-top: 0.15em;
-
-        &:focus {
-            outline: 1px dotted hsl(0deg 0% 20%);
-            outline: 5px auto -webkit-focus-ring-color;
-            outline-offset: -2px;
-        }
-
-        &:disabled {
-            cursor: not-allowed;
-        }
-    }
-
-    &.default_stream_private_tooltip {
-        cursor: not-allowed;
-
-        & label {
-            pointer-events: none;
-        }
-    }
-}
-
 .new-stream-configuration,
 .channel-permissions,
 .group-permissions,
 .stream_details_box {
     .input-group {
-        margin-bottom: 0.625em; /* 10px at 16px/em */
-
         &.message-retention-setting-group {
             & input {
                 width: 5ch;
@@ -1329,7 +1279,8 @@ div.settings-radio-input-parent {
     }
 }
 
-#subscription_overlay .default-stream {
+#subscription_overlay .default-stream,
+#subscription_overlay .history-public-to-subscribers {
     width: fit-content;
 
     .inline {
@@ -1351,11 +1302,6 @@ div.settings-radio-input-parent {
         opacity: 0.5;
         content: attr(data-placeholder);
     }
-}
-
-.advanced-configurations-container .pill-container,
-.channel-permissions .pill-container {
-    margin-bottom: 10px;
 }
 
 .group-permissions .dropdown_widget_with_label_wrapper {
@@ -1452,11 +1398,6 @@ div.settings-radio-input-parent {
     .two-pane-settings-container {
         max-width: 95%;
     }
-
-    #groups_overlay .group_settings_header,
-    #subscription_overlay .stream_settings_header {
-        flex-wrap: wrap;
-    }
 }
 
 /* This ensures the left-border is tall enough. We can't keep this style for
@@ -1473,6 +1414,10 @@ div.settings-radio-input-parent {
     .two-pane-settings-container {
         position: relative;
         overflow: hidden;
+
+        /* This variable allows JavaScript to detect whether we are showing both
+        the left sidebar and settings content for the current screen width or not. */
+        --column-count: 1;
 
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;

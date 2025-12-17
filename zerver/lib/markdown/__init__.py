@@ -2844,3 +2844,11 @@ def render_message_markdown(
     )
 
     return rendering_result
+
+
+def get_markdown_link_for_url(filename: str, url: str) -> str:
+    # Our markdown has no escaping, so we cannot link any
+    # text containing brackets; strip them from the
+    # filename we're linking.
+    filename = re.sub(r"\[|\]", "", filename)
+    return f"[{filename}]({url})"

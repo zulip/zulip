@@ -97,8 +97,12 @@ export function reset_ui_state(opts: {trigger?: string}): void {
     compose_banner.clear_message_sent_banners(true, skip_automatic_new_visibility_policy_banner);
 }
 
-export function changehash(newhash: string, trigger: string): void {
-    if (browser_history.state.changing_hash) {
+export function changehash(
+    newhash: string,
+    trigger: string,
+    remove_current_hash_from_history = false,
+): void {
+    if (browser_history.state.changing_hash || remove_current_hash_from_history) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
         if (trigger === "retarget message location") {
@@ -122,12 +126,16 @@ export function changehash(newhash: string, trigger: string): void {
     }
 }
 
-export function update_hash_to_match_filter(filter: Filter, trigger: string): void {
+export function update_hash_to_match_filter(
+    filter: Filter,
+    trigger: string,
+    remove_current_hash_from_history = false,
+): void {
     if (browser_history.state.changing_hash && trigger !== "retarget message location") {
         return;
     }
     const new_hash = hash_util.search_terms_to_hash(filter.terms());
-    changehash(new_hash, trigger);
+    changehash(new_hash, trigger, remove_current_hash_from_history);
 
     if (stream_list.is_zoomed_in()) {
         browser_history.update_current_history_state_data({show_more_topics: true});
@@ -244,7 +252,21 @@ function create_and_update_message_list(
     // the current message list as we are trying to emulate the `hashchange`
     // workflow we have which calls `message_view.show` after hash is updated.
     if (opts.change_hash) {
-        update_hash_to_match_filter(filter, opts.trigger ?? "unknown");
+        let remove_current_hash_from_history = false;
+        let trigger = opts.trigger ?? "unknown";
+        if (opts.trigger === "old_unreads_missing") {
+            // We are not navigating user to a different place but want to
+            // keep user at the same place but avoid marking messages as read.
+            // Assuming current narrow doesn't have a `near` term,
+            // we replace the current history entry with
+            // the new hash which has a `near` term.
+            assert(!narrow_state.filter()!.has_operator("near"));
+            assert(msg_list.data.filter.has_operator("near"));
+            remove_current_hash_from_history = true;
+            trigger = "retarget message location";
+        }
+
+        update_hash_to_match_filter(filter, trigger, remove_current_hash_from_history);
         opts.show_more_topics = browser_history.get_current_state_show_more_topics() ?? false;
     }
 
@@ -833,6 +855,17 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                         first_unread_message_id <
                         id_info.first_unread_msg_id_pending_server_verification
                     ) {
+                        // Do nothing if top of the first unread message is fully on screen
+                        // so that we don't annoyingly retarget the user.
+                        const $row = msg_list.get_row(first_unread_message_id);
+                        if ($row.length > 0) {
+                            const row_rect = util.the($row).getBoundingClientRect();
+                            const viewport_info = message_viewport.message_viewport_info();
+                            if (row_rect.top >= viewport_info.visible_top) {
+                                return;
+                            }
+                        }
+
                         // We convert the current narrow into a `near` narrow so that
                         // user doesn't accidentally mark msgs read which they haven't seen.
                         let terms: NarrowTerm[] = [
@@ -851,10 +884,11 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                             trigger: "old_unreads_missing",
                         };
                         show(terms, opts);
+                        const new_message_list_id = message_lists.current?.id;
 
                         const on_jump_to_first_unread = (): void => {
                             // This is a no-op if the user has already switched narrow.
-                            if (msg_list.id !== message_lists.current?.id) {
+                            if (new_message_list_id !== message_lists.current?.id) {
                                 return;
                             }
 
@@ -1023,7 +1057,7 @@ function load_local_messages(msg_data: MessageListData, superset_data: MessageLi
     // cases when our local cache (superset_data) has at least
     // one message the user will expect to see in the new narrow.
 
-    const in_msgs = superset_data.all_messages();
+    const in_msgs = superset_data.all_messages_after_mute_filtering();
     const is_contiguous_history = true;
     msg_data.add_messages(in_msgs, is_contiguous_history);
 
@@ -1313,6 +1347,7 @@ export function narrow_to_next_topic(opts: {trigger: string; only_followed_topic
         curr_info.stream_id,
         curr_info.topic,
         opts.only_followed_topics,
+        stream_list.get_sorted_channel_ids_for_next_unread_navigation(),
     );
 
     if (!next_narrow && opts.only_followed_topics) {

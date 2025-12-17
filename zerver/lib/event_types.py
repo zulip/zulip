@@ -866,6 +866,7 @@ class EventRemindersRemove(BaseEvent):
 class BasicStreamFields(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -933,6 +934,7 @@ class EventSubmessage(BaseEvent):
 class SingleSubscription(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -1064,25 +1066,6 @@ class EventTypingEditMessageStop(BaseEvent):
     sender_id: int
     message_id: int
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
-
-
-class EventUpdateDisplaySettingsCore(BaseEvent):
-    type: Literal["update_display_settings"]
-    setting_name: str
-    setting: bool | int | str
-    user: str
-
-
-class EventUpdateDisplaySettings(EventUpdateDisplaySettingsCore):
-    # TODO: fix types to avoid optional fields
-    language_name: str | None = None
-
-
-class EventUpdateGlobalNotifications(BaseEvent):
-    type: Literal["update_global_notifications"]
-    notification_name: str
-    setting: bool | int | str
-    user: str
 
 
 class EventUpdateMessageCore(BaseEvent):

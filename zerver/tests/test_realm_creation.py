@@ -49,7 +49,6 @@ class DemoCreationTest(ZulipTestCase):
             )
         )
 
-        self.assertIn("demo-", realm.string_id)
         self.assertIn("demo test", realm.name)
         expected_deletion_date = realm.date_created + timedelta(days=30)
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)

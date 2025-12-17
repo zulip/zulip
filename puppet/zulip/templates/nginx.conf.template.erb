@@ -1,6 +1,6 @@
 user zulip;
 
-worker_processes auto;
+worker_processes <%= @worker_processes %>;
 pid /var/run/nginx.pid;
 include /etc/nginx/modules-enabled/*.conf;
 

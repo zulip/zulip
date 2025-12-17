@@ -20,6 +20,41 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 442**
+
+* [`GET /events`](/api/get-events): `giphy_rating` is now used to denote
+  the common rating configured for both Tenor and GIPHY integrations.
+* [`POST /register`](/api/register-queue): Added new `tenor_api_key`
+  field, which is required to fetch GIFs using the Tenor API.
+* [`POST /register`](/api/register-queue): Renamed
+  `giphy_rating_options` to `gif_rating_options` to generalize the
+  ratings for both GIPHY and Tenor integrations. `realm_giphy_rating`
+  is now used for both the Tenor and GIPHY integrations.
+
+**Feature level 441**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_create_topic_group`
+  field which is a [group-setting value](/api/group-setting-values) describing
+  the set of users with permissions to create new topics in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_create_topic_group`
+  parameter to support setting and changing the user group whose members can create
+  new topics in the specified channel.
+
+**Feature level 440**
+
+* [`GET users/<user_id>/channels`](/api/get-user-channels)
+  Added a new endpoint to get the channels another user is subscribed to.
+
+**Feature level 439**
+
+* [`GET /events`](/api/get-events): The deprecated `update_display_settings`
+  and `update_global_notifications` event types are no longer sent to any
+  clients. These legacy event types were deprecated in Zulip 5.0 (feature
+  level 89) and replaced by the `user_settings` event type.
+
 **Feature level 438**
 
 * [`POST /register`](/api/register-queue): Added
@@ -1539,10 +1574,10 @@ deactivated groups.
 
 * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
   [`GET /messages/{message_id}`](/api/get-message),
-  [`POST /zulip-outgoing-webhook`](/api/zulip-outgoing-webhooks): Removed
-  the `prev_rendered_content_version` field from the `edit_history` object
-  within message objects and the `update_message` event type as it is an
-  internal server implementation detail not used by any client.
+  [outgoing webhook payloads](/api/outgoing-webhook-payload#zulip-format):
+  Removed the `prev_rendered_content_version` field from the `edit_history`
+  object within message objects and the `update_message` event type as it
+  is an internal server implementation detail not used by any client.
 
 **Feature level 283**
 

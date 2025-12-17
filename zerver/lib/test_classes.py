@@ -49,6 +49,7 @@ from corporate.models.plans import CustomerPlan
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
+from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
@@ -2367,6 +2368,19 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
             streams=Stream.objects.exclude(id__in=stream_ids)
         )
 
+    def set_user_role(self, user: UserProfile, role: int) -> None:
+        """
+        Test helper for switching a user to a given role. Hardcodes
+        acting_user=None, which means the change is treated as
+        though it was done by a management command, not another
+        user.
+
+        Tests using this should consider using users who have the
+        appropriate initial role; this is usually more readable and
+        a bit faster.
+        """
+        do_change_user_role(user, role, acting_user=None)
+
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
@@ -2485,7 +2499,7 @@ class WebhookTestCase(ZulipTestCase):
             if all_event_types is None:
                 return  # nocoverage
 
-            def side_effect(*args: Any, **kwargs: Any) -> None:
+            def side_effect(*args: Any, **kwargs: Any) -> int | None:
                 complete_event_type = (
                     kwargs.get("complete_event_type")
                     if len(args) < 5
@@ -2505,7 +2519,7 @@ self-documenting the supported event types for this integration.
 You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
 """.strip()
                     )
-                check_send_webhook_message(*args, **kwargs)
+                return check_send_webhook_message(*args, **kwargs)
 
             self.patch = mock.patch(
                 f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.check_send_webhook_message",

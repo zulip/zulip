@@ -144,6 +144,8 @@ export let private_message_recipient_typeahead: Typeahead<
     UserGroupPillData | user_pill.UserPillData
 >;
 
+export let stream_message_topic_typeahead: Typeahead<string>;
+
 export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
         token = val;
@@ -889,7 +891,7 @@ export function get_candidates(
         if (
             current_token.length === 3 &&
             !compose_ui.code_formatting_button_triggered &&
-            compose_ui.compose_textarea_typeahead === undefined
+            !compose_ui.compose_textarea_typeahead?.shown
         ) {
             return [];
         }
@@ -1468,10 +1470,16 @@ export function initialize_topic_edit_typeahead(
             return matcher(item);
         },
         sorter(items: string[], query: string): string[] {
+            const stream_id = stream_data.get_stream_id(stream_name);
             const sorted = typeahead_helper.sorter(query, items, (x) =>
                 util.get_final_topic_display_name(x),
             );
-            if (sorted.length > 0 && !sorted.includes(query)) {
+            if (
+                stream_id &&
+                stream_data.can_create_new_topics_in_stream(stream_id) &&
+                sorted.length > 0 &&
+                !sorted.includes(query)
+            ) {
                 sorted.unshift(query);
             }
             return sorted;
@@ -1596,6 +1604,14 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
     );
 }
 
+function get_footer_html_for_topic_typeahead(stream_id: number | undefined): string {
+    let can_create_new_topics_in_stream = true;
+    if (stream_id !== undefined) {
+        can_create_new_topics_in_stream = stream_data.can_create_new_topics_in_stream(stream_id);
+    }
+    return render_topic_typeahead_hint({can_create_new_topics_in_stream});
+}
+
 export function initialize({
     on_enter_send,
 }: {
@@ -1613,7 +1629,8 @@ export function initialize({
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
     };
-    new Typeahead(stream_message_typeahead_input, {
+    stream_message_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
+        dropup: true,
         source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1634,7 +1651,13 @@ export function initialize({
             const sorted = typeahead_helper.sorter(query, items, (x) =>
                 util.get_final_topic_display_name(x),
             );
-            if (sorted.length > 0 && !sorted.includes(query)) {
+            const stream_id = compose_state.stream_id();
+            if (
+                stream_id &&
+                stream_data.can_create_new_topics_in_stream(stream_id) &&
+                sorted.length > 0 &&
+                !sorted.includes(query)
+            ) {
                 sorted.unshift(query);
             }
             return sorted;
@@ -1650,7 +1673,7 @@ export function initialize({
             }
             return false;
         },
-        footer_html: render_topic_typeahead_hint,
+        footer_html: () => get_footer_html_for_topic_typeahead(compose_state.stream_id()),
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {

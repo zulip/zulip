@@ -70,6 +70,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
     channel_events_topic_name,
+    check_for_can_create_topic_group_violation,
     ensure_stream,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
@@ -1395,9 +1396,9 @@ def check_send_stream_message(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic_name)
-    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
+    message_request = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
     sent_message_result = do_send_messages(
-        [message], mark_as_read=[sender.id] if read_by_sender else []
+        [message_request], mark_as_read=[sender.id] if read_by_sender else []
     )[0]
     return sent_message_result.message_id
 
@@ -1412,8 +1413,8 @@ def check_send_stream_message_by_id(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic_name)
-    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
-    sent_message_result = do_send_messages([message])[0]
+    message_request = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -1425,8 +1426,8 @@ def check_send_private_message(
     no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
-    message = check_message(sender, client, addressee, body, no_previews=no_previews)
-    sent_message_result = do_send_messages([message])[0]
+    message_request = check_message(sender, client, addressee, body, no_previews=no_previews)
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -1451,7 +1452,7 @@ def check_send_message(
     read_by_sender: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
-    message = check_message(
+    message_request = check_message(
         sender,
         client,
         addressee,
@@ -1465,7 +1466,10 @@ def check_send_message(
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
     )
-    return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
+    return do_send_messages(
+        [message_request],
+        mark_as_read=[sender.id] if read_by_sender else [],
+    )[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
@@ -1796,6 +1800,10 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
+        check_for_can_create_topic_group_violation(
+            user_profile=sender, stream=stream, topic_name=topic_name
+        )
+
         topics_policy = get_stream_topics_policy(realm, stream)
         empty_topic_display_name = get_topic_display_name("", sender.default_language)
         if topics_policy == StreamTopicsPolicyEnum.disable_empty_topic.value and topic_name == "":
@@ -2063,16 +2071,16 @@ def internal_send_private_message(
     disable_external_notifications: bool = False,
     acting_user: UserProfile | None = None,
 ) -> int | None:
-    message = internal_prep_private_message(
+    message_request = internal_prep_private_message(
         sender,
         recipient_user,
         content,
         disable_external_notifications=disable_external_notifications,
         acting_user=acting_user,
     )
-    if message is None:
+    if message_request is None:
         return None
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -2089,7 +2097,7 @@ def internal_send_stream_message(
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
 ) -> int | None:
-    message = internal_prep_stream_message(
+    message_request = internal_prep_stream_message(
         sender,
         stream,
         topic_name,
@@ -2101,14 +2109,14 @@ def internal_send_stream_message(
         acting_user=acting_user,
     )
 
-    if message is None:
+    if message_request is None:
         return None
 
     mark_as_read = []
     if mark_as_read_for_acting_user and acting_user is not None:
         mark_as_read.append(acting_user.id)
 
-    sent_message_result = do_send_messages([message], mark_as_read=mark_as_read)[0]
+    sent_message_result = do_send_messages([message_request], mark_as_read=mark_as_read)[0]
     return sent_message_result.message_id
 
 
@@ -2119,7 +2127,7 @@ def internal_send_stream_message_by_name(
     topic_name: str,
     content: str,
 ) -> int | None:
-    message = internal_prep_stream_message_by_name(
+    message_request = internal_prep_stream_message_by_name(
         realm,
         sender,
         stream_name,
@@ -2127,9 +2135,9 @@ def internal_send_stream_message_by_name(
         content,
     )
 
-    if message is None:
+    if message_request is None:
         return None
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 
@@ -2163,14 +2171,14 @@ def internal_send_group_direct_message(
     emails: list[str] | None = None,
     recipient_users: list[UserProfile] | None = None,
 ) -> int | None:
-    message = internal_prep_group_direct_message(
+    message_request = internal_prep_group_direct_message(
         realm, sender, content, emails=emails, recipient_users=recipient_users
     )
 
-    if message is None:
+    if message_request is None:
         return None
 
-    sent_message_result = do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message_request])[0]
     return sent_message_result.message_id
 
 

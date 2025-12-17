@@ -161,6 +161,8 @@ landing_page_urls = [
     path("for/open-source/", landing_view, {"template_name": "corporate/for/open-source.html"}),
     path("for/research/", landing_view, {"template_name": "corporate/for/research.html"}),
     path("for/business/", landing_view, {"template_name": "corporate/for/business.html"}),
+    # /role pages
+    path("role/engineers/", landing_view, {"template_name": "corporate/role/engineers.html"}),
     # case-studies
     path(
         "case-studies/idrift/",
@@ -191,6 +193,11 @@ landing_page_urls = [
         "case-studies/tum/",
         landing_view,
         {"template_name": "corporate/case-studies/tum-case-study.html"},
+    ),
+    path(
+        "case-studies/university-of-cordoba/",
+        landing_view,
+        {"template_name": "corporate/case-studies/university-of-cordoba-case-study.html"},
     ),
     path(
         "case-studies/ucsd/",
@@ -226,6 +233,11 @@ landing_page_urls = [
         "case-studies/windborne/",
         landing_view,
         {"template_name": "corporate/case-studies/windborne-case-study.html"},
+    ),
+    path(
+        "case-studies/mixxx/",
+        landing_view,
+        {"template_name": "corporate/case-studies/mixxx-case-study.html"},
     ),
     path("communities/", communities_view),
 ]

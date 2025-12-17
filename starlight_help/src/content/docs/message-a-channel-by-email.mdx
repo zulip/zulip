@@ -5,6 +5,7 @@ title: Message a channel by email
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SelectChannelViewGeneral from "../include/_SelectChannelViewGeneral.mdx";
 
 <ZulipTip>
@@ -35,13 +36,15 @@ API](/api/send-message).
 
   <SelectChannelViewGeneral />
 
-  1. Under **Channel details**, click **Generate email address**.
+  1. Under **Settings**, click **Generate email address**.
   1. Select **Who should be the sender of the Zulip messages for this email
      address**.
   1. Toggle the configuration options as desired.
   1. Click **Copy address** to add the channel email address to your clipboard.
   1. Send an email to that address.
 </FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
 
 The email subject will become the Zulip topic, and the email body will
 become the Zulip message.

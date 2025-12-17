@@ -12,6 +12,7 @@ from typing_extensions import override
 from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
+from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
@@ -19,12 +20,13 @@ from zerver.lib.webhooks.common import (
     INVALID_JSON_MESSAGE,
     MISSING_EVENT_HEADER_MESSAGE,
     MissingHTTPEventHeaderError,
+    check_send_webhook_message,
     get_fixture_http_headers,
     standardize_headers,
     validate_extract_webhook_http_header,
     validate_webhook_signature,
 )
-from zerver.models import UserProfile
+from zerver.models import Client, Message, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -175,6 +177,29 @@ class WebhooksCommonTestCase(ZulipTestCase):
             "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
         ):
             validate_webhook_signature(request, payload, signature)
+
+    def test_check_send_webhook_message_returns_id(self) -> None:
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        stream = self.make_stream("test_stream")
+        self.subscribe(webhook_bot, stream.name)
+
+        request = HostRequestMock()
+        request.user = webhook_bot
+        client = Client.objects.get_or_create(name="TestClient")[0]
+        RequestNotes.get_notes(request).client = client
+
+        message_id = check_send_webhook_message(
+            request,
+            webhook_bot,
+            "Test topic",
+            "Test message content",
+            stream=stream.name,
+        )
+
+        self.assertIsInstance(message_id, int)
+        assert message_id is not None
+        msg = Message.objects.get(id=message_id)
+        self.assertEqual(msg.topic_name(), "Test topic")
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):

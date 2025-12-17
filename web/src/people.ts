@@ -1052,6 +1052,10 @@ export function small_avatar_url(message: Message): string {
     return gravatar_url_for_email(email);
 }
 
+export function get_muted_user_avatar_url(): string {
+    return "/static/images/muted-user/muted-sender.png";
+}
+
 export function is_valid_user_id_for_compose(user_id: number): boolean {
     if (cross_realm_dict.has(user_id)) {
         return true;
@@ -1676,6 +1680,13 @@ export function add_cross_realm_user(person: User): void {
     } else if (person.full_name === "Email Gateway") {
         EMAIL_GATEWAY_BOT = person;
     }
+}
+
+export function user_can_change_their_own_role(): boolean {
+    if (is_current_user_only_owner()) {
+        return false;
+    }
+    return current_user.is_admin;
 }
 
 export function deactivate(person: User): void {

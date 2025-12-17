@@ -190,10 +190,6 @@ def get_events_backend(
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
-    user_settings_object: Annotated[
-        Json[bool],
-        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
-    ] = False,
     pronouns_field_type_supported: Annotated[
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
@@ -256,7 +252,6 @@ def get_events_backend(
             narrow=narrow,
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
-            user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,

@@ -353,7 +353,6 @@ DATABASES: dict[str, dict[str, Any]] = {
         "PASSWORD": "",
         # Host = '' => connect to localhost by default
         "HOST": "",
-        "SCHEMA": "zulip",
         "CONN_MAX_AGE": 600,
         "OPTIONS": {
             "connection_factory": TimeTrackingConnection,
@@ -384,10 +383,7 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"].update(
             PASSWORD=get_secret("postgres_password"),
         )
-    if REMOTE_POSTGRES_SSLMODE != "":
-        DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
-    else:
-        DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
+    DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
 elif (
     get_config("postgresql", "database_user", "zulip") != "zulip"
     and get_secret("postgres_password") is not None
@@ -535,14 +531,6 @@ if LOCAL_UPLOADS_DIR is None and S3_REGION is None:
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
-
-# Twitter API credentials
-# Secrecy not required because its only used for R/O requests.
-# Please don't make us go over our rate limit.
-TWITTER_CONSUMER_KEY = get_secret("twitter_consumer_key")
-TWITTER_CONSUMER_SECRET = get_secret("twitter_consumer_secret")
-TWITTER_ACCESS_TOKEN_KEY = get_secret("twitter_access_token_key")
-TWITTER_ACCESS_TOKEN_SECRET = get_secret("twitter_access_token_secret")
 
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [

@@ -615,7 +615,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
 # REMOTE_POSTGRES_HOST = "dbserver.example.com"
 # REMOTE_POSTGRES_PORT = "5432"
-# REMOTE_POSTGRES_SSLMODE = "require"
+# REMOTE_POSTGRES_SSLMODE = "verify-full"
 
 ########
 ## RabbitMQ configuration.
@@ -676,21 +676,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## can also be disabled in a realm's organization settings.
 # INLINE_URL_EMBED_PREVIEW = True
 
-########
-## Twitter previews.
-##
-## Zulip supports showing inline Tweet previews when a tweet is linked
-## to in a message.  To support this, Zulip must have access to the
-## Twitter API via OAuth.  To obtain the various access tokens needed
-## below, you must register a new application under your Twitter
-## account by doing the following:
-##
-## 1. Log in to http://dev.twitter.com.
-## 2. In the menu under your username, click My Applications. From this page, create a new application.
-## 3. Click on the application you created and click "create my access token".
-## 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
-##    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
-
 
 ################
 ## Logging and error reporting.
@@ -717,9 +702,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # LOGGING_SHOW_PID = False
 
 #################
-## Animated GIF integration powered by GIPHY.  See:
+## GIF picker / search engine integrations. To get an API key, see:
 ## https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
 # GIPHY_API_KEY = "<Your API key from GIPHY>"
+# TENOR_API_KEY = "<Your API key from Tenor>"
 
 ################
 ## Video call integrations.

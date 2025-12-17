@@ -36,8 +36,10 @@ from zerver.lib.narrow import (
     BadNarrowOperatorError,
     NarrowBuilder,
     NarrowParameter,
+    add_narrow_conditions,
     exclude_muting_conditions,
     find_first_unread_anchor,
+    get_base_query_for_search,
     is_spectator_compatible,
     ok_to_include_history,
     post_process_limited_query,
@@ -4264,25 +4266,57 @@ class GetOldMessagesTest(ZulipTestCase):
 
         user_profile = hamlet
 
-        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
-            anchor = find_first_unread_anchor(
-                sa_conn=sa_conn,
+        def test_find_first_unread_anchor(
+            narrow: list[NarrowParameter], need_user_message: bool
+        ) -> tuple[int, list[Any]]:
+            query, inner_msg_id_col = get_base_query_for_search(
+                realm_id=user_profile.realm_id,
                 user_profile=user_profile,
-                narrow=[],
+                need_user_message=need_user_message,
             )
+            query = query.add_columns(column("flags", Integer))
+            query, _is_search, is_dm_narrow = add_narrow_conditions(
+                user_profile=user_profile,
+                inner_msg_id_col=inner_msg_id_col,
+                query=query,
+                narrow=narrow,
+                realm=user_profile.realm,
+                is_web_public_query=False,
+            )
+
+            with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
+                anchor = find_first_unread_anchor(
+                    sa_conn=sa_conn,
+                    user_profile=user_profile,
+                    narrow=narrow,
+                    query=query,
+                    is_dm_narrow=is_dm_narrow,
+                    inner_msg_id_col=inner_msg_id_col,
+                    need_user_message=need_user_message,
+                )
+            return anchor, queries
+
+        anchor, queries = test_find_first_unread_anchor([], need_user_message=False)
         self.assert_length(queries, 4)
+        self.assertEqual(anchor, first_message_id)
+
+        # If need_user_message is set to True, we don't need to call
+        # get_base_query_for_search inside find_first_unread_anchor.
+        # This saves us an extra call that get_base_query_for_search
+        # makes to get_recursive_membership_groups in case of
+        # need_user_message being True.
+        anchor, queries = test_find_first_unread_anchor([], need_user_message=True)
+        self.assert_length(queries, 3)
         self.assertEqual(anchor, first_message_id)
 
         # Looking for the first-unread in DMs leaves off the muted
         # topics queries and limits
-        with queries_captured() as queries, get_sqlalchemy_connection() as sa_conn:
-            anchor = find_first_unread_anchor(
-                sa_conn=sa_conn,
-                user_profile=user_profile,
-                narrow=[NarrowParameter(operator="is", operand="dm")],
-            )
-        self.assert_length(queries, 2)
-        self.assertTrue("muted" not in queries[1].sql)
+        anchor, queries = test_find_first_unread_anchor(
+            [NarrowParameter(operator="is", operand="dm")],
+            need_user_message=True,
+        )
+        self.assert_length(queries, 1)
+        self.assertTrue("muted" not in queries[0].sql)
         self.assertEqual(anchor, dm_message_id)
 
         # With the same data setup, we now want to test that a reasonable

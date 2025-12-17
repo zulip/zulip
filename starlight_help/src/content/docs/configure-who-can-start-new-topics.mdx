@@ -1,0 +1,44 @@
+---
+title: Configure who can start new topics
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
+
+You can restrict who can start new topics in a channel. For example, you can set
+up:
+
+* A channel where only some users can post new announcements, but
+  everyone can discuss them.
+* A channel with just a handful of topics everyone is expected to use.
+* A channel for mirroring another messaging app, where each topic corresponds to
+  a channel in the other app.
+
+<ZulipTip>
+  You can also [configure who can send messages](/help/channel-posting-policy)
+  to a channel.
+</ZulipTip>
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewPermissions />
+
+  1. Under **Messaging permissions**, configure **Who can start new topics**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
+
+## Related articles
+
+* [Channel permissions](/help/channel-permissions)
+* [Channel posting policy](/help/channel-posting-policy)
+* [Configure whether topics are required](/help/require-topics)

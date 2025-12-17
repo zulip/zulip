@@ -43,6 +43,7 @@ import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
 import type {Realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
@@ -237,7 +238,7 @@ function set_video_chat_provider_dropdown(): void {
     set_jitsi_server_url_dropdown();
 }
 
-function set_giphy_rating_dropdown(): void {
+function set_gif_rating_dropdown(): void {
     const rating_id = realm.realm_giphy_rating;
     $("#id_realm_giphy_rating").val(rating_id);
 }
@@ -693,9 +694,14 @@ export function discard_stream_property_element_changes(
     }
 
     switch (property_name) {
-        case "stream_privacy": {
-            assert(typeof property_value === "string");
-            $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
+        case "message_retention_days":
+            set_message_retention_setting_dropdown(sub);
+            break;
+        case "channel_privacy": {
+            settings_components.set_dropdown_list_widget_setting_value(
+                "channel_privacy",
+                stream_data.get_stream_privacy_policy(sub.stream_id),
+            );
 
             // Hide stream privacy warning banner
             const $stream_permissions_warning_banner = $(
@@ -706,9 +712,6 @@ export function discard_stream_property_element_changes(
             }
             break;
         }
-        case "message_retention_days":
-            set_message_retention_setting_dropdown(sub);
-            break;
         case "folder_id":
             settings_components.set_channel_folder_dropdown_value(sub);
             break;
@@ -1463,7 +1466,7 @@ export function build_page(): void {
 
     set_realm_waiting_period_setting();
     set_video_chat_provider_dropdown();
-    set_giphy_rating_dropdown();
+    set_gif_rating_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
     set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");

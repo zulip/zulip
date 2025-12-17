@@ -10,6 +10,7 @@ import {$t, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as settings from "./settings.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -136,9 +137,9 @@ export function build_page(): void {
         realm_night_logo_url = realm.realm_logo_url;
     }
 
-    let giphy_help_link = "/help/animated-gifs-from-giphy";
-    if (realm.giphy_api_key === "") {
-        giphy_help_link =
+    let gif_help_link = "/help/animated-gifs";
+    if (realm.giphy_api_key === "" && realm.tenor_api_key === "") {
+        gif_help_link =
             "https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html";
     }
 
@@ -150,9 +151,10 @@ export function build_page(): void {
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
         server_jitsi_server_url: realm.server_jitsi_server_url,
-        giphy_rating_options: realm.giphy_rating_options,
-        giphy_api_key_empty: realm.giphy_api_key === "",
-        realm_description: realm.realm_description,
+        gif_rating_options: realm.gif_rating_options,
+        gif_api_key_empty: realm.giphy_api_key === "" && realm.tenor_api_key === "",
+        realm_description_text: realm.realm_description,
+        realm_description_html: postprocess_content(page_params.realm_rendered_description),
         realm_inline_image_preview: realm.realm_inline_image_preview,
         server_inline_image_preview: realm.server_inline_image_preview,
         realm_inline_url_embed_preview: realm.realm_inline_url_embed_preview,
@@ -285,7 +287,7 @@ export function build_page(): void {
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
-        giphy_help_link,
+        gif_help_link,
         ...get_realm_level_notification_settings(),
         all_bots_list_dropdown_widget_name: settings_bots.all_bots_list_dropdown_widget_name,
         your_bots_list_dropdown_widget_name: settings_bots.your_bots_list_dropdown_widget_name,

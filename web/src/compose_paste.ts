@@ -575,6 +575,21 @@ export function paste_handler_converter(
             );
         },
     });
+
+    // Block elements wrap their content in two `\n`s as per
+    // the default turndown rules.
+    // We define this rule to avoid that behavior when
+    // the `paste_html` has divs.
+    // We may need to add other block elements in the future
+    // in the filter where we only want one newline as the
+    // separator.
+    turndownService.addRule("no extra newline", {
+        filter: "div",
+        replacement(content) {
+            return "\n" + content + "\n";
+        },
+    });
+
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.

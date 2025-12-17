@@ -145,6 +145,14 @@ to set up the Zulip Terminal development environment.
 
 ## Finding an issue to work on
 
+::: note
+
+**Note**: Project maintainers are not able to individually recommend issues to new
+contributors. Learning how to find an issue you can tackle is one of the skills
+new contributors need to learn.
+
+:::
+
 ### Where to look for an issue
 
 Now you're ready to pick your first issue! Zulip has several repositories you
@@ -164,10 +172,7 @@ especially approachable for new contributors.
 Here are some handy links for issues to look through:
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-- Mobile apps: no "help wanted" label, but see the
-  [project board](https://github.com/orgs/zulip/projects/5/views/4)
-  for the upcoming Flutter-based app. Look for issues up through the
-  "Launch" milestone, and that aren't already assigned.
+- [Mobile app](https://github.com/zulip/zulip-flutter/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Desktop app](https://github.com/zulip/zulip-desktop/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Terminal app](https://github.com/zulip/zulip-terminal/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted")
 - [Python API bindings and bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
@@ -250,13 +255,22 @@ issue you're interested in.
 
 #### In other Zulip repositories
 
-There is no bot for other Zulip repositories
-([`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/), etc.). If
-you are interested in claiming an issue in one of these repositories, simply
-post a comment on the issue thread saying that you've started work on the
-issue and would like to claim it. In your comment, describe what part of the
-code you're modifying and how you plan to approach the problem, based on
-what you learned in steps 1–4 [above](#picking-an-issue-to-work-on).
+In other Zulip repositories, including
+[`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/),
+there is no bot. Instead:
+
+- Use the steps above to find an issue you'd like to work on
+  and to get started working on it.
+- Post a comment on the issue thread saying that you've started work
+  on the issue and would like to claim it.
+- In your comment, **describe what you learned in steps 1–4
+  [above](#picking-an-issue-to-work-on)**: what part of the code
+  you're modifying and how you plan to approach the problem.
+- Once you've followed these steps, you've successfully claimed the issue.
+  Go ahead and continue work on the issue, and send a PR when ready.
+  Someone might come along and assign the issue to you for better
+  tracking, but there's no need to wait for that or for any other
+  form of permission.
 
 There is no need to @-mention the issue creator in your comment. There is
 also no need to post the same information in multiple places, for example in
@@ -441,6 +455,14 @@ becoming a core developer often involves taking ownership of one of these area
 labels.
 
 ## Common questions
+
+- **Can I work on an issue that's not marked as "help wanted"?** The entire
+  purpose of the "help wanted" label is to indicate which issues are open for
+  contribution, so the answer is generally "no". Please feel free to ask if you
+  have a _merged PR_ in a closely related part of the codebase, _and_ the issue
+  has a clear product spec, and no obvious blockers. Otherwise, asking to claim
+  an issue without a "help wanted" label clutters up comment threads, and wastes
+  maintainer time.
 
 - **What if somebody is already working on the issue I want to claim?** There
   are lots of issues to work on (likely

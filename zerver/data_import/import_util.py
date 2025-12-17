@@ -1,10 +1,13 @@
 import logging
 import os
 import random
+import secrets
 import shutil
+import subprocess
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
+from dataclasses import dataclass
 from typing import Any, Protocol, TypeAlias, TypeVar
 
 import orjson
@@ -16,12 +19,14 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_extension
 from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
+from zerver.lib.upload import sanitize_name
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -38,6 +43,13 @@ from zproject.backends import all_default_backend_names
 # stubs
 ZerverFieldsT: TypeAlias = dict[str, Any]
 
+
+@dataclass
+class AttachmentLinkResult:
+    path_id: str
+    markdown_link: str
+
+
 DATA_IMPORT_CLIENTS = {
     # Match low ID clients in zerver/lib/server_initialization.py.
     # This has no functional impact other than ensuring low IDs.
@@ -48,6 +60,26 @@ DATA_IMPORT_CLIENTS = {
     # Special client key to be used for data import messages.
     "ZulipDataImport": 5,
 }
+
+
+@dataclass
+class UploadRecordData:
+    content_type: str | None
+    last_modified: float
+    path: str
+    realm_id: int
+    s3_path: str
+    size: int
+    user_profile_id: int
+
+
+@dataclass
+class UploadFileRequest:
+    output_file_path: str
+    request_url: str
+    params: dict[str, Any] | None
+    headers: dict[str, Any] | None
+    kwargs: dict[str, Any]
 
 
 class SubscriberHandler:
@@ -579,7 +611,7 @@ def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[s
         # Adjust the avatar size for a typical Slack user.
         avatar_url += size_url_suffix
 
-    response = requests.get(avatar_url, stream=True)
+    response = request_file_stream(avatar_url)
     with open(image_path, "wb") as image_file:
         shutil.copyfileobj(response.raw, image_file)
     shutil.copy(image_path, original_image_path)
@@ -645,47 +677,43 @@ def process_avatars(
     return avatar_list + avatar_original_list
 
 
-def get_uploads(upload_dir: str, upload: list[str]) -> None:
-    upload_url = upload[0]
-    upload_path = upload[1]
-    upload_path = os.path.join(upload_dir, upload_path)
+def request_file_stream(
+    url: str,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> requests.Response:
+    if "stream" not in kwargs:
+        kwargs.update(stream=True)
 
-    response = requests.get(upload_url, stream=True)
-    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-    with open(upload_path, "wb") as upload_file:
-        shutil.copyfileobj(response.raw, upload_file)
+    response = requests.get(
+        url,
+        params=params,
+        headers=headers,
+        **kwargs,
+    )
+    if response.status_code != requests.codes.ok:
+        logging.info("HTTP error: %s, Response: %s", response.status_code, response.text)
+        raise Exception("Failed downloading file.")
+
+    return response
 
 
-def process_uploads(
-    upload_list: list[ZerverFieldsT], upload_dir: str, processes: int
-) -> list[ZerverFieldsT]:
-    """
-    This function downloads the uploads and saves it in the realm's upload directory.
-    Required parameters:
+def download_and_export_upload_file(
+    output_dir: str, upload_file_request: UploadFileRequest
+) -> None:
+    file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path)
 
-    1. upload_list: List of uploads to be mapped in uploads records.json file
-    2. upload_dir: Folder where the downloaded uploads are saved
-    """
-    logging.info("######### GETTING ATTACHMENTS #########\n")
-    logging.info("DOWNLOADING ATTACHMENTS .......\n")
-    upload_url_list = []
-    for upload in upload_list:
-        upload_url = upload["path"]
-        upload_s3_path = upload["s3_path"]
-        upload_url_list.append([upload_url, upload_s3_path])
-        upload["path"] = upload_s3_path
-
-    # Run downloads in parallel
-    run_parallel(
-        partial(get_uploads, upload_dir),
-        upload_url_list,
-        processes=processes,
-        catch=True,
-        report=lambda count: logging.info("Finished %s items", count),
+    response = request_file_stream(
+        upload_file_request.request_url,
+        upload_file_request.params,
+        upload_file_request.headers,
+        **upload_file_request.kwargs,
     )
 
-    logging.info("######### GETTING ATTACHMENTS FINISHED #########\n")
-    return upload_list
+    os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
+    with open(file_output_path, "wb") as upload_file:
+        shutil.copyfileobj(response.raw, upload_file)
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
@@ -702,7 +730,7 @@ def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> Zerv
 def get_emojis(emoji_dir: str, emoji_url: str, emoji_path: str) -> str | None:
     upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
-    response = requests.get(emoji_url, stream=True)
+    response = request_file_stream(emoji_url)
     os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
     with open(upload_emoji_path, "wb") as emoji_file:
         shutil.copyfileobj(response.raw, emoji_file)
@@ -852,3 +880,33 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
             f"Invalid email format, please fix the following email(s) and try again: {details}"
         )
         raise ValidationError(error_log)
+
+
+def convert_html_to_text(content: str) -> str:
+    # html2text is GPL licensed, so run it as a subprocess.
+    return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
+
+
+def get_data_file(path: str) -> Any:
+    with open(path, "rb") as fp:
+        data = orjson.loads(fp.read())
+        return data
+
+
+def get_attachment_path_and_content(
+    link_name: str, filename: str, realm_id: int
+) -> AttachmentLinkResult:
+    # Since the files will be remapped during import, the layout is
+    # to prevent directories from getting too big.
+    path_id = "/".join(
+        [
+            str(realm_id),
+            format(random.randint(0, 255), "x"),
+            secrets.token_urlsafe(18),
+            sanitize_name(filename),
+        ]
+    )
+    attachment_url = f"/user_uploads/{path_id}"
+    markdown_link = get_markdown_link_for_url(link_name, attachment_url)
+
+    return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link)

@@ -5,6 +5,7 @@ title: Link to a message or conversation
 import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ChannelActions from "../include/_ChannelActions.mdx";
 import ChannelLongPressMenu from "../include/_ChannelLongPressMenu.mdx";
@@ -113,6 +114,12 @@ accepts HTML formatting (e.g., your email, GitHub, docs, etc.), the link will be
 formatted as it would be in Zulip (e.g., [#channel > topic](#link-to-a-topic-within-zulip)).
 To paste the plain URL, you can paste without formatting (likely <kbd>Ctrl</kbd> +
 <kbd>Shift</kbd> + <kbd>V</kbd> in your browser).
+
+<ZulipNote>
+  Due to a Safari quirk, pasting Zulip links from Safari into GitHub
+  and some other apps may result in incorrect formatting. You can
+  paste without formatting, or use a different browser.
+</ZulipNote>
 
 ### Get a link to a specific message
 

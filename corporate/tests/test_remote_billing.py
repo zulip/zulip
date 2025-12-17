@@ -130,14 +130,6 @@ class RemoteRealmBillingTestCase(BouncerTestCase):
             self.assertEqual(prereg_user.created_user, remote_billing_user)
             self.assertEqual(remote_billing_user.date_joined, now)
 
-            # Now we should be redirected again to the /remote-billing-login/ endpoint
-            # with a new signed_access_token. Now that the email has been confirmed,
-            # and we have a RemoteRealmBillingUser entry, we'll be in the same position
-            # as the case where first_time_login=False.
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result["Location"].startswith("/remote-billing-login/"))
-            result = self.client_get(result["Location"], subdomain="selfhosting")
-
         # Final confirmation page - just confirm your details, possibly
         # agreeing to ToS if needed and an authenticated session will be granted:
         self.assertEqual(result.status_code, 200)
@@ -691,8 +683,8 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Click the first confirmation link.
         with time_machine.travel(now, tick=False):
             result = self.client_get(first_confirmation_url, subdomain="selfhosting")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].startswith("/remote-billing-login/"))
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Log in to Zulip plan management"], result)
 
         # This created the RemoteRealmBillingUser entry.
         remote_billing_user = RemoteRealmBillingUser.objects.latest("id")
@@ -703,15 +695,15 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(first_prereg_user.created_user, remote_billing_user)
 
         # Now click the second confirmation link. The RemoteRealmBillingUser entry
-        # stays the same, since it's already been created, and the user is redirected
+        # stays the same, since it's already been created, and the user proceeds
         # normally further through the flow, while we log this event.
         with (
             time_machine.travel(now + timedelta(seconds=1), tick=False),
             self.assertLogs("corporate.stripe", "INFO") as mock_logger,
         ):
             result = self.client_get(second_confirmation_url, subdomain="selfhosting")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result["Location"].startswith("/remote-billing-login/"))
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Log in to Zulip plan management"], result)
 
         # The RemoteRealmBillingUser entry stays the same.
         self.assertEqual(RemoteRealmBillingUser.objects.latest("id"), remote_billing_user)

@@ -198,7 +198,8 @@ export function update_stream_privacy(
         // Rerender message list if we are narrowed to the stream.
         message_lists.current?.rerender();
     }
-    stream_ui_updates.update_setting_element(sub, "stream_privacy");
+    stream_ui_updates.update_setting_element(sub, "channel_privacy");
+    stream_ui_updates.update_setting_element(sub, "history_public_to_subscribers");
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
@@ -250,7 +251,6 @@ export function update_is_default_stream(): void {
         const sub = sub_store.get(active_stream_id);
         assert(sub !== undefined);
         stream_ui_updates.update_setting_element(sub, "is_default_stream");
-        stream_ui_updates.update_private_stream_privacy_option_state($("#stream_settings"));
     }
 }
 
@@ -353,7 +353,7 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     const html = render_browse_streams_list_item(setting_sub);
     const $new_row = $(html);
 
-    if (stream_settings_components.filter_includes_channel(sub)) {
+    if (stream_settings_components.archived_status_filter_includes_channel(sub)) {
         if (stream_create.get_name() === sub.name) {
             scroll_util.get_content_element($(".streams-list")).prepend($new_row);
             scroll_util.reset_scrollbar($(".streams-list"));
@@ -463,8 +463,8 @@ export function update_settings_for_archived_and_unarchived(slim_sub: StreamSubs
         $(".stream_settings_filter_container").removeClass("hide_filter");
     } else {
         $(".stream_settings_filter_container").addClass("hide_filter");
-        stream_settings_components.set_filter_dropdown_value(
-            stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+        stream_settings_components.set_archived_status_filter_dropdown_value(
+            stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
         );
     }
     redraw_left_panel();
@@ -516,17 +516,17 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 }
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
-    const current_channel_visibility_filter =
-        stream_settings_components.get_filter_dropdown_value();
-    const channel_visibility_filters = stream_settings_data.FILTERS;
+    const archived_status_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
     if (
-        current_channel_visibility_filter === channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
+        left_panel_params.archived_status_filter_value ===
+            archived_status_filters.NON_ARCHIVED_CHANNELS &&
         sub.is_archived
     ) {
         return "rejected";
     }
     if (
-        current_channel_visibility_filter === channel_visibility_filters.ARCHIVED_CHANNELS &&
+        left_panel_params.archived_status_filter_value ===
+            archived_status_filters.ARCHIVED_CHANNELS &&
         !sub.is_archived
     ) {
         return "rejected";
@@ -641,8 +641,8 @@ export function update_empty_left_panel_message(): void {
     const has_search_query =
         $<HTMLInputElement>("#stream_filter input[type='text']").val()!.trim() !== "";
     const has_filter =
-        stream_settings_components.get_filter_dropdown_value() !==
-        stream_settings_data.FILTERS.ALL_CHANNELS;
+        stream_settings_components.get_archived_status_filter_dropdown_value() !==
+        stream_settings_data.ARCHIVED_STATUS_FILTERS.ALL_CHANNELS;
 
     // Both search queries and filters can lead to all channels being hidden.
     if (all_channels_hidden && (has_search_query || (has_filter && has_streams))) {
@@ -732,16 +732,20 @@ type LeftPanelParams = {
     show_subscribed: boolean;
     show_available: boolean;
     sort_order: string;
+    archived_status_filter_value: string;
 };
 
 export function get_left_panel_params(): LeftPanelParams {
     const $search_box = $<HTMLInputElement>("#stream_filter input[type='text']");
     const input = $search_box.expectOne().val()!.trim();
+    const archived_status_filter_value =
+        stream_settings_components.get_archived_status_filter_dropdown_value();
     return {
         input,
         show_subscribed: stream_ui_updates.show_subscribed,
         show_available: stream_ui_updates.show_available,
         sort_order,
+        archived_status_filter_value,
     };
 }
 
@@ -799,21 +803,23 @@ function filters_dropdown_options(
 ): dropdown_widget.Option[] {
     return [
         {
-            unique_id: stream_settings_data.FILTERS.ARCHIVED_CHANNELS,
+            unique_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.ARCHIVED_CHANNELS,
             name: $t({defaultMessage: "Archived channels"}),
             bold_current_selection:
-                current_value === stream_settings_data.FILTERS.ARCHIVED_CHANNELS,
+                current_value === stream_settings_data.ARCHIVED_STATUS_FILTERS.ARCHIVED_CHANNELS,
         },
         {
-            unique_id: stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+            unique_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
             name: $t({defaultMessage: "Non-archived channels"}),
             bold_current_selection:
-                current_value === stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+                current_value ===
+                stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
         },
         {
-            unique_id: stream_settings_data.FILTERS.ALL_CHANNELS,
+            unique_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.ALL_CHANNELS,
             name: $t({defaultMessage: "Archived and non-archived"}),
-            bold_current_selection: current_value === stream_settings_data.FILTERS.ALL_CHANNELS,
+            bold_current_selection:
+                current_value === stream_settings_data.ARCHIVED_STATUS_FILTERS.ALL_CHANNELS,
         },
     ];
 }
@@ -840,10 +846,10 @@ function set_up_dropdown_widget(): void {
         widget_name: "stream_settings_filter",
         item_click_callback: filter_click_handler,
         $events_container: $("#stream_filter"),
-        default_id: stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+        default_id: stream_settings_data.ARCHIVED_STATUS_FILTERS.NON_ARCHIVED_CHANNELS,
     });
     widget.setup();
-    stream_settings_components.set_filter_dropdown_widget(widget);
+    stream_settings_components.set_archived_status_filter_dropdown_widget(widget);
 }
 
 function setup_page(callback: () => void): void {
@@ -946,6 +952,7 @@ function setup_page(callback: () => void): void {
             stream_privacy_policy,
             stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
             check_default_stream: false,
+            history_public_to_subscribers: true,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             org_level_message_retention_setting:
                 stream_edit.get_display_text_for_realm_message_retention_setting(),
@@ -1082,15 +1089,15 @@ export function change_state(
         switch_to_stream_row(stream_id);
 
         const sub = stream_data.get_sub_by_id(stream_id);
-        if (sub && !stream_settings_components.filter_includes_channel(sub)) {
-            const FILTERS = stream_settings_data.FILTERS;
+        if (sub && !stream_settings_components.archived_status_filter_includes_channel(sub)) {
+            const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
             let selected_filter;
             if (sub.is_archived) {
                 selected_filter = FILTERS.ARCHIVED_CHANNELS;
             } else {
                 selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
             }
-            stream_settings_components.set_filter_dropdown_value(selected_filter);
+            stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
         }
         return;
     }

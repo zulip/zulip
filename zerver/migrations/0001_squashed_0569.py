@@ -15,7 +15,7 @@ import django.db.models.deletion
 import django.db.models.functions.text
 import django.utils.timezone
 from django.conf import settings
-from django.db import connection, migrations, models
+from django.db import connection, migrations, models, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.utils import InternalError
@@ -61,16 +61,17 @@ def set_up_fts_indexes(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
     # Duplicated in 0001_initial.py
     with connection.cursor() as cursor:
         try:
-            cursor.execute(
-                """
-                CREATE TEXT SEARCH DICTIONARY english_us_hunspell
-                  (template = ispell, DictFile = en_us, AffFile = en_us, StopWords = zulip_english);
-                CREATE TEXT SEARCH CONFIGURATION zulip.english_us_search (COPY=pg_catalog.english);
-                ALTER TEXT SEARCH CONFIGURATION zulip.english_us_search
-                  ALTER MAPPING FOR asciiword, asciihword, hword_asciipart, word, hword, hword_part
-                  WITH english_us_hunspell, english_stem;
-                """
-            )
+            with transaction.atomic(savepoint=True):
+                cursor.execute(
+                    """
+                    CREATE TEXT SEARCH DICTIONARY english_us_hunspell
+                      (template = ispell, DictFile = en_us, AffFile = en_us, StopWords = zulip_english);
+                    CREATE TEXT SEARCH CONFIGURATION zulip.english_us_search (COPY=pg_catalog.english);
+                    ALTER TEXT SEARCH CONFIGURATION zulip.english_us_search
+                      ALTER MAPPING FOR asciiword, asciihword, hword_asciipart, word, hword, hword_part
+                      WITH english_us_hunspell, english_stem;
+                    """
+                )
         except InternalError as e:
             # If we have a remote PostgreSQL server, and we get an
             # error about the tsearch_data paths, assume that we're
@@ -677,6 +678,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(sql="ALTER ROLE CURRENT_USER SET search_path TO zulip,public"),
         migrations.CreateModel(
             name="ArchiveTransaction",
             fields=[

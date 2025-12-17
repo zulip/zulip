@@ -29,7 +29,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
-from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm
 from zerver.lib.default_streams import get_slim_realm_default_streams
@@ -3549,7 +3549,6 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
         self.assertIn("Demo organization", realm.name)
-        self.assertIn("demo-", realm.string_id)
 
         # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(
@@ -3608,11 +3607,11 @@ class DeactivateUserTest(ZulipTestCase):
         user = self.example_user("desdemona")
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_owner)
-        do_change_user_role(user_2, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user_2, UserProfile.ROLE_REALM_OWNER)
         self.assertTrue(user_2.is_realm_owner)
         result = self.client_delete("/json/users/me")
         self.assert_json_success(result)
-        do_change_user_role(user, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user, UserProfile.ROLE_REALM_OWNER)
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm("zulip")

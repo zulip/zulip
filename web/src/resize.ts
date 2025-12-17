@@ -56,7 +56,10 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
     return watch_manual_resize_for_element(box);
 }
 
-export function watch_manual_resize_for_element(box: Element): (() => void)[] {
+export function watch_manual_resize_for_element(
+    box: Element,
+    resize_callback?: (height: number) => void,
+): (() => void)[] {
     let height: number;
     let mousedown = false;
 
@@ -75,6 +78,9 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
             if (height !== box.clientHeight) {
                 height = box.clientHeight;
                 autosize.destroy($(box)).height(height + "px");
+                if (resize_callback) {
+                    resize_callback(height);
+                }
             }
         }
     };

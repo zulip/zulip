@@ -17,6 +17,7 @@ import * as narrow_title from "./narrow_title.ts";
 import * as overlays from "./overlays.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as resize from "./resize.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_list from "./stream_list.ts";
@@ -114,6 +115,7 @@ export function show(opts: {
     compose_recipient.handle_middle_pane_transition();
     opts.complete_rerender(true);
     compose_actions.on_show_navigation_view();
+    popup_banners.close_found_missing_unreads_banner();
 
     // This has to happen after resetting the current narrow filter, so
     // that the buddy list is rendered with the correct narrow state.

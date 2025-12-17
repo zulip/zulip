@@ -188,6 +188,9 @@ JITSI_SERVER_URL: str | None = "https://meet.jit.si"
 # GIPHY API key.
 GIPHY_API_KEY = get_secret("giphy_api_key")
 
+# Tenor API key
+TENOR_API_KEY = get_secret("tenor_api_key")
+
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
@@ -212,8 +215,8 @@ RABBITMQ_USE_TLS = False
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
 REMOTE_POSTGRES_HOST = ""
-REMOTE_POSTGRES_PORT = ""
-REMOTE_POSTGRES_SSLMODE = ""
+REMOTE_POSTGRES_PORT = 5432
+REMOTE_POSTGRES_SSLMODE = "verify-full"
 
 TORNADO_PORTS: list[int] = []
 USING_TORNADO = True

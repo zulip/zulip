@@ -198,6 +198,9 @@ mock_esm("../src/unread", {
 mock_esm("../src/resize", {
     update_recent_view: noop,
 });
+mock_esm("../src/popup_banners", {
+    close_found_missing_unreads_banner: noop,
+});
 const dropdown_widget = mock_esm("../src/dropdown_widget");
 dropdown_widget.DropdownWidget = function DropdownWidget() {
     this.setup = noop;
@@ -1050,7 +1053,7 @@ test("test_delete_messages", ({override}) => {
 
     // messages[0] was removed.
     let reduced_msgs = messages.slice(1);
-    override(all_messages_data, "all_messages", () => reduced_msgs);
+    override(all_messages_data, "all_messages_after_mute_filtering", () => reduced_msgs);
 
     let all_topics = rt_data.get_conversations();
     assert.equal(
@@ -1081,7 +1084,7 @@ test("test_delete_messages", ({override}) => {
 });
 
 test("test_topic_edit", ({override}) => {
-    override(all_messages_data, "all_messages", () => messages);
+    override(all_messages_data, "all_messages_after_mute_filtering", () => messages);
     recent_view_util.set_visible(false);
 
     // NOTE: This test should always run in the end as it modified the messages data.

@@ -31,11 +31,11 @@ export class MessageListData {
     // message ID. It's used to efficiently query if a given
     // message is present.
     _hash: Map<number, Message>;
-    // Some views exclude muted topics.
+    // Some views exclude muted topics / users.
     //
-    // TODO: Refactor this to be a property of Filter, rather than
-    // a parameter that needs to be passed into the constructor.
+    // Also, `all_messages_data` never excludes anything by definition.
     excludes_muted_topics: boolean;
+    excludes_muted_users: boolean;
     // Tracks any locally echoed messages, which we know aren't present on the server.
     _local_only: Set<number>;
     // The currently selected message ID. The special value -1
@@ -60,7 +60,15 @@ export class MessageListData {
     // See also MessageList and MessageListView, which are important
     // to actually display a message list.
 
-    constructor({excludes_muted_topics, filter}: {excludes_muted_topics: boolean; filter: Filter}) {
+    constructor({
+        excludes_muted_topics,
+        excludes_muted_users = true,
+        filter,
+    }: {
+        excludes_muted_topics: boolean;
+        excludes_muted_users?: boolean;
+        filter: Filter;
+    }) {
         this.filter = filter;
         this.fetch_status = new FetchStatus();
         this.participants = new ConversationParticipants([]);
@@ -68,6 +76,7 @@ export class MessageListData {
         this._items = [];
         this._hash = new Map();
         this.excludes_muted_topics = excludes_muted_topics;
+        this.excludes_muted_users = excludes_muted_users;
         this._local_only = new Set();
         this._selected_id = -1;
     }
@@ -82,7 +91,7 @@ export class MessageListData {
         this.add_messages_callback = callback;
     }
 
-    all_messages(): Message[] {
+    all_messages_after_mute_filtering(): Message[] {
         return this._items;
     }
 
@@ -240,7 +249,7 @@ export class MessageListData {
         // Don't exclude messages sent by muted users if we're
         // searching for a specific group or user, since the user
         // presumably wants to see those messages.
-        if (this.filter.is_search_for_specific_group_or_user()) {
+        if (!this.excludes_muted_users || this.filter.is_search_for_specific_group_or_user()) {
             return [...messages];
         }
 

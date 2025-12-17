@@ -131,7 +131,8 @@ class PushDevice(AbstractPushDevice):
         ]
         indexes = [
             models.Index(
-                # Used in 'send_push_notifications' and `send_e2ee_test_push_notification_api`.
+                # Used in 'send_push_notifications', `send_e2ee_test_push_notification_api`,
+                # 'get_recipient_info', and 'do_clear_mobile_push_notifications_for_ids'.
                 fields=["user", "bouncer_device_id"],
                 condition=Q(bouncer_device_id__isnull=False),
                 name="zerver_pushdevice_user_bouncer_device_id_idx",

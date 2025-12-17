@@ -25,6 +25,7 @@ import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
@@ -117,6 +118,7 @@ export function initialize(): void {
     });
 
     resize.watch_manual_resize("#compose-textarea");
+    message_viewport.register_resize_handler(message_edit.maybe_autosize_message_edit_box);
 
     // Updates compose max-height and scroll to bottom button position when
     // there is a change in compose height like when a compose banner is displayed.
@@ -635,6 +637,11 @@ export function initialize(): void {
         // chat* is permitted.
         compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
+        const stream_id = compose_state.stream_id()!;
+        if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+            // Open the typahead so that user can select an existing topic.
+            composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
+        }
     });
 
     $("#compose-direct-recipient").on("click", "#compose-new-direct-recipient-button", (e) => {

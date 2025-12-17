@@ -456,7 +456,10 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
     const stream_header_height =
         $(".narrow-filter.stream-expanded .bottom_left_row").outerHeight(true) ?? 0;
     const topic_header_height = $("#topics_header").outerHeight(true) ?? 0;
-    const sticky_header_height = stream_header_height + topic_header_height;
+    const channel_folder_header_height =
+        $selected_topic.closest(".stream-list-subsection-header").outerHeight(true) ?? 0;
+    const sticky_header_height =
+        stream_header_height + topic_header_height + channel_folder_header_height;
     scroll_util.scroll_element_into_container($selected_topic, $container, sticky_header_height);
 }
 

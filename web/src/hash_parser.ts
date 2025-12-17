@@ -1,3 +1,5 @@
+// See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
 import {type NarrowTerm, narrow_operator_schema} from "./state_data.ts";
 
 export function get_hash_category(hash?: string): string {

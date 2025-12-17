@@ -85,6 +85,7 @@ export type CustomProfileFieldData = {
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
 let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
+let user_widget_current_user_id: number | undefined;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
@@ -124,9 +125,12 @@ export function get_user_id_if_user_profile_modal_open(): number | undefined {
 export function update_user_profile_streams_list_for_users(user_ids: number[]): void {
     const user_id = get_user_id_if_user_profile_modal_open();
     if (user_id && user_ids.includes(user_id) && user_streams_list_widget !== undefined) {
-        const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
+        // The stream data should already be fetched for an open stream list widget.
+        const user_streams = stream_data.get_fetched_streams_for_user(user_id).subscribed;
         user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
+        const user = people.get_by_user_id(user_id);
+        void render_or_update_user_streams_tab(user);
     }
 }
 
@@ -136,6 +140,8 @@ export function update_user_profile_groups_list_for_users(user_ids: number[]): v
         const user_groups_list = user_groups.get_user_groups_of_user(user_id);
         user_groups_list.sort(compare_by_name);
         user_groups_list_widget.replace_list_data(user_groups_list);
+        const user = people.get_by_user_id(user_id);
+        render_or_update_user_groups_tab(user);
     }
 }
 
@@ -213,15 +219,18 @@ function initialize_bot_owner(
     return user_pills;
 }
 
-function render_user_profile_subscribe_widget(): void {
+function render_user_profile_subscribe_widget(user_id: number): void {
     const opts: DropdownWidgetOptions = {
         widget_name: "user_profile_subscribe",
-        get_options: get_user_unsub_streams_for_dropdown,
+        // The stream data should already be fetched before calling the render
+        // function, since it's used for checking if we should render it.
+        get_options: get_fetched_user_unsub_streams_for_dropdown,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
         unique_id_type: "number",
     };
     user_profile_subscribe_widget = new dropdown_widget.DropdownWidget(opts);
+    user_widget_current_user_id = user_id;
     user_profile_subscribe_widget.setup();
 }
 
@@ -253,14 +262,19 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
+export function get_fetched_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
-    return get_user_unsub_streams(target_user_id);
+    return get_fetched_user_unsub_streams(target_user_id);
 }
 
-export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
+async function get_user_unsub_streams(user_id: number): Promise<dropdown_widget.Option[]> {
+    await stream_data.get_streams_for_user(user_id);
+    return get_fetched_user_unsub_streams(user_id);
+}
+
+function get_fetched_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
     return stream_data
-        .get_streams_for_user(user_id)
+        .get_fetched_streams_for_user(user_id)
         .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
@@ -325,10 +339,56 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     });
 }
 
+async function render_or_update_user_streams_tab(user: User): Promise<void> {
+    if (!peer_data.subscriber_data_loaded_for_user(user.user_id)) {
+        $("#user-profile-streams-tab .stream-list-bottom-section").hide();
+        loading.make_indicator($(".stream-list-loader"), {
+            height: 56, // 4em at 14px / 1em
+        });
+    }
+    const user_streams = (await stream_data.get_streams_for_user(user.user_id)).subscribed;
+    const user_unsub_streams = await get_user_unsub_streams(user.user_id);
+    // If a modal for another user was opened while we were fetching data, there's
+    // nothing for us to do here.
+    if (user_widget_current_user_id !== undefined && user_widget_current_user_id !== user.user_id) {
+        return;
+    }
+
+    loading.destroy_indicator($(".stream-list-loader"));
+
+    if (!user_streams_list_widget) {
+        render_user_stream_list(user_streams, user);
+    }
+    // We only show the subscribe widget if the user is an admin, the user has opened
+    // their own profile, or if the user profile belongs to a bot whose owner has opened
+    // the user profile. However, we don't want to show the subscribe widget for generic
+    // bots since they are system bots and for deactivated users. Therefore, we also check
+    // for that condition.
+    // We also don't show the widget if there are no channels the user is currently
+    // unsubscribed from and could become subscribed to (i.e. nothing to show in the widget).
+    const show_user_subscribe_widget =
+        (people.can_admin_user(user) || current_user.is_admin) &&
+        user_unsub_streams.length > 0 &&
+        !user.is_system_bot &&
+        people.is_person_active(user.user_id);
+
+    if (show_user_subscribe_widget && user_profile_subscribe_widget === undefined) {
+        reset_subscribe_widget();
+        render_user_profile_subscribe_widget(user.user_id);
+    }
+
+    if (show_user_subscribe_widget) {
+        $("#user-profile-streams-tab .stream-list-bottom-section").show();
+    } else {
+        $("#user-profile-streams-tab .stream-list-bottom-section").hide();
+    }
+}
+
 function render_user_stream_list(streams: StreamSubscription[], user: User): void {
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
     $container.empty();
+    user_widget_current_user_id = user.user_id;
     user_streams_list_widget = ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
         get_item: ListWidget.default_get_item,
@@ -345,10 +405,35 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
     });
 }
 
+function render_or_update_user_groups_tab(user: User): void {
+    if (!user_groups_list_widget) {
+        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+        render_user_group_list(groups_of_user, user);
+        const $user_group_pill_container = $("#user-group-to-add .pill-container");
+        user_group_pill_widget = user_group_picker_pill.create(
+            $user_group_pill_container,
+            user.user_id,
+        );
+    }
+
+    const user_groups_allowed_to_add_members =
+        user_group_picker_pill.get_user_groups_allowed_to_add_members();
+    const show_user_group_widget =
+        user_groups_allowed_to_add_members.some(
+            (group) => !user_groups.is_direct_member_of(user.user_id, group.id),
+        ) && people.is_person_active(user.user_id);
+    if (show_user_group_widget) {
+        $(".group-list-bottom-section").show();
+    } else {
+        $(".group-list-bottom-section").hide();
+    }
+}
+
 function render_user_group_list(groups: UserGroup[], user: User): void {
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
+    user_widget_current_user_id = user.user_id;
     user_groups_list_widget = ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         get_item: ListWidget.default_get_item,
@@ -466,11 +551,7 @@ export function update_user_custom_profile_fields(user: User): void {
 
     const profile_data = {profile_fields};
     $custom_profile_field.html(render_user_custom_profile_fields(profile_data));
-    custom_profile_fields_ui.initialize_custom_user_type_fields(
-        "#user-profile-modal #content",
-        user.user_id,
-        false,
-    );
+    custom_profile_fields_ui.initialize_profile_user_type_pills(user.user_id);
 }
 
 export function hide_user_profile(): void {
@@ -496,11 +577,7 @@ function initialize_user_type_fields(user: User): void {
     // Avoid duplicate pill fields, by removing existing ones.
     $("#user-profile-modal .pill").remove();
     if (!user.is_bot) {
-        custom_profile_fields_ui.initialize_custom_user_type_fields(
-            "#user-profile-modal #content",
-            user.user_id,
-            false,
-        );
+        custom_profile_fields_ui.initialize_profile_user_type_pills(user.user_id);
     } else {
         initialize_bot_owner("#user-profile-modal #content", user.user_id);
     }
@@ -599,6 +676,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     user_streams_list_widget = undefined;
     user_groups_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
+    user_widget_current_user_id = undefined;
 
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
@@ -607,18 +685,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     original_values = {
         user_id: user.user_id.toString(),
     };
-    const user_unsub_streams = get_user_unsub_streams(user.user_id);
-    // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
-    // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
-    // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
-    // Therefore, we also check for that condition.
-    const show_user_subscribe_widget =
-        (people.can_admin_user(user) || user_unsub_streams.length > 0) &&
-        !user.is_system_bot &&
-        people.is_person_active(user.user_id);
-    const show_user_group_container =
-        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
-        people.is_person_active(user.user_id);
+
     // We currently have the main UI for editing your own profile in
     // settings for non-admins, so can_manage_profile is artificially
     // false for those.
@@ -639,8 +706,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         profile_data,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
-        show_user_subscribe_widget,
-        show_user_group_container,
         user_avatar: people.medium_avatar_url_for_person(user),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         user_id: user.user_id,
@@ -699,22 +764,11 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     }
                     break;
                 case "user-profile-groups-tab": {
-                    if (!user_groups_list_widget) {
-                        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
-                        render_user_group_list(groups_of_user, user);
-                    }
+                    render_or_update_user_groups_tab(user);
                     break;
                 }
                 case "user-profile-streams-tab": {
-                    if (!user_streams_list_widget) {
-                        const user_streams = stream_data.get_streams_for_user(
-                            user.user_id,
-                        ).subscribed;
-                        if (show_user_subscribe_widget) {
-                            render_user_profile_subscribe_widget();
-                        }
-                        render_user_stream_list(user_streams, user);
-                    }
+                    void render_or_update_user_streams_tab(user);
                     break;
                 }
                 case "manage-profile-tab":
@@ -749,16 +803,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     setTimeout(() => {
         $(".ind-tab.selected").trigger("focus");
     }, 0);
-    if (show_user_subscribe_widget) {
-        reset_subscribe_widget();
-    }
-    if (show_user_group_container) {
-        const $user_group_pill_container = $("#user-group-to-add .pill-container");
-        user_group_pill_widget = user_group_picker_pill.create(
-            $user_group_pill_container,
-            user.user_id,
-        );
-    }
 }
 
 function handle_remove_stream_subscription(

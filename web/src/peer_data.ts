@@ -16,7 +16,14 @@ import * as util from "./util.ts";
 // its count being accurate.
 const subscriber_counts = new Map<number, number>();
 
+const fetched_user_subscriptions = new Set<number>();
+
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
+// We might not have all the subscribers for a given stream. Streams
+// with full data will be stored in `fetched_stream_ids`, and for the
+// rest we try to have all non-long-term-idle subscribers for streams,
+// though that doesn't account for subscribers that become active after
+// pageload.
 // Make sure that when we have full subscriber data for a stream,
 // the size of its subscribers set stays synced with the relevant
 // stream's `subscriber_count`.
@@ -25,6 +32,17 @@ const fetched_stream_ids = new Set<number>();
 export function has_full_subscriber_data(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
+
+// Don't run this in loops, since it has O(channels) runtime.
+export function has_complete_subscriber_data(): boolean {
+    const all_stream_ids = new Set(sub_store.stream_ids());
+    return (
+        all_stream_ids.size === fetched_stream_ids.size &&
+        all_stream_ids.difference(fetched_stream_ids).size === 0
+    );
+}
+
+// Requests for subscribers of a stream
 const pending_subscriber_requests = new Map<
     number,
     {
@@ -35,15 +53,23 @@ const pending_subscriber_requests = new Map<
         }[];
     }
 >();
+// Requests for subscriptions for a user
+const pending_subscription_requests = new Map<number, Promise<void>>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
     fetched_stream_ids.clear();
     pending_subscriber_requests.clear();
+    pending_subscription_requests.clear();
+    fetched_user_subscriptions.clear();
 }
 
 const fetch_stream_subscribers_response_schema = z.object({
     subscribers: z.array(z.number()),
+});
+
+const fetch_user_subscriptions_response_schema = z.object({
+    subscribed_channel_ids: z.array(z.number()),
 });
 
 // This function will always resolve to a LazySet but could hang
@@ -447,4 +473,68 @@ export async function get_unique_subscriber_count_for_streams(
         }
     }
     return valid_subscribers.size;
+}
+
+// This function might retry up to 5 times to fetch data, then will
+// give up. `num_attempts` should only be set in the recursive call.
+async function load_subscriptions_for_user_with_retry(
+    user_id: number,
+    num_attempts = 0,
+): Promise<void> {
+    const subscriptions_promise = (async () => {
+        await channel.get({
+            url: `/json/users/${user_id}/channels`,
+            success(raw_data) {
+                const subscriptions =
+                    fetch_user_subscriptions_response_schema.parse(raw_data).subscribed_channel_ids;
+                for (const stream_id of subscriptions) {
+                    add_subscriber(stream_id, user_id);
+                }
+                fetched_user_subscriptions.add(user_id);
+            },
+            error(xhr) {
+                if (xhr.status === 400) {
+                    blueslip.error("Bad request to fetch user's subscribed channels.", {
+                        user_id,
+                    });
+                    return;
+                }
+                pending_subscription_requests.delete(user_id);
+                if (num_attempts === 5) {
+                    blueslip.error("Failure fetching user's subscribed channels. Giving up.", {
+                        user_id,
+                    });
+                    return;
+                }
+                blueslip.warn("Failure fetching user's subscribed channels. Retrying.", {
+                    user_id,
+                });
+                num_attempts += 1;
+                const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+                setTimeout(() => {
+                    void load_subscriptions_for_user_with_retry(user_id, num_attempts);
+                }, retry_delay_secs * 1000);
+                return;
+            },
+        });
+    })();
+
+    pending_subscription_requests.set(user_id, subscriptions_promise);
+    return subscriptions_promise;
+}
+
+export function subscriber_data_loaded_for_user(user_id: number): boolean {
+    return has_complete_subscriber_data() || fetched_user_subscriptions.has(user_id);
+}
+
+export async function load_subscriptions_for_user(user_id: number): Promise<void> {
+    if (subscriber_data_loaded_for_user(user_id)) {
+        return;
+    }
+
+    if (pending_subscription_requests.has(user_id)) {
+        return pending_subscription_requests.get(user_id)!;
+    }
+
+    return load_subscriptions_for_user_with_retry(user_id);
 }

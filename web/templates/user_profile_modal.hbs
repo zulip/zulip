@@ -122,19 +122,18 @@
                                         <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                                     </button>
                                 </div>
+                                <div class="stream-list-loader"></div>
                                 <div class="subscription-stream-list" data-simplebar data-simplebar-tab-index="-1">
                                     <ul class="user-stream-list" data-empty="{{t 'No channel subscriptions.' }}" data-search-results-empty="{{t 'No matching channels.' }}"></ul>
                                 </div>
                             </div>
                         </div>
-                        {{#if show_user_subscribe_widget}}
-                            <div class="stream-list-bottom-section">
-                                <div class="header-section">
-                                    <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
-                                </div>
-                                {{> user_profile_subscribe_widget}}
+                        <div class="stream-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
                             </div>
-                        {{/if}}
+                            {{> user_profile_subscribe_widget}}
+                        </div>
                     </div>
 
                     <div class="tabcontent" id="user-profile-groups-tab">
@@ -156,26 +155,24 @@
                                 </div>
                             </div>
                         </div>
-                        {{#if show_user_group_container}}
-                            <div class="group-list-bottom-section">
-                                <div class="header-section">
-                                    <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
-                                </div>
-                                <div id="groups-to-add" class="add-button-container">
-                                    <div id="user-group-to-add">
-                                        <div class="add-user-group-container">
-                                            <div class="pill-container">
-                                                <div class="input" contenteditable="true"
-                                                  data-placeholder="{{t 'Add user groups' }}">
-                                                    {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                                                </div>
+                        <div class="group-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                            </div>
+                            <div id="groups-to-add" class="add-button-container">
+                                <div id="user-group-to-add">
+                                    <div class="add-user-group-container">
+                                        <div class="pill-container">
+                                            <div class="input" contenteditable="true"
+                                              data-placeholder="{{t 'Add user groups' }}">
+                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
                                             </div>
                                         </div>
                                     </div>
-                                    {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
                                 </div>
+                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
                             </div>
-                        {{/if}}
+                        </div>
                     </div>
                     <div class="tabcontent" id="manage-profile-tab"></div>
                 </div>

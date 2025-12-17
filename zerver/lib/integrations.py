@@ -13,22 +13,22 @@ from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
 from zerver.webhooks import fixtureless_integrations
 
 """This module declares all of the (documented) integrations available
-in the Zulip server.  The Integration class is used as part of
-generating the documentation on the /integrations/ page, while the
-WebhookIntegration class is also used to generate the URLs in
-`zproject/urls.py` for webhook integrations.
+in the Zulip server.
 
-To add a new non-webhook integration, add code to the INTEGRATIONS
-dictionary below.
+The Integration class is used as part of generating the
+documentation on the /integrations/ page, while the
+IncomingWebhookIntegration class is also used to generate the URLs in
+`zproject/urls.py` for incoming webhook integrations.
 
-To add a new webhook integration, declare a WebhookIntegration in the
-WEBHOOK_INTEGRATIONS list below (it will be automatically added to
-INTEGRATIONS).
+To add a new integration, register it in the appropriate *_INTEGRATIONS
+list. For example, to add a new incoming webhook integration, declare a
+IncomingWebhookIntegration in the INCOMING_WEBHOOK_INTEGRATIONS list. All
+*_INTEGRATIONS lists are automatically aggregated into the INTEGRATIONS dict.
 
 To add a new integration category, add to either the CATEGORIES or
 META_CATEGORY dicts below. The META_CATEGORY dict is for categories
@@ -64,7 +64,7 @@ CATEGORIES: dict[str, StrPromise] = {
 }
 
 # Can also be computed from INTEGRATIONS by removing entries from
-# WEBHOOK_INTEGRATIONS and NO_SCREENSHOT_CONFIG, but defined explicitly to
+# INCOMING_WEBHOOK_INTEGRATIONS and NO_SCREENSHOT_CONFIG, but defined explicitly to
 # avoid circular dependency
 FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "asana",
@@ -163,6 +163,7 @@ class Integration:
         webhook_screenshot_configs: list[WebhookScreenshotConfig] | None = None,
         client_name: str | None = None,
         logo: str | None = None,
+        fallback_logo_path: str | None = None,
         secondary_line_text: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
@@ -203,9 +204,8 @@ class Integration:
                 )
         self.categories = [CATEGORIES[c] for c in categories]
 
-        self.logo_path = logo if logo is not None else self.get_logo_path()
-        # TODO: Enforce that all integrations have logo_url with an assertion.
-        self.logo_url = self.get_logo_url()
+        self.logo_path = logo if logo is not None else self.get_logo_path(fallback_logo_path)
+        self.logo_url = staticfiles_storage.url(self.logo_path)
 
         if display_name is None:
             display_name = name.title()
@@ -218,28 +218,25 @@ class Integration:
     def is_enabled(self) -> bool:
         return True
 
-    def get_logo_path(self) -> str | None:
-        logo_file_path_svg = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name)
-        logo_file_path_png = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name)
-        if os.path.isfile(static_path(logo_file_path_svg)):
-            return logo_file_path_svg
-        elif os.path.isfile(static_path(logo_file_path_png)):
-            return logo_file_path_png
+    def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
+        paths_to_check = [
+            self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name),
+            self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name),
+        ]
+        if fallback_logo_path is not None:
+            paths_to_check.append(fallback_logo_path)
 
-        return None
+        for potential_path in paths_to_check:
+            if os.path.isfile(static_path(potential_path)):
+                return potential_path
 
-    def get_bot_avatar_path(self) -> str | None:
-        if self.logo_path is not None:
-            name = os.path.splitext(os.path.basename(self.logo_path))[0]
-            return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
+        raise AssertionError(
+            f"Could not find a logo for integration {self.name}. Paths checked: {', '.join(paths_to_check)}"
+        )
 
-        return None
-
-    def get_logo_url(self) -> str | None:
-        if self.logo_path is not None:
-            return staticfiles_storage.url(self.logo_path)
-
-        return None
+    def get_bot_avatar_path(self) -> str:
+        name = os.path.splitext(os.path.basename(self.logo_path))[0]
+        return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
 
     def get_translated_categories(self) -> list[str]:
         return [str(category) for category in self.categories]
@@ -268,15 +265,9 @@ class BotIntegration(Integration):
             categories=categories,
             fixtureless_screenshot_config_options=fixtureless_screenshot_config_options,
             secondary_line_text=secondary_line_text,
+            logo=logo,
+            fallback_logo_path=self.ZULIP_LOGO_STATIC_PATH_PNG,
         )
-
-        if logo is None:
-            self.logo_url = self.get_logo_url()
-            if self.logo_url is None:
-                # TODO: Add a test for this by initializing one in a test.
-                logo = staticfiles_storage.url(self.ZULIP_LOGO_STATIC_PATH_PNG)  # nocoverage
-        else:
-            self.logo_url = staticfiles_storage.url(logo)
 
         if display_name is None:
             display_name = f"{name.title()} Bot"  # nocoverage
@@ -328,7 +319,7 @@ class PythonAPIIntegration(Integration):
         )
 
 
-class WebhookIntegration(Integration):
+class IncomingWebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = "zerver.webhooks.{dir_name}.view.api_{dir_name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
     DEFAULT_CLIENT_NAME = "Zulip{name}Webhook"
@@ -405,7 +396,7 @@ def split_fixture_path(path: str) -> tuple[str, str]:
 
 
 def get_fixture_path(
-    integration: WebhookIntegration, screenshot_config: WebhookScreenshotConfig
+    integration: IncomingWebhookIntegration, screenshot_config: WebhookScreenshotConfig
 ) -> str:
     fixture_dir = os.path.join("zerver", "webhooks", integration.dir_name, "fixtures")
     fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
@@ -461,10 +452,12 @@ class EmbeddedBotIntegration(Integration):
     """
 
     DEFAULT_CLIENT_NAME = "Zulip{name}EmbeddedBot"
+    ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         assert kwargs.get("client_name") is None
         kwargs["client_name"] = self.DEFAULT_CLIENT_NAME.format(name=name.title())
+        kwargs["fallback_logo_path"] = self.ZULIP_LOGO_STATIC_PATH_PNG
         super().__init__(name, *args, **kwargs)
 
 
@@ -477,12 +470,14 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration("followup", []),
 ]
 
-WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
-    WebhookIntegration("airbrake", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]),
-    WebhookIntegration(
+INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
+    IncomingWebhookIntegration(
+        "airbrake", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
+    ),
+    IncomingWebhookIntegration(
         "airbyte", ["deployment"], [WebhookScreenshotConfig("airbyte_job_payload_success.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "alertmanager",
         ["monitoring"],
         [
@@ -493,35 +488,35 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="Prometheus Alertmanager",
         logo="images/integrations/logos/prometheus.svg",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "ansibletower",
         ["deployment"],
         [WebhookScreenshotConfig("job_successful_multiple_hosts.json")],
         display_name="Ansible Tower",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "appfollow",
         ["marketing", "customer-support"],
         [WebhookScreenshotConfig("review.json")],
         display_name="AppFollow",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "appveyor",
         ["continuous-integration"],
         [WebhookScreenshotConfig("appveyor_build_success.json")],
         display_name="AppVeyor",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "azuredevops",
         ["continuous-integration"],
         [WebhookScreenshotConfig("code_push.json")],
         display_name="AzureDevOps",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "basecamp", ["project-management"], [WebhookScreenshotConfig("doc_active.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "beanstalk",
         ["version-control"],
         [
@@ -533,7 +528,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
             )
         ],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "beeminder",
         ["productivity"],
         # The fixture's goal.losedate needs to be modified dynamically
@@ -541,7 +536,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         # [WebhookScreenshotConfig("derail_worried.json")],
         display_name="Beeminder",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "bitbucket",
         ["version-control"],
         [
@@ -557,7 +552,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         secondary_line_text="(Enterprise)",
         legacy=True,
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "bitbucket2",
         ["version-control"],
         [
@@ -573,7 +568,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="Bitbucket",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "bitbucket3",
         ["version-control"],
         [
@@ -589,70 +584,85 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="Bitbucket Server",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "buildbot", ["continuous-integration"], [WebhookScreenshotConfig("started.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "canarytoken",
         ["monitoring"],
         [WebhookScreenshotConfig("canarytoken_real.json")],
         display_name="Thinkst Canarytokens",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "circleci",
         ["continuous-integration"],
         [WebhookScreenshotConfig("github_job_completed.json")],
         display_name="CircleCI",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "clubhouse", ["project-management"], [WebhookScreenshotConfig("story_create.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "codeship",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("error_build.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
+        "dbt",
+        ["deployment"],
+        [WebhookScreenshotConfig("job_run_completed_errored.json")],
+        display_name="DBT",
+        url_options=[
+            WebhookUrlOption(name="access_url", label="DBT Access URL", validator=check_string)
+        ],
+    ),
+    IncomingWebhookIntegration(
         "delighted",
         ["customer-support", "marketing"],
         [WebhookScreenshotConfig("survey_response_updated_promoter.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "dialogflow",
         ["customer-support"],
         [WebhookScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
     ),
-    WebhookIntegration("dropbox", ["productivity"], [WebhookScreenshotConfig("file_updated.json")]),
-    WebhookIntegration("errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]),
-    WebhookIntegration("flock", ["communication"], [WebhookScreenshotConfig("messages.json")]),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
+        "dropbox", ["productivity"], [WebhookScreenshotConfig("file_updated.json")]
+    ),
+    IncomingWebhookIntegration(
+        "errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
+    ),
+    IncomingWebhookIntegration(
+        "flock", ["communication"], [WebhookScreenshotConfig("messages.json")]
+    ),
+    IncomingWebhookIntegration(
         "freshdesk",
         ["customer-support"],
         [WebhookScreenshotConfig("ticket_created.json", image_name="004.png", use_basic_auth=True)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "freshping", ["monitoring"], [WebhookScreenshotConfig("freshping_check_unreachable.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "freshstatus",
         ["monitoring", "customer-support"],
         [WebhookScreenshotConfig("freshstatus_incident_open.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "front",
         ["customer-support", "communication"],
         [WebhookScreenshotConfig("inbound_message.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "gitea",
         ["version-control"],
         [WebhookScreenshotConfig("pull_request__merged.json", channel="commits")],
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "github",
         ["version-control", "continuous-integration", "project-management"],
         [WebhookScreenshotConfig("push__1_commit.json", channel="commits")],
@@ -660,9 +670,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
+            WebhookUrlOption(
+                name="include_repository_name",
+                label="Include repository name in the notifications",
+                validator=check_bool,
+            ),
         ],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "githubsponsors",
         ["financial"],
         [WebhookScreenshotConfig("created.json", channel="github")],
@@ -671,7 +686,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         dir_name="github",
         doc="github/githubsponsors.md",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "gitlab",
         ["version-control"],
         [
@@ -682,39 +697,39 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         display_name="GitLab",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "gocd",
         ["continuous-integration"],
         [WebhookScreenshotConfig("pipeline_with_mixed_job_result.json")],
         display_name="GoCD",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "gogs",
         ["version-control"],
         [WebhookScreenshotConfig("pull_request__opened.json", channel="commits")],
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "gosquared",
         ["marketing"],
         [WebhookScreenshotConfig("traffic_spike.json")],
         display_name="GoSquared",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "grafana", ["monitoring"], [WebhookScreenshotConfig("alert_values_v11.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "greenhouse", ["hr"], [WebhookScreenshotConfig("candidate_stage_change.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "groove", ["customer-support"], [WebhookScreenshotConfig("ticket_started.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "harbor",
         ["deployment"],
         [WebhookScreenshotConfig("scanning_completed.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "hellosign",
         ["productivity", "hr"],
         [
@@ -726,83 +741,85 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ],
         display_name="HelloSign",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"
     ),
-    WebhookIntegration("heroku", ["deployment"], [WebhookScreenshotConfig("deploy.txt")]),
-    WebhookIntegration(
+    IncomingWebhookIntegration("heroku", ["deployment"], [WebhookScreenshotConfig("deploy.txt")]),
+    IncomingWebhookIntegration(
         "homeassistant",
         ["misc"],
         [WebhookScreenshotConfig("reqwithtitle.json")],
         display_name="Home Assistant",
     ),
-    WebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
-    WebhookIntegration(
+    IncomingWebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
+    IncomingWebhookIntegration(
         "insping", ["monitoring"], [WebhookScreenshotConfig("website_state_available.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "intercom",
         ["customer-support"],
         [WebhookScreenshotConfig("conversation_admin_replied.json")],
     ),
     # Avoid collision with jira-plugin's doc "jira/doc.md".
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "jira",
         ["project-management"],
         [WebhookScreenshotConfig("created_v1.json")],
         doc="jira/jira-doc.md",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "json",
         ["misc"],
         [WebhookScreenshotConfig("json_github_push__1_commit.json")],
         display_name="JSON formatter",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "librato",
         ["monitoring"],
         [WebhookScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "lidarr", ["entertainment"], [WebhookScreenshotConfig("lidarr_album_grabbed.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "linear", ["project-management"], [WebhookScreenshotConfig("issue_create_complex.json")]
     ),
-    WebhookIntegration("mention", ["marketing"], [WebhookScreenshotConfig("webfeeds.json")]),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
+        "mention", ["marketing"], [WebhookScreenshotConfig("webfeeds.json")]
+    ),
+    IncomingWebhookIntegration(
         "netlify",
         ["deployment", "continuous-integration"],
         [WebhookScreenshotConfig("deploy_building.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "newrelic",
         ["monitoring"],
         [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
         display_name="New Relic",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
         [WebhookScreenshotConfig("one_time_donation.json")],
         display_name="Open Collective",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "openproject",
         ["project-management"],
         [WebhookScreenshotConfig("project_created__without_parent.json")],
         display_name="OpenProject",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "opensearch",
         ["monitoring"],
         [WebhookScreenshotConfig("example_template.txt")],
         display_name="OpenSearch",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "opsgenie",
         ["monitoring"],
         [WebhookScreenshotConfig("addrecipient.json")],
@@ -814,92 +831,100 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
             )
         ],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "pagerduty",
         ["monitoring"],
         [WebhookScreenshotConfig("trigger_v2.json")],
         display_name="PagerDuty",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "papertrail",
         ["monitoring"],
         [WebhookScreenshotConfig("short_post.json", payload_as_query_param=True)],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "patreon", ["financial"], [WebhookScreenshotConfig("members_pledge_create.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "pingdom", ["monitoring"], [WebhookScreenshotConfig("http_up_to_down.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "pivotal",
         ["project-management"],
         [WebhookScreenshotConfig("v5_type_changed.json")],
         display_name="Pivotal Tracker",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "radarr", ["entertainment"], [WebhookScreenshotConfig("radarr_movie_grabbed.json")]
     ),
-    WebhookIntegration("raygun", ["monitoring"], [WebhookScreenshotConfig("new_error.json")]),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
+        "raygun", ["monitoring"], [WebhookScreenshotConfig("new_error.json")]
+    ),
+    IncomingWebhookIntegration(
         "reviewboard",
         ["productivity"],
         [WebhookScreenshotConfig("review_request_published.json")],
         display_name="Review Board",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "rhodecode",
         ["version-control"],
         [WebhookScreenshotConfig("push.json", channel="commits")],
         display_name="RhodeCode",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
-    WebhookIntegration("rundeck", ["deployment"], [WebhookScreenshotConfig("start.json")]),
-    WebhookIntegration(
+    IncomingWebhookIntegration("rundeck", ["deployment"], [WebhookScreenshotConfig("start.json")]),
+    IncomingWebhookIntegration(
         "semaphore",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("pull_request.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "sentry", ["monitoring"], [WebhookScreenshotConfig("event_for_exception_python.json")]
     ),
-    WebhookIntegration("slack", ["communication"]),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
+        "slack",
+        ["communication"],
+        url_options=[
+            WebhookUrlOption.build_preset_config(PresetUrlOption.CHANNEL_MAPPING),
+        ],
+    ),
+    IncomingWebhookIntegration(
         "slack_incoming",
         ["communication", "meta-integration"],
         display_name="Slack-compatible webhook",
         logo="images/integrations/logos/slack.svg",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "sonarqube",
         ["continuous-integration", "monitoring"],
         [WebhookScreenshotConfig("error.json")],
         display_name="SonarQube",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "sonarr", ["entertainment"], [WebhookScreenshotConfig("sonarr_episode_grabbed.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "splunk", ["monitoring"], [WebhookScreenshotConfig("search_one_result.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "statuspage",
         ["customer-support", "monitoring"],
         [WebhookScreenshotConfig("incident_created.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "stripe", ["financial"], [WebhookScreenshotConfig("charge_succeeded__card.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "taiga", ["project-management"], [WebhookScreenshotConfig("userstory_changed_status.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "teamcity", ["continuous-integration"], [WebhookScreenshotConfig("success.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "thinkst", ["monitoring"], [WebhookScreenshotConfig("canary_consolidated_port_scan.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "transifex",
         ["misc"],
         [
@@ -915,38 +940,40 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
             )
         ],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "travis",
         ["continuous-integration"],
         [WebhookScreenshotConfig("build.json", payload_as_query_param=True)],
         display_name="Travis CI",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "trello", ["project-management"], [WebhookScreenshotConfig("adding_comment_to_card.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "updown", ["monitoring"], [WebhookScreenshotConfig("check_multiple_events.json")]
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "uptimerobot",
         ["monitoring"],
         [WebhookScreenshotConfig("uptimerobot_monitor_up.json")],
         display_name="UptimeRobot",
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "wekan",
         ["productivity", "project-management"],
         [WebhookScreenshotConfig("add_comment.json")],
     ),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "wordpress",
         ["marketing"],
         [WebhookScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
         display_name="WordPress",
     ),
-    WebhookIntegration("zabbix", ["monitoring"], [WebhookScreenshotConfig("zabbix_alert.json")]),
-    WebhookIntegration("zapier", ["meta-integration"]),
-    WebhookIntegration(
+    IncomingWebhookIntegration(
+        "zabbix", ["monitoring"], [WebhookScreenshotConfig("zabbix_alert.json")]
+    ),
+    IncomingWebhookIntegration("zapier", ["meta-integration"]),
+    IncomingWebhookIntegration(
         "zendesk",
         ["customer-support"],
         [
@@ -974,6 +1001,7 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
 EMBEDDED_INTEGRATIONS: list[Integration] = [
     Integration("email", ["communication"]),
     Integration("giphy", ["misc"], display_name="GIPHY"),
+    Integration("tenor", ["misc"], display_name="Tenor"),
 ]
 
 ZAPIER_INTEGRATIONS: list[Integration] = [
@@ -1068,12 +1096,7 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
-    BotIntegration(
-        "xkcd",
-        ["bots", "entertainment"],
-        display_name="xkcd",
-        logo="images/integrations/logos/xkcd.png",
-    ),
+    BotIntegration("xkcd", ["bots", "entertainment"], display_name="xkcd"),
 ]
 
 HUBOT_INTEGRATIONS: list[HubotIntegration] = [
@@ -1102,7 +1125,7 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
 INTEGRATIONS: dict[str, Integration] = {
     integration.name: integration
     for integration in chain(
-        WEBHOOK_INTEGRATIONS,
+        INCOMING_WEBHOOK_INTEGRATIONS,
         PYTHON_API_INTEGRATIONS,
         BOT_INTEGRATIONS,
         HUBOT_INTEGRATIONS,
@@ -1141,8 +1164,9 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Video call integrations
     | {"big-blue-button", "jitsi", "zoom"}
     | {
-        # the integration does not send messages
+        # these integrations do not send messages
         "giphy",
+        "tenor",
         # the integration is planned to be removed
         "twitter",
     }
@@ -1153,7 +1177,7 @@ NO_SCREENSHOT_CONFIG = INTEGRATIONS_MISSING_SCREENSHOT_CONFIG | INTEGRATIONS_WIT
 
 def get_all_event_types_for_integration(integration: Integration) -> list[str] | None:
     integration = INTEGRATIONS[integration.name]
-    if isinstance(integration, WebhookIntegration):
+    if isinstance(integration, IncomingWebhookIntegration):
         if integration.name == "githubsponsors":
             return import_string("zerver.webhooks.github.view.SPONSORS_EVENT_TYPES")
         function = integration.get_function()

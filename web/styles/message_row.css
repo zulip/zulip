@@ -67,6 +67,12 @@
             cursor: pointer;
         }
     }
+
+    #report-message-preview-container & {
+        /* A message preview only contains a single row of message */
+        border-radius: var(--last-message-row-border-radius);
+        border: 1px solid var(--color-message-list-border);
+    }
 }
 
 .messagebox {
@@ -83,6 +89,25 @@
             opacity: 1;
             visibility: visible;
         }
+    }
+
+    &:hover .reveal-hidden-message {
+        opacity: 1;
+    }
+}
+
+.reveal-hidden-message {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 0.1em;
+    /* This is meant to offset the vertical padding of 0.125rem introduced
+    by the action button, which otherwise makes this button look at a
+    slightly lower height than the muted message notice. */
+    margin-top: -0.125em;
+    /* Source : https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/hover */
+    @media (hover: none) {
+        opacity: 1;
+        transition: none;
     }
 }
 
@@ -205,6 +230,37 @@
         }
     }
 
+    .muted-message-notice-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.2em;
+
+        > .muted-message-notice {
+            opacity: 0.5;
+            user-select: none;
+        }
+    }
+
+    /* Leading whitespaces are collapsed if they are at the start of a line.
+    This lets us conditionally add a space to the left of `.inline-hide-button`,
+    only when there is some preceding text on the same line before the button.
+    */
+    .inline-hide-button-space-wrapper {
+        margin-right: 0.2em;
+    }
+
+    .rehide-muted-user-message {
+        &.inline-hide-button {
+            display: inline-flex;
+        }
+
+        &.block-hide-button {
+            display: flex;
+            margin-bottom: var(--markdown-interelement-space-px);
+        }
+        align-items: center;
+    }
+
     .message_reactions {
         grid-area: reactions;
         display: flex;
@@ -267,6 +323,9 @@
         border-radius: 4px;
         border: none;
         outline: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        overflow-wrap: normal;
         font-variant: all-small-caps;
 
         &:hover {
@@ -411,6 +470,10 @@
                    grid. */
                 margin-top: var(--message-box-vertical-margin);
             }
+
+            .muted-sender-avatar {
+                opacity: 0.5;
+            }
         }
 
         .status-message {
@@ -492,6 +555,10 @@
                     .user-name {
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .muted {
+                        opacity: 0.5;
                     }
                 }
             }
@@ -838,20 +905,12 @@
     }
 }
 
-.upload-overlay-visible .edit-form {
-    position: relative;
-    z-index: var(--compose-with-upload-overlay-z-index);
-}
-
 .message_edit_content {
     max-height: var(--max-message-edit-height);
     width: 100%;
     min-width: 206px;
     min-height: 52px;
     box-sizing: border-box;
-    /* Setting resize as none hides the bottom right diagonal box
-       (which even has a background color of its own!). */
-    resize: none !important;
     color: var(--color-text-default);
     background-color: var(--background-color-textarea);
     /* Flatten the bottom edge of the textarea to
@@ -872,6 +931,10 @@
 
     &:focus {
         outline: 0;
+    }
+
+    &:read-write {
+        resize: vertical !important;
     }
 
     &:read-only,
@@ -1187,4 +1250,32 @@
 .date_row .timerender-content::before {
     right: 0.25em;
     margin-left: -50%;
+}
+
+#report-message-preview-container {
+    /* Hide most UI for interacting with a message in the report message preview UI. */
+    .add-task-bar,
+    .change_visibility_policy,
+    .recipient-row-topic-menu,
+    .todo-edit-task-list-title,
+    .message_controls,
+    .message-reminders,
+    .message_reactions {
+        display: none;
+    }
+}
+
+@container message-lists (width < $cq_ml_min) {
+    .muted-message-notice {
+        display: none;
+    }
+}
+
+/* Fallback for hiding the muted message notice. */
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .muted-message-notice {
+            display: none;
+        }
+    }
 }

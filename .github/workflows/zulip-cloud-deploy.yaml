@@ -31,12 +31,12 @@ jobs:
       filenames: ${{ steps.set-matrix.outputs.filenames }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
@@ -48,19 +48,19 @@ jobs:
         id: generate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE: ${{ inputs.before || github.event.before }}
+          HEAD: ${{ inputs.after || github.event.after }}
         run: |
-          BASE="${{ inputs.before || github.event.before }}"
-          HEAD="${{ inputs.after || github.event.after }}"
           set -o pipefail
 
           mkdir closed-by-commits-output
           ./tools/closed-by-commits "$BASE" "$HEAD" \
             | perl -ple 'undef $/;s/\n\n/\x00/g' \
-            | split -t '\0' -C 5000 -d - closed-by-commits-output/message-
+            | split -t '\0' -C 8000 -d - closed-by-commits-output/message-
           perl -pi -e 's/\00/\n\n/g' closed-by-commits-output/message-*
 
       - name: Upload messages as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: closed-by-commits-output
           path: closed-by-commits-output/
@@ -75,12 +75,13 @@ jobs:
     needs: build-messages
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix:
         filename: ${{ fromJson(needs.build-messages.outputs.filenames) }}
-    if: success() && ${{github.repository == 'zulip/zulip'}}
+    if: ${{ success() && github.repository == 'zulip/zulip' }}
     steps:
       - name: Download messages as artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: closed-by-commits-output
           path: closed-by-commits-output/
@@ -89,8 +90,10 @@ jobs:
         id: read-file
         run: |
           echo "content<<EOF" >> $GITHUB_OUTPUT
-          cat closed-by-commits-output/${{ matrix.filename }} >> $GITHUB_OUTPUT
+          cat "closed-by-commits-output/$FILENAME" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          FILENAME: ${{ matrix.filename }}
 
       - name: Send to Zulip
         uses: zulip/github-actions-zulip/send-message@v1

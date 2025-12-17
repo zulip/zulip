@@ -8,7 +8,6 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.users import do_change_user_role
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
@@ -185,7 +184,7 @@ class RealmEmojiTest(ZulipTestCase):
         realm = othello.realm
         self.login_user(othello)
 
-        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(othello, UserProfile.ROLE_MODERATOR)
         administrators_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
@@ -200,7 +199,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_emoji_1", info=emoji_data)
         self.assert_json_error(result, "Insufficient permission")
 
-        do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR)
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
             result = self.client_post("/json/realm/emoji/my_emoji_1", info=emoji_data)
@@ -215,13 +214,13 @@ class RealmEmojiTest(ZulipTestCase):
             moderators_system_group,
             acting_user=None,
         )
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(othello, UserProfile.ROLE_MEMBER)
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
             result = self.client_post("/json/realm/emoji/my_emoji_2", info=emoji_data)
         self.assert_json_error(result, "Insufficient permission")
 
-        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(othello, UserProfile.ROLE_MODERATOR)
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
             result = self.client_post("/json/realm/emoji/my_emoji_2", info=emoji_data)
@@ -237,7 +236,7 @@ class RealmEmojiTest(ZulipTestCase):
             acting_user=None,
         )
         do_set_realm_property(othello.realm, "waiting_period_threshold", 100000, acting_user=None)
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(othello, UserProfile.ROLE_MEMBER)
 
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
@@ -259,13 +258,13 @@ class RealmEmojiTest(ZulipTestCase):
             members_system_group,
             acting_user=None,
         )
-        do_change_user_role(othello, UserProfile.ROLE_GUEST, acting_user=None)
+        self.set_user_role(othello, UserProfile.ROLE_GUEST)
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
             result = self.client_post("/json/realm/emoji/my_emoji_4", info=emoji_data)
         self.assert_json_error(result, "Not allowed for guest users")
 
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(othello, UserProfile.ROLE_MEMBER)
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
             result = self.client_post("/json/realm/emoji/my_emoji_4", info=emoji_data)

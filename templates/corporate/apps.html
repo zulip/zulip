@@ -1,5 +1,5 @@
 {% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% set entrypoint = "marketing-page" %}
 
 {% set PAGE_TITLE = "Download the Zulip app for your device" %}
 
@@ -26,9 +26,9 @@
                     <div class="cta">
                         <h1>Zulip for <span class="platform"></span></h1>
                         <p class="description"></p>
-                        <a class="desktop-download-link no-action" hidden href=""><span class="button green">Download Zulip for <span class="platform"></span></span></a>
-                        <a class="download-from-google-play-store" hidden href=""><img src="{{ static('images/store-badges/google-play-badge.png') }}" alt=""/></a>
-                        <a class="download-from-apple-app-store" hidden href=""><img src="{{ static('images/store-badges/app-store-badge.svg') }}" alt=""/></a>
+                        <a class="button desktop-download-link no-action" hidden href=""><span class="button green">Download Zulip for <span class="platform"></span></span></a>
+                        <a class="button download-from-google-play-store" hidden href=""><img src="{{ static('images/store-badges/google-play-badge.png') }}" alt=""/></a>
+                        <a class="button download-from-apple-app-store" hidden href=""><img src="{{ static('images/store-badges/app-store-badge.svg') }}" alt=""/></a>
                         <span id="download-from-microsoft-store" hidden>or <a href="https://apps.microsoft.com/store/detail/XP8HN41S4PLGZ3">download from the Microsoft Store</a></span>
                         <span id="download-android-apk" hidden>or manually download APK for the <a class="android-apk-current" href="">current</a> or <a class="android-apk-legacy" href="">legacy</a> app</span>
                         <span id="download-mac-intel" hidden>or <a href="">download <strong>Intel</strong> processor build <i>(some older Macs)</i></a></span>
@@ -43,22 +43,22 @@
         <h2>Apps for every platform.</h2>
 
         <div class="apps">
-            <a class="" href="/apps/mac">
+            <a class="app-option" href="/apps/mac">
                 <i class="icon fa fa-apple" data-label="macOS"></i>
             </a>
-            <a class="" href="/apps/windows">
+            <a class="app-option" href="/apps/windows">
                 <i class="icon fa fa-windows" data-label="Windows"></i>
             </a>
-            <a class="" href="/apps/linux">
+            <a class="app-option" href="/apps/linux">
                 <i class="icon fa fa-linux" data-label="Linux"></i>
             </a>
-            <a class="" href="/apps/android">
+            <a class="app-option" href="/apps/android">
                 <i class="icon fa fa-android" data-label="Android"></i>
             </a>
-            <a class="" href="/apps/ios">
+            <a class="app-option" href="/apps/ios">
                 <i class="icon fa fa-mobile-phone" data-label="iOS"></i>
             </a>
-            <a href="https://github.com/zulip/zulip-terminal#readme">
+            <a class="app-option" href="https://github.com/zulip/zulip-terminal#readme">
                 <i class="icon fa fa-terminal" data-label="Terminal (beta)"></i>
             </a>
         </div>

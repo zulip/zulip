@@ -6,6 +6,7 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import is_1_to_1_message, truncate_content
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.lib.url_encoding import pm_message_url
 from zerver.models import Message, Realm, UserProfile
@@ -36,15 +37,17 @@ def send_message_report(
     reported_user_mention = silent_mention_syntax_for_user(reported_user)
     reporting_user_mention = silent_mention_syntax_for_user(reporting_user)
     report_reason = Realm.REPORT_MESSAGE_REASONS[report_type]
+    reported_message_date_sent = datetime_to_global_time(reported_message.date_sent)
 
     # Build reported message header
     if is_1_to_1_message(reported_message):
         if reported_user != reporting_user:
             report_header = _(
-                "{reporting_user_mention} reported a direct message sent by {reported_user_mention}."
+                "{reporting_user_mention} reported a direct message sent by {reported_user_mention} at {reported_message_date_sent}."
             ).format(
                 reporting_user_mention=reporting_user_mention,
                 reported_user_mention=reported_user_mention,
+                reported_message_date_sent=reported_message_date_sent,
             )
         else:
             # Clearly mention the direct message recipient if someone is
@@ -58,11 +61,12 @@ def send_message_report(
             else:
                 recipient_user = reporting_user_mention
             report_header = _(
-                "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_user}."
+                "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_user} at {reported_message_date_sent}."
             ).format(
                 reporting_user_mention=reporting_user_mention,
                 reported_user_mention=reported_user_mention,
                 recipient_user=recipient_user,
+                reported_message_date_sent=reported_message_date_sent,
             )
     elif reported_message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         recipient_list = sorted(
@@ -77,12 +81,13 @@ def send_message_report(
         if len(recipient_list) > 1:
             recipient_users += ","
         report_header = _(
-            "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user}."
+            "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user} at {reported_message_date_sent}."
         ).format(
             reporting_user_mention=reporting_user_mention,
             reported_user_mention=reported_user_mention,
             recipient_users=recipient_users,
             last_recipient_user=last_recipient_user,
+            reported_message_date_sent=reported_message_date_sent,
         )
     else:
         assert reported_message.is_channel_message is True
@@ -96,17 +101,18 @@ def send_message_report(
             reported_message.id,
         )
         report_header = _(
-            "{reporting_user_mention} reported a message sent by {reported_user_mention}."
+            "{reporting_user_mention} reported a message sent by {reported_user_mention} at {reported_message_date_sent}."
         ).format(
             reporting_user_mention=reporting_user_mention,
             reported_user_mention=reported_user_mention,
+            reported_message_date_sent=reported_message_date_sent,
         )
 
     content = report_header
 
     # Build report context and message preview block
     if reported_message.is_channel_message:
-        original_message_string = _("**Original message at {channel_message_link}**").format(
+        original_message_string = _("Original message at {channel_message_link}").format(
             channel_message_link=channel_message_link
         )
     else:
@@ -117,7 +123,7 @@ def send_message_report(
                 display_recipient=get_display_recipient(reported_message.recipient),
             ),
         )
-        original_message_string = _("**[Original message]({direct_message_link})**").format(
+        original_message_string = _("[Original message]({direct_message_link})").format(
             direct_message_link=direct_message_link
         )
 
@@ -141,7 +147,7 @@ def send_message_report(
     )
     content += reported_message_preview_block
 
-    topic_name = _("{fullname}'s moderation requests").format(fullname=reported_user.full_name)
+    topic_name = _("{fullname} moderation").format(fullname=reported_user.full_name)
     if moderation_request_channel.topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value:
         topic_name = ""
 
@@ -150,4 +156,5 @@ def send_message_report(
         stream=moderation_request_channel,
         topic_name=topic_name,
         content=content,
+        acting_user=reporting_user,
     )

@@ -1,3 +1,8 @@
+/* We have Unicode list-style-type values below.  @charset is a
+   special directive which webpack will relocate to the first bytes of
+   the generated output bundle, so browsers decode the bytes correctly. */
+@charset "UTF-8";
+
 /* We use a custom counter here for Safari to
    get better control of its counter positioning.
    Because Safari does not recognize `content`
@@ -1001,8 +1006,8 @@
 }
 
 /* Both the horizontal scrollbar in <pre/> as well as
-   vertical scrollbar in the <textarea/> is styled similarly. */
-.message_edit_form textarea,
+   vertical scrollbar in the view source <textarea/> is styled similarly. */
+.message_edit_form textarea:read-only,
 .rendered_markdown pre {
     /* Ensure the horizontal scrollbar is visible on Mac */
     &::-webkit-scrollbar {

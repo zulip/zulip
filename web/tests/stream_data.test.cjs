@@ -25,6 +25,7 @@ const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const bot_data = mock_esm("../src/bot_data");
+const channel = mock_esm("../src/channel");
 
 const current_user = {};
 set_current_user(current_user);
@@ -53,6 +54,13 @@ const test_user = {
     user_id: 101,
 };
 
+const guest_user = {
+    email: "guest@example.com",
+    user_id: 102,
+    full_name: "Guest",
+    is_guest: true,
+};
+
 const admin_user_id = 1;
 const moderator_user_id = 2;
 
@@ -76,7 +84,7 @@ const moderators_group = make_user_group({
 const everyone_group = make_user_group({
     name: "Everyone",
     id: 3,
-    members: new Set([me.user_id, test_user.user_id]),
+    members: new Set([me.user_id, test_user.user_id, guest_user.user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([moderators_group.id]),
 });
@@ -129,7 +137,7 @@ function test(label, f) {
                 me_group,
             ],
         });
-        f(helpers);
+        return f(helpers);
     });
 }
 
@@ -203,10 +211,7 @@ test("basics", () => {
 
     assert.equal(stream_data.get_stream_privacy_policy(test.stream_id), "public");
     assert.equal(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
-    assert.equal(
-        stream_data.get_stream_privacy_policy(denmark.stream_id),
-        "invite-only-public-history",
-    );
+    assert.equal(stream_data.get_stream_privacy_policy(denmark.stream_id), "invite-only");
     assert.equal(stream_data.get_stream_privacy_policy(web_public_stream.stream_id), "web-public");
     assert.ok(stream_data.is_web_public_by_stream_id(web_public_stream.stream_id));
     assert.ok(!stream_data.is_web_public_by_stream_id(social.stream_id));
@@ -519,7 +524,11 @@ test("basics", () => {
     ]);
 });
 
-test("get_streams_for_user", ({override}) => {
+test("get_streams_for_user", async ({override}) => {
+    channel.get = (payload) =>
+        payload.success({
+            subscribed_channel_ids: [],
+        });
     const denmark = {
         subscribed: true,
         color: "blue",
@@ -592,7 +601,10 @@ test("get_streams_for_user", ({override}) => {
     peer_data.set_subscribers(world.stream_id, [me.user_id]);
 
     override(realm, "realm_can_add_subscribers_group", students.id);
-    assert.deepEqual(stream_data.get_streams_for_user(me.user_id).can_subscribe, [social, errors]);
+    assert.deepEqual((await stream_data.get_streams_for_user(me.user_id)).can_subscribe, [
+        social,
+        errors,
+    ]);
 
     // test_user is subscribed to all three streams, but current user (me)
     // gets only two because of subscriber visibility policy of stream:
@@ -601,24 +613,24 @@ test("get_streams_for_user", ({override}) => {
     //          user is a guest.
     // #test: current user is no longer subscribed to a private stream, so
     //        he cannot see whether test_user is subscribed to it.
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).subscribed, [
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).subscribed, [
         denmark,
         social,
     ]);
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, []);
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).can_subscribe, []);
     // Administrator is not part of the realm_can_add_subscribers_group
     // or the stream level can_add_subscribers_group. But users with
     // the permission to administer a channel can also subscribe other
     // users. Admins can administer all channels they have access to.
     override(current_user, "is_admin", true);
     assert.equal(user_groups.is_user_in_group(students.id, current_user.user_id), false);
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).can_subscribe, [
         world,
         errors,
     ]);
 
     override(realm, "realm_can_add_subscribers_group", everyone_group.id);
-    assert.deepEqual(stream_data.get_streams_for_user(test_user.user_id).can_subscribe, [
+    assert.deepEqual((await stream_data.get_streams_for_user(test_user.user_id)).can_subscribe, [
         world,
         errors,
     ]);
@@ -1551,6 +1563,47 @@ test("can_post_messages_in_stream", ({override}) => {
     page_params.is_spectator = false;
     social.is_archived = true;
     assert.equal(stream_data.can_post_messages_in_stream(social), false);
+});
+
+test("can_create_topics_in_stream", ({override}) => {
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_create_topic_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(sub);
+
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), true);
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), false);
+
+    sub.can_create_topic_group = moderators_group.id;
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), true);
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), true);
+    override(current_user, "user_id", test_user.user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), false);
+
+    sub.can_create_topic_group = everyone_group.id;
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), true);
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), true);
+    override(current_user, "user_id", test_user.user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), true);
+    override(current_user, "user_id", guest_user.user_id);
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), true);
+
+    page_params.is_spectator = true;
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), false);
+
+    page_params.is_spectator = false;
+    sub.is_archived = true;
+    assert.equal(stream_data.can_create_new_topics_in_stream(sub.stream_id), false);
 });
 
 test("can_move_messages_out_of_channel", ({override}) => {

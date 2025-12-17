@@ -476,6 +476,7 @@
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
+    --last-message-row-border-radius: 0 0 7px 7px;
 
     /* This length is the primary reference for height
        and image width on URL preview embeds. 112px
@@ -502,10 +503,6 @@
     */
     --unread-marker-left: -1px;
 
-    /* Used by upload overlay to show compose box above it. */
-    --compose-default-z-index: 4;
-    --upload-overlay-z-index: 10000;
-    --compose-with-upload-overlay-z-index: 10001;
     /*
     Compose-recipient box minimum height. Used in a flexbox context to
     allow elements like DM pills to stack without breaking out of their
@@ -730,6 +727,14 @@
     --color-selected-message-outline: light-dark(
         hsl(217deg 64% 59% / 60%),
         hsl(217deg 64% 59% / 70%)
+    );
+    --color-selected-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59%),
+        hsl(217deg 95% 59%)
+    );
+    --color-hovered-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59% / 50%),
+        hsl(217deg 95% 59% / 60%)
     );
     --color-message-list-border: light-dark(
         hsl(0deg 0% 0% / 16%),
@@ -2259,6 +2264,9 @@
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-black.svg");
 
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-black.svg");
+
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: light-dark(
         hsl(0deg 0% 93%),
@@ -2866,10 +2874,6 @@
         color-mix(in oklch, hsl(228deg 10% 20%) 30%, transparent),
         color-mix(in oklch, hsl(0deg 0% 100%) 40%, transparent)
     );
-    --color-border-settings-radio-input-parent: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 0% / 20%)
-    );
 
     /* .main-view-banner colors */
     --color-success-main-view-banner: light-dark(
@@ -3096,6 +3100,9 @@
 
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-white.svg");
+
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-white.svg");
 }
 
 @media screen {

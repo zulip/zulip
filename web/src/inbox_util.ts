@@ -27,7 +27,7 @@ export function current_filter(): Filter | undefined {
 
 export function get_channel_id(): number {
     assert(filter !== undefined);
-    const narrow_channel_stream_id_string = filter.terms_with_operator("channel")[0]!.operator;
+    const narrow_channel_stream_id_string = filter.terms_with_operator("channel")[0]!.operand;
     return Number.parseInt(narrow_channel_stream_id_string, 10);
 }
 

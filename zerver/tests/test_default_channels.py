@@ -13,7 +13,6 @@ from zerver.actions.default_streams import (
 )
 from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.users import do_change_user_role
 from zerver.lib.default_streams import (
     get_default_stream_ids_for_realm,
     get_slim_realm_default_streams,
@@ -81,7 +80,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assert_json_error(result, "Must be an organization administrator")
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_post("/json/default_streams", dict(stream_id=stream.id))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
@@ -133,7 +132,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
 
         # User still needs to be an admin to add a default channel.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_MEMBER)
         user_profile_group = check_add_user_group(
             realm, "user_profile_group", [user_profile], acting_user=user_profile
         )
@@ -147,7 +146,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.assert_json_error(result, "You do not have permission to change default channels.")
         self.assertFalse(stream_id in get_default_stream_ids_for_realm(realm.id))
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
         self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
@@ -166,13 +165,13 @@ class DefaultStreamTest(ZulipTestCase):
         }
 
         # User still needs to be an admin to remove a default channel.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_MEMBER)
         self.assertTrue(is_user_in_group(stream.can_administer_channel_group_id, user_profile))
         self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "You do not have permission to change default channels.")
         self.assertTrue(stream_id in get_default_stream_ids_for_realm(realm.id))
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
@@ -303,7 +302,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         realm = user_profile.realm
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         # Test creating new default stream group
         stream_names = ["stream1", "stream2", "stream3"]

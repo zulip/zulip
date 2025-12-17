@@ -9,6 +9,7 @@ import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
 
+import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
@@ -425,9 +426,12 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".settings-radio-input-parent.default_stream_private_tooltip",
+        target: [
+            "[data-tab-key='available'].disabled",
+            "[data-tab-key='all-streams'].disabled",
+        ].join(","),
         content: $t({
-            defaultMessage: "Default channels for new users cannot be made private.",
+            defaultMessage: "You can only view channels that you are subscribed to.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -436,12 +440,22 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: [
-            "[data-tab-key='available'].disabled",
-            "[data-tab-key='all-streams'].disabled",
-        ].join(","),
+        target: ".history-public-to-subscribers.protected_history_with_new_topics_permission_tooltip",
         content: $t({
-            defaultMessage: "You can only view channels that you are subscribed to.",
+            defaultMessage:
+                "This setting can be changed only in channels where everyone including guests can start new topics.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".can_create_topic_group_container.can_create_topic_group_disabled_tooltip",
+        content: $t({
+            defaultMessage:
+                "This setting can be changed only in channels where subscribers can view messages sent before they joined.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -924,13 +938,24 @@ export function initialize(): void {
         target: ".topic-edit-save-wrapper",
         onShow(instance) {
             const $elem = $(instance.reference);
-            if ($($elem).find(".topic_edit_save").prop("disabled")) {
+            const $save_button = $elem.find(".topic_edit_save");
+            if (!$save_button.prop("disabled")) {
+                return false;
+            }
+
+            if ($save_button.hasClass("topic-required")) {
                 const error_message =
                     compose_validate.get_topics_required_error_tooltip_message_html();
                 instance.setContent(ui_util.parse_html(error_message));
                 return undefined;
             }
-            return false;
+
+            const content = $elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
         },
         appendTo: () => document.body,
         onHidden(instance) {
@@ -976,6 +1001,23 @@ export function initialize(): void {
                 return undefined;
             }
             return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#recipient_box_clear_topic_button",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const stream_id = compose_state.stream_id();
+            let content = $t({defaultMessage: "New topic"});
+            if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                content = $t({defaultMessage: "Clear topic"});
+            }
+            instance.setContent(content);
         },
         appendTo: () => document.body,
         onHidden(instance) {

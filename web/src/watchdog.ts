@@ -18,19 +18,33 @@ export function suspects_user_is_offline(): boolean {
 }
 
 /*
-    Our watchdog code checks every 5 seconds to make sure that we
-    haven't gone 20 seconds since the last "5-second-ago" check.
-    This sounds confusing, but it is just is a way to detect that
-    the machine has gone to sleep.
+There are two ways for us to detect that the web app had been on a
+suspended device. The first is the `resume` event on Document, which
+is not yet available on Safari. See
+https://caniuse.com/mdn-api_document_resume_event.
 
-    When we detect the condition we call back to server_events code
-    to reset ourselves accordingly.
+So we instead use a timer, and check if more time passed than would be
+possible if we were running the whole time. This logic has to be
+careful to avoid mishandling the Chrome intensive throttling feature:
+https://developer.chrome.com/blog/timer-throttling-in-chrome-88#intensive_throttling
+
+Essentially, for an idle tab, Chromium will eventually start batching
+timer events to only run once per minute. We don't want this watchdog
+code to trigger every minute in this situation, it's important for
+MINIMUM_SUSPEND_MILLISECONDS to be longer than that.
+
+We need CHECK_FREQUENCY_MILLISECONDS to be fairly short, because that
+controls how long after unsuspend (and potentially the user focusing
+the app) that we might fail to discover that the device has
+unsuspended.
 */
+
+const CHECK_FREQUENCY_MILLISECONDS = 5000;
+const MINIMUM_SUSPEND_MILLISECONDS = 75000;
 
 export function check_for_unsuspend(): void {
     const new_time = Date.now();
-    if (new_time - watchdog_time > 20000) {
-        // 20 seconds.
+    if (new_time - watchdog_time > MINIMUM_SUSPEND_MILLISECONDS) {
         // Defensively reset watchdog_time here in case there's an
         // exception in one of the event handlers
         watchdog_time = new_time;
@@ -57,4 +71,4 @@ export function on_unsuspend(f: () => void): void {
     unsuspend_callbacks.push(f);
 }
 
-setInterval(check_for_unsuspend, 5000);
+setInterval(check_for_unsuspend, CHECK_FREQUENCY_MILLISECONDS);

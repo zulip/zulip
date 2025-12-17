@@ -30,7 +30,7 @@ for any particular type of object.
 
 from collections.abc import Collection, Container, Iterator
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date
 from typing import Any, NoReturn, TypeVar, cast, overload
 
 import orjson
@@ -117,10 +117,7 @@ def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
     try:
-        if (
-            datetime.strptime(val, "%Y-%m-%d").replace(tzinfo=timezone.utc).strftime("%Y-%m-%d")
-            != val
-        ):
+        if date.fromisoformat(val).isoformat() != val:
             raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
     except ValueError:
         raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))

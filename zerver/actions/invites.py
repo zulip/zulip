@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Collection, Sequence
 from datetime import datetime, timedelta
+from email.utils import format_datetime as email_format_datetime
 from typing import Any
 
 from django.conf import settings
@@ -30,7 +31,6 @@ from zerver.lib.exceptions import InvitationError
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import (
-    EMAIL_DATE_FORMAT,
     FromAddress,
     clear_scheduled_invitation_emails,
     maybe_remove_from_suppression_list,
@@ -473,7 +473,7 @@ def do_send_user_invite_email(
             "corporate_enabled": settings.CORPORATE_ENABLED,
         },
         "realm_id": realm.id,
-        "date": event_time.strftime(EMAIL_DATE_FORMAT),
+        "date": email_format_datetime(event_time),
     }
     queue_event_on_commit("email_senders", event)
 

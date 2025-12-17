@@ -788,7 +788,7 @@ export function process_unread_messages_event({
         unread_ui.notify_messages_remain_unread();
     }
 
-    unread_ui.update_unread_counts();
+    unread_ui.update_unread_counts(true);
 }
 
 // Takes a list of messages and marks them as read.

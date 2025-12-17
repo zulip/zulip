@@ -186,13 +186,13 @@ to a URL. This is done in `zerver/lib/integrations.py`.
 Look for the lines beginning with:
 
 ```python
-WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
+INCOMING_WEBHOOK_INTEGRATIONS: List[IncomingWebhookIntegration] = [
 ```
 
 And you'll find the entry for Hello World:
 
 ```python
-  WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
+  IncomingWebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
 ```
 
 This tells the Zulip API to call the `api_helloworld_webhook` function in
@@ -211,7 +211,7 @@ tools which you can use to test your webhook - 2 command line tools and a GUI.
 ### Webhooks requiring custom configuration
 
 In cases where an incoming webhook integration supports optional URL parameters,
-one can use the `url_options` feature. It's a field in the `WebhookIntegration`
+one can use the `url_options` feature. It's a field in the `IncomingWebhookIntegration`
 class that is used when [generating a URL for an integration](/help/generate-integration-url)
 in the web app, which encodes the user input for each URL parameter in the
 incoming webhook's URL.
@@ -219,7 +219,7 @@ incoming webhook's URL.
 These URL options are declared as follows:
 
 ```python
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         'helloworld',
         ...
         url_options=[
@@ -256,7 +256,7 @@ URL. A typical use case for this would be APIs that require clients
 to do a callback to get details beyond an opaque object ID that one
 would want to include in a Zulip notification message.
 
-The `config_options` field in the `WebhookIntegration` class is reserved
+The `config_options` field in the `IncomingWebhookIntegration` class is reserved
 for this use case.
 
 ### WebhookUrlOption presets
@@ -277,7 +277,7 @@ Using a preset URL option with the `build_preset_config` method:
 # zerver/lib/integrations.py
 from zerver.lib.webhooks.common import PresetUrlOption, WebhookUrlOption
   # -- snip --
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "github",
         # -- snip --
         url_options=[
@@ -304,7 +304,7 @@ Currently configured preset URL options:
   `ignore_private_repositories` boolean parameter will be added to the
   [generated integration URL](/help/generate-integration-url).
 
-- **`MAPPING`**: This preset is intended to be used for [chat-app
+- **`CHANNEL_MAPPING`**: This preset is intended to be used for [chat-app
   integrations](/integrations/category/communication) (like Slack), and adds a
   special option, **Matching Zulip channel**, to the UI for where to send
   Zulip notification messages. This special option maps the notification
@@ -511,8 +511,8 @@ There are two parts to the end-user documentation on this page.
 The first is the lozenge in the grid of integrations, showing your
 integration logo and name, which links to the full documentation.
 This is generated automatically once you've registered the integration
-in `WEBHOOK_INTEGRATIONS` in `zerver/lib/integrations.py`, and supports
-some customization via options to the `WebhookIntegration` class.
+in `INCOMING_WEBHOOK_INTEGRATIONS` in `zerver/lib/integrations.py`, and supports
+some customization via options to the `IncomingWebhookIntegration` class.
 
 Second, you need to write the actual documentation content in
 `zerver/webhooks/mywebhook/doc.md`.

@@ -83,7 +83,9 @@ const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
-const stream_list = mock_esm("../src/stream_list");
+const stream_list = mock_esm("../src/stream_list", {
+    update_collapsed_state_on_show_channel_folders_change: noop,
+});
 const stream_settings_components = mock_esm("../src/stream_settings_components");
 const stream_settings_data = mock_esm("../src/stream_settings_data");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
@@ -728,21 +730,9 @@ run_test("realm settings", ({override, override_rewire}) => {
     dispatch(event);
     assert_same(realm.realm_default_code_block_language, "javascript");
 
-    let update_called = false;
-    stream_ui_updates.update_stream_privacy_choices = (property) => {
-        assert_same(property, "can_create_web_public_channel_group");
-        update_called = true;
-    };
     event = event_fixtures.realm__update__enable_spectator_access;
     dispatch(event);
     assert_same(realm.realm_enable_spectator_access, true);
-    assert_same(update_called, true);
-
-    let update_stream_privacy_choices_called = false;
-    stream_ui_updates.update_stream_privacy_choices = (property) => {
-        assert_same(property, "can_create_public_channel_group");
-        update_stream_privacy_choices_called = true;
-    };
 
     event = event_fixtures.realm__update_dict__default;
     override(realm, "realm_create_multiuse_invite_group", 1);
@@ -800,7 +790,6 @@ run_test("realm settings", ({override, override_rewire}) => {
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
-    assert_same(update_stream_privacy_choices_called, true);
     assert_same(add_subscribers_element_updated, true);
 
     event = event_fixtures.realm__update_dict__icon;
