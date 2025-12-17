@@ -1,21 +1,9 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
 
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 
-export type TenorPickerState = {
-    // Only used if popover called from edit message, otherwise it is `undefined`.
-    edit_message_id: number | undefined;
-    next_pos_identifier: string | number | undefined;
-    is_loading_more: boolean;
-    popover_instance: tippy.Instance | undefined;
-    current_search_term: undefined | string;
-    // Stores the index of the last GIF that is part of the grid.
-    last_gif_index: number;
-};
-
-const picker_state: TenorPickerState = {
+const picker_state: gif_picker_ui.GifPickerState = {
     // Only used if popover called from edit message, otherwise it is `undefined`.
     edit_message_id: undefined,
     next_pos_identifier: undefined,
@@ -24,6 +12,7 @@ const picker_state: TenorPickerState = {
     current_search_term: undefined,
     // Stores the index of the last GIF that is part of the grid.
     last_gif_index: -1,
+    gif_provider: "tenor",
 };
 
 export type TenorPayload = {
@@ -37,7 +26,7 @@ export type TenorPayload = {
     q?: string;
 };
 
-export function get_tenor_picker_state(): TenorPickerState {
+export function get_tenor_picker_state(): gif_picker_ui.GifPickerState {
     return picker_state;
 }
 

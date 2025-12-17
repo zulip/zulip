@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
@@ -14,9 +15,21 @@ import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
-import type {TenorPayload, TenorPickerState} from "./tenor";
+import type {TenorPayload} from "./tenor";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+
+export type GifPickerState = {
+    // Only used if popover called from edit message, otherwise it is `undefined`.
+    edit_message_id: number | undefined;
+    next_pos_identifier: string | number | undefined;
+    is_loading_more: boolean;
+    popover_instance: tippy.Instance | undefined;
+    current_search_term: undefined | string;
+    // Stores the index of the last GIF that is part of the grid.
+    last_gif_index: number;
+    gif_provider: "tenor" | "giphy";
+};
 
 const TENOR_BASE_URL = "https://tenor.googleapis.com/v2";
 const tenor_rating_map = {
@@ -45,7 +58,7 @@ export const tenor_result_schema = z.object({
     next: z.string(),
 });
 
-export function hide_gif_picker_popover(picker_state: TenorPickerState): boolean {
+export function hide_gif_picker_popover(picker_state: GifPickerState): boolean {
     // Returns `true` if the popover was open.
     if (picker_state.popover_instance) {
         picker_state.popover_instance.destroy();
@@ -59,7 +72,7 @@ export function hide_gif_picker_popover(picker_state: TenorPickerState): boolean
     return false;
 }
 
-export function handle_gif_click(img_element: HTMLElement, picker_state: TenorPickerState): void {
+export function handle_gif_click(img_element: HTMLElement, picker_state: GifPickerState): void {
     const insert_url = img_element.dataset["insertUrl"];
     assert(insert_url !== undefined);
 
@@ -74,7 +87,7 @@ export function handle_gif_click(img_element: HTMLElement, picker_state: TenorPi
     hide_gif_picker_popover(picker_state);
 }
 
-export function focus_gif_at_index(index: number, picker_state: TenorPickerState): void {
+export function focus_gif_at_index(index: number, picker_state: GifPickerState): void {
     if (index < 0 || index > picker_state.last_gif_index) {
         assert(picker_state.popover_instance !== undefined);
         const $popper = $(picker_state.popover_instance.popper);
@@ -90,7 +103,7 @@ export function focus_gif_at_index(index: number, picker_state: TenorPickerState
 
 export function handle_keyboard_navigation_on_gif(
     e: JQuery.KeyDownEvent,
-    picker_state: TenorPickerState,
+    picker_state: GifPickerState,
 ): void {
     e.stopPropagation();
     assert(e.currentTarget instanceof HTMLElement);
@@ -135,7 +148,7 @@ export function handle_keyboard_navigation_on_gif(
 export function render_gifs_to_grid(
     raw_tenor_result: unknown,
     next_page: boolean,
-    picker_state: TenorPickerState,
+    picker_state: GifPickerState,
 ): void {
     // Tenor popover may have been hidden by the
     // time this function is called.
@@ -187,7 +200,7 @@ export function get_tenor_base_payload(): TenorPayload {
 
 // This will render trending GIFs for GIPHY
 // and featured GIFs for Tenor.
-export function render_default_gifs(next_page: boolean, picker_state: TenorPickerState): void {
+export function render_default_gifs(next_page: boolean, picker_state: GifPickerState): void {
     if (
         picker_state.is_loading_more ||
         (picker_state.current_search_term !== undefined &&
@@ -212,7 +225,7 @@ export function render_default_gifs(next_page: boolean, picker_state: TenorPicke
 }
 
 export function update_grid_with_search_term(
-    picker_state: TenorPickerState,
+    picker_state: GifPickerState,
     search_term: string,
     next_page = false,
 ): void {
@@ -250,7 +263,7 @@ export function update_grid_with_search_term(
         });
 }
 
-export function toggle_gif_popover(target: HTMLElement, picker_state: TenorPickerState): void {
+export function toggle_gif_popover(target: HTMLElement, picker_state: GifPickerState): void {
     popover_menus.toggle_popover_menu(
         target,
         {
