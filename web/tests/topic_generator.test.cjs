@@ -21,6 +21,14 @@ run_test("streams", ({override}) => {
         const actual = tg.get_next_stream(curr_stream_id);
         assert.equal(actual, expected);
     }
+    // Folder structure for this test:
+    // Folder A: streams 1, 2
+    // Folder B: stream 3
+    // No folder: stream 4
+
+    assert_next_stream(2, 3); // cross folder A → folder B
+    assert_next_stream(3, 4); // folder → ungrouped
+    assert_next_stream(4, 1); // wrap-around
 
     override(stream_list_sort, "get_stream_ids", () => [1, 2, 3, 4]);
 
@@ -79,6 +87,12 @@ run_test("topics", ({override}) => {
     const devel_stream_id = 401;
     const announce_stream_id = 402;
     const test_here_stream_id = 403;
+    // Stream order reflects folder-aware sorting:
+    // announce → no folder
+    // muted → folder
+    // devel → folder
+    // test-here → no folder
+
     override(stream_list_sort, "get_stream_ids", () => [
         announce_stream_id,
         muted_stream_id,
