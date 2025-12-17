@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import one_click_unsubscribe_link
 from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.digest import (
     DigestTopic,
@@ -639,6 +640,43 @@ class TestDigestEmailMessages(ZulipTestCase):
             message_id = self.send_stream_message(sender, stream, content)
             message_ids.append(message_id)
         return message_ids
+
+    def test_include_archived_channel_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        channel = self.make_stream("new channel", realm=hamlet.realm)
+        self.subscribe(aaron, channel.name)
+        self.subscribe(hamlet, channel.name)
+
+        cutoff_date = timezone_now() - timedelta(days=5)
+        channel.date_created = cutoff_date - timedelta(days=2)
+        subscription_created_date = cutoff_date - timedelta(days=1)
+        channel.save(update_fields=["date_created"])
+        RealmAuditLog.objects.filter(
+            modified_stream_id=channel.id,
+            modified_user_id__in=[aaron.id, hamlet.id],
+            event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
+        ).update(event_time=subscription_created_date)
+
+        # No 'hot_conversations'
+        with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
+            bulk_handle_digest_email([aaron.id], cutoff_date.timestamp())
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        self.assert_length(kwargs["context"]["hot_conversations"], 0)
+
+        # Verify 'hot_conversations' includes messages from archived channel.
+        self.send_stream_message(
+            hamlet, channel.name, content="channel archived", skip_capture_on_commit_callbacks=True
+        )
+        do_deactivate_stream(channel, acting_user=None)
+
+        get_recent_topics.cache_clear()
+        with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
+            bulk_handle_digest_email([aaron.id], cutoff_date.timestamp())
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        self.assert_length(kwargs["context"]["hot_conversations"], 2)
 
 
 class TestDigestContentInBrowser(ZulipTestCase):
