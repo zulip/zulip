@@ -20,10 +20,10 @@ export function validate_bot_short_name(value: string): boolean {
     return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
 }
 
-export function generate_zuliprc_url(bot_id: number): string {
+export function generate_zuliprc_url(bot_id: number, api_key: string): string {
     const bot = bot_data.get(bot_id);
     assert(bot !== undefined);
-    const data = generate_zuliprc_content(bot);
+    const data = generate_zuliprc_content({...bot, api_key});
     return encode_zuliprc_as_url(data);
 }
 
@@ -197,13 +197,19 @@ export function initialize_bot_click_handlers(): void {
     });
 
     $("body").on("click", "button.download-bot-zuliprc", function () {
-        const $bot_info = $(this).closest("#bot-edit-form");
-        const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-        const bot_email = $bot_info.attr("data-email");
+        void (async () => {
+            const $bot_info = $(this).closest("#bot-edit-form");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+            const bot_email = $bot_info.attr("data-email");
+            const api_key = await fetch_bot_api_key(bot_id, $("#bot-edit-form-error"), $(this));
+            if (!api_key) {
+                return;
+            }
 
-        // Select the <a> element by matching data-email.
-        const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
-        $zuliprc_link.attr("href", generate_zuliprc_url(bot_id));
-        $zuliprc_link[0]?.click();
+            // Select the <a> element by matching data-email.
+            const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
+            $zuliprc_link.attr("href", generate_zuliprc_url(bot_id, api_key));
+            $zuliprc_link[0]?.click();
+        })();
     });
 }

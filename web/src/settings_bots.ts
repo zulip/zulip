@@ -10,6 +10,7 @@ import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
 import type {Bot} from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -696,34 +697,58 @@ export function set_up_bots(): void {
     create_status_filter_dropdown($("#admin-all-bots-list"), all_bots_section);
     create_status_filter_dropdown($("#admin-your-bots-list"), your_bots_section);
 
-    $("#download-botserverrc-file").on("click", () => {
-        let content = "";
-
-        for (const bot of bot_data.get_all_bots_for_current_user()) {
-            if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
-                const services = bot_data.get_services(bot.user_id);
-                assert(services !== undefined);
-                const service = services[0];
-                assert(service && "token" in service);
-                const bot_token = service.token;
-                content += generate_botserverrc_content(bot.email, bot.api_key, bot_token);
+    $("#download-botserverrc-file").on("click", (e) => {
+        void (async () => {
+            let content = "";
+            buttons.show_button_loading_indicator($(e.currentTarget));
+            $(e.currentTarget).prop("disabled", true);
+            for (const bot of bot_data.get_all_bots_for_current_user()) {
+                if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
+                    const services = bot_data.get_services(bot.user_id);
+                    assert(services !== undefined);
+                    const service = services[0];
+                    assert(service && "token" in service);
+                    const bot_token = service.token;
+                    const api_key = await bot_helper.fetch_bot_api_key(
+                        bot.user_id,
+                        $("#admin-your-bots-list .bot-list-error"),
+                    );
+                    if (!api_key) {
+                        buttons.hide_button_loading_indicator($(e.currentTarget));
+                        $(e.currentTarget).prop("disabled", false);
+                        return;
+                    }
+                    content += generate_botserverrc_content(bot.email, api_key, bot_token);
+                }
             }
-        }
+            buttons.hide_button_loading_indicator($(e.currentTarget));
+            $(e.currentTarget).prop("disabled", false);
 
-        $("#hidden-botserverrc-download").attr(
-            "href",
-            "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content),
-        );
-        $("#hidden-botserverrc-download")[0]?.click();
+            $("#hidden-botserverrc-download").attr(
+                "href",
+                "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content),
+            );
+            $("#hidden-botserverrc-download")[0]?.click();
+        })();
     });
     toggle_bot_config_download_container();
 
-    $("#admin-bot-list").on("click", ".download-bot-zuliprc-button", (e) => {
-        const $row = $(e.target).closest(".user_row");
-        const $zuliprc_link = $row.find(".hidden-zuliprc-download");
-        const bot_id = Number.parseInt($zuliprc_link.attr("data-user-id")!, 10);
-        $zuliprc_link.attr("href", bot_helper.generate_zuliprc_url(bot_id));
-        $zuliprc_link[0]?.click();
+    $("#admin-bot-list").on("click", ".download-bot-zuliprc-button", function (this: HTMLElement) {
+        void (async () => {
+            const $row = $(this).closest(".user_row");
+            const $zuliprc_link = $row.find(".hidden-zuliprc-download");
+            const bot_id = Number.parseInt($zuliprc_link.attr("data-user-id")!, 10);
+            const api_key = await bot_helper.fetch_bot_api_key(
+                bot_id,
+                $row.closest(".bot-settings-section").find(".bot-list-error"),
+                $(this),
+            );
+            if (!api_key) {
+                return;
+            }
+            $zuliprc_link.attr("href", bot_helper.generate_zuliprc_url(bot_id, api_key));
+            $zuliprc_link[0]?.click();
+        })();
     });
 
     $("#admin-bot-list").on("click", ".generate-integration-url-button", (e) => {
