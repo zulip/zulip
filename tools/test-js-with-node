@@ -113,6 +113,8 @@ EXEMPT_FILES = make_set(
         "web/src/fetch_status.ts",
         "web/src/flatpickr.ts",
         "web/src/gear_menu.ts",
+        "web/src/gif_picker_data.ts",
+        "web/src/gif_picker_ui.ts",
         "web/src/gif_state.ts",
         "web/src/giphy.ts",
         "web/src/global.ts",

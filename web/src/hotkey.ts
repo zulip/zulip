@@ -24,6 +24,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import * as gear_menu from "./gear_menu.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as giphy from "./giphy.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
@@ -436,7 +437,8 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         tenor.focus_current_edit_message();
         // Hide after setting focus so that `edit_message_id` is
         // still set in giphy.
-        tenor.hide_tenor_popover();
+        const tenor_picker_state = tenor.get_tenor_picker_state();
+        gif_picker_ui.hide_gif_picker_popover(tenor_picker_state);
         return true;
     }
 
@@ -449,7 +451,10 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
 
     // Check if the Tenor popover was open using compose box.
     // Hide Tenor popover if it's open.
-    if (!tenor.is_popped_from_edit_message() && tenor.hide_tenor_popover()) {
+    if (
+        !tenor.is_popped_from_edit_message() &&
+        gif_picker_ui.hide_gif_picker_popover(tenor.get_tenor_picker_state())
+    ) {
         $("textarea#compose-textarea").trigger("focus");
         return true;
     }

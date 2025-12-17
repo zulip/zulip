@@ -10,6 +10,7 @@ import render_tenor_gif from "../templates/tenor_gif.hbs";
 import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as gif_picker_data from "./gif_picker_data.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
 import {get_rating} from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
@@ -44,7 +45,7 @@ const tenor_result_schema = z.object({
     next: z.string(),
 });
 
-type TenorPickerState = {
+export type TenorPickerState = {
     // Only used if popover called from edit message, otherwise it is `undefined`.
     edit_message_id: number | undefined;
     next_pos_identifier: string | number | undefined;
@@ -78,6 +79,10 @@ export type TenorPayload = {
     pos?: string | number | undefined;
     q?: string;
 };
+
+export function get_tenor_picker_state(): TenorPickerState {
+    return picker_state;
+}
 
 export function is_popped_from_edit_message(): boolean {
     return (
@@ -117,7 +122,7 @@ function handle_gif_click(img_element: HTMLElement): void {
     }
 
     compose_ui.insert_syntax_and_focus(`[](${insert_url})`, $textarea, "block", 1);
-    hide_tenor_popover();
+    gif_picker_ui.hide_gif_picker_popover(picker_state);
 }
 
 function focus_gif_at_index(index: number): void {
@@ -173,20 +178,6 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
             break;
         }
     }
-}
-
-export function hide_tenor_popover(): boolean {
-    // Returns `true` if the popover was open.
-    if (picker_state.popover_instance) {
-        picker_state.popover_instance.destroy();
-        picker_state.popover_instance = undefined;
-        picker_state.edit_message_id = undefined;
-        picker_state.next_pos_identifier = undefined;
-        picker_state.current_search_term = undefined;
-        picker_state.is_loading_more = false;
-        return true;
-    }
-    return false;
 }
 
 function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): void {
@@ -310,7 +301,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 }
 
                 $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
-                    hide_tenor_popover();
+                    gif_picker_ui.hide_gif_picker_popover(picker_state);
                 });
 
                 $popper.on("keyup", "#gif-search-query", (e) => {
@@ -361,7 +352,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 });
             },
             onHidden() {
-                hide_tenor_popover();
+                gif_picker_ui.hide_gif_picker_popover(picker_state);
             },
         },
         {
