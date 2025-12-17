@@ -15,6 +15,7 @@ const color_data = mock_esm("../src/color_data");
 const compose_recipient = mock_esm("../src/compose_recipient");
 const dialog_widget = mock_esm("../src/dialog_widget");
 const message_live_update = mock_esm("../src/message_live_update");
+const message_view = mock_esm("../src/message_view");
 const settings_streams = mock_esm("../src/settings_streams");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
@@ -111,6 +112,7 @@ function narrow_to_frontend() {
         data: {
             filter,
         },
+        update_trailing_bookend: noop,
     };
 }
 
@@ -454,10 +456,15 @@ test("marked_subscribed (normal)", ({override}) => {
 
     let list_updated = false;
 
+    const then_select_offset = 17;
+    override(browser_history, "current_scroll_offset", () => then_select_offset);
+
     const stream_list_stub = make_stub();
     const message_view_header_stub = make_stub();
+    const show_stub = make_stub();
 
-    override(stream_list, "add_sidebar_row", stream_list_stub.f);
+    let sidebar_row_added = false;
+
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
     override(
@@ -467,6 +474,14 @@ test("marked_subscribed (normal)", ({override}) => {
     );
     override(message_lists.current, "update_trailing_bookend", () => {
         list_updated = true;
+    });
+    override(stream_list, "add_sidebar_row", (sub) => {
+        sidebar_row_added = true;
+        stream_list_stub.f(sub);
+    });
+    override(message_view, "show", (terms, opts) => {
+        assert.equal(sidebar_row_added, true);
+        show_stub.f(terms, opts);
     });
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
@@ -479,6 +494,12 @@ test("marked_subscribed (normal)", ({override}) => {
     assert.equal(message_view_header_stub.num_calls, 1);
 
     assert.equal(list_updated, true);
+    assert.equal(show_stub.num_calls, 1);
+    const show_args = show_stub.get_args("terms", "opts");
+    assert.equal(show_args.terms, message_lists.current.data.filter.terms());
+    assert.equal(show_args.opts.then_select_offset, then_select_offset);
+    assert.equal(show_args.opts.force_rerender, true);
+    assert.equal(show_args.opts.trigger, "subscription confirmed refresh");
 
     assert.equal(sub.color, "blue");
     message_lists.current = undefined;

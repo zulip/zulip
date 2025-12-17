@@ -310,19 +310,32 @@ export function mark_subscribed(
         }
     }
 
+    // We may trigger narrow-refreshing UI code paths below (e.g. via
+    // `message_view.show`) that expect the newly subscribed stream to already
+    // exist in the left sidebar.
+    stream_list.add_sidebar_row(sub);
+    stream_list.update_subscribe_to_more_streams_link();
+    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
+
     if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend(true);
+        const then_select_id =
+            typeof message_lists.current.selected_id === "function"
+                ? message_lists.current.selected_id()
+                : undefined;
+        message_view.show(message_lists.current.data.filter.terms(), {
+            then_select_id,
+            then_select_offset: browser_history.current_scroll_offset(),
+            force_rerender: true,
+            trigger: "subscription confirmed refresh",
+        });
         activity_ui.build_user_sidebar();
     }
 
     // The new stream in sidebar might need its unread counts
     // re-calculated.
     unread_ui.update_unread_counts();
-
-    stream_list.add_sidebar_row(sub);
-    stream_list.update_subscribe_to_more_streams_link();
-    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
 export function mark_unsubscribed(sub: StreamSubscription): void {
