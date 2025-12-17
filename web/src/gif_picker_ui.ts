@@ -169,21 +169,35 @@ export function handle_keyboard_navigation_on_gif(
 }
 
 export function render_gifs_to_grid(
-    raw_tenor_result: unknown,
+    raw_gif_provider_result: unknown,
     next_page: boolean,
     picker_state: GifPickerState,
 ): void {
-    // Tenor popover may have been hidden by the
+    // GIF popover may have been hidden by the
     // time this function is called.
     if (picker_state.popover_instance === undefined) {
         return;
     }
-    const parsed_data = tenor_result_schema.parse(raw_tenor_result);
-    const urls = parsed_data.results.map((result) => ({
-        preview_url: result.media_formats.tinygif.url,
-        insert_url: result.media_formats.mediumgif.url,
-    }));
-    picker_state.next_pos_identifier = parsed_data.next;
+    let urls: {
+        preview_url: string;
+        insert_url: string;
+    }[] = [];
+    if (picker_state.gif_provider === "tenor") {
+        const parsed_data = tenor_result_schema.parse(raw_gif_provider_result);
+        urls = parsed_data.results.map((result) => ({
+            preview_url: result.media_formats.tinygif.url,
+            insert_url: result.media_formats.mediumgif.url,
+        }));
+        picker_state.next_pos_identifier = parsed_data.next;
+    } else {
+        const parsed_data = giphy_result_schema.parse(raw_gif_provider_result);
+        urls = parsed_data.data.map((result) => ({
+            preview_url: result.images.fixed_height.url,
+            insert_url: result.images.downsized_medium.url,
+        }));
+        picker_state.next_pos_identifier = parsed_data.pagination.offset + LIMIT;
+    }
+
     let gif_grid_html = "";
 
     if (!next_page) {
@@ -197,12 +211,16 @@ export function render_gifs_to_grid(
             gif_index: picker_state.last_gif_index,
         });
     }
+    const content_class: string =
+        picker_state.gif_provider === "tenor" ? ".tenor-content" : ".giphy-content";
     const $popper = $(picker_state.popover_instance.popper);
     if (next_page) {
-        $popper.find(".tenor-content").append($(gif_grid_html));
+        // eslint-disable-next-line unicorn/no-array-callback-reference
+        $popper.find(content_class).append($(gif_grid_html));
     } else {
         $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
-        $popper.find(".tenor-content").html(gif_grid_html);
+        // eslint-disable-next-line unicorn/no-array-callback-reference
+        $popper.find(content_class).html(gif_grid_html);
     }
 
     picker_state.is_loading_more = false;
