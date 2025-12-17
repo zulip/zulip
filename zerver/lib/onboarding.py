@@ -112,9 +112,9 @@ We also have a guide for [moving your organization to Zulip]({organization_setup
         # Add extra content about automatic deletion for demo organization owners.
         if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
             demo_organization_warning_string = _("""
-Note that this is a [demo organization]({demo_organization_help_url}) and
-will be **automatically deleted** in 30 days, unless it's [converted into
-a permanent organization]({convert_demo_organization_help_url}).
+This [demo organization]({demo_organization_help_url}) will be **automatically
+deleted** in 30 days, unless it's [converted into a permanent
+organization]({convert_demo_organization_help_url}).
 """).format(
                 demo_organization_help_url="/help/demo-organizations",
                 convert_demo_organization_help_url="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization",
