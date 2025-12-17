@@ -2,10 +2,8 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import * as z from "zod/mini";
 
 import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
-import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as gif_picker_data from "./gif_picker_data.ts";
@@ -25,24 +23,6 @@ const tenor_rating_map = {
     r: "off",
     "pg-13": "low",
 };
-
-const tenor_result_schema = z.object({
-    results: z.array(
-        z.object({
-            media_formats: z.object({
-                tinygif: z.object({
-                    url: z.url(),
-                }),
-                mediumgif: z.object({
-                    url: z.url(),
-                }),
-            }),
-        }),
-    ),
-    // This denotes the identifier to use for the next API call
-    // to fetch the next set of results for the current query.
-    next: z.string(),
-});
 
 export type TenorPickerState = {
     // Only used if popover called from edit message, otherwise it is `undefined`.
@@ -109,42 +89,6 @@ function get_base_payload(): TenorPayload {
     };
 }
 
-function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): void {
-    // Tenor popover may have been hidden by the
-    // time this function is called.
-    if (picker_state.popover_instance === undefined) {
-        return;
-    }
-    const parsed_data = tenor_result_schema.parse(raw_tenor_result);
-    const urls = parsed_data.results.map((result) => ({
-        preview_url: result.media_formats.tinygif.url,
-        insert_url: result.media_formats.mediumgif.url,
-    }));
-    picker_state.next_pos_identifier = parsed_data.next;
-    let gif_grid_html = "";
-
-    if (!next_page) {
-        picker_state.last_gif_index = -1;
-    }
-    for (const url of urls) {
-        picker_state.last_gif_index += 1;
-        gif_grid_html += render_tenor_gif({
-            preview_url: url.preview_url,
-            insert_url: url.insert_url,
-            gif_index: picker_state.last_gif_index,
-        });
-    }
-    const $popper = $(picker_state.popover_instance.popper);
-    if (next_page) {
-        $popper.find(".tenor-content").append($(gif_grid_html));
-    } else {
-        $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
-        $popper.find(".tenor-content").html(gif_grid_html);
-    }
-
-    picker_state.is_loading_more = false;
-}
-
 function render_featured_gifs(next_page: boolean): void {
     if (
         picker_state.is_loading_more ||
@@ -162,7 +106,7 @@ function render_featured_gifs(next_page: boolean): void {
     gif_picker_data
         .fetch_tenor_gifs(data, BASE_URL + "/featured")
         .then((raw_tenor_result: unknown) => {
-            render_gifs_to_grid(raw_tenor_result, next_page);
+            gif_picker_ui.render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
         })
         .catch(() => {
             blueslip.log("Error fetching featured Tenor GIFs.");
@@ -197,7 +141,7 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
     gif_picker_data
         .fetch_tenor_gifs(data, `${BASE_URL}/search`)
         .then((raw_tenor_result) => {
-            render_gifs_to_grid(raw_tenor_result, next_page);
+            gif_picker_ui.render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
         })
         .catch(() => {
             blueslip.log("Error fetching searched Tenor GIFs.");

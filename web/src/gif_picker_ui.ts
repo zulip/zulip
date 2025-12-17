@@ -1,8 +1,29 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import * as z from "zod/mini";
+
+import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as compose_ui from "./compose_ui.ts";
 import type {TenorPickerState} from "./tenor";
+
+export const tenor_result_schema = z.object({
+    results: z.array(
+        z.object({
+            media_formats: z.object({
+                tinygif: z.object({
+                    url: z.url(),
+                }),
+                mediumgif: z.object({
+                    url: z.url(),
+                }),
+            }),
+        }),
+    ),
+    // This denotes the identifier to use for the next API call
+    // to fetch the next set of results for the current query.
+    next: z.string(),
+});
 
 export function hide_gif_picker_popover(picker_state: TenorPickerState): boolean {
     // Returns `true` if the popover was open.
@@ -89,4 +110,44 @@ export function handle_keyboard_navigation_on_gif(
             break;
         }
     }
+}
+
+export function render_gifs_to_grid(
+    raw_tenor_result: unknown,
+    next_page: boolean,
+    picker_state: TenorPickerState,
+): void {
+    // Tenor popover may have been hidden by the
+    // time this function is called.
+    if (picker_state.popover_instance === undefined) {
+        return;
+    }
+    const parsed_data = tenor_result_schema.parse(raw_tenor_result);
+    const urls = parsed_data.results.map((result) => ({
+        preview_url: result.media_formats.tinygif.url,
+        insert_url: result.media_formats.mediumgif.url,
+    }));
+    picker_state.next_pos_identifier = parsed_data.next;
+    let gif_grid_html = "";
+
+    if (!next_page) {
+        picker_state.last_gif_index = -1;
+    }
+    for (const url of urls) {
+        picker_state.last_gif_index += 1;
+        gif_grid_html += render_tenor_gif({
+            preview_url: url.preview_url,
+            insert_url: url.insert_url,
+            gif_index: picker_state.last_gif_index,
+        });
+    }
+    const $popper = $(picker_state.popover_instance.popper);
+    if (next_page) {
+        $popper.find(".tenor-content").append($(gif_grid_html));
+    } else {
+        $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
+        $popper.find(".tenor-content").html(gif_grid_html);
+    }
+
+    picker_state.is_loading_more = false;
 }
