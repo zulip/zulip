@@ -78,7 +78,8 @@ contribute a few patches of my own,” Robert says.
 ---
 
 Learn more about [Zulip for Education](/for/education/), and how
-Zulip is being used at the [University of California San Diego](/case-studies/ucsd/).
+Zulip is being used at the [University of California San
+Diego](/case-studies/ucsd/) and the [National University of Córdoba](/case-studies/university-of-cordoba/).
 You can also check out our guides on using Zulip for [conferences](/for/events/)
 and [research](/for/research/)!
 

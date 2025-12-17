@@ -195,6 +195,11 @@ landing_page_urls = [
         {"template_name": "corporate/case-studies/tum-case-study.html"},
     ),
     path(
+        "case-studies/university-of-cordoba/",
+        landing_view,
+        {"template_name": "corporate/case-studies/university-of-cordoba-case-study.html"},
+    ),
+    path(
         "case-studies/ucsd/",
         landing_view,
         {"template_name": "corporate/case-studies/ucsd-case-study.html"},
