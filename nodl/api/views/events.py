@@ -107,6 +107,12 @@ def register_queue(request: HttpRequest) -> HttpResponse:
     # Zulip docs: "A few minutes [optimizing this] often saves 90% of bandwidth"
     request.POST = request.POST.copy()
 
+    # Parse JSON body for client_capabilities (frontend sends JSON, not form data)
+    # This is needed for bulk_message_deletion capability which affects event format
+    body = _get_json_body(request)
+    if "client_capabilities" in body and "client_capabilities" not in request.POST:
+        request.POST["client_capabilities"] = json.dumps(body["client_capabilities"])
+
     # Only fetch these event types for initial data (reduces queries dramatically)
     if "fetch_event_types" not in request.POST:
         request.POST["fetch_event_types"] = json.dumps([

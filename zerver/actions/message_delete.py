@@ -79,10 +79,12 @@ def _process_grouped_messages_deletion(
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
     event["message_type"] = message_type
 
-    # We exclude long-term idle users, since they by definition have no active clients.
+    # Include all users in notification list for delete events.
+    # nodl users may be marked as long_term_idle but still have active event queues.
     users_to_notify = event_recipient_ids_for_action_on_messages(
         grouped_messages,
         channel=stream if message_type == "stream" else None,
+        exclude_long_term_idle_users=False,
     )
 
     if acting_user is not None:
