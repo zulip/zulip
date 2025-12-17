@@ -1622,7 +1622,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = "default-bot@zulip.com"
         user_profile = self.get_bot_user(email)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=user_profile)
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=user_profile, notify=False
+        )
 
         req = dict(role=UserProfile.ROLE_GUEST)
 

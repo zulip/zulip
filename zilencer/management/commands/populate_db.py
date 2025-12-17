@@ -561,7 +561,9 @@ class Command(ZulipBaseCommand):
             assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
-            do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+            do_change_user_role(
+                iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
+            )
             iago.is_staff = True
             iago.save(update_fields=["is_staff"])
 
@@ -583,13 +585,15 @@ class Command(ZulipBaseCommand):
             )
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
-            do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+            do_change_user_role(
+                desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None, notify=False
+            )
 
             shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
-            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None)
+            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None, notify=False)
 
             polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
-            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None)
+            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -832,6 +836,8 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulip"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                None,
+                notify=False,
             )
             do_update_user_custom_profile_data_if_changed(
                 hamlet,
@@ -849,6 +855,8 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulipbot"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                None,
+                notify=False,
             )
             # We need to create at least one scheduled message for Iago for the api-test
             # cURL example to delete an existing scheduled message.

@@ -191,15 +191,32 @@ class TestRealmAuditLog(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         acting_user = self.example_user("iago")
         do_change_user_role(
-            user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=acting_user
+            user_profile,
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+            acting_user=acting_user,
+            notify=False,
         )
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_GUEST, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MODERATOR, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
         old_values_seen = set()
         new_values_seen = set()
         for event in RealmAuditLog.objects.filter(

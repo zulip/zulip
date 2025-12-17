@@ -993,7 +993,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 )
             except JsonableError as e:
                 raise ZulipLDAPError(e.msg)
-            do_change_full_name(user_profile, full_name, None)
+            do_change_full_name(user_profile, full_name, None, notify=True)
 
     def sync_custom_profile_fields_from_ldap(
         self, user_profile: UserProfile, ldap_user: _LDAPUser
@@ -1366,7 +1366,7 @@ class ZulipLDAPUser(_LDAPUser):
             # Change the role properly, updating system groups.
             updated_role = user_profile.role
             user_profile.role = original_role
-            do_change_user_role(user_profile, updated_role, acting_user=None)
+            do_change_user_role(user_profile, updated_role, acting_user=None, notify=True)
 
     def _get_groups(self) -> _LDAPUserGroups:
         groups = super()._get_groups()
@@ -1743,7 +1743,7 @@ def sync_user_profile_custom_fields(
                 "value": value,
             }
         )
-    do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
+    do_update_user_custom_profile_data_if_changed(user_profile, profile_data, None, notify=True)
 
 
 @external_auth_method
@@ -2162,7 +2162,7 @@ def social_auth_sync_user_attributes(
     # Based on the information collected above, sync what's needed for the user_profile.
     old_role = user_profile.role
     if new_role is not None and old_role != new_role:
-        do_change_user_role(user_profile, new_role, acting_user=None)
+        do_change_user_role(user_profile, new_role, acting_user=None, notify=True)
         backend.logger.info(
             "Set role %s for user %s", UserProfile.ROLE_ID_TO_API_NAME[new_role], user_profile.id
         )
