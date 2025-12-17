@@ -745,29 +745,23 @@ ul.popover-group-menu-member-list {
         padding: 0 2px;
     }
 
-    .giphy-gif,
     .gif-picker-gif {
         cursor: pointer;
-    }
-
-    .gif-picker-gif {
         width: 100%;
         height: 100%;
         border-radius: 10px;
         object-fit: cover;
-    }
 
-    .giphy-gif:focus,
-    .gif-picker-gif:focus {
-        /* Blue outline for clear visibility
-         * of which image is in focus.
-         */
-        outline: 2px solid var(--color-selected-gif-in-grid-picker);
-    }
+        &:focus {
+            /* Blue outline for clear visibility
+            * of which image is in focus.
+            */
+            outline: 2px solid var(--color-selected-gif-in-grid-picker);
+        }
 
-    .giphy-gif:hover,
-    .gif-picker-gif:hover {
-        outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        &:hover {
+            outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        }
     }
 
     .gif-scrolling-container {
