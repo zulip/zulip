@@ -41,10 +41,6 @@ const PresetUrlOption = {
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
     const streams = stream_data.subscribed_subs();
-    const default_integration_option = {
-        name: $t_html({defaultMessage: "Select an integration"}),
-        unique_id: "",
-    };
     const direct_messages_option = {
         name: $t_html({defaultMessage: "Direct message to me"}),
         unique_id: -1,
@@ -60,10 +56,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
     });
 
     function generate_integration_url_post_render(): void {
-        let selected_integration = "";
+        let selected_integration: string | undefined;
         let stream_input_dropdown_widget: DropdownWidget;
         let integration_input_dropdown_widget: DropdownWidget;
-        let previous_selected_integration = "";
+        let previous_selected_integration: string | undefined;
         let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
 
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
@@ -197,12 +193,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
             if (previous_selected_integration !== selected_integration) {
                 reset_to_blank_state();
             }
-            if (selected_integration === default_integration_option.unique_id) {
-                $("#integration-url-stream_widget").prop("disabled", true);
-                $integration_url.text(default_url_message);
-                $dialog_submit_button.prop("disabled", true);
-                return;
-            }
             $("#integration-url-stream_widget").prop("disabled", false);
             previous_selected_integration = selected_integration;
 
@@ -302,21 +292,21 @@ export function show_generate_integration_url_modal(api_key: string): void {
             get_options: get_options_for_integration_input_dropdown_widget,
             item_click_callback: integration_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
-            default_id: default_integration_option.unique_id,
+            default_id: "",
+            text_if_current_value_not_in_options: $t_html({
+                defaultMessage: "Select an integration",
+            }),
             unique_id_type: "string",
         });
         integration_input_dropdown_widget.setup();
 
         function get_options_for_integration_input_dropdown_widget(): Option[] {
-            const options = [
-                default_integration_option,
-                ...realm.realm_incoming_webhook_bots
-                    .toSorted((a, b) => util.strcmp(a.display_name, b.display_name))
-                    .map((bot) => ({
-                        name: bot.display_name,
-                        unique_id: bot.name,
-                    })),
-            ];
+            const options = realm.realm_incoming_webhook_bots
+                .toSorted((a, b) => util.strcmp(a.display_name, b.display_name))
+                .map((bot) => ({
+                    name: bot.display_name,
+                    unique_id: bot.name,
+                }));
             return options;
         }
 
