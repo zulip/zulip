@@ -1,22 +1,23 @@
-import $ from "jquery";
+import $, { when } from "jquery";
 import assert from "minimalistic-assert";
 
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
-import type {Filter} from "./filter.ts";
+import type { Filter } from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t} from "./i18n.ts";
+import { $t } from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
-import {page_params} from "./page_params.ts";
+import { page_params } from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
-import {current_user} from "./state_data.ts";
+import { current_user } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import type {StreamSubscription} from "./sub_store.ts";
+import type { StreamSubscription } from "./sub_store.ts";
+import * as popovers from "./popovers.ts"
 
 type MessageViewHeaderContext = {
     title?: string | undefined;
@@ -31,19 +32,19 @@ type MessageViewHeaderContext = {
     stream?: StreamSubscription;
     stream_settings_link?: string;
 } & (
-    | {
-          zulip_icon: string;
-      }
-    | {
-          icon: string | undefined;
-      }
-);
+        | {
+            zulip_icon: string;
+        }
+        | {
+            icon: string | undefined;
+        }
+    );
 
-function get_message_view_header_context(filter: Filter | undefined): MessageViewHeaderContext {
+export function get_message_view_header_context(filter: Filter | undefined): MessageViewHeaderContext {
     if (recent_view_util.is_visible()) {
         return {
-            title: $t({defaultMessage: "Recent conversations"}),
-            description: $t({defaultMessage: "Overview of ongoing conversations."}),
+            title: $t({ defaultMessage: "Recent conversations" }),
+            description: $t({ defaultMessage: "Overview of ongoing conversations." }),
             zulip_icon: "recent",
             link: "/help/recent-conversations",
         };
@@ -51,7 +52,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
 
     if (inbox_util.is_visible() && !inbox_util.is_channel_view()) {
         return {
-            title: $t({defaultMessage: "Inbox"}),
+            title: $t({ defaultMessage: "Inbox" }),
             description: $t({
                 defaultMessage: "Overview of your conversations with unread messages.",
             }),
@@ -83,7 +84,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             });
         }
         return {
-            title: $t({defaultMessage: "Combined feed"}),
+            title: $t({ defaultMessage: "Combined feed" }),
             description,
             zulip_icon: "all-messages",
             link: "/help/combined-feed",
@@ -187,11 +188,13 @@ export function initialize(): void {
     render_title_area();
 
     const hide_stream_settings_button_width_threshold = 620;
+    const mobile_threshold = 576;
     $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
         const $view_description_elt = $(this);
         const window_width = $(window).width()!;
         let hover_timeout;
 
+        if (window_width <= mobile_threshold) return;
         if (event.type === "mouseenter") {
             if (!$view_description_elt.hasClass("view-description-extended")) {
                 const current_width = $view_description_elt.outerWidth();
@@ -234,6 +237,69 @@ export function initialize(): void {
             }, 100);
         }
     });
+
+    $("body").on("click", ".narrow_description", function () {
+        const window_width = $(window).width()!;
+
+        if (window_width > mobile_threshold) return;
+
+        const filter = narrow_state.filter();
+        const context = get_message_view_header_context(filter)
+
+        let mobile_description_popup_content = ``
+        
+        // This was originaly to be placed inside 
+        // `navbar.hbs` file but at the point when
+        // that template is rendered, narrow_state.filter()
+        // returns undefined
+        if (context.description) {
+            mobile_description_popup_content = `
+                <div id="broad-description-menu-mobile" tabindex="0">
+                    <div class="close-btn-container">
+                        <button type="button" id="broad-description-menu-mobile-exit" aria-label="{{t 'Exit Description' }}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+                    </div>
+                    <span class="sub-stream-description rendered_markdown content-container">
+                        ${context.description}
+                    </span>
+                </div>
+            `
+        } else {
+            mobile_description_popup_content = `
+                <div id="broad-description-menu-mobile" tabindex="0">
+                    <div class="close-btn-container">
+                        <button type="button" id="broad-description-menu-mobile-exit" aria-label="{{t 'Exit Description' }}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+                    </div>
+                    <span class="sub-stream-description rendered_markdown content-container">
+                        ${context.rendered_narrow_description}
+                    </span>
+                </div>
+            `
+        }
+
+        const $header_container = $("#header-container")
+        if ($header_container.find("#broad-description-menu-mobile").length > 0) {
+            $("#header-container #broad-description-menu-mobile").remove();
+        }
+
+        const $el = $(mobile_description_popup_content);
+        $("#header-container").append($el);
+
+        $("#navbar-middle .column-middle-inner, .header, #message_view_header").addClass("no-navbar-shadow");
+        $("#broad-description-menu-mobile").addClass("expanded");
+        popovers.hide_all();
+    })
+
+    $("body").on("click", "#broad-description-menu-mobile-exit", function () {
+        $("#navbar-middle .column-middle-inner, .header, #message_view_header").removeClass("no-navbar-shadow");
+        $("#broad-description-menu-mobile").removeClass("expanded");
+    })
+
+    $(window).on("resize", function () {
+        if ($(window).width() > mobile_threshold) {
+            $("#navbar-middle .column-middle-inner, .header, #message_view_header").removeClass("no-navbar-shadow");
+            $("#broad-description-menu-mobile").removeClass("expanded");
+        }
+    })
 }
 
 export function render_title_area(): void {

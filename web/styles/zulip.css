@@ -16,7 +16,8 @@ html {
 }
 
 #app-loading.loaded {
-    display: none !important; /* We are now loaded, by definition. */
+    display: none !important;
+    /* We are now loaded, by definition. */
 }
 
 body {
@@ -27,10 +28,8 @@ body {
     /* The line-height used in most of the UI should be at least
        its legacy value, but should expand with larger base
        line-height values. */
-    line-height: max(
-        var(--legacy-body-line-height-unitless),
-        var(--base-line-height-unitless)
-    );
+    line-height: max(var(--legacy-body-line-height-unitless),
+            var(--base-line-height-unitless));
     font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
@@ -39,22 +38,18 @@ body {
     .header-main,
     .app .app-main,
     #compose-container {
-        max-width: calc(
-            var(--left-sidebar-max-width) + var(--message-area-max-width) +
-                var(--right-sidebar-max-width)
-        );
+        max-width: calc(var(--left-sidebar-max-width) + var(--message-area-max-width) + var(--right-sidebar-max-width));
     }
 
     /* When sidebars are manually hidden, we set the max-width
        for the layout to a different maximum width. This keeps
        the message area predictably readable. */
     &.hide-left-sidebar:not(.fluid_layout_width) {
+
         .header-main,
         .app .app-main,
         #compose-container {
-            max-width: calc(
-                var(--message-area-max-width) + var(--right-sidebar-max-width)
-            );
+            max-width: calc(var(--message-area-max-width) + var(--right-sidebar-max-width));
 
             /* When we're less than the xl_min breakpoint, we instead
                constrain to just the message area's max-width, since
@@ -71,9 +66,8 @@ body {
 
     /* Fallback media query. */
     @media (width < $xl_min) {
-        &.without-container-query-support.hide-left-sidebar:not(
-                .fluid_layout_width
-            ) {
+        &.without-container-query-support.hide-left-sidebar:not(.fluid_layout_width) {
+
             .header-main,
             .app .app-main,
             #compose-container {
@@ -83,16 +77,16 @@ body {
     }
 
     &.hide-right-sidebar:not(.fluid_layout_width) {
+
         .header-main,
         .app .app-main,
         #compose-container {
-            max-width: calc(
-                var(--left-sidebar-max-width) + var(--message-area-max-width)
-            );
+            max-width: calc(var(--left-sidebar-max-width) + var(--message-area-max-width));
         }
     }
 
     &.hide-left-sidebar.hide-right-sidebar:not(.fluid_layout_width) {
+
         .header-main,
         .app .app-main,
         #compose-container {
@@ -101,6 +95,7 @@ body {
     }
 
     &.fluid_layout_width {
+
         .header-main,
         .app .app-main,
         #compose-container {
@@ -234,7 +229,8 @@ p.n-margin {
 }
 
 .messages-logo-svg {
-    width: 1.7188em; /* 27.5px at 16px/1em */
+    width: 1.7188em;
+    /* 27.5px at 16px/1em */
 }
 
 .bottom-messages-logo {
@@ -244,9 +240,11 @@ p.n-margin {
 .alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
-    width: 1.7143em; /* 24px at 14px/em */
+    width: 1.7143em;
+    /* 24px at 14px/em */
     height: 1.7143em;
-    margin: 0 auto 0.8571em; /* 12px at 14px/em */
+    margin: 0 auto 0.8571em;
+    /* 12px at 14px/em */
 
     & svg {
         & circle {
@@ -396,6 +394,61 @@ p.n-margin {
     position: relative;
 }
 
+#header-container {
+    position: relative;
+}
+
+#header-container #broad-description-menu-mobile {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--color-background-search);
+    color: var(--color-text-search);
+    margin-top: 0;
+    /* position: absolute; */
+    top: 0;
+    left: 0;
+    z-index: 10000000000;
+
+    &.expanded {
+        display: block !important;
+        box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
+    }
+
+    .close-btn-container {
+        width: 100%;
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        #broad-description-menu-mobile-exit {
+            width: 2.75em;
+            height: 100%;
+            background: none;
+            border: none;
+            opacity: 0.5;
+            line-height: 0;
+            border-radius: 4px;
+            color: var(--color-search-icons);
+            padding: 0;
+            outline: none;
+        }
+    }
+
+    .content-container {
+        display: block;
+        /* (header-height + 6px) in order to match the navbar
+        text in message_view_header */
+        padding: 4px calc(var(--header-height) + 6px) calc(var(--header-height) + 6px) calc(var(--header-height) + 6px);
+        hyphens: auto;
+    }
+}
+
+.no-navbar-shadow {
+    box-shadow: none !important;
+}
+
 body.has-overlay-scrollbar {
     /* Move simplebar scrollbar to the left so that
        browser scrollbar doesn't overlap with it. */
@@ -507,30 +560,18 @@ body.has-overlay-scrollbar {
         }
 
         & .login_button {
-            color: var(
-                --color-navbar-spectator-medium-attention-brand-button-text
-            );
-            background-color: var(
-                --color-navbar-spectator-medium-attention-brand-button-background
-            );
+            color: var(--color-navbar-spectator-medium-attention-brand-button-text);
+            background-color: var(--color-navbar-spectator-medium-attention-brand-button-background);
 
             &:hover,
             &:focus {
-                color: var(
-                    --color-navbar-spectator-medium-attention-brand-button-text
-                );
-                background-color: var(
-                    --color-navbar-spectator-medium-attention-brand-button-background-hover
-                );
+                color: var(--color-navbar-spectator-medium-attention-brand-button-text);
+                background-color: var(--color-navbar-spectator-medium-attention-brand-button-background-hover);
             }
 
             &:active {
-                color: var(
-                    --color-navbar-spectator-medium-attention-brand-button-text
-                );
-                background-color: var(
-                    --color-navbar-spectator-medium-attention-brand-button-background-active
-                );
+                color: var(--color-navbar-spectator-medium-attention-brand-button-text);
+                background-color: var(--color-navbar-spectator-medium-attention-brand-button-background-active);
             }
         }
     }
@@ -542,7 +583,7 @@ body.has-overlay-scrollbar {
         height: var(--header-height);
         width: var(--header-height);
 
-        @media (width >= $xl_min) and (height >= 600px) {
+        @media (width >=$xl_min) and (height >=600px) {
             display: none;
         }
 
@@ -589,9 +630,7 @@ body.has-overlay-scrollbar {
 #message_feed_container,
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
-    padding-top: calc(
-        var(--navbar-fixed-height) + var(--header-padding-bottom)
-    );
+    padding-top: calc(var(--navbar-fixed-height) + var(--header-padding-bottom));
 }
 
 .app-main {
@@ -653,6 +692,7 @@ body.has-overlay-scrollbar {
 }
 
 .with-container-query-support {
+
     /* With spec-aligned container support, we
        can establish em-aware containers to
        query as needed.
@@ -675,9 +715,7 @@ body.has-overlay-scrollbar {
 .column-middle,
 #compose-content {
     margin-right: var(--right-sidebar-width);
-    margin-left: calc(
-        var(--left-sidebar-width) + var(--left-sidebar-padding-left)
-    );
+    margin-left: calc(var(--left-sidebar-width) + var(--left-sidebar-padding-left));
     position: relative;
 }
 
@@ -705,7 +743,7 @@ button:focus {
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
 a:not(:active):focus,
 button:focus-visible,
-label.checkbox input[type="checkbox"]:focus ~ .rendered-checkbox,
+label.checkbox input[type="checkbox"]:focus~.rendered-checkbox,
 i.fa:focus,
 i.zulip-icon:focus-visible,
 [role="button"]:focus {
@@ -715,6 +753,7 @@ i.zulip-icon:focus-visible,
 
 /* List of text-like input types taken from Bootstrap */
 input:not(.input-element) {
+
     &[type="text"],
     &[type="password"],
     &[type="email"],
@@ -834,6 +873,7 @@ strong {
 }
 
 @keyframes pulse-unread {
+
     /* Only unread dots in collapsed Views
        have offset variables set; all others
        will fall back to 0 (no offset). */
@@ -842,8 +882,7 @@ strong {
     }
 
     50% {
-        transform: scale(var(--pulse-unread-scale-max))
-            translateX(var(--unread-dot-x-offset-scaled, 0));
+        transform: scale(var(--pulse-unread-scale-max)) translateX(var(--unread-dot-x-offset-scaled, 0));
     }
 
     100% {
@@ -857,7 +896,8 @@ strong {
 
 .messagebox-content .slow-send-spinner {
     display: block;
-    font-size: 0.8571em; /* 12px at 14px/em */
+    font-size: 0.8571em;
+    /* 12px at 14px/em */
     text-align: right;
     opacity: 0.8;
     color: var(--color-text-default);
@@ -1047,7 +1087,8 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .topic_edit_save,
 .topic_edit_cancel {
     /* Adjust top and bottom padding to fit into the recipient row. */
-    padding: 0.125em 0.625em; /* 2px 10px at 16px/em */
+    padding: 0.125em 0.625em;
+    /* 2px 10px at 16px/em */
 }
 
 .information-settings .user-profile-picture,
@@ -1087,9 +1128,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     /* Calculate right margin so that title and description
        elements can truncate and not collide with or run underneath
        with the search section. */
-    margin-right: calc(
-        var(--search-box-width) + var(--navbar-content-righthand-offset)
-    );
+    margin-right: calc(var(--search-box-width) + var(--navbar-content-righthand-offset));
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1189,11 +1228,13 @@ nav {
 
         .nav-logo {
             display: inline-block;
-            height: 1.25em; /* 20px at 16px em */
+            height: 1.25em;
+            /* 20px at 16px em */
             max-width: var(--realm-logo-max-width);
 
             @media (height < $short_navbar_cutoff_height) {
-                height: 0.9375em; /* 15px at 16px em */
+                height: 0.9375em;
+                /* 15px at 16px em */
             }
         }
 
@@ -1252,16 +1293,20 @@ nav {
     /* Override the base rules in app_components.css, which would require
        coordination with loading.make_indicator */
     .loading_indicator_spinner {
-        height: 2.7143em; /* 38px at 14px/em */
-        width: 2.7143em; /* 38px at 14px/em */
+        height: 2.7143em;
+        /* 38px at 14px/em */
+        width: 2.7143em;
+        /* 38px at 14px/em */
     }
 }
 
 #loading_older_messages_indicator_box,
 #loading_more_indicator_box {
     position: relative;
-    left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
-    top: -3.0714em; /* -43px at 14px/em */
+    left: -1.3571em;
+    /* 50% of 38px = 19px at 14px/em */
+    top: -3.0714em;
+    /* -43px at 14px/em */
     z-index: 1;
     border-radius: 6px;
 }
@@ -1305,13 +1350,17 @@ nav {
 div.topic_edit_spinner {
     display: flex;
     align-items: center;
-    width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
-    height: 1.2em; /* 18px at 15px/em */
+    width: 1.2em;
+    /* 18px at 15px/em  (from font size set in .message-header-contents) */
+    height: 1.2em;
+    /* 18px at 15px/em */
 }
 
 div.topic_edit_spinner .loading_indicator_spinner {
-    width: 0.9333em; /* 14px at 15px/em  (from font size set in .message-header-contents) */
-    height: 0.9333em; /* 14px at 15px/em */
+    width: 0.9333em;
+    /* 14px at 15px/em  (from font size set in .message-header-contents) */
+    height: 0.9333em;
+    /* 14px at 15px/em */
 
     & path {
         fill: var(--color-recipient-bar-controls-spinner);
@@ -1356,7 +1405,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
-@container banner (width >= 25em) {
+@container banner (width >=25em) {
     #copy_generated_invite_link .action-button-label {
         display: none;
     }
@@ -1493,6 +1542,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .flatpickr-calendar {
+
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
         display: none;
@@ -1736,6 +1786,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     @container app (width < $cq_xl_min) {
+
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
@@ -1755,6 +1806,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 body:not(.hide-left-sidebar) {
+
     /* User can clearly see the unread count in the left sidebar. So,
        we don't need an indicator here as it will only serve as a disctraction. */
     #header-container .column-left .left-sidebar-toggle-unreadcount {
@@ -1763,6 +1815,7 @@ body:not(.hide-left-sidebar) {
 }
 
 body:not(.spectator-view) {
+
     /* The large Log In button for spectators makes this rule
        inappropriate for that view. */
     @container header-container (width < $cq_xl_min) {
@@ -1843,7 +1896,8 @@ body:not(.spectator-view) {
     }
 }
 
-@container app (width <= $cq_ml_min) {
+@container app (width <=$cq_ml_min) {
+
     .column-right.expanded,
     .column-left.expanded {
         width: 100vw;
@@ -1854,12 +1908,6 @@ body:not(.spectator-view) {
     .app-main .column-left.expanded .left-sidebar {
         width: 100vw;
         max-width: 100%;
-    }
-}
-
-@container header-container (width <= $cq_sm_min) {
-    .narrow_description {
-        display: none;
     }
 }
 
@@ -1886,6 +1934,7 @@ body:not(.spectator-view) {
         }
 
         .hide-left-sidebar {
+
             #compose-content,
             .app-main .column-middle {
                 margin-left: 7px;
@@ -1944,8 +1993,9 @@ body:not(.spectator-view) {
     }
 }
 
-@media (width <= $ml_min) {
+@media (width <=$ml_min) {
     .without-container-query-support {
+
         .column-right.expanded,
         .column-left.expanded {
             width: 100vw;
@@ -1956,14 +2006,6 @@ body:not(.spectator-view) {
         .app-main .column-left.expanded .left-sidebar {
             width: 100vw;
             max-width: 100%;
-        }
-    }
-}
-
-@media (width <= $sm_min) {
-    .without-container-query-support {
-        .narrow_description {
-            display: none;
         }
     }
 }
@@ -1989,13 +2031,13 @@ body:not(.spectator-view) {
     }
 }
 
-@container app (width >= $cq_md_min) {
+@container app (width >=$cq_md_min) {
     .app-main::after {
         content: "gte_md_min";
     }
 }
 
-@media (width >= $md_min) {
+@media (width >=$md_min) {
     .without-container-query-support {
         .app-main::after {
             content: "gte_md_min";
@@ -2003,13 +2045,13 @@ body:not(.spectator-view) {
     }
 }
 
-@container app (width >= $cq_xl_min) {
+@container app (width >=$cq_xl_min) {
     .app-main::after {
         content: "gte_md_min gte_xl_min";
     }
 }
 
-@media (width >= $xl_min) {
+@media (width >=$xl_min) {
     .without-container-query-support {
         .app-main::after {
             content: "gte_md_min gte_xl_min";
@@ -2020,6 +2062,7 @@ body:not(.spectator-view) {
 /* End viewport state queries. */
 
 @media (height < $short_navbar_cutoff_height) {
+
     .app-main .column-right.expanded .right-sidebar,
     .app-main .column-left.expanded .left-sidebar {
         margin-top: var(--navbar-fixed-height);
@@ -2060,10 +2103,7 @@ body:not(.spectator-view) {
         height: var(--header-height);
     }
 
-    nav
-        .column-left
-        .left-sidebar-toggle-button
-        .left-sidebar-toggle-unreadcount {
+    nav .column-left .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
         top: 5px;
         left: 16px;
     }
@@ -2075,8 +2115,10 @@ body:not(.spectator-view) {
     }
 
     #top_navbar .column-right #personal-menu .header-button-avatar {
-        width: 1.25em; /* 20px at 16px em */
-        height: 1.25em; /* 20px at 16px em */
+        width: 1.25em;
+        /* 20px at 16px em */
+        height: 1.25em;
+        /* 20px at 16px em */
     }
 }
 
@@ -2120,8 +2162,10 @@ body:not(.spectator-view) {
     }
 
     #scroll-to-bottom-button-clickable-area {
-        width: 3.75em; /* 60px at 16px em */
-        height: 3.75em; /* 60px at 16px em */
+        width: 3.75em;
+        /* 60px at 16px em */
+        height: 3.75em;
+        /* 60px at 16px em */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2133,8 +2177,10 @@ body:not(.spectator-view) {
 
         #scroll-to-bottom-button {
             text-align: center;
-            width: 2.5em; /* 40px at 16px em */
-            height: 2.5em; /* 40px at 16px em */
+            width: 2.5em;
+            /* 40px at 16px em */
+            height: 2.5em;
+            /* 40px at 16px em */
             background: hsl(240deg 96% 68% / 50%);
             border-radius: 50%;
             display: flex;
@@ -2143,7 +2189,8 @@ body:not(.spectator-view) {
             & .scroll-to-bottom-icon {
                 color: hsl(0deg 0% 100%);
                 margin: 0 auto;
-                font-size: 1.3125em; /* 21px at 16px em */
+                font-size: 1.3125em;
+                /* 21px at 16px em */
             }
         }
     }
@@ -2244,11 +2291,9 @@ body:not(.spectator-view) {
         display: grid;
         grid-template:
             "privacy-icon     item-label       " min-content
-            "item-description item-description" minmax(0, min-content) / minmax(
-                0,
+            "item-description item-description" minmax(0, min-content) / minmax(0,
                 auto
-            )
-            minmax(0, 1fr);
+            ) minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2290,9 +2335,7 @@ body:not(.spectator-view) {
             grid-area: item-label;
             display: grid;
             grid-template:
-                "item-text item-buttons" minmax(0, auto)
-                "item-text .           " minmax(0, auto) / minmax(0, 1fr)
-                minmax(0, auto);
+                "item-text item-buttons" minmax(0, auto) "item-text .           " minmax(0, auto) / minmax(0, 1fr) minmax(0, auto);
             align-items: center;
 
             &:has(.dropdown-list-buttons) {
@@ -2436,12 +2479,14 @@ body:not(.spectator-view) {
     }
 
     .zulip-icon-gear {
-        font-size: 1.125em; /* 18px at 16px em */
+        font-size: 1.125em;
+        /* 18px at 16px em */
     }
 
     .zulip-icon-help-bigger,
     .zulip-icon-user-list {
-        font-size: 1.25em; /* 20px at 16px em */
+        font-size: 1.25em;
+        /* 20px at 16px em */
     }
 
     .zulip-icon-help {
@@ -2452,9 +2497,11 @@ body:not(.spectator-view) {
 }
 
 .left-sidebar-toggle-button {
+
     .zulip-icon-panel-left,
     .zulip-icon-panel-left-dashed {
-        font-size: 1.25em; /* 20px at 16px em */
+        font-size: 1.25em;
+        /* 20px at 16px em */
     }
 }
 
@@ -2463,8 +2510,10 @@ body:not(.spectator-view) {
         /* Put styling on div rather than img to gracefully handle
            uBlock Origin blocking of gravatar, which seems to make
            the img disappear. */
-        width: 1.5em; /* 24px at 16px em */
-        height: 1.5em; /* 24px at 16px em */
+        width: 1.5em;
+        /* 24px at 16px em */
+        height: 1.5em;
+        /* 24px at 16px em */
         background-size: cover;
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
@@ -2495,7 +2544,7 @@ body:not(.spectator-view) {
 .inline_profile_picture.deactivated {
     position: relative;
 
-    > img {
+    >img {
         opacity: 0.5;
     }
 
