@@ -1,15 +1,21 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as gif_picker_data from "./gif_picker_data.ts";
 import {get_rating} from "./gif_state.ts";
+import * as popover_menus from "./popover_menus.ts";
+import * as rows from "./rows.ts";
+import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
 import type {TenorPayload, TenorPickerState} from "./tenor";
+import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 
 const TENOR_BASE_URL = "https://tenor.googleapis.com/v2";
@@ -242,4 +248,97 @@ export function update_grid_with_search_term(
         .catch(() => {
             blueslip.log("Error fetching searched Tenor GIFs.");
         });
+}
+
+export function toggle_gif_popover(target: HTMLElement, picker_state: TenorPickerState): void {
+    popover_menus.toggle_popover_menu(
+        target,
+        {
+            theme: "popover-menu",
+            placement: "top",
+            onCreate(instance) {
+                instance.setContent(ui_util.parse_html(render_gif_picker_ui({is_giphy: false})));
+                $(instance.popper).addClass("tenor-popover");
+            },
+            onShow(instance) {
+                picker_state.popover_instance = instance;
+                const $popper = $(instance.popper).trigger("focus");
+                const debounced_search = _.debounce((search_term: string) => {
+                    update_grid_with_search_term(picker_state, search_term);
+                }, 300);
+                const $click_target = $(instance.reference);
+                if ($click_target.parents(".message_edit_form").length === 1) {
+                    // Store message id in global variable edit_message_id so that
+                    // its value can be further used to correctly find the message textarea element.
+                    picker_state.edit_message_id = rows.id($click_target.parents(".message_row"));
+                } else {
+                    picker_state.edit_message_id = undefined;
+                }
+
+                $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
+                    hide_gif_picker_popover(picker_state);
+                });
+
+                $popper.on("keyup", "#gif-search-query", (e) => {
+                    assert(e.target instanceof HTMLInputElement);
+                    if (e.key === "ArrowDown") {
+                        // Trigger arrow key based navigation on the grid by focusing
+                        // the first grid element.
+                        focus_gif_at_index(0, picker_state);
+                        return;
+                    }
+                    debounced_search(e.target.value);
+                });
+                $popper.on("click", ".tenor-gif", (e) => {
+                    assert(e.currentTarget instanceof HTMLElement);
+                    handle_gif_click(e.currentTarget, picker_state);
+                });
+                $popper.on("click", "#gif-search-clear", (e) => {
+                    e.stopPropagation();
+                    $("#gif-search-query").val("");
+                    update_grid_with_search_term(picker_state, "");
+                });
+                $popper.on("keydown", ".tenor-gif", (e) => {
+                    handle_keyboard_navigation_on_gif(e, picker_state);
+                });
+            },
+            onMount(instance) {
+                render_default_gifs(false, picker_state);
+                const $popper = $(instance.popper);
+                $popper.find("#gif-search-query").trigger("focus");
+
+                const scroll_element = scroll_util.get_scroll_element(
+                    $(".gif-scrolling-container"),
+                )[0];
+                assert(scroll_element instanceof HTMLElement);
+
+                scroll_element.addEventListener("scroll", () => {
+                    if (
+                        scroll_element.scrollTop + scroll_element.clientHeight >
+                        scroll_element.scrollHeight - scroll_element.clientHeight
+                    ) {
+                        if (picker_state.is_loading_more) {
+                            return;
+                        }
+                        if (picker_state.current_search_term === undefined) {
+                            render_default_gifs(true, picker_state);
+                            return;
+                        }
+                        update_grid_with_search_term(
+                            picker_state,
+                            picker_state.current_search_term,
+                            true,
+                        );
+                    }
+                });
+            },
+            onHidden() {
+                hide_gif_picker_popover(picker_state);
+            },
+        },
+        {
+            show_as_overlay_on_mobile: true,
+            show_as_overlay_always: false,
+        },
+    );
 }
