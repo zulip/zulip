@@ -305,6 +305,12 @@ emoji.emojis_by_name.clear();
 for (const [key, val] of emojis_by_name.entries()) {
     emoji.emojis_by_name.set(key, val);
 }
+typeahead.set_frequently_used_emojis(
+    [emoji_thumbs_up.emoji_code, emoji_heart.emoji_code].map((emoji_code) => ({
+        emoji_type: "unicode_emoji",
+        emoji_code,
+    })),
+);
 emoji_picker.rebuild_catalog();
 const emoji_list = composebox_typeahead.emoji_collection.map((emoji) => ({
     ...emoji,

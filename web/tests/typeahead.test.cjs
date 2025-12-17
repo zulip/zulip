@@ -181,6 +181,7 @@ run_test("sort_emojis: th", () => {
         {emoji_name: "thumbs_down", is_realm_emoji: true},
         {emoji_name: "thumbs_up", is_realm_emoji: false, emoji_code: "1f44d"},
     ];
+    typeahead.set_frequently_used_emojis(typeahead.get_popular_emojis());
     assert.deepEqual(sort_emojis(emoji_list, "th"), [
         "thumbs_up",
         "thermometer",
