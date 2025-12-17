@@ -1428,6 +1428,8 @@ def generate_demo_realm_subdomain() -> str:
         adjective = random.SystemRandom().choice(demo_organization_words["adjectives"])
         noun = random.SystemRandom().choice(demo_organization_words["nouns"])
         demo_subdomain = f"{adverb}-{adjective}-{noun}"
+        if len(demo_subdomain) > Realm.MAX_REALM_SUBDOMAIN_LENGTH:  # nocoverage
+            continue
         try:
             check_subdomain_available(demo_subdomain)
             break
