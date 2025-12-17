@@ -7,8 +7,9 @@ import * as z from "zod/mini";
 import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
-import * as channel from "./channel.ts";
+import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as gif_picker_data from "./gif_picker_data.ts";
 import {get_rating} from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
@@ -53,14 +54,14 @@ const BASE_URL = "https://tenor.googleapis.com/v2";
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
 
-type TenorPayload = {
+export type TenorPayload = {
     key: string;
     client_key: string;
     limit: string;
     media_filter: string;
     locale: string;
     contentfilter: string;
-    pos?: typeof next_pos_identifier;
+    pos?: string | number | undefined;
     q?: string;
 };
 
@@ -214,13 +215,14 @@ function render_featured_gifs(next_page: boolean): void {
         is_loading_more = true;
         data = {...data, pos: next_pos_identifier};
     }
-    void channel.get({
-        url: `${BASE_URL}/featured`,
-        data,
-        success(raw_tenor_result) {
+    gif_picker_data
+        .fetch_tenor_gifs(data, BASE_URL + "/featured")
+        .then((raw_tenor_result: unknown) => {
             render_gifs_to_grid(raw_tenor_result, next_page);
-        },
-    });
+        })
+        .catch(() => {
+            blueslip.log("Error fetching featured Tenor GIFs.");
+        });
 }
 
 function update_grid_with_search_term(search_term: string, next_page = false): void {
@@ -245,13 +247,14 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
         data = {...data, pos: next_pos_identifier};
     }
 
-    void channel.get({
-        url: `${BASE_URL}/search`,
-        data,
-        success(raw_tenor_result) {
+    gif_picker_data
+        .fetch_tenor_gifs(data, `${BASE_URL}/search`)
+        .then((raw_tenor_result) => {
             render_gifs_to_grid(raw_tenor_result, next_page);
-        },
-    });
+        })
+        .catch(() => {
+            blueslip.log("Error fetching searched Tenor GIFs.");
+        });
 }
 
 function toggle_tenor_popover(target: HTMLElement): void {
