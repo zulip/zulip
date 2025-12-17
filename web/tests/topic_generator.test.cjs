@@ -10,6 +10,10 @@ const pm_conversations = mock_esm("../src/pm_conversations", {
 });
 const stream_list_sort = mock_esm("../src/stream_list_sort");
 const unread = mock_esm("../src/unread");
+const stream_data = mock_esm("../src/stream_data");
+const stream_topic_history = mock_esm("../src/stream_topic_history");
+const user_topics = mock_esm("../src/user_topics");
+
 
 const tg = zrequire("topic_generator");
 
