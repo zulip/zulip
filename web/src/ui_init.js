@@ -175,6 +175,7 @@ import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
+import * as watchdog from "./watchdog.ts";
 import * as widgets from "./widgets.ts";
 
 // This is where most of our initialization takes place.
@@ -616,6 +617,7 @@ export async function initialize_everything(state_data) {
         restart_get_events: server_events.restart_get_events,
     });
     server_events.initialize(state_data.server_events);
+    watchdog.initialize();
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();
     compose_pm_pill.initialize({

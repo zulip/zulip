@@ -85,4 +85,22 @@ export function on_unsuspend(f: () => void): void {
 
 export function initialize(): void {
     setInterval(check_for_unsuspend, CHECK_FREQUENCY_MILLISECONDS);
+
+    // The Page Lifecycle API "resume" event.
+    // This handles when the page is "resumed" from a frozen state, such as when
+    // the user switches back to a tab that Chrome has discarded/frozen to save memory.
+    // Note: This event is currently only available on Chrome.
+    // See https://developer.chrome.com/docs/web-platform/page-lifecycle-api#event-resume
+    document.addEventListener("resume", () => {
+        check_for_unsuspend();
+    });
+
+    // The BFCache "pageshow" event.
+    // This handles when the page is restored from the Back-Forward Cache (BFCache),
+    // e.g. when the user navigates back to this page.
+    window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+            check_for_unsuspend();
+        }
+    });
 }
