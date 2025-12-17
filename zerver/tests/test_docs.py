@@ -332,7 +332,9 @@ class DocPageTest(ZulipTestCase):
         # case-studies
         self._test("/case-studies/tum/", ["Technical University of Munich"])
         self._test("/case-studies/ucsd/", ["UCSD"])
-        self._test("/case-studies/university-of-cordoba/", ["University of Córdoba"])
+        self._test(
+            "/case-studies/university-of-cordoba/", ["National University of C\\xc3\\xb3rdoba"]
+        )
         self._test("/case-studies/rust/", ["Rust programming language"])
         self._test("/case-studies/recurse-center/", ["Recurse Center"])
         self._test("/case-studies/lean/", ["Lean theorem prover"])
