@@ -366,20 +366,20 @@ export class DropdownWidget {
                         },
                         filter: {
                             $element: $search_input,
-                            
+
                             predicate(item, value) {
                                 const search = value.toLowerCase();
-                            
+
                                 if (item.name.toLowerCase().includes(search)) {
                                     return true;
                                 }
-                            
+
                                 if (item.aliases !== undefined) {
                                     return item.aliases.some((alias) =>
                                         alias.toLowerCase().includes(search),
                                     );
                                 }
-                            
+
                                 return false;
                             },
                         },

@@ -284,7 +284,7 @@ function get_options_for_recipient_widget(): Option[] {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct message"}),
-        
+
         aliases: [$t({defaultMessage: "dm"})],
     };
 
