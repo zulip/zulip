@@ -8,7 +8,6 @@ import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import * as compose_ui from "./compose_ui.ts";
 import * as gif_picker_data from "./gif_picker_data.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 import {get_rating} from "./gif_state.ts";
@@ -110,21 +109,6 @@ function get_base_payload(): TenorPayload {
     };
 }
 
-function handle_gif_click(img_element: HTMLElement): void {
-    const insert_url = img_element.dataset["insertUrl"];
-    assert(insert_url !== undefined);
-
-    let $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    if (picker_state.edit_message_id !== undefined) {
-        $textarea = $(
-            `#edit_form_${CSS.escape(`${picker_state.edit_message_id}`)} .message_edit_content`,
-        );
-    }
-
-    compose_ui.insert_syntax_and_focus(`[](${insert_url})`, $textarea, "block", 1);
-    gif_picker_ui.hide_gif_picker_popover(picker_state);
-}
-
 function focus_gif_at_index(index: number): void {
     if (index < 0 || index > picker_state.last_gif_index) {
         assert(picker_state.popover_instance !== undefined);
@@ -155,7 +139,7 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     if (key === "Enter" || key === " " || key === "Spacebar") {
         // Meant to avoid page scroll on pressing space.
         e.preventDefault();
-        handle_gif_click(e.currentTarget);
+        gif_picker_ui.handle_gif_click(e.currentTarget, picker_state);
         return;
     }
 
@@ -316,7 +300,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 });
                 $popper.on("click", ".tenor-gif", (e) => {
                     assert(e.currentTarget instanceof HTMLElement);
-                    handle_gif_click(e.currentTarget);
+                    gif_picker_ui.handle_gif_click(e.currentTarget, picker_state);
                 });
                 $popper.on("click", "#gif-search-clear", (e) => {
                     e.stopPropagation();
