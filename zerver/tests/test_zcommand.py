@@ -80,3 +80,13 @@ class ZcommandTest(ZulipTestCase):
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
         self.assert_in_response("You are still in fixed width mode", result)
+
+    def test_zcommand_requires_login(self) -> None:
+        payload = dict(command="/ping")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_error(
+            result,
+            "Not logged in: API authentication or user session required",
+            status_code=401,
+        )
+
