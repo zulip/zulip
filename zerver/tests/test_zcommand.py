@@ -89,4 +89,3 @@ class ZcommandTest(ZulipTestCase):
             "Not logged in: API authentication or user session required",
             status_code=401,
         )
-
