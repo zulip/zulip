@@ -20,6 +20,20 @@ const group_permission_setting_schema = z.object({
 });
 export type GroupPermissionSetting = z.output<typeof group_permission_setting_schema>;
 
+// We cannot parse the operand since it is incomplete,
+// only used for generating suggestions.
+export type NarrowTermSuggestion = {
+    operator: NarrowTerm["operator"];
+    operand: string;
+    negated?: boolean | undefined;
+};
+
+export type NarrowCanonicalTermSuggestion = {
+    operator: NarrowCanonicalTerm["operator"];
+    operand: string;
+    negated?: boolean | undefined;
+};
+
 export const narrow_canonical_operator_schema = z.enum([
     "", // Used for search suggestions.
     "channel",
@@ -111,17 +125,17 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     }),
     z.object({
         operator: z.literal("sender"),
-        operand: z.string(),
+        operand: z.number(),
         negated: z.optional(z.boolean()),
     }),
     z.object({
         operator: z.literal("dm-including"),
-        operand: z.string(),
+        operand: z.array(z.number()),
         negated: z.optional(z.boolean()),
     }),
     z.object({
         operator: z.literal("dm"),
-        operand: z.string(),
+        operand: z.array(z.number()),
         negated: z.optional(z.boolean()),
     }),
 ]);
