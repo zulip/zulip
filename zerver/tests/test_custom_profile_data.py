@@ -7,7 +7,6 @@ from typing_extensions import override
 
 from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
-    do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
 )
@@ -425,7 +424,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
-        do_update_user_custom_profile_data_if_changed(iago, data)
+        self.set_user_custom_profile_data(iago, data)
 
         iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
         converter = field.FIELD_CONVERTERS[field.field_type]
@@ -455,7 +454,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": "123456"},
         ]
-        do_update_user_custom_profile_data_if_changed(user_profile, data)
+        self.set_user_custom_profile_data(user_profile, data)
 
         self.assertTrue(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
@@ -935,7 +934,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             "id": quote.id,
             "value": "***beware*** of jealousy...",
         }
-        do_update_user_custom_profile_data_if_changed(iago, [update_dict])
+        self.set_user_custom_profile_data(iago, [update_dict])
 
         iago_profile_quote = self.example_user("iago").profile_data()[-1]
         value = iago_profile_quote["value"]
@@ -954,14 +953,14 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
-        do_update_user_custom_profile_data_if_changed(iago, data)
+        self.set_user_custom_profile_data(iago, data)
 
         with mock.patch(
             "zerver.actions.custom_profile_fields.notify_user_update_custom_profile_data"
         ) as mock_notify:
             # Attempting to "update" the field value, when it wouldn't actually change,
             # shouldn't trigger notify.
-            do_update_user_custom_profile_data_if_changed(iago, data)
+            self.set_user_custom_profile_data(iago, data)
             mock_notify.assert_not_called()
 
     def test_removing_option_from_select_field(self) -> None:
