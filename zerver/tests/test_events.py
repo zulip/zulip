@@ -40,7 +40,6 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_remove_realm_custom_profile_field,
-    do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )
@@ -1778,7 +1777,7 @@ class NormalActionsTest(BaseAction):
             "value": "New value",
         }
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
+            self.set_user_custom_profile_data(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(
             events[0]["person"]["custom_profile_field"].keys(), {"id", "value", "rendered_value"}
@@ -1793,7 +1792,7 @@ class NormalActionsTest(BaseAction):
             "value": [self.example_user("ZOE").id],
         }
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
+            self.set_user_custom_profile_data(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
@@ -1803,7 +1802,7 @@ class NormalActionsTest(BaseAction):
             "value": [self.example_user("othello").id],
         }
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [updated_field])
+            self.set_user_custom_profile_data(self.user_profile, [updated_field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
@@ -1824,11 +1823,11 @@ class NormalActionsTest(BaseAction):
         }
         cordelia = self.example_user("cordelia")
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_update_user_custom_profile_data_if_changed(cordelia, [field])
+            self.set_user_custom_profile_data(cordelia, [field])
 
         hamlet = self.example_user("hamlet")
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(hamlet, [field])
+            self.set_user_custom_profile_data(hamlet, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
