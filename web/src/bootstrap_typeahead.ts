@@ -255,6 +255,11 @@ export class Typeahead<ItemType extends string | object> {
     stopAdvance: boolean;
     advanceKeys: string[];
     non_tippy_parent_element: string | undefined;
+    // Optional predicate to suppress showing the typeahead for specific
+    // queries. If provided and returns true, the typeahead will be hidden.
+    suppressShow:
+        | ((query: string, items: ItemType[], input_element: TypeaheadInputElement) => boolean)
+        | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
     requireHighlight: boolean;
@@ -317,6 +322,7 @@ export class Typeahead<ItemType extends string | object> {
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.suppressShow = options.suppressShow;
         this.listen();
     }
 
@@ -525,6 +531,10 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     process(items: ItemType[]): this {
+        if (this.suppressShow?.(this.query, items, this.input_element)) {
+            return this.shown ? this.hide() : this;
+        }
+
         const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
 
         const final_items = this.sorter(matching_items, this.query);
@@ -941,4 +951,9 @@ type TypeaheadOptions<ItemType> = {
     showOnClick?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    suppressShow?: (
+        query: string,
+        items: ItemType[],
+        input_element: TypeaheadInputElement,
+    ) => boolean;
 };
