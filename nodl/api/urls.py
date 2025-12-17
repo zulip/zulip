@@ -36,6 +36,7 @@ from nodl.api.views.streams import (
     unsubscribe_from_stream,
     update_stream,
 )
+from nodl.api.views.uploads import upload_file
 from nodl.api.views.users import (
     get_current_user,
     get_user,
@@ -89,6 +90,8 @@ urlpatterns = [
     # Unread counts and mark-as-read endpoints - authenticated via JWT
     path("api/v1/unread", get_unread_counts, name="nodl_unread_counts"),
     path("api/v1/messages/read", mark_messages_as_read, name="nodl_mark_read"),
+    # File upload endpoint - authenticated via JWT
+    path("api/v1/uploads", upload_file, name="nodl_upload_file"),
 ]
 
 # i18n URL patterns (empty for API endpoints)
