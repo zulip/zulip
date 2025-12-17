@@ -18,6 +18,9 @@ run_test("streams", ({override}) => {
         const actual = tg.get_next_stream(curr_stream_id);
         assert.equal(actual, expected);
     }
+
+    override(stream_list_sort, "get_stream_ids", () => [1, 2, 3, 4]);
+
     // Folder structure for this test:
     // Folder A: streams 1, 2
     // Folder B: stream 3
@@ -26,8 +29,6 @@ run_test("streams", ({override}) => {
     assert_next_stream(2, 3); // cross folder A → folder B
     assert_next_stream(3, 4); // folder → ungrouped
     assert_next_stream(4, 1); // wrap-around
-
-    override(stream_list_sort, "get_stream_ids", () => [1, 2, 3, 4]);
 
     assert_next_stream(undefined, 1);
 
