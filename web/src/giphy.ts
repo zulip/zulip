@@ -23,6 +23,21 @@ let giphy_popover_instance: tippy.Instance | undefined;
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let edit_message_id: number | undefined;
 
+// Source: https://developers.giphy.com/docs/api/endpoint
+export type GiphyPayload = {
+    api_key: string;
+    limit: number;
+    offset: number;
+    rating: string;
+    // Lets us reduce the response payload size by only requesting what we need.
+    // We could have used in a `bundle` field, but that gives us more image objects than we need.
+    // Source: https://developers.giphy.com/docs/optional-settings/#fields-on-demand
+    fields: string;
+    q?: string;
+    // only used in the search endpoint.
+    lang?: string;
+};
+
 export function is_popped_from_edit_message(): boolean {
     return giphy_popover_instance !== undefined && edit_message_id !== undefined;
 }
