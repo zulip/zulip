@@ -735,17 +735,13 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .tenor-content {
+    .gif-picker-content {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         grid-auto-rows: auto;
         gap: 6px;
-    }
-
-    /* Meant to prevent outline overflow when the GIF
+        /* Meant to prevent outline overflow when the GIF
        is focused. */
-    .tenor-content,
-    .giphy-content {
         padding: 0 2px;
     }
 

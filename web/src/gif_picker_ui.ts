@@ -212,16 +212,12 @@ export function render_gifs_to_grid(
             gif_index: picker_state.last_gif_index,
         });
     }
-    const content_class: string =
-        picker_state.gif_provider === "tenor" ? ".tenor-content" : ".giphy-content";
     const $popper = $(picker_state.popover_instance.popper);
     if (next_page) {
-        // eslint-disable-next-line unicorn/no-array-callback-reference
-        $popper.find(content_class).append($(gif_grid_html));
+        $popper.find(`.gif-picker-content`).append($(gif_grid_html));
     } else {
         $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
-        // eslint-disable-next-line unicorn/no-array-callback-reference
-        $popper.find(content_class).html(gif_grid_html);
+        $popper.find(`.gif-picker-content`).html(gif_grid_html);
     }
 
     picker_state.is_loading_more = false;
