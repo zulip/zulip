@@ -564,7 +564,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(confirmation.realm, realm)
 
     def test_realm_deactivation_demo_organization_owner_email_not_configured(self) -> None:
-        demo_name = "demo deactivate"
+        demo_name = "demo deactivate no email"
         result = self.submit_demo_creation_form(demo_name)
         realm = Realm.objects.filter(name=demo_name).latest("date_created")
         self.assertEqual(result.status_code, 302)
@@ -584,11 +584,74 @@ class RealmTest(ZulipTestCase):
         self.assert_logged_in_user_id(demo_owner_account.id)
         self.assertEqual(demo_owner_account.delivery_email, "")
 
+        # There must be a value set for deletion_delay_days.
+        result = self.client_post("/json/realm/deactivate", subdomain=realm.subdomain)
+        self.assert_json_error(result, "Invalid data deletion time for demo organization.")
+
+        # If the owner has not configured an email, then deletion_delay_days
+        # must be set to 0, i.e., immediate data deletion as there is no way
+        # to recover the demo organization for the user.
         result = self.client_post(
-            "/json/realm/deactivate", {"deletion_delay_days": 17}, subdomain=realm.subdomain
+            "/json/realm/deactivate", {"deletion_delay_days": 14}, subdomain=realm.subdomain
         )
+        self.assert_json_error(result, "Invalid data deletion time for demo organization.")
+
+        with self.assertLogs(level="INFO"):
+            result = self.client_post(
+                "/json/realm/deactivate", {"deletion_delay_days": 0}, subdomain=realm.subdomain
+            )
         self.assert_json_success(result)
         self.assert_length(mail.outbox, 0)
+        self.assert_logged_in_user_id(None)
+
+    def test_realm_deactivation_demo_organization_owner_email_configured(self) -> None:
+        demo_name = "demo deactivate with email"
+        result = self.submit_demo_creation_form(demo_name)
+        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].startswith(
+                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
+            )
+        )
+        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+
+        result = self.client_get(result["Location"], subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
+
+        demo_owner_account = realm.get_first_human_user()
+        assert demo_owner_account is not None
+        self.assert_logged_in_user_id(demo_owner_account.id)
+        self.assertEqual(demo_owner_account.delivery_email, "")
+
+        # Set an email for the demo organization owner's account.
+        demo_owner_account.delivery_email = "demo-owner@example.com"
+        demo_owner_account.save()
+
+        # There must be a value set for deletion_delay_days.
+        result = self.client_post("/json/realm/deactivate", subdomain=realm.subdomain)
+        self.assert_json_error(result, "Invalid data deletion time for demo organization.")
+
+        # If the owner has configured an email, then deletion_delay_days
+        # must be less than the automatic scheduled deletion date.
+        result = self.client_post(
+            "/json/realm/deactivate", {"deletion_delay_days": 90}, subdomain=realm.subdomain
+        )
+        self.assert_json_error(result, "Invalid data deletion time for demo organization.")
+
+        result = self.client_post(
+            "/json/realm/deactivate", {"deletion_delay_days": 10}, subdomain=realm.subdomain
+        )
+        self.assert_json_success(result)
+        self.assert_length(mail.outbox, 1)
+        self.assert_length(mail.outbox, 1)
+        self.assertIn(
+            f"Your Zulip organization {demo_name} has been deactivated", mail.outbox[0].subject
+        )
+        self.assertIn(
+            f"You have deactivated your Zulip demo organization, {demo_name},", mail.outbox[0].body
+        )
         self.assert_logged_in_user_id(None)
 
     def test_do_send_realm_deactivation_email_no_acting_user(self) -> None:
