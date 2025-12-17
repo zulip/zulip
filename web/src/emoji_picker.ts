@@ -59,7 +59,11 @@ let edit_message_id: number | null = null;
 let current_message_id: number | null = null;
 
 const EMOJI_CATEGORIES = [
-    {name: "Popular", icon: "fa-star-o", translated: $t({defaultMessage: "Popular"})},
+    {
+        name: "Frequently used",
+        icon: "fa-star-o",
+        translated: $t({defaultMessage: "Frequently used"}),
+    },
     {
         name: "Smileys & Emotion",
         icon: "fa-smile-o",
@@ -170,17 +174,23 @@ export function rebuild_catalog(): void {
         catalog.set(category, emojis);
     }
 
-    const popular = [];
-    for (const codepoint of typeahead.popular_emojis) {
-        const name = emoji.get_emoji_name(codepoint);
-        if (name !== undefined) {
-            const emoji_dict = emoji.emojis_by_name.get(name);
-            if (emoji_dict !== undefined) {
-                popular.push(emoji_dict);
-            }
+    const frequently_used = [];
+    for (const {emoji_code, emoji_type} of typeahead.frequently_used_emojis) {
+        let emoji_name: string | undefined;
+        if (emoji_type !== "unicode_emoji") {
+            emoji_name = emoji.all_realm_emojis.get(emoji_code)?.emoji_name;
+        } else {
+            emoji_name = emoji.get_emoji_name(emoji_code);
+        }
+
+        assert(emoji_name !== undefined);
+        const emoji_dict = emoji.emojis_by_name.get(emoji_name);
+        if (emoji_dict !== undefined) {
+            frequently_used.push(emoji_dict);
         }
     }
-    catalog.set("Popular", popular);
+
+    catalog.set("Frequently used", frequently_used);
 
     const categories = EMOJI_CATEGORIES.filter((category) => catalog.has(category.name));
     complete_emoji_catalog = categories.map((category) => ({
@@ -191,8 +201,8 @@ export function rebuild_catalog(): void {
         translated: category.translated,
     }));
     const emojis_by_category = complete_emoji_catalog.flatMap((category) => {
-        if (category.name === "Popular") {
-            // popular category has repeated emojis in the catalog so we skip it
+        if (category.name === "Frequently used") {
+            // Frequently used category may have repeated emojis in the catalog so we skip it
             return [];
         }
         return category.emojis;
@@ -200,7 +210,10 @@ export function rebuild_catalog(): void {
     composebox_typeahead.update_emoji_data(emojis_by_category);
 }
 
-const generate_emoji_picker_content = function (id: number | null): string {
+const generate_emoji_picker_content = function (
+    id: number | null,
+    include_frequently_used_category: boolean,
+): string {
     let emojis_used: string[] = [];
 
     if (id) {
@@ -210,9 +223,13 @@ const generate_emoji_picker_content = function (id: number | null): string {
         emoji_dict.has_reacted = emoji_dict.aliases.some((alias) => emojis_used.includes(alias));
     }
 
+    let emoji_catalog = complete_emoji_catalog;
+    if (!include_frequently_used_category) {
+        emoji_catalog = complete_emoji_catalog.slice(1);
+    }
     return render_emoji_popover({
         message_id: id,
-        emoji_categories: complete_emoji_catalog,
+        emoji_categories: emoji_catalog,
         is_status_emoji_popover: user_status_ui.user_status_picker_open(),
     });
 };
@@ -281,7 +298,7 @@ function filter_emojis(): void {
         search_results.length = 0;
 
         for (const category of categories) {
-            if (category.name === "Popular") {
+            if (category.name === "Frequently used") {
                 continue;
             }
             const emojis = category.emojis;
@@ -615,9 +632,9 @@ export function emoji_select_tab($elt: JQuery): void {
         // Handles the corner case where the refill_section_head_offsets()
         // is still running and section_head_offset[] is still empty,
         // scroll events in the middle may attempt to access section_head_offset[]
-        // causing exception. In this situation the currently_selected is hardcoded as "Popular".
+        // causing exception. In this situation the currently_selected is hardcoded as "Frequently used".
         if (section_head_offsets.length === 0) {
-            currently_selected = "Popular";
+            currently_selected = "Frequently used";
         } else {
             currently_selected = section_head_offsets[0]!.section;
         }
@@ -642,7 +659,9 @@ function register_popover_events($popover: JQuery): void {
     $(".emoji-popover").on("keydown", process_keydown);
 }
 
-function get_default_emoji_popover_options(): Partial<tippy.Props> {
+function get_default_emoji_popover_options(
+    include_frequently_used_category: boolean,
+): Partial<tippy.Props> {
     return {
         theme: "popover-menu",
         placement: "top",
@@ -666,7 +685,12 @@ function get_default_emoji_popover_options(): Partial<tippy.Props> {
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
             instance.setContent(
-                ui_util.parse_html(generate_emoji_picker_content(current_message_id)),
+                ui_util.parse_html(
+                    generate_emoji_picker_content(
+                        current_message_id,
+                        include_frequently_used_category,
+                    ),
+                ),
             );
             emoji_catalog_last_coordinates = {
                 section: 0,
@@ -682,10 +706,14 @@ function get_default_emoji_popover_options(): Partial<tippy.Props> {
             const $popover = $(instance.popper);
             // Render the emojis after simplebar has been initialized which
             // saves us ~30% time rendering them.
+            let emoji_catalog = complete_emoji_catalog;
+            if (!include_frequently_used_category) {
+                emoji_catalog = complete_emoji_catalog.slice(1);
+            }
             $popover.find(".emoji-popover-emoji-map .simplebar-content").html(
                 render_emoji_popover_emoji_map({
                     message_id: current_message_id,
-                    emoji_categories: complete_emoji_catalog,
+                    emoji_categories: emoji_catalog,
                     is_status_emoji_popover: user_status_ui.user_status_picker_open(),
                 }),
             );
@@ -709,6 +737,7 @@ export function toggle_emoji_popover(
     target: tippy.ReferenceElement,
     id?: number,
     additional_popover_options?: Partial<tippy.Props>,
+    include_frequently_used_category = true,
 ): void {
     if (id) {
         current_message_id = id;
@@ -717,7 +746,7 @@ export function toggle_emoji_popover(
     popover_menus.toggle_popover_menu(
         target,
         {
-            ...get_default_emoji_popover_options(),
+            ...get_default_emoji_popover_options(include_frequently_used_category),
             ...additional_popover_options,
         },
         {
@@ -883,7 +912,12 @@ function register_click_handlers(): void {
             e.preventDefault();
             e.stopPropagation();
             const micromodal = $("#set-user-status-modal").closest(".modal__overlay")[0]!;
-            toggle_emoji_popover(this, undefined, {placement: "bottom", appendTo: micromodal});
+            toggle_emoji_popover(
+                this,
+                undefined,
+                {placement: "bottom", appendTo: micromodal},
+                false,
+            );
             if (is_open()) {
                 // Because the emoji picker gets drawn on top of the user
                 // status modal, we need this hack to make clicking outside
