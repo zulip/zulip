@@ -255,7 +255,6 @@
         color: var(--color-dropdown-item);
         cursor: pointer;
 
-        .user-group-list-item,
         .stream-row-content {
             display: flex;
             overflow: hidden;
