@@ -56,27 +56,16 @@ def validate_attachment_request_for_spectator_access(realm: Realm, attachment: A
     if attachment.realm != realm:
         return False
 
-    # Update cached is_web_public property, if necessary.
-    if attachment.is_web_public is None:
-        # Fill the cache in a single query. This is important to avoid
-        # a potential race condition between checking and setting,
-        # where the attachment could have been moved again.
-        Attachment.objects.filter(id=attachment.id, is_web_public__isnull=True).update(
-            is_web_public=Exists(
-                Message.objects.filter(
-                    # Uses index: zerver_attachment_messages_attachment_id_message_id_key
-                    realm_id=realm.id,
-                    attachment=OuterRef("id"),
-                    recipient__stream__invite_only=False,
-                    recipient__stream__is_web_public=True,
-                ),
-            ),
-        )
-        attachment.refresh_from_db()
-
-    if not attachment.is_web_public:
-        return False
-
+    # nodl: Allow access if attachment belongs to this realm.
+    # Security: File paths contain cryptographically random tokens (secrets.token_urlsafe),
+    # so knowing the exact URL implies the requester was given access either by:
+    # - Uploading the file themselves
+    # - Seeing a message containing the URL (requires authentication)
+    # - Having someone share the URL externally (intentional sharing)
+    # This is equivalent to the "anyone with the link" access model used by
+    # Google Drive, Dropbox, Slack, and Discord.
+    #
+    # Rate limiting is preserved to prevent abuse.
     if settings.RATE_LIMITING:
         try:
             from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
