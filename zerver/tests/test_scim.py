@@ -9,7 +9,6 @@ from django.conf import settings
 from typing_extensions import override
 
 from zerver.actions.user_groups import check_add_user_group, do_deactivate_user_group
-from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import get_user_group_direct_member_ids
@@ -263,7 +262,7 @@ class TestSCIMUser(SCIMTestCase):
         format and values.
         """
         hamlet = self.example_user("hamlet")
-        do_change_full_name(hamlet, "Firstname Lastname", acting_user=None)
+        self.set_full_name(hamlet, "Firstname Lastname")
         expected_response_schema = self.generate_user_schema(hamlet)
         expected_response_schema["name"] = {"givenName": "Firstname", "familyName": "Lastname"}
 
@@ -274,7 +273,7 @@ class TestSCIMUser(SCIMTestCase):
         output_data = orjson.loads(result.content)
         self.assertEqual(output_data, expected_response_schema)
 
-        do_change_full_name(hamlet, "Firstnameonly", acting_user=None)
+        self.set_full_name(hamlet, "Firstnameonly")
         expected_response_schema = self.generate_user_schema(hamlet)
         expected_response_schema["name"] = {"givenName": "Firstnameonly", "familyName": ""}
 
