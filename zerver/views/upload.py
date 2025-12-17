@@ -265,7 +265,17 @@ def serve_file(
     force_download: bool = False,
 ) -> HttpResponseBase:
     path_id = f"{realm_id_str}/{filename}"
-    realm = get_valid_realm_from_request(request)
+
+    # For anonymous users accessing from non-subdomain hosts (e.g., Railway),
+    # get realm from URL path instead of subdomain lookup
+    if isinstance(maybe_user_profile, AnonymousUser):
+        try:
+            realm = Realm.objects.get(id=int(realm_id_str))
+        except (ValueError, Realm.DoesNotExist):
+            return HttpResponseNotFound(_("<p>This file does not exist or has been deleted.</p>"))
+    else:
+        realm = get_valid_realm_from_request(request)
+
     is_authorized, attachment = validate_attachment_request(maybe_user_profile, path_id, realm)
 
     def serve_image_error(status: int, image_path: str) -> HttpResponseBase:
