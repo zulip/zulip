@@ -44,15 +44,29 @@ const tenor_result_schema = z.object({
     next: z.string(),
 });
 
-// Only used if popover called from edit message, otherwise it is `undefined`.
-let edit_message_id: number | undefined;
-let next_pos_identifier: string | number | undefined;
-let is_loading_more = false;
-let tenor_popover_instance: tippy.Instance | undefined;
-let current_search_term: undefined | string;
+type TenorPickerState = {
+    // Only used if popover called from edit message, otherwise it is `undefined`.
+    edit_message_id: number | undefined;
+    next_pos_identifier: string | number | undefined;
+    is_loading_more: boolean;
+    popover_instance: tippy.Instance | undefined;
+    current_search_term: undefined | string;
+    // Stores the index of the last GIF that is part of the grid.
+    last_gif_index: number;
+};
+
+const picker_state: TenorPickerState = {
+    // Only used if popover called from edit message, otherwise it is `undefined`.
+    edit_message_id: undefined,
+    next_pos_identifier: undefined,
+    is_loading_more: false,
+    popover_instance: undefined,
+    current_search_term: undefined,
+    // Stores the index of the last GIF that is part of the grid.
+    last_gif_index: -1,
+};
+
 const BASE_URL = "https://tenor.googleapis.com/v2";
-// Stores the index of the last GIF that is part of the grid.
-let last_gif_index = -1;
 
 export type TenorPayload = {
     key: string;
@@ -66,12 +80,16 @@ export type TenorPayload = {
 };
 
 export function is_popped_from_edit_message(): boolean {
-    return tenor_popover_instance !== undefined && edit_message_id !== undefined;
+    return (
+        picker_state.popover_instance !== undefined && picker_state.edit_message_id !== undefined
+    );
 }
 
 export function focus_current_edit_message(): void {
-    assert(edit_message_id !== undefined);
-    $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`).trigger("focus");
+    assert(picker_state.edit_message_id !== undefined);
+    $(`#edit_form_${CSS.escape(`${picker_state.edit_message_id}`)} .message_edit_content`).trigger(
+        "focus",
+    );
 }
 
 function get_base_payload(): TenorPayload {
@@ -92,8 +110,10 @@ function handle_gif_click(img_element: HTMLElement): void {
     assert(insert_url !== undefined);
 
     let $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    if (edit_message_id !== undefined) {
-        $textarea = $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`);
+    if (picker_state.edit_message_id !== undefined) {
+        $textarea = $(
+            `#edit_form_${CSS.escape(`${picker_state.edit_message_id}`)} .message_edit_content`,
+        );
     }
 
     compose_ui.insert_syntax_and_focus(`[](${insert_url})`, $textarea, "block", 1);
@@ -101,9 +121,9 @@ function handle_gif_click(img_element: HTMLElement): void {
 }
 
 function focus_gif_at_index(index: number): void {
-    if (index < 0 || index > last_gif_index) {
-        assert(tenor_popover_instance !== undefined);
-        const $popper = $(tenor_popover_instance.popper);
+    if (index < 0 || index > picker_state.last_gif_index) {
+        assert(picker_state.popover_instance !== undefined);
+        const $popper = $(picker_state.popover_instance.popper);
         // Just trigger focus on the search input because there are no GIFs
         // above or below.
         $popper.find("#gif-search-query").trigger("focus");
@@ -122,8 +142,8 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     if (is_alpha_numeric) {
         // This implies that the user is focused on some GIF
         // but wants to continue searching.
-        assert(tenor_popover_instance !== undefined);
-        const $popper = $(tenor_popover_instance.popper);
+        assert(picker_state.popover_instance !== undefined);
+        const $popper = $(picker_state.popover_instance.popper);
         $popper.find("#gif-search-query").trigger("focus");
         return;
     }
@@ -157,13 +177,13 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
 
 export function hide_tenor_popover(): boolean {
     // Returns `true` if the popover was open.
-    if (tenor_popover_instance) {
-        tenor_popover_instance.destroy();
-        tenor_popover_instance = undefined;
-        edit_message_id = undefined;
-        next_pos_identifier = undefined;
-        current_search_term = undefined;
-        is_loading_more = false;
+    if (picker_state.popover_instance) {
+        picker_state.popover_instance.destroy();
+        picker_state.popover_instance = undefined;
+        picker_state.edit_message_id = undefined;
+        picker_state.next_pos_identifier = undefined;
+        picker_state.current_search_term = undefined;
+        picker_state.is_loading_more = false;
         return true;
     }
     return false;
@@ -172,7 +192,7 @@ export function hide_tenor_popover(): boolean {
 function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): void {
     // Tenor popover may have been hidden by the
     // time this function is called.
-    if (tenor_popover_instance === undefined) {
+    if (picker_state.popover_instance === undefined) {
         return;
     }
     const parsed_data = tenor_result_schema.parse(raw_tenor_result);
@@ -180,21 +200,21 @@ function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): voi
         preview_url: result.media_formats.tinygif.url,
         insert_url: result.media_formats.mediumgif.url,
     }));
-    next_pos_identifier = parsed_data.next;
+    picker_state.next_pos_identifier = parsed_data.next;
     let gif_grid_html = "";
 
     if (!next_page) {
-        last_gif_index = -1;
+        picker_state.last_gif_index = -1;
     }
     for (const url of urls) {
-        last_gif_index += 1;
+        picker_state.last_gif_index += 1;
         gif_grid_html += render_tenor_gif({
             preview_url: url.preview_url,
             insert_url: url.insert_url,
-            gif_index: last_gif_index,
+            gif_index: picker_state.last_gif_index,
         });
     }
-    const $popper = $(tenor_popover_instance.popper);
+    const $popper = $(picker_state.popover_instance.popper);
     if (next_page) {
         $popper.find(".tenor-content").append($(gif_grid_html));
     } else {
@@ -202,18 +222,22 @@ function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): voi
         $popper.find(".tenor-content").html(gif_grid_html);
     }
 
-    is_loading_more = false;
+    picker_state.is_loading_more = false;
 }
 
 function render_featured_gifs(next_page: boolean): void {
-    if (is_loading_more || (current_search_term !== undefined && current_search_term.length > 0)) {
+    if (
+        picker_state.is_loading_more ||
+        (picker_state.current_search_term !== undefined &&
+            picker_state.current_search_term.length > 0)
+    ) {
         return;
     }
     let data = get_base_payload();
 
     if (next_page) {
-        is_loading_more = true;
-        data = {...data, pos: next_pos_identifier};
+        picker_state.is_loading_more = true;
+        data = {...data, pos: picker_state.next_pos_identifier};
     }
     gif_picker_data
         .fetch_tenor_gifs(data, BASE_URL + "/featured")
@@ -226,13 +250,16 @@ function render_featured_gifs(next_page: boolean): void {
 }
 
 function update_grid_with_search_term(search_term: string, next_page = false): void {
-    if (is_loading_more || (search_term.trim() === current_search_term && !next_page)) {
+    if (
+        picker_state.is_loading_more ||
+        (search_term.trim() === picker_state.current_search_term && !next_page)
+    ) {
         return;
     }
     // We set `current_search_term` here to avoid using to a stale
     // version of the search term in `render_featured_gifs` for return checks
     // in case the current `search_term` is empty.
-    current_search_term = search_term;
+    picker_state.current_search_term = search_term;
     if (search_term.trim().length === 0) {
         render_featured_gifs(next_page);
         return;
@@ -243,8 +270,8 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
     };
 
     if (next_page) {
-        is_loading_more = true;
-        data = {...data, pos: next_pos_identifier};
+        picker_state.is_loading_more = true;
+        data = {...data, pos: picker_state.next_pos_identifier};
     }
 
     gif_picker_data
@@ -268,7 +295,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 $(instance.popper).addClass("tenor-popover");
             },
             onShow(instance) {
-                tenor_popover_instance = instance;
+                picker_state.popover_instance = instance;
                 const $popper = $(instance.popper).trigger("focus");
                 const debounced_search = _.debounce((search_term: string) => {
                     update_grid_with_search_term(search_term);
@@ -277,9 +304,9 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 if ($click_target.parents(".message_edit_form").length === 1) {
                     // Store message id in global variable edit_message_id so that
                     // its value can be further used to correctly find the message textarea element.
-                    edit_message_id = rows.id($click_target.parents(".message_row"));
+                    picker_state.edit_message_id = rows.id($click_target.parents(".message_row"));
                 } else {
-                    edit_message_id = undefined;
+                    picker_state.edit_message_id = undefined;
                 }
 
                 $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
@@ -322,14 +349,14 @@ function toggle_tenor_popover(target: HTMLElement): void {
                         scroll_element.scrollTop + scroll_element.clientHeight >
                         scroll_element.scrollHeight - scroll_element.clientHeight
                     ) {
-                        if (is_loading_more) {
+                        if (picker_state.is_loading_more) {
                             return;
                         }
-                        if (current_search_term === undefined) {
+                        if (picker_state.current_search_term === undefined) {
                             render_featured_gifs(true);
                             return;
                         }
-                        update_grid_with_search_term(current_search_term, true);
+                        update_grid_with_search_term(picker_state.current_search_term, true);
                     }
                 });
             },
