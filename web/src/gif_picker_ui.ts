@@ -215,7 +215,7 @@ export function render_default_gifs(next_page: boolean, picker_state: GifPickerS
         data = {...data, pos: picker_state.next_pos_identifier};
     }
     gif_picker_data
-        .fetch_tenor_gifs(data, TENOR_BASE_URL + "/featured")
+        .fetch_gifs(data, TENOR_BASE_URL + "/featured")
         .then((raw_tenor_result: unknown) => {
             render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
         })
@@ -254,7 +254,7 @@ export function update_grid_with_search_term(
     }
 
     gif_picker_data
-        .fetch_tenor_gifs(data, `${TENOR_BASE_URL}/search`)
+        .fetch_gifs(data, `${TENOR_BASE_URL}/search`)
         .then((raw_tenor_result) => {
             render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
         })
