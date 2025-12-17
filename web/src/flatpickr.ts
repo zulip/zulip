@@ -25,21 +25,60 @@ export function show_flatpickr(
     callback: (time: string) => void,
     default_timestamp: flatpickr.Options.DateOption,
     options: flatpickr.Options.Options = {},
+    hide_confirm_button = false,
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
     options.enableTime = options.enableTime ?? ENABLE_TIME_DEFAULT;
-    flatpickr_instance = flatpickr(util.the($flatpickr_input), {
-        mode: "single",
-        clickOpens: false,
-        defaultDate: default_timestamp,
-        plugins: [
+    if (hide_confirm_button && options.enableTime) {
+        throw new Error(
+            "`hide_confirm_button` is only supported for date-only flatpickr (set `enableTime` to false).",
+        );
+    }
+
+    const plugins: flatpickr.Options.Plugin[] = [...(options.plugins ?? [])];
+    if (!hide_confirm_button) {
+        plugins.unshift(
             confirmDatePlugin({
                 showAlways: true,
                 confirmText: $t({defaultMessage: "Confirm"}),
                 confirmIcon: "",
             }),
-        ],
+        );
+    }
+
+    function submit_and_close(): void {
+        const time = $flatpickr_input.val();
+        assert(typeof time === "string");
+        callback(time);
+        flatpickr_instance?.close();
+        flatpickr_instance?.destroy();
+    }
+
+    // Called when hide_confirm_button is true and we want to directly
+    // submit on date select.
+    const on_change_hook: flatpickr.Options.Hook = (selectedDates) => {
+        if (selectedDates.length === 0) {
+            return;
+        }
+
+        submit_and_close();
+    };
+
+    if (hide_confirm_button) {
+        if (options.onChange === undefined) {
+            options.onChange = on_change_hook;
+        } else if (Array.isArray(options.onChange)) {
+            options.onChange = [...options.onChange, on_change_hook];
+        } else {
+            options.onChange = [options.onChange, on_change_hook];
+        }
+    }
+
+    flatpickr_instance = flatpickr(util.the($flatpickr_input), {
+        mode: "single",
+        clickOpens: false,
+        defaultDate: default_timestamp,
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
@@ -68,7 +107,7 @@ export function show_flatpickr(
                 const elems = [
                     instance.selectedDateElem,
                     ...(options.enableTime ? enabled_time_options : []),
-                    $(".flatpickr-confirm")[0],
+                    ...(hide_confirm_button ? [] : [$(".flatpickr-confirm")[0]]),
                 ];
                 assert(event.target instanceof HTMLElement);
                 const i = elems.indexOf(event.target);
@@ -88,6 +127,7 @@ export function show_flatpickr(
             }
         },
         ...options,
+        plugins,
     });
 
     const $container = $(flatpickr_instance.calendarContainer);
@@ -110,7 +150,9 @@ export function show_flatpickr(
                 // use flatpickr's built-in behavior to choose the selected day.
                 return true;
             }
-            $container.find(".flatpickr-confirm").trigger("click");
+            if (!hide_confirm_button) {
+                $container.find(".flatpickr-confirm").trigger("click");
+            }
         }
 
         if (e.key === "Escape") {
@@ -134,13 +176,11 @@ export function show_flatpickr(
         return true;
     });
 
-    $container.on("click", ".flatpickr-confirm", () => {
-        const time = $flatpickr_input.val();
-        assert(typeof time === "string");
-        callback(time);
-        flatpickr_instance?.close();
-        flatpickr_instance?.destroy();
-    });
+    if (!hide_confirm_button) {
+        $container.on("click", ".flatpickr-confirm", () => {
+            submit_and_close();
+        });
+    }
     flatpickr_instance.open();
     assert(flatpickr_instance.selectedDateElem !== undefined);
     flatpickr_instance.selectedDateElem.focus();
