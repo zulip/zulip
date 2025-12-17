@@ -1,4 +1,5 @@
 from typing import Any
+
 from django.conf import settings
 from django.db.models import Count, Q
 from django.utils.translation import gettext as _
@@ -6,8 +7,9 @@ from typing_extensions import override
 
 from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import UserProfile, Subscription, Message, Realm
+from zerver.models import Message, Realm, UserProfile
 from zerver.models.users import get_system_bot
+
 
 class Command(ZulipBaseCommand):
     help = """Suggests channel unsubscribes to users with high subscription counts."""
@@ -61,30 +63,23 @@ class Command(ZulipBaseCommand):
             # But adhering to the constraints of "no database migrations", we'll check message history carefully or just assume this cron runs infrequently.
             # Actually, let's check if they received a message from notification-bot with the specific link recently?
             # To keep it simple and efficient without DB changes: checking for existence of ANY link to #channels/recommendations from notification bot in DM.
-            
-            # This check is expensive if done naively. 
-            # Ideally we'd have a UserHotspot or similar. 
+
+            # This check is expensive if done naively.
+            # Ideally we'd have a UserHotspot or similar.
             # Constraint: "Modify only the necessary files — do not change unrelated code or introduce breaking changes." "No database migrations".
             # So I cannot add a new UserHotspot.
             # I will assume for this MVP that the command is run once or manually.
             # OR I can check last message from notification bot?
-            
+
             # Let's simple check if they have received a message with the recommendation link.
             # This might be slow but it's a management command.
-            
-            already_notified = Message.objects.filter(
-                sender=notification_bot,
-                recipient__type=1, # Recipient.PERSONAL
-                recipient__type_id=user.id, # This is wrong, Recipient.id is not user.id
-                content__contains="#channels/recommendations"
-            ).exists()
-            
+
             # Wait, accessing recipient via user profile is better.
             # user.recipient_id
             if Message.objects.filter(
                 sender=notification_bot,
                 recipient_id=user.recipient_id,
-                content__contains="#channels/recommendations"
+                content__contains="#channels/recommendations",
             ).exists():
                 continue
 
@@ -93,7 +88,7 @@ class Command(ZulipBaseCommand):
                 print(f"Would send suggestion to {user.delivery_email} (Subs: {user.sub_count})")
             else:
                 self.send_suggestion(user, notification_bot, user.sub_count)
-        
+
         if dry_run:
             print(f"Total users to suggest in realm {realm.string_id}: {count}")
 
@@ -104,21 +99,16 @@ class Command(ZulipBaseCommand):
             "[Review recommendations](#channels/recommendations)"
         ).format(sub_count=sub_count)
 
-        internal_send_private_message(
-            realm=user.realm,
-            sender=bot,
-            recipient=user,
-            content=content
-        )
+        internal_send_private_message(realm=user.realm, sender=bot, recipient=user, content=content)
 
-def internal_send_private_message(realm: Realm, sender: UserProfile, recipient: UserProfile, content: str) -> None:
+
+def internal_send_private_message(
+    realm: Realm, sender: UserProfile, recipient: UserProfile, content: str
+) -> None:
     # Helper similar to zerver.lib.onboarding but using do_send_messages
     messages = [
         internal_prep_private_message(
-            realm=realm,
-            sender=sender,
-            recipient=recipient,
-            content=content
+            realm=realm, sender=sender, recipient=recipient, content=content
         )
     ]
     do_send_messages(messages)
