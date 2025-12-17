@@ -2,15 +2,17 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as gif_picker_data from "./gif_picker_data.ts";
 import {get_rating} from "./gif_state.ts";
 import {realm} from "./state_data.ts";
 import type {TenorPayload, TenorPickerState} from "./tenor";
 import {user_settings} from "./user_settings.ts";
 
+const TENOR_BASE_URL = "https://tenor.googleapis.com/v2";
 const tenor_rating_map = {
     // Source: https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
     pg: "medium",
@@ -175,4 +177,30 @@ export function get_tenor_base_payload(): TenorPayload {
         locale: user_settings.default_language,
         contentfilter: tenor_rating_map[get_rating()],
     };
+}
+
+// This will render trending GIFs for GIPHY
+// and featured GIFs for Tenor.
+export function render_default_gifs(next_page: boolean, picker_state: TenorPickerState): void {
+    if (
+        picker_state.is_loading_more ||
+        (picker_state.current_search_term !== undefined &&
+            picker_state.current_search_term.length > 0)
+    ) {
+        return;
+    }
+    let data = get_tenor_base_payload();
+
+    if (next_page) {
+        picker_state.is_loading_more = true;
+        data = {...data, pos: picker_state.next_pos_identifier};
+    }
+    gif_picker_data
+        .fetch_tenor_gifs(data, TENOR_BASE_URL + "/featured")
+        .then((raw_tenor_result: unknown) => {
+            render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
+        })
+        .catch(() => {
+            blueslip.log("Error fetching featured Tenor GIFs.");
+        });
 }

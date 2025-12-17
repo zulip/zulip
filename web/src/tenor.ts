@@ -65,30 +65,6 @@ export function focus_current_edit_message(): void {
     );
 }
 
-function render_featured_gifs(next_page: boolean): void {
-    if (
-        picker_state.is_loading_more ||
-        (picker_state.current_search_term !== undefined &&
-            picker_state.current_search_term.length > 0)
-    ) {
-        return;
-    }
-    let data = gif_picker_ui.get_tenor_base_payload();
-
-    if (next_page) {
-        picker_state.is_loading_more = true;
-        data = {...data, pos: picker_state.next_pos_identifier};
-    }
-    gif_picker_data
-        .fetch_tenor_gifs(data, BASE_URL + "/featured")
-        .then((raw_tenor_result: unknown) => {
-            gif_picker_ui.render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
-        })
-        .catch(() => {
-            blueslip.log("Error fetching featured Tenor GIFs.");
-        });
-}
-
 function update_grid_with_search_term(search_term: string, next_page = false): void {
     if (
         picker_state.is_loading_more ||
@@ -101,7 +77,7 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
     // in case the current `search_term` is empty.
     picker_state.current_search_term = search_term;
     if (search_term.trim().length === 0) {
-        render_featured_gifs(next_page);
+        gif_picker_ui.render_default_gifs(next_page, picker_state);
         return;
     }
     let data: TenorPayload = {
@@ -177,7 +153,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 });
             },
             onMount(instance) {
-                render_featured_gifs(false);
+                gif_picker_ui.render_default_gifs(false, picker_state);
                 const $popper = $(instance.popper);
                 $popper.find("#gif-search-query").trigger("focus");
 
@@ -195,7 +171,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                             return;
                         }
                         if (picker_state.current_search_term === undefined) {
-                            render_featured_gifs(true);
+                            gif_picker_ui.render_default_gifs(true, picker_state);
                             return;
                         }
                         update_grid_with_search_term(picker_state.current_search_term, true);
