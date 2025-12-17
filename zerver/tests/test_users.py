@@ -42,6 +42,7 @@ from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_emails, queue_scheduled_emails, send_future_email
 from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -49,6 +50,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     get_test_image_file,
+    most_recent_message,
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
@@ -66,6 +68,7 @@ from zerver.lib.users import (
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
+    CustomProfileFieldValue,
     Message,
     OnboardingStep,
     PreregistrationUser,
@@ -264,7 +267,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(othello_dict["is_owner"])
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
-        with self.capture_send_event_calls(expected_num_events=6) as events:
+        with self.capture_send_event_calls(expected_num_events=7) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -274,7 +277,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.capture_send_event_calls(expected_num_events=5) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -286,7 +289,7 @@ class PermissionTest(ZulipTestCase):
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=5) as events:
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -325,7 +328,7 @@ class PermissionTest(ZulipTestCase):
         # Giveth
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
-        with self.capture_send_event_calls(expected_num_events=6) as events:
+        with self.capture_send_event_calls(expected_num_events=7) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -336,7 +339,7 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.capture_send_event_calls(expected_num_events=5) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -418,11 +421,24 @@ class PermissionTest(ZulipTestCase):
         new_name = "new name"
         self.login("iago")
         hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        old_name = hamlet.full_name
         req = dict(full_name=new_name)
         result = self.client_patch(f"/json/users/{hamlet.id}", req)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.full_name, new_name)
+
+        # Check that notification was sent
+        message = most_recent_message(hamlet)
+        self.assertEqual(message.recipient.type_id, hamlet.id)
+        self.assertIn(
+            f"{silent_mention_syntax_for_user(iago)} has made the following changes to your account.",
+            message.content,
+        )
+        self.assertIn(
+            f"**Old full name:** {old_name}\n- **New full name:** {new_name}", message.content
+        )
 
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login("hamlet")
@@ -658,10 +674,12 @@ class PermissionTest(ZulipTestCase):
         user_email: str,
         new_role: int,
     ) -> None:
+        admin = self.example_user("desdemona")
         self.login("desdemona")
 
         user_profile = self.example_user(user_email)
         old_role = user_profile.role
+        old_role_name = user_profile.get_role_name()
         old_system_group = get_system_user_group_for_user(user_profile)
 
         self.assertTrue(self.check_property_for_role(user_profile, old_role))
@@ -674,9 +692,9 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=orjson.dumps(new_role).decode())
 
         # The basic events sent in all cases on changing role are - one event
-        # for changing role and one event each for adding and removing user
-        # from system user group.
-        num_events = 3
+        # for changing role, one event each for adding and removing user
+        # from system user group and one event for sending a private notifications.
+        num_events = 4
 
         if UserProfile.ROLE_MEMBER in [old_role, new_role]:
             # There is one additional event for adding/removing user from
@@ -724,6 +742,18 @@ class PermissionTest(ZulipTestCase):
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], user_profile.id)
         self.assertTrue(person["role"], new_role)
+
+        # Test notification is sent
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.recipient.type_id, user_profile.id)
+        self.assertIn(
+            f"{silent_mention_syntax_for_user(admin)} has made the following changes to your account.",
+            message.content,
+        )
+        self.assertIn(
+            f"**Old role:** {old_role_name}\n- **New role:** {user_profile.get_role_name()}",
+            message.content,
+        )
 
     def test_change_regular_member_to_guest(self) -> None:
         self.check_user_role_change("hamlet", UserProfile.ROLE_GUEST)
@@ -777,6 +807,7 @@ class PermissionTest(ZulipTestCase):
 
     def test_admin_user_can_change_profile_data(self) -> None:
         realm = get_realm("zulip")
+        iago = self.example_user("iago")
         self.login("iago")
         cordelia = self.example_user("cordelia")
 
@@ -818,10 +849,63 @@ class PermissionTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        cordelia = self.example_user("cordelia")
         for field_dict in cordelia.profile_data():
             with self.subTest(field_name=field_dict["name"]):
                 self.assertEqual(field_dict["value"], fields[field_dict["name"]])
+
+        # Check notification
+        message = most_recent_message(cordelia)
+        self.assertIn(
+            f"{silent_mention_syntax_for_user(iago)} has made the following changes to your account.",
+            message.content,
+        )
+
+        # Map field names to their expected display values in the notification.
+        # Some field types convert their stored values to human-readable display text.
+        expected_display_values = {
+            "Phone number": "short text data",
+            "Biography": "long text data",
+            "Favorite food": "short text data",
+            "Favorite editor": "Vim",  # SELECT field: "0" -> "Vim"
+            "Birthday": "1909-03-05",
+            "Favorite website": "https://zulip.com",
+            "Mentor": silent_mention_syntax_for_user(cordelia),
+            "GitHub username": "timabbott",
+            "Pronouns": "she/her",
+        }
+
+        for field_name, display_value in expected_display_values.items():
+            self.assertIn(
+                f"**Old {field_name}:** *None*\n- **New {field_name}:** {display_value}",
+                message.content,
+            )
+
+        # Test delete a custom profile field and notification
+        phone_field_id = CustomProfileField.objects.get(name="Phone number", realm=realm).id
+        deleted_field = [
+            {
+                "id": phone_field_id,
+                "value": None,
+            }
+        ]
+        result = self.client_patch(
+            f"/json/users/{cordelia.id}", {"profile_data": orjson.dumps(deleted_field).decode()}
+        )
+        self.assert_json_success(result)
+
+        self.assertFalse(
+            CustomProfileFieldValue.objects.filter(
+                user_profile=cordelia, field=phone_field_id
+            ).exists()
+        )
+
+        message = most_recent_message(cordelia)
+        expected_content = (
+            f"{silent_mention_syntax_for_user(iago)} has made the following changes to your account.\n"
+            f"- **Old Phone number:** {expected_display_values['Phone number']}\n"
+            f"- **New Phone number:** *None*"
+        )
+        self.assertEqual(expected_content, message.content)
 
         # Test admin user cannot set invalid profile data
         invalid_fields = [
@@ -3366,7 +3450,7 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertGreater(len(direct_message_group_with_hamlet_recipient_ids), 0)
 
-        do_change_full_name(hamlet, "some new name", acting_user=hamlet)
+        do_change_full_name(hamlet, "some new name", acting_user=hamlet, notify=False)
         name_change_log = RealmAuditLog.objects.last()
         assert name_change_log is not None
         self.assertEqual(name_change_log.event_type, AuditLogEventType.USER_FULL_NAME_CHANGED)

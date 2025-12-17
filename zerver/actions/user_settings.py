@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED, STATUS_USED
+from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
@@ -22,6 +23,7 @@ from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
+from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.upload import delete_avatar_image
 from zerver.lib.users import (
     can_access_delivery_email,
@@ -223,7 +225,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
 
 @transaction.atomic(savepoint=False)
 def do_change_full_name(
-    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None
+    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None, notify: bool
 ) -> None:
     old_name = user_profile.full_name
     if old_name == full_name:
@@ -253,6 +255,17 @@ def do_change_full_name(
             bot_owner_user_ids(user_profile),
         )
 
+    if notify:
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="full name",
+                old_value=old_name,
+                new_value=full_name,
+            )
+        ]
+
+        send_user_profile_update_notification(user_profile, acting_user, changes)
+
 
 def check_change_full_name(
     user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile | None
@@ -264,7 +277,7 @@ def check_change_full_name(
     new_full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
     )
-    do_change_full_name(user_profile, new_full_name, acting_user)
+    do_change_full_name(user_profile, new_full_name, acting_user, notify=True)
     return new_full_name
 
 
@@ -286,7 +299,7 @@ def check_change_bot_full_name(
         full_name=new_full_name,
         is_activation=False,
     )
-    do_change_full_name(user_profile, new_full_name, acting_user)
+    do_change_full_name(user_profile, new_full_name, acting_user, notify=False)
 
 
 @transaction.atomic(durable=True)

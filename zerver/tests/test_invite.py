@@ -1501,7 +1501,7 @@ earl-test@zulip.com""",
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         # Test we properly handle links in user full names
-        do_change_full_name(hamlet, "</a> https://www.google.com", hamlet)
+        do_change_full_name(hamlet, "</a> https://www.google.com", hamlet, notify=False)
 
         result = self.invite("newuser@zulip.com", ["Denmark"])
         self.assert_json_success(result)

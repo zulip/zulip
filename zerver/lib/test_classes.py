@@ -2382,7 +2382,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         appropriate initial role; this is usually more readable and
         a bit faster.
         """
-        do_change_user_role(user, role, acting_user=None)
+        do_change_user_role(user, role, acting_user=None, notify=False)
 
     def set_user_setting(self, user: UserProfile, setting_name: str, value: bool) -> None:
         with self.captureOnCommitCallbacks(execute=True):
@@ -2391,10 +2391,12 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     def set_user_custom_profile_data(
         self, user_profile: UserProfile, data: list[ProfileDataElementUpdateDict]
     ) -> None:
-        do_update_user_custom_profile_data_if_changed(user_profile, data)
+        do_update_user_custom_profile_data_if_changed(
+            user_profile, data, acting_user=None, notify=False
+        )
 
     def set_full_name(self, user_profile: UserProfile, full_name: str) -> None:
-        do_change_full_name(user_profile, full_name, acting_user=None)
+        do_change_full_name(user_profile, full_name, acting_user=None, notify=False)
 
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:

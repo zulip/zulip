@@ -101,7 +101,10 @@ def import_slack_data(event: dict[str, Any]) -> None:
                 )
                 if importing_user.role != UserProfile.ROLE_REALM_OWNER:
                     do_change_user_role(
-                        importing_user, UserProfile.ROLE_REALM_OWNER, acting_user=importing_user
+                        importing_user,
+                        UserProfile.ROLE_REALM_OWNER,
+                        acting_user=importing_user,
+                        notify=False,
                     )
                 preregistration_realm.status = confirmation_settings.STATUS_USED
             except UserProfile.DoesNotExist:

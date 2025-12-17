@@ -795,9 +795,9 @@ def registration_helper(
                 # transaction, to avoid security issues if the process is interrupted halfway,
                 # e.g. leaving the user reactivated but with the wrong role.
                 do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
-                do_change_user_role(user_profile, role, acting_user=user_profile)
+                do_change_user_role(user_profile, role, acting_user=user_profile, notify=False)
             do_change_password(user_profile, password)
-            do_change_full_name(user_profile, full_name, user_profile)
+            do_change_full_name(user_profile, full_name, user_profile, notify=False)
             do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
             do_change_user_setting(
                 user_profile,
@@ -1261,10 +1261,15 @@ def realm_import_post_process(
             # to create this specific realm and cannot have been used
             # to finish creating an account yet.
             do_change_user_role(
-                importing_user, UserProfile.ROLE_REALM_OWNER, acting_user=importing_user
+                importing_user,
+                UserProfile.ROLE_REALM_OWNER,
+                acting_user=importing_user,
+                notify=False,
             )
             do_change_user_delivery_email(
-                importing_user, preregistration_realm.email, acting_user=importing_user
+                importing_user,
+                preregistration_realm.email,
+                acting_user=importing_user,
             )
 
             preregistration_realm.status = confirmation_settings.STATUS_USED
