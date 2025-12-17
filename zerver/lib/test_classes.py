@@ -50,8 +50,8 @@ from zerver.actions.custom_profile_fields import do_update_user_custom_profile_d
 from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
-from zerver.actions.users import do_change_user_role
 from zerver.actions.user_settings import do_change_full_name
+from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
@@ -2382,15 +2382,17 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         appropriate initial role; this is usually more readable and
         a bit faster.
         """
-        do_change_user_role(user, role, acting_user=None)
+        do_change_user_role(user, role, acting_user=None, notify=False)
 
     def set_user_custom_profile_data(
         self, user_profile: UserProfile, data: list[ProfileDataElementUpdateDict]
     ) -> None:
-        do_update_user_custom_profile_data_if_changed(user_profile, data)
+        do_update_user_custom_profile_data_if_changed(
+            user_profile, data, acting_user=None, notify=False
+        )
 
     def set_full_name(self, user_profile: UserProfile, full_name: str) -> None:
-        do_change_full_name(user_profile, full_name, acting_user=None)
+        do_change_full_name(user_profile, full_name, acting_user=None, notify=False)
 
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:

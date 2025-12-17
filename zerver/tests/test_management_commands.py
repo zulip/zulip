@@ -804,3 +804,102 @@ class TestSendZulipUpdateAnnouncements(ZulipTestCase):
 
         realm.refresh_from_db()
         self.assertEqual(realm.zulip_update_announcements_level, 5)
+
+
+class TestUserChangeNotifications(ZulipTestCase):
+    def test_bulk_change_user_name_sends_notifications(self) -> None:
+        hamlet = self.example_user("hamlet")
+        bot = self.example_user("default_bot")
+        realm = hamlet.realm
+
+        # Count bot messages before changes
+        from zerver.models import Message
+
+        bot_messages_before = Message.objects.filter(
+            realm_id=realm.id, recipient__type_id=bot.id
+        ).count()
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv") as f:
+            f.write(f"{hamlet.delivery_email},New Hamlet Name\n")
+            f.write(f"{bot.delivery_email},New Bot Name\n")
+            data_file = f.name
+
+        try:
+            # Run the bulk_change_user_name command
+            with stdout_suppressed():
+                call_command("bulk_change_user_name", data_file, f"--realm={realm.string_id}")
+
+            # Verify the name was changed
+            hamlet.refresh_from_db()
+            self.assertEqual(hamlet.full_name, "New Hamlet Name")
+
+            # Verify a notification was sent (acting_user=None means system change)
+            message = most_recent_message(hamlet)
+            self.assertIn(
+                "The following changes have been made to your account.",
+                message.content,
+            )
+            self.assertIn("**Old full name:** King Hamlet", message.content)
+            self.assertIn("**New full name:** New Hamlet Name", message.content)
+
+            # Verify bot's name was changed
+            bot.refresh_from_db()
+            self.assertEqual(bot.full_name, "New Bot Name")
+
+            # Verify bot did NOT receive a notification
+            bot_messages_after = Message.objects.filter(
+                realm_id=realm.id, recipient__type_id=bot.id
+            ).count()
+            self.assertEqual(bot_messages_before, bot_messages_after)
+        finally:
+            os.unlink(data_file)
+
+    def test_change_user_role_sends_notifications(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Hamlet starts as a member
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MEMBER)
+
+        # Change hamlet's role to moderator via management command
+        with stdout_suppressed():
+            call_command(
+                "change_user_role", hamlet.delivery_email, "moderator", f"--realm={realm.string_id}"
+            )
+
+        # Verify the role was changed
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MODERATOR)
+
+        # Verify a notification was sent (acting_user=None means system change)
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        self.assertIn("**Old role:** Member", message.content)
+        self.assertIn("**New role:** Moderator", message.content)
+
+        # Change bot's role to moderator via management command
+        bot = self.example_user("default_bot")
+
+        # Count bot messages before changes
+        from zerver.models import Message
+
+        bot_messages_before = Message.objects.filter(
+            realm_id=realm.id, recipient__type_id=bot.id
+        ).count()
+
+        with stdout_suppressed():
+            call_command(
+                "change_user_role", bot.delivery_email, "moderator", f"--realm={realm.string_id}"
+            )
+
+        # Verify bot's role was changed
+        bot.refresh_from_db()
+        self.assertEqual(bot.role, UserProfile.ROLE_MODERATOR)
+
+        # Verify bot did NOT receive a notification
+        bot_messages_after = Message.objects.filter(
+            realm_id=realm.id, recipient__type_id=bot.id
+        ).count()
+        self.assertEqual(bot_messages_before, bot_messages_after)
