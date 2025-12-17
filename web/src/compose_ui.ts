@@ -28,6 +28,7 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rtl from "./rtl.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
 
@@ -441,7 +442,10 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             topic_display_name = opts.topic;
         } else if (
             stream_data.can_use_empty_topic(opts.stream_id) &&
-            !$("input#stream_message_recipient_topic").is(":focus")
+            !$("input#stream_message_recipient_topic").is(":focus") &&
+            (stream_data.can_create_new_topics_in_stream(opts.stream_id!) ||
+                stream_data.is_empty_topic_only_channel(opts.stream_id) ||
+                stream_topic_history.stream_has_empty_string_topic(opts.stream_id!))
         ) {
             topic_display_name = util.get_final_topic_display_name(opts.topic);
         }

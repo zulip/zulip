@@ -22,6 +22,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
@@ -395,6 +396,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     const recipient_widget_hidden =
         $(".compose_select_recipient-dropdown-list-container").length === 0;
     const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+    const stream_id = compose_state.stream_id();
 
     // reset
     $input.prop("disabled", false);
@@ -404,7 +406,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $topic_not_mandatory_placeholder.hide();
     $("#compose_recipient_box").removeClass("disabled");
 
-    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
+    if (!stream_data.can_use_empty_topic(stream_id)) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
         // When topics are mandatory, no additional adjustments are needed.
         // Also, if the recipient in the compose box is not selected, the
@@ -412,9 +414,19 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         return;
     }
 
+    assert(stream_id !== undefined);
+    if (
+        !stream_data.can_create_new_topics_in_stream(stream_id) &&
+        !stream_data.is_empty_topic_only_channel(stream_id) &&
+        !stream_topic_history.stream_has_empty_string_topic(stream_id)
+    ) {
+        $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+        return;
+    }
+
     // If `topics_policy` is set to `empty_topic_only`, disable the topic input
     // and empty the input box.
-    if (stream_data.is_empty_topic_only_channel(compose_state.stream_id())) {
+    if (stream_data.is_empty_topic_only_channel(stream_id)) {
         compose_state.topic("");
         $input.prop("disabled", true);
         $input.addClass("empty-topic-only");
