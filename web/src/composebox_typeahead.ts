@@ -1446,6 +1446,19 @@ function compose_trigger_selection(event: JQuery.KeyDownEvent): boolean {
     return false;
 }
 
+// Returns true if the typeahead should be suppressed because
+// the query already matches an existing topic exactly.
+function should_suppress_topic_typeahead(query: string, items: string[]): boolean {
+    const normalized_query = util.get_final_topic_display_name(query).trim().toLowerCase();
+    if (normalized_query === "") {
+        return false;
+    }
+    return items.some(
+        (topic) =>
+            util.get_final_topic_display_name(topic).trim().toLowerCase() === normalized_query,
+    );
+}
+
 export function initialize_topic_edit_typeahead(
     form_field: JQuery<HTMLInputElement>,
     stream_name: string,
@@ -1495,6 +1508,7 @@ export function initialize_topic_edit_typeahead(
             return "topic-edit-typeahead";
         },
         showOnClick: false,
+        suppressShow: should_suppress_topic_typeahead,
     });
 }
 
@@ -1674,6 +1688,7 @@ export function initialize({
             }
             return false;
         },
+        suppressShow: should_suppress_topic_typeahead,
         footer_html: () => get_footer_html_for_topic_typeahead(compose_state.stream_id()),
     });
 
