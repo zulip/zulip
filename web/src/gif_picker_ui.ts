@@ -351,8 +351,16 @@ export function toggle_gif_popover(target: HTMLElement, picker_state: GifPickerS
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_gif_picker_ui({is_giphy: false})));
-                $(instance.popper).addClass("tenor-popover");
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_gif_picker_ui({is_giphy: picker_state.gif_provider === "giphy"}),
+                    ),
+                );
+                if (picker_state.gif_provider === "tenor") {
+                    $(instance.popper).addClass("tenor-popover");
+                } else {
+                    $(instance.popper).addClass("giphy-popover");
+                }
             },
             onShow(instance) {
                 picker_state.popover_instance = instance;
