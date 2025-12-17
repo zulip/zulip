@@ -39,6 +39,8 @@ export type Option = {
     delete_icon_label?: string;
     edit_icon_label?: string;
     manage_folder_icon_label?: string;
+
+    aliases?: string[];
 };
 
 export type DropdownWidgetOptions = {
@@ -364,8 +366,21 @@ export class DropdownWidget {
                         },
                         filter: {
                             $element: $search_input,
+                            
                             predicate(item, value) {
-                                return item.name.toLowerCase().includes(value);
+                                const search = value.toLowerCase();
+                            
+                                if (item.name.toLowerCase().includes(search)) {
+                                    return true;
+                                }
+                            
+                                if (item.aliases !== undefined) {
+                                    return item.aliases.some((alias) =>
+                                        alias.toLowerCase().includes(search),
+                                    );
+                                }
+                            
+                                return false;
                             },
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),
