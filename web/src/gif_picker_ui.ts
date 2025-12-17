@@ -10,7 +10,9 @@ import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as gif_picker_data from "./gif_picker_data.ts";
+import * as gif_state from "./gif_state.ts";
 import {get_rating} from "./gif_state.ts";
+import type {GiphyPayload} from "./giphy.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -31,6 +33,7 @@ export type GifPickerState = {
     gif_provider: "tenor" | "giphy";
 };
 
+const LIMIT = 15;
 const TENOR_BASE_URL = "https://tenor.googleapis.com/v2";
 const tenor_rating_map = {
     // Source: https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
@@ -205,16 +208,28 @@ export function render_gifs_to_grid(
     picker_state.is_loading_more = false;
 }
 
-export function get_tenor_base_payload(): TenorPayload {
+export function get_base_payload(provider: "tenor" | "giphy"): TenorPayload | GiphyPayload {
+    if (provider === "tenor") {
+        return {
+            key: realm.tenor_api_key,
+            client_key: "ZulipWeb",
+            limit: LIMIT.toString(),
+            // We use the tinygif size for the picker UI, and the mediumgif size
+            // for what gets actually uploaded.
+            media_filter: "tinygif,mediumgif",
+            locale: user_settings.default_language,
+            contentfilter: tenor_rating_map[get_rating()],
+        };
+    }
     return {
-        key: realm.tenor_api_key,
-        client_key: "ZulipWeb",
-        limit: "15",
-        // We use the tinygif size for the picker UI, and the mediumgif size
-        // for what gets actually uploaded.
-        media_filter: "tinygif,mediumgif",
-        locale: user_settings.default_language,
-        contentfilter: tenor_rating_map[get_rating()],
+        api_key: realm.giphy_api_key,
+        limit: LIMIT,
+        rating: gif_state.get_rating(),
+        offset: 0,
+        // Source: https://developers.giphy.com/docs/api/schema#image-object
+        // We will use the `downsized_medium` version for sending and `fixed_height` for
+        // preview in the GIF picker.
+        fields: "images.downsized_medium,images.fixed_height",
     };
 }
 
@@ -228,7 +243,7 @@ export function render_default_gifs(next_page: boolean, picker_state: GifPickerS
     ) {
         return;
     }
-    let data = get_tenor_base_payload();
+    let data = get_base_payload(picker_state.gif_provider);
 
     if (next_page) {
         picker_state.is_loading_more = true;
@@ -263,9 +278,9 @@ export function update_grid_with_search_term(
         render_default_gifs(next_page, picker_state);
         return;
     }
-    let data: TenorPayload = {
+    let data = {
         q: search_term,
-        ...get_tenor_base_payload(),
+        ...get_base_payload(picker_state.gif_provider),
     };
 
     if (next_page) {
