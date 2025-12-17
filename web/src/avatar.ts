@@ -70,7 +70,7 @@ function display_avatar_delete_started(): void {
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-export function build_user_avatar_widget(upload_function: UploadFunction): void {
+export function build_user_avatar_widget(upload_function: NonNullable<UploadFunction>): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
         return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
     };

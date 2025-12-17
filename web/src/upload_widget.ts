@@ -14,7 +14,7 @@ export type UploadWidget = {
     close: () => void;
 };
 
-export type UploadFunction = (file: File, night: boolean | null, icon: boolean) => void;
+export type UploadFunction = ((file: File, night: boolean | null, icon: boolean) => void) | undefined;
 
 const default_max_file_size = 5;
 
@@ -185,6 +185,9 @@ function open_uppy_editor(
     $upload_button: JQuery,
     upload_function: UploadFunction,
 ): void {
+    // Safe fallback for bot avatars that don't provide upload_function
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const safe_upload_function = upload_function ?? (() => {});
     const rendered_image_editor_modal = render_image_editor_modal();
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Editing {file_name}"}, {file_name: file.name}),
@@ -225,9 +228,9 @@ function open_uppy_editor(
                     const $realm_logo_section = $upload_button.closest(".image_upload_widget");
                     const is_night =
                         $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
-                    upload_function(file.data, is_night, false);
+                    safe_upload_function(file.data, is_night, false);
                 } else {
-                    upload_function(file.data, null, true);
+                    safe_upload_function(file.data, null, true);
                 }
             });
         },
