@@ -8,21 +8,10 @@ import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import * as blueslip from "./blueslip.ts";
 import * as gif_picker_data from "./gif_picker_data.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
-import {get_rating} from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
 import * as scroll_util from "./scroll_util.ts";
-import {realm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
-import {user_settings} from "./user_settings.ts";
-
-const tenor_rating_map = {
-    // Source: https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
-    pg: "medium",
-    g: "high",
-    r: "off",
-    "pg-13": "low",
-};
 
 export type TenorPickerState = {
     // Only used if popover called from edit message, otherwise it is `undefined`.
@@ -76,19 +65,6 @@ export function focus_current_edit_message(): void {
     );
 }
 
-function get_base_payload(): TenorPayload {
-    return {
-        key: realm.tenor_api_key,
-        client_key: "ZulipWeb",
-        limit: "15",
-        // We use the tinygif size for the picker UI, and the mediumgif size
-        // for what gets actually uploaded.
-        media_filter: "tinygif,mediumgif",
-        locale: user_settings.default_language,
-        contentfilter: tenor_rating_map[get_rating()],
-    };
-}
-
 function render_featured_gifs(next_page: boolean): void {
     if (
         picker_state.is_loading_more ||
@@ -97,7 +73,7 @@ function render_featured_gifs(next_page: boolean): void {
     ) {
         return;
     }
-    let data = get_base_payload();
+    let data = gif_picker_ui.get_tenor_base_payload();
 
     if (next_page) {
         picker_state.is_loading_more = true;
@@ -130,7 +106,7 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
     }
     let data: TenorPayload = {
         q: search_term,
-        ...get_base_payload(),
+        ...gif_picker_ui.get_tenor_base_payload(),
     };
 
     if (next_page) {

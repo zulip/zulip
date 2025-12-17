@@ -2,10 +2,22 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as compose_ui from "./compose_ui.ts";
-import type {TenorPickerState} from "./tenor";
+import {get_rating} from "./gif_state.ts";
+import {realm} from "./state_data.ts";
+import type {TenorPayload, TenorPickerState} from "./tenor";
+import {user_settings} from "./user_settings.ts";
+
+const tenor_rating_map = {
+    // Source: https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
+    pg: "medium",
+    g: "high",
+    r: "off",
+    "pg-13": "low",
+};
 
 export const tenor_result_schema = z.object({
     results: z.array(
@@ -150,4 +162,17 @@ export function render_gifs_to_grid(
     }
 
     picker_state.is_loading_more = false;
+}
+
+export function get_tenor_base_payload(): TenorPayload {
+    return {
+        key: realm.tenor_api_key,
+        client_key: "ZulipWeb",
+        limit: "15",
+        // We use the tinygif size for the picker UI, and the mediumgif size
+        // for what gets actually uploaded.
+        media_filter: "tinygif,mediumgif",
+        locale: user_settings.default_language,
+        contentfilter: tenor_rating_map[get_rating()],
+    };
 }
