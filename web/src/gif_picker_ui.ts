@@ -311,19 +311,36 @@ export function update_grid_with_search_term(
         q: search_term,
         ...get_base_payload(picker_state.gif_provider),
     };
-
+    // `lang` is specified only when searching, which is why
+    // it is not part of the GIPHY base payload.
+    if (picker_state.gif_provider === "giphy") {
+        data = {...data, lang: user_settings.default_language};
+    }
     if (next_page) {
         picker_state.is_loading_more = true;
-        data = {...data, pos: picker_state.next_pos_identifier};
+        if (picker_state.gif_provider === "tenor") {
+            data = {...data, pos: picker_state.next_pos_identifier};
+        } else {
+            assert(typeof picker_state.next_pos_identifier === "number");
+            data = {
+                ...data,
+                offset: picker_state.next_pos_identifier,
+            };
+        }
     }
 
+    const URL =
+        picker_state.gif_provider === "tenor"
+            ? `${TENOR_BASE_URL}/search`
+            : `${GIPHY_BASE_URL}/search`;
+
     gif_picker_data
-        .fetch_gifs(data, `${TENOR_BASE_URL}/search`)
-        .then((raw_tenor_result) => {
-            render_gifs_to_grid(raw_tenor_result, next_page, picker_state);
+        .fetch_gifs(data, URL)
+        .then((raw_gif_provider_result) => {
+            render_gifs_to_grid(raw_gif_provider_result, next_page, picker_state);
         })
         .catch(() => {
-            blueslip.log("Error fetching searched Tenor GIFs.");
+            blueslip.log(`Error fetching searched ${picker_state.gif_provider} GIFs.`);
         });
 }
 
