@@ -14,7 +14,9 @@ export type UploadWidget = {
     close: () => void;
 };
 
-export type UploadFunction = ((file: File, night: boolean | null, icon: boolean) => void) | undefined;
+export type UploadFunction =
+    | ((file: File, night: boolean | null, icon: boolean) => void)
+    | undefined;
 
 const default_max_file_size = 5;
 
