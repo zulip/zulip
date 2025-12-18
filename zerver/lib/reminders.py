@@ -1,3 +1,5 @@
+from enum import Enum
+
 from django.conf import settings
 from django.utils.translation import gettext as _
 
@@ -27,18 +29,20 @@ def normalize_note_text(body: str) -> str:
     return body
 
 
+class ReminderRecipientType(Enum):
+    CHANNEL = "channel"
+    PRIVATE = "private"
+
+
 def get_reminder_formatted_content(
     message: Message, current_user: UserProfile, note: str | None = None
 ) -> str:
     if note:
         note = normalize_note_text(note)
 
+    format_recipient_type_key: ReminderRecipientType
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
     conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
-    context = dict(
-        user_silent_mention=user_silent_mention,
-        conversation_url=conversation_url,
-    )
 
     if message.is_channel_message:
         # We don't need to check access here since we already have the message
@@ -55,15 +59,19 @@ def get_reminder_formatted_content(
         )
         if note:
             content = _(
-                "You requested a reminder for {message_pretty_link}. Note:\n > {note}"
+                "You requested a reminder for the following message. Note:\n > {note}"
             ).format(
-                message_pretty_link=message_pretty_link,
                 note=note,
             )
         else:
-            content = _("You requested a reminder for {message_pretty_link}.").format(
-                message_pretty_link=message_pretty_link,
-            )
+            content = _("You requested a reminder for the following message.")
+
+        format_recipient_type_key = ReminderRecipientType.CHANNEL
+        context = dict(
+            user_silent_mention=user_silent_mention,
+            conversation_url=conversation_url,
+            message_pretty_link=message_pretty_link,
+        )
     else:
         if note:
             content = _(
@@ -73,23 +81,36 @@ def get_reminder_formatted_content(
             )
         else:
             content = _("You requested a reminder for the following direct message.")
+        format_recipient_type_key = ReminderRecipientType.PRIVATE
+        context = dict(
+            user_silent_mention=user_silent_mention,
+            conversation_url=conversation_url,
+        )
 
     # Format the message content as a quote.
     content += "\n\n"
 
     REMINDER_FORMAT = {
-        "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
-        "text": _("{user_silent_mention} [said]({conversation_url}):"),
+        ReminderRecipientType.CHANNEL: {
+            "widget": _(
+                "{user_silent_mention} [sent]({conversation_url}) a {widget} in {message_pretty_link}."
+            ),
+            "text": _("{user_silent_mention} [said]({conversation_url}) in {message_pretty_link}:"),
+        },
+        ReminderRecipientType.PRIVATE: {
+            "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
+            "text": _("{user_silent_mention} [said]({conversation_url}):"),
+        },
     }
 
     if message.content.startswith("/poll"):
         context.update(widget="poll")
-        content += REMINDER_FORMAT["widget"].format_map(context)
+        content += REMINDER_FORMAT[format_recipient_type_key]["widget"].format_map(context)
     elif message.content.startswith("/todo"):
         context.update(widget="todo list")
-        content += REMINDER_FORMAT["widget"].format_map(context)
+        content += REMINDER_FORMAT[format_recipient_type_key]["widget"].format_map(context)
     else:
-        content += REMINDER_FORMAT["text"].format_map(context)
+        content += REMINDER_FORMAT[format_recipient_type_key]["text"].format_map(context)
         content += "\n"
         fence = get_unused_fence(content)
         quoted_message = "{fence}quote\n{msg_content}\n{fence}"
