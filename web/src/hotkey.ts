@@ -739,6 +739,22 @@ export function process_cmd_or_ctrl_enter_key(): boolean {
     return false;
 }
 
+function is_element_visible(el: HTMLElement): boolean {
+    return el.offsetParent !== null && el.offsetWidth > 0 && el.offsetHeight > 0;
+}
+
+function is_element_disabled(el: HTMLElement): boolean {
+    if (
+        el instanceof HTMLButtonElement ||
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement
+    ) {
+        return el.disabled;
+    }
+    return false;
+}
+
 export function process_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
@@ -826,6 +842,47 @@ export function process_tab_key(): boolean {
 
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("tab");
+    }
+
+    return false;
+}
+
+// prevent focus from keep looping inside the message edit form
+function focus_next_element_outside_form(
+    form_container: HTMLElement,
+    current_el: HTMLElement,
+): boolean {
+    const selector = 'a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])';
+    const all_focusable = document.querySelectorAll(selector);
+
+    // Use Array.from to allow array methods and avoid iteration issues
+    const focusable_array = [...all_focusable].filter(
+        (el): el is HTMLElement => el instanceof HTMLElement,
+    );
+    const current_index = focusable_array.indexOf(current_el);
+
+    if (current_index === -1) {
+        return false;
+    }
+
+    const candidates = focusable_array.slice(current_index + 1);
+
+    for (const candidate of candidates) {
+        if (form_container.contains(candidate)) {
+            continue;
+        }
+
+        if (is_element_disabled(candidate)) {
+            continue;
+        }
+
+        const style = window.getComputedStyle(candidate);
+        if (!is_element_visible(candidate) || style.visibility === "hidden") {
+            continue;
+        }
+
+        candidate.focus();
+        return true;
     }
 
     return false;
@@ -1575,6 +1632,30 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
 
 export function process_keydown(e: JQuery.KeyDownEvent): boolean {
     activity.set_new_user_input(true);
+
+    // prevent the focus from getting lost in the message edit area after pressing enter key
+    if (e.key === "Enter" || e.which === 13) {
+        const $target = $(e.target);
+        const $form = $target.closest(".message_edit_form");
+
+        if ($target.hasClass("markdown_preview")) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            $target.trigger("click");
+            $form.find(".undo_markdown_preview").trigger("focus");
+            return true;
+        }
+
+        if ($target.hasClass("undo_markdown_preview")) {
+            e.preventDefault();
+            e.stopPropagation();
+            $target.trigger("click");
+            $form.find(".message_edit_content").trigger("focus");
+            return true;
+        }
+    }
+
     const result = get_keydown_hotkey(e);
     if (!result) {
         return false;
