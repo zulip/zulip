@@ -9,7 +9,7 @@ from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.topic_link_util import get_message_link_syntax
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.url_encoding import message_link_url
 from zerver.models import Message, Stream, UserProfile
@@ -43,12 +43,9 @@ def get_reminder_formatted_content(
     if note:
         note = normalize_note_text(note)
 
+    format_recipient_type_key: ReminderRecipientType
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
     conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
-    context = dict(
-        user_silent_mention=user_silent_mention,
-        conversation_url=conversation_url,
-    )
 
     if message.is_channel_message:
         # We don't need to check access here since we already have the message
@@ -57,25 +54,26 @@ def get_reminder_formatted_content(
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
-        message_pretty_link = get_message_link_syntax(
+        topic_pretty_link = get_stream_topic_link_syntax(
             stream_id=stream.id,
             stream_name=stream.name,
             topic_name=message.topic_name(),
-            message_id=message.id,
         )
         if note:
             content = _(
-                "You requested a reminder for {message_pretty_link}. Note:\n > {note}"
+                "You requested a reminder for the following message. Note:\n > {note}"
             ).format(
-                message_pretty_link=message_pretty_link,
                 note=note,
             )
         else:
-            content = _("You requested a reminder for {message_pretty_link}.").format(
-                message_pretty_link=message_pretty_link,
-            )
+            content = _("You requested a reminder for the following message.")
 
         format_recipient_type_key = ReminderRecipientType.CHANNEL
+        context = dict(
+            user_silent_mention=user_silent_mention,
+            conversation_url=conversation_url,
+            topic_pretty_link=topic_pretty_link,
+        )
     else:
         if note:
             content = _(
@@ -93,16 +91,25 @@ def get_reminder_formatted_content(
 
         if not recipients:
             format_recipient_type_key = ReminderRecipientType.NOTE_TO_SELF
+            context = dict(
+                conversation_url=conversation_url,
+            )
         else:
             format_recipient_type_key = ReminderRecipientType.PRIVATE
+            context = dict(
+                user_silent_mention=user_silent_mention,
+                conversation_url=conversation_url,
+            )
 
     # Format the message content as a quote.
     content += "\n\n"
 
     REMINDER_FORMAT = {
         ReminderRecipientType.CHANNEL: {
-            "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
-            "text": _("{user_silent_mention} [said]({conversation_url}):"),
+            "widget": _(
+                "{user_silent_mention} [sent]({conversation_url}) a {widget} in {topic_pretty_link}."
+            ),
+            "text": _("{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"),
         },
         ReminderRecipientType.PRIVATE: {
             "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
