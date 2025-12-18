@@ -66,8 +66,8 @@ class RemindersTest(ZulipTestCase):
 
     def get_channel_message_reminder_content(self, msg_content: str, msg_id: int) -> str:
         return (
-            f"You requested a reminder for #**Verona>test@{msg_id}**.\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}):\n```quote\n{msg_content}\n```"
+            f"You requested a reminder for the following message.\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}) in #**Verona>test**:\n```quote\n{msg_content}\n```"
         )
 
     def test_schedule_reminder(self) -> None:
@@ -466,8 +466,8 @@ class RemindersTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_reminder()
         self.assertEqual(
             scheduled_message.content,
-            f"You requested a reminder for #**Verona>test@{message_id}**. Note:\n > {note}\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}):\n```quote\n{content}\n```",
+            f"You requested a reminder for the following message. Note:\n > {note}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}) in #**Verona>test**:\n```quote\n{content}\n```",
         )
 
         message_id = self.send_dm_from_hamlet_to_othello(content)
@@ -512,10 +512,9 @@ class RemindersTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_reminder()
         self.assertEqual(
             scheduled_message.content,
-            "You requested a reminder for #**Verona>{789}@"
-            + str(message_id)
-            + "**. Note:\n > {123}\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/.7B789.7D/near/{message_id}):\n```quote\n{content}\n```",
+            "You requested a reminder for the following message. Note:\n > {123}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/.7B789.7D/near/{message_id})"
+            " in #**Verona>{789}**:\n" + f"```quote\n{content}\n```",
         )
 
     def test_schedule_reminder_ones_own_message(self) -> None:
