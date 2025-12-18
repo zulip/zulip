@@ -7,6 +7,7 @@ const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
+const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -721,12 +722,12 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     new_banner_rendered = false;
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".recipient_not_subscribed", []);
-    channel.get = (opts) => {
+    mock_channel_get(channel, (opts) => {
         assert.equal(opts.url, `/json/streams/${sub.stream_id}/members`);
-        return {
+        return opts.success({
             subscribers: [],
-        };
-    };
+        });
+    });
 
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);

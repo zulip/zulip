@@ -46,7 +46,8 @@ export function has_complete_subscriber_data(): boolean {
 const pending_subscriber_requests = new Map<
     number,
     {
-        subscribers_promise: Promise<LazySet | null>;
+        // false means bad request, null means we retried too many times and gave up
+        subscribers_promise: Promise<LazySet | null | false>;
         pending_peer_events: {
             type: "peer_add" | "peer_remove";
             user_ids: number[];
@@ -72,60 +73,87 @@ const fetch_user_subscriptions_response_schema = z.object({
     subscribed_channel_ids: z.array(z.number()),
 });
 
-// This function will always resolve to a LazySet but could hang
-// indefinitely trying to fetch data. `num_attempts` should only
-// be set in the recursive call.
-export async function maybe_fetch_stream_subscribers_with_retry(
+// Warning: This function can fetch indefinitely (with longer retry
+// delay each time) if the server keeps returning non-400 errors.
+export async function fetch_stream_subscribers_with_retry(
     stream_id: number,
     num_attempts = 1,
-): Promise<LazySet> {
+): Promise<LazySet | null> {
     const subscribers = await fetch_stream_subscribers(stream_id);
+    // Bad request, so just give up here.
+    if (subscribers === false) {
+        return null;
+    }
+    // Failed request, retry.
     if (subscribers === null) {
         num_attempts += 1;
         const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
         await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
-        return maybe_fetch_stream_subscribers_with_retry(stream_id, num_attempts);
+        return fetch_stream_subscribers_with_retry(stream_id, num_attempts);
     }
     return subscribers;
 }
 
-export async function fetch_stream_subscribers(stream_id: number): Promise<LazySet | null> {
+// This function either waits for an existing pending request or kicks off
+// a new one.
+export async function fetch_stream_subscribers(stream_id: number): Promise<LazySet | null | false> {
     if (pending_subscriber_requests.has(stream_id)) {
         return pending_subscriber_requests.get(stream_id)!.subscribers_promise;
     }
-    const subscribers_promise = (async () => {
-        let subscribers: number[];
-        try {
-            const result = await channel.get({
-                url: `/json/streams/${stream_id}/members`,
-            });
-            subscribers = fetch_stream_subscribers_response_schema.parse(result).subscribers;
-        } catch {
-            blueslip.error("Failure fetching channel subscribers", {
-                stream_id,
-            });
-            pending_subscriber_requests.delete(stream_id);
-            return null;
-        }
-
-        set_subscribers(stream_id, subscribers);
-        const pending_peer_events = pending_subscriber_requests.get(stream_id)!.pending_peer_events;
-        pending_subscriber_requests.delete(stream_id);
-        for (const event of pending_peer_events) {
-            if (event.type === "peer_add") {
-                bulk_add_subscribers({stream_ids: [stream_id], user_ids: event.user_ids});
-            } else {
-                bulk_remove_subscribers({stream_ids: [stream_id], user_ids: event.user_ids});
-            }
-        }
-        return get_loaded_subscriber_subset(stream_id);
-    })();
-
     pending_subscriber_requests.set(stream_id, {
-        subscribers_promise,
+        subscribers_promise: fetch_stream_subscribers_from_server(stream_id),
         pending_peer_events: [],
     });
-    return subscribers_promise;
+    return pending_subscriber_requests.get(stream_id)!.subscribers_promise;
+}
+
+// This function wraps the fetch in a Promise so that we can have both
+// the `channel.get` handling the xhr error and
+// `fetch_stream_subscribers_from_server` not resolving until the success/error
+// handling finishes.
+async function fetch_stream_subscribers_from_server(
+    stream_id: number,
+): Promise<LazySet | null | false> {
+    return new Promise<LazySet | null | false>((resolve) => {
+        void channel.get({
+            url: `/json/streams/${stream_id}/members`,
+            success(result) {
+                const fetched_subscribers =
+                    fetch_stream_subscribers_response_schema.parse(result).subscribers;
+                set_subscribers(stream_id, fetched_subscribers);
+                const pending_peer_events =
+                    pending_subscriber_requests.get(stream_id)!.pending_peer_events;
+                pending_subscriber_requests.delete(stream_id);
+                for (const event of pending_peer_events) {
+                    if (event.type === "peer_add") {
+                        bulk_add_subscribers({stream_ids: [stream_id], user_ids: event.user_ids});
+                    } else {
+                        bulk_remove_subscribers({
+                            stream_ids: [stream_id],
+                            user_ids: event.user_ids,
+                        });
+                    }
+                }
+
+                resolve(get_loaded_subscriber_subset(stream_id));
+            },
+            error(xhr) {
+                pending_subscriber_requests.delete(stream_id);
+                if (xhr.status === 400) {
+                    blueslip.error("Bad request to fetch channel subscribers.", {
+                        stream_id,
+                        error_json: xhr.responseJSON,
+                    });
+                    resolve(false);
+                } else {
+                    blueslip.error("Failure fetching channel subscribers", {
+                        stream_id,
+                    });
+                    resolve(null);
+                }
+            },
+        });
+    });
 }
 
 function get_loaded_subscriber_subset(stream_id: number): LazySet {
@@ -160,14 +188,14 @@ async function get_full_subscriber_set(
     // This function parallels `get_loaded_subscriber_subset` but ensures we include all
     // subscribers, possibly fetching that data from the server.
     if (!fetched_stream_ids.has(stream_id) && sub_store.get(stream_id)) {
-        let fetched_subscribers: LazySet | null;
+        let fetched_subscribers: LazySet | null | false;
         if (retry_on_failure) {
-            fetched_subscribers = await maybe_fetch_stream_subscribers_with_retry(stream_id);
+            fetched_subscribers = await fetch_stream_subscribers_with_retry(stream_id);
         } else {
             fetched_subscribers = await fetch_stream_subscribers(stream_id);
         }
         // This means a request failed and we don't know who the subscribers are.
-        if (fetched_subscribers === null) {
+        if (fetched_subscribers === null || fetched_subscribers === false) {
             return null;
         }
         set_subscribers(stream_id, [...fetched_subscribers.keys()]);
@@ -475,14 +503,12 @@ export async function get_unique_subscriber_count_for_streams(
     return valid_subscribers.size;
 }
 
-// This function might retry up to 5 times to fetch data, then will
-// give up. `num_attempts` should only be set in the recursive call.
-async function fetch_subscriptions_for_user_with_retry(
-    user_id: number,
-    num_attempts = 0,
-): Promise<void> {
-    const subscriptions_promise = (async () => {
-        await channel.get({
+// This function wraps the fetch in a Promise so that we can have both
+// the `channel.get` handling the xhr error and `load_subscriptions_for_user`
+// not resolving until the success/error handling finishes.
+async function fetch_subscriptions_for_user_from_server(user_id: number): Promise<boolean | null> {
+    return new Promise<boolean | null>((resolve) => {
+        channel.get({
             url: `/json/users/${user_id}/channels`,
             success(raw_data) {
                 const subscriptions =
@@ -491,42 +517,26 @@ async function fetch_subscriptions_for_user_with_retry(
                     add_subscriber(stream_id, user_id);
                 }
                 fetched_user_subscriptions.add(user_id);
+                resolve(true);
             },
             error(xhr) {
                 if (xhr.status === 400) {
                     blueslip.error("Bad request to fetch user's subscribed channels.", {
                         user_id,
+                        error_json: xhr.responseJSON,
                     });
-                    return;
+                    resolve(false);
+                } else {
+                    resolve(null);
                 }
-                pending_subscription_requests.delete(user_id);
-                if (num_attempts === 5) {
-                    blueslip.error("Failure fetching user's subscribed channels. Giving up.", {
-                        user_id,
-                    });
-                    return;
-                }
-                blueslip.warn("Failure fetching user's subscribed channels. Retrying.", {
-                    user_id,
-                });
-                num_attempts += 1;
-                const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
-                setTimeout(() => {
-                    void fetch_subscriptions_for_user_with_retry(user_id, num_attempts);
-                }, retry_delay_secs * 1000);
-                return;
             },
         });
-    })();
-
-    pending_subscription_requests.set(user_id, subscriptions_promise);
-    return subscriptions_promise;
+    });
 }
 
-export function subscriber_data_loaded_for_user(user_id: number): boolean {
-    return has_complete_subscriber_data() || fetched_user_subscriptions.has(user_id);
-}
-
+// This function might retry up to 5 times to fetch data, then will give up.
+// We store the whole fetch with retry promise in the pending requests because
+// there are no outside calls to fetch_subscriptions_for_user (without retry).
 export async function fetch_subscriptions_for_user(user_id: number): Promise<void> {
     if (subscriber_data_loaded_for_user(user_id)) {
         return;
@@ -536,5 +546,44 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
         return pending_subscription_requests.get(user_id)!;
     }
 
-    return fetch_subscriptions_for_user_with_retry(user_id);
+    const subscriptions_promise = (async () => {
+        let num_attempts = 0;
+        while (num_attempts < 5) {
+            if (num_attempts > 0) {
+                blueslip.warn("Failure fetching user's subscribed channels. Retrying.", {
+                    user_id,
+                });
+            }
+            const result = await fetch_subscriptions_for_user_from_server(user_id);
+            // Bad request, so just give up here.
+            if (result === false) {
+                pending_subscription_requests.delete(user_id);
+                break;
+            }
+            // Failed request, so try again (unless we've reached the retry limit)
+            else if (result === null) {
+                num_attempts += 1;
+                const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+                await new Promise((resolve) => setTimeout(resolve, retry_delay_secs * 1000));
+                continue;
+            }
+            // Success
+            else {
+                pending_subscription_requests.delete(user_id);
+                break;
+            }
+        }
+        if (num_attempts === 5) {
+            blueslip.error("Failure fetching user's subscribed channels. Giving up.", {
+                user_id,
+            });
+        }
+    })();
+
+    pending_subscription_requests.set(user_id, subscriptions_promise);
+    return subscriptions_promise;
+}
+
+export function subscriber_data_loaded_for_user(user_id: number): boolean {
+    return has_complete_subscriber_data() || fetched_user_subscriptions.has(user_id);
 }
