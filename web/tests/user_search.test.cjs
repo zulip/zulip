@@ -32,6 +32,14 @@ function mock_setTimeout() {
     });
 }
 
+function mock_channel_get(f) {
+    channel.get = async (opts) => {
+        // await an empty promise to ensure the "fetch" happens asynchronously
+        await Promise.resolve();
+        f(opts);
+    };
+}
+
 const channel = mock_esm("../src/channel");
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
@@ -153,12 +161,12 @@ test("fetch on search", async ({override}) => {
         make_message_list([{operator: "stream", operand: office.stream_id.toString()}]),
     );
     let get_call_count = 0;
-    channel.get = () => {
+    mock_channel_get((opts) => {
         get_call_count += 1;
-        return {
+        opts.success({
             subscribers: [1, 2, 3, 4],
-        };
-    };
+        });
+    });
     // Only one fetch should happen.
     set_input_val("somevalu");
     set_input_val("somevalue");
