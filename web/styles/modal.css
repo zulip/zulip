@@ -243,7 +243,7 @@
     margin-bottom: 5px;
     -webkit-overflow-scrolling: touch;
 
-    .user-profile-group-row,
+    .modal-group-list-row,
     .modal-channel-list-row {
         display: flex;
         justify-content: space-between;
@@ -255,6 +255,7 @@
         color: var(--color-dropdown-item);
         cursor: pointer;
 
+        .modal-group-list-row-content,
         .modal-channel-list-row-content {
             display: flex;
             overflow: hidden;
