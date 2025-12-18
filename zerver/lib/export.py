@@ -348,7 +348,12 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "zerver_message": ["last_edit_time", "date_sent"],
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
-    "zerver_realm": ["date_created"],
+    "zerver_realm": [
+        "date_created",
+        "demo_organization_scheduled_deletion_date",
+        "push_notifications_enabled_end_timestamp",
+        "scheduled_deletion_date",
+    ],
     "zerver_realmexport": [
         "date_requested",
         "date_started",
