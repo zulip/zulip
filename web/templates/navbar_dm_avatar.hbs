@@ -1,0 +1,15 @@
+<div class="navbar-dm-avatar-container" data-user-id="{{user_id}}">
+    <div class="navbar-dm-avatar-wrapper">
+        <img class="navbar-dm-avatar{{#if is_guest}} guest-avatar{{/if}}{{#if is_deactivated}} deactivated{{/if}}"
+          src="{{avatar_url}}"
+          alt=""
+          loading="lazy"/>
+        {{#if (and (not is_bot) (not is_deactivated))}}
+        <span class="navbar-dm-avatar-presence zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle hidden-for-spectators" data-presence-indicator-user-id="{{user_id}}"></span>
+        {{/if}}
+        {{#if is_deactivated}}
+        <span class="navbar-dm-avatar-presence conversation-partners-icon fa fa-ban deactivated-user-icon"></span>
+        {{/if}}
+    </div>
+</div>
+
