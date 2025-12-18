@@ -743,22 +743,85 @@ export function process_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_el = document.activeElement;
 
-    let $message_edit_form;
-
-    const $focused_message_edit_content = $(".message_edit_content:focus");
-    if ($focused_message_edit_content.length > 0) {
-        $message_edit_form = $focused_message_edit_content.closest(".message_edit_form");
-        // Open message edit forms either have a save button or a close button, but not both.
-        $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
-        return true;
+    if (!(focused_el instanceof HTMLElement)) {
+        return false;
     }
 
-    const $focused_message_edit_save = $(".message_edit_save:focus");
-    if ($focused_message_edit_save.length > 0) {
-        $message_edit_form = $focused_message_edit_save.closest(".message_edit_form");
-        $message_edit_form.find(".message_edit_cancel").trigger("focus");
-        return true;
+    const $focused = $(focused_el);
+    const $form = $focused.closest(".message_edit_form");
+
+    if ($form.length === 0) {
+        return false;
+    }
+
+    const form_el = $form[0];
+    if (!form_el) {
+        return false;
+    }
+
+    // 1. Content -> Save
+    if ($focused.hasClass("message_edit_content")) {
+        const $save = $form.find(".message_edit_save").first();
+        if ($save.length > 0 && is_element_visible($save[0]!)) {
+            $save.trigger("focus");
+            return true;
+        }
+        const $close = $form.find(".message_edit_close").first();
+        if ($close.length > 0 && is_element_visible($close[0]!)) {
+            $close.trigger("focus");
+            return true;
+        }
+        return false;
+    }
+
+    // 2. Save -> Cancel
+    if ($focused.hasClass("message_edit_save")) {
+        const $cancel = $form.find(".message_edit_cancel");
+        if ($cancel.length > 0 && is_element_visible($cancel[0]!)) {
+            $cancel.trigger("focus");
+            return true;
+        }
+    }
+
+    // 3. Cancel -> First Formatting Button
+    if ($focused.hasClass("message_edit_cancel")) {
+        const $formatting_btns = $form
+            .find(".compose_control_button")
+            .filter((_i, el) => is_element_visible(el));
+
+        const $first_btn = $formatting_btns.first();
+
+        if ($first_btn.length > 0) {
+            $first_btn.trigger("focus");
+            return true;
+        }
+
+        return focus_next_element_outside_form(form_el, focused_el);
+    }
+
+    // 4. Formatting Buttons -> Next Button OR Exit
+    if ($focused.hasClass("compose_control_button")) {
+        const $formatting_btns = $form
+            .find(".compose_control_button")
+            .filter((_i, el) => is_element_visible(el));
+
+        const index = $formatting_btns.index(focused_el);
+
+        if (index !== -1) {
+            const is_last = index === $formatting_btns.length - 1;
+
+            if (is_last) {
+                return focus_next_element_outside_form(form_el, focused_el);
+            }
+
+            const $next_btn = $formatting_btns.eq(index + 1);
+            if ($next_btn.length > 0) {
+                $next_btn.trigger("focus");
+                return true;
+            }
+        }
     }
 
     if (emoji_picker.is_open()) {
