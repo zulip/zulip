@@ -75,7 +75,7 @@ class DemoCreationTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
         self.assertIn("getting started guide", welcome_msg.content)
@@ -633,7 +633,7 @@ class RealmCreationTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
@@ -654,7 +654,7 @@ class RealmCreationTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
         self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
@@ -701,7 +701,7 @@ class RealmCreationTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=get_realm(string_id).id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
