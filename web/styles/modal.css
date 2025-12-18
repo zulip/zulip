@@ -275,7 +275,7 @@
 
         &:focus-visible {
             outline: 1px solid var(--color-outline-user-profile-list-item);
-            outline-offset: -2px;
+            outline-offset: -1px;
         }
 
         .user-group-name,
