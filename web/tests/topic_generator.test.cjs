@@ -36,144 +36,94 @@ run_test("streams", ({override}) => {
     assert_prev_stream(1, 4);
 });
 
-// TODO: Rewrite them taking into account channel folders.
-// run_test("topics", ({override}) => {
-//     const streams = [1, 2, 3, 4];
-//     const topics = new Map([
-//         [1, ["read", "read", "1a", "1b", "read", "1c"]],
-//         [2, []],
-//         [3, ["3a", "read", "read", "3b", "read"]],
-//         [4, ["4a"]],
-//     ]);
+run_test("topics", () => {
+    const {next_topic} = tg;
 
-//     function has_unread_messages(_stream, topic) {
-//         return topic !== "read";
-//     }
+    function make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names) {
+        function get_topics(stream_id) {
+            return topics_by_stream.get(stream_id) ?? [];
+        }
 
-//     function get_topics(stream) {
-//         return topics.get(stream);
-//     }
+        function has_unread_messages(_stream_id, topic) {
+            return unread_topic_names.has(topic);
+        }
 
-//     function next_topic(curr_stream, curr_topic) {
-//         return tg.next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic);
-//     }
+        return function (curr_stream_id, curr_topic) {
+            return next_topic(
+                sorted_channels_info,
+                get_topics,
+                has_unread_messages,
+                curr_stream_id,
+                curr_topic,
+            );
+        };
+    }
 
-//     assert.deepEqual(next_topic(1, "1a"), {stream_id: 1, topic: "1b"});
-//     assert.deepEqual(next_topic(1, undefined), {stream_id: 1, topic: "1a"});
-//     assert.deepEqual(next_topic(2, "bogus"), {stream_id: 3, topic: "3a"});
-//     assert.deepEqual(next_topic(3, "3b"), {stream_id: 3, topic: "3a"});
-//     assert.deepEqual(next_topic(4, "4a"), {stream_id: 1, topic: "1a"});
-//     assert.deepEqual(next_topic(undefined, undefined), {stream_id: 1, topic: "1a"});
+    // Case 1: basic navigation within a single uncollapsed channel
+    {
+        const sorted_channels_info = [{channel_id: 1, is_collapsed: false}];
+        const topics_by_stream = new Map([[1, ["t1", "t2", "t3"]]]);
+        const unread_topic_names = new Set(["t1", "t2", "t3"]);
 
-//     assert.deepEqual(
-//         tg.next_topic(streams, get_topics, () => false, 1, "1a"),
-//         undefined,
-//     );
+        const next = make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names);
 
-//     // Now test the deeper function that is wired up to
-//     // real functions stream_data/stream_list_sort/unread.
+        assert.deepEqual(next(1, "t1"), {stream_id: 1, topic: "t2"});
+        assert.deepEqual(next(1, "t2"), {stream_id: 1, topic: "t3"});
 
-//     const muted_stream_id = 400;
-//     const devel_stream_id = 401;
-//     const announce_stream_id = 402;
-//     const test_here_stream_id = 403;
-//     override(stream_list_sort, "get_stream_ids", () => [
-//         announce_stream_id,
-//         muted_stream_id,
-//         devel_stream_id,
-//         test_here_stream_id,
-//     ]);
+        // Wrap-around behavior: go back to first unread
+        assert.deepEqual(next(1, "t3"), {stream_id: 1, topic: "t1"});
 
-//     override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
-//         switch (stream_id) {
-//             case muted_stream_id:
-//                 return ["ms-topic1", "ms-topic2", "unmuted", "followed-muted"];
-//             case devel_stream_id:
-//                 return ["muted", "python", "followed-devel"];
-//         }
+        assert.deepEqual(next(1, undefined), {stream_id: 1, topic: "t1"});
 
-//         return [];
-//     });
+        // Now mark everything as read → true undefined case
+        unread_topic_names.clear();
+        assert.equal(next(1, "t3"), undefined);
+    }
 
-//     override(stream_data, "is_muted", (stream_id) => stream_id === muted_stream_id);
+    // Case 2: multiple uncollapsed channels, wrapping across channels
+    {
+        const sorted_channels_info = [
+            {channel_id: 1, is_collapsed: false},
+            {channel_id: 2, is_collapsed: false},
+        ];
+        const topics_by_stream = new Map([
+            [1, ["a1", "a2"]],
+            [2, ["b1"]],
+        ]);
+        const unread_topic_names = new Set(["a1", "a2", "b1"]);
 
-//     let topic_has_unreads = new Set([
-//         "unmuted",
-//         "followed-muted",
-//         "muted",
-//         "python",
-//         "followed-devel",
-//     ]);
-//     function mark_topic_as_read(topic) {
-//         topic_has_unreads.delete(topic);
-//     }
-//     override(unread, "topic_has_any_unread", (_stream_id, topic) => topic_has_unreads.has(topic));
+        const next = make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names);
 
-//     override(user_topics, "is_topic_muted", (_stream_name, topic) => topic === "muted");
+        assert.deepEqual(next(1, "a1"), {stream_id: 1, topic: "a2"});
+        assert.deepEqual(next(1, "a2"), {stream_id: 2, topic: "b1"});
+        assert.deepEqual(next(2, "b1"), {stream_id: 1, topic: "a1"});
+        assert.deepEqual(next(undefined, undefined), {stream_id: 1, topic: "a1"});
+    }
 
-//     override(
-//         user_topics,
-//         "is_topic_unmuted_or_followed",
-//         (_stream_name, topic) =>
-//             topic === "unmuted" || topic === "followed-muted" || topic === "followed-devel",
-//     );
+    // Case 3: collapsed channels
+    {
+        const sorted_channels_info = [
+            {channel_id: 1, is_collapsed: false},
+            {channel_id: 2, is_collapsed: true},
+            {channel_id: 3, is_collapsed: false},
+        ];
+        const topics_by_stream = new Map([
+            [1, ["c1"]],
+            [2, ["c2"]],
+            [3, ["c3"]],
+        ]);
 
-//     override(
-//         user_topics,
-//         "is_topic_followed",
-//         (_stream_name, topic) => topic === "followed-muted" || topic === "followed-devel",
-//     );
+        const unread_topic_names = new Set(["c1", "c2", "c3"]);
+        const next = make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names);
 
-//     let next_item = tg.get_next_topic(announce_stream_id, "whatever");
-//     assert.deepEqual(next_item, {
-//         stream_id: muted_stream_id,
-//         topic: "unmuted",
-//     });
-//     mark_topic_as_read("unmuted");
+        assert.deepEqual(next(1, "c1"), {stream_id: 3, topic: "c3"});
 
-//     next_item = tg.get_next_topic(muted_stream_id, "unmuted");
-//     assert.deepEqual(next_item, {
-//         stream_id: muted_stream_id,
-//         topic: "followed-muted",
-//     });
-//     mark_topic_as_read("followed-muted");
+        unread_topic_names.delete("c1");
+        unread_topic_names.delete("c3");
 
-//     next_item = tg.get_next_topic(muted_stream_id, "followed-muted");
-//     assert.deepEqual(next_item, {
-//         stream_id: devel_stream_id,
-//         topic: "python",
-//     });
-//     mark_topic_as_read("python");
-
-//     next_item = tg.get_next_topic(devel_stream_id, "python");
-//     assert.deepEqual(next_item, {
-//         stream_id: devel_stream_id,
-//         topic: "followed-devel",
-//     });
-//     mark_topic_as_read("followed-devel");
-
-//     // Mark topics as unread again
-//     topic_has_unreads = new Set(["unmuted", "followed-muted", "muted", "python", "followed-devel"]);
-//     // Shift + N takes the user to next unread followed topic,
-//     // even if the stream is muted.
-//     next_item = tg.get_next_topic(announce_stream_id, "whatever", true);
-//     assert.deepEqual(next_item, {
-//         stream_id: muted_stream_id,
-//         topic: "followed-muted",
-//     });
-
-//     next_item = tg.get_next_topic(muted_stream_id, "whatever", true);
-//     assert.deepEqual(next_item, {
-//         stream_id: muted_stream_id,
-//         topic: "followed-muted",
-//     });
-
-//     next_item = tg.get_next_topic(muted_stream_id, undefined);
-//     assert.deepEqual(next_item, {
-//         stream_id: muted_stream_id,
-//         topic: "unmuted",
-//     });
-// });
+        assert.deepEqual(next(1, "c1"), {stream_id: 2, topic: "c2"});
+    }
+});
 
 run_test("get_next_unread_pm_string", ({override}) => {
     override(pm_conversations.recent, "get_strings", () => ["1", "read", "2,3", "4", "unk"]);
