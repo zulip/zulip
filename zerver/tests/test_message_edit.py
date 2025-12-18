@@ -212,7 +212,10 @@ class EditMessageTest(ZulipTestCase):
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["raw_content"], "Outgoing direct message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
-        self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
+        self.assertEqual(
+            response_dict["message"]["recipient_id"],
+            self.get_dm_group_recipient(hamlet, cordelia).id,
+        )
         self.assertEqual(response_dict["message"]["flags"], ["read"])
         self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 
@@ -224,7 +227,10 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(response_dict["raw_content"], "Incoming direct message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
         # Incoming DMs show the recipient_id that outgoing DMs would.
-        self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
+        self.assertEqual(
+            response_dict["message"]["recipient_id"],
+            self.get_dm_group_recipient(hamlet, cordelia).id,
+        )
         self.assertEqual(response_dict["message"]["flags"], [])
         self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 

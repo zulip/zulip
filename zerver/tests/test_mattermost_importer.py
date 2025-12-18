@@ -1126,10 +1126,10 @@ class MatterMostImporter(ZulipTestCase):
         group_direct_messages = messages.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).order_by("date_sent")
-        self.assert_length(group_direct_messages, 7)
+        self.assert_length(group_direct_messages, 11)
 
         direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
-        self.assert_length(set(direct_message_group_recipients), 3)
+        self.assert_length(set(direct_message_group_recipients), 7)
 
         self.assertEqual(group_direct_messages[0].sender.email, "ron@zulip.com")
         self.assertRegex(
@@ -1149,7 +1149,7 @@ class MatterMostImporter(ZulipTestCase):
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"
         )
-        self.assert_length(personal_messages, 4)
+        self.assert_length(personal_messages, 0)
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")

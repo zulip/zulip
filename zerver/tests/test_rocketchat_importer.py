@@ -976,7 +976,7 @@ class RocketChatImporter(ZulipTestCase):
             return orjson.loads(f.read())
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_do_convert_data(self) -> None:
+    def test_do_convert_data_using_personal_recipient(self) -> None:
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
         output_dir = self.make_import_output_dir("rocketchat")
 
