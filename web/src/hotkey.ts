@@ -835,36 +835,65 @@ export function process_shift_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_el = document.activeElement;
 
-    if ($("#compose-send-button").is(":focus")) {
-        // Shift-Tab: go back to content textarea and restore
-        // cursor position.
+    if (!(focused_el instanceof HTMLElement)) {
+        return false;
+    }
+
+    const $focused = $(focused_el);
+    const $form = $focused.closest(".message_edit_form");
+
+    if (focused_el.id === "compose-send-button") {
         compose_textarea.restore_compose_cursor();
         return true;
     }
 
-    // Shift-Tabbing from the edit message cancel button takes you to save.
-    if ($(".message_edit_cancel:focus").length > 0) {
-        $(".message_edit_save").trigger("focus");
-        return true;
+    // Shift-Tab from the FIRST visible formatting button -> Go to Cancel
+    // (This handles 'Preview', 'Write', or whatever is first)
+    if ($focused.hasClass("compose_control_button")) {
+        const $formatting_btns = $form
+            .find(".compose_control_button")
+            .filter((_i, el) => is_element_visible(el));
+
+        // If we are on the first button, we need to jump back to Cancel
+        if ($formatting_btns.first().is($focused)) {
+            const $cancel = $form.find(".message_edit_cancel");
+            if ($cancel.length > 0 && is_element_visible($cancel[0]!)) {
+                $cancel.trigger("focus");
+                return true;
+            }
+        }
+        // Otherwise, let browser handle Shift+Tab (goes to previous button)
+        return false;
     }
 
-    // Shift-Tabbing from the edit message save button takes you to the content.
-    const $focused_message_edit_save = $(".message_edit_save:focus");
-    if ($focused_message_edit_save.length > 0) {
-        $focused_message_edit_save
-            .closest(".message_edit_form")
-            .find(".message_edit_content")
-            .trigger("focus");
-        return true;
+    // Shift-Tabbing from Cancel -> Go to Save
+    if ($focused.hasClass("message_edit_cancel")) {
+        const $save = $form.find(".message_edit_save");
+        if ($save.length > 0 && is_element_visible($save[0]!)) {
+            $save.trigger("focus");
+            return true;
+        }
     }
 
-    // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
+    // Shift-Tabbing from Save -> Go to Content
+    if ($focused.hasClass("message_edit_save")) {
+        const $content = $form.find(".message_edit_content");
+        if ($content.length > 0) {
+            $content.trigger("focus");
+            return true;
+        }
+    }
+
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("shift_tab");
     }
 
-    if ($("input#stream_message_recipient_topic").is(":focus")) {
+    if (
+        focused_el instanceof HTMLInputElement &&
+        focused_el.id === "stream_message_recipient_topic"
+    ) {
         compose_recipient.toggle_compose_recipient_dropdown();
         return true;
     }
