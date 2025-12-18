@@ -3,6 +3,10 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {
+    quote_message_template,
+    forward_channel_message_template,
+} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
@@ -55,7 +59,6 @@ const compose_ui = mock_esm("../src/compose_ui", {
     set_focus: noop,
     compute_placeholder_text: noop,
 });
-const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
     filter: noop,
@@ -100,6 +103,7 @@ const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 const {set_realm} = zrequire("state_data");
+const sub_store = zrequire("sub_store");
 
 const realm = make_realm({
     realm_topics_policy: "disable_empty_topic",
@@ -486,11 +490,15 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         replaced = true;
     });
 
-    const denmark_stream = make_stream({
+    const channel_id = 20;
+    const channel_object = {
         subscribed: false,
         name: "Denmark",
-        stream_id: 20,
-    });
+        stream_id: channel_id,
+    };
+    const denmark_stream = make_stream(channel_object);
+
+    sub_store.add_hydrated_sub(channel_id, channel_object);
 
     selected_message = {
         type: "stream",
@@ -498,10 +506,8 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         topic: "python",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
+        id: 10,
     };
-    hash_util.by_conversation_and_time_url = () =>
-        "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado";
-
     let success_function;
     override(channel, "get", (opts) => {
         success_function = opts.success;
@@ -536,9 +542,12 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     $("textarea#compose-textarea").attr("id", "compose-textarea");
 
     replaced = false;
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
-
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
     quote_message(opts);
 
     run_success_callback();
@@ -552,6 +561,13 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     replaced = false;
 
     override(compose_ui, "insert_and_scroll_into_view", noop);
+
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
 
     quote_message(opts);
 
@@ -570,9 +586,17 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
         raw_content: "Testing.",
+        id: 10,
     };
 
     replaced = false;
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
+
     disallow(channel, "get");
     quote_message(opts);
     assert.ok(replaced);
@@ -583,6 +607,12 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         forward_message: true,
     };
     replaced = false;
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
     quote_message(opts);
     assert.ok(replaced);
 
@@ -598,11 +628,17 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
         raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
+        id: 10,
     };
 
     replaced = false;
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "````",
+        content: selected_message.raw_content,
+    });
+
     quote_message(opts);
     assert.ok(replaced);
 
@@ -611,6 +647,12 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         forward_message: true,
     };
     replaced = false;
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "````",
+        content: selected_message.raw_content,
+    });
     quote_message(opts);
     assert.ok(replaced);
 
@@ -621,13 +663,15 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     opts = {
         trigger: "hotkey",
     };
+    const selected_string = "Hello world";
     override_rewire(compose_reply, "selection_within_message_id", () => 50);
-    override_rewire(compose_reply, "get_message_selection", () => "Hello world");
+    override_rewire(compose_reply, "get_message_selection", () => selected_string);
 
     const stub = make_stub();
     override_rewire(compose_reply, "respond_to_message", stub.f);
 
     const highlighted_message = {
+        id: 50,
         type: "stream",
         stream_id: denmark_stream.stream_id,
         topic: "test",
@@ -635,8 +679,12 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_id: 90,
         raw_content: "[unselected text] Hello world [some extra text that is also not selected]",
     };
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nHello world\n```";
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message: highlighted_message,
+        fence: "```",
+        content: "Hello world",
+    });
     override(message_lists.current, "get", (id) => (id === 50 ? highlighted_message : undefined));
     quote_message(opts);
     const {opts: opts_when_message_has_selection} = stub.get_args("opts");
@@ -651,8 +699,13 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override_rewire(compose_reply, "selection_within_message_id", () => undefined);
     override(message_lists.current, "selected_id", () => 100);
     override(message_lists.current, "get", (id) => (id === 100 ? message_with_pointer : undefined));
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\n[unselected text] Hello world [some extra text that is also not selected]\n```";
+
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message: message_with_pointer,
+        fence: "```",
+        content: message_with_pointer.raw_content,
+    });
     quote_message(opts);
     const {opts: opts_when_message_has_no_selection} = stub.get_args("opts");
     assert.equal(opts_when_message_has_no_selection.trigger, "hotkey");
