@@ -48,6 +48,7 @@ class ZulipUploadBackend:
         raise NotImplementedError
 
     def delete_message_attachment(self, path_id: str) -> None:
+        """This must delete the attachment, any adjacent .info files, and any thumbnails."""
         raise NotImplementedError
 
     def delete_message_attachments(self, path_ids: list[str]) -> None:

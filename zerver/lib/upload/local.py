@@ -49,13 +49,17 @@ def read_local_file(type: Literal["avatars", "files"], path: str) -> Iterator[by
         yield from iter(lambda: f.read(4 * 1024 * 1024), b"")
 
 
-def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
+def delete_local_file(
+    type: Literal["avatars", "files"],
+    path: str,
+    *,
+    directory: bool = False,
+    missing_ok: bool = True,
+) -> bool:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     assert_is_local_storage_path(type, file_path)
 
-    if os.path.isfile(file_path):
-        os.remove(file_path)
-
+    def prune_empty_dirs(file_path: str) -> None:
         # Remove as many directories up the tree as are now empty
         directory = os.path.dirname(file_path)
         while directory != settings.LOCAL_UPLOADS_DIR:
@@ -64,9 +68,22 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
                 directory = os.path.dirname(directory)
             except OSError:
                 break
-        return True
-    file_name = path.split("/")[-1]
-    logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
+
+    if directory:
+        if os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+            prune_empty_dirs(os.path.dirname(file_path))
+            return True
+        elif missing_ok:
+            return True
+    else:
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+            prune_empty_dirs(file_path)
+            return True
+        elif missing_ok:
+            return True
+    logging.warning("%s does not exist. Its entry in the database will be removed.", file_path)
     return False
 
 
@@ -118,6 +135,8 @@ class LocalUploadBackend(ZulipUploadBackend):
     @override
     def delete_message_attachment(self, path_id: str) -> None:
         delete_local_file("files", path_id)
+        delete_local_file("files", f"{path_id}.info", missing_ok=True)
+        delete_local_file("files", f"thumbnail/{path_id}/", directory=True, missing_ok=True)
 
     @override
     def all_message_attachments(
