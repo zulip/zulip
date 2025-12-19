@@ -99,7 +99,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
         self.assertTrue(os.path.isfile(file_path))
 
-        self.assertTrue(delete_message_attachment(path_id))
+        delete_message_attachment(path_id)
         self.assertFalse(os.path.isfile(file_path))
 
     def test_delete_message_attachments(self) -> None:
