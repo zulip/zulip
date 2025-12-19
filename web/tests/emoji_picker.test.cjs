@@ -88,6 +88,10 @@ run_test("initialize", () => {
     for (const emoji of [...popular_emojis, ...non_popular_emojis_usage]) {
         emoji_frequency.reaction_data.set(emoji.emoji_code, emoji);
     }
+
+    // FIX: Mock the UI function so the test doesn't crash on rebuild
+    emoji_picker.rebuild_catalog = () => {};
+
     emoji_frequency.update_frequently_used_emojis_list();
     non_popular_emoji_codes.reverse();
 
