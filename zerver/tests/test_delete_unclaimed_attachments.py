@@ -15,7 +15,7 @@ from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.thumbnail import ThumbnailFormat
-from zerver.models import ArchivedAttachment, Attachment, Message, UserProfile
+from zerver.models import ArchivedAttachment, Attachment, ImageAttachment, Message, UserProfile
 from zerver.models.clients import get_client
 
 
@@ -44,6 +44,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         has_file: bool,
         has_attachment: bool,
         has_archived_attachment: bool,
+        has_imageattachment: bool = False,
     ) -> None:
         assert settings.LOCAL_FILES_DIR
         self.assertEqual(  # File existence on disk
@@ -55,6 +56,10 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(  # ArchivedAttachment row
             ArchivedAttachment.objects.filter(id=attachment.id).exists(), has_archived_attachment
         )
+        self.assertEqual(  # ImageAttachment row
+            ImageAttachment.objects.filter(path_id=attachment.path_id).exists(),
+            has_imageattachment,
+        )
 
     def test_delete_unused_thumbnails(self) -> None:
         assert settings.LOCAL_FILES_DIR
@@ -62,7 +67,11 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             unused_attachment = self.make_attachment("img.png")
 
         self.assert_exists(
-            unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
+            unused_attachment,
+            has_file=True,
+            has_attachment=True,
+            has_archived_attachment=False,
+            has_imageattachment=True,
         )
 
         # It also has thumbnails
@@ -83,7 +92,11 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # If we have 3 weeks of grace, nothing happens
         do_delete_old_unclaimed_attachments(3)
         self.assert_exists(
-            unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
+            unused_attachment,
+            has_file=True,
+            has_attachment=True,
+            has_archived_attachment=False,
+            has_imageattachment=True,
         )
         self.assertTrue(
             os.path.isdir(
@@ -102,7 +115,11 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # If we have 1 weeks of grace, the Attachment is deleted, and so is the file on disk
         do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
-            unused_attachment, has_file=False, has_attachment=False, has_archived_attachment=False
+            unused_attachment,
+            has_file=False,
+            has_attachment=False,
+            has_archived_attachment=False,
+            has_imageattachment=False,
         )
         self.assertFalse(
             os.path.exists(
