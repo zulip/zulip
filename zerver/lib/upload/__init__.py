@@ -279,7 +279,7 @@ def attachment_source(path_id: str) -> StreamingSourceWithSize:
 
 
 def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
-    return upload_backend.save_attachment_contents(path_id, filehandle)
+    upload_backend.save_attachment_contents(path_id, filehandle)
 
 
 def delete_message_attachment(path_id: str) -> None:
@@ -287,7 +287,7 @@ def delete_message_attachment(path_id: str) -> None:
 
 
 def delete_message_attachments(path_ids: list[str]) -> None:
-    return upload_backend.delete_message_attachments(path_ids)
+    upload_backend.delete_message_attachments(path_ids)
 
 
 def all_message_attachments(
