@@ -14,6 +14,7 @@ from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
+    ImageAttachment,
     Message,
     Realm,
     Recipient,
@@ -49,6 +50,7 @@ def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None
         raise JsonableError(
             _("An error occurred while deleting the attachment. Please try again later.")
         )
+    ImageAttachment.objects.filter(path_id=attachment.path_id).delete()
     attachment.delete()
 
 
