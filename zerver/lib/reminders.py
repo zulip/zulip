@@ -7,7 +7,7 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import truncate_content
+from zerver.lib.message import get_user_mentions_for_display, truncate_content
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import UserDisplayRecipient
@@ -96,9 +96,11 @@ def get_reminder_formatted_content(
             )
         else:
             format_recipient_type_key = ReminderRecipientType.PRIVATE
+            list_of_recipient_mentions = get_user_mentions_for_display(recipients)
             context = dict(
                 user_silent_mention=user_silent_mention,
                 conversation_url=conversation_url,
+                list_of_recipient_mentions=list_of_recipient_mentions,
             )
 
     # Format the message content as a quote.
@@ -112,8 +114,12 @@ def get_reminder_formatted_content(
             "text": _("{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"),
         },
         ReminderRecipientType.PRIVATE: {
-            "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
-            "text": _("{user_silent_mention} [said]({conversation_url}):"),
+            "widget": _(
+                "{user_silent_mention} [sent]({conversation_url}) a {widget} to {list_of_recipient_mentions}."
+            ),
+            "text": _(
+                "{user_silent_mention} [said]({conversation_url}) to {list_of_recipient_mentions}:"
+            ),
         },
         ReminderRecipientType.NOTE_TO_SELF: {
             "widget": _("You [sent]({conversation_url}) yourself a {widget}."),
