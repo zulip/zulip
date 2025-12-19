@@ -285,7 +285,6 @@ function get_options_for_recipient_widget(): Option[] {
         unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct messages"}),
         search_terms: [$t({defaultMessage: "dm"})],
-
     };
 
     if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {

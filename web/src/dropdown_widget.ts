@@ -367,17 +367,17 @@ export class DropdownWidget {
                         filter: {
                             $element: $search_input,
                             predicate(item, value) {
-                                const query=value.toLowerCase();
+                                const query = value.toLowerCase();
 
-                                if(item.name.toLowerCase().includes(query)){
+                                if (item.name.toLowerCase().includes(query)) {
                                     return true;
                                 }
-                                if(item.search_terms){ 
-                                   return item.search_terms.some((term)=>
-                                     term.toLowerCase().includes(query),
-                                );
-                            }
-                            return false;
+                                if (item.search_terms) {
+                                    return item.search_terms.some((term) =>
+                                        term.toLowerCase().includes(query),
+                                    );
+                                }
+                                return false;
                             },
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),
