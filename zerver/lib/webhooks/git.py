@@ -213,10 +213,15 @@ def get_pull_request_event_message(
     reviewer: str | None = None,
     type: str = "PR",
     title: str | None = None,
+    suffix: str | None = None,
 ) -> str:
     action_messages = {
         "approval": "added their approval for",
         "unapproval": "removed their approval for",
+        "enqueued": "added",
+        "dequeued": "removed",
+        "milestoned": "linked",
+        "demilestoned": "unlinked",
     }
 
     kwargs = {
@@ -255,6 +260,9 @@ def get_pull_request_event_message(
 
     if assignees or assignee or reviewer:
         main_message = f"{main_message} {assignee_info}"
+
+    if suffix:
+        main_message = f"{main_message} {suffix}"
 
     punctuation = ":" if message else "."
     if (
