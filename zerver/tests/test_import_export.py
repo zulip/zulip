@@ -1690,7 +1690,7 @@ class RealmImportExportTest(ExportFile):
             assert new_realm_emoji is not None
         original_realm_emoji_count = RealmEmoji.objects.count()
         self.assertGreaterEqual(original_realm_emoji_count, 2)
-        new_realm_emoji.author = None
+        new_realm_emoji.author = hamlet
         new_realm_emoji.save()
 
         RealmAuditLog.objects.create(
@@ -1859,17 +1859,17 @@ class RealmImportExportTest(ExportFile):
         # with is_user_active=True used for everything.
         self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
 
+        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         all_imported_realm_emoji = RealmEmoji.objects.filter(realm=imported_realm)
         self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
         for imported_realm_emoji in all_imported_realm_emoji:
-            self.assertNotEqual(imported_realm_emoji.author, None)
+            self.assertEqual(imported_realm_emoji.author_id, imported_hamlet.id)
 
         self.assertEqual(
             original_realm.authentication_methods_dict(),
             imported_realm.authentication_methods_dict(),
         )
 
-        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         realmauditlog = RealmAuditLog.objects.get(
             modified_user=imported_hamlet, event_type=AuditLogEventType.USER_CREATED
         )

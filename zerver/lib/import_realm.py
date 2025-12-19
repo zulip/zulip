@@ -544,6 +544,13 @@ def fix_message_edit_history(
         message["edit_history"] = orjson.dumps(edit_history).decode()
 
 
+def fix_realm_emoji_author(data: ImportedTableData, default_author_id: int) -> None:
+    re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
+    for emoji in data["zerver_realmemoji"]:
+        if emoji["author_id"] is None:
+            emoji["author_id"] = default_author_id
+
+
 def current_table_ids(data: ImportedTableData, table: TableName) -> list[int]:
     """
     Returns the ids present in the current table
@@ -1464,15 +1471,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         NamedUserGroup.objects.bulk_update(named_user_groups, ["creator_id"])
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
-    re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
-
-    if settings.BILLING_ENABLED:
-        disable_restricted_authentication_methods(data)
-
-    for table, model, related_table in realm_tables:
-        re_map_foreign_keys(data, table, "realm", related_table="realm")
-        update_model_ids(model, data, related_table)
-        bulk_import_model(data, model)
 
     # Ensure RealmEmoji get the .author set to a reasonable default, if the value
     # wasn't provided in the import data.
@@ -1481,11 +1479,31 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         .order_by("id")
         .first()
     )
-    for realm_emoji in RealmEmoji.objects.filter(realm=realm):
-        if realm_emoji.author_id is None:
-            assert first_user_profile is not None
-            realm_emoji.author_id = first_user_profile.id
-            realm_emoji.save(update_fields=["author_id"])
+    if first_user_profile is not None:
+        realm_emoji_default_author_id = first_user_profile.id
+    else:
+        first_fallback_user_profile = (
+            UserProfile.objects.filter(
+                realm=realm, is_active=False, role=UserProfile.ROLE_REALM_OWNER
+            )
+            .order_by("id")
+            .first()
+        )
+        assert first_fallback_user_profile is not None
+        realm_emoji_default_author_id = first_fallback_user_profile.id
+
+    fix_realm_emoji_author(
+        data,
+        realm_emoji_default_author_id,
+    )
+
+    if settings.BILLING_ENABLED:
+        disable_restricted_authentication_methods(data)
+
+    for table, model, related_table in realm_tables:
+        re_map_foreign_keys(data, table, "realm", related_table="realm")
+        update_model_ids(model, data, related_table)
+        bulk_import_model(data, model)
 
     channels = Stream.objects.filter(realm=realm)
     for channel in channels:

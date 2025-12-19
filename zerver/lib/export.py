@@ -2432,12 +2432,9 @@ def export_emoji_from_local(
 
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             shutil.copy2(local_path, output_path)
-            # Realm emoji author is optional.
-            author = realm_emoji_object.author
-            author_id = author.id if author else None
             record = dict(
                 realm_id=realm.id,
-                author=author_id,
+                author=realm_emoji_object.author_id,
                 path=emoji_path,
                 s3_path=emoji_path,
                 file_name=realm_emoji_object.file_name,
