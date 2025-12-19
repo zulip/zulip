@@ -731,12 +731,6 @@ html_rules: list["Rule"] = [
             "web/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
             "web/templates/user_profile_modal.hbs",
-            # Inline styling for an svg; could be moved to CSS files?
-            "templates/zerver/landing_nav.html",
-            "templates/corporate/features.html",
-            "templates/zerver/portico-header.html",
-            "templates/corporate/billing/billing.html",
-            "templates/corporate/billing/upgrade.html",
             # Miscellaneous violations to be cleaned up
             "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
