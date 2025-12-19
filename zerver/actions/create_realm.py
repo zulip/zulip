@@ -59,6 +59,7 @@ def do_change_realm_subdomain(
     """
     old_subdomain = realm.subdomain
     old_url = realm.url
+    was_demo_organization = realm.demo_organization_scheduled_deletion_date is not None
     # If the realm had been a demo organization scheduled for
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
@@ -75,6 +76,7 @@ def do_change_realm_subdomain(
             extra_data={
                 RealmAuditLog.OLD_VALUE: old_subdomain,
                 RealmAuditLog.NEW_VALUE: new_subdomain,
+                "was_demo_organization": was_demo_organization,
             },
         )
 
