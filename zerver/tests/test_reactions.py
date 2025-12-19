@@ -196,6 +196,7 @@ class ReactionEmojiTest(ZulipTestCase):
 
     def test_get_emoji_data(self) -> None:
         realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
         realm_emoji = RealmEmoji.objects.get(name="green_tick")
 
         def verify(emoji_name: str, emoji_code: str, reaction_type: str) -> None:
@@ -221,7 +222,7 @@ class ReactionEmojiTest(ZulipTestCase):
 
         # Test override Unicode emoji.
         overriding_emoji = RealmEmoji.objects.create(
-            name="astonished", realm=realm, file_name="astonished"
+            name="astonished", realm=realm, file_name="astonished", author=hamlet
         )
         verify("astonished", str(overriding_emoji.id), "realm_emoji")
 
@@ -231,7 +232,9 @@ class ReactionEmojiTest(ZulipTestCase):
         verify("astonished", "1f632", "unicode_emoji")
 
         # Test override `:zulip:` emoji.
-        overriding_emoji = RealmEmoji.objects.create(name="zulip", realm=realm, file_name="zulip")
+        overriding_emoji = RealmEmoji.objects.create(
+            name="zulip", realm=realm, file_name="zulip", author=hamlet
+        )
         verify("zulip", str(overriding_emoji.id), "realm_emoji")
 
         # Test non-existent emoji.

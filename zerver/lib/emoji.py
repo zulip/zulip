@@ -126,9 +126,7 @@ def check_remove_custom_emoji(user_profile: UserProfile, emoji_name: str) -> Non
     emoji = RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).first()
-    current_user_is_author = (
-        emoji is not None and emoji.author is not None and emoji.author.id == user_profile.id
-    )
+    current_user_is_author = emoji is not None and emoji.author.id == user_profile.id
     if not current_user_is_author:
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 

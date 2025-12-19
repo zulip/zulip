@@ -2429,7 +2429,7 @@ def export_emoji_from_local(
             shutil.copy2(local_path, output_path)
             # Realm emoji author is optional.
             author = realm_emoji_object.author
-            author_id = author.id if author else None
+            author_id = author.id
             record = dict(
                 realm_id=realm.id,
                 author=author_id,
