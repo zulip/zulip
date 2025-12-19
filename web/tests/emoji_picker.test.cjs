@@ -71,7 +71,8 @@ run_test("initialize", () => {
         score,
     });
 
-    const popular_emojis = typeahead.popular_emojis.map((emoji_code) => make_emoji(emoji_code, 10));
+    // Note: The 18 here no longer matches POPULAR_EMOJIS_BONUS_WEIGHT
+    const popular_emojis = typeahead.popular_emojis.map((emoji_code) => make_emoji(emoji_code, 18));
     const non_popular_emoji_codes = [
         "1f3df", // stadium
         "1f4b0", // money bag
@@ -83,7 +84,7 @@ run_test("initialize", () => {
     ];
     const non_popular_emojis_usage = [];
     for (const [i, non_popular_emoji_code] of non_popular_emoji_codes.entries()) {
-        non_popular_emojis_usage.push(make_emoji(non_popular_emoji_code, i));
+        non_popular_emojis_usage.push(make_emoji(non_popular_emoji_code, i + 10));
     }
     for (const emoji of [...popular_emojis, ...non_popular_emojis_usage]) {
         emoji_frequency.reaction_data.set(emoji.emoji_code, emoji);
