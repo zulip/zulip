@@ -304,7 +304,7 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
 
 
 def run_help_center_dev_server(
-    external_host: str, port: int = help_center_port
+    allowed_hosts: str, port: int = help_center_port
 ) -> "subprocess.Popen[bytes]":
     env = os.environ.copy()
     env["ZULIP_WEB_APP_PROXY_PORT"] = str(proxy_port)
@@ -316,11 +316,29 @@ def run_help_center_dev_server(
             "dev",
             f"--port={port}",
             "--host",
-            f"--allowed-hosts={urlsplit(external_host).hostname}",
+            f"--allowed-hosts={allowed_hosts}",
         ],
         cwd="starlight_help",
         env=env,
     )
+
+
+def get_help_center_allowed_hosts() -> str:
+    import django
+
+    django.setup()
+    from django.conf import settings
+
+    hostnames = set()
+    # * is not a valid value for --allowed-hosts in vite.
+    # Ports are not allowed for --allowed-hosts in vite.
+    for host in settings.ALLOWED_HOSTS:
+        if host != "*":
+            hostname = urlsplit(f"//{host}").hostname
+            if hostname:
+                hostnames.add(hostname)
+
+    return ",".join(hostnames)
 
 
 @web.middleware
@@ -454,7 +472,8 @@ async def serve() -> None:
     external_host_url = f"{http_protocol}://{external_host}"
 
     if options.only_help_center:
-        children.append(run_help_center_dev_server(external_host_url, proxy_port))
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts, proxy_port))
         print_listeners(external_host_url)
         return
 
@@ -464,7 +483,8 @@ async def serve() -> None:
         children.append(start_webpack_watcher())
 
     if help_center_dev_server_enabled:
-        children.append(run_help_center_dev_server(external_host_url))
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts))
 
     setup_routes(options.help_center_static_build, options.help_center_dev_server)
 
