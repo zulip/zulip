@@ -282,8 +282,8 @@ def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
     return upload_backend.save_attachment_contents(path_id, filehandle)
 
 
-def delete_message_attachment(path_id: str) -> bool:
-    return upload_backend.delete_message_attachment(path_id)
+def delete_message_attachment(path_id: str) -> None:
+    upload_backend.delete_message_attachment(path_id)
 
 
 def delete_message_attachments(path_ids: list[str]) -> None:

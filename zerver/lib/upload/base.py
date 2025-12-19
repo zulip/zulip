@@ -47,7 +47,7 @@ class ZulipUploadBackend:
     def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
-    def delete_message_attachment(self, path_id: str) -> bool:
+    def delete_message_attachment(self, path_id: str) -> None:
         raise NotImplementedError
 
     def delete_message_attachments(self, path_ids: list[str]) -> None:
