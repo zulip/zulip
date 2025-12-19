@@ -9,10 +9,13 @@ from django.http import HttpRequest
 from django.utils import translation
 from two_factor.utils import default_device
 
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.context_processors import get_apps_page_url
 from zerver.lib.events import ClientCapabilities, do_events_register
 from zerver.lib.i18n import (
     get_and_set_request_language,
+    get_available_language_codes,
     get_language_list,
     get_language_translation_data,
 )
@@ -104,6 +107,10 @@ def build_page_params_for_home_page_load(
         simplified_presence_events=True,
     )
 
+    available_language_codes = get_available_language_codes()
+    if realm.default_language not in available_language_codes:
+        do_set_realm_property(realm, "default_language", "en", acting_user=None)
+
     if user_profile is not None:
         client = RequestNotes.get_notes(request).client
         assert client is not None
@@ -124,6 +131,12 @@ def build_page_params_for_home_page_load(
         )
         queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
+        if default_language not in available_language_codes:
+            do_change_user_setting(
+                user_profile, "default_language", realm.default_language, acting_user=None
+            )
+            default_language = user_profile.default_language
+            state_data["user_settings"]["default_language"] = user_profile.default_language
     else:
         # The spectator client will be fetching the /register response
         # for spectators via the API.
