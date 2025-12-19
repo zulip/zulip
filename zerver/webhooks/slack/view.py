@@ -278,7 +278,7 @@ def api_slack_webhook(
     sender = get_slack_sender_name(user_id, slack_app_token)
     content = get_message_body(text, sender, files)
 
-    # channels_map_to_topics=0 is ported to use UrlPreset.CHANNELS_MAPPING
+    # channels_map_to_topics=0 is ported to use PresetUrlOption.CHANNEL_MAPPING
     # (map_to_channels).
     if map_to_channels == "channels" and channels_map_to_topics is None:
         channels_map_to_topics = VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]
