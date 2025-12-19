@@ -2092,3 +2092,23 @@ run_test("fetch inaccessible user", async ({override, override_rewire}) => {
     assert.equal(inaccessible_user.user_id, 1);
     assert.equal(inaccessible_user.is_inaccessible_user, true);
 });
+
+run_test("get_user_mentions_for_display", () => {
+    people.add_active_user(stephen1);
+    people.add_active_user(stephen2);
+    people.add_active_user(maria);
+
+    assert.equal(people.get_user_mentions_for_display([stephen1]), "@**Stephen King|601**");
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2]),
+        "@**Stephen King|601** and @**Stephen King|602**",
+    );
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2, maria]),
+        "@**Stephen King|601**, @**Stephen King|602**,  and @**Maria Athens**",
+    );
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2, maria], true),
+        "@_**Stephen King|601**, @_**Stephen King|602**,  and @_**Maria Athens**",
+    );
+});

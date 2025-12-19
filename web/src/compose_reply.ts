@@ -312,17 +312,26 @@ export function quote_message(opts: {
                 },
             );
         } else {
+            const dm_user_ids = people.all_user_ids_in_pm(message)!;
+            const recipient_user_ids =
+                dm_user_ids.length > 1
+                    ? dm_user_ids.filter((id) => id !== message.sender_id)
+                    : [message.sender_id];
+            const recipient_users = recipient_user_ids.map((recipient_id) =>
+                people.get_by_user_id(recipient_id),
+            );
             // Final message looks like:
-            //     @_**Iago|5** [said](link to message):
+            //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
             //     ```quote
             //     message content
             //     ```
             // Keep syntax in sync with zerver/lib/reminders.py
             content = $t(
-                {defaultMessage: "{username} [said]({link_to_message}):"},
+                {defaultMessage: "{username} [said]({link_to_message}) to {recipients}:"},
                 {
                     username: sender_mention,
                     link_to_message: hash_util.by_conversation_and_time_url(message),
+                    recipients: people.get_user_mentions_for_display(recipient_users, true),
                 },
             );
         }
