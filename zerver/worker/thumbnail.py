@@ -7,6 +7,7 @@ from typing import Any
 
 import pyvips
 from django.db import transaction
+from django.db.utils import OperationalError
 from typing_extensions import override
 
 from zerver.actions.message_edit import do_update_embedded_data
@@ -35,14 +36,21 @@ class ThumbnailWorker(QueueProcessingWorker):
         start_time = time.perf_counter()
         with transaction.atomic(savepoint=False):
             try:
-                # This lock prevents us from racing with the on-demand
-                # rendering that can be triggered if a request is made
-                # directly to a thumbnail URL we have not made yet.
-                # This may mean that we may generate 0 thumbnail
-                # images once we get the lock.
-                row = ImageAttachment.objects.select_for_update(of=("self",)).get(id=event["id"])
+                # This lock prevents us from racing with other workers
+                # who might be servicing a duplicate request, or the
+                # unlikely on-demand rendering that can be triggered
+                # if a request is made directly to a thumbnail URL we
+                # have not made yet.  If any other process is holding
+                # the lock, we do not wait -- our outcome for
+                # thumbnailing would be the same, and there is no
+                # reason for us to hang out doing nothing and generate
+                # 0 more thumbnails.
+                row = ImageAttachment.objects.select_for_update(of=("self", ), nowait=True).get(id=event["id"])
             except ImageAttachment.DoesNotExist:  # nocoverage
                 logger.info("ImageAttachment row %d missing [%dms]", event["id"], (time.perf_counter() - start_time) * 1000)
+                return
+            except OperationalError:  # nocoverage
+                logger.debug("Dropping in-process thumbnail request for row %d [%dms]", event["id"], (time.perf_counter() - start_time) * 1000)
                 return
             lock_time = time.perf_counter() - start_time
             logger.info("Starting thumbnailing for %s", row.path_id)

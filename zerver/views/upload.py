@@ -340,7 +340,10 @@ def serve_file(
             # rendered yet.  Take a lock on the row, then render every
             # missing format, synchronously.  The lock prevents us
             # from doing double-work if the background worker is
-            # currently processing the row.
+            # currently processing the row.  Unlike the similar lock
+            # in the thumbnail worker, we _do_ want to wait until we
+            # get the lock, so if someone else is thumbnailing it
+            # still, then we wait for it to complete.
             with transaction.atomic(savepoint=False):
                 ensure_thumbnails(
                     ImageAttachment.objects.select_for_update().get(id=image_attachment.id),
