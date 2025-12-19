@@ -157,7 +157,7 @@ class S3Test(ZulipTestCase):
 
         path_id = re.sub(r"/user_uploads/", "", url)
         self.assertIsNotNone(bucket.Object(path_id).get())
-        self.assertTrue(delete_message_attachment(path_id))
+        delete_message_attachment(path_id)
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object(path_id).load()
 
@@ -185,7 +185,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object("non-existent-file").load()
-        self.assertEqual(False, delete_message_attachment("non-existent-file"))
+        delete_message_attachment("non-existent-file")
 
     @use_s3_backend
     def test_all_message_attachments(self) -> None:

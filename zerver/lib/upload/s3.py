@@ -289,8 +289,8 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str) -> bool:
-        return self.delete_file_from_s3(path_id, self.uploads_bucket)
+    def delete_message_attachment(self, path_id: str) -> None:
+        self.delete_file_from_s3(path_id, self.uploads_bucket)
 
     @override
     def delete_message_attachments(self, path_ids: list[str]) -> None:
