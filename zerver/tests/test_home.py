@@ -15,6 +15,7 @@ from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.events import has_pending_sponsorship_request
@@ -1400,6 +1401,51 @@ class HomeTest(ZulipTestCase):
             page_params["state_data"]["realm_push_notifications_enabled_end_timestamp"],
             datetime_to_timestamp(end_timestamp),
         )
+
+    def test_invalid_default_language(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        do_change_user_setting(cordelia, "default_language", "gl", acting_user=None)
+        do_change_user_setting(hamlet, "default_language", "no", acting_user=None)
+        do_set_realm_property(realm, "default_language", "pt-br", acting_user=None)
+
+        mocked_language_list = [
+            {"code": "de", "locale": "de", "name": "Deutsch", "percent_translated": 97},
+            {"code": "en", "locale": "en", "name": "English"},
+            {"code": "gl", "locale": "gl", "name": "galego", "percent_translated": 1},
+            {"code": "no", "locale": "no", "name": "norsk", "percent_translated": 1},
+            {
+                "code": "pt-br",
+                "locale": "pt_BR",
+                "name": "Português Brasileiro",
+                "percent_translated": 0,
+            },
+        ]
+
+        self.login_user(hamlet)
+        with patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self._get_home_page()
+
+        state_data = self._get_page_params(result)["state_data"]
+        self.assertEqual(state_data["user_settings"]["default_language"], "en")
+        realm.refresh_from_db()
+        hamlet.refresh_from_db()
+        self.assertEqual(realm.default_language, "en")
+        self.assertEqual(hamlet.default_language, "en")
+
+        # Test the case when realm's default is a valid value
+        # but user's language is set to an invalid value.
+        do_set_realm_property(realm, "default_language", "de", acting_user=None)
+        self.login_user(cordelia)
+        self.assertEqual(cordelia.default_language, "gl")
+
+        with patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self._get_home_page()
+        state_data = self._get_page_params(result)["state_data"]
+        self.assertEqual(state_data["user_settings"]["default_language"], "de")
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.default_language, "de")
 
 
 class TestDocRedirectView(ZulipTestCase):
