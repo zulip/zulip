@@ -715,28 +715,8 @@ ul.popover-group-menu-member-list {
     border: 0;
     padding: 0;
 
-    .popover-filter-input-wrapper {
-        position: relative;
-    }
-
-    .clear-search-button {
-        position: absolute;
-        /* The 60% instead of the usual 50% makes this
-        `x` button appear vertically centered inside the
-        input instead of the wrapper. */
-        top: 60%;
-        transform: translateY(-50%);
-        right: 0.5em;
-        font-size: 1em;
-        outline: none;
-        background: none;
-        border: none;
-        padding: 0;
-        opacity: 0.5;
-
-        &:hover {
-            opacity: 1;
-        }
+    .gif-search-container {
+        margin: 4px 4px 2px;
     }
 
     .tenor-content {
