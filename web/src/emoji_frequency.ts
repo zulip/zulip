@@ -4,7 +4,7 @@ import * as all_messages_data from "./all_messages_data.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as message_store from "./message_store.ts";
 import * as reactions from "./reactions.ts";
-import {current_user} from "./state_data.ts";
+import { current_user } from "./state_data.ts";
 import * as typeahead from "./typeahead.ts";
 
 export type ReactionUsage = {
@@ -23,16 +23,7 @@ export function update_frequently_used_emojis_list(): void {
     // 1. Get the list of special emojis
     const built_in_emojis = new Set(typeahead.popular_emojis);
 
-    // TEMPORARY: Print the list to the console so we can see what it looks like
-    console.log("DEBUG: Popular Emojis List:", typeahead.popular_emojis);
-
     const frequently_used_emojis = [...reaction_data.values()].toSorted((a, b) => {
-
-        // TEMPORARY: Print one emoji code to compare
-        if (a.score > 0 && Math.random() < 0.01) {
-            console.log("DEBUG: Checking Emoji Code:", a.emoji_code);
-        }
-
         let score_a = a.score;
         let score_b = b.score;
 
