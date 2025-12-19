@@ -152,14 +152,31 @@ class S3Test(ZulipTestCase):
     def test_delete_message_attachment(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
-        user_profile = self.example_user("hamlet")
-        url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
+        self.login("hamlet")
+        # Upload an image which will generate multiple thumbnails
+        webp_anim = ThumbnailFormat("webp", 100, 75, animated=True)
+        webp_still = ThumbnailFormat("webp", 100, 75, animated=False)
+        with (
+            self.thumbnail_formats(webp_anim, webp_still),
+            self.captureOnCommitCallbacks(execute=True),
+            get_test_image_file("animated_img.gif") as image_file,
+        ):
+            json_response = self.assert_json_success(
+                self.client_post("/json/user_uploads", {"file": image_file})
+            )
+            path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+            # Exit the block, triggering the thumbnailing worker
 
-        path_id = re.sub(r"/user_uploads/", "", url)
         self.assertIsNotNone(bucket.Object(path_id).get())
+        self.assertIsNotNone(bucket.Object(f"thumbnail/{path_id}/{webp_anim}").get())
+        self.assertIsNotNone(bucket.Object(f"thumbnail/{path_id}/{webp_still}").get())
         delete_message_attachment(path_id)
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object(path_id).load()
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(f"thumbnail/{path_id}/{webp_anim}").load()
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(f"thumbnail/{path_id}/{webp_still}").load()
 
     @use_s3_backend
     def test_delete_message_attachments(self) -> None:

@@ -290,12 +290,21 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def delete_message_attachment(self, path_id: str) -> None:
-        self.delete_file_from_s3(path_id, self.uploads_bucket)
+        self.delete_message_attachments([path_id])
 
     @override
     def delete_message_attachments(self, path_ids: list[str]) -> None:
+        all_paths = path_ids.copy()
+        for path_id in path_ids:
+            all_paths.append(f"{path_id}.info")
+            all_paths += [
+                thumb_path
+                for thumb_path, _ in self.all_message_attachments(
+                    include_thumbnails=True, prefix=f"thumbnail/{path_id}/"
+                )
+            ]
         self.uploads_bucket.delete_objects(
-            Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
+            Delete={"Objects": [{"Key": path_id} for path_id in all_paths], "Quiet": True},
         )
 
     @override
