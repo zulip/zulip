@@ -2079,3 +2079,24 @@ run_test("get_by_user_id", () => {
         },
     );
 });
+
+run_test("get_user_mentions_for_display", () => {
+    people.add_active_user(stephen1);
+    people.add_active_user(stephen2);
+    people.add_active_user(maria);
+
+    assert.equal(people.get_user_mentions_for_display([stephen1]), "@**Stephen King|601**");
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2]),
+        "@**Stephen King|601** and @**Stephen King|602**",
+    );
+    // User mentions are sorted.
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2, maria]),
+        "@**Maria Athens**, @**Stephen King|601**, and @**Stephen King|602**",
+    );
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2, maria], true),
+        "@_**Maria Athens**, @_**Stephen King|601**, and @_**Stephen King|602**",
+    );
+});

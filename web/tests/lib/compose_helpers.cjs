@@ -193,4 +193,23 @@ ${content}
 ${fence}`;
 }
 
-module.exports = {FakeComposeBox, quote_message_template, forward_channel_message_template};
+function forward_direct_message_template(opts) {
+    const {direct_message, dm_recipient_string, fence, content} = opts;
+
+    const {sender_full_name, sender_id, id: message_id, display_recipient} = direct_message;
+    const encoding_prefix = display_recipient.length > 2 ? "group" : "dm";
+    const dm_recipient_ids_string = display_recipient.map((user) => user.id).join(",");
+    const near_url = `http://zulip.zulipdev.com/#narrow/dm/${dm_recipient_ids_string}-${encoding_prefix}/near/${message_id}`;
+
+    return `translated: @_**${sender_full_name}|${sender_id}** [said](${near_url}) to ${dm_recipient_string}:
+${fence}quote
+${content}
+${fence}`;
+}
+
+module.exports = {
+    FakeComposeBox,
+    quote_message_template,
+    forward_channel_message_template,
+    forward_direct_message_template,
+};

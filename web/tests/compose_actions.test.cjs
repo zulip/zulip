@@ -6,6 +6,7 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {
     quote_message_template,
     forward_channel_message_template,
+    forward_direct_message_template,
 } = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
@@ -18,6 +19,12 @@ const $ = require("./lib/zjquery.cjs");
 
 const {set_current_user} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+initialize_user_settings({
+    user_settings: {
+        default_language: "en",
+    },
+});
 
 const nobody = make_user_group({
     name: "role:nobody",
@@ -475,6 +482,27 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     };
     people.add_active_user(steve);
 
+    const alice = {
+        user_id: 101,
+        email: "alice@example.com",
+        full_name: "Alice",
+    };
+    people.add_active_user(alice);
+
+    const bob = {
+        user_id: 102,
+        email: "bob@example.com",
+        full_name: "Bob",
+    };
+    people.add_active_user(bob);
+
+    const clara = {
+        user_id: 103,
+        email: "clara@example.com",
+        full_name: "Clara",
+    };
+    people.add_active_user(clara);
+
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
     override_private_message_recipient_ids({override});
@@ -653,6 +681,210 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         fence: "````",
         content: selected_message.raw_content,
     });
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Group direct message to 3 other users
+    let group_dm_recipients = [steve, alice, bob, clara];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 101,
+        raw_content: "Hi yall",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}**, @_**${bob.full_name}**, and @_**${clara.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Group direct message to only 2 other users
+    group_dm_recipients = [steve, alice, bob];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Hi you two",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}** and @_**${bob.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Other's group direct message
+    group_dm_recipients = [steve, alice, bob];
+    selected_message = {
+        type: "private",
+        sender_full_name: bob.full_name,
+        sender_id: bob.user_id,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Oh hi",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}** and @_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Direct message to other user
+    let dm_recipients = [steve, alice];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Hi Alice",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Other user's direct message
+    dm_recipients = [steve, alice];
+    selected_message = {
+        type: "private",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 103,
+        raw_content: "Hi Steve",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // One's own direct message
+    dm_recipients = [steve];
+    selected_message = {
+        type: "private",
+        sender_full_name: alice.full_name,
+        sender_id: steve.user_id,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 104,
+        raw_content: "It's just me",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
     quote_message(opts);
     assert.ok(replaced);
 
