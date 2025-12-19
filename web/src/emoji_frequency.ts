@@ -20,9 +20,33 @@ const CURRENT_USER_REACTION_WEIGHT = 5;
 export const reaction_data = new Map<string, ReactionUsage>();
 
 export function update_frequently_used_emojis_list(): void {
-    const frequently_used_emojis = [...reaction_data.values()].toSorted(
-        (a, b) => b.score - a.score,
-    );
+    // 1. Get the list of special emojis
+    const built_in_emojis = new Set(typeahead.popular_emojis);
+
+    // TEMPORARY: Print the list to the console so we can see what it looks like
+    console.log("DEBUG: Popular Emojis List:", typeahead.popular_emojis);
+
+    const frequently_used_emojis = [...reaction_data.values()].toSorted((a, b) => {
+
+        // TEMPORARY: Print one emoji code to compare
+        if (a.score > 0 && Math.random() < 0.01) {
+            console.log("DEBUG: Checking Emoji Code:", a.emoji_code);
+        }
+
+        let score_a = a.score;
+        let score_b = b.score;
+
+        // 2. Give +18 Bonus points if it is a built-in emoji
+        if (built_in_emojis.has(a.emoji_code)) {
+            score_a += 18;
+        }
+        if (built_in_emojis.has(b.emoji_code)) {
+            score_b += 18;
+        }
+
+        // 3. Compare the new scores
+        return score_b - score_a;
+    });
 
     const top_frequently_used_emojis = [];
     let popular_emojis = typeahead.get_popular_emojis();
