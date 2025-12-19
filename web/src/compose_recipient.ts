@@ -276,14 +276,16 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     event.preventDefault();
     event.stopPropagation();
 }
-
+// working on "Direct message" does include "dm"
 function get_options_for_recipient_widget(): Option[] {
     const options: Option[] = stream_data.get_options_for_dropdown_widget();
 
     const direct_messages_option = {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
-        name: $t({defaultMessage: "Direct message"}),
+        name: $t({defaultMessage: "Direct messages"}),
+        search_terms: [$t({defaultMessage: "dm"})],
+
     };
 
     if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {

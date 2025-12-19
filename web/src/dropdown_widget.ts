@@ -29,6 +29,8 @@ export type Option = {
     unique_id: number | string;
     name: string;
     description?: string;
+    // adding search term
+    search_terms?: string[];
     is_direct_message?: boolean;
     is_setting_disabled?: boolean;
     stream?: StreamSubscription;
@@ -365,7 +367,17 @@ export class DropdownWidget {
                         filter: {
                             $element: $search_input,
                             predicate(item, value) {
-                                return item.name.toLowerCase().includes(value);
+                                const query=value.toLowerCase();
+
+                                if(item.name.toLowerCase().includes(query)){
+                                    return true;
+                                }
+                                if(item.search_terms){ 
+                                   return item.search_terms.some((term)=>
+                                     term.toLowerCase().includes(query),
+                                );
+                            }
+                            return false;
                             },
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),
