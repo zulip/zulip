@@ -9,7 +9,7 @@
 {% block content %}
 
 {% if not is_self_hosted_realm %}
-{% include 'zerver/landing_nav.html' %}
+{% include 'zerver/marketing_nav.html' %}
 {% endif %}
 
 <div class="portico-pricing plans {% if is_self_hosted_realm %} showing-self-hosted {% else %} showing-cloud {% endif %}">
