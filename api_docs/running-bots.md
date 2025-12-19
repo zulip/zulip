@@ -37,11 +37,15 @@ You'll need:
 1. Use the following command to start the bot process *(replacing
    `~/path/to/zuliprc` with the path to the `zuliprc` file you downloaded above)*:
 
-       zulip-run-bot<bot-name> --config-file ~/path/to/zuliprc
+       ```
+    zulip-run-bot <bot-name> --config-file ~/path/to/zuliprc
+    ```
 
-To run a custom bot that you created yourself, provide the path to the bot's Python file instead of a bot name:
+    To run a custom bot that you created yourself, provide the path to the bot's Python file instead of a bot name:
 
-       zulip-run-bot ~/path/to/my-bot.py  --config-file ~/path/to/zuliprc
+    ```
+    zulip-run-bot ~/path/to/my-bot.py --config-file ~/path/to/zuliprc
+    ```
 
 1. Check the output of the command above to make sure your bot is running.
    It should include the following line:
