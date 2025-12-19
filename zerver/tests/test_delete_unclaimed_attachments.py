@@ -3,6 +3,7 @@ import re
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+import orjson
 import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -108,6 +109,20 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
                 os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", unused_attachment.path_id)
             )
         )
+
+    def test_delete_info_file(self) -> None:
+        attachment = self.make_attachment("text.txt")
+        assert settings.LOCAL_FILES_DIR
+        info_file = os.path.join(settings.LOCAL_FILES_DIR, attachment.path_id + ".info")
+        with open(info_file, "wb") as f:
+            f.write(orjson.dumps({"id": attachment.path_id}))
+        self.assertTrue(os.path.isfile(info_file))
+
+        do_delete_old_unclaimed_attachments(3)
+        self.assertTrue(os.path.isfile(info_file))
+
+        do_delete_old_unclaimed_attachments(1)
+        self.assertFalse(os.path.isfile(info_file))
 
     def test_delete_unused_upload(self) -> None:
         unused_attachment = self.make_attachment("text.txt")

@@ -48,23 +48,28 @@ def read_local_file(type: Literal["avatars", "files"], path: str) -> Iterator[by
         yield from iter(lambda: f.read(4 * 1024 * 1024), b"")
 
 
-def delete_local_file(type: Literal["avatars", "files"], path: str) -> None:
+def delete_local_file(
+    type: Literal["avatars", "files"], path: str, *, directory: bool = False
+) -> None:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     assert_is_local_storage_path(type, file_path)
 
-    if not os.path.isfile(file_path):
-        return
+    def prune_empty_dirs(file_path: str) -> None:
+        # Remove as many directories up the tree as are now empty
+        directory = os.path.dirname(file_path)
+        while directory != settings.LOCAL_UPLOADS_DIR:
+            try:
+                os.rmdir(directory)
+                directory = os.path.dirname(directory)
+            except OSError:
+                break
 
-    os.remove(file_path)
-
-    # Remove as many directories up the tree as are now empty
-    directory = os.path.dirname(file_path)
-    while directory != settings.LOCAL_UPLOADS_DIR:
-        try:
-            os.rmdir(directory)
-            directory = os.path.dirname(directory)
-        except OSError:
-            break
+    if directory and os.path.isdir(file_path):
+        shutil.rmtree(file_path)
+        prune_empty_dirs(os.path.dirname(file_path))
+    elif os.path.isfile(file_path):
+        os.remove(file_path)
+        prune_empty_dirs(file_path)
 
 
 class LocalUploadBackend(ZulipUploadBackend):
@@ -115,6 +120,8 @@ class LocalUploadBackend(ZulipUploadBackend):
     @override
     def delete_message_attachment(self, path_id: str) -> None:
         delete_local_file("files", path_id)
+        delete_local_file("files", f"{path_id}.info")
+        delete_local_file("files", f"thumbnail/{path_id}/", directory=True)
 
     @override
     def all_message_attachments(
