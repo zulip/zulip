@@ -194,7 +194,7 @@ function toggle_picker_popover(target: HTMLElement): void {
                     assert(e.currentTarget instanceof HTMLElement);
                     handle_gif_click(e.currentTarget);
                 });
-                $popper.on("click", "#gif-search-clear", (e) => {
+                $popper.on("click", ".input-close-filter-button", (e) => {
                     e.stopPropagation();
                     $("#gif-search-query").val("");
                     update_grid_with_search_term("");
