@@ -1526,8 +1526,6 @@ class MessageMoveTopicTest(ZulipTestCase):
         # The automated notice should render the topic link using a permalink with the latest
         # moved message id ("with/<id>") so users land in the right conversation.
         rendered_notice = notice.rendered_content
-        if rendered_notice is None:  # nocoverage
-            self.fail("Rendered content unexpectedly None for move notice")
         self.assertIn(f"/with/{max_moved_id}", rendered_notice)
 
     def test_notify_both_topics(self) -> None:
