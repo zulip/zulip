@@ -1,10 +1,8 @@
-import assert from "minimalistic-assert";
-
 import * as all_messages_data from "./all_messages_data.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as message_store from "./message_store.ts";
 import * as reactions from "./reactions.ts";
-import { current_user } from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import * as typeahead from "./typeahead.ts";
 
 export type ReactionUsage = {
@@ -23,7 +21,7 @@ export function update_frequently_used_emojis_list(): void {
     // 1. Get the list of special emojis
     const built_in_emojis = new Set(typeahead.popular_emojis);
 
-    const frequently_used_emojis = [...reaction_data.values()].toSorted((a, b) => {
+    const frequently_used_emojis = [...reaction_data.values()].sort((a, b) => {
         let score_a = a.score;
         let score_b = b.score;
 
@@ -40,7 +38,8 @@ export function update_frequently_used_emojis_list(): void {
     });
 
     const top_frequently_used_emojis = [];
-    let popular_emojis = typeahead.get_popular_emojis();
+    const popular_emojis = typeahead.get_popular_emojis();
+
     for (const emoji of frequently_used_emojis) {
         if (
             top_frequently_used_emojis.length + popular_emojis.length ===
@@ -48,39 +47,42 @@ export function update_frequently_used_emojis_list(): void {
         ) {
             break;
         }
-        assert(emoji !== undefined);
+        if (emoji === undefined) {
+            continue;
+        }
         top_frequently_used_emojis.push({
-            emoji_type: emoji.emoji_type,
             emoji_code: emoji.emoji_code,
+            emoji_type: emoji.emoji_type,
         });
-        popular_emojis = popular_emojis.filter(
-            (popular_emoji) => popular_emoji.emoji_code !== emoji.emoji_code,
-        );
     }
 
-    const final_frequently_used_emoji_list = [...top_frequently_used_emojis, ...popular_emojis];
-    typeahead.set_frequently_used_emojis(
-        final_frequently_used_emoji_list.slice(0, MAX_FREQUENTLY_USED_EMOJIS),
-    );
+    // Filter out duplicates
+    const final_frequently_used_emoji_list = top_frequently_used_emojis.filter((emoji) => {
+        const is_duplicate = popular_emojis.some(
+            (popular_emoji) => popular_emoji.emoji_code === emoji.emoji_code,
+        );
+        return !is_duplicate;
+    });
+
+    typeahead.set_frequently_used_emojis(final_frequently_used_emoji_list);
     emoji_picker.rebuild_catalog();
 }
 
-/*
-    This function assumes reactions.add_reaction has already been called.
-    TODO: Split reactions.ts into data and UI modules, so that this can
-    be called from directly from reactions.add_reaction without creating
-    an import cycle.
-*/
-export function update_emoji_frequency_on_add_reaction_event(event: reactions.ReactionEvent): void {
+export function update_emoji_frequency_on_add_reaction_event(
+    event: reactions.ReactionEvent,
+): void {
     const message_id = event.message_id;
     const message = message_store.get(message_id);
     if (message === undefined) {
         return;
     }
+
     const emoji_id = reactions.get_local_reaction_id(event);
     const clean_reaction_object = message.clean_reactions.get(emoji_id);
 
-    assert(clean_reaction_object !== undefined);
+    if (clean_reaction_object === undefined) {
+        return;
+    }
 
     if (!reaction_data.has(emoji_id)) {
         reaction_data.set(emoji_id, {
@@ -93,7 +95,9 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
     }
 
     const reaction_usage = reaction_data.get(emoji_id);
-    assert(reaction_usage !== undefined);
+    if (reaction_usage === undefined) {
+        return;
+    }
 
     if (reaction_usage.message_ids.has(message_id)) {
         return;
@@ -102,7 +106,7 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
 
     if (event.user_id === current_user.user_id) {
         reaction_usage.score += CURRENT_USER_REACTION_WEIGHT;
-        reaction_usage.current_user_reacted_message_ids.add(message.id);
+        reaction_usage.current_user_reacted_message_ids.add(message_id);
     } else {
         reaction_usage.score += 1;
     }
@@ -131,7 +135,7 @@ export function update_emoji_frequency_on_remove_reaction_event(
 
     if (event.user_id === current_user.user_id) {
         reaction_usage.score -= CURRENT_USER_REACTION_WEIGHT;
-        reaction_usage.current_user_reacted_message_ids.delete(message.id);
+        reaction_usage.current_user_reacted_message_ids.delete(message_id);
     } else {
         reaction_usage.score -= 1;
     }
@@ -141,13 +145,15 @@ export function update_emoji_frequency_on_remove_reaction_event(
 export function update_emoji_frequency_on_messages_deletion(message_ids: number[]): void {
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
-        assert(message !== undefined);
+        if (message === undefined) {
+            continue;
+        }
         const message_reactions = message.clean_reactions.values();
         for (const emoji of message_reactions) {
             const emoji_id = emoji.local_id;
             const reaction_usage = reaction_data.get(emoji_id);
             if (reaction_usage === undefined) {
-                return;
+                continue;
             }
             if (reaction_usage.message_ids.delete(message_id)) {
                 reaction_usage.score -= 1;
@@ -166,7 +172,9 @@ export function initialize_frequently_used_emojis(): void {
 
     for (let i = messages.length - 1; i >= 0; i -= 1) {
         const message = messages[i];
-        assert(message !== undefined);
+        if (message === undefined) {
+            continue;
+        }
         const message_reactions = message.clean_reactions.values();
         for (const emoji of message_reactions) {
             const emoji_id = emoji.local_id;
@@ -180,13 +188,16 @@ export function initialize_frequently_used_emojis(): void {
                 });
             }
             const reaction = reaction_data.get(emoji_id);
-            assert(reaction !== undefined);
+            if (reaction === undefined) {
+                continue;
+            }
             reaction.score += 1;
-            reaction.message_ids.add(message.id);
+            // FIX: Use brackets ["id"] to satisfy TS4111 strict index signature
+            reaction.message_ids.add(message["id"]);
 
             if (emoji.user_ids.includes(current_user.user_id)) {
                 reaction.score += CURRENT_USER_REACTION_WEIGHT - 1;
-                reaction.current_user_reacted_message_ids.add(message.id);
+                reaction.current_user_reacted_message_ids.add(message["id"]);
             }
         }
     }
