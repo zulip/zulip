@@ -5425,37 +5425,27 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE NOT has_link")
 
     def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has
+        term = NarrowParameter(operator="has", operand="reaction")
+        self._do_add_term_test(
+            term,
+            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
+        )
 
-        body = "Hello"
-        msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
-        msg = Message.objects.get(id=msg_id)
+    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
+        term = NarrowParameter(operator="has", operand="reaction", negated=True)
+        self._do_add_term_test(
+            term,
+            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
+        )
 
-        with mock.patch(
-            "zerver.actions.uploads.do_claim_attachments", wraps=do_claim_attachments
-        ) as m:
-            self.update_message(
-                msg, f"[link](http://{hamlet.realm.host}/user_uploads/{dummy_path_ids[0]})"
-            )
-            self.assertTrue(m.called)
-            m.reset_mock()
+    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
+        term = NarrowParameter(operator="has", operand="non_supported")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-            self.update_message(msg, f"[link](/user_uploads/{dummy_path_ids[1]})")
-            self.assertTrue(m.called)
-            m.reset_mock()
-
-            self.update_message(msg, f"[new text link](/user_uploads/{dummy_path_ids[1]})")
-            self.assertFalse(m.called)
-            m.reset_mock()
-
-            # It's not clear this is correct behavior
-            self.update_message(msg, f"[link](user_uploads/{dummy_path_ids[2]})")
-            self.assertFalse(m.called)
-            m.reset_mock()
-
-            self.update_message(msg, f"[link](https://github.com/user_uploads/{dummy_path_ids[0]})")
-            self.assertFalse(m.called)
-            m.reset_mock()
+    def test_add_term_using_in_operator(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="in", operand="home")
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_has_reaction(self) -> None:
         self.login("iago")
