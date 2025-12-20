@@ -85,14 +85,15 @@ as an empty string.
   reaction](/help/emoji-reactions).
 
 * In Zulip 7.0 (feature level 177), support was added for three filters
-  related to direct messages: `is:dm`, `dm` and `dm-including`. The
+  related to direct messages: `is:dm`, `dm` and `dm-with`. The
   `dm` operator replaced and deprecated the `pm-with` operator. The
   `is:dm` filter replaced and deprecated the `is:private` filter. The
-  `dm-including` operator replaced and deprecated the `group-pm-with`
-  operator.
+  `dm-with` operator replaced and deprecated the `group-pm-with`
+  operator. (`dm-including` was the original name for `dm-with` and is
+  now a legacy alias.)
 
-    * The `dm-including` and `group-pm-with` operators return slightly
-      different results. For example, `dm-including:1234` returns all
+    * The `dm-with` and `group-pm-with` operators return slightly
+      different results. For example, `dm-with:1234` returns all
       direct messages (1-on-1 and group) that include the current user
       and the user with the unique user ID of `1234`. On the other hand,
       `group-pm-with:1234` returned only group direct messages that
@@ -169,7 +170,7 @@ help center because they are primarily useful to API clients:
   you and user ID `1234`.
 * `dm:1234,5678`: Search the direct message conversation between
   you, user ID `1234`, and user ID `5678`.
-* `dm-including:1234`: Search all direct messages (1-on-1 and group)
+* `dm-with:1234`: Search all direct messages (1-on-1 and group)
   that include you and user ID `1234`.
 
 !!! tip ""

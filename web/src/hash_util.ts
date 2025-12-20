@@ -38,7 +38,8 @@ export function get_reload_hash(): string {
 export function encode_operand(operator: string, operand: string): string {
     if (
         operator === "group-pm-with" ||
-        operator === "dm-including" ||
+        operator === "dm-with" ||
+        operator === "dm-including" || // legacy alias
         operator === "dm" ||
         operator === "sender" ||
         operator === "pm-with"
@@ -69,7 +70,7 @@ export function decode_operand(
     operator: NarrowCanonicalTerm["operator"],
     operand: NarrowCanonicalTerm["operand"],
 ): string {
-    if (operator === "dm-including" || operator === "dm" || operator === "sender") {
+    if (operator === \"dm-with\" || operator === \"dm\" || operator === \"sender\") {
         const emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;

@@ -2558,11 +2558,12 @@ No changes; feature level used for Zulip 7.0 release.
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
   Added support for three [search/narrow filters](/api/construct-narrow#changes)
-  related to direct messages: `is:dm`, `dm` and `dm-including`.
+  related to direct messages: `is:dm`, `dm` and `dm-with`.
   The `dm` operator replaces and deprecates the `pm-with` operator.
   The `is:dm` filter replaces and deprecates the `is:private` filter.
-  The `dm-including` operator replaces and deprecates the `group-pm-with`
-  operator. Because existing Zulip messages may have links with these
+  The `dm-with` operator replaces and deprecates the `group-pm-with`
+  operator. (`dm-including` was the original name for `dm-with` and is
+  now a legacy alias.) Because existing Zulip messages may have links with these
   legacy filters, they are still supported for backwards-compatibility.
 
 **Feature level 176**

@@ -503,6 +503,14 @@ test("basics", () => {
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
 
+    // "dm-including" was replaced with "dm-with"
+    terms = [{operator: "dm-including", operand: "joe@example.com"}];
+    filter = new Filter(terms);
+    assert.ok(filter.has_operator("dm-with"));
+    assert.ok(!filter.has_operator("dm-including"));
+    assert.ok(!filter.is_channel_view());
+    assert.ok(!filter.has_exactly_channel_topic_operators());
+
     terms = [{operator: "is", operand: "resolved"}];
     filter = new Filter(terms);
     assert.ok(!filter.contains_only_private_messages());
