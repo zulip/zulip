@@ -1,13 +1,11 @@
 import re
-from collections import OrderedDict
 from typing import Any
 from unittest import mock
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import urlencode
 
 import responses
 from django.test import override_settings
 from django.utils.html import escape
-from pyoembed.providers import get_provider
 from requests.exceptions import ConnectionError
 from typing_extensions import override
 
@@ -17,7 +15,7 @@ from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
+from zerver.lib.url_preview.oembed import get_oembed_data, get_oembed_endpoint, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
@@ -26,18 +24,17 @@ from zerver.worker.embed_links import FetchLinksEmbedData
 
 
 def reconstruct_url(url: str, maxwidth: int = 640, maxheight: int = 480) -> str:
-    # The following code is taken from
-    # https://github.com/rafaelmartins/pyoembed/blob/master/pyoembed/__init__.py.
-    # This is a helper function which will be indirectly use to mock the HTTP responses.
-    provider = get_provider(str(url))
-    oembed_url = provider.oembed_url(url)
-    scheme, netloc, path, query_string, fragment = urlsplit(oembed_url)
-
-    query_params = OrderedDict(parse_qsl(query_string))
-    query_params["maxwidth"] = str(maxwidth)
-    query_params["maxheight"] = str(maxheight)
-    final_url = urlunsplit((scheme, netloc, path, urlencode(query_params, True), fragment))
-    return final_url
+    """Construct the oEmbed request URL for a given URL."""
+    endpoint = get_oembed_endpoint(url)
+    if endpoint is None:
+        raise ValueError(f"No oEmbed provider found for URL: {url}")
+    params = {
+        "url": url,
+        "format": "json",
+        "maxwidth": maxwidth,
+        "maxheight": maxheight,
+    }
+    return f"{endpoint}?{urlencode(params)}"
 
 
 @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -46,16 +43,16 @@ class OembedTestCase(ZulipTestCase):
     def test_present_provider(self) -> None:
         response_data = {
             "type": "rich",
-            "thumbnail_url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
+            "thumbnail_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
             "thumbnail_width": 640,
-            "thumbnail_height": 426,
-            "title": "NASA",
-            "html": "<p>test</p>",
+            "thumbnail_height": 480,
+            "title": "Test Video",
+            "html": "<iframe></iframe>",
             "version": "1.0",
-            "width": 658,
-            "height": 400,
+            "width": 640,
+            "height": 480,
         }
-        url = "http://instagram.com/p/BLtI2WdAymy"
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         reconstructed_url = reconstruct_url(url)
         responses.add(
             responses.GET,
@@ -73,18 +70,16 @@ class OembedTestCase(ZulipTestCase):
     def test_photo_provider(self) -> None:
         response_data = {
             "type": "photo",
-            "thumbnail_url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
-            "url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
+            "thumbnail_url": "https://i.imgur.com/test.jpg",
+            "url": "https://i.imgur.com/test.jpg",
             "thumbnail_width": 640,
             "thumbnail_height": 426,
-            "title": "NASA",
-            "html": "<p>test</p>",
+            "title": "Test Image",
             "version": "1.0",
             "width": 658,
             "height": 400,
         }
-        # pyoembed.providers.imgur only works with http:// URLs, not https:// (!)
-        url = "http://imgur.com/photo/158727223"
+        url = "https://imgur.com/gallery/test123"
         reconstructed_url = reconstruct_url(url)
         responses.add(
             responses.GET,
@@ -102,16 +97,16 @@ class OembedTestCase(ZulipTestCase):
     def test_video_provider(self) -> None:
         response_data = {
             "type": "video",
-            "thumbnail_url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
+            "thumbnail_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
             "thumbnail_width": 640,
-            "thumbnail_height": 426,
-            "title": "NASA",
-            "html": "<p>test</p>",
+            "thumbnail_height": 480,
+            "title": "Test YouTube Video",
+            "html": "<iframe src='https://www.youtube.com/embed/dQw4w9WgXcQ'></iframe>",
             "version": "1.0",
-            "width": 658,
-            "height": 400,
+            "width": 640,
+            "height": 480,
         }
-        url = "http://blip.tv/video/158727223"
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         reconstructed_url = reconstruct_url(url)
         responses.add(
             responses.GET,
@@ -127,7 +122,7 @@ class OembedTestCase(ZulipTestCase):
 
     @responses.activate
     def test_connect_error_request(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         reconstructed_url = reconstruct_url(url)
         responses.add(responses.GET, reconstructed_url, body=ConnectionError())
         data = get_oembed_data(url)
@@ -135,7 +130,7 @@ class OembedTestCase(ZulipTestCase):
 
     @responses.activate
     def test_400_error_request(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         reconstructed_url = reconstruct_url(url)
         responses.add(responses.GET, reconstructed_url, status=400)
         data = get_oembed_data(url)
@@ -143,7 +138,7 @@ class OembedTestCase(ZulipTestCase):
 
     @responses.activate
     def test_500_error_request(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         reconstructed_url = reconstruct_url(url)
         responses.add(responses.GET, reconstructed_url, status=500)
         data = get_oembed_data(url)
@@ -151,7 +146,7 @@ class OembedTestCase(ZulipTestCase):
 
     @responses.activate
     def test_invalid_json_in_response(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         reconstructed_url = reconstruct_url(url)
         responses.add(
             responses.GET,
@@ -161,6 +156,18 @@ class OembedTestCase(ZulipTestCase):
         )
         data = get_oembed_data(url)
         self.assertIsNone(data)
+
+    def test_no_provider_found(self) -> None:
+        # URL with no oEmbed provider should return None
+        url = "https://example.com/some-page"
+        data = get_oembed_data(url)
+        self.assertIsNone(data)
+
+    def test_reconstruct_url_no_provider(self) -> None:
+        # reconstruct_url should raise ValueError for unsupported URLs
+        url = "https://example.com/some-page"
+        with self.assertRaises(ValueError):
+            reconstruct_url(url)
 
     def test_oembed_html(self) -> None:
         html = '<iframe src="//www.instagram.com/embed.js"></iframe>'
