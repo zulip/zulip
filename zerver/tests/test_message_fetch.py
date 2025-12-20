@@ -700,49 +700,6 @@ class NarrowBuilderTest(ZulipTestCase):
         query = self._build_query(term)
         self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
 
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -750,13 +707,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -781,16 +731,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -812,19 +752,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -860,10 +787,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
-
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
@@ -917,173 +840,10 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -1091,13 +851,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -1122,16 +875,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -1153,19 +896,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -1202,10 +932,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -1213,29 +939,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -1246,201 +949,10 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
-    def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
-        )
-
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -1463,16 +975,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -1494,19 +996,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -1543,10 +1032,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -1554,29 +1039,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -1587,185 +1049,10 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -1773,13 +1060,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -1804,16 +1084,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -1835,19 +1105,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -1884,10 +1141,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -1895,29 +1148,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -1928,185 +1158,10 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -2114,13 +1169,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -2145,16 +1193,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -2176,19 +1214,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -2225,10 +1250,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -2236,29 +1257,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -2269,185 +1267,10 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -2455,13 +1278,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -2486,16 +1302,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -2517,19 +1323,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -2566,10 +1359,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -2577,29 +1366,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -2610,185 +1376,10 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -2796,13 +1387,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -2827,16 +1411,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -2858,19 +1432,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -2907,10 +1468,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -2918,29 +1475,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -2951,185 +1485,8 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -3137,13 +1494,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -3168,16 +1518,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -3199,19 +1539,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -3248,10 +1575,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -3259,29 +1582,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -3292,185 +1592,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -3478,13 +1599,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -3509,16 +1623,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -3540,19 +1644,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -3589,10 +1680,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -3600,29 +1687,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -3633,185 +1697,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -3819,13 +1704,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -3850,16 +1728,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -3881,19 +1749,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -3930,10 +1785,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -3942,217 +1793,16 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
     ) -> None:  # NEGATED
         term = NarrowParameter(operator="dm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
-        )
-
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
             term,
             "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
         )
 
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -4160,13 +1810,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -4191,16 +1834,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -4222,19 +1855,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -4271,10 +1891,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -4283,217 +1899,10 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-    def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
-        )
-
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -4501,13 +1910,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -4532,16 +1934,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -4563,19 +1955,6 @@ class NarrowBuilderTest(ZulipTestCase):
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -4612,229 +1991,11 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
-        self,
-    ) -> None:
-        term = NarrowParameter(
-            operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
-        )
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-    def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
-        )
-
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -4842,13 +2003,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -4873,16 +2027,6 @@ class NarrowBuilderTest(ZulipTestCase):
         params = {"recipient_id_1": direct_message_group.recipient_id}
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
 
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
         self,
@@ -4905,18 +2049,90 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
 
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
+    def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        myself_and_other = (
+            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
+        term = NarrowParameter(operator="dm", operand=myself_and_other, negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
+        )
+
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        # If the group doesn't exist, it's a flat true
+        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
+        term = NarrowParameter(operator="dm", operand=two_others, negated=True)
+        self._do_add_term_test(term, "WHERE true")
+
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        self._do_add_term_test(
+            term,
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
+        )
+
+    @override_settings(USING_PGROONGA=False)
+    @override_settings(USING_PGROONGA=False)
+    @override_settings(USING_PGROONGA=True)
+    @override_settings(USING_PGROONGA=True)
+    def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
+        )
+
+    def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        term = NarrowParameter(operator="dm", operand=self.hamlet_email, negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
+        )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_add_term_using_dm_operator_the_same_user_as_operand_when_direct_message_group_exists(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Make the direct message group for self messages
+        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        term = NarrowParameter(operator="dm", operand=hamlet.email)
+        params = {"recipient_id_1": direct_message_group.recipient_id}
+        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Make the direct message group for 1:1 messages between hamlet and othello
+        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
+
+        term = NarrowParameter(operator="dm", operand=f"{hamlet.email},{othello.email}")
+        params = {"recipient_id_1": direct_message_group.recipient_id}
+        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
+
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group(
+        self,
+    ) -> None:
+        # If the group doesn't exist, it's a flat false
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
+        self._do_add_term_test(term, "WHERE false")
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
@@ -4953,10 +2169,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
@@ -4964,29 +2176,6 @@ class NarrowBuilderTest(ZulipTestCase):
             operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
         )
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
 
     def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
         self,
@@ -4997,456 +2186,10 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
         )
 
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
     @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_in_operator_and_negated(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_in_operator_and_all_operand(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_all_operand_and_negated(self) -> None:
-        # negated = True should not change anything
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="all", negated=True)
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_add_term_using_in_operator_and_not_defined_operand(self) -> None:
-        term = NarrowParameter(operator="in", operand="not_defined")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_near_operator(self) -> None:
-        term = NarrowParameter(operator="near", operand="operand")
-        query = self._build_query(term)
-        self.assertEqual(get_sqlalchemy_sql(query), "SELECT id \nFROM zerver_message")
-
-    def test_negated_is_dm_with_dm_operator(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(is_term)
-
-        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_dm(self) -> None:
-        expected_error_message = (
-            "Invalid narrow operator: No message can be both a channel message and direct message"
-        )
-        term1 = NarrowParameter(operator="dm", operand=self.othello_email)
-        self._build_query(term1)
-
-        topic_term = NarrowParameter(operator="topic", operand="bogus")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(topic_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-        channels_term = NarrowParameter(operator="channels", operand="public")
-        with self.assertRaises(BadNarrowOperatorError) as error:
-            self._build_query(channels_term)
-        self.assertEqual(expected_error_message, str(error.exception))
-
-    def test_combined_channel_with_negated_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public")
-        self._build_query(channel_term)
-
-    def test_combined_negated_channel_with_is_dm(self) -> None:
-        dm_term = NarrowParameter(operator="is", operand="dm")
-        self._build_query(dm_term)
-
-        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
-        self._build_query(channel_term)
-
-    def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
-        )
-
-    def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        term = NarrowParameter(operator="dm", operand=self.hamlet_email, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_add_term_using_dm_operator_the_same_user_as_operand_when_direct_message_group_exists(
-        self,
-    ) -> None:
-        hamlet = self.example_user("hamlet")
-
-        # Make the direct message group for self messages
-        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id])
-
-        term = NarrowParameter(operator="dm", operand=hamlet.email)
-        params = {"recipient_id_1": direct_message_group.recipient_id}
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
-
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_add_term_using_dm_operator_and_self_and_user_as_operand_when_direct_message_group_exists(
-        self,
-    ) -> None:
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-
-        # Make the direct message group for 1:1 messages between hamlet and othello
-        direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
-
-        term = NarrowParameter(operator="dm", operand=f"{hamlet.email},{othello.email}")
-        params = {"recipient_id_1": direct_message_group.recipient_id}
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s", params)
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group(
-        self,
-    ) -> None:
-        # If the group doesn't exist, it's a flat false
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE false")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
-
-    def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        myself_and_other = (
-            f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
-        )
-        term = NarrowParameter(operator="dm", operand=myself_and_other, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
-        )
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        # If the group doesn't exist, it's a flat true
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others, negated=True)
-        self._do_add_term_test(term, "WHERE true")
-
-    def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        # Make the direct message group first
-        get_or_create_direct_message_group(
-            [
-                self.example_user("hamlet").id,
-                self.example_user("cordelia").id,
-                self.example_user("othello").id,
-            ]
-        )
-        two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
-        term = NarrowParameter(operator="dm", operand=two_others, negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
-
-    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
-        term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
-        self,
-    ) -> None:
-        term = NarrowParameter(
-            operator="dm", operand=self.othello_email + ",non-existing@zulip.com"
-        )
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_dm_with_operator(self) -> None:
-        term = NarrowParameter(operator="dm-with", operand=self.hamlet_email)
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
-    def test_add_term_using_dm_with_operator_with_different_user_email(self) -> None:
-        # Test without any such group direct messages existing
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-        # Test with at least one such group direct messages existing
-        self.send_group_direct_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
-        )
-
-    def test_add_term_using_dm_with_operator_with_different_user_email_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])))",
-        )
-
-    def test_add_term_using_dm_with_operator_without_personal_recipient(self) -> None:
-        # Dropping the personal recipient for Othello
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
-        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
-        )
-
-    def test_add_term_using_id_operator_integer(self) -> None:
-        term = NarrowParameter(operator="id", operand=555)
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_string(self) -> None:
-        term = NarrowParameter(operator="id", operand="555")
-        self._do_add_term_test(term, "WHERE id = %(param_1)s")
-
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = NarrowParameter(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = NarrowParameter(operator="id", operand=str(Message.MAX_POSSIBLE_MESSAGE_ID + 1))
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(
-            term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=False)
-    def test_add_term_using_search_operator_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
-        )
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_pgroonga(self) -> None:
-        term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
-
-    @override_settings(USING_PGROONGA=True)
-    def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
-        self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
-        )
-
-    def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="attachment")
-        self._do_add_term_test(term, "WHERE has_attachment")
-
-    def test_add_term_using_has_operator_attachment_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="attachment", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_attachment")
-
-    def test_add_term_using_has_operator_and_image_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="image")
-        self._do_add_term_test(term, "WHERE has_image")
-
-    def test_add_term_using_has_operator_image_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="image", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_image")
-
-    def test_add_term_using_has_operator_and_link_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="link")
-        self._do_add_term_test(term, "WHERE has_link")
-
-    def test_add_term_using_has_operator_link_operand_and_negated(self) -> None:  # NEGATED
-        term = NarrowParameter(operator="has", operand="link", negated=True)
-        self._do_add_term_test(term, "WHERE NOT has_link")
-
-    def test_add_term_using_has_operator_and_reaction_operand(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction")
-        self._do_add_term_test(
-            term,
-            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id)",
-        )
-
-    def test_add_term_using_has_operator_and_reaction_operand_and_negated(self) -> None:
-        term = NarrowParameter(operator="has", operand="reaction", negated=True)
-        self._do_add_term_test(
-            term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id))",
-        )
-
-    def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
-        term = NarrowParameter(operator="has", operand="non_supported")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_in_operator(self) -> None:
-        mute_channel(self.realm, self.user_profile, "Verona")
-        term = NarrowParameter(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
     def test_has_reaction(self) -> None:
         self.login("iago")
         has_reaction_narrow = orjson.dumps([dict(operator="has", operand="reaction")]).decode()

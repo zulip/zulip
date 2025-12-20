@@ -70,7 +70,7 @@ export function decode_operand(
     operator: NarrowCanonicalTerm["operator"],
     operand: NarrowCanonicalTerm["operand"],
 ): string {
-    if (operator === \"dm-with\" || operator === \"dm\" || operator === \"sender\") {
+    if (operator === "dm-with" || operator === "dm" || operator === "sender") {
         const emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;
