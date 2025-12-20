@@ -75,6 +75,7 @@ export type CustomProfileFieldData = {
     is_external_account: boolean;
     type: number;
     display_in_profile_summary: boolean | undefined;
+    display_on_user_card?: boolean;
     required: boolean;
     value: string;
     rendered_value?: string | null | undefined;
@@ -518,6 +519,22 @@ export function get_custom_profile_field_data(
         case field_types.LONG_TEXT.id:
             profile_field.value = field_value.value;
             profile_field.rendered_value = field_value.rendered_value;
+            if (field_type === field_types.LONG_TEXT.id) {
+                if (field.field_data && field.field_data.trim() !== "") {
+                    try {
+                        const long_text_data =
+                            settings_components.long_text_field_data_schema.parse(
+                                JSON.parse(field.field_data),
+                            );
+                        profile_field.display_on_user_card =
+                            long_text_data["display_on_user_card"] === "true";
+                    } catch {
+                        profile_field.display_on_user_card = false;
+                    }
+                } else {
+                    profile_field.display_on_user_card = false;
+                }
+            }
             break;
         case field_types.EXTERNAL_ACCOUNT.id: {
             const field_data = settings_components.external_account_field_schema.parse(
