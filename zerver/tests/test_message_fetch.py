@@ -1797,6 +1797,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = NarrowParameter(operator="dm-with", operand=self.othello_email, negated=True)
+        self._do_add_term_test(
             term,
             "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
         )
@@ -1992,6 +1993,14 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
+        self,
+    ) -> None:
+        term = NarrowParameter(
+            operator="dm",
+            operand=f"{self.example_user('cordelia').email},non-existent@zulip.com",
+        )
+        self._do_add_term_test(term, self.get_huddle_query([], []))
+
     @override_settings(USING_PGROONGA=False)
     @override_settings(USING_PGROONGA=False)
     @override_settings(USING_PGROONGA=True)
