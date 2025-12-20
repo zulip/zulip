@@ -203,6 +203,14 @@
     }
 }
 
+.custom-profile-field-clickable {
+    cursor: pointer !important;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+
 .custom-user-url-field {
     display: flex;
     align-items: center;
@@ -1102,6 +1110,28 @@ ul.popover-group-menu-member-list {
     }
 }
 
+.copy-custom-profile-field-long-text {
+    display: flex;
+    margin-left: auto;
+    flex-shrink: 0;
+
+    &.hide_copy_icon {
+        display: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus) !important;
+    }
+
+    &:hover {
+        background: transparent;
+    }
+
+    &:active {
+        background: transparent;
+    }
+}
+
 .personal-menu-header {
     display: flex;
     flex-flow: row nowrap;
@@ -1196,8 +1226,11 @@ ul.popover-group-menu-member-list {
     .popover-menu-label {
         /* Keep menu items on a single line, unless forced to wrap
         by a max-width on the popover. */
-        width: max-content;
         flex: 1 0 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .text-item,
@@ -1236,9 +1269,20 @@ ul.popover-group-menu-member-list {
 
     .link-item {
         outline: none;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
+        &:hover {
+            background: var(--color-background-hover-popover-menu);
+        }
 
         &:focus-within {
             background: var(--color-background-hover-popover-menu);
+        }
+
+        &:active {
+            background: var(--color-background-active-popover-menu);
         }
 
         .popover-menu-label,
@@ -1254,11 +1298,8 @@ ul.popover-group-menu-member-list {
             color: var(--color-text-popover-menu) !important;
             text-decoration: none;
             flex-grow: 1;
-
-            &:hover {
-                background: var(--color-background-hover-popover-menu);
-                outline: none;
-            }
+            cursor: pointer;
+            min-width: 0;
 
             &:focus-visible {
                 border-radius: 4px;
@@ -1268,7 +1309,7 @@ ul.popover-group-menu-member-list {
             }
 
             &:active {
-                background: var(--color-background-active-popover-menu);
+                background: transparent;
             }
         }
     }
