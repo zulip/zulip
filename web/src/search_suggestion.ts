@@ -562,8 +562,15 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         return [];
     }
 
+    // We don't want to show topic suggestions from negated channels
+    const excluded_channel_ids = new Set(
+        terms
+            .filter((term) => term.negated && term.operator === "channel")
+            .map((term) => term.operand),
+    );
+
     const current_channel_topic_entries: ChannelTopicEntry[] = [];
-    if (channel_id_str) {
+    if (channel_id_str && !excluded_channel_ids.has(channel_id_str)) {
         // We do this outside the stream_data.subscribed_stream_ids loop,
         // since we could be viewing a channel we can't read.
         const sub = stream_data.get_sub_by_id_string(channel_id_str)!;
@@ -584,7 +591,10 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 
     const other_channel_topic_entries: ChannelTopicEntry[] = [];
     for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
-        if (subscribed_channel_id.toString() === channel_id_str) {
+        if (
+            subscribed_channel_id.toString() === channel_id_str ||
+            excluded_channel_ids.has(subscribed_channel_id.toString())
+        ) {
             continue;
         } else if (!show_topics_from_other_channels) {
             continue;
