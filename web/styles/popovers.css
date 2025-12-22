@@ -1561,6 +1561,34 @@ ul.popover-menu-list {
             align-self: baseline;
         }
     }
+
+    /* No hover effect on the header labels */
+    .unread-counts-selector-header:hover,
+    .channel-links-selector-header:hover {
+        background: inherit;
+        cursor: default;
+    }
+
+    /* Style radio button links similar to buddy list */
+    .unread-counts-selector .popover-menu-link,
+    .channel-links-selector .popover-menu-link {
+        display: grid;
+        grid-template: "left-icon row-content" auto / 18px minmax(
+                max-content,
+                1fr
+            );
+        align-items: center;
+
+        .web_stream_unreads_count_display_policy_choice,
+        .web_channel_default_view_choice {
+            grid-area: left-icon;
+            justify-self: baseline;
+        }
+
+        .popover-menu-label {
+            grid-area: row-content;
+        }
+    }
 }
 
 #groups-to-add {
