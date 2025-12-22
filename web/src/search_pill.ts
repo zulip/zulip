@@ -129,9 +129,46 @@ function on_pill_exit(
     $user_pill.remove();
 }
 
+// This looks at the current topic search pill
+// and the pill behind the current pill to form
+// a combined pill with the display value of
+// `#channel > topic`.
+function maybe_generate_combined_channel_topic_pill(
+    index: number,
+    search_terms: NarrowTermSuggestion[],
+    search_pill: SearchPill,
+): ({type: "generic_operator"} & NarrowTermSuggestion & {display_value: string}) | undefined {
+    assert(search_pill.operator === "topic");
+    if (index === 0) {
+        return undefined;
+    }
+    if (search_terms[index - 1]?.operator !== "channel") {
+        return undefined;
+    }
+    // Specific topics only make sense with a specific channel,
+    // not a negated channel.
+    if (search_terms[index - 1]?.negated === true) {
+        return undefined;
+    }
+
+    const sign = search_pill.negated ? "-" : "";
+    const channel_operand = search_terms[index - 1]!.operand;
+    const channel_name = stream_data.get_valid_sub_by_id_string(channel_operand).name;
+    return {
+        ...search_pill,
+        display_value: `${sign}#${channel_name} > ${util.get_final_topic_display_name(search_pill.operand)}`,
+    };
+}
+
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
     const search_terms = Filter.parse(suggestion.search_string);
 
+    // This is used to track the index of the channel pill data
+    // for a channel that is combined with the subsequent topic pill
+    // to form a combined `#channel>topic` pill.
+    // The index tracked here will then be removed from `pill_render_data`
+    // before rendering the pills to avoid an extra channel pill.
+    let redundant_channel_pill_index = -1;
     type PillRenderData =
         | ({type: "generic_operator"} & NarrowTermSuggestion & {
                   display_value?: string;
@@ -165,7 +202,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
             case "dm-including":
             case "sender":
                 return search_user_pill_data_from_term(narrow_term);
-            case "topic":
+            case "topic": {
                 if (search_pill.operand === "") {
                     // There are three variants of this suggestion state:
                     //
@@ -189,6 +226,19 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                         // case 2
                         text_query.trim().endsWith("topic:")
                     ) {
+                        // We want to show a combined pill for the case
+                        // where the preceding operator is a `channel`.
+                        const combined_channel_topic_pill_render_data =
+                            maybe_generate_combined_channel_topic_pill(
+                                index,
+                                search_terms,
+                                search_pill,
+                            );
+                        if (combined_channel_topic_pill_render_data) {
+                            redundant_channel_pill_index = index - 1;
+                            return combined_channel_topic_pill_render_data;
+                        }
+
                         return {
                             ...search_pill,
                             is_empty_string_topic: true,
@@ -203,7 +253,17 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                         sign: search_pill.negated ? "-" : "",
                     };
                 }
+
+                // Try generating a combined channel topic pill for
+                // non-empty operands.
+                const combined_channel_topic_pill_render_data =
+                    maybe_generate_combined_channel_topic_pill(index, search_terms, search_pill);
+                if (combined_channel_topic_pill_render_data) {
+                    redundant_channel_pill_index = index - 1;
+                    return combined_channel_topic_pill_render_data;
+                }
                 break;
+            }
             case "search": {
                 let description_html = search_term_description_html(search_pill.operand);
                 // We capitalize the beginning of the suggestion line if it's text (not
@@ -225,11 +285,26 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
         };
     });
 
+    // Remove the redundant channel pill if we generated a combined
+    // channel+topic pill.
+    if (redundant_channel_pill_index !== -1) {
+        pill_render_data.splice(redundant_channel_pill_index, 1);
+    }
+
     // When there's a single pill on a suggestion line, we have space
     // to provide help text (description_html) explaining what the
     // operator does. When there's more than one pill we don't show it.
     if (pill_render_data.length === 1) {
         const render_data = util.the(pill_render_data);
+
+        // The combined channel topic pill doesn't require the lengthy
+        // help text that this would generate.
+        if (render_data.operator === "topic" && redundant_channel_pill_index !== -1) {
+            return render_search_list_item({
+                pills: pill_render_data,
+            });
+        }
+
         // Don't add description html for search terms, since those "pills"
         // are already set up to only display text and no pill. We also
         // don't show it for most user pills.
