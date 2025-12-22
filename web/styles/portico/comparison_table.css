@@ -160,6 +160,23 @@
         background: var(--color-table-background);
     }
 
+    &.education-features-comparison {
+        .comparison-table {
+            font-weight: normal;
+            table-layout: fixed;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .comparison-table-feature {
+            width: 30%;
+        }
+
+        td.competitor-cell {
+            opacity: 0.5;
+        }
+    }
+
     .comparison-table a {
         color: var(--color-table-link);
         text-underline-offset: 4px;
@@ -199,6 +216,11 @@
         font-weight: 700;
         color: hsl(223deg 40% 30% / 100%);
         background: hsl(209deg 41% 94%);
+    }
+
+    .comparison-table .competitor-cell {
+        padding: 12px 10px 10px;
+        font-weight: normal;
     }
 
     .comparison-table th .icon {
@@ -281,42 +303,44 @@
         font-size: 0.9em;
     }
 
-    .comparison-value-positive::after,
-    .comparison-value-warning::after,
-    .comparison-value-negative::after {
-        content: attr(data-title);
-        white-space: nowrap;
-        font-size: 14px;
-        line-height: 14px;
-        font-weight: 400;
-        display: block;
-        padding: 2px 4px;
-        border-radius: 5px;
-        background-color: hsl(208deg 43% 93%);
-        /* the color of mixed hover row with bg */
-        position: absolute;
-        top: calc(50% + 11px);
-        left: 50%;
-        /* Keep tooltips over top of other elements,
-           including the headers within the table. */
-        z-index: 3;
-        transform: translateX(-50%);
-        visibility: hidden;
-        opacity: 0;
-        transition:
-            visibility 301s linear,
-            opacity 250ms ease-out;
-    }
+    &:not(.education-features-comparison) {
+        .comparison-value-positive::after,
+        .comparison-value-warning::after,
+        .comparison-value-negative::after {
+            content: attr(data-title);
+            white-space: nowrap;
+            font-size: 14px;
+            line-height: 14px;
+            font-weight: 400;
+            display: block;
+            padding: 2px 4px;
+            border-radius: 5px;
+            background-color: hsl(208deg 43% 93%);
+            /* the color of mixed hover row with bg */
+            position: absolute;
+            top: calc(50% + 11px);
+            left: 50%;
+            /* Keep tooltips over top of other elements,
+            including the headers within the table. */
+            z-index: 3;
+            transform: translateX(-50%);
+            visibility: hidden;
+            opacity: 0;
+            transition:
+                visibility 301s linear,
+                opacity 250ms ease-out;
+        }
 
-    .comparison-value-positive:hover::after,
-    .comparison-value-warning:hover::after,
-    .comparison-value-negative:hover::after {
-        transition:
-            visibility 0s linear,
-            opacity 250ms ease-out;
-        transition-delay: 200ms;
-        visibility: visible;
-        opacity: 1;
+        .comparison-value-positive:hover::after,
+        .comparison-value-warning:hover::after,
+        .comparison-value-negative:hover::after {
+            transition:
+                visibility 0s linear,
+                opacity 250ms ease-out;
+            transition-delay: 200ms;
+            visibility: visible;
+            opacity: 1;
+        }
     }
 
     @media (width <= 940px) {
