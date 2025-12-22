@@ -97,7 +97,7 @@ html_safelisted_schemes = (
     "wtai",
     "xmpp",
 )
-allowed_schemes = ("http", "https", "ftp", "file", *html_safelisted_schemes)
+allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
 class LinkInfo(TypedDict):
