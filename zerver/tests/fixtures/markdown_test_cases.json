@@ -1080,6 +1080,16 @@
       "input": "Hello @_**Zoe|7** see [this](https://google.com).",
       "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"https://google.com\">this</a>.</p>",
       "text_content": "Hello Zoe see this."
+    },
+    {
+      "name": "RFC2392 mid links (markdown syntax)",
+      "input": "[message](mid:960830.1639@XIson.com)",
+      "expected_output": "<p><a href=\"mid:960830.1639@XIson.com\">message</a></p>"
+    },
+    {
+      "name": "RFC2392 mid links with part ID (markdown syntax)",
+      "input": "[message](mid:960830.1639@XIson.com/partA.960830.1639@XIson.com)",
+      "expected_output": "<p><a href=\"mid:960830.1639@XIson.com/partA.960830.1639@XIson.com\">message</a></p>"
     }
   ],
   "linkify_tests": [
