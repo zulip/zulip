@@ -167,10 +167,10 @@ class ReportMessageTest(ZulipTestCase):
         reported_dm_date_sent = datetime_to_global_time(reported_dm.date_sent)
 
         if reported_user != reporting_user:
-            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} at {reported_dm_date_sent}."
+            message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} at {reported_dm_date_sent}."
         else:
             dm_recipient_mention = silent_mention_syntax_for_user(dm_recipient)
-            message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {dm_recipient_mention} at {reported_dm_date_sent}."
+            message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {dm_recipient_mention} at {reported_dm_date_sent}."
 
         direct_message_link = pm_message_url(
             realm,
@@ -210,7 +210,7 @@ class ReportMessageTest(ZulipTestCase):
                 if user["id"] is not reported_user.id
             ]
         )
-        message_sent_to = f"{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {direct_message_recipients} at {reported_gdm_date_sent}."
+        message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {direct_message_recipients} at {reported_gdm_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(

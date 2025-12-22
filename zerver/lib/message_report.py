@@ -43,7 +43,7 @@ def send_message_report(
     if is_1_to_1_message(reported_message):
         if reported_user != reporting_user:
             report_header = _(
-                "{reporting_user_mention} reported a direct message sent by {reported_user_mention} at {reported_message_date_sent}."
+                "{reporting_user_mention} reported a message sent by {reported_user_mention} at {reported_message_date_sent}."
             ).format(
                 reporting_user_mention=reporting_user_mention,
                 reported_user_mention=reported_user_mention,
@@ -61,7 +61,7 @@ def send_message_report(
             else:
                 recipient_user = reporting_user_mention
             report_header = _(
-                "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {recipient_user} at {reported_message_date_sent}."
+                "{reporting_user_mention} reported a message sent by {reported_user_mention} to {recipient_user} at {reported_message_date_sent}."
             ).format(
                 reporting_user_mention=reporting_user_mention,
                 reported_user_mention=reported_user_mention,
@@ -70,7 +70,7 @@ def send_message_report(
             )
     elif reported_message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         report_header = _(
-            "{reporting_user_mention} reported a direct message sent by {reported_user_mention} to {direct_message_recipients} at {reported_message_date_sent}."
+            "{reporting_user_mention} reported a message sent by {reported_user_mention} to {direct_message_recipients} at {reported_message_date_sent}."
         ).format(
             reporting_user_mention=reporting_user_mention,
             reported_user_mention=reported_user_mention,
