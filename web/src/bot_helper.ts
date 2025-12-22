@@ -3,9 +3,13 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_bot_api_key_details from "../templates/settings/bot_api_key_details.hbs";
+
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
 
 export function validate_bot_short_name(value: string): boolean {
@@ -54,10 +58,10 @@ export function generate_zuliprc_content(bot: {
     );
 }
 
-export function initialize_clipboard_handlers(): void {
+function initialize_api_key_clipboard_handlers(): void {
     new ClipboardJS("#copy-api-key-button", {
         text(trigger) {
-            const data = $(trigger).closest("span").attr("data-api-key") ?? "";
+            const data = $(trigger).closest(".bot-api-key-container").attr("data-api-key") ?? "";
             return data;
         },
     }).on("success", (e) => {
@@ -66,7 +70,9 @@ export function initialize_clipboard_handlers(): void {
             show_check_icon: true,
         });
     });
+}
 
+export function initialize_zuliprc_clipboard_handlers(): void {
     new ClipboardJS("#copy-zuliprc-config", {
         text(trigger) {
             const $bot_info = $(trigger).closest("#bot-edit-form");
@@ -81,6 +87,28 @@ export function initialize_clipboard_handlers(): void {
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
         });
+    });
+}
+
+export function show_api_key_modal(bot_id: number): void {
+    const bot = bot_data.get(bot_id)!;
+    const modal_content_html = render_bot_api_key_details({
+        bot_id,
+        api_key: bot.api_key,
+    });
+    dialog_widget.launch({
+        modal_title_html: $t_html(
+            {defaultMessage: "API key for {bot_name}"},
+            {bot_name: bot.full_name},
+        ),
+        modal_content_html,
+        id: "api-key-modal",
+        single_footer_button: true,
+        modal_submit_button_text: $t_html({defaultMessage: "Close"}),
+        on_click() {
+            return;
+        },
+        post_render: initialize_api_key_clipboard_handlers,
     });
 }
 
@@ -103,7 +131,7 @@ export function initialize_bot_click_handlers(): void {
                     .parse(data);
 
                 $row.find(".api-key").val(parsed_data.api_key);
-                $row.find("span[data-api-key]").attr("data-api-key", parsed_data.api_key);
+                $row.closest(".bot-api-key-container").attr("data-api-key", parsed_data.api_key);
                 $row.find(".bot-modal-api-key-error").hide();
             },
             error(xhr) {
