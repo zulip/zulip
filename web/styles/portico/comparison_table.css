@@ -160,6 +160,23 @@
         background: var(--color-table-background);
     }
 
+    &.education-features-comparison {
+        .comparison-table {
+            font-weight: normal;
+            table-layout: fixed;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .comparison-table-feature {
+            width: 30%;
+        }
+
+        td.competitor-cell {
+            opacity: 0.5;
+        }
+    }
+
     .comparison-table a {
         color: var(--color-table-link);
         text-underline-offset: 4px;
@@ -199,6 +216,11 @@
         font-weight: 700;
         color: hsl(223deg 40% 30% / 100%);
         background: hsl(209deg 41% 94%);
+    }
+
+    .comparison-table .competitor-cell {
+        padding: 12px 10px 10px;
+        font-weight: normal;
     }
 
     .comparison-table th .icon {

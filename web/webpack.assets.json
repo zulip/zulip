@@ -56,7 +56,8 @@
         "./src/portico/legacy_landing_page.ts",
         "./styles/portico/portico_variables.css",
         "./styles/portico/marketing_page.css",
-        "./styles/portico/pricing_plans.css"
+        "./styles/portico/pricing_plans.css",
+        "./styles/portico/comparison_table.css"
     ],
     "landing-page-hello": [
         "./src/bundles/hello.ts",
