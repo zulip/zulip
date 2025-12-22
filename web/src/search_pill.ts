@@ -107,6 +107,34 @@ function on_pill_exit(
     $user_pill.remove();
 }
 
+// This looks at the current topic search pill
+// and the pill behind the current pill to form
+// a combined pill with the display value of
+// `#channel > topic`.
+function maybe_generate_combined_channel_topic_pill(
+    index: number,
+    search_terms: NarrowTerm[],
+    search_pill: SearchPill,
+): (SearchPill & {display_value: string}) | undefined {
+    assert(search_pill.operator === "topic");
+    if (
+        index > 0 &&
+        search_terms[index - 1]?.operator === "channel" &&
+        // We don't want negated channels to be part of the combined pill
+        search_terms[index - 1]?.negated !== true
+    ) {
+        const sign = search_pill.negated ? "-" : "";
+        const channel_operand = search_terms[index - 1]!.operand;
+        const channel_name = stream_data.get_valid_sub_by_id_string(channel_operand).name;
+        return {
+            ...search_pill,
+            operator: "channel+topic",
+            display_value: `${sign}#${channel_name} > ${get_search_operand(search_pill, true)}`,
+        };
+    }
+    return undefined;
+}
+
 // TODO: We're calculating `description_html` every time, even though
 // we only show it (in `generate_pills_html`) for lines with only one
 // pill. We can probably simplify things by separating out a function
@@ -114,7 +142,12 @@ function on_pill_exit(
 // search pill, and remove `description_html` from the `Suggestion` type.
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
     const search_terms = Filter.parse(suggestion.search_string);
-
+    // This is used to track the index of the channel pill data
+    // for a channel that is combined with the subsequent topic pill
+    // to form a combined `#channel>topic` pill.
+    // The index tracked here will then be removed from `pill_render_data`
+    //  before rendering the pills to avoid an extra channel pill.
+    let excluded_channel_pill_index = -1;
     const pill_render_data = search_terms.map((term, index) => {
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
             return search_user_pill_data_from_term(term);
@@ -152,6 +185,12 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 // case 2
                 text_query.trim().endsWith("topic:")
             ) {
+                const combined_channel_topic_pill_render_data =
+                    maybe_generate_combined_channel_topic_pill(index, search_terms, search_pill);
+                if (combined_channel_topic_pill_render_data) {
+                    excluded_channel_pill_index = index - 1;
+                    return combined_channel_topic_pill_render_data;
+                }
                 return {
                     ...search_pill,
                     is_empty_string_topic: true,
@@ -179,6 +218,16 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 description_html,
             };
         }
+
+        if (search_pill.operator === "topic") {
+            const combined_channel_topic_pill_render_data =
+                maybe_generate_combined_channel_topic_pill(index, search_terms, search_pill);
+            if (combined_channel_topic_pill_render_data) {
+                excluded_channel_pill_index = index - 1;
+                return combined_channel_topic_pill_render_data;
+            }
+        }
+
         return {
             ...search_pill,
             display_value: get_search_string_from_item(search_pill),
@@ -207,6 +256,10 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 description_html,
             });
         }
+    }
+
+    if (excluded_channel_pill_index !== -1) {
+        pill_render_data.splice(excluded_channel_pill_index, 1);
     }
 
     return render_search_list_item({

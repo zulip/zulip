@@ -23,6 +23,7 @@ export type GroupPermissionSetting = z.output<typeof group_permission_setting_sc
 export const narrow_canonical_operator_schema = z.enum([
     "", // Used for search suggestions.
     "channel",
+    "channel+topic", // Used for search suggestions.
     "channels",
     "dm",
     "dm-including",
@@ -121,6 +122,11 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     }),
     z.object({
         operator: z.literal("dm"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("channel+topic"),
         operand: z.string(),
         negated: z.optional(z.boolean()),
     }),
