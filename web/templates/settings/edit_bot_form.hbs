@@ -34,27 +34,14 @@
         </div>
         <div class="input-group edit-avatar-section">
             <label class="modal-field-label">{{t "Avatar" }}</label>
-            {{!-- Shows the current avatar --}}
-            <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
-            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
-            <div class="edit_bot_avatar_file"></div>
-            <div class="edit_bot_avatar_preview_text">
-                <img class="edit_bot_avatar_preview_image" />
-            </div>
-            {{> ../components/action_button
-              label=(t "Change avatar")
-              attention="quiet"
-              intent="neutral"
-              custom_classes="edit_bot_avatar_upload_button"
-              }}
-            {{> ../components/action_button
-              label=(t "Clear profile picture")
-              attention="quiet"
-              intent="danger"
-              custom_classes="edit_bot_avatar_clear_button"
-              hidden=true
-              }}
-            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+            {{> image_upload_widget
+              widget="bot-avatar"
+              upload_text=(t "Change avatar")
+              delete_text=(t "Delete avatar")
+              is_editable_by_current_user=true
+              image=bot_avatar_url
+            }}
+            <div id="bot-avatar-upload-widget-error" class="edit_bot_avatar_error text-error"></div>
         </div>
     </form>
     {{#if is_incoming_webhook_bot}}

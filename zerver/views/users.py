@@ -520,18 +520,6 @@ def patch_bot_backend(
     if config_data is not None:
         do_update_bot_config_data(bot, config_data)
 
-    if len(request.FILES) == 0:
-        pass
-    elif len(request.FILES) == 1:
-        [user_file] = request.FILES.values()
-        assert isinstance(user_file, UploadedFile)
-        assert user_file.size is not None
-        upload_avatar_image(user_file, bot)
-        avatar_source = UserProfile.AVATAR_FROM_USER
-        do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
-    else:
-        raise JsonableError(_("You may only upload one file at a time"))
-
     json_result = dict(
         full_name=bot.full_name,
         avatar_url=avatar_url(bot),
@@ -549,6 +537,34 @@ def patch_bot_backend(
         json_result["bot_owner"] = bot.bot_owner.email
 
     return json_success(request, data=json_result)
+
+
+@require_member_or_admin
+@typed_endpoint_without_parameters
+def set_bot_avatar_backend(
+    request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
+) -> HttpResponse:
+    """Upload avatar for a bot user."""
+    bot = access_bot_by_id(user_profile, bot_id)
+
+    if len(request.FILES) != 1:
+        raise JsonableError(_("You must upload exactly one avatar."))
+
+    [user_file] = request.FILES.values()
+    assert isinstance(user_file, UploadedFile)
+    assert user_file.size is not None
+    if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
+        raise JsonableError(
+            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
+            )
+        )
+
+    upload_avatar_image(user_file, bot)
+    do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
+    bot_avatar_url = avatar_url(bot)
+
+    return json_success(request, data={"avatar_url": bot_avatar_url})
 
 
 @require_member_or_admin

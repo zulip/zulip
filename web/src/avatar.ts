@@ -35,26 +35,18 @@ export function build_bot_create_widget(): UploadWidget {
     );
 }
 
-export function build_bot_edit_widget($target: JQuery): UploadWidget {
+export function build_bot_edit_widget($target: JQuery, upload_function: UploadFunction): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $target.find<HTMLInputElement>(".edit_bot_avatar_file_input");
+        return $target.find<HTMLInputElement>(".image_file_input");
     };
 
-    const $file_name_field = $target.find(".edit_bot_avatar_file");
-    const $input_error = $target.find(".edit_bot_avatar_error");
-    const $clear_button = $target.find(".edit_bot_avatar_clear_button");
-    const $upload_button = $target.find(".edit_bot_avatar_upload_button");
-    const $preview_text = $target.find(".edit_bot_avatar_preview_text");
-    const $preview_image = $target.find(".edit_bot_avatar_preview_image");
-
-    return upload_widget.build_widget(
+    upload_widget.build_direct_upload_widget(
         get_file_input,
-        $file_name_field,
-        $input_error,
-        $clear_button,
-        $upload_button,
-        $preview_text,
-        $preview_image,
+        $target.find(".edit_bot_avatar_error").expectOne(),
+        $target.find(".image_upload_button").expectOne(),
+        upload_function,
+        realm.max_avatar_file_size_mib,
+        "user_avatar",
     );
 }
 
@@ -70,7 +62,7 @@ function display_avatar_delete_started(): void {
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-export function build_user_avatar_widget(upload_function: NonNullable<UploadFunction>): void {
+export function build_user_avatar_widget(upload_function: UploadFunction): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
         return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
     };

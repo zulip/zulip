@@ -14,9 +14,7 @@ export type UploadWidget = {
     close: () => void;
 };
 
-export type UploadFunction =
-    | ((file: File, night: boolean | null, icon: boolean) => void)
-    | undefined;
+export type UploadFunction = (file: File, night: boolean | null, icon: boolean) => void;
 
 const default_max_file_size = 5;
 
@@ -187,9 +185,6 @@ function open_uppy_editor(
     $upload_button: JQuery,
     upload_function: UploadFunction,
 ): void {
-    // Safe fallback for bot avatars that don't provide upload_function
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const safe_upload_function = upload_function ?? (() => {});
     const rendered_image_editor_modal = render_image_editor_modal();
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Editing {file_name}"}, {file_name: file.name}),
@@ -200,40 +195,48 @@ function open_uppy_editor(
             assert(uppy_widget !== undefined);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
         },
-        post_render() {
-            set_up_uppy_widget();
-            assert(uppy_widget !== undefined);
+        on_shown() {
+            // Use requestAnimationFrame to ensure the modal is fully painted
+            // before initializing the image editor. This prevents CropperJS
+            // from calculating dimensions on an incompletely rendered container.
+            requestAnimationFrame(() => {
+                // Hide the loading placeholder
+                $("#uppy-editor .loading-placeholder").hide();
+                
+                set_up_uppy_widget();
+                assert(uppy_widget !== undefined);
 
-            if (property_name === "realm_logo") {
-                uppy_widget.getPlugin("ImageEditor")!.setOptions({
-                    cropperOptions: {...cropper_opts, aspectRatio: 8},
-                });
-            } else {
-                uppy_widget.getPlugin("ImageEditor")!.setOptions({
-                    cropperOptions: {...cropper_opts, aspectRatio: 1},
-                });
-            }
-
-            const uppy_file_id = uppy_widget.addFile({
-                name: file.name,
-                type: "image/png",
-                data: file,
-                source: "Local",
-                isRemote: false,
-            });
-            const uppy_file = uppy_widget.getFile(uppy_file_id);
-            uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
-
-            uppy_widget.once("file-editor:complete", (file) => {
-                assert(file.data instanceof File);
                 if (property_name === "realm_logo") {
-                    const $realm_logo_section = $upload_button.closest(".image_upload_widget");
-                    const is_night =
-                        $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
-                    safe_upload_function(file.data, is_night, false);
+                    uppy_widget.getPlugin("ImageEditor")!.setOptions({
+                        cropperOptions: {...cropper_opts, aspectRatio: 8},
+                    });
                 } else {
-                    safe_upload_function(file.data, null, true);
+                    uppy_widget.getPlugin("ImageEditor")!.setOptions({
+                        cropperOptions: {...cropper_opts, aspectRatio: 1},
+                    });
                 }
+
+                const uppy_file_id = uppy_widget.addFile({
+                    name: file.name,
+                    type: "image/png",
+                    data: file,
+                    source: "Local",
+                    isRemote: false,
+                });
+                const uppy_file = uppy_widget.getFile(uppy_file_id);
+                uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
+
+                uppy_widget.once("file-editor:complete", (file) => {
+                    assert(file.data instanceof File);
+                    if (property_name === "realm_logo") {
+                        const $realm_logo_section = $upload_button.closest(".image_upload_widget");
+                        const is_night =
+                            $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
+                        upload_function(file.data, is_night, false);
+                    } else {
+                        upload_function(file.data, null, true);
+                    }
+                });
             });
         },
         on_hidden() {

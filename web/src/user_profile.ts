@@ -57,7 +57,6 @@ import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
-import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_picker_pill from "./user_group_picker_pill.ts";
@@ -831,6 +830,33 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         return;
     }
 
+    function upload_bot_avatar(file: File): void {
+        const form_data = new FormData();
+
+        assert(csrf_token !== undefined);
+        form_data.append("csrfmiddlewaretoken", csrf_token);
+        form_data.append("file", file);
+
+        const $error_field = $("#bot-avatar-upload-widget-error");
+        $error_field.hide();
+
+        channel.post({
+            url: `/json/bots/${user_id}/avatar`,
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success() {
+                dialog_widget.close();
+                // Avatar URL will update via user_events
+            },
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                dialog_widget.hide_dialog_spinner();
+            },
+        });
+    }
+
     const owner_id = bot_user.owner_id;
     assert(owner_id !== null);
     const is_bot_owner_current_user = owner_id === current_user.user_id;
@@ -853,7 +879,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         zuliprc: "zuliprc",
     });
     $container.append($(html_body));
-    let avatar_widget: UploadWidget;
 
     assert(bot.bot_type !== undefined && bot.bot_type !== null);
 
@@ -911,14 +936,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             formData.append("config_data", JSON.stringify(config_data));
         }
 
-        const files = util.the(
-            $("#bot-edit-form").find<HTMLInputElement>("input.edit_bot_avatar_file_input"),
-        ).files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
-        }
-
         const $submit_button = $("#user-profile-modal .dialog_submit_button");
         const $cancel_button = $("#user-profile-modal .dialog_exit_button");
         show_button_spinner($submit_button);
@@ -931,7 +948,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             contentType: false,
             success() {
                 $("#bot-edit-form-error").hide();
-                avatar_widget.clear();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));
                 toggle_submit_button($("#bot-edit-form"));
@@ -1008,7 +1024,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 .hide();
         }
 
-        avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
+        avatar.build_bot_edit_widget($("#bot-edit-form"), upload_bot_avatar);
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(
@@ -1030,17 +1046,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 ),
             );
         }
-
-        // Hide the avatar if the user has uploaded an image
-        $("#bot-edit-form").on("input", ".edit_bot_avatar_file_input", () => {
-            $("#current_bot_avatar_image").hide();
-        });
-
-        // Show the avatar if the user has cleared the image
-        $("#bot-edit-form").on("click", ".edit_bot_avatar_clear_button", () => {
-            $("#current_bot_avatar_image").show();
-            $(".edit_bot_avatar_file_input").trigger("input");
-        });
 
         $("#bot-edit-form").on("click", ".deactivate-bot-button", (e) => {
             e.preventDefault();
