@@ -14,7 +14,7 @@ Jensen](https://www.endpointdev.com/team/jon-jensen/). “Zulip’s UI makes it 
 to access all the information you need, without being too cluttered.”
 
 
-> “Zulip’s UI makes it easy to access all the info you need.”
+> Zulip’s UI makes it easy to access all the info you need.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 
@@ -42,8 +42,8 @@ channels you’re in, the harder it is to use,” which was a show-stopper for a
 consulting company with hundreds of ongoing projects.
 
 
-> “Slack’s interface was too slow and clunky, and the more channels you’re in,
-> the harder it is to use.”
+> Slack’s interface was too slow and clunky, and the more channels you’re in,
+> the harder it is to use.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 
@@ -77,7 +77,7 @@ subscribed to most of them. Joanne takes advantage of per-channel flexibility fo
 notifications, turning on notification sounds just for low-traffic channels where
 every message is important.
 
-> “Zulip is my lifeline.”
+> Zulip is my lifeline.
 >
 > — [Joanne Tipton](https://www.endpointdev.com/team/joanne-tipton/), Senior Team Manager at End Point
 
@@ -90,7 +90,7 @@ finished building and is ready to deploy,” Alejandro says. “I use this 100s 
 times per week.”
 
 
-> “I use Zulip’s Jenkins CI integration 100s of times per week.”
+> I use Zulip’s Jenkins CI integration 100s of times per week.
 >
 > — [Alejandro Ramon](https://www.endpointdev.com/team/alejandro-ramon/),
 > Director of Immersive & Geospatial division at End Point
@@ -119,8 +119,8 @@ bit exasperated. “The UI is slow and inconsistent, and you have to do so much
 clicking to get anywhere. Compared to Zulip, it’s missing key features like the
 ‘Combined feed’ view and topics.”
 
-> “It is amazing that companies would use Teams in its current state. The UI is
-> slow and inconsistent, and compared to Zulip, it’s missing key features.”
+> It is amazing that companies would use Teams in its current state. The UI is
+> slow and inconsistent, and compared to Zulip, it’s missing key features.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 
@@ -132,8 +132,8 @@ to offices and hallways. Thankfully, this is not a problem at End Point, Jon
 says. “Zulip removes much of the pain that makes people not want to use team
 chat apps. We love it."
 
->  “Zulip removes much of the pain that makes people not want to use team chat
->  apps. We love it.”
+> Zulip removes much of the pain that makes people not want to use team chat
+> apps. We love it.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 
