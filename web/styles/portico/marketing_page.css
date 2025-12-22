@@ -1327,7 +1327,8 @@ button {
     /* These are the same link styles as used in pricing_plans.css
        on the .h1-subheader's links. */
     .hero a:not(.button),
-    .quote:has(.triangle) a {
+    .quote:has(.triangle) a,
+    .hero-fine-print a {
         color: var(--color-text-hero);
         text-decoration: underline;
         text-decoration-color: hsl(0deg 0% 100% / 50%);
@@ -3155,7 +3156,22 @@ button {
     text-align: center;
 }
 
+.solutions-page .education-feature-end {
+    margin: 0;
+    background-color: var(--color-background-solid-hero);
+    color: var(--color-text-hero);
+
+    h1 {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 48px 0 24px;
+        font-weight: 500;
+    }
+}
+
 .solutions-page .for-education-pricing-model {
+    color: var(--color-text-marketing-page);
+
     .padded-content {
         padding-bottom: 10px;
     }

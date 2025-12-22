@@ -161,6 +161,8 @@
     }
 
     &.education-features-comparison {
+        padding-bottom: 48px;
+
         .comparison-table {
             font-weight: normal;
             table-layout: fixed;
