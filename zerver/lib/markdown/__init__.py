@@ -1038,6 +1038,76 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         supported_mimetypes = ["video/mp4", "video/webm"]
         return url_type in supported_mimetypes
 
+    def is_document_upload(self, url: str) -> bool:
+        """Check if URL points to a non-image, non-video user upload (i.e., a document/file)."""
+        if not url.startswith("/user_uploads/"):
+            return False
+        # Exclude images (they get inline previews)
+        if self.is_image(url):
+            return False
+        # Exclude videos (they get inline video players)
+        if self.is_video(urlsplit(url).path):
+            return False
+        # Exclude audio files (they are handled by AudioInlineProcessor)
+        url_type = guess_type(url)[0]
+        if url_type and url_type.startswith("audio/"):
+            return False
+        return True
+
+    def get_attachment_metadata(self, path_id: str) -> dict[str, Any] | None:
+        """Retrieve attachment metadata for file card rendering."""
+        from zerver.models import Attachment
+
+        try:
+            attachment = Attachment.objects.get(path_id=path_id)
+            return {
+                "path_id": attachment.path_id,
+                "file_name": attachment.file_name,
+                "size": attachment.size,
+                "content_type": attachment.content_type or "application/octet-stream",
+            }
+        except Attachment.DoesNotExist:
+            return None
+
+    def handle_file_inlining(
+        self,
+        root: Element,
+        found_url: ResultWithFamily[tuple[str, str | None]],
+    ) -> None:
+        """Add file card marker (HTML comment) for frontend rendering."""
+        import json
+
+        info = self.get_inlining_information(root, found_url)
+        url = found_url.result[0]
+        path_id = url.removeprefix("/user_uploads/")
+        metadata = self.get_attachment_metadata(path_id)
+
+        if metadata is None:
+            return
+
+        # Create a div container with the file card comment
+        if info["index"] is not None:
+            div = Element("div")
+            info["parent"].insert(info["index"], div)
+        else:
+            div = SubElement(info["parent"], "div")
+
+        div.set("class", "file_card_container")
+
+        # Add HTML comment with file metadata for frontend parsing
+        # The comment is added as text since ElementTree doesn't support comments in the tree
+        # We use a special marker that the frontend can parse
+        comment_json = json.dumps(metadata, separators=(",", ":"))
+        div.text = f"<!-- file:{comment_json} -->"
+
+        # Add the link as a child for fallback display
+        a = SubElement(div, "a")
+        a.set("href", url)
+        a.text = metadata["file_name"]
+
+        if info["remove"] is not None:
+            info["parent"].remove(info["remove"])
+
     def add_video(
         self,
         root: Element,
@@ -1155,6 +1225,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                         result=(image_source, image_source),
                     )
                 self.handle_image_inlining(root, found_url)
+                continue
+
+            # Handle document/file uploads (non-image, non-video, non-audio)
+            # These get rendered as file cards in the frontend
+            if self.is_document_upload(url):
+                self.handle_file_inlining(root, found_url)
                 continue
 
             netloc = urlsplit(url).netloc
