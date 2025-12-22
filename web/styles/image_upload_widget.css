@@ -21,6 +21,7 @@
         position: absolute;
         display: none;
         cursor: pointer;
+        top: 0;
     }
 
     .image_upload_button {
@@ -61,6 +62,7 @@
         text-align: center;
         visibility: hidden;
         z-index: 99;
+        top: 0;
     }
 
     .image-delete-text,
