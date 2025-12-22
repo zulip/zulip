@@ -28,7 +28,7 @@ team](https://www.rust-lang.org/governance/teams/lang) co-lead [Josh
 Triplett](https://joshtriplett.org/).
 
 
-> “Zulip lets us have focused conversations at scale.”
+> Zulip lets us have focused conversations at scale.
 >
 > — [Rust compiler team](https://www.rust-lang.org/governance/teams/compiler) co-lead [Felix
 > Klock](https://github.com/pnkfelix)
@@ -60,7 +60,7 @@ Zulip instances for the [Bytecode Alliance](https://bytecodealliance.org/),
 all the ways I care about and a joy to use.”
 
 
-> “Zulip is wildly simpler than most other tools I’ve worked with.”
+> Zulip is wildly simpler than most other tools I’ve worked with.
 >
 > — [Rust Language team](https://www.rust-lang.org/governance/teams/lang) co-lead
 > [Josh Triplett](https://joshtriplett.org/)
@@ -88,7 +88,7 @@ Zulip threads all the time on GitHub, Twitter, email, Discourse, and from other
 Zulip messages,” [Josh Triplett](https://joshtriplett.org/) says.
 
 
-> “Slack and Discord feel opaque. Zulip feels like an open room.”
+> Slack and Discord feel opaque. Zulip feels like an open room.
 >
 > — [Rust Language team](https://www.rust-lang.org/governance/teams/lang) co-lead
 > [Josh Triplett](https://joshtriplett.org/)
@@ -113,7 +113,7 @@ says [Rust Language team](https://www.rust-lang.org/governance/teams/lang)
 co-lead [Niko Matsakis](https://github.com/nikomatsakis).
 
 
-> “When I come back after a break, I don’t feel overwhelmed.”
+> When I come back after a break, I don’t feel overwhelmed.
 >
 > — [Rust Language team](https://www.rust-lang.org/governance/teams/lang)
 > co-lead [Niko Matsakis](https://github.com/nikomatsakis)
@@ -133,8 +133,8 @@ team](https://www.rust-lang.org/governance/teams/lang) co-lead [Josh
 Triplett](https://joshtriplett.org/).
 
 
-> “Some decisions that were blocked for months on GitHub were resolved within 24
-> hours on Zulip.”
+> Some decisions that were blocked for months on GitHub were resolved within 24
+> hours on Zulip.
 >
 > — [Rust Language team](https://www.rust-lang.org/governance/teams/lang) co-lead
 > [Josh Triplett](https://joshtriplett.org/)
@@ -155,8 +155,8 @@ Triplett](https://joshtriplett.org/). “Without Zulip, the Rust community would
 be more stuck, more slow-moving, less agile, and a little less human.”
 
 
-> “Rust development would not be moving at the pace that it has been without
-> Zulip.”
+> Rust development would not be moving at the pace that it has been without
+> Zulip.
 >
 > — [Rust Language team](https://www.rust-lang.org/governance/teams/lang) co-lead
 > [Josh Triplett](https://joshtriplett.org/)

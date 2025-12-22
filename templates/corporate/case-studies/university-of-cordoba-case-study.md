@@ -22,7 +22,7 @@ Looking back, being pushed off Slack by its search history limit ended up being
 for the best: “I think Zulip is a great tool, much better than Slack,” says
 Miguel Pagano, professor at FAMAF.
 
-> “I think Zulip is a great tool, much better than Slack.”
+> I think Zulip is a great tool, much better than Slack.
 >
 > — Miguel Pagano, professor at FAMAF of the National University of Córdoba
 
@@ -39,7 +39,7 @@ instructors can simply point students to past conversations for answers to their
 questions. “Zulip acts as a knowledge database of what we did in each subject,”
 Nicolás explains. “The search is perfect.”
 
-> “We can find messages from five years ago — it’s very convenient.”
+> We can find messages from five years ago — it’s very convenient.
 >
 > — Miguel Pagano, professor at FAMAF of the National University of Córdoba
 
@@ -52,8 +52,8 @@ also some friendly touches: “I love using Markdown for message formatting, and
 that you can copy-paste formatted text, and it translates accurately,” Nicolás
 notes.
 
-> “The UI is spartan, simple, clear — I like that. It reminds me of what Google
-> used to be.”
+> The UI is spartan, simple, clear — I like that. It reminds me of what Google
+> used to be.
 >
 > — Nicolás Wolovick, professor at FAMAF of the National University of Córdoba
 

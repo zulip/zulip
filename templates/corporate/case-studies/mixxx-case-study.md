@@ -32,8 +32,8 @@ Mixxx blog. “Zulip… convinced us after a short evaluation period. Its unique
 thread system was the ideal solution to replace structured email threads and
 instant chat rooms.”
 
-> “[Zulip’s] unique thread system was the ideal solution to replace structured
-> email threads and instant chat rooms.”
+> [Zulip’s] unique thread system was the ideal solution to replace structured
+> email threads and instant chat rooms.
 >
 >  — [Mixxx blog](https://mixxx.org/news/2025-11-17-zulip-3000_members/)
 
@@ -49,8 +49,8 @@ is critical for a distributed volunteer community like Mixxx: “[It] makes it
 possible to collaborate asynchronously across time zones without missing
 important context,” Daniel’s writes on the blog.
 
-> “Whenever a topic drifts, we can split it into a new thread, so conversations
->  stay focused and are easy to follow.”
+> Whenever a topic drifts, we can split it into a new thread, so conversations
+> stay focused and are easy to follow.
 >
 >  — [Mixxx blog](https://mixxx.org/news/2025-11-17-zulip-3000_members/)
 
@@ -66,7 +66,7 @@ day job, family and friends, “I’m not the person who can always hang around 
 the chat,” he explains. “With Zulip, there’s no *need* to hang around in chat
 rooms to avoid missing an important conversation.”
 
-> “With Zulip, I feel informed, but not stressed by all the messages.”
+> With Zulip, I feel informed, but not stressed by all the messages.
 >
 >  — Daniel Schürmann, core Mixxx developer
 
@@ -86,8 +86,8 @@ blocks, and convenient quoting functionality. Everyone can keep track of
 conversations in their [inbox](/help/inbox), and automatically
 [follow](/help/follow-a-topic) topics they’ve participated in.
 
-> “Collaboration in the Mixxx Zulip community propels the creative process to
-> the next level.”
+> Collaboration in the Mixxx Zulip community propels the creative process to
+> the next level.
 >
 > — Evelynne Veys, core Mixxx developer
 
@@ -98,9 +98,9 @@ experience that there’s a lot of love in Zulip,” he explains. From the smoot
 snappy interactions, to helpful touches like global times, polls, and pronouns,
 it adds up.
 
-> “You can experience that there’s a lot of love in Zulip.”
+> You can experience that there’s a lot of love in Zulip.
 >
->  — Daniel Schürmann, core Mixxx developer
+> — Daniel Schürmann, core Mixxx developer
 
 Other community members feel it too: “Some new contributors who were skeptical
 at first later told us that they consider Zulip one of the best tools for
@@ -111,11 +111,11 @@ mega-corporation. Daniel and other community members are glad that the Mixxx
 community has found an excellent communication tool that also aligns with their
 FOSS values.
 
-> “I highly recommend Zulip to other communities… Slack is a no-go for many due
+> I highly recommend Zulip to other communities… Slack is a no-go for many due
 > to not being FLOSS, and I’m concerned about vendor lock-in if they were to
 > stop being so generous. Slack’s threading model is much worse than Zulip’s
 > IMO. The channels/topics flow is an incredibly intuitive way to keep track of
-> everything that is going on.”
+> everything that is going on.
 >
 > — RJ Ryan, core Mixxx developer
 
