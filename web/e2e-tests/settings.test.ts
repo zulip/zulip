@@ -139,6 +139,14 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     const user_id = await common.get_user_id_from_name(page, "Bot 1");
     await open_manage_bot_tab(page, user_id!);
 
+    await page.click(".micromodal .show-zuliprc-and-api-key");
+
+    // Wait for the bot profile modal to close.
+    await common.wait_for_micromodal_to_close(page);
+
+    // Wait for zuliprc and API key modal to open.
+    await common.wait_for_micromodal_to_open(page);
+
     const outgoing_webhook_zuliprc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
@@ -181,6 +189,14 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
 
     const user_id = await common.get_user_id_from_name(page, "Bot 2");
     await open_manage_bot_tab(page, user_id!);
+
+    await page.click(".micromodal .show-zuliprc-and-api-key");
+
+    // Wait for the bot profile modal to close.
+    await common.wait_for_micromodal_to_close(page);
+
+    // Wait for zuliprc and API key modal to open.
+    await common.wait_for_micromodal_to_open(page);
 
     const zuliprc_url_selector = `.micromodal .hidden-zuliprc-download`;
     const download_zuliprc_selector = `.download-bot-zuliprc`;

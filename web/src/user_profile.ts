@@ -847,10 +847,8 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
-        api_key: bot_user.api_key,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
-        zuliprc: "zuliprc",
     });
     $container.append($(html_body));
     let avatar_widget: UploadWidget;
@@ -1072,6 +1070,13 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             const current_bot_data = bot_data.get(bot.user_id);
             assert(current_bot_data !== undefined);
             integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
+        });
+
+        $("#bot-edit-form").on("click", ".show-zuliprc-and-api-key", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            assert(bot !== undefined);
+            bot_helper.show_zuliprc_and_api_key_modal(bot.user_id);
         });
     }
 }
@@ -1538,6 +1543,4 @@ export function initialize(): void {
             show_check_icon: true,
         });
     });
-
-    bot_helper.initialize_clipboard_handlers();
 }

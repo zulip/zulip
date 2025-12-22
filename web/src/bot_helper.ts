@@ -3,9 +3,13 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_bot_zuliprc_and_api_key_details from "../templates/settings/bot_zuliprc_and_api_key_details.hbs";
+
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
 
 export function generate_zuliprc_url(bot_id: number): string {
@@ -49,10 +53,11 @@ export function generate_zuliprc_content(bot: {
     );
 }
 
-export function initialize_clipboard_handlers(): void {
+function initialize_clipboard_handlers(): void {
     new ClipboardJS("#copy-api-key-button", {
         text(trigger) {
-            const data = $(trigger).closest("span").attr("data-api-key") ?? "";
+            const data =
+                $(trigger).closest(".bot-zuliprc-and-api-key-container").attr("data-api-key") ?? "";
             return data;
         },
     }).on("success", (e) => {
@@ -64,8 +69,10 @@ export function initialize_clipboard_handlers(): void {
 
     new ClipboardJS("#copy-zuliprc-config", {
         text(trigger) {
-            const $bot_info = $(trigger).closest("#bot-edit-form");
-            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+            const bot_id = Number.parseInt(
+                $(trigger).closest(".bot-zuliprc-and-api-key-container").attr("data-user-id")!,
+                10,
+            );
             const bot = bot_data.get(bot_id);
             assert(bot !== undefined);
             const data = generate_zuliprc_content(bot);
@@ -76,6 +83,29 @@ export function initialize_clipboard_handlers(): void {
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
         });
+    });
+}
+
+export function show_zuliprc_and_api_key_modal(bot_id: number): void {
+    const bot = bot_data.get(bot_id)!;
+    const html_body = render_bot_zuliprc_and_api_key_details({
+        bot_id,
+        email: bot.email,
+        api_key: bot.api_key,
+    });
+    dialog_widget.launch({
+        html_heading: $t_html(
+            {defaultMessage: "API key for {bot_name}"},
+            {bot_name: bot.full_name},
+        ),
+        html_body,
+        id: "zuliprc-and-api-key-modal",
+        single_footer_button: true,
+        html_submit_button: $t_html({defaultMessage: "Close"}),
+        on_click() {
+            return;
+        },
+        post_render: initialize_clipboard_handlers,
     });
 }
 
@@ -98,7 +128,10 @@ export function initialize_bot_click_handlers(): void {
                     .parse(data);
 
                 $row.find(".api-key").val(parsed_data.api_key);
-                $row.find("span[data-api-key]").attr("data-api-key", parsed_data.api_key);
+                $row.closest(".bot-zuliprc-and-api-key-container").attr(
+                    "data-api-key",
+                    parsed_data.api_key,
+                );
                 $row.find(".bot-modal-api-key-error").hide();
             },
             error(xhr) {
@@ -111,9 +144,11 @@ export function initialize_bot_click_handlers(): void {
     });
 
     $("body").on("click", "button.download-bot-zuliprc", function () {
-        const $bot_info = $(this).closest("#bot-edit-form");
-        const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-        const bot_email = $bot_info.attr("data-email");
+        const bot_id = Number.parseInt(
+            $(this).closest(".bot-zuliprc-and-api-key-container").attr("data-user-id")!,
+            10,
+        );
+        const bot_email = $(this).closest(".bot-zuliprc-and-api-key-container").attr("data-email");
 
         // Select the <a> element by matching data-email.
         const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
