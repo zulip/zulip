@@ -94,16 +94,24 @@ async function test_copying_last_message_from_topic(page: Page): Promise<void> {
 
 async function test_copying_first_two_messages_from_topic(page: Page): Promise<void> {
     const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test D");
-    const expected_copied_lines = ["Desdemona: copy paste test C", "Desdemona: copy paste test D"];
+    const expected_copied_lines = [
+        "Desdemona:",
+        "copy paste test C",
+        "Desdemona:",
+        "copy paste test D",
+    ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
 async function test_copying_all_messages_from_topic(page: Page): Promise<void> {
     const actual_copied_lines = await copy_messages(page, "copy paste test C", "copy paste test E");
     const expected_copied_lines = [
-        "Desdemona: copy paste test C",
-        "Desdemona: copy paste test D",
-        "Desdemona: copy paste test E",
+        "Desdemona:",
+        "copy paste test C",
+        "Desdemona:",
+        "copy paste test D",
+        "Desdemona:",
+        "copy paste test E",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -111,10 +119,12 @@ async function test_copying_all_messages_from_topic(page: Page): Promise<void> {
 async function test_copying_last_from_prev_first_from_next(page: Page): Promise<void> {
     const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test C");
     const expected_copied_lines = [
-        "Verona > copy-paste-topic #1 Today",
-        "Desdemona: copy paste test B",
-        "Verona > copy-paste-topic #2 Today",
-        "Desdemona: copy paste test C",
+        "Verona > copy-paste-topic #1 | Today",
+        "Desdemona:",
+        "copy paste test B",
+        "Verona > copy-paste-topic #2 | Today",
+        "Desdemona:",
+        "copy paste test C",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -122,12 +132,16 @@ async function test_copying_last_from_prev_first_from_next(page: Page): Promise<
 async function test_copying_last_from_prev_all_from_next(page: Page): Promise<void> {
     const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test E");
     const expected_copied_lines = [
-        "Verona > copy-paste-topic #1 Today",
-        "Desdemona: copy paste test B",
-        "Verona > copy-paste-topic #2 Today",
-        "Desdemona: copy paste test C",
-        "Desdemona: copy paste test D",
-        "Desdemona: copy paste test E",
+        "Verona > copy-paste-topic #1 | Today",
+        "Desdemona:",
+        "copy paste test B",
+        "Verona > copy-paste-topic #2 | Today",
+        "Desdemona:",
+        "copy paste test C",
+        "Desdemona:",
+        "copy paste test D",
+        "Desdemona:",
+        "copy paste test E",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -135,11 +149,14 @@ async function test_copying_last_from_prev_all_from_next(page: Page): Promise<vo
 async function test_copying_all_from_prev_first_from_next(page: Page): Promise<void> {
     const actual_copied_lines = await copy_messages(page, "copy paste test A", "copy paste test C");
     const expected_copied_lines = [
-        "Verona > copy-paste-topic #1 Today",
-        "Desdemona: copy paste test A",
-        "Desdemona: copy paste test B",
-        "Verona > copy-paste-topic #2 Today",
-        "Desdemona: copy paste test C",
+        "Verona > copy-paste-topic #1 | Today",
+        "Desdemona:",
+        "copy paste test A",
+        "Desdemona:",
+        "copy paste test B",
+        "Verona > copy-paste-topic #2 | Today",
+        "Desdemona:",
+        "copy paste test C",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -147,14 +164,19 @@ async function test_copying_all_from_prev_first_from_next(page: Page): Promise<v
 async function test_copying_messages_from_several_topics(page: Page): Promise<void> {
     const actual_copied_lines = await copy_messages(page, "copy paste test B", "copy paste test F");
     const expected_copied_lines = [
-        "Verona > copy-paste-topic #1 Today",
-        "Desdemona: copy paste test B",
-        "Verona > copy-paste-topic #2 Today",
-        "Desdemona: copy paste test C",
-        "Desdemona: copy paste test D",
-        "Desdemona: copy paste test E",
-        "Verona > copy-paste-topic #3 Today",
-        "Desdemona: copy paste test F",
+        "Verona > copy-paste-topic #1 | Today",
+        "Desdemona:",
+        "copy paste test B",
+        "Verona > copy-paste-topic #2 | Today",
+        "Desdemona:",
+        "copy paste test C",
+        "Desdemona:",
+        "copy paste test D",
+        "Desdemona:",
+        "copy paste test E",
+        "Verona > copy-paste-topic #3 | Today",
+        "Desdemona:",
+        "copy paste test F",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
@@ -174,16 +196,21 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         },
     );
     const expected_copied_lines = [
-        "Verona > copy-paste-topic #1 Today",
-        // w/o partial selection: "Desdemona: copy paste test B",
-        "Desdemona: paste test B",
-        "Verona > copy-paste-topic #2 Today",
-        "Desdemona: copy paste test C",
-        "Desdemona: copy paste test D",
-        "Desdemona: copy paste test E",
-        "Verona > copy-paste-topic #3 Today",
-        // w/o partial selection: "Desdemona: copy paste test F",
-        "Desdemona: copy paste",
+        "Verona > copy-paste-topic #1 | Today",
+        "Desdemona:",
+        // w/o partial selection: "copy paste test B",
+        "paste test B",
+        "Verona > copy-paste-topic #2 | Today",
+        "Desdemona:",
+        "copy paste test C",
+        "Desdemona:",
+        "copy paste test D",
+        "Desdemona:",
+        "copy paste test E",
+        "Verona > copy-paste-topic #3 | Today",
+        "Desdemona:",
+        // w/o partial selection: "copy paste test F",
+        "copy paste",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
