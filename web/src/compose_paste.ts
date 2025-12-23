@@ -596,7 +596,7 @@ export function paste_handler_converter(
     markdown_text = markdown_text.replaceAll(/^(\W* {0,3})(\d+)\\\. /gm, "$1$2. ");
 
     // Removes newlines before the start of a list and between list elements.
-    markdown_text = markdown_text.replaceAll(/\n+([*+-])/g, "\n$1");
+    markdown_text = markdown_text.replaceAll(/\n+([*+-])\s+/g, "\n$1 ");
     return markdown_text;
 }
 
