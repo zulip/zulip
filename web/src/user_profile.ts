@@ -1645,7 +1645,7 @@ export function initialize(): void {
 
     $("body").on(
         "click",
-        "#user-profile-modal .modal-channel-list-row, .modal-group-list-row",
+        "#user-profile-modal .modal-channel-list-row-content, .modal-group-list-row-content",
         () => {
             hide_user_profile();
         },
