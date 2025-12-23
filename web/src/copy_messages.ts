@@ -46,13 +46,24 @@ function find_boundary_tr(
 }
 
 function construct_recipient_header($message_row: JQuery): JQuery {
+    const date_text = $message_row.parent(".recipient_row").find(".recipient_row_date").text();
     const message_header_content = rows
         .get_message_recipient_header($message_row)
         .text()
         .replaceAll(/\s+/g, " ")
         .replace(/^\s/, "")
         .replace(/\s$/, "");
-    return $("<p>").append($("<strong>").text(message_header_content));
+    const $p = $("<p>");
+    const message_header_recipient_text = message_header_content.slice(
+        0,
+        Math.max(0, message_header_content.length - date_text.length),
+    );
+    $p.attr("data-message-header-paragraph", "true");
+    $p.append($("<strong>").text(message_header_recipient_text)).append(
+        $("<span>").text("| " + date_text),
+    );
+
+    return $p;
 }
 
 // Returns the the inner HTML of the `.message_content` element
@@ -194,11 +205,17 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
             $content = $(message.content);
         }
 
-        $content.first().prepend(
-            $("<span>")
-                .text(message.sender_full_name + ": ")
-                .contents(),
-        );
+        // The message header or the previous message before this is
+        // expected to insert a newline before the sender name.
+        $div.append($("<b>").text(message.sender_full_name + ": "));
+
+        // Move the children into a div, to only insert a single newline
+        // after the sender name, with our custom `no extra newline` turndown
+        // rule.
+        if ($content && $content.length > 0 && $content.is("p")) {
+            $content = $("<div>").append($content.contents());
+        }
+
         $div.append($content);
     }
 
