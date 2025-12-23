@@ -1,6 +1,7 @@
 import Uppy from "@uppy/core";
 import type {Body, Meta} from "@uppy/core";
 import ImageEditor from "@uppy/image-editor";
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_image_editor_modal from "../templates/image_editor_modal.hbs";
@@ -202,7 +203,7 @@ function open_uppy_editor(
             requestAnimationFrame(() => {
                 // Hide the loading placeholder
                 $("#uppy-editor .loading-placeholder").hide();
-                
+
                 set_up_uppy_widget();
                 assert(uppy_widget !== undefined);
 
@@ -224,7 +225,9 @@ function open_uppy_editor(
                     isRemote: false,
                 });
                 const uppy_file = uppy_widget.getFile(uppy_file_id);
-                uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
+                uppy_widget
+                    .getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!
+                    .selectFile(uppy_file);
 
                 uppy_widget.once("file-editor:complete", (file) => {
                     assert(file.data instanceof File);

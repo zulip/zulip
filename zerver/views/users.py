@@ -462,6 +462,9 @@ def patch_bot_backend(
     service_interface: Json[int] = 1,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
 ) -> HttpResponse:
+    if request.FILES:
+        raise JsonableError(_("Avatar uploads must use the avatar upload endpoint."))
+
     bot = access_bot_by_id(user_profile, bot_id)
 
     if full_name is not None:

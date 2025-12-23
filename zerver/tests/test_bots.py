@@ -1394,20 +1394,22 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         email = "hambot-bot@zulip.testserver"
-        # Try error case first (too many files):
-        with get_test_image_file("img.png") as fp1, get_test_image_file("img.gif") as fp2:
+        bot_id = self.get_bot_user(email).id
+
+        # Test that PATCH endpoint rejects file uploads
+        with get_test_image_file("img.png") as fp:
             result = self.client_patch_multipart(
-                f"/json/bots/{self.get_bot_user(email).id}", dict(file1=fp1, file2=fp2)
+                f"/json/bots/{bot_id}", dict(file=fp)
             )
-        self.assert_json_error(result, "You may only upload one file at a time")
+        self.assert_json_error(result, "Avatar uploads must use the avatar upload endpoint.")
 
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.avatar_version, 1)
 
-        # HAPPY PATH
+        # HAPPY PATH - use the new dedicated avatar upload endpoint
         with get_test_image_file("img.png") as fp:
-            result = self.client_patch_multipart(
-                f"/json/bots/{self.get_bot_user(email).id}", dict(file=fp)
+            result = self.client_post(
+                f"/json/bots/{bot_id}/avatar", dict(file=fp)
             )
             profile = get_user(bot_email, bot_realm)
             self.assertEqual(profile.avatar_version, 2)
