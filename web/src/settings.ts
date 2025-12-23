@@ -5,6 +5,7 @@ import timezones from "../generated/timezones.json";
 import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
+import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
 import * as flatpickr from "./flatpickr.ts";
@@ -52,7 +53,10 @@ export function update_lock_icon_in_sidebar(): void {
 
     $(".org-settings-list .locked").show();
 
-    if (settings_bots.can_create_incoming_webhooks()) {
+    if (
+        settings_bots.can_create_incoming_webhooks() ||
+        bot_data.get_all_bots_ids_for_current_user().length > 0
+    ) {
         $(".org-settings-list li[data-section='bots'] .locked").hide();
     }
 
@@ -201,6 +205,8 @@ export function initialize(): void {
         show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
+        can_manage_bot:
+            current_user.is_admin || bot_data.get_all_bots_ids_for_current_user().length > 0,
         can_edit_user_panel:
             current_user.is_admin ||
             settings_data.user_can_create_multiuse_invite() ||

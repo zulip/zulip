@@ -498,6 +498,7 @@ export function dispatch_normal_event(event) {
                     if (user.bot_owner_id === current_user.user_id) {
                         settings_bots.redraw_your_bots_list();
                         settings_bots.toggle_bot_config_download_container();
+                        settings_bots.update_lock_icon_in_sidebar();
                     }
                     break;
                 }
@@ -505,6 +506,7 @@ export function dispatch_normal_event(event) {
                     bot_data.del(event.bot.user_id);
                     settings_bots.redraw_your_bots_list();
                     settings_bots.toggle_bot_config_download_container();
+                    settings_bots.update_lock_icon_in_sidebar();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
