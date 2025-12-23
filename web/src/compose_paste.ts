@@ -615,6 +615,14 @@ export function paste_handler_converter(
         },
     });
 
+    turndownService.addRule("message-header paste output", {
+        filter: (node) =>
+            node.nodeName === "P" && node.getAttribute("data-message-header-paragraph") === "true",
+        replacement(content) {
+            return `\n\n${content}\n`;
+        },
+    });
+
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.

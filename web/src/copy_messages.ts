@@ -4,6 +4,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_copied_recipient_header from "../templates/copied_recipient_header.hbs";
+
 import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
@@ -48,13 +50,14 @@ function find_boundary_tr(
 }
 
 function construct_recipient_header($message_row: JQuery): JQuery {
-    const message_header_content = rows
-        .get_message_recipient_header($message_row)
-        .text()
-        .replaceAll(/\s+/g, " ")
-        .replace(/^\s/, "")
-        .replace(/\s$/, "");
-    return $("<p>").append($("<strong>").text(message_header_content));
+    const $header = rows.get_message_recipient_header($message_row);
+    const date_text = $header.find(".recipient_row_date").text().trim();
+
+    const $header_without_date = $header.clone();
+    $header_without_date.find(".recipient_row_date").remove();
+    const recipient_text = $header_without_date.text().replaceAll(/\s+/g, " ").trim();
+
+    return $(render_copied_recipient_header({recipient_text, date_text}));
 }
 
 // Returns the selected `.message_content`s in the current range.
@@ -221,6 +224,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         const $row = copy_rows[i];
         assert($row !== undefined && $row[0] instanceof HTMLElement);
         const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row($row));
+        let added_recipient_header = false;
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
         // so we have to add new recipient's bar to final copied message
@@ -229,6 +233,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
             construct_recipient_header($row).appendTo($div);
             last_recipient_row_id = recipient_row_id;
             should_include_start_recipient_header = true;
+            added_recipient_header = true;
         }
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
@@ -242,11 +247,28 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
             $content = $(message.content);
         }
 
-        $content.first().prepend(
-            $("<span>")
-                .text(message.sender_full_name + ": ")
-                .contents(),
-        );
+        // A recipient header already separates itself from the following
+        // sender name with a newline. Between consecutive messages from the
+        // same recipient there is no header, so we insert an empty paragraph
+        // to keep a blank line separating each message's body from the next
+        // message's sender name.
+        if (i > 0 && !added_recipient_header) {
+            $div.append($("<p>"));
+        }
+
+        $div.append($("<b>").text(message.sender_full_name + ": "));
+
+        // A leading paragraph is moved into a div so that the `no extra
+        // newline` turndown rule keeps just a single newline (instead of a
+        // blank line) between the sender name and the message body. We only
+        // unwrap this first paragraph; any following block content, such as a
+        // list, is left untouched so that its structure is preserved.
+        const $first_content_element = $content.first();
+        if ($first_content_element.is("p")) {
+            $div.append($("<div>").append($first_content_element.contents()));
+            $content = $content.slice(1);
+        }
+
         $div.append($content);
     }
 
