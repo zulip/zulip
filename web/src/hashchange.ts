@@ -419,7 +419,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             if (section === "users") {
                 settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
             } else if (section === "bots") {
-                settings_panel_menu.org_settings.set_bot_settings_tab(get_settings_tab(section));
+                settings_panel_menu.org_settings.set_bot_settings_tab(get_settings_tab(section)!);
             }
         }
         settings_toggle.goto(base);
