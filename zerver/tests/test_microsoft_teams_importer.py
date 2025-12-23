@@ -69,6 +69,7 @@ MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA = MicrosoftTeamsUserRoleData(
     guest_user_ids={"16741626-4cd8-46cc-bf36-42ecc2b5fdce"},
 )
 
+DELETED_MICROSOFT_TEAMS_USERS = ["9bd4aca7-99cf-4b1b-a16d-e25717dc9414"]
 
 PRIVATE_MICROSOFT_TEAMS_CHANNELS = ["19:42c4944387224bf79bcad3cb6809a335@thread.tacv2"]
 
@@ -282,11 +283,10 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         )
         self.assertSetEqual(imported_user_emails, set(EXPORTED_MICROSOFT_TEAMS_USER_EMAIL.values()))
 
-        # For now the importer doesn't generate any mirror dummy accounts.
         mirror_dummy_accounts = self.get_imported_realm_user_field_values(
             "id", is_mirror_dummy=True, is_active=False
         )
-        self.assertListEqual(mirror_dummy_accounts, [])
+        self.assert_length(mirror_dummy_accounts, 1)
 
         imported_realm_owner_emails = set(
             self.get_imported_realm_user_field_values("email", role=UserProfile.ROLE_REALM_OWNER)
@@ -301,8 +301,15 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         raw_exported_users_data = self.get_exported_microsoft_teams_user_data()
 
         raw_exported_user_full_names = [user["DisplayName"] for user in raw_exported_users_data]
+        deleted_user_full_names = [
+            f"Deleted Teams user {user_id}" for user_id in DELETED_MICROSOFT_TEAMS_USERS
+        ]
+
         imported_user_full_names = self.get_imported_realm_user_field_values("full_name")
-        self.assertEqual(sorted(raw_exported_user_full_names), sorted(imported_user_full_names))
+        self.assertEqual(
+            sorted(raw_exported_user_full_names + deleted_user_full_names),
+            sorted(imported_user_full_names),
+        )
 
     def test_imported_channels(self) -> None:
         self.do_import_realm_fixture()
@@ -351,6 +358,7 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         convertable_exported_message_datetimes: list[float] = []
         exported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
         private_channel_message_exists: bool
+        deleted_user_message_exists: bool
 
         for message in exported_team_messages:
             if is_microsoft_teams_event_message(message):
@@ -360,14 +368,18 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
                 continue
             sender_id = get_microsoft_teams_sender_id_from_message(message)
             if sender_id not in self.exported_user_data_map:
-                continue
-            sender_email = self.exported_user_data_map[sender_id]["Mail"]
+                assert sender_id in DELETED_MICROSOFT_TEAMS_USERS
+                sender_email = f"{sender_id}@zulip.example.com"
+                deleted_user_message_exists = True
+            else:
+                sender_email = self.exported_user_data_map[sender_id]["Mail"]
 
             convertable_exported_messages.append(message)
             message_datetime = get_timestamp_from_message(message)
             convertable_exported_message_datetimes.append(message_datetime)
             exported_sender_messages_map[sender_email].append(message_datetime)
         self.assertTrue(private_channel_message_exists)
+        self.assertTrue(deleted_user_message_exists)
 
         imported_channel_messages = (
             Message.objects.filter(
