@@ -1,10 +1,8 @@
 <li class="group-list-item" role="presentation" data-group-id="{{group_id}}">
-    <a class="modal-group-list-row hidden-remove-button-row" href="{{group_edit_url}}">
-        <span class="modal-group-list-row-content">
-            <span class="user-group-name">
-                {{name}}
-            </span>
-        </span>
+    <div class="modal-group-list-row hidden-remove-button-row">
+        <a class="modal-group-list-row-content" href="{{group_edit_url}}">
+            <span class="user-group-name">{{name}}</span>
+        </a>
         {{#if can_remove_members }}
             <div class="remove-button-wrapper">
                 {{#if is_direct_member}}
@@ -16,5 +14,5 @@
                 {{/if}}
             </div>
         {{/if}}
-    </a>
+    </div>
 </li>
