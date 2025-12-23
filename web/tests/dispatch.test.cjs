@@ -830,6 +830,7 @@ run_test("realm_bot add", ({override}) => {
     override(bot_data, "add", bot_stub.f);
     override(settings_bots, "redraw_your_bots_list", noop);
     override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
 
     dispatch(event);
 
@@ -844,6 +845,7 @@ run_test("realm_bot delete", ({override}) => {
     override(bot_data, "del", bot_stub.f);
     override(settings_bots, "redraw_your_bots_list", noop);
     override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -874,6 +876,8 @@ run_test("realm_bot update", ({override}) => {
 
     event = event_fixtures.realm_bot__update_owner;
     override(settings_bots, "redraw_your_bots_list", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
+
     dispatch(event);
     assert.equal(toggle_download_container_stub.num_calls, 1);
     assert.equal(bot_stub.num_calls, 1);

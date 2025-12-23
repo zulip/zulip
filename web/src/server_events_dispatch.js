@@ -488,18 +488,21 @@ export function dispatch_normal_event(event) {
                     if (event.bot.owner_id === current_user.user_id) {
                         settings_bots.redraw_your_bots_list();
                         settings_bots.toggle_bot_config_download_container();
+                        settings_bots.update_lock_icon_in_sidebar();
                     }
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.redraw_your_bots_list();
                     settings_bots.toggle_bot_config_download_container();
+                    settings_bots.update_lock_icon_in_sidebar();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
                     if ("owner_id" in event.bot) {
                         settings_bots.redraw_your_bots_list();
                         settings_bots.toggle_bot_config_download_container();
+                        settings_bots.update_lock_icon_in_sidebar();
                     }
                     if ("is_active" in event.bot) {
                         settings_bots.toggle_bot_config_download_container();

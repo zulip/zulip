@@ -194,9 +194,19 @@ export function update_bot_settings_tip($tip_container: JQuery): void {
 function update_add_bot_button(): void {
     if (can_create_incoming_webhooks()) {
         $("#admin-bot-list .add-a-new-bot").show();
-        $(".org-settings-list li[data-section='bots'] .locked").hide();
     } else {
         $("#admin-bot-list .add-a-new-bot").hide();
+    }
+}
+
+export function update_lock_icon_in_sidebar(): void {
+    if (
+        can_create_incoming_webhooks() ||
+        current_user.is_admin ||
+        bot_data.get_all_bots_ids_for_current_user().length > 0
+    ) {
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
+    } else {
         $(".org-settings-list li[data-section='bots'] .locked").show();
     }
 }
@@ -204,6 +214,7 @@ function update_add_bot_button(): void {
 export function update_bot_permissions_ui(): void {
     update_bot_settings_tip($("#admin-bot-settings-tip"));
     update_add_bot_button();
+    update_lock_icon_in_sidebar();
 }
 
 export function get_allowed_bot_types(): BotType[] {
