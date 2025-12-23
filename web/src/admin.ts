@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
@@ -351,6 +352,7 @@ export function launch(section: string, settings_tab: string | undefined): void 
         settings_panel_menu.org_settings.set_user_settings_tab(settings_tab);
     }
     if (section === "bots") {
+        assert(settings_tab !== undefined);
         settings_panel_menu.org_settings.set_bot_settings_tab(settings_tab);
     }
     settings_toggle.goto("organization");

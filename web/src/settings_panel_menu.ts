@@ -226,7 +226,7 @@ export class SettingsPanelMenu {
         this.current_user_settings_tab = tab;
     }
 
-    set_bot_settings_tab(tab: string | undefined): void {
+    set_bot_settings_tab(tab: string): void {
         this.current_bot_settings_tab = tab;
     }
 
