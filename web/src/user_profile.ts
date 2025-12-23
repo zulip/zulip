@@ -355,6 +355,12 @@ async function render_or_update_user_streams_tab(user: User): Promise<void> {
     }
 
     loading.destroy_indicator($(".stream-list-loader"));
+    if (!peer_data.subscriber_data_loaded_for_user(user.user_id)) {
+        $(".stream-list-container .error-message").html(
+            $t_html({defaultMessage: "Failed to load subscribed channels."}),
+        );
+        return;
+    }
 
     if (!user_streams_list_widget) {
         render_user_stream_list(user_streams, user);

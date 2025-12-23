@@ -575,6 +575,12 @@ ul.popover-group-menu-member-list {
             }
         }
 
+        .error-message:not(:empty) {
+            color: var(--color-alert-error-red);
+            text-align: center;
+            margin-top: 20px;
+        }
+
         .stream-list-bottom-section,
         .group-list-bottom-section {
             grid-area: bottom;
