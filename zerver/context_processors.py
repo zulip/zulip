@@ -36,6 +36,7 @@ from zproject.config import get_config
 DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "page_type": "default",
     "development_environment": settings.DEVELOPMENT,
+    "request_language": "en",
 }
 
 
