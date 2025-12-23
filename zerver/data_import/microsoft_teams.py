@@ -313,7 +313,7 @@ def convert_users(
         zulip_user_id = NEXT_ID("user")
         found_emails[microsoft_teams_user_email.lower()] = zulip_user_id
 
-        user_profile = build_user_profile(
+        user_profile_dict = build_user_profile(
             avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
             date_joined=timestamp,
             delivery_email=microsoft_teams_user_email,
@@ -330,7 +330,6 @@ def convert_users(
             timezone="UTC",
         )
 
-        user_profile_dict: ZerverFieldsT = user_profile
         user_profile_dict["realm"] = realm_id
         zerver_user_profile.append(user_profile_dict)
         microsoft_teams_user_id_to_zulip_user_id[microsoft_teams_user_id] = zulip_user_id
