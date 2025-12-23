@@ -4,6 +4,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
+from email.headerregistry import Address
 from typing import Any, Literal, TypeAlias
 from urllib.parse import SplitResult
 
@@ -284,6 +285,41 @@ def get_user_email(user: MicrosoftTeamsFieldsT) -> str:
         raise AssertionError(f"Could not find email address for Microsoft Teams user {user}")
 
 
+def create_is_mirror_dummy_user(
+    microsoft_team_user_id: str,
+    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
+    realm: dict[str, Any],
+    realm_id: int,
+    domain_name: str,
+) -> None:
+    zulip_user_id = NEXT_ID("user")
+    user_full_name = f"Deleted Teams user {microsoft_team_user_id}"
+    email = Address(username=microsoft_team_user_id, domain=domain_name).addr_spec
+    user_profile_dict = build_user_profile(
+        avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+        date_joined=int(timezone_now().timestamp()),
+        delivery_email=email,
+        email=email,
+        full_name=user_full_name,
+        id=zulip_user_id,
+        is_active=False,
+        role=UserProfile.ROLE_MEMBER,
+        is_mirror_dummy=True,
+        realm_id=realm_id,
+        short_name=user_full_name,
+        timezone="UTC",
+    )
+    realm["zerver_userprofile"].append(user_profile_dict)
+    microsoft_teams_user_id_to_zulip_user_id[microsoft_team_user_id] = zulip_user_id
+
+    recipient_id = NEXT_ID("recipient")
+    subscription_id = NEXT_ID("subscription")
+    recipient = build_recipient(zulip_user_id, recipient_id, Recipient.PERSONAL)
+    sub = build_subscription(recipient_id, zulip_user_id, subscription_id)
+    realm["zerver_recipient"].append(recipient)
+    realm["zerver_subscription"].append(sub)
+
+
 def convert_users(
     microsoft_teams_user_role_data: MicrosoftTeamsUserRoleData,
     realm: dict[str, Any],
@@ -374,18 +410,17 @@ def is_microsoft_teams_event_message(message: MicrosoftTeamsFieldsT) -> bool:
 
 def process_messages(
     added_teams: dict[str, TeamMetadata],
+    domain_name: str,
     channel_metadata: None | dict[str, ChannelMetadata],
     is_private: bool,
     messages: list[MicrosoftTeamsFieldsT],
     microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
+    realm: dict[str, Any],
     realm_id: int,
     subscriber_map: dict[int, set[int]],
 ) -> tuple[list[ZerverFieldsT], list[ZerverFieldsT]]:
     zerver_usermessage: list[ZerverFieldsT] = []
     zerver_messages: list[ZerverFieldsT] = []
-    total_user_messages = 0
-    total_skipped_user_messages = 0
-    skipped_deleted_users_message = 0
 
     for message in messages:
         if is_microsoft_teams_event_message(message):
@@ -427,10 +462,13 @@ def process_messages(
         microsoft_teams_sender_id: str = get_microsoft_teams_sender_id_from_message(message)
 
         if microsoft_teams_sender_id not in microsoft_teams_user_id_to_zulip_user_id:
-            # TODO: Deleted users are not included in the exported user list but their
-            # messages are still exported and point to the deactivated user as the sender.
-            skipped_deleted_users_message += 1
-            continue
+            create_is_mirror_dummy_user(
+                microsoft_teams_sender_id,
+                microsoft_teams_user_id_to_zulip_user_id,
+                realm,
+                realm_id,
+                domain_name,
+            )
 
         message_id = NEXT_ID("message")
         zulip_message = build_message(
@@ -460,19 +498,11 @@ def process_messages(
             is_private=is_direct_message_type,
         )
 
-        total_user_messages += num_created
-        total_skipped_user_messages += num_skipped
-
         logging.debug(
             "Created %s UserMessages; deferred %s due to long-term idle",
-            total_user_messages,
-            total_skipped_user_messages,
+            num_created,
+            num_skipped,
         )
-
-    logging.info(
-        "Unable to convert %s message(s) from deleted users.",
-        skipped_deleted_users_message,
-    )
 
     return (
         zerver_messages,
@@ -501,6 +531,7 @@ def get_batched_export_message_data(
 
 def convert_messages(
     added_teams: dict[str, TeamMetadata],
+    domain_name: str,
     microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
     output_dir: str,
     realm_id: int,
@@ -542,10 +573,12 @@ def convert_messages(
         (zerver_messages, zerver_usermessage) = process_messages(
             added_teams=added_teams,
             channel_metadata=microsoft_teams_channel_metadata,
+            domain_name=domain_name,
             is_private=False,
             messages=message_chunk,
             microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
             subscriber_map=subscriber_map,
+            realm=realm,
             realm_id=realm_id,
         )
 
@@ -601,6 +634,7 @@ def do_convert_directory(
 
     convert_messages(
         added_teams=added_teams,
+        domain_name=domain_name,
         microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
         output_dir=output_dir,
         realm_id=realm_id,
