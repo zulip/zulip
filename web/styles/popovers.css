@@ -568,7 +568,11 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-list-loader:not(:empty) {
-            margin: 10px auto;
+            margin: auto; /* center the spinner */
+
+            .loading_indicator_spinner {
+                margin-top: 10px;
+            }
         }
 
         .stream-list-bottom-section,
