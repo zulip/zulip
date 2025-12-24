@@ -1038,8 +1038,20 @@ function show_empty_inbox_text(has_visible_unreads: boolean): void {
             $("#inbox-empty-without-search").hide();
         } else {
             $("#inbox-empty-with-search").hide();
-            // Use display value specified in CSS.
+
+            // Undo .hide() by returning to display value specified in CSS.
             $("#inbox-empty-without-search").css("display", "");
+
+            // Check if current filter is "followed topics" so that we
+            // can show the appropriate empty view message.
+            const is_followed_filter_selected = filters.has(views_util.FILTERS.FOLLOWED_TOPICS);
+            if (is_followed_filter_selected) {
+                $(".inbox-empty-action-default").hide();
+                $(".inbox-empty-action-filtered").show();
+            } else {
+                $(".inbox-empty-action-default").show();
+                $(".inbox-empty-action-filtered").hide();
+            }
         }
     } else {
         $(".inbox-empty-text").hide();
@@ -2436,6 +2448,14 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             const $elt = $(e.currentTarget);
             $elt.trigger("click");
         }
+    });
+
+    $("body").on("click", ".inbox-toggle-followed-filter", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        filters.delete(views_util.FILTERS.FOLLOWED_TOPICS);
+        save_data_to_ls();
+        complete_rerender();
     });
 
     $(document).on("compose_canceled.zulip", () => {
