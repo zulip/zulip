@@ -3,9 +3,9 @@ import {parseISO} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
-
+import tippy from "tippy.js";
+import type {Instance as TippyInstance} from "tippy.js";
 import render_profile_access_error_model from "../templates/profile_access_error_modal.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
@@ -192,6 +192,28 @@ export function update_profile_modal_ui(
         };
         $("#name .user-profile-name").html(render_user_full_name(user_type));
     }
+        // Disable "Deactivate user" button if the user is the only organization owner
+        const $deactivate_button = $("#deactivate-user-button");
+
+        if ($deactivate_button.length > 0) {
+            const is_only_owner = people.is_current_user_only_owner();
+
+    
+            if (is_only_owner) {
+                $deactivate_button.prop("disabled", true);
+    
+                tippy($deactivate_button[0]!, {
+                    content: $t({
+                        defaultMessage:
+                            "Because you are the only organization owner, you cannot deactivate your account.",
+                    }),
+                    
+                });
+            } else {
+                $deactivate_button.prop("disabled", false);
+            }
+        }
+    
 }
 
 function initialize_bot_owner(
@@ -236,7 +258,7 @@ function render_user_profile_subscribe_widget(user_id: number): void {
 
 function change_state_of_subscribe_button(
     event: JQuery.ClickEvent,
-    dropdown: tippy.Instance,
+    dropdown: TippyInstance,
 ): void {
     dropdown.hide();
     event.preventDefault();
@@ -978,7 +1000,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             }));
         }
 
-        function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
+        function item_click_callback(event: JQuery.ClickEvent, dropdown: TippyInstance): void {
             assert(bot_owner_dropdown_widget !== undefined);
             bot_owner_dropdown_widget.render();
             // Let dialog_widget know that there was a change in value.
