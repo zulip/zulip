@@ -781,7 +781,13 @@ export function get_person_suggestions(
         );
 
         return suggestion_items.filter((item) =>
-            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
+            typeahead_helper.query_matches_person(
+                query,
+                item,
+                should_remove_diacritics,
+                undefined,
+                true,
+            ),
         );
     };
 

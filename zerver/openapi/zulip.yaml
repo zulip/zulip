@@ -2060,6 +2060,7 @@ paths:
                                         "order": 8,
                                         "required": true,
                                         "editable_by_user": true,
+                                        "use_for_user_matching": true,
                                       },
                                     ],
                                   "id": 0,
@@ -13751,6 +13752,7 @@ paths:
                               "order": 8,
                               "required": true,
                               "editable_by_user": true,
+                              "use_for_user_matching": true,
                             },
                             {
                               "id": 9,
@@ -13899,6 +13901,22 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 296).
                   type: boolean
                   example: true
+                use_for_user_matching:
+                  description: |
+                    Whether this custom profile field should be used to match users in @ mention
+                    suggestions.
+
+                    Currently it's value only allowed for `Text (short)` and `External account`
+                    [profile field types](/help/custom-profile-fields#profile-field-types).
+
+                    By default, this value is **false** for `Text (short)` field and **true** for
+                    `External account` field.
+
+                    This field is only included when its value is `true`.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-043bb3).
+                  type: boolean
+                  example: false
               required:
                 - field_type
             encoding:
@@ -13911,6 +13929,8 @@ paths:
               required:
                 contentType: application/json
               editable_by_user:
+                contentType: application/json
+              use_for_user_matching:
                 contentType: application/json
       responses:
         "200":
@@ -25759,6 +25779,22 @@ components:
 
             **Changes**: New in Zulip 10.0 (feature level 296).
           default: true
+        use_for_user_matching:
+          type: boolean
+          description: |
+            Whether this custom profile field should be used to match users in @ mention
+            suggestions.
+
+            Currently it's value only allowed for `Text (short)` and `External account`
+            [profile field types](/help/custom-profile-fields#profile-field-types).
+
+            By default, this value is **false** for `Text (short)` field and **true** for
+            `External account` field.
+
+            This field is only included when its value is `true`.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-043bb3).
+          default: false
       required:
         - id
         - type

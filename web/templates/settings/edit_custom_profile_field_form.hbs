@@ -64,5 +64,13 @@
       is_checked= editable_by_user
       label=(t "Users can edit this field for their own account")
       }}
+    {{#if valid_to_use_for_user_matching}}
+    {{> settings_checkbox
+      prefix="id-custom-profile-field-"
+      setting_name="use_for_user_matching"
+      is_checked= use_for_user_matching
+      label=(t "Use in @-mention suggestions")
+      }}
+    {{/if}}
 </form>
 {{/with}}

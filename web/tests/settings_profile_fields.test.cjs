@@ -108,6 +108,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             field_data: "",
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
+            valid_to_use_for_user_matching: true,
             required: false,
         },
         {
@@ -127,6 +128,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             }),
             display_in_profile_summary: false,
             valid_to_display_in_summary: true,
+            valid_to_use_for_user_matching: false,
             required: false,
         },
         {
@@ -139,6 +141,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             }),
             display_in_profile_summary: true,
             valid_to_display_in_summary: true,
+            valid_to_use_for_user_matching: true,
             required: false,
         },
         {
@@ -152,6 +155,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             }),
             display_in_profile_summary: true,
             valid_to_display_in_summary: true,
+            valid_to_use_for_user_matching: true,
             required: false,
         },
     ];
@@ -167,6 +171,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 is_external_account_field: false,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
+                valid_to_use_for_user_matching: true,
                 required: false,
             },
             can_modify: true,
@@ -186,6 +191,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 is_external_account_field: false,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
+                valid_to_use_for_user_matching: false,
                 required: false,
             },
             can_modify: true,
@@ -202,6 +208,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
+                valid_to_use_for_user_matching: true,
                 required: false,
             },
             can_modify: true,
@@ -218,6 +225,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
+                valid_to_use_for_user_matching: true,
                 required: false,
             },
             can_modify: true,

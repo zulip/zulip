@@ -1059,6 +1059,7 @@ export function query_matches_person(
     person: UserPillData | UserOrMentionPillData,
     should_remove_diacritics: boolean | undefined = undefined,
     match_prefix?: boolean,
+    allow_custom_profile_field_matching: boolean = false,
 ): boolean {
     if (
         person.type === "broadcast" &&
@@ -1070,6 +1071,30 @@ export function query_matches_person(
     if (person.type === "user") {
         if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
             return true;
+        }
+
+        if (allow_custom_profile_field_matching) {
+            // Check custom profile fields that are enabled for use_for_user_matching
+            const field_types = realm.custom_profile_field_types;
+            for (const field of realm.custom_profile_fields) {
+                if (
+                    field.use_for_user_matching &&
+                    (field.type === field_types.SHORT_TEXT.id ||
+                        field.type === field_types.EXTERNAL_ACCOUNT.id)
+                ) {
+                    const field_value =
+                        people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
+                    if (
+                        typeahead.query_matches_string_in_order_assume_canonicalized(
+                            query,
+                            field_value.toLowerCase(),
+                            " ",
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+            }
         }
 
         if (person.user.delivery_email) {
