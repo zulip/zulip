@@ -395,7 +395,7 @@ export async function get_streams_for_user(user_id: number): Promise<{
     subscribed: StreamSubscription[];
     can_subscribe: StreamSubscription[];
 }> {
-    await peer_data.load_subscriptions_for_user(user_id);
+    await peer_data.fetch_subscriptions_for_user(user_id);
     return get_fetched_streams_for_user(user_id);
 }
 

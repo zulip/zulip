@@ -528,7 +528,7 @@ test("get_unique_subscriber_count_for_streams", async () => {
     assert.equal(count, 2);
 });
 
-test("load_subscriptions_for_user", async () => {
+test("fetch_subscriptions_for_user", async () => {
     people.add_active_user(fred);
 
     const india = {
@@ -551,8 +551,8 @@ test("load_subscriptions_for_user", async () => {
 
     // Only one of these will do the fetch, and the other will wait
     // for the first fetch to complete.
-    const promise1 = peer_data.load_subscriptions_for_user(fred.user_id);
-    const promise2 = peer_data.load_subscriptions_for_user(fred.user_id);
+    const promise1 = peer_data.fetch_subscriptions_for_user(fred.user_id);
+    const promise2 = peer_data.fetch_subscriptions_for_user(fred.user_id);
     await promise1;
     await promise2;
     assert.equal(channel_get_calls, 1);
@@ -563,7 +563,7 @@ test("load_subscriptions_for_user", async () => {
     };
     blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.", 5);
     blueslip.expect("error", "Failure fetching user's subscribed channels. Giving up.");
-    await peer_data.load_subscriptions_for_user(fred.user_id);
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
     blueslip.reset();
 
     peer_data.clear_for_testing();
@@ -571,7 +571,7 @@ test("load_subscriptions_for_user", async () => {
         payload.error({status: 400});
     };
     blueslip.expect("error", "Bad request to fetch user's subscribed channels.");
-    await peer_data.load_subscriptions_for_user(fred.user_id);
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
     blueslip.reset();
 
     peer_data.clear_for_testing();
@@ -588,7 +588,7 @@ test("load_subscriptions_for_user", async () => {
         }
     };
     blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.", 3);
-    await peer_data.load_subscriptions_for_user(fred.user_id);
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
     assert.ok(stream_data.is_user_loaded_and_subscribed(india.stream_id, fred.user_id));
     blueslip.reset();
 
@@ -605,6 +605,6 @@ test("load_subscriptions_for_user", async () => {
 
     // No get request here because we already have full subscriber data
     // for both streams.
-    await peer_data.load_subscriptions_for_user(fred.user_id);
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
     assert.equal(channel_get_calls, 2);
 });
