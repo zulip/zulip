@@ -911,7 +911,7 @@ export function deactivate_organization(e: JQuery.Event): void {
                 custom_deletion_time_input,
             );
             if (!is_valid_time_period(time_in_minutes)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                return "";
             }
         } else {
             // These options were already filtered for is_valid_time_period.
@@ -932,18 +932,25 @@ export function deactivate_organization(e: JQuery.Event): void {
     const maximum_allowed_days = realm.server_max_deactivated_realm_deletion_days;
 
     function is_valid_time_period(time_period: string | number): boolean {
+        const $custom_deletion_time_input = $<HTMLInputElement>("input#custom-deletion-time-input");
+
         if (time_period === "custom") {
+            $custom_deletion_time_input.removeClass("custom-time-input--error");
             return true;
         }
         if (time_period === "null") {
             if (maximum_allowed_days === null) {
+                $custom_deletion_time_input.removeClass("custom-time-input--error");
                 return true;
             }
+
+            $custom_deletion_time_input.addClass("custom-time-input--error");
             return false;
         }
         if (typeof time_period === "number") {
             if (maximum_allowed_days === null) {
                 if (time_period >= minimum_allowed_days * 24 * 60) {
+                    $custom_deletion_time_input.removeClass("custom-time-input--error");
                     return true;
                 }
             } else {
@@ -951,10 +958,13 @@ export function deactivate_organization(e: JQuery.Event): void {
                     time_period >= minimum_allowed_days * 24 * 60 &&
                     time_period <= maximum_allowed_days * 24 * 60
                 ) {
+                    $custom_deletion_time_input.removeClass("custom-time-input--error");
                     return true;
                 }
             }
         }
+
+        $custom_deletion_time_input.addClass("custom-time-input--error");
         return false;
     }
 
