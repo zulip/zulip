@@ -5,7 +5,7 @@ from zerver.actions.message_send import internal_send_stream_message
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import is_1_to_1_message, truncate_content
+from zerver.lib.message import get_user_mentions_for_display, is_1_to_1_message, truncate_content
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.lib.url_encoding import pm_message_url
@@ -69,24 +69,18 @@ def send_message_report(
                 reported_message_date_sent=reported_message_date_sent,
             )
     elif reported_message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        recipient_list = sorted(
-            [
-                silent_mention_syntax_for_user(user)
-                for user in get_display_recipient(reported_message.recipient)
-                if user["id"] is not reported_user.id
-            ]
-        )
-        last_recipient_user = recipient_list.pop()
-        recipient_users: str = ", ".join(recipient_list)
-        if len(recipient_list) > 1:
-            recipient_users += ","
         report_header = _(
-            "{reporting_user_mention} reported a message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user} at {reported_message_date_sent}."
+            "{reporting_user_mention} reported a message sent by {reported_user_mention} to {list_of_direct_message_recipients} at {reported_message_date_sent}."
         ).format(
             reporting_user_mention=reporting_user_mention,
             reported_user_mention=reported_user_mention,
-            recipient_users=recipient_users,
-            last_recipient_user=last_recipient_user,
+            list_of_direct_message_recipients=get_user_mentions_for_display(
+                [
+                    user
+                    for user in get_display_recipient(reported_message.recipient)
+                    if user["id"] is not reported_user.id
+                ]
+            ),
             reported_message_date_sent=reported_message_date_sent,
         )
     else:
