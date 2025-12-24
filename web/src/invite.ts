@@ -340,9 +340,11 @@ function generate_multiuse_invite(): void {
 // Find the valid_to function around line 300
 function valid_to(): string {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
+    const $custom_expiration_time_elm = $<HTMLInputElement>("input#custom-expiration-time-input");
     const time_input_value = $expires_in.val()!;
 
     if (time_input_value === "null") {
+        $custom_expiration_time_elm.removeClass("custom-time-input--error");
         return $t({defaultMessage: "Never expires"});
     }
 
@@ -361,6 +363,7 @@ function valid_to(): string {
 
         // Return empty string (null) if invalid OR if time exceeds 29 days
         if (!util.validate_custom_time_input(custom_expiration_time_input, false) || time_in_minutes > max_minutes) {
+            $custom_expiration_time_elm.addClass("custom-time-input--error");
             return "";
         }
     } else {
@@ -373,6 +376,7 @@ function valid_to(): string {
     const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
     const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
 
+    $custom_expiration_time_elm.removeClass("custom-time-input--error");
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 function set_streams_to_join_list_visibility(): void {
