@@ -69,8 +69,10 @@ test("partners", () => {
     const user3_id = 3;
 
     pmc.set_partner(user1_id);
+    assert.deepEqual(pmc.get_partners(), [user1_id]);
     pmc.set_partner(user3_id);
 
+    assert.deepEqual(pmc.get_partners(), [user1_id, user3_id]);
     assert.equal(pmc.is_partner(user1_id), true);
     assert.equal(pmc.is_partner(user2_id), false);
     assert.equal(pmc.is_partner(user3_id), true);
