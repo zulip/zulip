@@ -93,7 +93,10 @@ export function rewire_render_typeahead_item(value: typeof render_typeahead_item
     render_typeahead_item = value;
 }
 
-export let render_person = (person: UserPillData | UserOrMentionPillData): string => {
+export let render_person = (
+    person: UserPillData | UserOrMentionPillData,
+    query?: string,
+): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
@@ -112,6 +115,30 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
     const pronouns = pronouns_list?.[0]?.value;
 
+    // Prefer showing a matching custom profile field over email when the query matches it.
+    let secondary_text = person.user.delivery_email;
+
+    const q = query?.toLowerCase();
+    if (q) {
+        const email_matches = secondary_text?.toLowerCase().includes(q) ?? false;
+
+        if (!email_matches) {
+            for (const field of realm.custom_profile_fields) {
+                if (!field.use_for_user_matching) {
+                    continue;
+                }
+
+                const value = people
+                    .get_custom_profile_data(person.user.user_id, field.id)
+                    ?.value?.trim();
+
+                if (value && value.toLowerCase().includes(q)) {
+                    secondary_text = value;
+                    break;
+                }
+            }
+        }
+    }
     const typeahead_arguments = {
         primary: person.user.full_name,
         img_src: avatar_url,
@@ -123,7 +150,7 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
             person.user.user_id,
         ),
         pronouns,
-        secondary: person.user.delivery_email,
+        secondary: secondary_text,
     };
 
     return render_typeahead_item(typeahead_arguments);
@@ -155,12 +182,13 @@ export function rewire_render_user_group(value: typeof render_user_group): void 
 
 export function render_person_or_user_group(
     item: UserGroupPillData | UserPillData | UserOrMentionPillData,
+    query?: string,
 ): string {
     if (item.type === "user_group") {
         return render_user_group(item);
     }
 
-    return render_person(item);
+    return render_person(item, query);
 }
 
 export let render_stream = (stream: StreamData): string =>
