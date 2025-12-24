@@ -42,7 +42,6 @@ from zerver.lib.markdown import (
     content_has_emoji_syntax,
     image_preview_enabled,
     markdown_convert,
-    maybe_update_markdown_engines,
     possible_linked_stream_names,
     render_message_markdown,
     topic_links,
@@ -2260,7 +2259,6 @@ class MarkdownCodeBlockTest(ZulipTestCase):
         realm = do_create_realm(
             string_id="code_block_processor_test", name="code_block_processor_test"
         )
-        maybe_update_markdown_engines(realm.id, True)
         rendering_result = markdown_convert(msg, message_realm=realm, email_gateway=True)
         expected_output = (
             "<p>Hello,</p>\n"
