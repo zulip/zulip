@@ -292,14 +292,14 @@ test("maybe_fetch_stream_subscribers", async () => {
 
     // Only one of these will do the fetch, and the other will wait
     // for the first fetch to complete.
-    const promise1 = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
-    const promise2 = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    const promise1 = peer_data.fetch_stream_subscribers(india.stream_id);
+    const promise2 = peer_data.fetch_stream_subscribers(india.stream_id);
     await promise1;
     await promise2;
     assert.equal(channel_get_calls, 1);
 
     peer_data.clear_for_testing();
-    const pending_promise = peer_data.maybe_fetch_stream_subscribers(india.stream_id, false);
+    const pending_promise = peer_data.fetch_stream_subscribers(india.stream_id, false);
     peer_data.bulk_add_subscribers({
         stream_ids: [india.stream_id],
         user_ids: [7, 9],
@@ -377,7 +377,7 @@ test("maybe_fetch_stream_subscribers", async () => {
         throw new Error("error");
     };
     blueslip.expect("error", "Failure fetching channel subscribers");
-    const subscribers = await peer_data.maybe_fetch_stream_subscribers_with_retry(india.stream_id);
+    const subscribers = await peer_data.fetch_stream_subscribers_with_retry(india.stream_id);
     assert.equal(num_attempts, 2);
     assert.deepEqual([...subscribers.keys()], [1, 2, 3, 4]);
     blueslip.reset();
@@ -440,7 +440,7 @@ test("get_subscriber_count", async () => {
     channel.get = () => ({
         subscribers: [george.user_id, fred.user_id],
     });
-    await peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    await peer_data.fetch_stream_subscribers(india.stream_id);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 2);
     // Now we know Gail isn't subscribed, so we don't decrement the count
     peer_data.remove_subscriber(india.stream_id, gail.user_id);
@@ -599,8 +599,8 @@ test("load_subscriptions_for_user", async () => {
             subscribers: [fred.user_id],
         };
     };
-    await peer_data.maybe_fetch_stream_subscribers(india.stream_id);
-    await peer_data.maybe_fetch_stream_subscribers(rome.stream_id);
+    await peer_data.fetch_stream_subscribers(india.stream_id);
+    await peer_data.fetch_stream_subscribers(rome.stream_id);
     assert.equal(channel_get_calls, 2);
 
     // No get request here because we already have full subscriber data
