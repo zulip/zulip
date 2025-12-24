@@ -1657,6 +1657,20 @@ def prepare_linkifier_pattern(source: str) -> str:
     return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
+# We use maxsize of 1024. We need to prevent against admins
+# accidentally churning their linkifier configurations, so
+# we have to impose a reasonable max.  Having said that,
+# we want a pretty aggressive cache, since markdown
+# rendering is a critical performance path with regard to
+# latency.
+@lru_cache(maxsize=1024)
+def get_compiled_linkifier_regex(source_pattern: str) -> "re2._Regexp[str]":
+    # Do not write errors to stderr (this still raises exceptions)
+    options = re2.Options()
+    options.log_errors = False
+    return re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
+
+
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
 class LinkifierPattern(CompiledInlineProcessor):
@@ -1668,14 +1682,8 @@ class LinkifierPattern(CompiledInlineProcessor):
         url_template: str,
         zmd: "ZulipMarkdown",
     ) -> None:
-        # Do not write errors to stderr (this still raises exceptions)
-        options = re2.Options()
-        options.log_errors = False
-
-        compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-
+        compiled_re2 = get_compiled_linkifier_regex(source_pattern)
         self.prepared_url_template = uri_template.URITemplate(url_template)
-
         super().__init__(compiled_re2, zmd)
 
     @override
@@ -2421,17 +2429,9 @@ class ZulipMarkdown(markdown.Markdown):
         return postprocessors
 
 
-md_engines: dict[tuple[int, bool], ZulipMarkdown] = {}
-linkifier_data: dict[int, list[LinkifierDict]] = {}
-
-
-def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
-    md_engine_key = (linkifiers_key, email_gateway)
-    md_engines.pop(md_engine_key, None)
-
-    linkifiers = linkifier_data[linkifiers_key]
-    md_engines[md_engine_key] = ZulipMarkdown(
-        linkifiers=linkifiers,
+def make_md_engine(linkifiers_key: int, email_gateway: bool) -> ZulipMarkdown:
+    return ZulipMarkdown(
+        linkifiers=linkifiers_for_realm(linkifiers_key),
         linkifiers_key=linkifiers_key,
         email_gateway=email_gateway,
     )
@@ -2575,22 +2575,6 @@ def topic_links(linkifiers_key: int, topic_name: str) -> list[dict[str, str]]:
     return [{"url": match.url, "text": match.text} for match in applied_matches]
 
 
-def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:
-    linkifiers = linkifiers_for_realm(linkifiers_key)
-    if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
-        # Linkifier data has changed, update `linkifier_data` and any
-        # of the existing Markdown engines using this set of linkifiers.
-        linkifier_data[linkifiers_key] = linkifiers
-        for email_gateway_flag in [True, False]:
-            if (linkifiers_key, email_gateway_flag) in md_engines:
-                # Update only existing engines(if any), don't create new one.
-                make_md_engine(linkifiers_key, email_gateway_flag)
-
-    if (linkifiers_key, email_gateway) not in md_engines:
-        # Markdown engine corresponding to this key doesn't exists so create one.
-        make_md_engine(linkifiers_key, email_gateway)
-
-
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
 # characters with 'x'.
@@ -2634,11 +2618,7 @@ def do_convert(
     else:
         logging_message_id = "unknown"
 
-    maybe_update_markdown_engines(linkifiers_key, email_gateway)
-    md_engine_key = (linkifiers_key, email_gateway)
-    _md_engine = md_engines[md_engine_key]
-    # Reset the parser; otherwise it will get slower over time.
-    _md_engine.reset()
+    md_engine = make_md_engine(linkifiers_key, email_gateway)
 
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
@@ -2654,15 +2634,15 @@ def do_convert(
         thumbnail_spinners=set(),
     )
 
-    _md_engine.zulip_message = message
-    _md_engine.zulip_rendering_result = rendering_result
-    _md_engine.zulip_realm = message_realm
-    _md_engine.zulip_db_data = None  # for now
-    _md_engine.image_preview_enabled = image_preview_enabled(message, message_realm, no_previews)
-    _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
+    md_engine.zulip_message = message
+    md_engine.zulip_rendering_result = rendering_result
+    md_engine.zulip_realm = message_realm
+    md_engine.zulip_db_data = None  # for now
+    md_engine.image_preview_enabled = image_preview_enabled(message, message_realm, no_previews)
+    md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews
     )
-    _md_engine.url_embed_data = url_embed_data
+    md_engine.url_embed_data = url_embed_data
 
     # Pre-fetch data from the DB that is used in the Markdown thread
     user_upload_previews = None
@@ -2698,7 +2678,7 @@ def do_convert(
             active_realm_emoji = {}
 
         user_upload_previews = manifest_and_get_user_upload_previews(message_realm.id, content)
-        _md_engine.zulip_db_data = DbData(
+        md_engine.zulip_db_data = DbData(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
             active_realm_emoji=active_realm_emoji,
@@ -2716,7 +2696,7 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
+        rendering_result.rendered_content = unsafe_timeout(5, lambda: md_engine.convert(content))
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:
@@ -2745,13 +2725,6 @@ def do_convert(
         )
 
         raise MarkdownRenderingError
-    finally:
-        # These next three lines are slightly paranoid, since
-        # we always set these right before actually using the
-        # engine, but better safe then sorry.
-        _md_engine.zulip_message = None
-        _md_engine.zulip_realm = None
-        _md_engine.zulip_db_data = None
 
 
 markdown_time_start = 0.0
