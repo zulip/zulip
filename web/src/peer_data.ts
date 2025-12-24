@@ -477,7 +477,7 @@ export async function get_unique_subscriber_count_for_streams(
 
 // This function might retry up to 5 times to fetch data, then will
 // give up. `num_attempts` should only be set in the recursive call.
-async function load_subscriptions_for_user_with_retry(
+async function fetch_subscriptions_for_user_with_retry(
     user_id: number,
     num_attempts = 0,
 ): Promise<void> {
@@ -512,7 +512,7 @@ async function load_subscriptions_for_user_with_retry(
                 num_attempts += 1;
                 const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
                 setTimeout(() => {
-                    void load_subscriptions_for_user_with_retry(user_id, num_attempts);
+                    void fetch_subscriptions_for_user_with_retry(user_id, num_attempts);
                 }, retry_delay_secs * 1000);
                 return;
             },
@@ -527,7 +527,7 @@ export function subscriber_data_loaded_for_user(user_id: number): boolean {
     return has_complete_subscriber_data() || fetched_user_subscriptions.has(user_id);
 }
 
-export async function load_subscriptions_for_user(user_id: number): Promise<void> {
+export async function fetch_subscriptions_for_user(user_id: number): Promise<void> {
     if (subscriber_data_loaded_for_user(user_id)) {
         return;
     }
@@ -536,5 +536,5 @@ export async function load_subscriptions_for_user(user_id: number): Promise<void
         return pending_subscription_requests.get(user_id)!;
     }
 
-    return load_subscriptions_for_user_with_retry(user_id);
+    return fetch_subscriptions_for_user_with_retry(user_id);
 }
