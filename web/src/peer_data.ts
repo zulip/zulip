@@ -16,8 +16,6 @@ import * as util from "./util.ts";
 // its count being accurate.
 const subscriber_counts = new Map<number, number>();
 
-const fetched_user_subscriptions = new Set<number>();
-
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 // We might not have all the subscribers for a given stream. Streams
 // with full data will be stored in `fetched_stream_ids`, and for the
@@ -29,8 +27,19 @@ const fetched_user_subscriptions = new Set<number>();
 // stream's `subscriber_count`.
 const stream_subscribers = new Map<number, LazySet>();
 const fetched_stream_ids = new Set<number>();
+const users_with_complete_data = new Set<number>();
 export function has_full_subscriber_data(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
+}
+
+export function subscription_data_loaded_for_user(user_id: number): boolean {
+    return has_complete_subscriber_data() || users_with_complete_data.has(user_id);
+}
+
+export function mark_users_with_subscription_data_loaded(user_ids: number[]): void {
+    for (const user_id of user_ids) {
+        users_with_complete_data.add(user_id);
+    }
 }
 
 // Don't run this in loops, since it has O(channels) runtime.
@@ -61,7 +70,7 @@ export function clear_for_testing(): void {
     fetched_stream_ids.clear();
     pending_subscriber_requests.clear();
     pending_subscription_requests.clear();
-    fetched_user_subscriptions.clear();
+    users_with_complete_data.clear();
 }
 
 const fetch_stream_subscribers_response_schema = z.object({
@@ -490,7 +499,7 @@ async function load_subscriptions_for_user_with_retry(
                 for (const stream_id of subscriptions) {
                     add_subscriber(stream_id, user_id);
                 }
-                fetched_user_subscriptions.add(user_id);
+                users_with_complete_data.add(user_id);
             },
             error(xhr) {
                 if (xhr.status === 400) {
@@ -523,12 +532,8 @@ async function load_subscriptions_for_user_with_retry(
     return subscriptions_promise;
 }
 
-export function subscriber_data_loaded_for_user(user_id: number): boolean {
-    return has_complete_subscriber_data() || fetched_user_subscriptions.has(user_id);
-}
-
 export async function load_subscriptions_for_user(user_id: number): Promise<void> {
-    if (subscriber_data_loaded_for_user(user_id)) {
+    if (subscription_data_loaded_for_user(user_id)) {
         return;
     }
 

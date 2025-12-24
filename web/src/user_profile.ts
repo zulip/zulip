@@ -340,7 +340,7 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
 }
 
 async function render_or_update_user_streams_tab(user: User): Promise<void> {
-    if (!peer_data.subscriber_data_loaded_for_user(user.user_id)) {
+    if (!peer_data.subscription_data_loaded_for_user(user.user_id)) {
         $("#user-profile-streams-tab .stream-list-bottom-section").hide();
         loading.make_indicator($(".stream-list-loader"), {
             height: 56, // 4em at 14px / 1em

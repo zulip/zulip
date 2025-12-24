@@ -17452,6 +17452,19 @@ paths:
                           in `can_administer_channel_group` of a channel that they never
                           subscribed to, but not an organization administrator, the channel
                           in question would not be part of this array.
+                      users_with_complete_subscription_data:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          If [`include_subscribers="partial"`](/api/get-subscriptions#parameter-include_subscribers)
+                          was requested, the server may, at its discretion, send a
+                          `partial_subscribers` list rather than a `subscribers` list
+                          for channels with a large number of subscribers. But for users
+                          in this list, we can guarantee that all of their subscriptions
+                          are represented in the supplied subscriber data in this request.
+
+                          **Changes**: New in Zulip 11.0 (feature level ZF-0c83b4).
                       channel_folders:
                         type: array
                         items:
