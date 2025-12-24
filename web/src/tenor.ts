@@ -110,15 +110,44 @@ function focus_on_popover_search_input(): void {
     $popper.find("#gif-search-query").trigger("focus");
 }
 
-function focus_gif_at_index(index: number): void {
-    if (index < 0 || index > last_gif_index) {
-        focus_on_popover_search_input();
-        return;
+class GifGrid {
+    focus_at(index: number): void {
+        if (index < 0 || index > last_gif_index) {
+            focus_on_popover_search_input();
+            return;
+        }
+
+        const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
+        $target_gif.trigger("focus");
     }
 
-    const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
-    $target_gif.trigger("focus");
+    start_arrow_key_based_navigation_at_first_element(): void {
+        this.focus_at(0);
+    }
+
+    move(delta: number): void {
+        const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
+        this.focus_at(curr_gif_index + delta);
+    }
+
+    move_right(): void {
+        this.move(1);
+    }
+
+    move_left(): void {
+        this.move(-1);
+    }
+
+    move_up(): void {
+        this.move(-3);
+    }
+
+    move_down(): void {
+        this.move(3);
+    }
 }
+
+const gif_grid = new GifGrid();
 
 function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     assert(e.currentTarget instanceof HTMLElement);
@@ -137,22 +166,21 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
         return;
     }
 
-    const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
     switch (key) {
         case "ArrowRight": {
-            focus_gif_at_index(curr_gif_index + 1);
+            gif_grid.move_right();
             break;
         }
         case "ArrowLeft": {
-            focus_gif_at_index(curr_gif_index - 1);
+            gif_grid.move_left();
             break;
         }
         case "ArrowUp": {
-            focus_gif_at_index(curr_gif_index - 3);
+            gif_grid.move_up();
             break;
         }
         case "ArrowDown": {
-            focus_gif_at_index(curr_gif_index + 3);
+            gif_grid.move_down();
             break;
         }
     }
@@ -287,7 +315,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                     if (e.key === "ArrowDown") {
                         // Trigger arrow key based navigation on the grid by focusing
                         // the first grid element.
-                        focus_gif_at_index(0);
+                        gif_grid.start_arrow_key_based_navigation_at_first_element();
                         return;
                     }
                     debounced_search(e.target.value);
