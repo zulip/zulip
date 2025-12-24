@@ -170,6 +170,7 @@ export function show_flatpickr(
 
         if (["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(e.key)) {
             // use flatpickr's built-in navigation of the date grid.
+            e.stopPropagation();
             return true;
         }
 

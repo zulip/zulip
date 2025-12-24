@@ -2516,3 +2516,10 @@ body:not(.spectator-view) {
         right: -2px;
     }
 }
+
+.scroll-to-time {
+    &:focus:not(:focus-visible) {
+        /* Avoid outline on click */
+        outline: none;
+    }
+}

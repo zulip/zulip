@@ -200,6 +200,10 @@
                 padding-top: 5px;
             }
         }
+
+        .recipient_row_date {
+            cursor: pointer;
+        }
     }
 
     .message_header {
