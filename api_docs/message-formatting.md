@@ -19,6 +19,19 @@ for syntax highlighting. This field is used in the
 
 ## Global times
 
+**Changes**: In Zulip 12.0 (feature level 451), invalid timestamp formats
+are now rendered as escaped literal text instead of a `<span>` element with
+`timestamp-error` class and an error message.
+
+Previously, an invalid timestamp string would be rendered as:
+``` html
+<span class="timestamp-error">Invalid time format: invalid</span>
+```
+Now, it is rendered as:
+``` html
+&lt;time:invalid&gt;
+```
+
 **Changes**: In Zulip 3.0 (feature level 8), added [global time
 mentions][help-global-time] to supported Markdown message formatting
 features.

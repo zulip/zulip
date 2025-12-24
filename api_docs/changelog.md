@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 451**
+
+* [Message formatting](/api/message-formatting): Changed the
+rendering of invalid timestamps from a `<span class="timestamp-error">`
+element to plain escaped text.
+
 **Feature level 450**
 
 * [`GET /events`](/api/get-events): The `push_device` events now
