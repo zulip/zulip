@@ -50,8 +50,6 @@ let is_loading_more = false;
 let tenor_popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
 const BASE_URL = "https://tenor.googleapis.com/v2";
-// Stores the index of the last GIF that is part of the grid.
-let last_gif_index = -1;
 
 type TenorPayload = {
     key: string;
@@ -111,8 +109,19 @@ function focus_on_popover_search_input(): void {
 }
 
 class GifGrid {
+    last_gif_index = -1;
+
+    reset_internal_index(): void {
+        this.last_gif_index = -1;
+    }
+
+    next_index(): number {
+        this.last_gif_index += 1;
+        return this.last_gif_index();
+    }
+
     focus_at(index: number): void {
-        if (index < 0 || index > last_gif_index) {
+        if (index < 0 || index > this.last_gif_index) {
             focus_on_popover_search_input();
             return;
         }
@@ -215,14 +224,13 @@ function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): voi
     let gif_grid_html = "";
 
     if (!next_page) {
-        last_gif_index = -1;
+        gif_grid.reset_internal_index();
     }
     for (const url of urls) {
-        last_gif_index += 1;
         gif_grid_html += render_tenor_gif({
             preview_url: url.preview_url,
             insert_url: url.insert_url,
-            gif_index: last_gif_index,
+            gif_index: gif_grid.next_index(),
         });
     }
     const $popper = $(tenor_popover_instance.popper);
