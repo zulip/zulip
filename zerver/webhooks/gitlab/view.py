@@ -10,7 +10,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
+from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
@@ -82,6 +82,7 @@ def get_normal_push_event_body(payload: WildValue) -> str:
         compare_url,
         get_branch_name(payload),
         commits,
+        force_push=payload.get("forced", False).tame(check_bool),
     )
 
 
