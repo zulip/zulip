@@ -62,6 +62,35 @@ type TenorPayload = {
     q?: string;
 };
 
+class MessageEditingHelper {
+    /*
+    After somebody picks a gif from the popover grid, we
+    need to insert a little bit of markdown into the place
+    where the user is either composing a message or editing
+    a message.  That's the whole point of this exercise!!!
+
+    The rest of the code doesn't want to constantly be in
+    the business of having to understand where the compose
+    box lives and whether the user is even in the compose
+    box.
+
+    The goal here is to contain the ugliness to this class.
+    So this class is kinda ugly.
+    */
+
+    insert_the_url_for_a_gif_into_the_markdown(gif_url: string): void {
+        // Are we editing an old message or composing a new one?
+        let $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
+        if (edit_message_id !== undefined) {
+            $textarea = $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`);
+        }
+
+        compose_ui.insert_syntax_and_focus(`[](${gif_url})`, $textarea, "block", 1);
+    }
+}
+
+const message_editing_helper = new MessageEditingHelper();
+
 export function is_popped_from_edit_message(): boolean {
     return tenor_popover_instance !== undefined && edit_message_id !== undefined;
 }
@@ -87,13 +116,7 @@ function get_base_payload(): TenorPayload {
 function handle_gif_click(img_element: HTMLElement): void {
     const insert_url = img_element.dataset["insertUrl"];
     assert(insert_url !== undefined);
-
-    let $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    if (edit_message_id !== undefined) {
-        $textarea = $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`);
-    }
-
-    compose_ui.insert_syntax_and_focus(`[](${insert_url})`, $textarea, "block", 1);
+    message_editing_helper.insert_the_url_for_a_gif_into_the_markdown(insert_url);
     hide_tenor_popover();
 }
 
