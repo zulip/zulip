@@ -567,7 +567,7 @@ ul.popover-group-menu-member-list {
             margin-bottom: 8px;
         }
 
-        .stream-list-loader {
+        .stream-list-loader:not(:empty) {
             margin: 10px auto;
         }
 
