@@ -185,7 +185,7 @@ function do_update_users_for_search(): void {
         (async () => {
             $("#buddy_list_wrapper").hide();
             loading.make_indicator($("#buddy-list-loading-subscribers"));
-            await peer_data.maybe_fetch_stream_subscribers(stream_id);
+            await peer_data.fetch_stream_subscribers(stream_id);
             all_pending_fetches_for_search.delete(stream_id);
 
             // If we changed narrows during the fetch, don't rebuild the sidebar
