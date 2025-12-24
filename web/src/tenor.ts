@@ -99,13 +99,20 @@ function handle_gif_click(img_element: HTMLElement): void {
     hide_tenor_popover();
 }
 
+function focus_on_popover_search_input(): void {
+    // We often get called when folks are navigating around
+    // the gif grid and either go "off the grid" or start
+    // using the alpha keyboard despite being focused elsewhere.
+    assert(tenor_popover_instance !== undefined);
+    const $popper = $(tenor_popover_instance.popper);
+    // Just trigger focus on the search input because there are no GIFs
+    // above or below.
+    $popper.find("#gif-search-query").trigger("focus");
+}
+
 function focus_gif_at_index(index: number): void {
     if (index < 0 || index > last_gif_index) {
-        assert(tenor_popover_instance !== undefined);
-        const $popper = $(tenor_popover_instance.popper);
-        // Just trigger focus on the search input because there are no GIFs
-        // above or below.
-        $popper.find("#gif-search-query").trigger("focus");
+        focus_on_popover_search_input();
         return;
     }
 
@@ -120,9 +127,7 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     if (is_alpha_numeric) {
         // This implies that the user is focused on some GIF
         // but wants to continue searching.
-        assert(tenor_popover_instance !== undefined);
-        const $popper = $(tenor_popover_instance.popper);
-        $popper.find("#gif-search-query").trigger("focus");
+        focus_on_popover_search_input();
         return;
     }
     if (key === "Enter" || key === " " || key === "Spacebar") {
