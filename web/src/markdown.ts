@@ -590,7 +590,7 @@ function handleTimestamp(time_string: string): string {
         // there is a chance that the server would interpret it successfully
         // and if it does, the jumping from the error message to a rendered
         // timestamp doesn't look good.
-        return `<span>${escaped_time}</span>`;
+        return `&lt;time:${escaped_time}&gt;`;
     }
 
     // Use html5 <time> tag for valid timestamps.
