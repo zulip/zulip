@@ -18,7 +18,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.mention import MentionData, sender_can_mention_group
+from zerver.lib.mention import MentionData, sender_can_mention_group, silent_mention_syntax_for_user
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
 from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
@@ -1810,3 +1810,16 @@ def is_message_to_self(message: Message) -> bool:
         return message.recipient == message.sender.recipient
 
     return False
+
+
+def get_user_mentions_for_display(user_list: list[UserProfile | UserDisplayRecipient]) -> str:
+    recipient_list = sorted(silent_mention_syntax_for_user(user) for user in user_list)
+
+    if len(recipient_list) == 1:
+        return recipient_list[0]
+
+    last_user = recipient_list.pop()
+    other_users: str = ", ".join(recipient_list)
+    if len(recipient_list) > 1:
+        other_users += ","
+    return _("{other_users} and {last_user}").format(other_users=other_users, last_user=last_user)

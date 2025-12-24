@@ -12,7 +12,7 @@ from zerver.actions.streams import do_set_stream_property
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import truncate_content
+from zerver.lib.message import get_user_mentions_for_display, truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_global_time
@@ -203,18 +203,14 @@ class ReportMessageTest(ZulipTestCase):
         reported_user_mention = silent_mention_syntax_for_user(reported_user)
         reported_gdm_date_sent = datetime_to_global_time(reported_gdm.date_sent)
 
-        recipient_list = sorted(
+        list_of_direct_message_recipients = get_user_mentions_for_display(
             [
-                silent_mention_syntax_for_user(user)
+                user
                 for user in get_display_recipient(reported_gdm.recipient)
                 if user["id"] is not reported_user.id
             ]
         )
-        last_recipient_user = recipient_list.pop()
-        recipient_users: str = ", ".join(recipient_list)
-        if len(recipient_list) > 1:
-            recipient_users += ","
-        message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {recipient_users} and {last_recipient_user} at {reported_gdm_date_sent}."
+        message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {list_of_direct_message_recipients} at {reported_gdm_date_sent}."
         direct_message_link = pm_message_url(
             realm,
             dict(
