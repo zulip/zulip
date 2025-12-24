@@ -85,10 +85,6 @@ def _process_grouped_messages_deletion(
         channel=stream if message_type == "stream" else None,
     )
 
-    if acting_user is not None:
-        # Always send event to the user who deleted the message.
-        users_to_notify.add(acting_user.id)
-
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
     if stream is not None:
         check_update_first_message_id(realm, stream, message_ids, users_to_notify)

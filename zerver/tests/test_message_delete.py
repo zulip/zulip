@@ -46,7 +46,8 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertIn("type", event)
         self.assertEqual(event["type"], "delete_message")
         self.assertIn(msg_id, event["message_ids"])
-        self.assertIn(acting_user.id, events[0]["users"])
+        # User without access to message should not receive the event.
+        self.assertNotIn(acting_user.id, events[0]["users"])
 
     def test_do_delete_stream_messages_without_acting_user(self) -> None:
         realm = get_realm("zulip")
