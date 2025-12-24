@@ -529,6 +529,47 @@ A temporary team so that I can get some webhook fixtures!
         payload = self.get_body("check_run__in_progress")
         self.verify_post_is_ignored(payload, "check_run")
 
+    def test_issue_rename_topic(self) -> None:
+        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        repo = "public-repo"
+        issue_id = 2
+        old_title = "Old Title"
+        new_title = "New Title"
+        old_topic = f"{repo} / issue #{issue_id} {old_title}"
+        expected_new_topic = f"{repo} / issue #{issue_id} {new_title}"
+
+        self.send_stream_message(
+            self.test_user,
+            self.CHANNEL_NAME,
+            topic_name=old_topic,
+            content="Initial content",
+        )
+
+        payload = self.get_body("issue_edited_title")
+        url = f"/api/v1/external/github?stream={self.CHANNEL_NAME}&api_key={self.test_user.api_key}"
+        result = self.client_post(
+            url, payload, content_type="application/json", HTTP_X_GITHUB_EVENT="issues"
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(msg.subject, expected_new_topic)
+
+    def test_issue_rename_coverage_edge_cases(self) -> None:
+        stream = self.subscribe(self.test_user, "default-github-stream")
+        self.test_user.default_sending_stream = stream
+        self.test_user.save()
+
+        payload = self.get_body("issue_edited_title")
+        url = f"/api/v1/external/github?api_key={self.test_user.api_key}"
+        self.client_post(
+            url, payload, content_type="application/json", HTTP_X_GITHUB_EVENT="issues"
+        )
+
+        from zerver.lib.webhooks.common import check_topic_rename
+
+        check_topic_rename(self.test_user, "NON_EXISTENT_STREAM_123", "Old Topic", "New Topic")
+
     def test_ignored_pull_request_actions(self) -> None:
         ignored_actions = [
             "approved",
@@ -541,6 +582,19 @@ A temporary team so that I can get some webhook fixtures!
             data = dict(action=action)
             payload = orjson.dumps(data).decode()
             self.verify_post_is_ignored(payload, "pull_request")
+
+    def test_webhook_with_custom_topic_param(self) -> None:
+        """
+        Tests sending a webhook with a user-specified topic (?topic=...).
+        This ensures coverage for the `include_title` parameter in the Helper class.
+        """
+        payload = self.get_body("issue_edited_title")
+        # We append &topic=CustomTopic to the URL
+        url = f"/api/v1/external/github?stream={self.CHANNEL_NAME}&api_key={self.test_user.api_key}&topic=CustomTopic"
+
+        self.client_post(
+            url, payload, content_type="application/json", HTTP_X_GITHUB_EVENT="issues"
+        )
 
     def test_pull_request_review_edited_empty_changes_ignore(self) -> None:
         payload = self.get_body("pull_request_review__edited_empty_changes")
