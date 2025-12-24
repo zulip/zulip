@@ -653,4 +653,28 @@ export class MessageListData {
         const msg = this._items[msg_index];
         return msg;
     }
+
+    find_date_anchor_message_id(anchor_date: string): Message | undefined {
+        const anchor_timestamp = Math.floor(Date.parse(anchor_date) / 1000);
+        if (this.visibly_empty()) {
+            return undefined;
+        }
+
+        const first_message = this.first()!;
+        if (anchor_timestamp < first_message.timestamp && this.fetch_status.has_found_oldest()) {
+            return first_message;
+        }
+        const last_message = this.last()!;
+        if (anchor_timestamp > last_message.timestamp && this.fetch_status.has_found_newest()) {
+            return last_message;
+        }
+
+        return this.all_messages_after_mute_filtering().find(
+            (message) => message.timestamp >= anchor_timestamp,
+        );
+    }
+
+    date_anchor_exists(anchor_date: string): boolean {
+        return Boolean(this.find_date_anchor_message_id(anchor_date));
+    }
 }
