@@ -79,7 +79,7 @@ export async function maybe_fetch_stream_subscribers_with_retry(
     stream_id: number,
     num_attempts = 1,
 ): Promise<LazySet> {
-    const subscribers = await maybe_fetch_stream_subscribers(stream_id);
+    const subscribers = await fetch_stream_subscribers(stream_id);
     if (subscribers === null) {
         num_attempts += 1;
         const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
@@ -89,7 +89,7 @@ export async function maybe_fetch_stream_subscribers_with_retry(
     return subscribers;
 }
 
-export async function maybe_fetch_stream_subscribers(stream_id: number): Promise<LazySet | null> {
+export async function fetch_stream_subscribers(stream_id: number): Promise<LazySet | null> {
     if (pending_subscriber_requests.has(stream_id)) {
         return pending_subscriber_requests.get(stream_id)!.subscribers_promise;
     }
@@ -164,7 +164,7 @@ async function get_full_subscriber_set(
         if (retry_on_failure) {
             fetched_subscribers = await maybe_fetch_stream_subscribers_with_retry(stream_id);
         } else {
-            fetched_subscribers = await maybe_fetch_stream_subscribers(stream_id);
+            fetched_subscribers = await fetch_stream_subscribers(stream_id);
         }
         // This means a request failed and we don't know who the subscribers are.
         if (fetched_subscribers === null) {
