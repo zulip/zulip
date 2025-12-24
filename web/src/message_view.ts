@@ -937,8 +937,9 @@ function navigate_to_anchor_message(opts: {
     anchor: string;
     is_anchor_fetched: (data: MessageListData) => boolean;
     message_list_data_to_target_message_id: (data: MessageListData) => number;
+    anchor_date?: string | undefined;
 }): void {
-    const {anchor, is_anchor_fetched, message_list_data_to_target_message_id} = opts;
+    const {anchor, is_anchor_fetched, message_list_data_to_target_message_id, anchor_date} = opts;
     // The function navigates user to the anchor in the current
     // message list. We don't use `message_view.show` here due
     // to following reasons:
@@ -983,7 +984,7 @@ function navigate_to_anchor_message(opts: {
     if (is_anchor_fetched(message_lists.current.data)) {
         select_msg_id(message_list_data_to_target_message_id(message_lists.current.data));
         return;
-    } else if (is_anchor_fetched(all_messages_data)) {
+    } else if (is_anchor_fetched(all_messages_data) && anchor !== "date") {
         // We can load messages into `msg_list_data` but we don't know
         // the fetch status until we contact server. If we are contacting the
         // server, it is better to just fetch the required messages instead
@@ -992,6 +993,13 @@ function navigate_to_anchor_message(opts: {
         // So, a cheaper check is to see if we have found the anchor in
         // `all_messages_data`, and if we have, we can say `msg_list_data`
         // will also have the anchor (for oldest / newest anchors at least).
+        //
+        // We skip this for date anchor since message_list_data_to_target_message_id
+        // for date anchor heavily relies on has_found_oldest/newest being up-to-date.
+        // When using load_local_messages, we do not copy fetch_status over to
+        // msg_list_data, which causes error in message_list_data_to_target_message_id.
+        // See https://github.com/zulip/zulip/pull/37198#issuecomment-3858015457 for
+        // more details.
         const msg_list_data = new MessageListData({
             filter: message_lists.current.data.filter,
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
@@ -1018,37 +1026,65 @@ function navigate_to_anchor_message(opts: {
             select_anchor_using_data(msg_list_data);
         },
         msg_list_data,
+        anchor_date,
     );
 }
 
-export function fast_track_current_msg_list_to_anchor(anchor: string): void {
+export function fast_track_current_msg_list_to_anchor(anchor: string, anchor_date?: string): void {
     assert(message_lists.current !== undefined);
     if (message_lists.current.visibly_empty()) {
         return;
     }
 
-    if (anchor === "oldest") {
-        navigate_to_anchor_message({
-            anchor,
-            is_anchor_fetched(msg_list_data) {
-                return msg_list_data.fetch_status.has_found_oldest();
-            },
-            message_list_data_to_target_message_id(msg_list_data) {
-                return msg_list_data.first()!.id;
-            },
-        });
-    } else if (anchor === "newest") {
-        navigate_to_anchor_message({
-            anchor,
-            is_anchor_fetched(msg_list_data) {
-                return msg_list_data.fetch_status.has_found_newest();
-            },
-            message_list_data_to_target_message_id(msg_list_data) {
-                return msg_list_data.last()!.id;
-            },
-        });
-    } else {
-        blueslip.error(`Invalid anchor value: ${anchor}`);
+    switch (anchor) {
+        case "oldest": {
+            navigate_to_anchor_message({
+                anchor,
+                is_anchor_fetched(msg_list_data: MessageListData) {
+                    return msg_list_data.fetch_status.has_found_oldest();
+                },
+                message_list_data_to_target_message_id(msg_list_data) {
+                    return msg_list_data.first()!.id;
+                },
+            });
+
+            break;
+        }
+        case "newest": {
+            navigate_to_anchor_message({
+                anchor,
+                is_anchor_fetched(msg_list_data: MessageListData) {
+                    return msg_list_data.fetch_status.has_found_newest();
+                },
+                message_list_data_to_target_message_id(msg_list_data) {
+                    return msg_list_data.last()!.id;
+                },
+            });
+
+            break;
+        }
+        case "date": {
+            if (anchor_date === undefined) {
+                blueslip.error("Missing required argument anchor_date");
+                return;
+            }
+
+            navigate_to_anchor_message({
+                anchor,
+                is_anchor_fetched(msg_list_data: MessageListData) {
+                    return msg_list_data.date_anchor_exists(anchor_date);
+                },
+                message_list_data_to_target_message_id(msg_list_data) {
+                    return msg_list_data.find_date_anchor_message_id(anchor_date)!.id;
+                },
+                anchor_date,
+            });
+
+            break;
+        }
+        default: {
+            blueslip.error(`Invalid anchor value: ${anchor}`);
+        }
     }
 }
 

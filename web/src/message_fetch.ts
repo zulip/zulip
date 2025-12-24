@@ -45,6 +45,7 @@ type MessageFetchResponse = z.infer<typeof response_schema>;
 
 type MessageFetchOptions = {
     anchor: string | number;
+    anchor_date?: string | undefined;
     num_before: number;
     num_after: number;
     cont: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
@@ -61,6 +62,7 @@ type MessageFetchAPIParams = {
     client_gravatar: boolean;
     narrow?: string;
     allow_empty_topic_name: boolean;
+    anchor_date?: string;
 };
 
 let first_messages_fetch = true;
@@ -107,9 +109,11 @@ export function load_messages_around_anchor(
     anchor: string,
     cont: () => void,
     msg_list_data: MessageListData,
+    anchor_date?: string,
 ): void {
     load_messages({
         anchor,
+        anchor_date,
         num_before: consts.narrowed_view_backward_batch_size,
         num_after: consts.narrowed_view_forward_batch_size,
         msg_list_data,
@@ -366,6 +370,14 @@ export function get_parameters_for_message_fetch_api(
 
     if (msg_list_data === undefined) {
         blueslip.error("Message list data is undefined!");
+    }
+
+    if (opts.anchor === "date") {
+        if (opts.anchor_date === undefined) {
+            blueslip.error("Missing anchor_date for date anchor fetch");
+        } else {
+            data.anchor_date = opts.anchor_date;
+        }
     }
 
     const narrow = get_narrow_for_message_fetch(msg_list_data.filter);

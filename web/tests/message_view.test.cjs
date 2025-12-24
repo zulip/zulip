@@ -6,6 +6,7 @@ const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -15,6 +16,9 @@ const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
+const message_fetch = mock_esm("../src/message_fetch", {
+    load_messages_around_anchor() {},
+});
 const message_view = zrequire("message_view");
 const narrow_title = zrequire("narrow_title");
 const recent_view_util = zrequire("recent_view_util");
@@ -31,7 +35,9 @@ set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
 set_global("document", "document-stub");
-const message_lists = mock_esm("../src/message_lists");
+const message_lists = mock_esm("../src/message_lists", {
+    update_current_message_list() {},
+});
 function MessageListView() {
     return {
         maybe_rerender: noop,
@@ -906,6 +912,132 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
+});
+
+run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
+    const list = new MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
+    });
+    list.data.add_messages(
+        [
+            {id: 101, type: "stream", topic: "test", timestamp: 100, sender_id: me.user_id},
+            {id: 102, type: "stream", topic: "test", timestamp: 200, sender_id: me.user_id},
+            {id: 103, type: "stream", topic: "test", timestamp: 300, sender_id: me.user_id},
+        ],
+        true,
+    );
+
+    let selected;
+    list.select_id = (id, opts) => {
+        selected = {id, opts};
+    };
+    message_lists.current = list;
+
+    const in_range = new Date(150 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", in_range);
+    assert.deepEqual(selected, {
+        id: 102,
+        opts: {then_scroll: true, from_scroll: false},
+    });
+
+    list.data.fetch_status.finish_older_batch({
+        found_oldest: true,
+        history_limited: false,
+        update_loading_indicator: false,
+    });
+    const before_range = new Date(50 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", before_range);
+    assert.deepEqual(selected, {
+        id: 101,
+        opts: {then_scroll: true, from_scroll: false},
+    });
+
+    // If we have not found the oldest message, and the anchor timestamp is
+    // at or before the first message, we should fetch from the server.
+    override(message_fetch, "load_messages_around_anchor", (anchor, callback, msg_list_data) => {
+        load_messages_calls += 1;
+        load_messages_anchor = anchor;
+        const new_message = {
+            id: 100,
+            type: "stream",
+            topic: "test",
+            timestamp: 75,
+            sender_id: me.user_id,
+        };
+        list.data.add_messages([new_message], true);
+        msg_list_data.add_messages(list.data.all_messages_after_mute_filtering(), true);
+        msg_list_data.fetch_status.finish_older_batch({
+            found_oldest: true,
+            history_limited: false,
+            update_loading_indicator: false,
+        });
+        callback();
+    });
+    list.data.fetch_status.finish_older_batch({
+        found_oldest: false,
+        history_limited: false,
+        update_loading_indicator: false,
+    });
+    let load_messages_anchor;
+    let load_messages_calls = 0;
+    message_view.fast_track_current_msg_list_to_anchor("date", before_range);
+    assert.equal(load_messages_calls, 1);
+    assert.equal(load_messages_anchor, "date");
+    assert.deepEqual(selected, {
+        id: 100,
+        opts: {then_scroll: true, from_scroll: false, force_rerender: true},
+    });
+
+    // Message 104 is not in the list so we need to fetch it from the API
+    // using load_messages_around_anchor.
+    load_messages_anchor = undefined;
+    load_messages_calls = 0;
+    override(message_fetch, "load_messages_around_anchor", (anchor, callback, msg_list_data) => {
+        load_messages_calls += 1;
+        load_messages_anchor = anchor;
+        const new_message = {
+            id: 104,
+            type: "stream",
+            topic: "test",
+            timestamp: 400,
+            sender_id: me.user_id,
+        };
+        list.data.add_messages([new_message], true);
+        msg_list_data.add_messages(list.data.all_messages_after_mute_filtering(), true);
+        callback();
+    });
+    assert.equal(list.data.get(104), undefined);
+    const after_range = new Date(400 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", after_range);
+    assert.equal(load_messages_calls, 1);
+    assert.equal(load_messages_anchor, "date");
+    assert.deepEqual(selected, {
+        id: 104,
+        opts: {then_scroll: true, from_scroll: false, force_rerender: true},
+    });
+
+    // If we have found the newest message, having anchor_date in
+    // future should give you back the newest message.
+    list.data.fetch_status.finish_newer_batch([], {
+        found_newest: true,
+        update_loading_indicator: false,
+    });
+    load_messages_calls = 0;
+    const future_range = new Date(500 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", future_range);
+    assert.deepEqual(selected, {
+        id: 104,
+        opts: {then_scroll: true, from_scroll: false},
+    });
+    assert.equal(load_messages_calls, 0);
+
+    selected = undefined;
+    blueslip.expect("error", "Missing required argument anchor_date");
+    message_view.fast_track_current_msg_list_to_anchor("date");
+    assert.equal(selected, undefined);
 });
 
 run_test("narrow_compute_title", () => {
