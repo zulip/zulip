@@ -911,7 +911,7 @@ export function deactivate_organization(e: JQuery.Event): void {
                 custom_deletion_time_input,
             );
             if (!is_valid_time_period(time_in_minutes)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                return "";
             }
         } else {
             // These options were already filtered for is_valid_time_period.
