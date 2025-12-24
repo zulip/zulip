@@ -1406,19 +1406,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
-
-    &.custom-time-input--error {
-        border-color: var(--color-invalid-input-border);
-        box-shadow:
-            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-            0 0 6px var(--color-invalid-input-border);
-    }
-
-    &.custom-time-input--error:focus {
-        box-shadow:
-            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-            0 0 8px var(--color-invalid-input-border);
-    }
 }
 
 .custom-time-input-unit {

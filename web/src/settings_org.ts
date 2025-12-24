@@ -904,7 +904,7 @@ export function deactivate_organization(e: JQuery.Event): void {
         let time_in_minutes: number;
         if (delete_data_value === "custom") {
             if (!util.validate_custom_time_input(custom_deletion_time_input)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                return "";
             }
             time_in_minutes = util.get_custom_time_in_minutes(
                 custom_deletion_time_unit,
@@ -935,22 +935,22 @@ export function deactivate_organization(e: JQuery.Event): void {
         const $custom_deletion_time_input = $<HTMLInputElement>("input#custom-deletion-time-input");
 
         if (time_period === "custom") {
-            $custom_deletion_time_input.removeClass("custom-time-input--error");
+            $custom_deletion_time_input.removeClass("inavalid-input");
             return true;
         }
         if (time_period === "null") {
             if (maximum_allowed_days === null) {
-                $custom_deletion_time_input.removeClass("custom-time-input--error");
+                $custom_deletion_time_input.removeClass("invalid-input");
                 return true;
             }
 
-            $custom_deletion_time_input.addClass("custom-time-input--error");
+            $custom_deletion_time_input.addClass("invalid-input");
             return false;
         }
         if (typeof time_period === "number") {
             if (maximum_allowed_days === null) {
                 if (time_period >= minimum_allowed_days * 24 * 60) {
-                    $custom_deletion_time_input.removeClass("custom-time-input--error");
+                    $custom_deletion_time_input.removeClass("invalid-input");
                     return true;
                 }
             } else {
@@ -958,13 +958,13 @@ export function deactivate_organization(e: JQuery.Event): void {
                     time_period >= minimum_allowed_days * 24 * 60 &&
                     time_period <= maximum_allowed_days * 24 * 60
                 ) {
-                    $custom_deletion_time_input.removeClass("custom-time-input--error");
+                    $custom_deletion_time_input.removeClass("invalid-input");
                     return true;
                 }
             }
         }
 
-        $custom_deletion_time_input.addClass("custom-time-input--error");
+        $custom_deletion_time_input.addClass("invalid-input");
         return false;
     }
 
