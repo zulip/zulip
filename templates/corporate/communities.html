@@ -6,15 +6,12 @@
 {% set PAGE_DESCRIPTION = "Zulip communities that are open to the public, and
   have opted in to be listed." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
 {% block hello_page_container %} hello-main{% endblock %}
 
 {% block portico_content %}
 
-{% include 'zerver/landing_nav.html' %}
+{% include 'zerver/marketing_nav.html' %}
 {% include 'zerver/gradients.html' %}
 
 <div class="portico-landing integrations communities">

@@ -22,6 +22,7 @@ from django.urls import reverse
 from django.utils.translation import get_language, gettext_lazy
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from django.views.decorators.cache import never_cache
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
 
@@ -264,6 +265,7 @@ def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
 
 
+@never_cache
 @require_post
 def import_realm_from_slack(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
@@ -1428,6 +1430,8 @@ def generate_demo_realm_subdomain() -> str:
         adjective = random.SystemRandom().choice(demo_organization_words["adjectives"])
         noun = random.SystemRandom().choice(demo_organization_words["nouns"])
         demo_subdomain = f"{adverb}-{adjective}-{noun}"
+        if len(demo_subdomain) > Realm.MAX_REALM_SUBDOMAIN_LENGTH:  # nocoverage
+            continue
         try:
             check_subdomain_available(demo_subdomain)
             break

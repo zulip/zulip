@@ -15,6 +15,7 @@ import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
 import * as message_view from "./message_view.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
@@ -292,7 +293,7 @@ function render_widgets(
 
 function setup_event_handlers(): void {
     $("#drafts_table .restore-overlay-message").on("click", function (e) {
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
 
@@ -313,12 +314,15 @@ function setup_event_handlers(): void {
         "click",
         ".user-group-mention",
         function (this: HTMLElement, e) {
-            if (document.getSelection()?.type === "Range") {
+            // We stop the event from propagating because that is what
+            // the main `.messagebox .user-group-mention` click handler
+            // expects us to do for drafts.
+            e.stopPropagation();
+            if (mouse_drag.is_drag(e)) {
                 return;
             }
 
             user_group_popover.toggle_user_group_info_popover(this, undefined);
-            e.stopPropagation();
         },
     );
 

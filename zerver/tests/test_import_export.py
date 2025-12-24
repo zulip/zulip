@@ -49,6 +49,7 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
+from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
 from zerver.lib.export import (
     PRESERVED_AUDIT_LOG_EVENT_TYPES,
     Record,
@@ -113,6 +114,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.messages import ImageAttachment, SubMessage
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realms import get_realm
 from zerver.models.recipients import (
     get_direct_message_group_hash,
@@ -2984,6 +2986,106 @@ class RealmImportExportTest(ExportFile):
                 exportable_user_ids=get_consented_user_ids(realm),
             )
             do_import_realm(get_output_dir(), "test-zulip")
+
+    def test_get_all_custom_emoji_for_realm_cache_after_import(self) -> None:
+        """
+        The import logic needs to be careful not to cause a call to get_all_custom_emoji
+        before all RealmEmoji have been imported. The function caches its results, so calling
+        it too early will load an empty result into the cache.
+        We had a bug involving this before, which caused channel description rendering to fail
+        to correctly render emojis and the custom emoji list shown to users to be empty in
+        imported realms until the expiry of the cache.
+
+        This test will verify that after an export->import cycle:
+        1. get_all_custom_emoji_for_realm returns the correct result when called.
+        2. channel descriptions with emojis are rendered correctly.
+        """
+        original_realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(iago)
+
+        emoji_1 = "hawaii"
+        with get_test_image_file("img.png") as img_file:
+            check_add_realm_emoji(
+                realm=hamlet.realm,
+                name=emoji_1,
+                author=hamlet,
+                image_file=img_file,
+                content_type="image/png",
+            )
+        emoji_2 = "guatemala"
+        with get_test_image_file("img.png") as img_file:
+            check_add_realm_emoji(
+                realm=iago.realm,
+                name=emoji_2,
+                author=iago,
+                image_file=img_file,
+                content_type="image/png",
+            )
+
+        self.subscribe(iago, "Emoji channel")
+        emoji_channel = get_stream("Emoji channel", original_realm)
+        result = self.client_patch(
+            f"/json/streams/{emoji_channel.id}",
+            {"description": f"Render realm emoji here! :{emoji_2}:"},
+        )
+        self.assert_json_success(result)
+        emoji_channel = get_stream(emoji_channel.name, original_realm)
+
+        self.assertIn(
+            (
+                "<p>Render realm emoji here! "
+                f'<img alt=":{emoji_2}:" class="emoji" '
+                f'src="/user_avatars/{original_realm.id}/emoji/images/'
+            ),
+            emoji_channel.rendered_description,
+        )
+
+        original_realm_emoji_count = RealmEmoji.objects.count()
+        self.assertGreaterEqual(original_realm_emoji_count, 2)
+
+        self.export_realm_and_create_auditlog(original_realm)
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        all_imported_realm_emoji = RealmEmoji.objects.filter(realm=imported_realm)
+        self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
+        imported_realm_emoji_dict = get_all_custom_emoji_for_realm(imported_realm.id)
+        self.assertEqual(all_imported_realm_emoji.count(), len(imported_realm_emoji_dict))
+
+        # Check cached realm emoji is not stale.
+        for imported_realm_emoji in all_imported_realm_emoji:
+            emoji_id = str(imported_realm_emoji.id)
+            self.assertIn(emoji_id, imported_realm_emoji_dict)
+            realm_emoji_info = imported_realm_emoji_dict[emoji_id]
+            self.assertEqual(emoji_id, realm_emoji_info["id"])
+            assert imported_realm_emoji.author is not None
+            assert isinstance(imported_realm_emoji.author.id, int)
+            assert isinstance(realm_emoji_info["author_id"], int)
+            self.assertEqual(imported_realm_emoji.author.id, int(realm_emoji_info["author_id"]))
+            self.assertEqual(imported_realm_emoji.name, realm_emoji_info["name"])
+            imported_emoji_path = os.path.dirname(
+                get_emoji_url(
+                    get_emoji_file_name("image/png", imported_realm_emoji.id), imported_realm.id
+                )
+            )
+            self.assertEqual(
+                imported_emoji_path,
+                os.path.dirname(realm_emoji_info["source_url"]),
+            )
+
+        # Imported channel description with emoji is rendered correctly.
+        imported_emoji_channel = get_stream(emoji_channel.name, imported_realm)
+        self.assertIn(
+            (
+                "<p>Render realm emoji here! "
+                f'<img alt=":{emoji_2}:" class="emoji" '
+                f'src="/user_avatars/{imported_realm.id}/emoji/images/'
+            ),
+            imported_emoji_channel.rendered_description,
+        )
 
 
 class SingleUserExportTest(ExportFile):

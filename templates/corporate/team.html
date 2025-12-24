@@ -1,5 +1,4 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "marketing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "The Zulip team" %}
 
@@ -7,9 +6,8 @@
 development community of any team chat software, with over 1,500 code
 contributors, and 97+ people with 100+ commits." %}
 
-{% block portico_content %}
 
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing why-page">
     <div class="hero bg-pycon drone">

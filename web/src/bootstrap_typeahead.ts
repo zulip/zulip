@@ -164,6 +164,7 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
+import * as mouse_drag from "./mouse_drag.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {get_string_diff, the} from "./util.ts";
 
@@ -321,6 +322,9 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
+        if (e?.type === "click" && mouse_drag.is_drag(e)) {
+            return this;
+        }
         const active_option = this.$menu.find(".active")[0];
         const val = active_option ? this.values.get(active_option) : undefined;
         // It's possible that we got here from pressing enter with nothing highlighted.
@@ -646,7 +650,13 @@ export class Typeahead<ItemType extends string | object> {
         this.$menu
             .on("click", "li", this.click.bind(this))
             .on("mouseenter", "li", this.mouseenter.bind(this))
-            .on("mousemove", "li", this.mousemove.bind(this));
+            .on("mousemove", "li", this.mousemove.bind(this))
+            .on("blur", "li", (e) => {
+                // Selecting typeahead item content followed by blur
+                // should hide the typeahead if the relatedTarget is
+                // outside the typeahead.
+                this.blur(e);
+            });
 
         $(window).on("resize", this.resizeHandler.bind(this));
     }

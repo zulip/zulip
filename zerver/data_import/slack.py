@@ -330,6 +330,7 @@ def users_to_zerver_userprofile(
         # ref: https://zulip.com/help/change-your-profile-picture
         avatar_source, avatar_url = build_avatar_url(slack_user_id, user)
         if avatar_source == UserProfile.AVATAR_FROM_USER:
+            assert avatar_url is not None
             build_avatar(user_id, realm_id, avatar_url, timestamp, avatar_list)
         role = UserProfile.ROLE_MEMBER
         if get_owner(user):
@@ -501,8 +502,8 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     raise AssertionError(f"Could not find email address for Slack user {user}")
 
 
-def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str]:
-    avatar_url: str = ""
+def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str | None]:
+    avatar_url: str | None = None
     avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
     if user["profile"].get("avatar_hash"):
         # Process avatar image for a typical Slack user.
@@ -515,14 +516,14 @@ def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str]
         # a file type extension (.png, in this case).
         # e.g https://avatars.slack-edge.com/2024-05-01/7218497908_deb94eac4c_512.png
         avatar_url = user["profile"]["image_72"]
+        avatar_source = UserProfile.AVATAR_FROM_USER
         content_type = guess_type(avatar_url)[0]
         if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
             logging.info(
                 "Unsupported avatar type (%s) for user -> %s\n", content_type, user.get("name")
             )
+            avatar_url = None
             avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-        else:
-            avatar_source = UserProfile.AVATAR_FROM_USER
     else:
         logging.info("Failed to process avatar for user -> %s\n", user.get("name"))
     return avatar_source, avatar_url

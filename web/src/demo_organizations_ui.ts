@@ -10,12 +10,9 @@ import type {ActionButton} from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t} from "./i18n.ts";
-import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import * as settings_org from "./settings_org.ts";
 import type {RequestOpts} from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {HTMLSelectOneElement} from "./types.ts";
 
 export function get_demo_organization_deadline_days_remaining(): number {
     const now = Date.now();
@@ -105,7 +102,6 @@ export function show_convert_demo_organization_modal(): void {
     const html_body = render_convert_demo_organization_form({
         realm_domain: domain,
         user_has_email_set: email_set,
-        realm_org_type_values: settings_org.get_org_type_dropdown_options(),
     });
 
     function demo_organization_conversion_post_render(): void {
@@ -113,37 +109,25 @@ export function show_convert_demo_organization_modal(): void {
             "#demo-organization-conversion-modal .dialog_submit_button",
         );
         $convert_submit_button.prop("disabled", true);
-        $("#add_organization_type").val(realm.realm_org_type);
 
         if (!email_set) {
-            // Disable form fields if demo organization owner email not set.
-            $("#add_organization_type").prop("disabled", true);
+            // Disable form field if demo organization owner email not set.
             $("#new_subdomain").prop("disabled", true);
             // Show banner for adding email to account.
             show_configure_email_banner();
         } else {
-            // Disable submit button if either form field blank.
+            // Disable submit button if new subdomain field blank.
             $("#convert-demo-organization-form").on("input change", () => {
                 const string_id = $<HTMLInputElement>("input#new_subdomain").val()!.trim();
-                const org_type = $<HTMLSelectOneElement>(
-                    "select:not([multiple])#add_organization_type",
-                ).val()!;
-                $convert_submit_button.prop(
-                    "disabled",
-                    string_id === "" ||
-                        Number.parseInt(org_type, 10) ===
-                            settings_config.all_org_type_values.unspecified.code,
-                );
+                $convert_submit_button.prop("disabled", string_id === "");
             });
         }
     }
 
     function submit_subdomain(): void {
         const $string_id = $("#new_subdomain");
-        const $organization_type = $("#add_organization_type");
         const data = {
             string_id: $string_id.val(),
-            org_type: $organization_type.val(),
         };
         const opts: RequestOpts = {
             success_continuation(raw_data) {

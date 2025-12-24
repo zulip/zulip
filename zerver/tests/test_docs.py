@@ -1,6 +1,7 @@
 import os
 import re
 from collections.abc import Sequence
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 from urllib.parse import urlsplit
@@ -377,6 +378,15 @@ class DocPageTest(ZulipTestCase):
         realm.save()
         self._test(
             "/communities/", ["Open communities directory", "Zulip Dev", 'data-category="research"']
+        )
+
+        # Demo organizations are not shown.
+        demo_deletion_date = timezone_now() + timedelta(days=15)
+        realm.demo_organization_scheduled_deletion_date = demo_deletion_date
+        realm.save()
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(
+            ["Zulip Dev", "Some description", 'data-category="research"'], result
         )
 
     def test_integration_doc_endpoints(self) -> None:

@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as hash_util from "./hash_util.ts";
 import * as message_lists from "./message_lists.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -147,6 +148,9 @@ export function toggle_user_group_info_popover(
 export function register_click_handlers(): void {
     $("#main_div").on("click", ".user-group-mention", function (this: HTMLElement, e) {
         e.stopPropagation();
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
 
         const $elt = $(this);
         const $row = $elt.closest(".message_row");
@@ -187,6 +191,9 @@ export function register_click_handlers(): void {
     // that run before this one and call stopPropagation.
     $("body").on("click", ".messagebox .user-group-mention", function (this: HTMLElement, e) {
         e.stopPropagation();
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
         toggle_user_group_info_popover(this, undefined);
     });
 

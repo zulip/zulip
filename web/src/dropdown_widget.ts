@@ -28,6 +28,7 @@ export type DataType = "number" | "string";
 export type Option = {
     unique_id: number | string;
     name: string;
+    aliases?: string[];
     description?: string;
     is_direct_message?: boolean;
     is_setting_disabled?: boolean;
@@ -368,17 +369,6 @@ export class DropdownWidget {
                             $element: $search_input,
 
                             predicate(item, value) {
-                                const search = value.toLowerCase();
-
-                                if (item.name.toLowerCase().includes(search)) {
-                                    return true;
-                                }
-
-                                if (item.aliases !== undefined) {
-                                    return item.aliases.some((alias) =>
-                                        alias.toLowerCase().includes(search),
-                                    );
-                                }
 
                                 return false;
                             },

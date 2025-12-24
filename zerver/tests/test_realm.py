@@ -319,6 +319,18 @@ class RealmTest(ZulipTestCase):
         self.assertIsNone(realm.demo_organization_scheduled_deletion_date)
         self.assertEqual(realm.string_id, data["string_id"])
 
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=desdemona
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: "zulip",
+            RealmAuditLog.NEW_VALUE: "coolrealm",
+            "was_demo_organization": True,
+        }
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+        self.assertEqual(realm_audit_log.acting_user, desdemona)
+
     def test_realm_name_length(self) -> None:
         new_name = "A" * (Realm.MAX_REALM_NAME_LENGTH + 1)
         data = dict(name=new_name)
@@ -405,6 +417,7 @@ class RealmTest(ZulipTestCase):
         expected_extra_data = {
             RealmAuditLog.OLD_VALUE: "zulip",
             RealmAuditLog.NEW_VALUE: "newzulip",
+            "was_demo_organization": False,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)

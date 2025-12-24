@@ -65,12 +65,6 @@ html {
     margin-bottom: 0;
 }
 
-/* TODO: Remove this from the marketing-page templates instead
-   of just hiding in CSS. */
-.header {
-    display: none;
-}
-
 .navbar.footer .nav {
     > li {
         line-height: 56px;
@@ -239,165 +233,9 @@ input.text-error {
     display: block;
 }
 
-.header-main {
-    .logo {
-        display: block;
-        text-decoration: none;
-        position: relative;
-        line-height: 0.8;
-
-        & svg {
-            vertical-align: -5px;
-        }
-
-        & a,
-        a:focus,
-        a:hover {
-            text-decoration: none;
-            color: hsl(0deg 0% 20%);
-        }
-
-        .light {
-            font-size: 1.2rem;
-            font-weight: 400;
-            color: hsl(0deg 0% 20%);
-            opacity: 0.7;
-        }
-    }
-
-    .portico-logo {
-        height: 28px;
-        width: auto;
-        padding: 6px 0;
-    }
-}
-
-.portico-header {
-    .portico-header-dropdown {
-        position: relative;
-        display: inline-block;
-
-        & ul {
-            display: none;
-            position: absolute;
-            right: 0;
-            margin: 10px 0 0;
-            list-style-type: none;
-            width: fit-content;
-            background-color: hsl(0deg 0% 100%);
-            padding: 5px 0;
-            border-radius: 4px;
-            border: 1px solid hsl(0deg 0% 87%);
-            box-shadow: 0 2px 5px hsl(0deg 0% 0% / 10%);
-
-            &::before {
-                content: "\25B2";
-                position: absolute;
-                top: -4px;
-                right: 9px;
-                font-size: 0.5em;
-                color: hsl(0deg 0% 87%);
-                line-height: 0;
-                transform: scale(1.8, 1);
-            }
-
-            & li {
-                display: list-item;
-                margin: 0;
-                padding: 3px 10px;
-                text-align: left;
-                opacity: 1;
-                cursor: pointer;
-
-                &:hover {
-                    background-color: hsl(190deg 10% 90%);
-                    transition: none;
-                }
-
-                & a {
-                    display: block;
-                    margin: 2px 0;
-                    padding: 0;
-                    transition: none;
-                    font-size: 0.9em;
-                    font-weight: 400;
-                    color: hsl(0deg 0% 27%);
-                }
-
-                &:hover a {
-                    background-color: transparent;
-                }
-
-                & a i {
-                    margin-right: 5px;
-                }
-            }
-
-            &.dropdown-list {
-                margin-top: 3px;
-                margin-right: 3px;
-            }
-        }
-
-        &.show ul {
-            display: block;
-        }
-    }
-
-    .portico-header-dropdown-pill {
-        border: 1px solid hsl(0deg 0% 0% / 20%);
-        border-radius: 4px;
-        margin-left: 10px;
-        font-weight: 400;
-        cursor: pointer;
-
-        .realm-name {
-            display: inline-block;
-            vertical-align: top;
-            margin: 0 5px 0 -4px;
-            padding: 1px 0 1px 5px;
-            font-size: 0.9em;
-            font-weight: 600;
-            line-height: 1.6;
-        }
-
-        .realm-name i.fa {
-            position: relative;
-            top: -2px;
-            font-size: 0.6em;
-            margin-left: 5px;
-            opacity: 0.5;
-            transition: opacity 0.2s ease;
-        }
-
-        &:hover .realm-name i.fa {
-            opacity: 1;
-        }
-
-        .header-realm-icon {
-            width: 26px;
-            height: 26px;
-            vertical-align: top;
-            border-radius: 4px;
-        }
-    }
-}
-
-.portico-page-container .portico-header .dropdown-pill .realm-name {
-    margin-left: -3px;
-}
-
 .app {
     width: 100%;
     z-index: 99;
-}
-
-.devlogin_subheader {
-    margin-top: 10px;
-    margin-bottom: 20px;
-    padding-top: 0;
-    text-align: center;
-    font-size: 16px;
 }
 
 .table.table-striped {
@@ -588,22 +426,6 @@ input#terminal:checked ~ #tab-terminal {
         height: 170px;
         margin: 0 20px;
         pointer-events: none;
-    }
-}
-
-.login-page-header {
-    width: 100%;
-}
-
-.login-page {
-    text-align: center;
-
-    .alert {
-        width: 320px;
-        margin: auto;
-        margin-top: -30px;
-        margin-bottom: 15px;
-        text-align: center;
     }
 }
 
@@ -954,12 +776,8 @@ input#terminal:checked ~ #tab-terminal {
         }
     }
 
-    .app-main,
-    .header-main {
-        min-width: auto;
-    }
-
     .app-main {
+        min-width: auto;
         padding: 0;
     }
 
@@ -1059,15 +877,6 @@ input#terminal:checked ~ #tab-terminal {
         display: block;
     }
 
-    .header {
-        padding: 4px 0 6px;
-    }
-
-    .header-main {
-        max-width: 100vw;
-        padding: 0 10px;
-    }
-
     #skip-navigation {
         left: 60px;
     }
@@ -1103,53 +912,6 @@ label.label-title {
 .documentation-footer {
     font-size: 0.85rem;
     opacity: 0.8;
-}
-
-#devtools-wrapper {
-    display: flex;
-    justify-content: center;
-}
-
-#devtools-registration {
-    float: left;
-
-    & form {
-        display: inline;
-    }
-}
-
-#devtools-page {
-    max-width: 800px;
-    margin: 0 auto;
-
-    .table-bordered {
-        border: 1px solid hsl(0deg 0% 87%);
-        border-collapse: separate;
-        border-spacing: 0;
-        border-left: 0;
-        border-radius: 4px;
-
-        & th,
-        td {
-            border-left: 1px solid hsl(0deg 0% 87%);
-        }
-
-        thead tr:first-child > th:first-child {
-            border-top-left-radius: 4px;
-        }
-
-        thead tr:first-child > th:last-child {
-            border-top-right-radius: 4px;
-        }
-
-        tbody tr:last-child > td:first-child {
-            border-bottom-left-radius: 4px;
-        }
-
-        tbody tr:last-child > td:last-child {
-            border-bottom-right-radius: 4px;
-        }
-    }
 }
 
 .portico-page.error {
@@ -3174,33 +2936,6 @@ button {
         & header {
             width: auto;
         }
-    }
-
-    .portico-header .content > ul::before {
-        content: "Zulip";
-        display: block;
-        margin-top: 25px;
-        padding-top: 5px;
-        margin-left: 10px;
-
-        width: 100px;
-        height: 40px;
-
-        font-size: 1.5rem;
-        line-height: 30px;
-        text-align: right;
-        color: hsl(0deg 0% 27%);
-
-        background-size: 40px auto;
-        background-image: url("../../images/zulip-logo.svg");
-        background-repeat: no-repeat;
-    }
-
-    .portico-header .dropdown ul {
-        width: 100%;
-        height: auto;
-        margin: 42px 0 0;
-        font-size: 0.8em;
     }
 
     .portico-landing.apps .main ul.sidebar {

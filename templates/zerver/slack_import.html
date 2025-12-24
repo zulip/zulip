@@ -112,6 +112,15 @@
                 {% endif %}
             </div>
             {% if poll_for_import_completion %}
+            <div id="bottom-hint-slack-import-page">
+                <span class="bottom-text">
+                    {% trans %}
+                    Feel free to step away. You can always come back to this page
+                    <br />
+                    by clicking the <b>Complete registration</b> button in your email.
+                    {% endtrans %}
+                </span>
+            </div>
             {% else %}
             <form method="post" class="hidden" id="cancel-slack-import-form" action="{{ url('import_realm_from_slack') }}">
                 {{ csrf_input }}
