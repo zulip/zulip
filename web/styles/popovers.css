@@ -754,11 +754,11 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-gif,
-    .tenor-gif {
+    .gif-picker-gif {
         cursor: pointer;
     }
 
-    .tenor-gif {
+    .gif-picker-gif {
         width: 100%;
         height: 100%;
         border-radius: 10px;
@@ -766,7 +766,7 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-gif:focus,
-    .tenor-gif:focus {
+    .gif-picker-gif:focus {
         /* Blue outline for clear visibility
          * of which image is in focus.
          */
@@ -774,7 +774,7 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-gif:hover,
-    .tenor-gif:hover {
+    .gif-picker-gif:hover {
         outline: 2px solid var(--color-hovered-gif-in-grid-picker);
     }
 
