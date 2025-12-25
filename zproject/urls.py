@@ -276,6 +276,8 @@ from zerver.views.video_calls import (
 )
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
 from zproject import dev_urls
+from zerver.views.support import support_page
+
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
@@ -754,6 +756,7 @@ i18n_urls = [
         integrations_doc,
         name="integration_doc",
     ),
+    path("support/", support_page, name="support"),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -966,6 +969,7 @@ urls += [
         GET=self_hosting_auth_json_endpoint,
     ),
 ]
+
 
 urls += [
     path(

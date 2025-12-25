@@ -1,0 +1,20 @@
+{% extends "zerver/base.html" %}
+
+{% block content %}
+<div class="support-page">
+
+    {% if is_cloud %}
+        <div class="support-recipient-note">
+            {{ _("Your message will be sent to Zulip Support.") }}
+        </div>
+    {% else %}
+        <div class="support-recipient-note">
+            {{ _("Your message will be sent to this Zulip server's administrators at") }}
+            <a href="mailto:{{ admin_email }}">{{ admin_email }}</a>.
+        </div>
+    {% endif %}
+
+    <!-- Support form will be added in next steps -->
+
+</div>
+{% endblock %}
