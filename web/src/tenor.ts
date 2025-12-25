@@ -5,7 +5,7 @@ import type * as tippy from "tippy.js";
 
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
-import type {GifInfoUrl} from "./abstract_gif_network.ts";
+import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -18,7 +18,7 @@ let tenor_popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
-let network: tenor_network.TenorNetwork;
+let network: GifNetwork;
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
