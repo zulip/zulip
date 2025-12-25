@@ -14,7 +14,50 @@
         </div>
     {% endif %}
 
-    <!-- Support form will be added in next steps -->
+    <form method="post" class="support-form">
+        {% csrf_token %}
+    
+        <div class="form-group">
+            <label for="support_name">{{ _("Name") }}</label>
+            <input
+                type="text"
+                id="support_name"
+                name="name"
+                class="form-control"
+                required
+            />
+        </div>
+    
+        <div class="form-group">
+            <label for="support_zulip_url">{{ _("Zulip URL") }}</label>
+            <input
+                type="url"
+                id="support_zulip_url"
+                name="zulip_url"
+                class="form-control"
+                value="{{ request.scheme }}://{{ request.get_host }}"
+                readonly
+            />
+        </div>
+    
+        <div class="form-group">
+            <label for="support_message">{{ _("Message") }}</label>
+            <textarea
+                id="support_message"
+                name="message"
+                class="form-control"
+                rows="6"
+                required
+            ></textarea>
+        </div>
+    
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ _("Send message") }}
+            </button>
+        </div>
+    </form>
+    
 
 </div>
 {% endblock %}
