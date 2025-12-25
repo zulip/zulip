@@ -495,6 +495,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Ansible Tower",
     ),
     IncomingWebhookIntegration(
+        "anytype",
+        ["productivity"],
+        display_name="Anytype",
+    ),
+    IncomingWebhookIntegration(
         "appfollow",
         ["marketing", "customer-support"],
         [WebhookScreenshotConfig("review.json")],

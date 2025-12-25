@@ -1,0 +1,21 @@
+{
+  "event": "object.created",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "object": {
+    "id": "obj_abc123def456",
+    "type": "note",
+    "title": "Meeting Notes - Q1 Planning",
+    "description": "Quick notes from today's quarterly planning meeting. Discussed budget allocation and team goals.",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  },
+  "space": {
+    "id": "space_xyz789",
+    "name": "Personal Notes"
+  },
+  "user": {
+    "id": "user_alice123",
+    "name": "Alice Johnson",
+    "email": "alice@example.com"
+  }
+}

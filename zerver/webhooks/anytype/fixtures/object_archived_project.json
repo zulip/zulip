@@ -1,0 +1,21 @@
+{
+  "event": "object.archived",
+  "timestamp": "2024-01-15T20:30:00Z",
+  "object": {
+    "id": "obj_project_redesign",
+    "type": "project",
+    "title": "Website Redesign",
+    "status": "completed",
+    "created_at": "2023-10-01T09:00:00Z",
+    "archived_at": "2024-01-15T20:30:00Z"
+  },
+  "space": {
+    "id": "space_completed_projects",
+    "name": "Completed Projects"
+  },
+  "user": {
+    "id": "user_david456",
+    "name": "David Wilson",
+    "email": "david@example.com"
+  }
+}

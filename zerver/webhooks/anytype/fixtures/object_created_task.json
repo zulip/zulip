@@ -1,0 +1,22 @@
+{
+  "event": "object.created",
+  "timestamp": "2024-01-15T14:20:00Z",
+  "object": {
+    "id": "obj_task456def",
+    "type": "task",
+    "title": "Review API Documentation",
+    "status": "todo",
+    "priority": "high",
+    "created_at": "2024-01-15T14:20:00Z",
+    "updated_at": "2024-01-15T14:20:00Z"
+  },
+  "space": {
+    "id": "space_project_alpha",
+    "name": "Project Alpha"
+  },
+  "user": {
+    "id": "user_bob456",
+    "name": "Bob Smith",
+    "email": "bob@example.com"
+  }
+}
