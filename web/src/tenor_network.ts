@@ -1,3 +1,4 @@
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
@@ -48,17 +49,18 @@ export type TenorPayload = {
 export class TenorNetwork {
     is_loading_more = false;
     next_pos_identifier: string | number | undefined;
+    abandoned = false;
 
     is_loading_more_gifs(): boolean {
         return this.is_loading_more;
     }
 
-    reset(): void {
-        this.is_loading_more = false;
-        this.next_pos_identifier = undefined;
+    abandon(): void {
+        this.abandoned = true;
     }
 
     ask_for_default_gifs(next_page: boolean, render_gifs_callback: RenderGifsCallback): void {
+        assert(!this.abandoned);
         // We use "default" generically here in anticipation of
         // tenor default == featured
         // giphy default == trending
@@ -71,6 +73,7 @@ export class TenorNetwork {
         next_page: boolean,
         render_gifs_callback: RenderGifsCallback,
     ): void {
+        assert(!this.abandoned);
         const data: TenorPayload = {
             q: search_term,
             ...get_base_payload(),
@@ -85,6 +88,7 @@ export class TenorNetwork {
         next_page = false,
         render_gifs_callback: RenderGifsCallback,
     ): void {
+        assert(!this.abandoned);
         if (next_page) {
             this.is_loading_more = true;
             data = {...data, pos: this.next_pos_identifier};
@@ -93,6 +97,12 @@ export class TenorNetwork {
             url,
             data,
             success: (raw_tenor_result) => {
+                // We don't want to have this code run after the caller
+                // abandons its network object, to avoid all sorts of weird
+                // bugs.
+                if (this.abandoned) {
+                    return;
+                }
                 const parsed_data = tenor_result_schema.parse(raw_tenor_result);
                 const urls: GifInfoUrl[] = parsed_data.results.map((result) => ({
                     preview_url: result.media_formats.tinygif.url,
