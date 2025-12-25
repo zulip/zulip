@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
+import type {GifInfoUrl, RenderGifsCallback} from "./abstract_gif_network.ts";
 import * as channel from "./channel.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
@@ -67,13 +68,6 @@ type TenorPayload = {
     q?: string;
 };
 
-type TenorURL = {
-    preview_url: string;
-    insert_url: string;
-};
-
-type RenderGifsCallback = (urls: TenorURL[], next_page: boolean) => void;
-
 class TenorNetwork {
     is_loading_more = false;
     next_pos_identifier: string | number | undefined;
@@ -123,7 +117,7 @@ class TenorNetwork {
             data,
             success: (raw_tenor_result) => {
                 const parsed_data = tenor_result_schema.parse(raw_tenor_result);
-                const urls: TenorURL[] = parsed_data.results.map((result) => ({
+                const urls: GifInfoUrl[] = parsed_data.results.map((result) => ({
                     preview_url: result.media_formats.tinygif.url,
                     insert_url: result.media_formats.mediumgif.url,
                 }));
@@ -234,7 +228,7 @@ export function hide_tenor_popover(): boolean {
     return false;
 }
 
-function render_gifs_to_grid(urls: TenorURL[], next_page: boolean): void {
+function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
     // Tenor popover may have been hidden by the
     // time this function is called.
     if (tenor_popover_instance === undefined) {
