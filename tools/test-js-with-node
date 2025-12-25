@@ -274,6 +274,7 @@ EXEMPT_FILES = make_set(
         "web/src/submessage.ts",
         "web/src/subscriber_api.ts",
         "web/src/tenor.ts",
+        "web/src/tenor_network.ts",
         "web/src/theme.ts",
         "web/src/thumbnail.ts",
         "web/src/timerender.ts",

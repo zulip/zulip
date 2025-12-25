@@ -2,53 +2,23 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import * as z from "zod/mini";
 
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
-import type {GifInfoUrl, RenderGifsCallback} from "./abstract_gif_network.ts";
-import * as channel from "./channel.ts";
+import type {GifInfoUrl} from "./abstract_gif_network.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
-import {get_rating} from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
-import {realm} from "./state_data.ts";
-import {user_settings} from "./user_settings.ts";
-
-const tenor_rating_map = {
-    // Source: https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
-    pg: "medium",
-    g: "high",
-    r: "off",
-    "pg-13": "low",
-};
-
-const tenor_result_schema = z.object({
-    results: z.array(
-        z.object({
-            media_formats: z.object({
-                tinygif: z.object({
-                    url: z.url(),
-                }),
-                mediumgif: z.object({
-                    url: z.url(),
-                }),
-            }),
-        }),
-    ),
-    // This denotes the identifier to use for the next API call
-    // to fetch the next set of results for the current query.
-    next: z.string(),
-});
+import * as tenor_network from "./tenor_network.ts";
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let compose_icon_session: ComposeIconSession | undefined;
 let tenor_popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
-const BASE_URL = "https://tenor.googleapis.com/v2";
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
+const network = new tenor_network.TenorNetwork();
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -57,80 +27,6 @@ function is_editing_existing_message(): boolean {
     return compose_icon_session.is_editing_existing_message;
 }
 
-type TenorPayload = {
-    key: string;
-    client_key: string;
-    limit: string;
-    media_filter: string;
-    locale: string;
-    contentfilter: string;
-    pos?: string | number | undefined;
-    q?: string;
-};
-
-class TenorNetwork {
-    is_loading_more = false;
-    next_pos_identifier: string | number | undefined;
-
-    is_loading_more_gifs(): boolean {
-        return this.is_loading_more;
-    }
-
-    reset(): void {
-        this.is_loading_more = false;
-        this.next_pos_identifier = undefined;
-    }
-
-    ask_for_default_gifs(next_page: boolean, render_gifs_callback: RenderGifsCallback): void {
-        // We use "default" generically here in anticipation of
-        // tenor default == featured
-        // giphy default == trending
-        const data = get_base_payload();
-        this.ask_for_gifs(`${BASE_URL}/featured`, data, next_page, render_gifs_callback);
-    }
-
-    ask_for_search_gifs(
-        search_term: string,
-        next_page: boolean,
-        render_gifs_callback: RenderGifsCallback,
-    ): void {
-        const data: TenorPayload = {
-            q: search_term,
-            ...get_base_payload(),
-        };
-
-        this.ask_for_gifs(`${BASE_URL}/search`, data, next_page, render_gifs_callback);
-    }
-
-    ask_for_gifs(
-        url: string,
-        data: TenorPayload,
-        next_page = false,
-        render_gifs_callback: RenderGifsCallback,
-    ): void {
-        if (next_page) {
-            this.is_loading_more = true;
-            data = {...data, pos: this.next_pos_identifier};
-        }
-        void channel.get({
-            url,
-            data,
-            success: (raw_tenor_result) => {
-                const parsed_data = tenor_result_schema.parse(raw_tenor_result);
-                const urls: GifInfoUrl[] = parsed_data.results.map((result) => ({
-                    preview_url: result.media_formats.tinygif.url,
-                    insert_url: result.media_formats.mediumgif.url,
-                }));
-                this.next_pos_identifier = parsed_data.next;
-                this.is_loading_more = false;
-                render_gifs_callback(urls, next_page);
-            },
-        });
-    }
-}
-
-const network = new TenorNetwork();
-
 export function is_popped_from_edit_message(): boolean {
     return tenor_popover_instance !== undefined && is_editing_existing_message();
 }
@@ -138,19 +34,6 @@ export function is_popped_from_edit_message(): boolean {
 export function focus_current_edit_message(): void {
     assert(compose_icon_session);
     compose_icon_session.focus_on_edit_textarea();
-}
-
-function get_base_payload(): TenorPayload {
-    return {
-        key: realm.tenor_api_key,
-        client_key: "ZulipWeb",
-        limit: "15",
-        // We use the tinygif size for the picker UI, and the mediumgif size
-        // for what gets actually uploaded.
-        media_filter: "tinygif,mediumgif",
-        locale: user_settings.default_language,
-        contentfilter: tenor_rating_map[get_rating()],
-    };
 }
 
 function handle_gif_click(img_element: HTMLElement): void {
