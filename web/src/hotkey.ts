@@ -437,7 +437,7 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         tenor.focus_current_edit_message();
         // Hide after setting focus so that `edit_message_id` is
         // still set in giphy.
-        tenor.hide_tenor_popover();
+        tenor.hide_picker_popover();
         return true;
     }
 
