@@ -69,6 +69,11 @@ type TenorPayload = {
     q?: string;
 };
 
+type TenorURL = {
+    preview_url: string;
+    insert_url: string;
+};
+
 export function is_popped_from_edit_message(): boolean {
     return tenor_popover_instance !== undefined && is_editing_existing_message();
 }
@@ -167,18 +172,13 @@ export function hide_tenor_popover(): boolean {
     return false;
 }
 
-function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): void {
+function render_gifs_to_grid(urls: TenorURL[], next_page: boolean): void {
     // Tenor popover may have been hidden by the
     // time this function is called.
     if (tenor_popover_instance === undefined) {
         return;
     }
-    const parsed_data = tenor_result_schema.parse(raw_tenor_result);
-    const urls = parsed_data.results.map((result) => ({
-        preview_url: result.media_formats.tinygif.url,
-        insert_url: result.media_formats.mediumgif.url,
-    }));
-    next_pos_identifier = parsed_data.next;
+
     let gif_grid_html = "";
 
     if (!next_page) {
@@ -199,8 +199,6 @@ function render_gifs_to_grid(raw_tenor_result: unknown, next_page: boolean): voi
         $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
         $popper.find(".tenor-content").html(gif_grid_html);
     }
-
-    is_loading_more = false;
 }
 
 function render_featured_gifs(next_page: boolean): void {
@@ -220,7 +218,14 @@ function ask_tenor_for_gifs(url: string, data: TenorPayload, next_page = false):
         url,
         data,
         success(raw_tenor_result) {
-            render_gifs_to_grid(raw_tenor_result, next_page);
+            const parsed_data = tenor_result_schema.parse(raw_tenor_result);
+            const urls: TenorURL[] = parsed_data.results.map((result) => ({
+                preview_url: result.media_formats.tinygif.url,
+                insert_url: result.media_formats.mediumgif.url,
+            }));
+            next_pos_identifier = parsed_data.next;
+            is_loading_more = false;
+            render_gifs_to_grid(urls, next_page);
         },
     });
 }
