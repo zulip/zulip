@@ -14,7 +14,7 @@ import * as tenor_network from "./tenor_network.ts";
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let compose_icon_session: ComposeIconSession | undefined;
-let tenor_popover_instance: tippy.Instance | undefined;
+let popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
@@ -28,7 +28,7 @@ function is_editing_existing_message(): boolean {
 }
 
 export function is_popped_from_edit_message(): boolean {
-    return tenor_popover_instance !== undefined && is_editing_existing_message();
+    return popover_instance !== undefined && is_editing_existing_message();
 }
 
 export function focus_current_edit_message(): void {
@@ -41,13 +41,13 @@ function handle_gif_click(img_element: HTMLElement): void {
     assert(insert_url !== undefined);
     assert(compose_icon_session !== undefined);
     compose_icon_session.insert_block_markdown_into_textarea(`[](${insert_url})`, 1);
-    hide_tenor_popover();
+    hide_picker_popover();
 }
 
 function focus_gif_at_index(index: number): void {
     if (index < 0 || index > last_gif_index) {
-        assert(tenor_popover_instance !== undefined);
-        const $popper = $(tenor_popover_instance.popper);
+        assert(popover_instance !== undefined);
+        const $popper = $(popover_instance.popper);
         // Just trigger focus on the search input because there are no GIFs
         // above or below.
         $popper.find("#gif-search-query").trigger("focus");
@@ -65,8 +65,8 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     if (is_alpha_numeric) {
         // This implies that the user is focused on some GIF
         // but wants to continue searching.
-        assert(tenor_popover_instance !== undefined);
-        const $popper = $(tenor_popover_instance.popper);
+        assert(popover_instance !== undefined);
+        const $popper = $(popover_instance.popper);
         $popper.find("#gif-search-query").trigger("focus");
         return;
     }
@@ -98,12 +98,12 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     }
 }
 
-export function hide_tenor_popover(): boolean {
+export function hide_picker_popover(): boolean {
     // Returns `true` if the popover was open.
-    if (tenor_popover_instance) {
+    if (popover_instance) {
         compose_icon_session = undefined;
-        tenor_popover_instance.destroy();
-        tenor_popover_instance = undefined;
+        popover_instance.destroy();
+        popover_instance = undefined;
         current_search_term = undefined;
         network.abandon();
         return true;
@@ -112,7 +112,7 @@ export function hide_tenor_popover(): boolean {
 }
 
 function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
-    assert(tenor_popover_instance !== undefined);
+    assert(popover_instance !== undefined);
     let gif_grid_html = "";
 
     if (!next_page) {
@@ -126,7 +126,7 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
             gif_index: last_gif_index,
         });
     }
-    const $popper = $(tenor_popover_instance.popper);
+    const $popper = $(popover_instance.popper);
     if (next_page) {
         $popper.find(".tenor-content").append($(gif_grid_html));
     } else {
@@ -164,7 +164,7 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
     network.ask_for_search_gifs(search_term, next_page, render_gifs_to_grid);
 }
 
-function toggle_tenor_popover(target: HTMLElement): void {
+function toggle_picker_popover(target: HTMLElement): void {
     popover_menus.toggle_popover_menu(
         target,
         {
@@ -175,7 +175,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 $(instance.popper).addClass("tenor-popover");
             },
             onShow(instance) {
-                tenor_popover_instance = instance;
+                popover_instance = instance;
                 const $popper = $(instance.popper).trigger("focus");
                 const debounced_search = _.debounce((search_term: string) => {
                     update_grid_with_search_term(search_term);
@@ -228,7 +228,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 });
             },
             onHidden() {
-                hide_tenor_popover();
+                hide_picker_popover();
             },
         },
         {
@@ -248,7 +248,7 @@ function register_click_handlers(): void {
                 network.abandon();
             }
             network = new tenor_network.TenorNetwork();
-            toggle_tenor_popover(this);
+            toggle_picker_popover(this);
         },
     );
 }
