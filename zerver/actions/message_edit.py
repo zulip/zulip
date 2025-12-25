@@ -84,7 +84,10 @@ from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamM
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
+from zerver.lib.user_topics import (
+    get_users_with_user_topic_visibility_policy,
+    topic_has_visibility_policy,
+)
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -615,6 +618,8 @@ def update_user_topic_visibility_policies_on_move(
     target_topic_name: str,
     target_topic_has_messages: bool,
     users_losing_access: Iterable[UserProfile],
+    filter_to_user_ids: set[int] | None = None,
+    remove_orig_topic_visibility_policy: bool = False,
 ) -> dict[UserProfile, int]:
     stream_inaccessible_to_user_profiles: list[UserProfile] = []
     orig_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
@@ -624,6 +629,9 @@ def update_user_topic_visibility_policies_on_move(
     for user_topic in get_users_with_user_topic_visibility_policy(
         stream_being_edited.id, orig_topic_name
     ):
+        if filter_to_user_ids is not None and user_topic.user_profile_id not in filter_to_user_ids:
+            continue
+
         if is_stream_edited and user_topic.user_profile_id in user_ids_losing_access:
             stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
         else:
@@ -634,6 +642,9 @@ def update_user_topic_visibility_policies_on_move(
     for user_topic in get_users_with_user_topic_visibility_policy(
         target_stream.id, target_topic_name
     ):
+        if filter_to_user_ids is not None and user_topic.user_profile_id not in filter_to_user_ids:
+            continue
+
         target_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
             user_topic.visibility_policy
         )
@@ -669,18 +680,19 @@ def update_user_topic_visibility_policies_on_move(
             (orig_topic_visibility_policy, target_topic_visibility_policy)
         ].append(user_profile_with_policy)
 
-    # If the messages are being moved to a stream the user
-    # cannot access, then we treat this as the
-    # messages/topic being deleted for this user. This is
-    # important for security reasons; we don't want to
-    # give users a UserTopic row in a stream they cannot
-    # access. Remove the user topic rows for such users.
-    bulk_do_set_user_topic_visibility_policy(
-        stream_inaccessible_to_user_profiles,
-        stream_being_edited,
-        orig_topic_name,
-        visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
-    )
+    if remove_orig_topic_visibility_policy:
+        # If the messages are being moved to a stream the user
+        # cannot access, then we treat this as the
+        # messages/topic being deleted for this user. This is
+        # important for security reasons; we don't want to
+        # give users a UserTopic row in a stream they cannot
+        # access. Remove the user topic rows for such users.
+        bulk_do_set_user_topic_visibility_policy(
+            stream_inaccessible_to_user_profiles,
+            stream_being_edited,
+            orig_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+        )
 
     # If the messages are being moved to a stream the user _can_
     # access, we move the user topic records, by removing the old
@@ -700,7 +712,10 @@ def update_user_topic_visibility_policies_on_move(
     ) in user_profiles_for_visibility_policy_pair.items():
         orig_topic_visibility_policy, target_topic_visibility_policy = visibility_policy_pair
 
-        if orig_topic_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
+        if (
+            remove_orig_topic_visibility_policy
+            and orig_topic_visibility_policy != UserTopic.VisibilityPolicy.INHERIT
+        ):
             bulk_do_set_user_topic_visibility_policy(
                 user_profiles,
                 stream_being_edited,
@@ -755,16 +770,12 @@ def apply_automatic_unmute_follow_topics_policy(
     target_stream: Stream,
     target_topic_name: str,
 ) -> None:
+    visibility_policy = None
     if (
         user_profile.automatically_follow_topics_policy
         == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
     ):
-        bulk_do_set_user_topic_visibility_policy(
-            [user_profile],
-            target_stream,
-            target_topic_name,
-            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
-        )
+        visibility_policy = UserTopic.VisibilityPolicy.FOLLOWED
     elif (
         user_profile.automatically_unmute_topics_in_muted_streams_policy
         == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION
@@ -777,12 +788,26 @@ def apply_automatic_unmute_follow_topics_policy(
         ).first()
 
         if subscription is not None and subscription.is_muted:
-            bulk_do_set_user_topic_visibility_policy(
-                [user_profile],
-                target_stream,
-                target_topic_name,
-                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
-            )
+            visibility_policy = UserTopic.VisibilityPolicy.UNMUTED
+
+    if visibility_policy is not None:
+        # We check if the policy is already set, because we might have
+        # already updated the user's visibility policy from the
+        # original topic.
+        if topic_has_visibility_policy(
+            user_profile,
+            target_stream.id,
+            target_topic_name,
+            visibility_policy,
+        ):
+            return
+
+        bulk_do_set_user_topic_visibility_policy(
+            [user_profile],
+            target_stream,
+            target_topic_name,
+            visibility_policy=visibility_policy,
+        )
 
 
 # This must be called already in a transaction, with a write lock on
@@ -1227,6 +1252,7 @@ def do_update_message(
                 target_topic_name=target_topic_name,
                 target_topic_has_messages=target_topic_has_messages,
                 users_losing_access=users_losing_access,
+                remove_orig_topic_visibility_policy=True,
             )
         )
 
@@ -1237,6 +1263,27 @@ def do_update_message(
         target_topic = message_edit_request.target_topic_name
 
         assert target_stream.recipient_id is not None
+
+        sender_ids_with_moved_messages = set(
+            changed_messages.values_list("sender_id", flat=True).distinct()
+        )
+
+        target_topic_has_messages = (
+            messages_for_topic(realm.id, target_stream.recipient_id, target_topic)
+            .exclude(id__in=[*changed_message_ids])
+            .exists()
+        )
+
+        update_user_topic_visibility_policies_on_move(
+            is_stream_edited=message_edit_request.is_stream_edited,
+            stream_being_edited=stream_being_edited,
+            orig_topic_name=orig_topic_name,
+            target_stream=target_stream,
+            target_topic_name=target_topic,
+            target_topic_has_messages=target_topic_has_messages,
+            users_losing_access=users_losing_access,
+            filter_to_user_ids=sender_ids_with_moved_messages,
+        )
 
         messages_in_target_topic = messages_for_topic(
             realm.id, target_stream.recipient_id, target_topic
