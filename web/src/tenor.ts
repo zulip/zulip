@@ -43,8 +43,6 @@ const tenor_result_schema = z.object({
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let compose_icon_session: ComposeIconSession | undefined;
-let next_pos_identifier: string | number | undefined;
-let is_loading_more = false;
 let tenor_popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
 const BASE_URL = "https://tenor.googleapis.com/v2";
@@ -65,7 +63,7 @@ type TenorPayload = {
     media_filter: string;
     locale: string;
     contentfilter: string;
-    pos?: typeof next_pos_identifier;
+    pos?: string | number | undefined;
     q?: string;
 };
 
@@ -75,6 +73,69 @@ type TenorURL = {
 };
 
 type RenderGifsCallback = (urls: TenorURL[], next_page: boolean) => void;
+
+class TenorNetwork {
+    is_loading_more = false;
+    next_pos_identifier: string | number | undefined;
+
+    is_loading_more_gifs(): boolean {
+        return this.is_loading_more;
+    }
+
+    reset(): void {
+        this.is_loading_more = false;
+        this.next_pos_identifier = undefined;
+    }
+
+    ask_for_default_gifs(next_page: boolean, render_gifs_callback: RenderGifsCallback): void {
+        // We use "default" generically here in anticipation of
+        // tenor default == featured
+        // giphy default == trending
+        const data = get_base_payload();
+        this.ask_for_gifs(`${BASE_URL}/featured`, data, next_page, render_gifs_callback);
+    }
+
+    ask_for_search_gifs(
+        search_term: string,
+        next_page: boolean,
+        render_gifs_callback: RenderGifsCallback,
+    ): void {
+        const data: TenorPayload = {
+            q: search_term,
+            ...get_base_payload(),
+        };
+
+        this.ask_for_gifs(`${BASE_URL}/search`, data, next_page, render_gifs_callback);
+    }
+
+    ask_for_gifs(
+        url: string,
+        data: TenorPayload,
+        next_page = false,
+        render_gifs_callback: RenderGifsCallback,
+    ): void {
+        if (next_page) {
+            this.is_loading_more = true;
+            data = {...data, pos: this.next_pos_identifier};
+        }
+        void channel.get({
+            url,
+            data,
+            success: (raw_tenor_result) => {
+                const parsed_data = tenor_result_schema.parse(raw_tenor_result);
+                const urls: TenorURL[] = parsed_data.results.map((result) => ({
+                    preview_url: result.media_formats.tinygif.url,
+                    insert_url: result.media_formats.mediumgif.url,
+                }));
+                this.next_pos_identifier = parsed_data.next;
+                this.is_loading_more = false;
+                render_gifs_callback(urls, next_page);
+            },
+        });
+    }
+}
+
+const network = new TenorNetwork();
 
 export function is_popped_from_edit_message(): boolean {
     return tenor_popover_instance !== undefined && is_editing_existing_message();
@@ -166,9 +227,8 @@ export function hide_tenor_popover(): boolean {
         compose_icon_session = undefined;
         tenor_popover_instance.destroy();
         tenor_popover_instance = undefined;
-        next_pos_identifier = undefined;
         current_search_term = undefined;
-        is_loading_more = false;
+        network.reset();
         return true;
     }
     return false;
@@ -203,65 +263,21 @@ function render_gifs_to_grid(urls: TenorURL[], next_page: boolean): void {
     }
 }
 
-function ask_tenor_for_default_gifs(
-    next_page: boolean,
-    render_gifs_callback: RenderGifsCallback,
-): void {
-    // We use "default" generically here in anticipation of
-    // tenor default == featured
-    // giphy default == trending
-    const data = get_base_payload();
-    ask_tenor_for_gifs(`${BASE_URL}/featured`, data, next_page, render_gifs_callback);
-}
-
-function ask_tenor_for_search_gifs(
-    search_term: string,
-    next_page: boolean,
-    render_gifs_callback: RenderGifsCallback,
-): void {
-    const data: TenorPayload = {
-        q: search_term,
-        ...get_base_payload(),
-    };
-
-    ask_tenor_for_gifs(`${BASE_URL}/search`, data, next_page, render_gifs_callback);
-}
-
 function render_featured_gifs(next_page: boolean): void {
-    if (is_loading_more || (current_search_term !== undefined && current_search_term.length > 0)) {
+    if (
+        network.is_loading_more_gifs() ||
+        (current_search_term !== undefined && current_search_term.length > 0)
+    ) {
         return;
     }
-    ask_tenor_for_default_gifs(next_page, render_gifs_to_grid);
-}
-
-function ask_tenor_for_gifs(
-    url: string,
-    data: TenorPayload,
-    next_page = false,
-    render_gifs_callback: RenderGifsCallback,
-): void {
-    if (next_page) {
-        is_loading_more = true;
-        data = {...data, pos: next_pos_identifier};
-    }
-    void channel.get({
-        url,
-        data,
-        success(raw_tenor_result) {
-            const parsed_data = tenor_result_schema.parse(raw_tenor_result);
-            const urls: TenorURL[] = parsed_data.results.map((result) => ({
-                preview_url: result.media_formats.tinygif.url,
-                insert_url: result.media_formats.mediumgif.url,
-            }));
-            next_pos_identifier = parsed_data.next;
-            is_loading_more = false;
-            render_gifs_callback(urls, next_page);
-        },
-    });
+    network.ask_for_default_gifs(next_page, render_gifs_to_grid);
 }
 
 function update_grid_with_search_term(search_term: string, next_page = false): void {
-    if (is_loading_more || (search_term.trim() === current_search_term && !next_page)) {
+    if (
+        network.is_loading_more_gifs() ||
+        (search_term.trim() === current_search_term && !next_page)
+    ) {
         return;
     }
     // We set `current_search_term` here to avoid using to a stale
@@ -273,7 +289,7 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
         return;
     }
 
-    ask_tenor_for_search_gifs(search_term, next_page, render_gifs_to_grid);
+    network.ask_for_search_gifs(search_term, next_page, render_gifs_to_grid);
 }
 
 function toggle_tenor_popover(target: HTMLElement): void {
@@ -328,7 +344,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
                         scroll_element.scrollTop + scroll_element.clientHeight >
                         scroll_element.scrollHeight - scroll_element.clientHeight
                     ) {
-                        if (is_loading_more) {
+                        if (network.is_loading_more_gifs()) {
                             return;
                         }
                         if (current_search_term === undefined) {
