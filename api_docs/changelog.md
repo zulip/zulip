@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 447**
+
+* `PATCH /bots/{bot_id}`: Added `short_name` parameter to support updating bot's email.
+
 **Feature level 446**
 
 * [`GET /messages`](/api/get-messages),
