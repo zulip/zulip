@@ -8,6 +8,11 @@ import * as channel from "./channel.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {realm} from "./state_data.ts";
 
+export function validate_bot_short_name(value: string): boolean {
+    // Adapted from Django's EmailValidator
+    return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
+}
+
 export function generate_zuliprc_url(bot_id: number): string {
     const bot = bot_data.get(bot_id);
     assert(bot !== undefined);
