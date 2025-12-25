@@ -201,12 +201,28 @@ function render_gifs_to_grid(urls: TenorURL[], next_page: boolean): void {
     }
 }
 
+function ask_tenor_for_default_gifs(next_page: boolean): void {
+    // We use "default" generically here in anticipation of
+    // tenor default == featured
+    // giphy default == trending
+    const data = get_base_payload();
+    ask_tenor_for_gifs(`${BASE_URL}/featured`, data, next_page);
+}
+
+function ask_tenor_for_search_gifs(search_term: string, next_page: boolean): void {
+    const data: TenorPayload = {
+        q: search_term,
+        ...get_base_payload(),
+    };
+
+    ask_tenor_for_gifs(`${BASE_URL}/search`, data, next_page);
+}
+
 function render_featured_gifs(next_page: boolean): void {
     if (is_loading_more || (current_search_term !== undefined && current_search_term.length > 0)) {
         return;
     }
-    const data = get_base_payload();
-    ask_tenor_for_gifs(`${BASE_URL}/featured`, data, next_page);
+    ask_tenor_for_default_gifs(next_page);
 }
 
 function ask_tenor_for_gifs(url: string, data: TenorPayload, next_page = false): void {
@@ -242,12 +258,8 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
         render_featured_gifs(next_page);
         return;
     }
-    const data: TenorPayload = {
-        q: search_term,
-        ...get_base_payload(),
-    };
 
-    ask_tenor_for_gifs(`${BASE_URL}/search`, data, next_page);
+    ask_tenor_for_search_gifs(search_term, next_page);
 }
 
 function toggle_tenor_popover(target: HTMLElement): void {
