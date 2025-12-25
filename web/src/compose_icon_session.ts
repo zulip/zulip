@@ -34,6 +34,12 @@ export class ComposeIconSession {
         return this.compose_textarea();
     }
 
+    insert_inline_markdown_into_textarea(syntax: string): void {
+        const $textarea = this.textarea();
+        $textarea.trigger("focus");
+        compose_ui.smart_insert_inline($textarea, syntax);
+    }
+
     insert_block_markdown_into_textarea(syntax: string, padding_newlines: number): void {
         const $textarea = this.textarea();
         $textarea.trigger("focus");

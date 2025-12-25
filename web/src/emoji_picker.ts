@@ -11,7 +11,7 @@ import render_emoji_showcase from "../templates/popovers/emoji/emoji_showcase.hb
 
 import * as blueslip from "./blueslip.ts";
 import * as common from "./common.ts";
-import * as compose_ui from "./compose_ui.ts";
+import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiDict} from "./emoji.ts";
@@ -55,7 +55,7 @@ let section_head_offsets: {
     section: string;
     position_y: number;
 }[] = [];
-let edit_message_id: number | null = null;
+let compose_icon_session: ComposeIconSession | undefined;
 let current_message_id: number | null = null;
 
 const EMOJI_CATEGORIES = [
@@ -252,6 +252,7 @@ export function hide_emoji_popover(): void {
     if (!is_open()) {
         return;
     }
+    compose_icon_session = undefined;
     current_message_id = null;
     if (user_status_ui.user_status_picker_open()) {
         // Re-enable clicking events for other elements after closing
@@ -785,21 +786,10 @@ function handle_status_emoji_clicked(emoji_name: string): void {
 }
 
 function handle_composition_emoji_clicked(emoji_name: string): void {
-    hide_emoji_popover();
     const emoji_text = ":" + emoji_name + ":";
-    // The following check will return false if emoji was not selected in
-    // message edit form.
-    if (edit_message_id !== null) {
-        const $edit_message_textarea = $<HTMLTextAreaElement>(
-            `#edit_form_${CSS.escape(edit_message_id.toString())} textarea.message_edit_content`,
-        );
-        // Assign null to edit_message_id so that the selection of emoji in new
-        // message composition form works correctly.
-        edit_message_id = null;
-        compose_ui.insert_syntax_and_focus(emoji_text, $edit_message_textarea);
-    } else {
-        compose_ui.insert_syntax_and_focus(emoji_text);
-    }
+    assert(compose_icon_session !== undefined);
+    compose_icon_session.insert_inline_markdown_into_textarea(emoji_text);
+    hide_emoji_popover();
 }
 
 function handle_emoji_clicked(
@@ -841,15 +831,7 @@ function register_click_handlers(): void {
     $("body").on("click", ".emoji_map", function (this: HTMLElement, e): void {
         e.preventDefault();
         e.stopPropagation();
-
-        if ($(this).parents(".message_edit_form").length === 1) {
-            // Store message id in global variable edit_message_id so that
-            // its value can be further used to correctly find the message textarea element.
-            assert(this instanceof HTMLElement);
-            edit_message_id = rows.get_message_id(this);
-        } else {
-            edit_message_id = null;
-        }
+        compose_icon_session = new ComposeIconSession(this);
         toggle_emoji_popover(this);
     });
 
