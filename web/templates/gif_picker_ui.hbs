@@ -7,6 +7,12 @@
                 <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
             </button>
         </div>
-        <div class="gif-scrolling-container" data-simplebar data-simplebar-tab-index="-1"></div>
+        <div class="gif-scrolling-container" data-simplebar data-simplebar-tab-index="-1">
+            {{!-- We need a container we can replace
+            without removing the simplebar wrappers.
+            We replace the `gif-picker-content` when
+            searching for GIFs. --}}
+            <div class="gif-picker-content"></div>
+        </div>
     </div>
 </div>

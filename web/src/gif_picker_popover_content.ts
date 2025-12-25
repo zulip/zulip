@@ -13,12 +13,6 @@ export function populate_gif_popover(instance: tippy.Instance, is_giphy: boolean
     const $popper = $(instance.popper);
     if (is_giphy) {
         $popper.find("#gif-search-query").attr("placeholder", $t({defaultMessage: "Filter"}));
-        // We need a container we can replace
-        // without removing the simplebar wrappers.
-        // We replace the `giphy-content`/`tenor-content` when
-        // searching for GIFs.
-        const $giphy_content = $("<div>").addClass("giphy-content");
-        $popper.find(".gif-scrolling-container").append($giphy_content);
 
         // We are required to include the
         // "Powered By GIPHY" banner, which isn't mandatory
@@ -27,7 +21,5 @@ export function populate_gif_popover(instance: tippy.Instance, is_giphy: boolean
         $popper.find(".popover-inner").append($(render_giphy_footer()));
     } else {
         $popper.find("#gif-search-query").attr("placeholder", $t({defaultMessage: "Search Tenor"}));
-        const $tenor_content = $("<div>").addClass("tenor-content");
-        $popper.find(".gif-scrolling-container").append($tenor_content);
     }
 }

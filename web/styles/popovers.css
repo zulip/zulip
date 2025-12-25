@@ -671,8 +671,7 @@ ul.popover-group-menu-member-list {
     left: -1px;
 }
 
-.giphy-popover,
-.tenor-popover,
+.gif-picker-popover,
 .emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
@@ -739,43 +738,34 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .tenor-content {
+    .gif-picker-content {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         grid-auto-rows: auto;
         gap: 6px;
-    }
 
-    /* Meant to prevent outline overflow when the GIF
+        /* Meant to prevent outline overflow when the GIF
        is focused. */
-    .tenor-content,
-    .giphy-content {
         padding: 0 2px;
     }
 
-    .giphy-gif,
     .gif-picker-gif {
         cursor: pointer;
-    }
-
-    .gif-picker-gif {
         width: 100%;
         height: 100%;
         border-radius: 10px;
         object-fit: cover;
-    }
 
-    .giphy-gif:focus,
-    .gif-picker-gif:focus {
-        /* Blue outline for clear visibility
-         * of which image is in focus.
-         */
-        outline: 2px solid var(--color-selected-gif-in-grid-picker);
-    }
+        &:focus {
+            /* Blue outline for clear visibility
+              * of which image is in focus.
+              */
+            outline: 2px solid var(--color-selected-gif-in-grid-picker);
+        }
 
-    .giphy-gif:hover,
-    .gif-picker-gif:hover {
-        outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        &:hover {
+            outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        }
     }
 
     .gif-scrolling-container {
