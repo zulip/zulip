@@ -74,6 +74,8 @@ type TenorURL = {
     insert_url: string;
 };
 
+type RenderGifsCallback = (urls: TenorURL[], next_page: boolean) => void;
+
 export function is_popped_from_edit_message(): boolean {
     return tenor_popover_instance !== undefined && is_editing_existing_message();
 }
@@ -201,31 +203,43 @@ function render_gifs_to_grid(urls: TenorURL[], next_page: boolean): void {
     }
 }
 
-function ask_tenor_for_default_gifs(next_page: boolean): void {
+function ask_tenor_for_default_gifs(
+    next_page: boolean,
+    render_gifs_callback: RenderGifsCallback,
+): void {
     // We use "default" generically here in anticipation of
     // tenor default == featured
     // giphy default == trending
     const data = get_base_payload();
-    ask_tenor_for_gifs(`${BASE_URL}/featured`, data, next_page);
+    ask_tenor_for_gifs(`${BASE_URL}/featured`, data, next_page, render_gifs_callback);
 }
 
-function ask_tenor_for_search_gifs(search_term: string, next_page: boolean): void {
+function ask_tenor_for_search_gifs(
+    search_term: string,
+    next_page: boolean,
+    render_gifs_callback: RenderGifsCallback,
+): void {
     const data: TenorPayload = {
         q: search_term,
         ...get_base_payload(),
     };
 
-    ask_tenor_for_gifs(`${BASE_URL}/search`, data, next_page);
+    ask_tenor_for_gifs(`${BASE_URL}/search`, data, next_page, render_gifs_callback);
 }
 
 function render_featured_gifs(next_page: boolean): void {
     if (is_loading_more || (current_search_term !== undefined && current_search_term.length > 0)) {
         return;
     }
-    ask_tenor_for_default_gifs(next_page);
+    ask_tenor_for_default_gifs(next_page, render_gifs_to_grid);
 }
 
-function ask_tenor_for_gifs(url: string, data: TenorPayload, next_page = false): void {
+function ask_tenor_for_gifs(
+    url: string,
+    data: TenorPayload,
+    next_page = false,
+    render_gifs_callback: RenderGifsCallback,
+): void {
     if (next_page) {
         is_loading_more = true;
         data = {...data, pos: next_pos_identifier};
@@ -241,7 +255,7 @@ function ask_tenor_for_gifs(url: string, data: TenorPayload, next_page = false):
             }));
             next_pos_identifier = parsed_data.next;
             is_loading_more = false;
-            render_gifs_to_grid(urls, next_page);
+            render_gifs_callback(urls, next_page);
         },
     });
 }
@@ -259,7 +273,7 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
         return;
     }
 
-    ask_tenor_for_search_gifs(search_term, next_page);
+    ask_tenor_for_search_gifs(search_term, next_page, render_gifs_to_grid);
 }
 
 function toggle_tenor_popover(target: HTMLElement): void {
