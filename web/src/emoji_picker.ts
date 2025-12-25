@@ -56,7 +56,33 @@ let section_head_offsets: {
     position_y: number;
 }[] = [];
 let compose_icon_session: ComposeIconSession | undefined;
-let current_message_id: number | null = null;
+
+class MessageReactionSession {
+    private message_id: number;
+
+    constructor(message_id: number) {
+        this.message_id = message_id;
+    }
+
+    already_used_emojis(): string[] {
+        return reactions.get_emojis_used_by_user_for_message_id(this.message_id);
+    }
+
+    toggle_message_reaction(emoji_name: string): boolean {
+        const message_id = this.message_id;
+        const message = message_store.get(message_id);
+        if (!message) {
+            blueslip.error("reactions: Bad message id", {message_id});
+            return false;
+        }
+
+        // THIS IS THE WHOLE POINT OF THE EXERCISE:
+        reactions.toggle_emoji_reaction(message, emoji_name);
+        return true;
+    }
+}
+
+let message_reaction_session: MessageReactionSession | undefined;
 
 const EMOJI_CATEGORIES = [
     {
@@ -210,15 +236,13 @@ export function rebuild_catalog(): void {
     composebox_typeahead.update_emoji_data(emojis_by_category);
 }
 
-const generate_emoji_picker_content = function (
-    id: number | null,
-    include_frequently_used_category: boolean,
-): string {
+const generate_emoji_picker_content = function (include_frequently_used_category: boolean): string {
     let emojis_used: string[] = [];
 
-    if (id) {
-        emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
+    if (message_reaction_session) {
+        emojis_used = message_reaction_session.already_used_emojis();
     }
+
     for (const emoji_dict of emoji.emojis_by_name.values()) {
         emoji_dict.has_reacted = emoji_dict.aliases.some((alias) => emojis_used.includes(alias));
     }
@@ -227,11 +251,7 @@ const generate_emoji_picker_content = function (
     if (!include_frequently_used_category) {
         emoji_catalog = complete_emoji_catalog.slice(1);
     }
-    return render_emoji_popover({
-        message_id: id,
-        emoji_categories: emoji_catalog,
-        is_status_emoji_popover: user_status_ui.user_status_picker_open(),
-    });
+    return render_emoji_popover({emoji_categories: emoji_catalog});
 };
 
 function refill_section_head_offsets($popover: JQuery): void {
@@ -253,7 +273,7 @@ export function hide_emoji_popover(): void {
         return;
     }
     compose_icon_session = undefined;
-    current_message_id = null;
+    message_reaction_session = undefined;
     if (user_status_ui.user_status_picker_open()) {
         // Re-enable clicking events for other elements after closing
         // the popover.  This is the inverse of the hack of in the
@@ -292,7 +312,6 @@ export function is_emoji_present_in_text(text: string, emoji_dict: EmojiDict): b
 function filter_emojis(): void {
     const $elt = $<HTMLInputElement>("input#emoji-popover-filter").expectOne();
     const query = $elt.val()!.trim().toLowerCase();
-    const message_id = Number($(".emoji-search-results-container").attr("data-message-id"));
     if (query !== "") {
         const categories = complete_emoji_catalog;
         const search_terms = query.split(" ");
@@ -323,8 +342,6 @@ function filter_emojis(): void {
         const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: sorted_search_results,
-            is_status_emoji_popover: user_status_ui.user_status_picker_open(),
-            message_id,
         });
         $(".emoji-search-results").html(rendered_search_results);
         scroll_util.reset_scrollbar($(".emoji-search-results-container"));
@@ -336,32 +353,25 @@ function filter_emojis(): void {
     }
 }
 
-function toggle_reaction(emoji_name: string, event: JQuery.ClickEvent | JQuery.KeyDownEvent): void {
-    // The emoji picker for setting user status
-    // doesn't have a concept of toggling.
-    // TODO: Ideally we never even get here in
-    // that context, see #28464.
-    if ($("#set-user-status-modal").length > 0) {
+function handle_reaction_emoji_clicked(
+    emoji_name: string,
+    event: JQuery.ClickEvent | JQuery.KeyDownEvent,
+): void {
+    assert(message_reaction_session !== undefined);
+
+    // When the user clicks an emoji in the picker, it toggles
+    // their reaction to the message for that emoji.
+    // Step one does the actual model-related stuff.
+    if (!message_reaction_session.toggle_message_reaction(emoji_name)) {
         return;
     }
-
-    if (current_message_id === null) {
-        return;
-    }
-
-    const message_id = current_message_id;
-    const message = message_store.get(message_id);
-    if (!message) {
-        blueslip.error("reactions: Bad message id", {message_id});
-        return;
-    }
-
-    reactions.toggle_emoji_reaction(message, emoji_name);
 
     if (!event.shiftKey) {
         hide_emoji_popover();
     }
 
+    // And now we do the UI toggle. In the UI we are touching
+    // the little emojis (aka reactions) under the message.
     $(event.target).closest(".reaction").toggleClass("reacted");
 }
 
@@ -686,12 +696,7 @@ function get_default_emoji_popover_options(
             const $popover = $(instance.popper);
             $popover.addClass("emoji-popover-root");
             instance.setContent(
-                ui_util.parse_html(
-                    generate_emoji_picker_content(
-                        current_message_id,
-                        include_frequently_used_category,
-                    ),
-                ),
+                ui_util.parse_html(generate_emoji_picker_content(include_frequently_used_category)),
             );
             emoji_catalog_last_coordinates = {
                 section: 0,
@@ -711,13 +716,9 @@ function get_default_emoji_popover_options(
             if (!include_frequently_used_category) {
                 emoji_catalog = complete_emoji_catalog.slice(1);
             }
-            $popover.find(".emoji-popover-emoji-map .simplebar-content").html(
-                render_emoji_popover_emoji_map({
-                    message_id: current_message_id,
-                    emoji_categories: emoji_catalog,
-                    is_status_emoji_popover: user_status_ui.user_status_picker_open(),
-                }),
-            );
+            $popover
+                .find(".emoji-popover-emoji-map .simplebar-content")
+                .html(render_emoji_popover_emoji_map({emoji_categories: emoji_catalog}));
             refill_section_head_offsets($popover);
             show_emoji_catalog();
             register_popover_events($popover);
@@ -734,16 +735,19 @@ function get_default_emoji_popover_options(
     };
 }
 
-export function toggle_emoji_popover(
+export function start_picker_for_message_reaction(
+    reference: tippy.ReferenceElement,
+    message_id: number,
+): void {
+    message_reaction_session = new MessageReactionSession(message_id);
+    toggle_emoji_popover(reference, {placement: "bottom"});
+}
+
+function toggle_emoji_popover(
     target: tippy.ReferenceElement,
-    id?: number,
     additional_popover_options?: Partial<tippy.Props>,
     include_frequently_used_category = true,
 ): void {
-    if (id) {
-        current_message_id = id;
-    }
-
     popover_menus.toggle_popover_menu(
         target,
         {
@@ -758,17 +762,6 @@ export function toggle_emoji_popover(
             message_feed_overlay_detection: true,
         },
     );
-}
-
-function handle_reaction_emoji_clicked(
-    emoji_name: string,
-    event: JQuery.ClickEvent | JQuery.KeyDownEvent,
-): void {
-    // When an emoji is clicked in the popover,
-    // if the user has reacted to this message with this emoji
-    // the reaction is removed
-    // otherwise, the reaction is added
-    toggle_reaction(emoji_name, event);
 }
 
 function handle_status_emoji_clicked(emoji_name: string): void {
@@ -801,23 +794,12 @@ function handle_emoji_clicked(
         return;
     }
 
-    const emoji_destination = $emoji
-        .closest(".emoji-picker-popover")
-        .attr("data-emoji-destination");
-
-    switch (emoji_destination) {
-        case "reaction": {
-            handle_reaction_emoji_clicked(emoji_name, event);
-            break;
-        }
-        case "status": {
-            handle_status_emoji_clicked(emoji_name);
-            break;
-        }
-        case "composition": {
-            handle_composition_emoji_clicked(emoji_name);
-            break;
-        }
+    if (message_reaction_session) {
+        handle_reaction_emoji_clicked(emoji_name, event);
+    } else if (compose_icon_session) {
+        handle_composition_emoji_clicked(emoji_name);
+    } else {
+        handle_status_emoji_clicked(emoji_name);
     }
 }
 
@@ -847,7 +829,7 @@ function register_click_handlers(): void {
             }
 
             const message_id = rows.get_message_id(this);
-            toggle_emoji_popover(this, message_id, {placement: "bottom"});
+            start_picker_for_message_reaction(this, message_id);
         },
     );
 
@@ -894,12 +876,7 @@ function register_click_handlers(): void {
             e.preventDefault();
             e.stopPropagation();
             const micromodal = $("#set-user-status-modal").closest(".modal__overlay")[0]!;
-            toggle_emoji_popover(
-                this,
-                undefined,
-                {placement: "bottom", appendTo: micromodal},
-                false,
-            );
+            toggle_emoji_popover(this, {placement: "bottom", appendTo: micromodal}, false);
             if (is_open()) {
                 // Because the emoji picker gets drawn on top of the user
                 // status modal, we need this hack to make clicking outside
