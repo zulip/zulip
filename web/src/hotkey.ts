@@ -23,7 +23,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import {$t} from "./i18n.ts";
@@ -62,7 +62,6 @@ import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
-import * as tenor from "./tenor.ts";
 import * as topic_list from "./topic_list.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_card_popover from "./user_card_popover.ts";
@@ -425,19 +424,11 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
-    if (giphy.is_popped_from_edit_message()) {
-        giphy.focus_current_edit_message();
+    if (gif_picker_ui.is_popped_from_edit_message()) {
+        gif_picker_ui.focus_current_edit_message();
         // Hide after setting focus so that `edit_message_id` is
-        // still set in giphy.
-        giphy.hide_giphy_popover();
-        return true;
-    }
-
-    if (tenor.is_popped_from_edit_message()) {
-        tenor.focus_current_edit_message();
-        // Hide after setting focus so that `edit_message_id` is
-        // still set in giphy.
-        tenor.hide_picker_popover();
+        // still set in picker.
+        gif_picker_ui.hide_picker_popover();
         return true;
     }
 
@@ -492,9 +483,12 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         }
 
         if (compose_state.composing()) {
-            // Check if the giphy popover was open using compose box.
-            // Hide GIPHY popover if it's open.
-            if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
+            // Check if the GIF picker popover was open using compose box.
+            // Hide GIF picker popover if it's open.
+            if (
+                !gif_picker_ui.is_popped_from_edit_message() &&
+                gif_picker_ui.hide_picker_popover()
+            ) {
                 $("textarea#compose-textarea").trigger("focus");
                 return true;
             }
