@@ -207,14 +207,17 @@ function render_featured_gifs(next_page: boolean): void {
     if (is_loading_more || (current_search_term !== undefined && current_search_term.length > 0)) {
         return;
     }
-    let data = get_base_payload();
+    const data = get_base_payload();
+    ask_tenor_for_gifs(`${BASE_URL}/featured`, data, next_page);
+}
 
+function ask_tenor_for_gifs(url: string, data: TenorPayload, next_page = false): void {
     if (next_page) {
         is_loading_more = true;
         data = {...data, pos: next_pos_identifier};
     }
     void channel.get({
-        url: `${BASE_URL}/featured`,
+        url,
         data,
         success(raw_tenor_result) {
             render_gifs_to_grid(raw_tenor_result, next_page);
@@ -234,23 +237,12 @@ function update_grid_with_search_term(search_term: string, next_page = false): v
         render_featured_gifs(next_page);
         return;
     }
-    let data: TenorPayload = {
+    const data: TenorPayload = {
         q: search_term,
         ...get_base_payload(),
     };
 
-    if (next_page) {
-        is_loading_more = true;
-        data = {...data, pos: next_pos_identifier};
-    }
-
-    void channel.get({
-        url: `${BASE_URL}/search`,
-        data,
-        success(raw_tenor_result) {
-            render_gifs_to_grid(raw_tenor_result, next_page);
-        },
-    });
+    ask_tenor_for_gifs(`${BASE_URL}/search`, data, next_page);
 }
 
 function toggle_tenor_popover(target: HTMLElement): void {
