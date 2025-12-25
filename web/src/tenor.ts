@@ -3,7 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_tenor_gif from "../templates/tenor_gif.hbs";
+import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
 
 import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
@@ -54,7 +54,7 @@ function focus_gif_at_index(index: number): void {
         return;
     }
 
-    const $target_gif = $(`img.tenor-gif[data-gif-index='${index}']`);
+    const $target_gif = $(`img.gif-picker-gif[data-gif-index='${index}']`);
     $target_gif.trigger("focus");
 }
 
@@ -120,7 +120,7 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
     }
     for (const url of urls) {
         last_gif_index += 1;
-        gif_grid_html += render_tenor_gif({
+        gif_grid_html += render_gif_picker_gif({
             preview_url: url.preview_url,
             insert_url: url.insert_url,
             gif_index: last_gif_index,
@@ -190,7 +190,7 @@ function toggle_picker_popover(target: HTMLElement): void {
                     }
                     debounced_search(e.target.value);
                 });
-                $popper.on("click", ".tenor-gif", (e) => {
+                $popper.on("click", ".gif-picker-gif", (e) => {
                     assert(e.currentTarget instanceof HTMLElement);
                     handle_gif_click(e.currentTarget);
                 });
@@ -199,7 +199,7 @@ function toggle_picker_popover(target: HTMLElement): void {
                     $("#gif-search-query").val("");
                     update_grid_with_search_term("");
                 });
-                $popper.on("keydown", ".tenor-gif", handle_keyboard_navigation_on_gif);
+                $popper.on("keydown", ".gif-picker-gif", handle_keyboard_navigation_on_gif);
             },
             onMount(instance) {
                 render_featured_gifs(false);
