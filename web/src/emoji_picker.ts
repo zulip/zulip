@@ -55,7 +55,6 @@ let section_head_offsets: {
     section: string;
     position_y: number;
 }[] = [];
-let compose_icon_session: ComposeIconSession | undefined;
 
 class MessageReactionSession {
     private message_id: number;
@@ -82,7 +81,72 @@ class MessageReactionSession {
     }
 }
 
+class UserStatusSession {
+    /*
+        It's a little funny that this class has no constructor, but the
+        intent is to be parallel in structure with ComposeIconSession
+        and MessageReactionSession.  The target of any change to
+        the user status is, of course, the actual user, and that is
+        implicit here.
+
+        Note also that much of our code actually treats the
+        response from user_status_ui.user_status_picker_open() as
+        the authoritative answer of whether we are trying to
+        pick an emoji to help the user changes his status (as
+        opposed to making a reaction or putting an emoji in a
+        message).  This isn't necessarily bad, but it's odd.
+
+        The following functions are static for kind of the same
+        reason that we call user_status_ui.user_status_picker_open()
+        in several places. Setting emojis for user statuses has some
+        complications related to the nested dialogs. Instead of trying
+        to explain the user experience, I urge you to just change
+        your status emoji in the app and witness it yourself.
+
+        I'm not defending the code here; I'm just giving context.
+    */
+
+    static disable_click_events_for_other_elements(): void {
+        // Because the emoji picker gets drawn on top of the user
+        // status modal, we need this hack to make clicking outside
+        // the emoji picker only close the emoji picker, and not the
+        // whole user status modal.
+        $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "none");
+    }
+
+    static re_enable_click_events_for_other_elements(): void {
+        // Re-enable clicking events for other elements after closing
+        // the popover.  This is the inverse of the hack of in the
+        // handler that opens the "user status modal" emoji picker.
+        $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "all");
+    }
+
+    /*
+        THis IS THE WHOLE POINT OF THE EXERCISE.
+
+        Here we update the status emoji for the user, delegating
+        out to user_status_ui.
+    */
+
+    update_the_status_emoji_for_our_user(emoji_name: string): void {
+        // THIS IS THE MAIN POINT OF THE EXERCISE!
+        let emoji_info = {
+            emoji_name,
+            emoji_alt_code: user_settings.emojiset === "text",
+        };
+        if (!emoji_info.emoji_alt_code) {
+            emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
+        }
+        user_status_ui.set_selected_emoji_info(emoji_info);
+        user_status_ui.update_button();
+        user_status_ui.toggle_clear_status_button();
+    }
+
+}
+
+let compose_icon_session: ComposeIconSession | undefined;
 let message_reaction_session: MessageReactionSession | undefined;
+let user_status_session: UserStatusSession | undefined;
 
 const EMOJI_CATEGORIES = [
     {
@@ -272,14 +336,15 @@ export function hide_emoji_popover(): void {
     if (!is_open()) {
         return;
     }
+
+    if (user_status_ui.user_status_picker_open()) {
+        UserStatusSession.re_enable_click_events_for_other_elements();
+    }
+
     compose_icon_session = undefined;
     message_reaction_session = undefined;
-    if (user_status_ui.user_status_picker_open()) {
-        // Re-enable clicking events for other elements after closing
-        // the popover.  This is the inverse of the hack of in the
-        // handler that opens the "user status modal" emoji picker.
-        $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "all");
-    }
+    user_status_session = undefined;
+
     assert(emoji_popover_instance !== null); // the first conditional inside the function justifies this assert
     $(emoji_popover_instance.reference).removeClass("active-emoji-picker-reference");
     $(emoji_popover_instance.reference).parent().removeClass("active-emoji-picker-reference");
@@ -765,17 +830,9 @@ function toggle_emoji_popover(
 }
 
 function handle_status_emoji_clicked(emoji_name: string): void {
+    assert(user_status_session);
+    user_status_session.update_the_status_emoji_for_our_user(emoji_name);
     hide_emoji_popover();
-    let emoji_info = {
-        emoji_name,
-        emoji_alt_code: user_settings.emojiset === "text",
-    };
-    if (!emoji_info.emoji_alt_code) {
-        emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
-    }
-    user_status_ui.set_selected_emoji_info(emoji_info);
-    user_status_ui.update_button();
-    user_status_ui.toggle_clear_status_button();
 }
 
 function handle_composition_emoji_clicked(emoji_name: string): void {
@@ -878,15 +935,13 @@ function register_click_handlers(): void {
             const micromodal = $("#set-user-status-modal").closest(".modal__overlay")[0]!;
             toggle_emoji_popover(this, {placement: "bottom", appendTo: micromodal}, false);
             if (is_open()) {
-                // Because the emoji picker gets drawn on top of the user
-                // status modal, we need this hack to make clicking outside
-                // the emoji picker only close the emoji picker, and not the
-                // whole user status modal.
-                $(".app, .header, .modal__overlay, #set-user-status-modal").css(
-                    "pointer-events",
-                    "none",
-                );
+                UserStatusSession.disable_click_events_for_other_elements();
             }
+
+            // Create a UserStatusSession object.  Just its mere existence
+            // helps us know that we're actually gonna pick emojis related
+            // to user statuses (as opposed to reactions or something else).
+            user_status_session = new UserStatusSession();
         },
     );
 
