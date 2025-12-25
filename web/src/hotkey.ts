@@ -1403,10 +1403,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             } else {
                 emoji_picker_reference = util.the($row.find(".message-actions-menu-button"));
             }
-
-            emoji_picker.toggle_emoji_popover(emoji_picker_reference, msg.id, {
-                placement: "bottom",
-            });
+            emoji_picker.start_picker_for_message_reaction(emoji_picker_reference, msg.id);
             return true;
         }
         case "thumbs_up_emoji": {
