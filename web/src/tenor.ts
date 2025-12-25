@@ -18,7 +18,7 @@ let tenor_popover_instance: tippy.Instance | undefined;
 let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
-const network = new tenor_network.TenorNetwork();
+let network: tenor_network.TenorNetwork;
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -105,19 +105,14 @@ export function hide_tenor_popover(): boolean {
         tenor_popover_instance.destroy();
         tenor_popover_instance = undefined;
         current_search_term = undefined;
-        network.reset();
+        network.abandon();
         return true;
     }
     return false;
 }
 
 function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
-    // Tenor popover may have been hidden by the
-    // time this function is called.
-    if (tenor_popover_instance === undefined) {
-        return;
-    }
-
+    assert(tenor_popover_instance !== undefined);
     let gif_grid_html = "";
 
     if (!next_page) {
@@ -249,6 +244,10 @@ function register_click_handlers(): void {
         ".compose_control_button.compose-gif-icon-tenor",
         function (this: HTMLElement) {
             compose_icon_session = new ComposeIconSession(this);
+            if (network) {
+                network.abandon();
+            }
+            network = new tenor_network.TenorNetwork();
             toggle_tenor_popover(this);
         },
     );
