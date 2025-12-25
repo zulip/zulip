@@ -2853,6 +2853,62 @@ class EditMessageTest(ZulipTestCase):
             True,
         )
 
+    def test_automatic_unmute_policy_does_not_downgrade_followed_policy_on_move(self) -> None:
+        # Moving a message copies the sender's visibility policy for the
+        # original topic over to the target topic. The automatic
+        # unmute-on-initiation policy must not then downgrade an
+        # already-FOLLOWED policy to UNMUTED, since these automatic
+        # policies may only increase visibility.
+        self.login("iago")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        stream = self.make_stream("new_stream")
+        recipient = stream.recipient
+        original_topic = "original"
+        post_move = "post-move"
+
+        do_change_user_setting(
+            hamlet,
+            "automatically_unmute_topics_in_muted_streams_policy",
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+
+        for user in [iago, cordelia, hamlet]:
+            self.subscribe(user, stream.name)
+
+        for user in [cordelia, hamlet]:
+            subscription = Subscription.objects.get(recipient=recipient, user_profile=user)
+            subscription.is_muted = True
+            subscription.save()
+
+        # Two messages in the topic, so that moving Hamlet's message is
+        # a partial move.
+        self.send_stream_message(cordelia, stream.name, topic_name=original_topic)
+        message_id = self.send_stream_message(hamlet, stream.name, topic_name=original_topic)
+
+        # Hamlet follows the original topic, so the partial-move logic
+        # copies FOLLOWED over to the target topic.
+        do_set_user_topic_visibility_policy(
+            user_profile=hamlet,
+            stream=stream,
+            topic_name=original_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        result = self.client_patch(f"/json/messages/{message_id}", {"topic": post_move})
+        self.assert_json_success(result)
+
+        # FOLLOWED is preserved on the target topic, not overwritten with
+        # UNMUTED by the automatic unmute-on-initiation policy.
+        stream_topic_target = StreamTopicTarget(stream_id=stream.id, topic_name=post_move)
+        self.assertEqual(
+            stream_topic_target.user_id_to_visibility_policy_dict().get(hamlet.id),
+            UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
     def test_automatic_follow_policy_in_channel_with_protected_history(self) -> None:
         self.login("iago")
         iago = self.example_user("iago")
