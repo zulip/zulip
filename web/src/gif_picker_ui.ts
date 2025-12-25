@@ -8,6 +8,7 @@ import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
 import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
+import * as giphy_network from "./giphy_network.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as tenor_network from "./tenor_network.ts";
@@ -19,6 +20,7 @@ let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
 let network: GifNetwork;
+let provider: "tenor" | "giphy";
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -128,10 +130,10 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
     }
     const $popper = $(popover_instance.popper);
     if (next_page) {
-        $popper.find(".tenor-content").append($(gif_grid_html));
+        $popper.find(".gif-picker-content").append($(gif_grid_html));
     } else {
         $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
-        $popper.find(".tenor-content").html(gif_grid_html);
+        $popper.find(".gif-picker-content").html(gif_grid_html);
     }
 }
 
@@ -171,8 +173,14 @@ function toggle_picker_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(gif_picker_popover_content.get_gif_popover_content(false));
-                $(instance.popper).addClass("tenor-popover");
+                instance.setContent(
+                    gif_picker_popover_content.get_gif_popover_content(provider === "giphy"),
+                );
+                if (provider === "tenor") {
+                    $(instance.popper).addClass("tenor-popover");
+                } else {
+                    $(instance.popper).addClass("giphy-popover");
+                }
             },
             onShow(instance) {
                 popover_instance = instance;
@@ -242,10 +250,25 @@ function register_click_handlers(): void {
         ".compose_control_button.compose-gif-icon-tenor",
         function (this: HTMLElement) {
             compose_icon_session = new ComposeIconSession(this);
+            provider = "tenor";
             if (network) {
                 network.abandon();
             }
             network = new tenor_network.TenorNetwork();
+            toggle_picker_popover(this);
+        },
+    );
+
+    $("body").on(
+        "click",
+        ".compose_control_button.compose-gif-icon-giphy",
+        function (this: HTMLElement) {
+            compose_icon_session = new ComposeIconSession(this);
+            provider = "giphy";
+            if (network) {
+                network.abandon();
+            }
+            network = new giphy_network.GiphyNetwork();
             toggle_picker_popover(this);
         },
     );
