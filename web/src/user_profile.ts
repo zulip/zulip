@@ -840,11 +840,14 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
+    // Extract short_name from email (format: {short_name}-bot@domain)
+    const short_name = bot.email.split("@")[0]!.slice(0, -4);
     const html_body = render_edit_bot_form({
         user_id,
         is_active,
         is_bot_owner_current_user,
         email: bot.email,
+        short_name,
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
@@ -853,6 +856,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         api_key: bot_user.api_key,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
+        realm_bot_domain: realm.realm_bot_domain,
         zuliprc: "zuliprc",
     });
     $container.append($(html_body));
@@ -879,6 +883,10 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     original_values = get_current_values($("#bot-edit-form"));
     $("#bot-edit-form").on("input", "input, select, button", (e) => {
         e.preventDefault();
+        // Clear invalid state when user starts typing
+        if ($(e.target).hasClass("invalid")) {
+            $(e.target).removeClass("invalid");
+        }
         toggle_submit_button($("#bot-edit-form"));
     });
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
@@ -887,6 +895,17 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             10,
         );
         const $full_name = $("#bot-edit-form").find<HTMLInputElement>("input[name='full_name']");
+        const $short_name = $("#bot-edit-form").find<HTMLInputElement>(
+            "input[name='bot_short_name']",
+        );
+
+        const short_name_value = $short_name.val()!.trim();
+        if (!bot_helper.validate_bot_short_name(short_name_value)) {
+            $short_name.addClass("invalid");
+            $short_name.trigger("focus");
+            return;
+        }
+
         const url = "/json/bots/" + encodeURIComponent(bot.user_id);
 
         const formData = new FormData();
@@ -894,6 +913,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val()!);
         formData.append("role", JSON.stringify(role));
+        formData.append("short_name", short_name_value);
         const new_bot_owner_id = bot_owner_dropdown_widget!.value();
         if (new_bot_owner_id) {
             formData.append("bot_owner_id", new_bot_owner_id.toString());
@@ -1132,10 +1152,20 @@ function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
     const $submit_button = $("#user-profile-modal .dialog_submit_button");
     const full_name_value = $edit_form.find<HTMLInputElement>("input[name='full_name']").val()!;
+    const $short_name = $edit_form.find<HTMLInputElement>("input[name='bot_short_name']");
 
     if (full_name_value.trim() === "") {
         $submit_button.prop("disabled", true);
         return;
+    }
+
+    // Only check short_name for bot profiles
+    if ($short_name.length > 0) {
+        const short_name_value = $short_name.val()!.trim();
+        if (short_name_value === "") {
+            $submit_button.prop("disabled", true);
+            return;
+        }
     }
 
     if (_.isEqual(original_values, current_values)) {

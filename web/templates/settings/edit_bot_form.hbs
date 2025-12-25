@@ -7,8 +7,17 @@
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
-            <label for="email" class="modal-field-label">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+            <label for="edit_bot_short_name" class="modal-field-label">
+                {{t "Bot email (a-z, 0-9, and dashes only)" }}
+                {{> ../help_link_widget link="/help/bots-overview" }}
+            </label>
+            <input type="text" autocomplete="off" name="bot_short_name" id="edit_bot_short_name"
+              class="modal_text_input"
+              value="{{ short_name }}" placeholder="{{t 'cookie' }}" maxlength="100" />
+            -bot@{{ realm_bot_domain }}
+            <div class="settings-field-hint">
+                {{t "Integrations will need to be updated to use the new email address." }}
+            </div>
         </div>
         <div class="input-group user_id_container">
             <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
