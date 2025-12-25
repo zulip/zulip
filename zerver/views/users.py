@@ -1,5 +1,4 @@
 from collections.abc import Mapping
-from email.headerregistry import Address
 from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
@@ -86,12 +85,12 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
-    check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
     get_users_for_api,
     max_message_id_for_user,
+    validate_short_name_and_construct_bot_email,
     validate_user_custom_profile_data,
 )
 from zerver.lib.utils import generate_api_key
@@ -588,15 +587,10 @@ def add_bot_backend(
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
-    short_name = check_short_name(short_name_raw)
-    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
-        service_name = service_name or short_name
-    short_name += "-bot"
-    full_name = check_full_name(
-        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
-    )
     try:
-        email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
+        short_name, email = validate_short_name_and_construct_bot_email(
+            short_name_raw, user_profile.realm
+        )
     except InvalidFakeEmailDomainError:
         raise JsonableError(
             _(
@@ -604,8 +598,11 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    except ValueError:
-        raise JsonableError(_("Bad name or username"))
+    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
+        service_name = service_name or short_name
+    full_name = check_full_name(
+        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+    )
     form = CreateUserForm({"full_name": full_name, "email": email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
