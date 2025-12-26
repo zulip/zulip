@@ -141,12 +141,61 @@ class UserStatusSession {
         user_status_ui.update_button();
         user_status_ui.toggle_clear_status_button();
     }
-
 }
 
-let compose_icon_session: ComposeIconSession | undefined;
-let message_reaction_session: MessageReactionSession | undefined;
-let user_status_session: UserStatusSession | undefined;
+class SessionManager {
+    compose_icon_session: ComposeIconSession | undefined;
+    message_reaction_session: MessageReactionSession | undefined;
+    user_status_session: UserStatusSession | undefined;
+
+    start_picker_for_compose_icon(icon: HTMLElement): void {
+        this.compose_icon_session = new ComposeIconSession(icon);
+        toggle_emoji_popover(icon);
+    }
+
+    start_picker_for_message_reaction(reference: tippy.ReferenceElement, message_id: number): void {
+        this.message_reaction_session = new MessageReactionSession(message_id);
+        toggle_emoji_popover(reference, {placement: "bottom"});
+    }
+
+    start_picker_for_user_status(icon: HTMLElement): void {
+        const micromodal = $("#set-user-status-modal").closest(".modal__overlay")[0]!;
+        toggle_emoji_popover(icon, {placement: "bottom", appendTo: micromodal}, false);
+        if (is_open()) {
+            UserStatusSession.disable_click_events_for_other_elements();
+        }
+
+        // Create a UserStatusSession object.  Just its mere existence
+        // helps us know that we're actually gonna pick emojis related
+        // to user statuses (as opposed to reactions or something else).
+        this.user_status_session = new UserStatusSession();
+    }
+
+    process_selected_emoji(
+        emoji_name: string,
+        event: JQuery.ClickEvent | JQuery.KeyDownEvent,
+    ): void {
+        if (this.message_reaction_session) {
+            handle_reaction_emoji_clicked(emoji_name, event);
+        } else if (this.compose_icon_session) {
+            handle_composition_emoji_clicked(emoji_name);
+        } else {
+            handle_status_emoji_clicked(emoji_name);
+        }
+    }
+
+    reset(): void {
+        if (user_status_ui.user_status_picker_open()) {
+            UserStatusSession.re_enable_click_events_for_other_elements();
+        }
+
+        this.compose_icon_session = undefined;
+        this.message_reaction_session = undefined;
+        this.user_status_session = undefined;
+    }
+}
+
+const session_manager = new SessionManager();
 
 const EMOJI_CATEGORIES = [
     {
@@ -303,6 +352,7 @@ export function rebuild_catalog(): void {
 const generate_emoji_picker_content = function (include_frequently_used_category: boolean): string {
     let emojis_used: string[] = [];
 
+    const message_reaction_session = session_manager.message_reaction_session;
     if (message_reaction_session) {
         emojis_used = message_reaction_session.already_used_emojis();
     }
@@ -337,14 +387,7 @@ export function hide_emoji_popover(): void {
         return;
     }
 
-    if (user_status_ui.user_status_picker_open()) {
-        UserStatusSession.re_enable_click_events_for_other_elements();
-    }
-
-    compose_icon_session = undefined;
-    message_reaction_session = undefined;
-    user_status_session = undefined;
-
+    session_manager.reset();
     assert(emoji_popover_instance !== null); // the first conditional inside the function justifies this assert
     $(emoji_popover_instance.reference).removeClass("active-emoji-picker-reference");
     $(emoji_popover_instance.reference).parent().removeClass("active-emoji-picker-reference");
@@ -422,6 +465,8 @@ function handle_reaction_emoji_clicked(
     emoji_name: string,
     event: JQuery.ClickEvent | JQuery.KeyDownEvent,
 ): void {
+    const message_reaction_session = session_manager.message_reaction_session;
+
     assert(message_reaction_session !== undefined);
 
     // When the user clicks an emoji in the picker, it toggles
@@ -804,8 +849,7 @@ export function start_picker_for_message_reaction(
     reference: tippy.ReferenceElement,
     message_id: number,
 ): void {
-    message_reaction_session = new MessageReactionSession(message_id);
-    toggle_emoji_popover(reference, {placement: "bottom"});
+    session_manager.start_picker_for_message_reaction(reference, message_id);
 }
 
 function toggle_emoji_popover(
@@ -830,14 +874,16 @@ function toggle_emoji_popover(
 }
 
 function handle_status_emoji_clicked(emoji_name: string): void {
+    const user_status_session = session_manager.user_status_session;
     assert(user_status_session);
     user_status_session.update_the_status_emoji_for_our_user(emoji_name);
     hide_emoji_popover();
 }
 
 function handle_composition_emoji_clicked(emoji_name: string): void {
-    const emoji_text = ":" + emoji_name + ":";
+    const compose_icon_session = session_manager.compose_icon_session;
     assert(compose_icon_session !== undefined);
+    const emoji_text = ":" + emoji_name + ":";
     compose_icon_session.insert_inline_markdown_into_textarea(emoji_text);
     hide_emoji_popover();
 }
@@ -850,14 +896,7 @@ function handle_emoji_clicked(
     if (emoji_name === undefined) {
         return;
     }
-
-    if (message_reaction_session) {
-        handle_reaction_emoji_clicked(emoji_name, event);
-    } else if (compose_icon_session) {
-        handle_composition_emoji_clicked(emoji_name);
-    } else {
-        handle_status_emoji_clicked(emoji_name);
-    }
+    session_manager.process_selected_emoji(emoji_name, event);
 }
 
 function register_click_handlers(): void {
@@ -870,8 +909,7 @@ function register_click_handlers(): void {
     $("body").on("click", ".emoji_map", function (this: HTMLElement, e): void {
         e.preventDefault();
         e.stopPropagation();
-        compose_icon_session = new ComposeIconSession(this);
-        toggle_emoji_popover(this);
+        session_manager.start_picker_for_compose_icon(this);
     });
 
     $("#main_div").on(
@@ -932,16 +970,7 @@ function register_click_handlers(): void {
         function (this: HTMLElement, e): void {
             e.preventDefault();
             e.stopPropagation();
-            const micromodal = $("#set-user-status-modal").closest(".modal__overlay")[0]!;
-            toggle_emoji_popover(this, {placement: "bottom", appendTo: micromodal}, false);
-            if (is_open()) {
-                UserStatusSession.disable_click_events_for_other_elements();
-            }
-
-            // Create a UserStatusSession object.  Just its mere existence
-            // helps us know that we're actually gonna pick emojis related
-            // to user statuses (as opposed to reactions or something else).
-            user_status_session = new UserStatusSession();
+            session_manager.start_picker_for_user_status(this);
         },
     );
 
