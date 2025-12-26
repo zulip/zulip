@@ -794,11 +794,14 @@ export async function build_move_topic_to_stream_popover(
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
         assert(stream_widget_value !== undefined);
         const new_stream_name = sub_store.get(stream_widget_value)!.name;
+        const disable_topic_creation =
+            !stream_data.can_create_new_topics_in_stream(stream_widget_value);
         move_topic_to_stream_topic_typeahead?.unlisten();
         move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
             $topic_input,
             new_stream_name,
             false,
+            disable_topic_creation,
         );
     }
 
@@ -1078,10 +1081,13 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_modal .move_topic_warning_container").hide();
 
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        const disable_topic_creation =
+            !stream_data.can_create_new_topics_in_stream(current_stream_id);
         move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
             $topic_input,
             current_stream_name,
             false,
+            disable_topic_creation,
         );
 
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
@@ -1091,6 +1097,11 @@ export async function build_move_topic_to_stream_popover(
         }
 
         $topic_input.on("focus", () => {
+            const stream_id = stream_widget_value;
+            if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                move_topic_to_stream_topic_typeahead?.lookup(false);
+            }
+
             update_topic_input_placeholder();
 
             $topic_input.one("blur", () => {
