@@ -595,6 +595,7 @@ export type FormattedDraft =
           topic_display_name: string;
           is_empty_string_topic: boolean;
           raw_content: string;
+          content: string;
           stream_id: number | undefined;
           time_stamp: string;
           invite_only: boolean;
@@ -607,6 +608,7 @@ export type FormattedDraft =
           recipients: string;
           has_recipient_data: boolean;
           raw_content: string;
+          content: string;
           time_stamp: string;
       };
 

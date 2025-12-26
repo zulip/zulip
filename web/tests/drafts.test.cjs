@@ -661,6 +661,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     $.create(".drafts-list", {children: []});
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
+    $("#outbox_view_section .outbox-list").remove = noop;
     drafts_overlay_ui.launch();
 });
 
@@ -818,5 +819,6 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     $.create(".drafts-list", {children: []});
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
+    $("#outbox_view_section .outbox-list").remove = noop;
     drafts_overlay_ui.launch();
 });

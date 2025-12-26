@@ -54,3 +54,11 @@ export function get_waiting_for_ack_local_ids_by_topic(channel_id: number): Map<
     }
     return max_message_id_by_topic;
 }
+
+export function get_global_outbox_messages(): LocalMessage[] {
+    // Get messages from both "waiting" lists
+    const ack_messages = [...waiting_for_ack.values()];
+    const id_messages = [...waiting_for_id.values()];
+    const all_waiting = [...ack_messages, ...id_messages];
+    return all_waiting;
+}
