@@ -1607,7 +1607,7 @@ export function get_sorted_channel_ids_for_next_unread_navigation(): {
     // Get sorted section ids.
     const sections = stream_list_sort.get_current_sections().map((section) => ({
         id: section.id,
-        channels: section.streams,
+        channels: [...section.streams, ...section.muted_streams, ...section.inactive_streams],
         is_collapsed: collapsed_sections.has(section.id),
     }));
 
