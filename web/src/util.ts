@@ -109,7 +109,7 @@ export function normalize_recipients(recipients: string): string {
         .join(",");
 }
 
-// Avoid URI decode errors by removing characters from the end
+// Avoid URL decode errors by removing characters from the end
 // one by one until the decode succeeds.  This makes sense if
 // we are decoding input that the user is in the middle of
 // typing.
