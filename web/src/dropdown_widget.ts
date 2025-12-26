@@ -756,4 +756,16 @@ export class DropdownWidget {
             $(this.widget_value_selector).text(option.name);
         }
     }
+
+    reset_selected_option_to_custom_text(): void {
+        if (this.text_if_current_value_not_in_options) {
+            this.current_value = this.default_id;
+            $(this.widget_value_selector).html(
+                render_dropdown_current_value_not_in_options({
+                    name: this.text_if_current_value_not_in_options,
+                }),
+            );
+            return;
+        }
+    }
 }

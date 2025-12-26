@@ -13,7 +13,7 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as branch_pill from "./integration_branch_pill.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -55,19 +55,32 @@ export function show_generate_integration_url_modal(api_key: string): void {
         max_topic_length: realm.max_topic_length,
     });
 
+    const topics_named_after_slack_channels_option: Option = {
+        name: $t_html({defaultMessage: "Topics named after Slack channels"}),
+        unique_id: "map_topics_to_slack_channels",
+    };
+
+    const send_all_to_single_topic_option: Option = {
+        name: $t_html({defaultMessage: "Send all notifications to a single topic"}),
+        unique_id: "send_all_to_a_topic",
+    };
+
     function generate_integration_url_post_render(): void {
         let selected_integration: string | undefined;
         let stream_input_dropdown_widget: DropdownWidget;
         let integration_input_dropdown_widget: DropdownWidget;
+        let slack_topics_dropdown_widget: DropdownWidget;
         let previous_selected_integration: string | undefined;
         let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
 
+        const slack_topics_dropdown_widget_id = "slack-topics-dropdown";
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
         const $show_integration_events = $("#show-integration-events");
         const $config_container = $("#integration-url-config-options-container");
+        const $slack_topics_dropdown = $(`#${slack_topics_dropdown_widget_id}_widget`);
 
         $dialog_submit_button.prop("disabled", true);
         $("#integration-url-stream_widget").prop("disabled", true);
@@ -109,6 +122,38 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
             $("#integration-url-branches-text").trigger("focus");
             update_url();
+        }
+
+        function set_input_disabled_state($input: JQuery, disable: boolean): void {
+            $input
+                .prop("disabled", disable)
+                .closest(".input-group")
+                .toggleClass("control-label-disabled", disable);
+        }
+
+        function set_topic_config_field_state(
+            disable: boolean,
+            select_send_all_to_a_single_topic_option?: boolean,
+        ): void {
+            // The topic configuration uses different UI depending on the integration.
+            // The Slack integration uses a dropdown field while other integrations use
+            // a checkbox field.
+            set_input_disabled_state($override_topic, disable);
+            set_input_disabled_state($slack_topics_dropdown, disable);
+
+            if (select_send_all_to_a_single_topic_option === undefined) {
+                return;
+            }
+            slack_topics_dropdown_widget.render(
+                select_send_all_to_a_single_topic_option
+                    ? send_all_to_single_topic_option.unique_id
+                    : undefined,
+            );
+            $override_topic.prop("checked", select_send_all_to_a_single_topic_option);
+
+            if (!select_send_all_to_a_single_topic_option) {
+                slack_topics_dropdown_widget.reset_selected_option_to_custom_text();
+            }
         }
 
         function render_url_options(config: UrlOption[]): void {
@@ -225,9 +270,23 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const params = new URLSearchParams({api_key});
+            const selected_slack_topic_option = slack_topics_dropdown_widget.value();
             if (stream_id !== -1) {
                 params.set("stream", stream_id!.toString());
-                if ($override_topic.prop("checked") && topic_name !== "") {
+
+                // Only used by the Slack integration, it replaces the $override_topic field.
+                const send_notification_to_a_single_topic: boolean =
+                    Boolean($override_topic.prop("checked")) ||
+                    selected_slack_topic_option === send_all_to_single_topic_option.unique_id;
+
+                if (
+                    selected_slack_topic_option ===
+                    topics_named_after_slack_channels_option.unique_id
+                ) {
+                    // This setting is from the Slack webhook integration.
+                    params.set("channels_map_to_topics", "1");
+                } else if (send_notification_to_a_single_topic && topic_name !== "") {
+                    params.delete("channels_map_to_topics");
                     params.set("topic", topic_name);
                 }
             }
@@ -322,7 +381,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 (bot) => bot.name === selected_integration,
             );
             const url_options = selected_integration_data?.url_options;
-
+            if (selected_integration === "slack") {
+                $override_topic.closest(".input-group").hide();
+                slack_topics_dropdown_widget.setup();
+                set_topic_config_field_state(true, false);
+                $slack_topics_dropdown.closest(".input-group").show();
+            }
             if (url_options) {
                 render_url_options(url_options);
             }
@@ -341,6 +405,38 @@ export function show_generate_integration_url_modal(api_key: string): void {
             unique_id_type: "number",
         });
         stream_input_dropdown_widget.setup();
+
+        $slack_topics_dropdown.closest(".input-group").hide();
+        slack_topics_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: slack_topics_dropdown_widget_id,
+            get_options() {
+                return [topics_named_after_slack_channels_option, send_all_to_single_topic_option];
+            },
+            item_click_callback: slack_topics_click_callback,
+            $events_container: $("#generate-integration-url-modal"),
+            text_if_current_value_not_in_options: $t({
+                defaultMessage: "Select notification topics",
+            }),
+            unique_id_type: "string",
+            default_id: "",
+        });
+
+        function slack_topics_click_callback(
+            event: JQuery.ClickEvent,
+            dropdown: tippy.Instance,
+            widget: DropdownWidget,
+        ): void {
+            slack_topics_dropdown_widget.render();
+            $slack_topics_dropdown.trigger("input");
+            $override_topic.prop(
+                "checked",
+                widget.value() === send_all_to_single_topic_option.unique_id,
+            );
+            $override_topic.trigger("change");
+            dropdown.hide();
+            event.preventDefault();
+            event.stopPropagation();
+        }
 
         function get_additional_stream_dropdown_options(): Option[] {
             const additional_options: Option[] = [];
@@ -393,17 +489,14 @@ export function show_generate_integration_url_modal(api_key: string): void {
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
             if (user_selected_option === direct_messages_option.unique_id) {
-                $override_topic.prop("checked", false).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                set_topic_config_field_state(true, false);
                 $topic_input.val("");
             } else if (user_selected_option === map_channels_option.unique_id) {
-                $override_topic.prop("checked", true).prop("disabled", true);
-                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                set_topic_config_field_state(true, true);
                 $topic_input.val("");
                 $topic_input.parent().removeClass("hide");
             } else {
-                $override_topic.prop("disabled", false);
-                $override_topic.closest(".input-group").removeClass("control-label-disabled");
+                set_topic_config_field_state(false, undefined);
             }
             $override_topic.trigger("change");
             event.preventDefault();
@@ -437,8 +530,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $("#integrations-event-container .integration-event").prop("checked", false);
             $show_integration_events.prop("checked", false);
 
-            $override_topic.prop("checked", false).prop("disabled", true);
-            $override_topic.closest(".input-group").addClass("control-label-disabled");
+            $slack_topics_dropdown.closest(".input-group").hide();
+            $override_topic.closest(".input-group").show();
+            $("#integration-url-override-topic").show();
+            set_topic_config_field_state(true);
             $topic_input.val("");
             $topic_input.parent().addClass("hide");
 
