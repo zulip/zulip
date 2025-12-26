@@ -1,12 +1,14 @@
-Generally, we prefer to use SVG assets when possible.
+// TODO: Rewrite them taking into account channel folders.
 
-However, many websites where you might want to use a Zulip logo do not
-support SVG files. If you need a Zulip logo asset in a different
-format (e.g., a 512px height PNG), you can generate that from one of
-the `.svg` files in this directory.
+// Example of how to rewrite a test:
+// Before:
+// it('should generate topic names correctly', () => {
+//   const result = topic_generator.generateTopicName('channel1', 'topic1');
+//   expect(result).toBe('channel1/topic1');
+// });
 
-On Linux, you can generate a PNG of a given height using the following:
-
-```
-rsvg-convert -h 512 static/images/logo/zulip-org-logo.svg -o /tmp/zulip-org-logo-512.png
-```
+// After:
+// it('should handle channel folders correctly', () => {
+//   const result = topic_generator.generateTopicName('channel1/folder1', 'topic1');
+//   expect(result).toBe('channel1/folder1/topic1');
+// });
