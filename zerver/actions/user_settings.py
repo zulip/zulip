@@ -10,7 +10,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED, STATUS_USED
 from zerver.actions.presence import do_update_user_presence
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, generate_and_upload_jdenticon_avatar
 from zerver.lib.cache import (
     cache_delete,
     delete_user_profile_caches,
@@ -415,10 +415,18 @@ def do_change_avatar_fields(
 
 def do_scrub_avatar_image(user: UserProfile, *, acting_user: UserProfile | None) -> None:
     old_version = user.avatar_version
+    # Note: No need to generate and upload avatar when default_avatar_source is jdenticon.
     do_change_avatar_fields(
-        user, UserProfile.AVATAR_FROM_GRAVATAR, skip_notify=True, acting_user=acting_user
+        user, user.realm.default_avatar_source, skip_notify=True, acting_user=acting_user
     )
     delete_avatar_image(user, old_version)
+
+
+def set_avatar_to_default(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
+    default_avatar_source = user_profile.realm.default_avatar_source
+    if default_avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        generate_and_upload_jdenticon_avatar(user_profile, future=True)
+    do_change_avatar_fields(user_profile, default_avatar_source, acting_user=acting_user)
 
 
 def update_scheduled_email_notifications_time(

@@ -2351,7 +2351,7 @@ def export_avatars_from_local(
         ]
 
     for user in users:
-        if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+        if user.avatar_source != UserProfile.AVATAR_FROM_USER:
             continue
 
         avatar_path = user_avatar_base_path_from_ids(user.id, user.avatar_version, realm.id)

@@ -527,7 +527,7 @@ class S3Test(ZulipTestCase):
 
         do_scrub_avatar_image(user, acting_user=user)
 
-        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
 
         # Confirm that the avatar files no longer exist in S3.
         with self.assertRaises(botocore.exceptions.ClientError):

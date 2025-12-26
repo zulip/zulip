@@ -962,6 +962,8 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         with self.verify_action(client_gravatar=True) as events:
             self.send_stream_message(
@@ -1309,7 +1311,7 @@ class NormalActionsTest(BaseAction):
         message_obj = events[0]["message"]
         self.assertEqual(message_obj["sender_full_name"], iago.full_name)
         self.assertEqual(message_obj["sender_email"], iago.delivery_email)
-        self.assertIsNone(message_obj["avatar_url"])
+        self.assertIsNotNone(message_obj["avatar_url"])
 
     def test_add_reaction(self) -> None:
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
@@ -2643,6 +2645,10 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
+        do_change_avatar_fields(
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.
@@ -2664,6 +2670,10 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
+        do_change_avatar_fields(
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.
@@ -4408,6 +4418,7 @@ class RealmPropertyActionTest(BaseAction):
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
+            default_avatar_source=["G", "J"],
         )
 
         vals = test_values.get(name)
