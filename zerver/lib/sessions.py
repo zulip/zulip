@@ -67,11 +67,17 @@ def delete_all_user_sessions() -> None:
 
 
 def delete_all_deactivated_user_sessions() -> None:
+    user_cache: dict[int, UserProfile] = {}
+
     for session in Session.objects.all().iterator():
         user_profile_id = get_session_user_id(session)
         if user_profile_id is None:  # nocoverage  # TODO: Investigate why we lost coverage on this
             continue
-        user_profile = get_user_profile_narrow_by_id(user_profile_id)
+
+        if user_profile_id not in user_cache:
+            user_cache[user_profile_id] = get_user_profile_narrow_by_id(user_profile_id)
+
+        user_profile = user_cache[user_profile_id]
         if not user_profile.is_active or user_profile.realm.deactivated:
             logging.info("Deactivating session for deactivated user %s", user_profile.id)
             delete_session(session)
