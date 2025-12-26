@@ -629,6 +629,7 @@ export const split_state_data_schema = z.object({
         subscriptions: z.array(api_stream_subscription_schema),
         unsubscribed: z.array(api_stream_subscription_schema),
         never_subscribed: z.array(never_subscribed_stream_schema),
+        users_with_complete_subscription_data: z.array(z.number()),
         realm_default_streams: z.array(z.number()),
     }),
     user_groups: z.object({realm_user_groups: z.array(raw_user_group_schema)}),

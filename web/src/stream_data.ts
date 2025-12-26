@@ -403,7 +403,7 @@ export function get_fetched_streams_for_user(user_id: number): {
     subscribed: StreamSubscription[];
     can_subscribe: StreamSubscription[];
 } {
-    assert(peer_data.subscriber_data_loaded_for_user(user_id));
+    assert(peer_data.subscription_data_loaded_for_user(user_id));
     // Note that we only have access to subscribers of some streams
     // depending on our role.
     const all_subs = get_unsorted_subs();
@@ -1236,6 +1236,7 @@ export function initialize(params: StateData["stream_data"]): void {
     const subscriptions = params.subscriptions;
     const unsubscribed = params.unsubscribed;
     const never_subscribed = params.never_subscribed;
+    const users_with_complete_subscription_data = params.users_with_complete_subscription_data;
     const realm_default_streams = params.realm_default_streams;
 
     /*
@@ -1263,6 +1264,7 @@ export function initialize(params: StateData["stream_data"]): void {
     populate_subscriptions(subscriptions, true, true);
     populate_subscriptions(unsubscribed, false, true);
     populate_subscriptions(never_subscribed, false, false);
+    peer_data.mark_users_with_subscription_data_loaded(users_with_complete_subscription_data);
 }
 
 export function remove_default_stream(stream_id: number): void {

@@ -356,6 +356,7 @@ class SubscriptionInfo:
     subscriptions: list[SubscriptionStreamDict]
     unsubscribed: list[SubscriptionStreamDict]
     never_subscribed: list[NeverSubscribedStreamDict]
+    users_with_complete_subscription_data: list[int]
 
 
 class RealmPlaygroundDict(TypedDict):

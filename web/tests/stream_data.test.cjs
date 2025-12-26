@@ -1366,6 +1366,8 @@ test("initialize", ({override}) => {
                 },
             ],
 
+            users_with_complete_subscription_data: [],
+
             realm_default_streams: [],
         };
     }

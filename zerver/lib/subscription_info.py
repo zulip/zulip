@@ -179,6 +179,7 @@ def get_web_public_subs(
         subscriptions=subscribed,
         unsubscribed=[],
         never_subscribed=[],
+        users_with_complete_subscription_data=[],
     )
 
 
@@ -1004,6 +1005,8 @@ def gather_subscriptions_helper(
         subscriptions=subscribed,
         unsubscribed=unsubscribed,
         never_subscribed=never_subscribed,
+        # TODO(evy): populate this
+        users_with_complete_subscription_data=[],
     )
 
 
