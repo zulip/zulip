@@ -105,6 +105,10 @@ run_test("get_built_in_views", () => {
     assert.ok(mentions_view);
     assert.equal(mentions_view.is_pinned, false);
 
+    const alert_words_view = built_in_views.find((view) => view.fragment === "narrow/is/alerted");
+    assert.ok(alert_words_view);
+    assert.equal(alert_words_view.is_pinned, built_in_views_meta_data.alert_words.is_pinned);
+
     const inbox_view = built_in_views.find((view) => view.fragment === "inbox");
     assert.ok(inbox_view);
     assert.equal(inbox_view.is_pinned, built_in_views_meta_data.inbox.is_pinned);
