@@ -242,9 +242,6 @@ def convert_stream_subscription_data(
             users = stream_members_map[stream["id"]]
         else:
             users = set()
-            # Set the stream without any subscribers
-            # as deactivated.
-            stream["deactivated"] = True
         subscriber_handler.set_info(users=users, stream_id=stream["id"])
 
 
