@@ -1021,6 +1021,35 @@
       "expected_output": "<p><em><a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">Static types in Python</a></em></p>"
     },
     {
+      "name": "bold_text_inside_a_link",
+      "input": "[**Static types in Python**](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)",
+      "expected_output": "<p><a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\"><strong>Static types in Python</strong></a></p>",
+      "text_content": "Static types in Python"
+    },
+    {
+      "name": "italic_text_inside_a_link",
+      "input": "[*Static types in Python*](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)",
+      "expected_output": "<p><a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\"><em>Static types in Python</em></a></p>",
+      "text_content": "Static types in Python"
+    },
+    {
+      "name": "bold_and_italic_text_inside_a_link",
+      "input": "[***Static types in Python***](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)",
+      "expected_output": "<p><a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\"><strong><em>Static types in Python</em></strong></a></p>",
+      "text_content": "Static types in Python"
+    },
+    {
+      "name": "link_containing_a_linkifier_pattern_should_not_nest",
+      "input": "[A link about #999](https://example.com)",
+      "expected_output": "<p><a href=\"https://example.com\">A link about #999</a></p>",
+      "marked_expected_output": "<p>[A link about <a href=\"https://trac.example.com/ticket/999\" title=\"https://trac.example.com/ticket/999\">#999</a>](<a href=\"https://example.com\">https://example.com</a>)</p>"
+    },
+    {
+      "name": "link_containing_an_autolink_pattern_should_not_nest",
+      "input": "[A link about google.com](https://example.com)",
+      "expected_output": "<p><a href=\"https://example.com\">A link about google.com</a></p>"
+    },
+    {
       "name": "edge_case_embedded_link_inside_Bold",
       "input": "<h1>**<h1>[<h2>Static types in Python</h2>](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)</h1>**</h1>",
       "expected_output": "<p>&lt;h1&gt;<strong>&lt;h1&gt;<a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">&lt;h2&gt;Static types in Python&lt;/h2&gt;</a>&lt;/h1&gt;</strong>&lt;/h1&gt;</p>",
