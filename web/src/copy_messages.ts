@@ -4,8 +4,10 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
+import {the} from "./util.ts";
 
 function find_boundary_tr(
     $initial_tr: JQuery,
@@ -44,13 +46,94 @@ function find_boundary_tr(
 }
 
 function construct_recipient_header($message_row: JQuery): JQuery {
+    const date_text = $message_row.parent(".recipient_row").find(".recipient_row_date").text();
     const message_header_content = rows
         .get_message_recipient_header($message_row)
         .text()
         .replaceAll(/\s+/g, " ")
         .replace(/^\s/, "")
         .replace(/\s$/, "");
-    return $("<p>").append($("<strong>").text(message_header_content));
+    const $p = $("<p>");
+    const message_header_recipient_text = message_header_content.slice(
+        0,
+        Math.max(0, message_header_content.length - date_text.length),
+    );
+    $p.attr("data-message-header-paragraph", "true");
+    $p.append($("<strong>").text(message_header_recipient_text)).append(
+        $("<span>").text("| " + date_text),
+    );
+
+    return $p;
+}
+
+// Returns the the inner HTML of the `.message_content` element
+// at index `idx` from the currently selected `.message_content`s
+// in the present single-range selection.
+function get_selected_message_content_html_at(idx: number): string {
+    assert(window.getSelection()?.rangeCount === 1);
+    const selected_message_content_elements = document
+        .getSelection()
+        ?.getRangeAt(0)
+        .cloneContents()
+        .querySelectorAll(".message_content");
+    assert(selected_message_content_elements !== undefined);
+    if (idx === -1) {
+        idx = selected_message_content_elements.length - 1;
+    }
+    const target_message_content_element = selected_message_content_elements[idx];
+    assert(target_message_content_element !== undefined);
+
+    // Special case for /me messages.
+    // We wrap the /me message content in a `div` to ensure newlines are
+    // inserted before and after the message content, which is important
+    // when copy pasting multiple messages.
+    if (target_message_content_element.classList.contains("status-message")) {
+        return `<div>` + target_message_content_element.outerHTML + `</div>`;
+    }
+    return target_message_content_element.innerHTML;
+}
+
+function maybe_expand_selection_for_first_and_last_messages(
+    copy_rows: JQuery[],
+    range_count: number,
+): void {
+    // This is only meant for a multi-message selection involving
+    // multiple ranges.
+    assert(range_count > 1 && copy_rows.length > 1);
+
+    if (navigator.userAgent.includes("Chrome")) {
+        blueslip.error("Multiple ranges detected in Chrome for a multi-message selection.");
+    }
+
+    // We only want to expand the selection ranges if start/end range lies within a message.
+    // Not having these checks could alter the range in weird ways, like a message header
+    // selection getting removed to select the first message that follows that header.
+    const is_start_within_message_row =
+        get_nearest_html_element(window.getSelection()!.getRangeAt(0).startContainer)!.closest(
+            ".message_row",
+        ) !== null;
+
+    const is_end_within_message_row =
+        get_nearest_html_element(
+            window.getSelection()!.getRangeAt(range_count - 1).endContainer,
+        )!.closest(".message_row") !== null;
+
+    if (is_start_within_message_row) {
+        const $start = copy_rows[0];
+        assert($start?.[0] !== undefined);
+        const start_node = the($start.find(".message_content"));
+        window.getSelection()?.getRangeAt(0).setStartBefore(start_node);
+    }
+
+    if (is_end_within_message_row) {
+        const $end = copy_rows.at(-1);
+        assert($end?.[0] !== undefined);
+        const end_node = the($end.find(".message_content"));
+        window
+            .getSelection()
+            ?.getRangeAt(range_count - 1)
+            .setEndAfter(end_node);
+    }
 }
 /*
 The techniques we use in this code date back to
@@ -71,7 +154,24 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     if (message_lists.current === undefined) {
         return;
     }
+    let $first_message_element;
+    let $last_message_element;
     const copy_rows = rows.visible_range(start_id, end_id);
+    const range_count = window.getSelection()?.rangeCount;
+    if (range_count && range_count > 1) {
+        // Expand selection to select content from all the messages
+        // belonging to the multi-message selection.
+        // We do this only for Firefox where multi-message selections are
+        // broken down into multiple-ranges.
+        maybe_expand_selection_for_first_and_last_messages(copy_rows, range_count);
+    } else {
+        // Instead of copying the entire content of the first and last message,
+        // we only use the content that is part of the selection.
+        // This is only done on Chrome for now, because of the behavior of having
+        // a single range for a multi-message selection.
+        $first_message_element = $(get_selected_message_content_html_at(0));
+        $last_message_element = $(get_selected_message_content_html_at(-1));
+    }
 
     const $start_row = copy_rows[0];
     assert($start_row !== undefined);
@@ -80,7 +180,9 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     let should_include_start_recipient_header = false;
     let last_recipient_row_id = start_recipient_row_id;
 
-    for (const $row of copy_rows) {
+    for (let i = 0; i < copy_rows.length; i += 1) {
+        const $row = copy_rows[i];
+        assert($row !== undefined && $row[0] instanceof HTMLElement);
         const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row($row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
@@ -93,12 +195,27 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         }
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
-        const $content = $(message.content);
-        $content.first().prepend(
-            $("<span>")
-                .text(message.sender_full_name + ": ")
-                .contents(),
-        );
+        let $content;
+
+        if (i === 0 && $first_message_element) {
+            $content = $first_message_element;
+        } else if (i === copy_rows.length - 1 && $last_message_element) {
+            $content = $last_message_element;
+        } else {
+            $content = $(message.content);
+        }
+
+        // The message header or the previous message before this is
+        // expected to insert a newline before the sender name.
+        $div.append($("<b>").text(message.sender_full_name + ": "));
+
+        // Move the children into a div, to only insert a single newline
+        // after the sender name, with our custom `no extra newline` turndown
+        // rule.
+        if ($content && $content.length > 0 && $content.is("p")) {
+            $content = $("<div>").append($content.contents());
+        }
+
         $div.append($content);
     }
 
