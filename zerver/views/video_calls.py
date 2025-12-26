@@ -461,3 +461,51 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint
+def create_nextcloud_talk_url(
+    request: HttpRequest, user: UserProfile, *, meeting_name: str
+) -> HttpResponse:
+    if (
+        settings.NEXTCLOUD_SERVER is None
+        or settings.NEXTCLOUD_TALK_USERNAME is None
+        or settings.NEXTCLOUD_TALK_PASSWORD is None
+    ):
+        raise JsonableError(_("Nextcloud Talk is not configured."))
+
+    # https://nextcloud-talk.readthedocs.io/en/stable/conversation/#creating-a-new-conversation
+    api_url = urljoin(settings.NEXTCLOUD_SERVER, "/ocs/v2.php/apps/spreed/api/v4/room")
+
+    payload = {
+        # Create a PUBLIC conversation (roomType=3) which allows guest access
+        # https://nextcloud-talk.readthedocs.io/en/latest/constants/#conversation-types
+        "roomType": 3,
+        "roomName": meeting_name,
+    }
+    username = str(settings.NEXTCLOUD_TALK_USERNAME)
+    password = str(settings.NEXTCLOUD_TALK_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "OCS-APIRequest": "true",
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    try:
+        response = VideoCallSession().post(api_url, json=payload, headers=headers, timeout=10)
+
+        response.raise_for_status()
+    except requests.RequestException:
+        raise JsonableError(_("Error connecting to the Nextcloud Talk server."))
+
+    try:
+        data = response.json()
+        token = data["ocs"]["data"]["token"]
+    except (KeyError, ValueError):
+        raise JsonableError(_("Failed to create Nextcloud Talk conversation"))
+
+    call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
+    return json_success(request, data={"url": call_url})

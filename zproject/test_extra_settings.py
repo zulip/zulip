@@ -202,6 +202,10 @@ VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+NEXTCLOUD_SERVER = "https://nextcloud.example.com"
+NEXTCLOUD_TALK_USERNAME = "username"
+NEXTCLOUD_TALK_PASSWORD = "password"
+
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
