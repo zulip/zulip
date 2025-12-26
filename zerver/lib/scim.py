@@ -340,7 +340,7 @@ class ZulipSCIMUser(SCIMUser):
             do_change_user_delivery_email(self.obj, email_new_value, acting_user=None)
 
         if role_new_value is not None:
-            do_change_user_role(self.obj, role_new_value, acting_user=None)
+            do_change_user_role(self.obj, role_new_value, acting_user=None, notify=True)
 
         if is_active_new_value is not None and is_active_new_value:
             do_reactivate_user(self.obj, acting_user=None)

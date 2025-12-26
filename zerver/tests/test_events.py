@@ -40,7 +40,6 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_remove_realm_custom_profile_field,
-    do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )
@@ -1778,7 +1777,7 @@ class NormalActionsTest(BaseAction):
             "value": "New value",
         }
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
+            self.set_user_custom_profile_data(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(
             events[0]["person"]["custom_profile_field"].keys(), {"id", "value", "rendered_value"}
@@ -1793,7 +1792,7 @@ class NormalActionsTest(BaseAction):
             "value": [self.example_user("ZOE").id],
         }
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [field])
+            self.set_user_custom_profile_data(self.user_profile, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
@@ -1803,14 +1802,14 @@ class NormalActionsTest(BaseAction):
             "value": [self.example_user("othello").id],
         }
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(self.user_profile, [updated_field])
+            self.set_user_custom_profile_data(self.user_profile, [updated_field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
         # Test event for removing custom profile data
         with self.verify_action() as events:
             check_remove_custom_profile_field_value(
-                self.user_profile, field_id, acting_user=self.user_profile
+                self.user_profile, field_id, acting_user=self.user_profile, notify=False
             )
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
@@ -1824,11 +1823,11 @@ class NormalActionsTest(BaseAction):
         }
         cordelia = self.example_user("cordelia")
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_update_user_custom_profile_data_if_changed(cordelia, [field])
+            self.set_user_custom_profile_data(cordelia, [field])
 
         hamlet = self.example_user("hamlet")
         with self.verify_action() as events:
-            do_update_user_custom_profile_data_if_changed(hamlet, [field])
+            self.set_user_custom_profile_data(hamlet, [field])
         check_realm_user_update("events[0]", events[0], "custom_profile_field")
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
@@ -2605,7 +2604,7 @@ class NormalActionsTest(BaseAction):
     def test_change_full_name(self) -> None:
         now = timezone_now()
         with self.verify_action() as events:
-            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
+            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile, notify=False)
         check_realm_user_update("events[0]", events[0], "full_name")
         self.assertEqual(
             RealmAuditLog.objects.filter(
@@ -2619,7 +2618,7 @@ class NormalActionsTest(BaseAction):
 
         # Verify no operation if the value isn't changing.
         with self.verify_action(num_events=0, state_change_expected=False):
-            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile)
+            do_change_full_name(self.user_profile, "Sir Hamlet", self.user_profile, notify=False)
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 realm=self.user_profile.realm,
@@ -2634,7 +2633,7 @@ class NormalActionsTest(BaseAction):
         cordelia = self.example_user("cordelia")
         self.user_profile = self.example_user("polonius")
         with self.verify_action(num_events=0, state_change_expected=False):
-            do_change_full_name(cordelia, "Cordelia", self.user_profile)
+            do_change_full_name(cordelia, "Cordelia", self.user_profile, notify=False)
 
     def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
         do_change_user_setting(
@@ -3456,7 +3455,7 @@ class NormalActionsTest(BaseAction):
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action(num_events=2) as events:
-            do_change_full_name(bot, "New Bot Name", self.user_profile)
+            do_change_full_name(bot, "New Bot Name", self.user_profile, notify=False)
         check_realm_bot_update("events[1]", events[1], "full_name")
 
     def test_regenerate_bot_api_key(self) -> None:

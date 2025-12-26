@@ -22,10 +22,7 @@ from analytics.models import UserCount
 from version import ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_user import do_create_user
-from zerver.actions.custom_profile_fields import (
-    do_update_user_custom_profile_data_if_changed,
-    try_add_realm_custom_profile_field,
-)
+from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.navigation_views import do_add_navigation_view
 from zerver.actions.presence import do_update_user_presence
@@ -3300,9 +3297,7 @@ class SingleUserExportTest(ExportFile):
         )
 
         def set_favorite_city(user: UserProfile, city: str) -> None:
-            do_update_user_custom_profile_data_if_changed(
-                user, [dict(id=favorite_city.id, value=city)]
-            )
+            self.set_user_custom_profile_data(user, [dict(id=favorite_city.id, value=city)])
 
         set_favorite_city(cordelia, "Seattle")
         set_favorite_city(othello, "Moscow")

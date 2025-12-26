@@ -310,7 +310,7 @@ def remove_user_custom_profile_data(
     with transaction.atomic(durable=True):
         for field_id in data:
             check_remove_custom_profile_field_value(
-                user_profile, field_id, acting_user=user_profile
+                user_profile, field_id, acting_user=user_profile, notify=False
             )
     return json_success(request)
 
@@ -325,6 +325,6 @@ def update_user_custom_profile_data(
 ) -> HttpResponse:
     validate_user_custom_profile_data(user_profile.realm.id, data, acting_user=user_profile)
     with transaction.atomic(durable=True):
-        do_update_user_custom_profile_data_if_changed(user_profile, data)
+        do_update_user_custom_profile_data_if_changed(user_profile, data, user_profile, notify=True)
     # We need to call this explicitly otherwise constraints are not check
     return json_success(request)

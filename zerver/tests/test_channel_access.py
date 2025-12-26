@@ -495,7 +495,9 @@ class AccessStreamTest(ZulipTestCase):
         )
 
         # Bot with admin privileges should also be part of the result.
-        do_change_user_role(test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona)
+        do_change_user_role(
+            test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona, notify=False
+        )
         expected_private_user_ids.add(test_bot.id)
         self.assertCountEqual(
             can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
