@@ -58,6 +58,30 @@ function get_conversation(instance: tippy.Instance): {
 }
 
 export function initialize(): void {
+    $("body").on("click", ".recipient-bar-copy-link-to-topic", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        assert(e.currentTarget instanceof HTMLElement);
+        const $copy_button = $(e.currentTarget);
+        const topic_a_tag = util.the(
+            $copy_button.closest(".message-header-contents").find("a.narrows_by_topic"),
+        );
+        assert(topic_a_tag instanceof HTMLAnchorElement);
+        const topic_url = topic_a_tag.href;
+        void clipboard_handler.copy_link_to_clipboard(topic_url).then(() => {
+            // After copying successfully, change the tooltip text to "Copied!".
+            const tippy_reference: tippy.ReferenceElement | undefined = $copy_button.get(0);
+            const tippy_instance: tippy.Instance | undefined = tippy_reference!._tippy;
+            if (tippy_instance) {
+                tippy_instance.setContent($t_html({defaultMessage: "Copied!"}));
+                tippy_instance.show();
+                setTimeout(() => {
+                    tippy_instance.hide();
+                }, 1000);
+            }
+        });
+    });
+
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
         {

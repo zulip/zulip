@@ -64,6 +64,8 @@
                 {{/if}}
             {{/if}}
 
+            {{> components/icon_button icon="link-alt" intent="neutral" custom_classes="recipient-bar-control recipient-bar-control-icon recipient-bar-copy-link-to-topic" data-tippy-content=(t "Copy link to topic") aria-label=(t "Copy link to topic") }}
+
             {{! visibility policy menu }}
             {{#if (and is_subscribed (not is_archived))}}
             {{!-- We define the change_visibility_policy class in a wrapper span
