@@ -225,6 +225,9 @@ test_ui("send_message_success", ({override, override_rewire}) => {
         assert.equal(data.automatic_new_visibility_policy, 2);
     });
 
+    const $compose_reply_container = $("#compose-reply-container");
+    $compose_reply_container.set_find_results(".reply", {remove: noop});
+
     let request = {
         locally_echoed: false,
         local_id: "1001",
@@ -323,6 +326,9 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 return messages_data.raw_messages;
             });
         });
+
+        const $compose_reply_container = $("#compose-reply-container");
+        $compose_reply_container.set_find_results(".reply", {remove: noop});
 
         override(transmit, "send_message", (payload, success) => {
             const single_msg = {
@@ -652,6 +658,11 @@ test_ui("update_fade", ({override, override_rewire}) => {
     override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override_rewire(drafts, "update_compose_draft_count", noop);
     override(compose_pm_pill, "get_user_ids", () => []);
+
+    const $stub_textarea = $("textarea#compose-textarea");
+    const $stub_reply = $("#message-content-container");
+    $stub_textarea.closest = () => $stub_reply;
+    $stub_reply.set_find_results(".reply", false);
 
     compose_state.set_message_type(undefined);
     compose_recipient.update_on_recipient_change();

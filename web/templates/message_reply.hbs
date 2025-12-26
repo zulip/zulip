@@ -1,0 +1,16 @@
+<span class="reply">
+    <i class="zulip-icon zulip-icon-reply reply-icon" aria-hidden="true"></i>
+    <a href="{{topic_url}}" class="referenced-message-topic-link {{#unless show_topic_url}}hidden{{/unless}}">{{topic_url_text}}</a>
+    <span class="user-mention {{#if silent_mention}}silent{{/if}}" data-user-id="{{user_id}}">
+        {{~username~}}
+    </span>
+    <a class="referenced-message-link" href="{{link_to_message}}">{{~content~}}</a>
+    {{#if include_reply_action_buttons}}
+    {{#if silent_mention}}
+    {{> components/icon_button custom_classes="mention-button reply-action-button" intent="neutral" icon="at-sign"}}
+    {{else}}
+    {{> components/icon_button custom_classes="mention-button reply-action-button" intent="neutral" icon="at-sign-crossed"}}
+    {{/if}}
+    {{> components/icon_button custom_classes="remove-reply-button reply-action-button" intent="neutral" icon="close-small"}}
+    {{/if}}
+</span>

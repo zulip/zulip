@@ -17,7 +17,9 @@ import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
@@ -163,6 +165,11 @@ export function update_on_recipient_change(): void {
     // Clear the topic moved banner when the recipient
     // is changed or compose box is closed.
     compose_validate.clear_topic_moved_info();
+
+    // If the referenced message in reply is in different topic
+    // than the one user is composing to, show the topic link
+    // in the reply, otherwise hide it.
+    show_or_hide_topic_link_in_reply();
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -257,6 +264,47 @@ export function possibly_update_stream_name_in_compose(stream_id: number): void 
     if (compose_state.selected_recipient_id === stream_id) {
         on_compose_select_recipient_update();
     }
+}
+
+function show_or_hide_topic_link_in_reply(): void {
+    const $message_container = $("textarea#compose-textarea").closest("#message-content-container");
+    const $reply = $message_container.find(".reply");
+    if ($reply.length === 0) {
+        return;
+    }
+    const referenced_message_url = $reply.find(".referenced-message-link").attr("href");
+    if (referenced_message_url === undefined) {
+        return;
+    }
+
+    const referenced_message_stream_topic =
+        hash_util.decode_stream_topic_from_url(referenced_message_url);
+    const $referenced_message_topic_link = $reply.find(".referenced-message-topic-link");
+    if (
+        referenced_message_stream_topic?.topic_name !== undefined &&
+        referenced_message_stream_topic.message_id !== undefined
+    ) {
+        let referenced_message_stream_id = referenced_message_stream_topic.stream_id;
+        let referenced_message_topic = referenced_message_stream_topic.topic_name;
+        let referenced_message_id: string | undefined = referenced_message_stream_topic.message_id;
+
+        const referenced_message = message_store.get(Number.parseInt(referenced_message_id, 10));
+        if (referenced_message?.is_stream) {
+            referenced_message_stream_id = referenced_message.stream_id;
+            referenced_message_topic = referenced_message.topic;
+            referenced_message_id = undefined;
+        }
+
+        if (
+            compose_state.stream_name() !==
+                stream_data.get_stream_name_from_id(referenced_message_stream_id) ||
+            compose_state.topic() !== referenced_message_topic
+        ) {
+            $referenced_message_topic_link.removeClass("hidden");
+            return;
+        }
+    }
+    $referenced_message_topic_link.addClass("hidden");
 }
 
 function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
