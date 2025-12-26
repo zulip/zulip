@@ -1684,7 +1684,7 @@ paths:
                                       "name": "zulip.txt",
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
-                                      "create_time": 1594825414000,
+                                      "create_time": 1594825414,
                                       "messages": [],
                                     },
                                   "upload_space_used": 6,
@@ -1725,7 +1725,7 @@ paths:
                                       "name": "zulip.txt",
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
-                                      "create_time": 1594825414000,
+                                      "create_time": 1594825414,
                                       "messages": [],
                                     },
                                   "upload_space_used": 6,
@@ -6502,11 +6502,11 @@ paths:
                               "name": "166050.jpg",
                               "path_id": "2/ce/DfOkzwdg_IwlrN3myw3KGtiJ/166050.jpg",
                               "size": 571946,
-                              "create_time": 1588145417000,
+                              "create_time": 1588145417,
                               "messages":
                                 [
-                                  {"id": 102, "date_sent": 1588145424000},
-                                  {"id": 103, "date_sent": 1588145448000},
+                                  {"id": 102, "date_sent": 1588145424},
+                                  {"id": 103, "date_sent": 1588145448},
                                 ],
                             },
                           ],
@@ -9888,7 +9888,7 @@ paths:
                               "name": "1253601-1.jpg",
                               "path_id": "2/5d/BD5NRptFxPDKY3RUKwhhup8r/1253601-1.jpg",
                               "size": 1339060,
-                              "create_time": 1687984706000,
+                              "create_time": 1687984706,
                               "messages": [],
                             },
                           ],
@@ -25144,10 +25144,12 @@ components:
         create_time:
           type: integer
           description: |
-            Time when the attachment was uploaded as a UNIX timestamp
-            multiplied by 1000 (matching the format of getTime() in JavaScript).
+            Time when the attachment was uploaded as a UNIX timestamp (in seconds).
 
-            **Changes**: Changed in Zulip 3.0 (feature level 22). This field was
+            **Changes**: Before Zulip 12.0 (feature level ZF-7ceda9), this value
+            was returned in milliseconds rather than seconds.
+
+            Changed in Zulip 3.0 (feature level 22). This field was
             previously a floating point number.
         messages:
           type: array
@@ -25164,10 +25166,12 @@ components:
               date_sent:
                 type: integer
                 description: |
-                  Time when the message was sent as a UNIX timestamp
-                  multiplied by 1000 (matching the format of getTime() in JavaScript).
+                  Time when the message was sent as a UNIX timestamp (in seconds).
 
-                  **Changes**: Changed in Zulip 3.0 (feature level 22). This
+                  **Changes**: Before Zulip 12.0 (feature level ZF-7ceda9), this value
+                  was returned in milliseconds rather than seconds.
+
+                  Changed in Zulip 3.0 (feature level 22). This
                   field was previously strangely called `name` and was a floating
                   point number.
               id:

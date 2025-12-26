@@ -190,7 +190,7 @@ function render_attachments_ui(): void {
 function format_attachment_data(attachment: ServerAttachment): Attachment {
     return {
         ...attachment,
-        create_time_str: timerender.render_now(new Date(attachment.create_time)).time_str,
+        create_time_str: timerender.render_now(new Date(attachment.create_time * 1000)).time_str,
         size_str: bytes_to_size(attachment.size),
     };
 }
