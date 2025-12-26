@@ -599,25 +599,52 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert_is_topic_muted(cordelia, new_public_stream.id, "changed topic name", muted=True)
         assert_is_topic_muted(aaron, new_public_stream.id, "changed topic name", muted=False)
 
-        # Moving only half the messages doesn't move UserTopic records.
-        second_message_id = self.send_stream_message(
-            hamlet, stream_name, topic_name="changed topic name", content="Second message"
+        # For partial moves, only the visibility policies of users who are
+        # senders of the moved messages are migrated to the new topic.
+        # Other users' policies remain unchanged on the source topic.
+        # Here hamlet sends the message that gets moved (and has MUTED policy),
+        # while desdemona/cordelia also have policies on the source topic.
+        # Only hamlet's policy should migrate since he's the sender of the moved message.
+        #
+        # We need two messages in the topic so that moving only one results
+        # in a partial move.
+        self.send_stream_message(
+            cordelia, stream_name, topic_name="partial move topic", content="First message"
         )
-        with self.assert_database_query_count(25):
-            check_update_message(
-                user_profile=desdemona,
-                message_id=second_message_id,
-                stream_id=new_public_stream.id,
-                topic_name="final topic name",
-                propagate_mode="change_later",
-                send_notification_to_old_thread=False,
-                send_notification_to_new_thread=False,
-                content=None,
-            )
+        second_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="partial move topic", content="Second message"
+        )
+        # Set visibility policies for all three users on the source topic
+        set_topic_visibility_policy(
+            hamlet, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        set_topic_visibility_policy(
+            desdemona, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        set_topic_visibility_policy(
+            cordelia, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
+        )
 
-        assert_is_topic_muted(desdemona, new_public_stream.id, "changed topic name", muted=True)
-        assert_is_topic_muted(cordelia, new_public_stream.id, "changed topic name", muted=True)
-        assert_is_topic_muted(aaron, new_public_stream.id, "changed topic name", muted=False)
+        check_update_message(
+            user_profile=desdemona,
+            message_id=second_message_id,
+            stream_id=new_public_stream.id,
+            topic_name="final topic name",
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        # desdemona and cordelia's policies on the source topic should remain
+        # unchanged since they are not senders of the moved messages
+        assert_is_topic_muted(desdemona, stream.id, "partial move topic", muted=True)
+        assert_is_topic_muted(cordelia, stream.id, "partial move topic", muted=True)
+        assert_is_topic_muted(aaron, stream.id, "partial move topic", muted=False)
+        # hamlet's policy should have migrated to the new topic since they're the sender
+        assert_is_topic_muted(hamlet, stream.id, "partial move topic", muted=False)
+        assert_is_topic_muted(hamlet, new_public_stream.id, "final topic name", muted=True)
+        # desdemona/cordelia should NOT have policies on the new topic
         assert_is_topic_muted(desdemona, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
@@ -755,6 +782,65 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_has_visibility_policy(
             aaron, change_all_topic_name, stream, UserTopic.VisibilityPolicy.MUTED, expected=False
+        )
+
+        # For partial moves, only the visibility policies of users who are
+        # senders of the moved messages are migrated to the new topic.
+        # Other users' policies remain unchanged on the source topic.
+        # Here hamlet sends the message that gets moved (and has UNMUTED policy),
+        # while cordelia/othello also have policies on the source topic.
+        # Only hamlet's policy should migrate since he's the sender of the moved message.
+        partial_move_topic = "Partial move topic"
+        partial_move_target = "Partial move target"
+        self.send_stream_message(
+            cordelia, stream_name, topic_name=partial_move_topic, content="First message"
+        )
+        second_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name=partial_move_topic, content="Second message"
+        )
+        # Set visibility policies for hamlet, cordelia, and othello on the source topic
+        set_topic_visibility_policy(
+            hamlet, [[stream_name, partial_move_topic]], UserTopic.VisibilityPolicy.UNMUTED
+        )
+        set_topic_visibility_policy(
+            cordelia, [[stream_name, partial_move_topic]], UserTopic.VisibilityPolicy.MUTED
+        )
+        set_topic_visibility_policy(
+            othello, [[stream_name, partial_move_topic]], UserTopic.VisibilityPolicy.UNMUTED
+        )
+
+        check_update_message(
+            user_profile=hamlet,
+            message_id=second_message_id,
+            stream_id=None,
+            topic_name=partial_move_target,
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        # cordelia and othello's policies on the source topic should remain
+        # unchanged since they are not senders of the moved messages
+        self.assert_has_visibility_policy(
+            cordelia, partial_move_topic, stream, UserTopic.VisibilityPolicy.MUTED, expected=True
+        )
+        self.assert_has_visibility_policy(
+            othello, partial_move_topic, stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        # hamlet's policy should have migrated to the new topic since he's the sender
+        self.assert_has_visibility_policy(
+            hamlet, partial_move_topic, stream, UserTopic.VisibilityPolicy.UNMUTED, expected=False
+        )
+        self.assert_has_visibility_policy(
+            hamlet, partial_move_target, stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        # cordelia/othello should NOT have policies on the new topic
+        self.assert_has_visibility_policy(
+            cordelia, partial_move_target, stream, UserTopic.VisibilityPolicy.MUTED, expected=False
+        )
+        self.assert_has_visibility_policy(
+            othello, partial_move_target, stream, UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
 
     def test_merge_user_topic_states_on_move_messages(self) -> None:
