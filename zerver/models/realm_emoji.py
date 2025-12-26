@@ -27,8 +27,6 @@ def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:
 class RealmEmoji(models.Model):
     author = models.ForeignKey(
         "UserProfile",
-        blank=True,
-        null=True,
         on_delete=CASCADE,
     )
     realm = models.ForeignKey(Realm, on_delete=CASCADE)

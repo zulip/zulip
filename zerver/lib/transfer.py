@@ -106,7 +106,7 @@ def transfer_message_files_to_s3(processes: int) -> None:
 
 
 def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
-    if not realm_emoji.file_name or not realm_emoji.author:
+    if not realm_emoji.file_name:
         return  # nocoverage
     emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
         realm_id=realm_emoji.realm.id,
