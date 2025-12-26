@@ -78,15 +78,37 @@ export function clear(): void {
 }
 
 export function get_superset_datasets(filter: Filter): MessageListData[] {
-    const superset_datasets = [];
-    // Try to get exact match first.
-    const superset_data = get(filter);
-    if (superset_data !== undefined) {
-        // TODO: Search for additional superset datasets.
-        superset_datasets.push(superset_data);
+    const supersets_containing_near_or_with_msg = [];
+    // For `near` / `with` operators, we can try populating from a dataset
+    // that contains the message.
+    let message_id: number | undefined;
+    if (filter.has_operator("near")) {
+        message_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
+    } else if (filter.has_operator("with")) {
+        message_id = Number.parseInt(filter.terms_with_operator("with")[0]!.operand, 10);
+    }
+    if (message_id !== undefined) {
+        for (const cached_data of cache.values()) {
+            if (cached_data.get(message_id)) {
+                supersets_containing_near_or_with_msg.push(cached_data);
+            }
+        }
     }
 
-    return [...superset_datasets, all_messages_data.all_messages_data];
+    let supersets = [];
+    const exact_match = get(filter);
+    // 1. Exact match has the highest priority.
+    if (exact_match) {
+        supersets.push(exact_match);
+    }
+    // 2. supersets_containing_near_or_with_msg.
+    supersets = [...supersets, ...supersets_containing_near_or_with_msg];
+    if (!supersets.includes(all_messages_data.all_messages_data)) {
+        // 3. all_messages_data
+        supersets.push(all_messages_data.all_messages_data);
+    }
+
+    return supersets;
 }
 
 export function remove(filter: Filter): void {
