@@ -1,0 +1,23 @@
+name: Translation files changed check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "locale/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-if-translation-files-changed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fail if translation files are changed
+        run: |
+          echo "Please don't edit translation files directly, as this does not work with Zulip's translation system."
+          echo "If you're trying to add an improve a translation, follow these guidelines (https://zulip.readthedocs.io/en/latest/translating/translating.html) to join Zulip's team of volunteer translators on Weblate."
+          echo "If you're a developer, see the internationalization for developers guide (https://zulip.readthedocs.io/en/latest/translating/internationalization.html)."
+          exit 1
