@@ -972,9 +972,13 @@ export function dispatch_normal_event(event) {
                 // under settings, so we set the hash to the previous
                 // value of the home view.
                 if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
+<<<<<<< HEAD
                     browser_history.state.hash_before_overlay =
                         "#" +
                         original_home_view;
+=======
+                    browser_history.state.hash_before_overlay = "#" + original_home_view;
+>>>>>>> 7a831480ad (settings: Rename web_home_view value from "recent_topics" to "recent".)
                 }
             }
             if (event.property === "twenty_four_hour_time") {

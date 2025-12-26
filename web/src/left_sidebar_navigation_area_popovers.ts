@@ -261,7 +261,7 @@ export function initialize(): void {
             assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
-            const view_code = settings_config.web_home_view_values.recent_topics.code;
+            const view_code = settings_config.web_home_view_values.recent.code;
             const counts = unread.get_counts();
             const unread_messages_present =
                 counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;

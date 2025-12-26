@@ -49,4 +49,9 @@ class Migration(migrations.Migration):
             reverse_code=migrations.RunPython.noop,
             elidable=True,
         ),
+<<<<<<< HEAD
     ]
+=======
+    ]
+    
+>>>>>>> 7a831480ad (settings: Rename web_home_view value from "recent_topics" to "recent".)

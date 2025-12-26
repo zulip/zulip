@@ -159,7 +159,11 @@ export const web_home_view_values = {
         code: "inbox",
         description: $t({defaultMessage: "Inbox"}),
     },
+<<<<<<< HEAD
     recent_topics: {
+=======
+    recent: {
+>>>>>>> 7a831480ad (settings: Rename web_home_view value from "recent_topics" to "recent".)
         code: "recent",
         description: $t({defaultMessage: "Recent conversations"}),
     },
