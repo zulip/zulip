@@ -190,7 +190,9 @@ export function rebuild_catalog(): void {
         }
     }
 
-    catalog.set("Frequently used", frequently_used);
+    if (frequently_used.length > 0) {
+        catalog.set("Frequently used", frequently_used);
+    }
 
     const categories = EMOJI_CATEGORIES.filter((category) => catalog.has(category.name));
     complete_emoji_catalog = categories.map((category) => ({

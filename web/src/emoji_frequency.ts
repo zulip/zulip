@@ -15,8 +15,10 @@ export type ReactionUsage = {
     current_user_reacted_message_ids: Set<number>;
 };
 
-const MAX_FREQUENTLY_USED_EMOJIS = 12;
+const EMOJI_PICKER_ROW_LENGTH = 6;
+const MAX_FREQUENTLY_USED_EMOJIS = 5 * EMOJI_PICKER_ROW_LENGTH;
 const CURRENT_USER_REACTION_WEIGHT = 5;
+const POPULAR_EMOJIS_BONUS_WEIGHT = 18;
 export const reaction_data = new Map<string, ReactionUsage>();
 
 export function update_frequently_used_emojis_list(): void {
@@ -25,12 +27,8 @@ export function update_frequently_used_emojis_list(): void {
     );
 
     const top_frequently_used_emojis = [];
-    let popular_emojis = typeahead.get_popular_emojis();
     for (const emoji of frequently_used_emojis) {
-        if (
-            top_frequently_used_emojis.length + popular_emojis.length ===
-            MAX_FREQUENTLY_USED_EMOJIS
-        ) {
+        if (top_frequently_used_emojis.length === MAX_FREQUENTLY_USED_EMOJIS || emoji.score < 10) {
             break;
         }
         assert(emoji !== undefined);
@@ -38,15 +36,16 @@ export function update_frequently_used_emojis_list(): void {
             emoji_type: emoji.emoji_type,
             emoji_code: emoji.emoji_code,
         });
-        popular_emojis = popular_emojis.filter(
-            (popular_emoji) => popular_emoji.emoji_code !== emoji.emoji_code,
-        );
     }
 
-    const final_frequently_used_emoji_list = [...top_frequently_used_emojis, ...popular_emojis];
-    typeahead.set_frequently_used_emojis(
-        final_frequently_used_emoji_list.slice(0, MAX_FREQUENTLY_USED_EMOJIS),
+    const num_frequently_used_emojis =
+        Math.floor(top_frequently_used_emojis.length / EMOJI_PICKER_ROW_LENGTH) *
+        EMOJI_PICKER_ROW_LENGTH;
+    const final_frequently_used_emoji_list = top_frequently_used_emojis.slice(
+        0,
+        num_frequently_used_emojis,
     );
+    typeahead.set_frequently_used_emojis(final_frequently_used_emoji_list);
     emoji_picker.rebuild_catalog();
 }
 
@@ -148,6 +147,23 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
 export function initialize_frequently_used_emojis(): void {
     const message_data = all_messages_data.all_messages_data;
     const messages = message_data.all_messages_after_mute_filtering();
+
+    //
+    for (const {emoji_code, emoji_type} of typeahead.get_popular_emojis()) {
+        const emoji_id = [emoji_type, emoji_code].join(",");
+        if (!reaction_data.has(emoji_id)) {
+            reaction_data.set(emoji_id, {
+                score: POPULAR_EMOJIS_BONUS_WEIGHT,
+                emoji_code,
+                emoji_type,
+                message_ids: new Set(),
+                current_user_reacted_message_ids: new Set(),
+            });
+        }
+        const reaction = reaction_data.get(emoji_id);
+        assert(reaction !== undefined);
+        reaction.score += POPULAR_EMOJIS_BONUS_WEIGHT;
+    }
 
     for (let i = messages.length - 1; i >= 0; i -= 1) {
         const message = messages[i];
