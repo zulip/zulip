@@ -1,7 +1,12 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 
@@ -180,6 +185,73 @@ const untrimmed_message_content = get_or_set("textarea#compose-textarea", true, 
 function cursor_at_start_of_whitespace_in_compose(): boolean {
     const cursor_position = $("textarea#compose-textarea").caret();
     return message_content() === "" && cursor_position === 0;
+}
+
+export function get_message_with_raw_reply_content(
+    $input_textarea: JQuery<HTMLTextAreaElement>,
+): string {
+    const content = $input_textarea.val()?.trimEnd();
+    assert(content !== undefined);
+    const $reply = $input_textarea
+        .closest("#message-content-container, .edit-content-container")
+        .find(".reply");
+    if ($reply.length === 0) {
+        return content;
+    }
+
+    const $user_mention = $reply.children(".user-mention");
+    const user_id = $user_mention.attr("data-user-id");
+    const username = $user_mention.text();
+
+    let mention: string;
+    if (username.startsWith("@")) {
+        mention = `@**${username.slice(1)}|${user_id}**`;
+    } else {
+        mention = `@_**${username}|${user_id}**`;
+    }
+
+    const $referenced_message_link = $reply.children(".referenced-message-link");
+    const reply_content = $t(
+        {defaultMessage: "{username} [{content}]({link_to_message})"},
+        {
+            username: mention,
+            link_to_message: $referenced_message_link.attr("href"),
+            content: $referenced_message_link.text(),
+        },
+    );
+
+    return reply_content + "\n\n" + content;
+}
+
+export function render_reply_and_get_parsed_message(
+    message: string,
+    $container?: JQuery,
+    include_reply_action_buttons = true,
+): string {
+    const reply_pattern = /^@(_?)(?:\*\*([^*]+)\*\*)\s+!?\[([^\]]+)\]\(([^)]+)\)/;
+    let stream = stream_name();
+    let topic_name = topic();
+    if ($container?.hasClass("message-edit-reply-container")) {
+        stream = narrow_state.stream_name() ?? "";
+        topic_name = narrow_state.topic() ?? "";
+    }
+
+    const message_content_html = postprocess_content(
+        markdown.render(message).content,
+        stream,
+        topic_name,
+        include_reply_action_buttons,
+    );
+    const inertDocument = new DOMParser().parseFromString("", "text/html");
+    const template = inertDocument.createElement("template");
+    template.innerHTML = message_content_html;
+    const reply_html = template.content.querySelector(".reply");
+    if ($container && reply_html) {
+        $container.html(reply_html.outerHTML);
+        return message.replace(reply_pattern, "").trimStart();
+    }
+
+    return message;
 }
 
 export function focus_in_formatting_buttons(): boolean {

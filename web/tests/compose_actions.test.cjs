@@ -69,6 +69,9 @@ const compose_ui = mock_esm("../src/compose_ui", {
     set_focus: noop,
     compute_placeholder_text: noop,
 });
+mock_esm("../src/markdown", {
+    render: () => ({content: ""}),
+});
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
     filter: noop,
@@ -184,6 +187,10 @@ test("start", ({override, override_rewire, mock_template}) => {
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
     stub_message_row($textarea);
+    const $reply_stub = $("#reply-stub");
+    $reply_stub[0].remove = noop;
+    $("#compose-reply-container").set_find_results(".reply", $reply_stub);
+
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
@@ -392,6 +399,10 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
 
     opts = {};
 
+    const $reply_stub = $("#reply-stub");
+    $reply_stub[0].remove = noop;
+    $("#compose-reply-container").set_find_results(".reply", $reply_stub);
+
     respond_to_message(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
 });
@@ -437,6 +448,10 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     });
 
     const opts = {};
+
+    const $reply_stub = $("#reply-stub");
+    $reply_stub[0].remove = noop;
+    $("#compose-reply-container").set_find_results(".reply", $reply_stub);
 
     reply_with_mention(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
@@ -563,7 +578,7 @@ test("quote_messages", ({disallow, override, override_rewire}) => {
 
     override_rewire(compose_state, "topic", (topic) => {
         if (opts.forward_message) {
-            assert.equal(topic, "");
+            assert.ok(["", undefined].includes(topic));
         }
     });
 
@@ -576,6 +591,9 @@ test("quote_messages", ({disallow, override, override_rewire}) => {
         fence: "```",
         content: "Testing.",
     });
+    const $reply_stub = $("#reply-stub");
+    $reply_stub[0].remove = noop;
+    $("#compose-reply-container").set_find_results(".reply", $reply_stub);
     quote_messages(opts);
 
     run_success_callback();
