@@ -16,6 +16,7 @@ import * as compose_state from "./compose_state.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import {localstorage} from "./localstorage.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -475,6 +476,41 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
         sidebar_ui.hide_userlist_sidebar();
+    });
+
+    $("body").on("click", ".mention-button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $reply = $(this).closest(".reply");
+        const $user_mention = $reply.children(".user-mention");
+        const $mention_content = $user_mention.find(".mention-content-wrapper");
+        const $mention_icon = $(this).find(".zulip-icon");
+        const username = $mention_content.text();
+        const silent_mention = $user_mention.hasClass("silent");
+
+        $user_mention.toggleClass("silent");
+
+        const ls = localstorage();
+        ls.set(compose_reply.ls_mention_key, !silent_mention);
+
+        const silent_mention_icon_classname = "zulip-icon-at-sign-crossed";
+        const mention_icon_classname = "zulip-icon-at-sign";
+        if (silent_mention) {
+            $mention_content.text(`@${username}`);
+            $mention_icon.removeClass(mention_icon_classname);
+            $mention_icon.addClass(silent_mention_icon_classname);
+        } else {
+            $mention_content.text(username.slice(1));
+            $mention_icon.removeClass(silent_mention_icon_classname);
+            $mention_icon.addClass(mention_icon_classname);
+        }
+    });
+
+    $("body").on("click", ".remove-reply-button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).closest(".reply").remove();
     });
 
     // Doesn't show tooltip on touch devices.

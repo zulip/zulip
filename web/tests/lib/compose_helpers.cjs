@@ -21,6 +21,11 @@ class FakeComposeBox {
 
         const $message_row_stub = $.create("message_row_stub");
         this.$content_textarea.closest = (selector) => {
+            if (selector === "#message-content-container, .edit-content-container") {
+                const $container = $("#message-content-container, .edit-content-container");
+                $container.set_find_results(".reply", false);
+                return $container;
+            }
             assert.equal(selector, ".message_row");
             $message_row_stub.length = 0;
             return $message_row_stub;

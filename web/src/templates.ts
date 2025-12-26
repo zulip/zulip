@@ -135,7 +135,8 @@ Handlebars.registerHelper("tr", function (this: Context, options: Handlebars.Hel
 
 Handlebars.registerHelper(
     "rendered_markdown",
-    (content: string) => new Handlebars.SafeString(postprocess_content(content)),
+    (content: string, stream?: string, topic?: string) =>
+        new Handlebars.SafeString(postprocess_content(content, stream, topic)),
 );
 
 Handlebars.registerHelper("numberFormat", (number: number) => number.toLocaleString());

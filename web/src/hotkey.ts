@@ -1266,9 +1266,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
     // Shortcuts that are useful with an empty message feed, like opening compose.
     switch (event_name) {
         case "reply_message": // 'r': respond to message
-            // Note that you can "Enter" to respond to messages as well,
-            // but that is handled in process_enter_key().
-            compose_reply.respond_to_message({trigger: "hotkey"});
+            compose_reply.quote_message({trigger: "hotkey", reply_to_message: true});
             return true;
         case "compose": // 'c': compose
             if (!compose_state.composing()) {

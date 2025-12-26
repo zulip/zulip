@@ -3,6 +3,8 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
+import render_message_reply from "../templates/message_reply.hbs";
+
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_paste from "./compose_paste.ts";
@@ -15,20 +17,27 @@ import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
+import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
+import * as topic_link_util from "./topic_link_util.ts";
 import * as unread_ops from "./unread_ops.ts";
+
+export const ls_mention_key = "silent-mention";
+const MAX_REFERENCED_MESSAGE_LENGTH = 200;
 
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
     reply_type?: "personal";
     trigger?: string;
+    reply_to_message?: boolean;
 }): void => {
     let message;
     let msg_type: "private" | "stream";
@@ -236,6 +245,7 @@ export function quote_message(opts: {
     reply_type?: "personal";
     trigger?: string;
     forward_message?: boolean;
+    reply_to_message?: boolean;
 }): void {
     const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -279,8 +289,9 @@ export function quote_message(opts: {
                 keep_composebox_empty: true,
             });
         }
-
-        compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+        if (!opts.reply_to_message) {
+            compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+        }
     }
 
     function replace_content(message: Message, raw_content: string): void {
@@ -313,6 +324,77 @@ export function quote_message(opts: {
         if (select_recipient_widget !== undefined) {
             void select_recipient_widget._tippy?.popperInstance?.update();
         }
+    }
+
+    function insert_reply_in_composebox(message: Message): void {
+        // Get the HTML content of the message the user wants to reply to.
+        const $content = $(`.message_row[data-message-id="${message.id}"`)
+            .find(".message_content")
+            .clone();
+        // Remove the reply content, if present, from the message before extracting the content.
+        const $reply = $content.find(".reply");
+        $reply.parent().remove();
+
+        const content = $content.first().text().trim();
+        const ls = localstorage();
+        const is_mention_silent = ls.get(ls_mention_key) ?? false;
+        assert(typeof is_mention_silent === "boolean");
+        const username = is_mention_silent
+            ? message.sender_full_name
+            : "@" + message.sender_full_name;
+
+        const topic_url_info = {
+            show_topic_url: false,
+            topic_url: "",
+            topic_url_text: "",
+        };
+
+        const $message_container = $textarea.closest(
+            "#message-content-container, .edit-content-container",
+        );
+
+        // Add topic link to reply UI if the reply is added to composebox
+        // and referenced message is in a different topic than the one
+        // user is composing to.
+        if (!$message_container.hasClass("edit-content-container") && message.is_stream) {
+            const {text, url} = topic_link_util.get_topic_link_content_with_stream_id({
+                stream_id: message.stream_id,
+                topic_name: message.topic,
+                message_id: undefined,
+            });
+            topic_url_info.topic_url = url;
+            topic_url_info.topic_url_text = text;
+
+            if (
+                message.stream !== compose_state.stream_name() ||
+                message.topic !== compose_state.topic()
+            ) {
+                topic_url_info.show_topic_url = true;
+            }
+        }
+
+        const $reply_container = $message_container.find(".reply-container");
+        $reply_container.find(".reply").remove();
+        $reply_container.html(
+            render_message_reply({
+                include_reply_action_buttons: true,
+                silent_mention: is_mention_silent,
+                user_id: message.sender_id,
+                username,
+                link_to_message: hash_util.by_conversation_and_time_url(message),
+                content: content.replaceAll("\n", " ").slice(0, MAX_REFERENCED_MESSAGE_LENGTH),
+                ...topic_url_info,
+            }),
+        );
+        rendered_markdown.wrap_mention_content_in_dom_element(
+            $reply_container.find(".user-mention")[0]!,
+            people.sender_is_bot(message),
+        );
+    }
+
+    if (message && opts.reply_to_message) {
+        insert_reply_in_composebox(message);
+        return;
     }
 
     if (message && quote_content) {

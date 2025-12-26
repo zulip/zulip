@@ -878,7 +878,8 @@
     border: 1px solid var(--color-message-content-container-border);
     transition: border-color 0.2s ease;
     display: grid;
-    grid-template-areas: "message-edit-content";
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "reply-container" "message-edit-content";
 
     &:has(.message_edit_content:focus) {
         border-color: var(--color-message-content-container-border-focus);
@@ -901,6 +902,14 @@
             background-color: var(
                 --color-compose-message-content-background-approaching-limit
             );
+        }
+    }
+
+    .reply-container {
+        background-color: light-dark(hsl(0deg 0% 100%), hsl(0deg 0% 0% / 20%));
+
+        &.reply-preview {
+            background-color: inherit;
         }
     }
 }

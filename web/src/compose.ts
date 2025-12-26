@@ -98,13 +98,12 @@ export function show_preview_area(): void {
 
 export function render_preview_area(): void {
     const $compose_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    const content = compose_state.message_content();
     const $preview_message_area = $("#compose .preview_message_area");
     compose_ui.render_and_show_preview(
         $("#compose"),
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
-        content,
+        compose_state.get_message_with_raw_reply_content($("textarea#compose-textarea")),
     );
     const edit_height = $compose_textarea.height();
     $preview_message_area.css({"min-height": edit_height + "px"});
@@ -121,6 +120,7 @@ export function clear_compose_box(): void {
         compose_ui.make_compose_box_original_size();
     }
     $("textarea#compose-textarea").val("").trigger("focus");
+    $("#compose-reply-container").find(".reply").remove();
     compose_ui.compose_textarea_typeahead?.hide();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
@@ -202,7 +202,9 @@ export let send_message = (): void => {
         const recipient_ids = compose_state.private_message_recipient_ids();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: compose_state.get_message_with_raw_reply_content(
+                $("textarea#compose-textarea"),
+            ),
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: "",
@@ -219,7 +221,9 @@ export let send_message = (): void => {
         const topic = compose_state.topic();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: compose_state.get_message_with_raw_reply_content(
+                $("textarea#compose-textarea"),
+            ),
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: util.is_topic_name_considered_empty(topic) ? "" : topic,
@@ -427,7 +431,7 @@ function schedule_message_to_custom_date(): void {
         type: req_type,
         to: JSON.stringify(message_to),
         topic: message_type === "stream" ? compose_state.topic() : "",
-        content: compose_state.message_content(),
+        content: compose_state.get_message_with_raw_reply_content($("textarea#compose-textarea")),
         scheduled_delivery_timestamp,
     };
 

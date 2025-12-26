@@ -5,6 +5,7 @@ import * as tippy from "tippy.js";
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
+import render_mention_button_tooltip_message from "../templates/mention_button_tooltip_message.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
@@ -1002,6 +1003,34 @@ export function initialize(): void {
             }
             return false;
         },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".reply .mention-button",
+        delay: INSTANT_HOVER_DELAY,
+        onShow(instance) {
+            const message = render_mention_button_tooltip_message({
+                silent: $(instance.reference).find(".zulip-icon").hasClass("zulip-icon-at-sign"),
+            });
+            instance.setContent(ui_util.parse_html(message));
+            // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
+            // is in the error message.
+            $(instance.popper).find(".tippy-content").css("display", "block");
+            return undefined;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+    tippy.delegate("body", {
+        target: ".reply .remove-reply-button",
+        delay: INSTANT_HOVER_DELAY,
+        content: $t({defaultMessage: "Remove reply"}),
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

@@ -463,7 +463,7 @@ test_while_not_editing_text("misc", ({override}) => {
     // call get_message_reactions, so we verify just that.
     assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
-    assert_mapping("r", compose_reply, "respond_to_message");
+    assert_mapping("r", compose_reply, "quote_message");
     assert_mapping("R", compose_reply, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
     assert_mapping("J", navigate, "page_down", true);
