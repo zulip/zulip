@@ -379,7 +379,8 @@ select.settings_select {
 }
 
 #admin-active-users-list,
-#admin-bot-list {
+#admin-bot-list,
+#personal-bot-list {
     .table tr:first-of-type td {
         border-top: none;
     }
@@ -390,7 +391,8 @@ select.settings_select {
     }
 }
 
-#admin-bot-list .user-status-settings {
+#admin-bot-list .user-status-settings,
+#personal-bot-list .user-status-settings {
     display: flex;
     justify-content: flex-end;
 }
@@ -1995,7 +1997,8 @@ label.preferences-radio-choice-label {
     }
 
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row {
             .user_name,
             .email {
@@ -2014,7 +2017,8 @@ label.preferences-radio-choice-label {
 
 @media (width < $sm_min) {
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row,
         .table-sticky-headers {
             .bot_type,
