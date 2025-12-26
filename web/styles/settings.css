@@ -397,6 +397,13 @@ select.settings_select {
 
 .config-download-text {
     margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.bot-list-error {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .user_role,
@@ -434,7 +441,7 @@ select.settings_select {
     width: fit-content;
 }
 
-#bot-edit-form {
+#zuliprc-and-api-key-modal {
     .api-key-details-container,
     .zuliprc-container {
         display: flex;
@@ -445,6 +452,10 @@ select.settings_select {
             display: flex;
             align-items: center;
         }
+    }
+
+    .modal_text_input {
+        margin-bottom: 0;
     }
 }
 
