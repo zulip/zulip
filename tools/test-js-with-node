@@ -63,6 +63,7 @@ EXEMPT_FILES = make_set(
         "web/src/bootstrap_typeahead.ts",
         "web/src/bot_helper.ts",
         "web/src/browser_history.ts",
+        "web/src/browser_idle_detection.ts",
         "web/src/buddy_list.ts",
         "web/src/buttons.ts",
         "web/src/channel_folders_popover.ts",
