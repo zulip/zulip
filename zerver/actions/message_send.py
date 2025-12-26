@@ -41,7 +41,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionBackend, MentionData
+from zerver.lib.mention import ChannelTopicInfo, MentionBackend, MentionData
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
@@ -624,6 +624,7 @@ def build_message_send_dict(
     sender_queue_id: str | None = None,
     widget_content_dict: dict[str, Any] | None = None,
     email_gateway: bool = False,
+    topic_link_message_ids: dict[ChannelTopicInfo, int | None] | None = None,
     mention_backend: MentionBackend | None = None,
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
@@ -639,6 +640,9 @@ def build_message_send_dict(
 
     if mention_backend is None:
         mention_backend = MentionBackend(realm.id)
+
+    if topic_link_message_ids is not None:
+        mention_backend.topic_cache.update(topic_link_message_ids)
 
     mention_data = MentionData(
         mention_backend=mention_backend,
@@ -1738,6 +1742,7 @@ def check_message(
     skip_stream_access_check: bool = False,
     message_type: int = Message.MessageType.NORMAL,
     mention_backend: MentionBackend | None = None,
+    topic_link_message_ids: dict[ChannelTopicInfo, int | None] | None = None,
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     archived_channel_notice: bool = False,
@@ -1889,6 +1894,7 @@ def check_message(
         sender_queue_id=sender_queue_id,
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
+        topic_link_message_ids=topic_link_message_ids,
         mention_backend=mention_backend,
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
@@ -1928,6 +1934,7 @@ def _internal_prep_message(
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
     mention_backend: MentionBackend | None = None,
+    topic_link_message_ids: dict[ChannelTopicInfo, int | None] | None = None,
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     forged: bool = False,
@@ -1961,6 +1968,7 @@ def _internal_prep_message(
             email_gateway=email_gateway,
             message_type=message_type,
             mention_backend=mention_backend,
+            topic_link_message_ids=topic_link_message_ids,
             limit_unread_user_ids=limit_unread_user_ids,
             disable_external_notifications=disable_external_notifications,
             forged=forged,
@@ -1987,6 +1995,7 @@ def internal_prep_stream_message(
     *,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
+    topic_link_message_ids: dict[ChannelTopicInfo, int | None] | None = None,
     limit_unread_user_ids: set[int] | None = None,
     forged: bool = False,
     forged_timestamp: float | None = None,
@@ -2006,6 +2015,7 @@ def internal_prep_stream_message(
         content=content,
         email_gateway=email_gateway,
         message_type=message_type,
+        topic_link_message_ids=topic_link_message_ids,
         limit_unread_user_ids=limit_unread_user_ids,
         forged=forged,
         forged_timestamp=forged_timestamp,
@@ -2092,6 +2102,7 @@ def internal_send_stream_message(
     *,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
+    topic_link_message_ids: dict[ChannelTopicInfo, int | None] | None = None,
     limit_unread_user_ids: set[int] | None = None,
     mark_as_read_for_acting_user: bool = False,
     archived_channel_notice: bool = False,
@@ -2104,6 +2115,7 @@ def internal_send_stream_message(
         content,
         email_gateway=email_gateway,
         message_type=message_type,
+        topic_link_message_ids=topic_link_message_ids,
         limit_unread_user_ids=limit_unread_user_ids,
         archived_channel_notice=archived_channel_notice,
         acting_user=acting_user,
