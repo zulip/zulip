@@ -94,6 +94,24 @@ class RecentDirectMessages {
             .map((conversation) => conversation.user_ids_string);
     }
 
+    get_user_ids(): number[] {
+        // returns all unique user ids user had sent DM to.
+        // user id can be part of group DM.
+        const user_ids = new Set<number>();
+
+        for (const conversation of this.recent_private_messages) {
+            if (!filter_muted_pms(conversation)) {
+                continue;
+            }
+
+            for (const id of conversation.user_ids_string.split(",")) {
+                user_ids.add(Number(id));
+            }
+        }
+
+        return [...user_ids];
+    }
+
     has_conversation(user_ids_string: string): boolean {
         // Returns a boolean indicating whether we have a record proving
         // this particular direct message conversation exists.

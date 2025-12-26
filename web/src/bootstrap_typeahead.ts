@@ -238,7 +238,7 @@ export class Typeahead<ItemType extends string | object> {
     trigger_selection: (event: JQuery.KeyDownEvent) => boolean;
     on_escape: (() => void) | undefined;
     // returns a string to show in typeahead footer or false.
-    footer_html: () => string | false;
+    footer_html: (matching_items: ItemType[]) => string | false;
     // returns a string to show in typeahead items or false.
     option_label: (matching_items: ItemType[], item: ItemType) => string | false;
     suppressKeyPressRepeat = false;
@@ -578,7 +578,7 @@ export class Typeahead<ItemType extends string | object> {
         // in user's string since once typeahead is shown after `@`,
         // footer might change depending on whether next character is
         // `_` (silent mention) or not.
-        const footer_text_html = this.footer_html();
+        const footer_text_html = this.footer_html(matching_items);
         // We want to clear tooltip instance on each re render since
         // emoji may have shifted its position.
         this.clear_typeahead_tooltip?.();
@@ -925,7 +925,7 @@ type TypeaheadOptions<ItemType> = {
     automated?: () => boolean;
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;
-    footer_html?: () => string | false;
+    footer_html?: (matching_items: ItemType[]) => string | false;
     helpOnEmptyStrings?: boolean;
     hideOnEmptyAfterBackspace?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;
