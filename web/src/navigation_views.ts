@@ -50,7 +50,7 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         hidden_for_spectators: false,
         menu_icon_class: "recent-view-sidebar-menu-icon",
         menu_aria_label: $t({defaultMessage: "Recent conversations options"}),
-        home_view_code: "recent_topics",
+        home_view_code: "recent",
         prioritize_in_condensed_view: true,
     },
     all_messages: {

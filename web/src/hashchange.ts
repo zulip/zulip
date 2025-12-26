@@ -129,7 +129,7 @@ function show_home_view(narrow_opts?: message_view.ShowMessageViewOpts): void {
     // We only allow the primary recommended options for home views
     // rendered without a hash.
     switch (user_settings.web_home_view) {
-        case "recent_topics": {
+        case "recent": {
             recent_view_ui.show();
             break;
         }

@@ -974,7 +974,7 @@ export function dispatch_normal_event(event) {
                 if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
                     browser_history.state.hash_before_overlay =
                         "#" +
-                        (original_home_view === "recent_topics" ? "recent" : original_home_view);
+                        original_home_view;
                 }
             }
             if (event.property === "twenty_four_hour_time") {

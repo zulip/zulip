@@ -160,7 +160,7 @@ export const web_home_view_values = {
         description: $t({defaultMessage: "Inbox"}),
     },
     recent_topics: {
-        code: "recent_topics",
+        code: "recent",
         description: $t({defaultMessage: "Recent conversations"}),
     },
     all_messages: {
