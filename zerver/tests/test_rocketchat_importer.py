@@ -448,7 +448,7 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         self.assert_length(subscriber_handler.get_users(stream_id=zerver_stream[6]["id"]), 0)
-        self.assertTrue(zerver_stream[6]["deactivated"])
+        self.assertFalse(zerver_stream[6]["deactivated"])
 
     def test_convert_direct_message_group_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
