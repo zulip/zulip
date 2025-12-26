@@ -178,6 +178,7 @@
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
+      "@types/jquery.validation": "patches/@types__jquery.validation.patch",
       "@uppy/utils": "patches/@uppy__utils.patch",
       "eslint-plugin-astro": "patches/eslint-plugin-astro.patch",
       "handlebars": "patches/handlebars.patch",
