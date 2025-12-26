@@ -862,6 +862,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "vim_right":
         case "page_up":
         case "page_down":
+        case "open_inbox":
+        case "list_of_channel_topics":
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
             }
