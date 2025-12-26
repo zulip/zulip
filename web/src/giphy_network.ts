@@ -1,7 +1,12 @@
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import {type GifInfoUrl, GifNetwork, type RenderGifsCallback} from "./abstract_gif_network.ts";
+import {
+    type GifInfoUrl,
+    GifNetwork,
+    type GifProvider,
+    type RenderGifsCallback,
+} from "./abstract_gif_network.ts";
 import * as channel from "./channel.ts";
 import {get_rating} from "./gif_state.ts";
 import {realm} from "./state_data.ts";
@@ -48,6 +53,11 @@ export class GiphyNetwork extends GifNetwork {
     is_loading_more = false;
     next_pos_identifier = 0;
     abandoned = false;
+
+    get_provider(): GifProvider {
+        return "giphy";
+    }
+
     is_loading_more_gifs(): boolean {
         return this.is_loading_more;
     }

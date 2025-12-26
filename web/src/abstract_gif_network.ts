@@ -5,6 +5,7 @@ export type GifInfoUrl = {
 
 export type RenderGifsCallback = (urls: GifInfoUrl[], next_page: boolean) => void;
 
+export type GifProvider = "tenor" | "giphy";
 // When a user clicks on the gif icon either while composing a
 // message in the normal compose box or while editing a
 // message, the UI will need to talk to a third party
@@ -23,6 +24,7 @@ export type RenderGifsCallback = (urls: GifInfoUrl[], next_page: boolean) => voi
 // the UI should call `abandon()` below. And then they should
 // obviously never call the object again.
 export abstract class GifNetwork {
+    abstract get_provider(): GifProvider;
     abstract is_loading_more_gifs(): boolean;
     abstract ask_for_default_gifs(
         next_page: boolean,
