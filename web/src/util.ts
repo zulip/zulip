@@ -629,3 +629,14 @@ export async function sha256_hash(text: string): Promise<string | undefined> {
     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
     return hashHex;
 }
+
+// This should only be used in loops with small collections, since it
+// runs in linear time.
+export function unique_array_insert<T>(array: T[], new_item: T): void {
+    for (const item of array) {
+        if (_.isEqual(item, new_item)) {
+            return;
+        }
+    }
+    array.push(new_item);
+}

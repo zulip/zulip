@@ -413,9 +413,11 @@ def do_change_avatar_fields(
         notify_avatar_url_change(user_profile)
 
 
-def do_delete_avatar_image(user: UserProfile, *, acting_user: UserProfile | None) -> None:
+def do_scrub_avatar_image(user: UserProfile, *, acting_user: UserProfile | None) -> None:
     old_version = user.avatar_version
-    do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
+    do_change_avatar_fields(
+        user, UserProfile.AVATAR_FROM_GRAVATAR, skip_notify=True, acting_user=acting_user
+    )
     delete_avatar_image(user, old_version)
 
 

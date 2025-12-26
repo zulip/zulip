@@ -348,8 +348,7 @@ export function initialize(): void {
     });
 
     message_list_tooltip(".rendered_markdown time", {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        content: timerender.get_markdown_time_tooltip as tippy.Content,
+        content: timerender.get_markdown_time_tooltip,
         onHidden(instance) {
             instance.destroy();
         },

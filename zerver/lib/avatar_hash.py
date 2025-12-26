@@ -26,7 +26,7 @@ def user_avatar_hash(uid: str, version: str) -> str:
 
 
 def user_avatar_path(user_profile: UserProfile, future: bool = False) -> str:
-    # 'future' is if this is for the current avatar version, of the next one.
+    # 'future' is if this is for the current avatar version, or the next one.
     return user_avatar_base_path_from_ids(
         user_profile.id, user_profile.avatar_version + (1 if future else 0), user_profile.realm_id
     )

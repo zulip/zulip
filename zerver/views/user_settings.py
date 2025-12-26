@@ -475,11 +475,12 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    do_change_avatar_fields(
-        user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
-    )
-    gravatar_url = avatar_url(user_profile)
+    if user_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
+        do_change_avatar_fields(
+            user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
+        )
 
+    gravatar_url = avatar_url(user_profile)
     json_result = dict(
         avatar_url=gravatar_url,
     )

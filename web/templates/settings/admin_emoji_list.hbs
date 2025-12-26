@@ -2,6 +2,9 @@
 <tr class="emoji_row" id="emoji_{{name}}" data-emoji-name="{{name}}">
     <td>
         <span class="emoji_name">{{display_name}}</span>
+        {{#if is_overriding_default}}
+            <i class="zulip-icon zulip-icon-exclamation-circle tippy-zulip-tooltip emoji-override-warning" data-tippy-content="{{t 'This custom emoji overrides a default emoji with the same name.' }}"></i>
+        {{/if}}
     </td>
     <td>
         <span class="emoji_image">
