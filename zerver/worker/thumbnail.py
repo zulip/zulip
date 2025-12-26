@@ -1,11 +1,13 @@
 import logging
 import time
+from dataclasses import dataclass
 from dataclasses import asdict
 from io import BytesIO
 from typing import Any
 
 import pyvips
 from django.db import transaction
+from django.db.utils import OperationalError
 from typing_extensions import override
 
 from zerver.actions.message_edit import do_update_embedded_data
@@ -31,47 +33,72 @@ logger = logging.getLogger(__name__)
 class ThumbnailWorker(QueueProcessingWorker):
     @override
     def consume(self, event: dict[str, Any]) -> None:
-        start = time.time()
+        start_time = time.perf_counter()
         with transaction.atomic(savepoint=False):
             try:
-                # This lock prevents us from racing with the on-demand
-                # rendering that can be triggered if a request is made
-                # directly to a thumbnail URL we have not made yet.
-                # This may mean that we may generate 0 thumbnail
-                # images once we get the lock.
-                row = ImageAttachment.objects.select_for_update(of=("self",)).get(id=event["id"])
+                # This lock prevents us from racing with other workers
+                # who might be servicing a duplicate request, or the
+                # unlikely on-demand rendering that can be triggered
+                # if a request is made directly to a thumbnail URL we
+                # have not made yet.  If any other process is holding
+                # the lock, we do not wait -- our outcome for
+                # thumbnailing would be the same, and there is no
+                # reason for us to hang out doing nothing and generate
+                # 0 more thumbnails.
+                row = ImageAttachment.objects.select_for_update(of=("self", ), nowait=True).get(id=event["id"])
             except ImageAttachment.DoesNotExist:  # nocoverage
-                logger.info("ImageAttachment row %d missing", event["id"])
+                logger.info("ImageAttachment row %d missing [%dms]", event["id"], (time.perf_counter() - start_time) * 1000)
                 return
-            uploaded_thumbnails = ensure_thumbnails(row)
-        end = time.time()
+            except OperationalError:  # nocoverage
+                logger.debug("Dropping in-process thumbnail request for row %d [%dms]", event["id"], (time.perf_counter() - start_time) * 1000)
+                return
+            lock_time = time.perf_counter() - start_time
+            logger.info("Starting thumbnailing for %s", row.path_id)
+            result = ensure_thumbnails(row)
+            commit_time = time.perf_counter()
+        end_time = time.perf_counter()
         logger.info(
-            "Processed %d thumbnails (%dms)",
-            uploaded_thumbnails,
-            (end - start) * 1000,
+            "Processed %d thumbnails [%dms; lock=%dms, fetch=%dms, thumb=%dms, upload=%dms, commit=%dms]",
+            result.generated_thumbnail_count,
+            (end_time - start_time) * 1000,
+            lock_time * 1000,
+            result.fetching_seconds * 1000,
+            result.processing_seconds * 1000,
+            result.uploading_seconds * 1000,
+            (end_time - commit_time) * 1000,
         )
 
+@dataclass
+class ThumbnailingResult:
+    generated_thumbnail_count: int = 0
+    fetching_seconds: float = 0
+    processing_seconds: float = 0
+    uploading_seconds: float = 0
 
-def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
+def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
     needed_thumbnails = missing_thumbnails(image_attachment)
 
     if not needed_thumbnails:
-        return 0
+        return ThumbnailingResult()
 
     written_images = 0
     with BytesIO() as f:
+        start_time = time.perf_counter()
         save_attachment_contents(image_attachment.path_id, f)
         image_bytes = f.getvalue()
+        fetching_seconds = time.perf_counter() - start_time
     try:
         # TODO: We could save some computational time by using the same
         # bytes if multiple resolutions are larger than the source
         # image.  That is, if the input is 10x10, a 100x100.jpg is
         # going to be the same as a 200x200.jpg, since those set the
         # max dimensions, and we do not scale up.
+        processing_seconds = 0.0
+        uploading_seconds = 0.0
         for thumbnail_format in needed_thumbnails:
             # This will scale to fit within the given dimensions; it
             # may be smaller one one or more of them.
-            logger.info(
+            logger.debug(
                 "Resizing to %d x %d, from %d x %d",
                 thumbnail_format.max_width,
                 thumbnail_format.max_height,
@@ -96,6 +123,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
                         load_opts = f"n={IMAGE_MAX_ANIMATED_PIXELS // pixels_per_frame}"
                 else:
                     load_opts = "n=1"
+            start_time = time.perf_counter()
             resized = pyvips.Image.thumbnail_buffer(
                 image_bytes,
                 thumbnail_format.max_width,
@@ -106,10 +134,12 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
             thumbnailed_bytes = resized.write_to_buffer(
                 f".{thumbnail_format.extension}[{thumbnail_format.opts}]"
             )
+            processing_seconds += time.perf_counter() - start_time
             content_type = guess_type(f"image.{thumbnail_format.extension}")[0]
             assert content_type is not None
             thumbnail_path = get_image_thumbnail_path(image_attachment, thumbnail_format)
-            logger.info("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
+            logger.debug("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
+            start_time = time.perf_counter()
             upload_backend.upload_message_attachment(
                 thumbnail_path,
                 str(thumbnail_format),
@@ -118,6 +148,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
                 None,
                 None,
             )
+            uploading_seconds += time.perf_counter() - start_time
             height = resized.get("page-height") if thumbnail_format.animated else resized.height
             image_attachment.thumbnail_metadata.append(
                 asdict(
@@ -146,7 +177,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
                 image_attachment.realm_id, image_attachment.path_id, None
             )
             image_attachment.delete()
-            return 0
+            return ThumbnailingResult(0, fetching_seconds, processing_seconds, uploading_seconds)
         else:  # nocoverage
             # TODO: Clean up any dangling thumbnails we may have
             # produced?  Seems unlikely that we'd fail on one size,
@@ -167,7 +198,12 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
             transcoded_image=get_transcoded_format(image_attachment),
         ),
     )
-    return written_images
+    return ThumbnailingResult(
+        written_images,
+        fetching_seconds,
+        processing_seconds,
+        uploading_seconds,
+    )
 
 
 def update_message_rendered_content(
