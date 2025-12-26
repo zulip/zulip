@@ -11,6 +11,7 @@ import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as popovers from "./popovers.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
@@ -187,11 +188,15 @@ export function initialize(): void {
     render_title_area();
 
     const hide_stream_settings_button_width_threshold = 620;
+    const mobile_threshold = 576;
     $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
         const $view_description_elt = $(this);
         const window_width = $(window).width()!;
         let hover_timeout;
 
+        if (window_width <= mobile_threshold) {
+            return;
+        }
         if (event.type === "mouseenter") {
             if (!$view_description_elt.hasClass("view-description-extended")) {
                 const current_width = $view_description_elt.outerWidth();
@@ -232,6 +237,77 @@ export function initialize(): void {
                     $view_description_elt.css("width", "");
                 }
             }, 100);
+        }
+    });
+
+    $("body").on("click", ".narrow_description", () => {
+        const window_width = $(window).width()!;
+
+        if (window_width > mobile_threshold) {
+            return;
+        }
+
+        const filter = narrow_state.filter();
+        const context = get_message_view_header_context(filter);
+
+        let mobile_description_popup_content = ``;
+
+        // This was originally to be placed inside
+        // `navbar.hbs` file but at the point when
+        // that template is rendered, narrow_state.filter()
+        // returns undefined
+        if (context.description) {
+            mobile_description_popup_content = `
+                <div id="broad-description-menu-mobile" tabindex="0">
+                    <div class="close-btn-container">
+                        <button type="button" id="broad-description-menu-mobile-exit" aria-label="{{t 'Exit Description' }}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+                    </div>
+                    <span class="sub-stream-description rendered_markdown content-container">
+                        ${context.description}
+                    </span>
+                </div>
+            `;
+        } else {
+            mobile_description_popup_content = `
+                <div id="broad-description-menu-mobile" tabindex="0">
+                    <div class="close-btn-container">
+                        <button type="button" id="broad-description-menu-mobile-exit" aria-label="{{t 'Exit Description' }}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+                    </div>
+                    <span class="sub-stream-description rendered_markdown content-container">
+                        ${context.rendered_narrow_description}
+                    </span>
+                </div>
+            `;
+        }
+
+        const $header_container = $("#header-container");
+        if ($header_container.find("#broad-description-menu-mobile").length > 0) {
+            $("#header-container #broad-description-menu-mobile").remove();
+        }
+
+        const $el = $(mobile_description_popup_content);
+        $("#header-container").append($el);
+
+        $("#navbar-middle .column-middle-inner, .header, #message_view_header").addClass(
+            "no-navbar-shadow",
+        );
+        $("#broad-description-menu-mobile").addClass("expanded");
+        popovers.hide_all();
+    });
+
+    $("body").on("click", "#broad-description-menu-mobile-exit", () => {
+        $("#navbar-middle .column-middle-inner, .header, #message_view_header").removeClass(
+            "no-navbar-shadow",
+        );
+        $("#broad-description-menu-mobile").removeClass("expanded");
+    });
+
+    $(window).on("resize", (event) => {
+        if (event.target.innerWidth > mobile_threshold) {
+            $("#navbar-middle .column-middle-inner, .header, #message_view_header").removeClass(
+                "no-navbar-shadow",
+            );
+            $("#broad-description-menu-mobile").removeClass("expanded");
         }
     });
 }
