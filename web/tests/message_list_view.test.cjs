@@ -536,12 +536,35 @@ test("merge_message_groups", ({mock_template}) => {
         const list = build_list([message_group1]);
         const result = list.merge_message_groups([message_group2], "bottom");
 
-        assert.ok(message_group2.bookend_top);
-        assert_message_groups_list_equal(list._message_groups, [message_group1, message_group2]);
-        assert_message_groups_list_equal(result.append_groups, [message_group2]);
+        // Flipping historical flag should not split the message group
+        // if the message recipient is same
+        assert.equal(message_group2.bookend_top, undefined);
+        assert.equal(message2.want_subscription_status_divider, true);
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message1, message2]),
+        ]);
+        assert.deepEqual(result.append_groups, []);
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
-        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.append_messages, [message2]);
+        assert.ok(!list._message_groups[0].message_containers[0].want_subscription_status_divider);
+        assert.ok(list._message_groups[0].message_containers[1].want_subscription_status_divider);
+
+        const message3 = build_message_context({historical: false, topic: "test"});
+        const message_group3 = build_message_group([message3]);
+
+        const result2 = list.merge_message_groups([message_group3]);
+
+        assert.ok(message_group3.bookend_top);
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message1, message2]),
+            message_group3,
+        ]);
+        assert_message_groups_list_equal(result2.append_groups, [message_group3]);
+        assert.deepEqual(result2.prepend_groups, []);
+        assert.deepEqual(result2.rerender_groups, []);
+        assert.deepEqual(result2.append_messages, []);
+        assert.ok(!list._message_groups[1].message_containers[0].want_subscription_status_divider);
     })();
 
     (function test_append_message_same_topic_me_message() {
@@ -648,12 +671,36 @@ test("merge_message_groups", ({mock_template}) => {
         const list = build_list([message_group1]);
         const result = list.merge_message_groups([message_group2], "top");
 
-        assert.ok(message_group1.bookend_top);
-        assert_message_groups_list_equal(list._message_groups, [message_group2, message_group1]);
+        assert.equal(message_group1.bookend_top, undefined);
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message2, message1]),
+        ]);
         assert.deepEqual(result.append_groups, []);
-        assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
-        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.prepend_groups, []);
+        assert_message_groups_list_equal(result.rerender_groups, [
+            build_message_group([message2, message1]),
+        ]);
         assert.deepEqual(result.append_messages, []);
+        assert.ok(!list._message_groups[0].message_containers[0].want_subscription_status_divider);
+        assert.ok(list._message_groups[0].message_containers[1].want_subscription_status_divider);
+
+        const message3 = build_message_context({historical: false, topic: "test"});
+        const message_group3 = build_message_group([message3]);
+
+        const result2 = list.merge_message_groups([message_group3], "top");
+
+        assert.ok(message_group2.bookend_top);
+        assert_message_groups_list_equal(list._message_groups, [
+            message_group3,
+            build_message_group([message2, message1]),
+        ]);
+        assert.deepEqual(result2.append_groups, []);
+        assert_message_groups_list_equal(result2.prepend_groups, [message_group3]);
+        assert.deepEqual(result2.rerender_groups, []);
+        assert.deepEqual(result2.append_messages, []);
+        assert.ok(!list._message_groups[0].message_containers[0].want_subscription_status_divider);
+        assert.ok(!list._message_groups[1].message_containers[0].want_subscription_status_divider);
+        assert.ok(list._message_groups[1].message_containers[1].want_subscription_status_divider);
     })();
 });
 

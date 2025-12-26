@@ -12,7 +12,7 @@
        `auto`. */
     grid-template: auto auto / 2px minmax(0, 1fr);
     grid-template-areas:
-        "date_unread_marker    date_row  "
+        "message_divider_unread_marker message_feed_divider_content"
         "message_unread_marker messagebox";
 
     border-left: 1px solid var(--color-message-list-border);
@@ -743,8 +743,8 @@
         transition: opacity 0.3s ease-out;
     }
 
-    &.date_unread_marker {
-        grid-area: date_unread_marker;
+    &.message_divider_unread_marker {
+        grid-area: message_divider_unread_marker;
 
         .unread-marker-fill {
             border-radius: 0 !important;
@@ -1139,7 +1139,7 @@
     /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
        for details on how this works */
     .message_row.unread {
-        .date_unread_marker {
+        .message_divider_unread_marker {
             display: none;
         }
     }
@@ -1147,17 +1147,52 @@
     /* Select all but the first .message_row.unread,
        and remove the properties set from the previous rule. */
     .message_row.unread ~ .message_row.unread {
-        .date_unread_marker {
+        .message_divider_unread_marker {
             display: block;
         }
     }
 }
 
-.date_row {
-    grid-area: date_row;
+.message_feed_divider {
+    display: grid;
+    grid-area: message_feed_divider_content;
+    grid-template: auto / minmax(20px, 1fr) auto minmax(max-content, 1fr);
+    grid-template-areas: "left_divider_content middle_divider_content right_divider_content";
+    align-items: center;
+    padding: 8px 0;
 
-    & .timerender-content {
-        display: block;
+    &::before {
+        grid-area: left_divider_content;
+        content: " ";
+        height: 0;
+        border-bottom: 1px solid var(--color-border-message-group-spacer-line);
+    }
+
+    &::after {
+        display: none;
+    }
+
+    .stream_status {
+        grid-area: middle_divider_content;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        opacity: 0.75;
+        padding: 0 0.25em;
+
+        & i {
+            font-size: 0.7143em; /* 10px at 14px / em */
+            /* TODO: Don't use relative positioning here. */
+            position: relative;
+            margin-left: 0.2em; /* 2px at 10px / em */
+        }
+    }
+
+    .timerender-content {
+        grid-area: right_divider_content;
+        display: flex;
+        align-items: center;
+        justify-content: end;
         overflow: hidden;
         text-transform: uppercase;
         font-size: calc(12em / 14);
@@ -1168,19 +1203,43 @@
         letter-spacing: 0.04em;
         color: var(--color-date);
         /* Right padding matches time in message row and date in recipient row. */
-        padding: 8px 6px 8px 4px;
+        padding-right: 6px;
 
         &::before {
+            min-width: 20px;
             width: 100%;
+            position: relative;
+            content: " ";
+            height: 0;
+            border-bottom: 1px solid
+                var(--color-border-message-group-spacer-line);
+            right: 0.25em;
+            margin-left: -50%;
         }
 
         &::after {
             width: 6px;
+            position: relative;
             left: 0.25em;
             /* Align date with message time and recipient bar date. */
             margin-right: -1px;
+            content: " ";
+            height: 0;
+            border-bottom: 1px solid
+                var(--color-border-message-group-spacer-line);
         }
     }
+}
+
+.message_feed_divider:not(:has(.timerender-content))::after {
+    grid-area: right_divider_content;
+    display: block;
+    min-width: 20px;
+    content: " ";
+    height: 0;
+    width: calc(100% - 2px);
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-border-message-group-spacer-line);
 }
 
 .bookend {
@@ -1216,7 +1275,18 @@
 
     &::before,
     &::after {
+        display: inline-block;
+        position: relative;
+        content: " ";
+        vertical-align: middle;
+        height: 0;
+        border-bottom: 1px solid var(--color-border-message-group-spacer-line);
         width: 50%;
+    }
+
+    &::before {
+        right: 0.25em;
+        margin-left: -50%;
     }
 
     &::after {
@@ -1232,24 +1302,6 @@
 
 .trailing_bookend .bookend-channel-settings-link {
     display: inline;
-}
-
-.bookend-label::before,
-.bookend-label::after,
-.date_row .timerender-content::before,
-.date_row .timerender-content::after {
-    display: inline-block;
-    position: relative;
-    content: " ";
-    vertical-align: middle;
-    height: 0;
-    border-bottom: 1px solid var(--color-border-message-group-spacer-line);
-}
-
-.bookend-label::before,
-.date_row .timerender-content::before {
-    right: 0.25em;
-    margin-left: -50%;
 }
 
 #report-message-preview-container {
