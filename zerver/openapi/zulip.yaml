@@ -8450,6 +8450,19 @@ paths:
                           user automatically unmuting or following the topic in question.
 
                           **Changes**: New in Zulip 8.0 (feature level 218).
+                      message_url:
+                        type: string
+                        description: |
+                          The URL of the sent message.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-1aabde).
+                      message_link:
+                        type: string
+                        description: |
+                          The URL of the sent message in the
+                          [Zulip-flavored Markdown format for message links](/help/format-your-message-using-markdown#links).
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-1aabde).
                     example:
                       {
                         "msg": "",

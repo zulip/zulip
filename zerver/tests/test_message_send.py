@@ -854,6 +854,56 @@ class MessagePOSTTest(ZulipTestCase):
         content = self.assert_json_success(result)
         assert "automatic_new_visibility_policy" not in content
 
+    def test_message_url_in_api_response(self) -> None:
+        """
+        Test to verify message URL in API response.
+        """
+        user_profile = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Test message URL when sending in a channel.
+        stream = get_stream("Verona", user_profile.realm)
+        result = self.api_post(
+            user_profile,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(stream.name).decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        response_dict = self.assert_json_success(result)
+
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/channel/{stream.id}-{stream.name}/topic/Test.20topic/near/{message_id}",
+        )
+        self.assertEqual(
+            response_dict["message_link"],
+            f"[#Verona > Test topic @ 💬](#narrow/channel/{stream.id}-{stream.name}/topic/Test.20topic/near/{message_id})",
+        )
+
+        # Test message URL when sending a direct message.
+        result = self.api_post(
+            user_profile,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "content": "Test message",
+                "to": orjson.dumps([othello.email]).decode(),
+            },
+        )
+        response_dict = self.assert_json_success(result)
+
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/dm/10,12/near/{message_id}",
+        )
+        self.assertEqual(response_dict["message_link"], response_dict["message_url"])
+
     def test_personal_message(self) -> None:
         """
         Sending a personal message to a valid username is successful.

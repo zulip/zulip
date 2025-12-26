@@ -80,7 +80,8 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
-from zerver.lib.topic_link_util import get_stream_link_syntax
+from zerver.lib.topic_link_util import get_fallback_markdown_link, get_stream_link_syntax
+from zerver.lib.url_encoding import message_link_url
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     check_any_user_has_permission_by_role,
@@ -234,6 +235,8 @@ class UserProfileAnnotations(TypedDict):
 @dataclass
 class SentMessageResult:
     message_id: int
+    message_url: str | None = None
+    message_link: str | None = None
     automatic_new_visibility_policy: int | None = None
 
 
@@ -1090,10 +1093,23 @@ def do_send_messages(
                         visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
                     )
 
-        # Deliver events to the real-time push system, as well as
-        # enqueuing any additional processing triggered by the message.
         wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
 
+        # Compute URL of the message.
+        send_request.message_url = message_link_url(send_request.realm, wide_message_dict)
+        if send_request.stream:
+            send_request.message_link = get_fallback_markdown_link(
+                send_request.stream.id,
+                send_request.stream.name,
+                send_request.message.topic_name(),
+                send_request.message.id,
+            )
+        else:
+            # There is no special Zulip markdown syntax for direct message URLs.
+            send_request.message_link = send_request.message_url
+
+        # Deliver events to the real-time push system, as well as
+        # enqueuing any additional processing triggered by the message.
         user_flags = user_message_flags.get(send_request.message.id, {})
 
         """
@@ -1303,6 +1319,8 @@ def do_send_messages(
     sent_message_results = [
         SentMessageResult(
             message_id=send_request.message.id,
+            message_url=send_request.message_url,
+            message_link=send_request.message_link,
             automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
         )
         for send_request in send_message_requests

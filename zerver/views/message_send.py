@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Sequence
 from email.headerregistry import Address
-from typing import Annotated, Literal, cast
+from typing import Annotated, Any, Literal, cast
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -218,7 +218,7 @@ def send_message_backend(
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
 
-    data: dict[str, int] = {}
+    data: dict[str, Any] = {}
     sent_message_result = check_send_message(
         sender,
         client,
@@ -236,6 +236,10 @@ def send_message_backend(
         read_by_sender=read_by_sender,
     )
     data["id"] = sent_message_result.message_id
+    if sent_message_result.message_url:
+        data["message_url"] = sent_message_result.message_url
+    if sent_message_result.message_link:
+        data["message_link"] = sent_message_result.message_link
     if sent_message_result.automatic_new_visibility_policy:
         data["automatic_new_visibility_policy"] = (
             sent_message_result.automatic_new_visibility_policy
