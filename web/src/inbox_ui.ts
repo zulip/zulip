@@ -1039,6 +1039,19 @@ function show_empty_inbox_text(has_visible_unreads: boolean): void {
         } else {
             $("#inbox-empty-with-search").hide();
             // Use display value specified in CSS.
+
+            // Check is current filter is "followed topics"
+            const is_followed_filter_selected = filters.has(views_util.FILTERS.FOLLOWED_TOPICS);
+
+            // Conditionally render the custom texts accordingly
+            if (is_followed_filter_selected) {
+                $(".inbox-empty-action-default").hide();
+                $(".inbox-empty-action-filtered").show();
+            } else {
+                $(".inbox-empty-action-default").show();
+                $(".inbox-empty-action-filtered").hide();
+            }
+
             $("#inbox-empty-without-search").css("display", "");
         }
     } else {
@@ -2436,6 +2449,14 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             const $elt = $(e.currentTarget);
             $elt.trigger("click");
         }
+    });
+
+    $("body").on("click", ".inbox-toggle-followed-filter", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        filters.delete(views_util.FILTERS.FOLLOWED_TOPICS);
+        save_data_to_ls();
+        complete_rerender();
     });
 
     $(document).on("compose_canceled.zulip", () => {
