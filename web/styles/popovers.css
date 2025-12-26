@@ -568,7 +568,17 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-list-loader {
-            margin: 10px auto;
+            margin: auto; /* center the spinner */
+
+            .loading_indicator_spinner {
+                margin-top: 10px;
+            }
+        }
+
+        .error-message:not(:empty) {
+            color: var(--color-alert-error-red);
+            text-align: center;
+            margin-top: 20px;
         }
 
         .stream-list-bottom-section,
