@@ -38,9 +38,7 @@ async function test_mention(page: Page): Promise<void> {
     await page.waitForSelector(".wildcard_warning", {hidden: true});
 
     message_list_id = await common.get_current_msg_list_id(page, true);
-    await common.check_messages_sent(page, message_list_id, [
-        ["Verona > Test mention all", ["@all"]],
-    ]);
+    await common.check_messages_sent(page, message_list_id, [["Test mention all", ["@all"]]]);
 }
 
 common.run_test(test_mention);
