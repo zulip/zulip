@@ -760,6 +760,10 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="group-pm-with", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
+    def test_add_term_using_mentions_operator_with_non_existing_user(self) -> None:
+        term = NarrowParameter(operator="mentions", operand="non-existing@zulip.com")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
     # Test that the underscore version of "group-pm-with" works.
     def test_add_term_using_underscore_version_of_group_pm_with_operator(self) -> None:
         term = NarrowParameter(operator="group_pm_with", operand=self.othello_email)
@@ -815,6 +819,33 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def _build_query(self, term: NarrowParameter) -> Select:
         return self.builder.add_term(self.raw_query, term)
+
+    def test_add_term_using_mentions_operator_with_logged_in_user_email(self) -> None:
+        term = NarrowParameter(operator="mentions", operand=self.user_profile.id)
+        self._do_add_term_test(
+            term,
+            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+        )
+
+    def test_add_term_using_mentions_operator_with_different_user_email(self) -> None:
+        othello = self.example_user("othello")
+        term = NarrowParameter(operator="mentions", operand=othello.id)
+
+        self._do_add_term_test(
+            term,
+            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+        )
+
+        self.send_stream_message(
+            self.user_profile,
+            "Denmark",
+            content=f"Hello @**{othello.full_name}**",
+        )
+
+        self._do_add_term_test(
+            term,
+            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+        )
 
 
 class NarrowLibraryTest(ZulipTestCase):
@@ -1138,6 +1169,11 @@ class NarrowLibraryTest(ZulipTestCase):
                     NarrowParameter(operator="channel", operand="Denmark"),
                     NarrowParameter(operator="topic", operand="logic"),
                 ]
+            )
+        )
+        self.assertFalse(
+            is_spectator_compatible(
+                [NarrowParameter(operator="mentions", operand="hamlet@zulip.com")]
             )
         )
         self.assertFalse(
@@ -4645,6 +4681,37 @@ class GetOldMessagesTest(ZulipTestCase):
         queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
         self.assertIn(f"AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}", queries[0].sql)
+
+    def test_get_visible_messages_with_mentions_narrow(self) -> None:
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("design")
+        self.subscribe(iago, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        content = f"Hello @**{iago.full_name}**!"
+        msg_id = [
+            self.send_stream_message(
+                hamlet,
+                stream.name,
+                content=content,
+            )
+            for i in range(5)
+        ]
+
+        content = f"Hello @_**{iago.full_name}**!"
+        self.send_stream_message(
+            hamlet,
+            stream.name,
+            content=content,
+        )
+
+        narrow = [dict(operator="mentions", operand=iago.email)]
+
+        # This should check just the messages that mentioned this user.
+        self.message_visibility_test(narrow, msg_id, 2)
 
     def test_exclude_muting_conditions(self) -> None:
         realm = get_realm("zulip")
