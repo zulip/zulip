@@ -1,5 +1,6 @@
 # Zulip's main Markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our Markdown syntax.
+import html
 import logging
 import re
 import time
@@ -1226,7 +1227,7 @@ class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
 
 class Timestamp(markdown.inlinepatterns.Pattern):
     @override
-    def handleMatch(self, match: Match[str]) -> Element | None:
+    def handleMatch(self, match: Match[str]) -> Element | str | None:
         time_input_string = match.group("time")
         try:
             timestamp = dateutil.parser.parse(time_input_string, tzinfos=common_timezones)
@@ -1236,13 +1237,12 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             except ValueError:
                 timestamp = None
 
+        # Reject ordinal-based natural language dates (e.g. "5th", "21st")
+        if timestamp is not None and re.search(r"\b\d+(st|nd|rd|th)\b", time_input_string):
+            timestamp = None
+
         if not timestamp:
-            error_element = Element("span")
-            error_element.set("class", "timestamp-error")
-            error_element.text = markdown.util.AtomicString(
-                f"Invalid time format: {time_input_string}"
-            )
-            return error_element
+            return f"&lt;time:{html.escape(time_input_string)}&gt;"
 
         # Use HTML5 <time> element for valid timestamps.
         time_element = Element("time")
@@ -1250,12 +1250,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
             try:
                 timestamp = timestamp.astimezone(timezone.utc)
             except (ValueError, OverflowError):
-                error_element = Element("span")
-                error_element.set("class", "timestamp-error")
-                error_element.text = markdown.util.AtomicString(
-                    f"Invalid time format: {time_input_string}"
-                )
-                return error_element
+                return f"&lt;time:{html.escape(time_input_string)}&gt;"
         else:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
         time_element.set("datetime", timestamp.isoformat().replace("+00:00", "Z"))
