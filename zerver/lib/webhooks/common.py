@@ -15,6 +15,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json
 from typing_extensions import override
 
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -27,8 +28,10 @@ from zerver.lib.exceptions import (
     JsonableError,
     StreamDoesNotExistError,
 )
+from zerver.lib.message import access_message
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
@@ -208,6 +211,41 @@ def check_send_webhook_message(
             # non-existent stream, so we don't need to re-raise it since it
             # clutters up webhook-errors.log
             return None
+
+
+def maybe_auto_resolve_topic(
+    *,
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int | None,
+    should_resolve: bool,
+) -> None:
+    """
+    Perform follow-up actions on a webhook message, such as auto-resolving
+    the topic. Safe to call when no message was sent.
+    """
+    if not should_resolve or message_id is None:
+        return
+
+    # Fetch the message to read its current topic
+    message = access_message(
+        user_profile,
+        message_id,
+        is_modifying_message=True,
+    )
+
+    # Do NOT try to resolve empty topics"
+    if not message.topic_name():
+        return
+
+    new_topic = f"{RESOLVED_TOPIC_PREFIX}{message.topic_name()}"
+
+    check_update_message(
+        user_profile=user_profile,
+        message_id=message_id,
+        topic_name=new_topic,
+        propagate_mode="change_all",
+    )
 
 
 def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
