@@ -1070,9 +1070,49 @@ def api_github_webhook(
 
 
 def is_empty_pull_request_review_event(payload: WildValue) -> bool:
+    # When submitting a review, GitHub has a bug where it'll send a
+    # duplicate empty "edited" event for the main review body. We ignore
+    # those, to avoid triggering duplicate notifications.
     action = payload["action"].tame(check_string)
     changes = payload.get("changes", {})
     return action == "edited" and len(changes) == 0
+
+
+PULL_REQUEST_ACTION_TO_EVENT = {
+    "opened": "opened_pull_request",
+    "reopened": "opened_pull_request",
+    "synchronize": "updated_pull_request",
+    "edited": "updated_pull_request",
+    "assigned": "assigned_or_unassigned_pull_request",
+    "unassigned": "assigned_or_unassigned_pull_request",
+    "closed": "closed_pull_request",
+    "review_requested": "pull_request_review_requested",
+    "ready_for_review": "pull_request_ready_for_review",
+    "locked": "locked_or_unlocked_pull_request",
+    "unlocked": "locked_or_unlocked_pull_request",
+    "auto_merge_enabled": "pull_request_auto_merge",
+    "auto_merge_disabled": "pull_request_auto_merge",
+}
+
+ISSUE_ACTION_TO_EVENT = {
+    "labeled": "issue_labeled_or_unlabeled",
+    "unlabeled": "issue_labeled_or_unlabeled",
+    "milestoned": "issue_milestoned_or_demilestoned",
+    "demilestoned": "issue_milestoned_or_demilestoned",
+    "transferred": "issues_transferred",
+}
+
+
+def get_push_event_name(payload: WildValue, branches: str | None) -> str | None:
+    if is_merge_queue_push_event(payload):
+        return None
+    if not is_commit_push_event(payload):
+        return "push_tags"
+    if branches is not None:
+        branch = get_branch_name_from_ref(payload["ref"].tame(check_string))
+        if not is_branch_name_notifiable(branch, branches):
+            return None
+    return "push_commits"
 
 
 def get_zulip_event_name(
@@ -1080,83 +1120,32 @@ def get_zulip_event_name(
     payload: WildValue,
     branches: str | None,
 ) -> str | None:
-    """
-    Usually, we return an event name that is a key in EVENT_FUNCTION_MAPPER.
-
-    We return None for an event that we know we don't want to handle.
-    """
-    if header_event == "pull_request":
-        action = payload["action"].tame(check_string)
-        if action in ("opened", "reopened"):
-            return "opened_pull_request"
-        elif action in ("synchronize", "edited"):
-            return "updated_pull_request"
-        if action in ("assigned", "unassigned"):
-            return "assigned_or_unassigned_pull_request"
-        if action == "closed":
-            return "closed_pull_request"
-        if action == "review_requested":
-            return "pull_request_review_requested"
-        if action == "ready_for_review":
-            return "pull_request_ready_for_review"
-        if action in ("locked", "unlocked"):
-            return "locked_or_unlocked_pull_request"
-        if action in ("auto_merge_enabled", "auto_merge_disabled"):
-            return "pull_request_auto_merge"
-        if action in IGNORED_PULL_REQUEST_ACTIONS:
-            return None
-    elif header_event == "pull_request_review":
-        if is_empty_pull_request_review_event(payload):
-            # When submitting a review, GitHub has a bug where it'll
-            # send a duplicate empty "edited" event for the main
-            # review body. Ignore those, to avoid triggering
-            # duplicate notifications.
-            return None
-        return "pull_request_review"
-    elif header_event == "push":
-        if is_merge_queue_push_event(payload):
-            return None
-        if is_commit_push_event(payload):
-            if branches is not None:
-                branch = get_branch_name_from_ref(payload["ref"].tame(check_string))
-                if not is_branch_name_notifiable(branch, branches):
-                    return None
-            return "push_commits"
-        else:
-            return "push_tags"
-    elif header_event == "check_run":
-        if payload["check_run"]["status"].tame(check_string) != "completed":
-            return None
-        return header_event
-    elif header_event == "team":
-        action = payload["action"].tame(check_string)
-        if action == "edited":
-            return "team"
-        if action in IGNORED_TEAM_ACTIONS:
-            # no need to spam our logs, we just haven't implemented it yet
-            return None
-        else:
-            # this means GH has actually added new actions since September 2020,
-            # so it's a bit more cause for alarm
+    action = payload.get("action", "").tame(check_string)
+    match header_event:
+        case "pull_request":
+            if action in IGNORED_PULL_REQUEST_ACTIONS:
+                return None
+            return PULL_REQUEST_ACTION_TO_EVENT.get(action)
+        case "issues":
+            if action == "opened" and payload.get("changes", {}).get("old_issue"):
+                return "issues_opened_via_transfer"
+            return ISSUE_ACTION_TO_EVENT.get(action, "issues")
+        case "pull_request_review":
+            return None if is_empty_pull_request_review_event(payload) else "pull_request_review"
+        case "push":
+            return get_push_event_name(payload, branches)
+        case "check_run":
+            status = payload["check_run"]["status"].tame(check_string)
+            return "check_run" if status == "completed" else None
+        case "team":
+            if action == "edited":
+                return "team"
+            if action in IGNORED_TEAM_ACTIONS:
+                return None
             raise UnsupportedWebhookEventTypeError(f"unsupported team action {action}")
-    elif header_event == "issues":
-        action = payload["action"].tame(check_string)
-        if action in ("labeled", "unlabeled"):
-            return "issue_labeled_or_unlabeled"
-        if action in ("milestoned", "demilestoned"):
-            return "issue_milestoned_or_demilestoned"
-        if action == "transferred":
-            return "issues_transferred"
-        if action == "opened" and payload.get("changes", {}).get("old_issue"):
-            return "issues_opened_via_transfer"
-        else:
-            return "issues"
-    elif header_event in EVENT_FUNCTION_MAPPER:
-        return header_event
-    elif header_event in IGNORED_EVENTS:
-        return None
-
-    complete_event = "{}:{}".format(
-        header_event, payload.get("action", "???").tame(check_string)
-    )  # nocoverage
-    raise UnsupportedWebhookEventTypeError(complete_event)
+        case _:
+            if header_event in IGNORED_EVENTS:
+                return None
+            if header_event in EVENT_FUNCTION_MAPPER:
+                return header_event
+            raise UnsupportedWebhookEventTypeError(f"{header_event}:{action or '???'}")
