@@ -446,7 +446,7 @@ class DraftDeleteTests(ZulipTestCase):
         resp = self.api_delete(hamlet, f"/api/v1/drafts/{new_draft_id}")
         self.assert_json_success(resp)
 
-        # Now make sure that the there are no more drafts.
+        # Now make sure that there are no more drafts.
         self.assertEqual(Draft.objects.count() - initial_count, 0)
 
     def test_delete_non_existent_draft(self) -> None:
