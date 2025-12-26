@@ -488,6 +488,19 @@ export function populate_realm_domains_label(
     $("#allowed_domains_label").text($t({defaultMessage: "Allowed domains: {domains}"}, {domains}));
 }
 
+// Show yellow outline when organization description is empty.
+// We use a class-based approach because :empty doesn't work for textareas.
+export function update_description_empty_state(): void {
+    // We do not show any indicator for non-admins.
+    if (!current_user.is_admin) {
+        return;
+    }
+    const $textarea = $<HTMLTextAreaElement>("#id_realm_description");
+    const description_text = $textarea.val()!;
+    const is_empty = description_text.trim() === "";
+    $textarea.toggleClass("empty-description", is_empty);
+}
+
 export function populate_auth_methods(auth_method_to_bool_map: Record<string, boolean>): void {
     if (!meta.loaded) {
         return;
@@ -1481,6 +1494,9 @@ export function build_page(): void {
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();
+
+    update_description_empty_state();
+    $("#id_realm_description").on("input", update_description_empty_state);
 
     $(".org-permissions-form").on(
         "input change",
