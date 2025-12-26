@@ -190,9 +190,14 @@ export function initialize(): void {
             return;
         }
 
+        if (document.getSelection()?.type === "Range") {
+            // Drags and double/triple clicks on the message
+            // (to copy message text) shouldn't trigger a reply.
+            return;
+        }
+
         if (mouse_drag.is_drag(e)) {
-            // Drags on the message (to copy message text) shouldn't trigger a reply.
-            // This also prevents triggering a reply when you click and drag through
+            // This prevents triggering a reply when you click and drag through
             // an area that doesn't contain text.
             return;
         }
