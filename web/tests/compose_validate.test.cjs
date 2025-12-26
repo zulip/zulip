@@ -48,6 +48,14 @@ set_current_user(current_user);
 const user_settings = {default_language: "en"};
 initialize_user_settings({user_settings});
 
+function mock_channel_get(f) {
+    channel.get = async (opts) => {
+        // await an empty promise to ensure the "fetch" happens asynchronously
+        await Promise.resolve();
+        f(opts);
+    };
+}
+
 const me = {
     email: "me@example.com",
     user_id: 30,
@@ -721,12 +729,12 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     new_banner_rendered = false;
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".recipient_not_subscribed", []);
-    channel.get = (opts) => {
+    mock_channel_get((opts) => {
         assert.equal(opts.url, `/json/streams/${sub.stream_id}/members`);
-        return {
+        return opts.success({
             subscribers: [],
-        };
-    };
+        });
+    });
 
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);

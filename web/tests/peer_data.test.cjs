@@ -24,6 +24,14 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 
+function mock_channel_get(f) {
+    channel.get = async (opts) => {
+        // await an empty promise to ensure the "fetch" happens asynchronously
+        await Promise.resolve();
+        f(opts);
+    };
+}
+
 set_current_user({});
 const realm = make_realm();
 set_realm(realm);
@@ -282,24 +290,24 @@ test("maybe_fetch_stream_subscribers", async () => {
     };
     stream_data.add_sub_for_tests(india);
     let channel_get_calls = 0;
-    channel.get = (opts) => {
+    mock_channel_get((opts) => {
         assert.equal(opts.url, `/json/streams/${india.stream_id}/members`);
         channel_get_calls += 1;
-        return {
+        opts.success({
             subscribers: [1, 2, 3, 4],
-        };
-    };
+        });
+    });
 
     // Only one of these will do the fetch, and the other will wait
     // for the first fetch to complete.
-    const promise1 = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
-    const promise2 = peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    const promise1 = peer_data.fetch_stream_subscribers(india.stream_id);
+    const promise2 = peer_data.fetch_stream_subscribers(india.stream_id);
     await promise1;
     await promise2;
     assert.equal(channel_get_calls, 1);
 
     peer_data.clear_for_testing();
-    const pending_promise = peer_data.maybe_fetch_stream_subscribers(india.stream_id, false);
+    const pending_promise = peer_data.fetch_stream_subscribers(india.stream_id, false);
     peer_data.bulk_add_subscribers({
         stream_ids: [india.stream_id],
         user_ids: [7, 9],
@@ -336,9 +344,21 @@ test("maybe_fetch_stream_subscribers", async () => {
     );
 
     peer_data.clear_for_testing();
-    channel.get = () => {
-        throw new Error("error");
-    };
+    mock_channel_get((opts) => {
+        opts.error({status: 400, responseJSON: ""});
+    });
+    blueslip.expect("error", "Bad request to fetch channel subscribers.");
+    // retry is false, so we get null because there was an error
+    assert.deepEqual(
+        await peer_data.get_subscribers_with_possible_fetch(india.stream_id, false),
+        null,
+    );
+    blueslip.reset();
+
+    peer_data.clear_for_testing();
+    mock_channel_get((opts) => {
+        opts.error({status: 500, responseJSON: ""});
+    });
     blueslip.expect("error", "Failure fetching channel subscribers");
     // retry is false, so we get null because there was an error
     assert.deepEqual(
@@ -347,18 +367,21 @@ test("maybe_fetch_stream_subscribers", async () => {
     );
     blueslip.reset();
 
-    channel.get = () => {
-        throw new Error("error");
-    };
     peer_data.clear_for_testing();
+    mock_channel_get((opts) => {
+        opts.error({status: 500, responseJSON: ""});
+    });
     blueslip.expect("error", "Failure fetching channel subscribers");
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, false), null);
+    blueslip.reset();
+
     // If we know they're subscribed, we return `true` even though we don't have complete
     // data.
     peer_data.bulk_add_subscribers({
         stream_ids: [india.stream_id],
         user_ids: [5],
     });
+    blueslip.expect("error", "Failure fetching channel subscribers");
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, false), true);
     blueslip.reset();
 
@@ -367,17 +390,18 @@ test("maybe_fetch_stream_subscribers", async () => {
         f();
     });
     let num_attempts = 0;
-    channel.get = async () => {
+    mock_channel_get((opts) => {
         num_attempts += 1;
         if (num_attempts === 2) {
-            return {
+            opts.success({
                 subscribers: [1, 2, 3, 4],
-            };
+            });
+        } else {
+            opts.error({status: 500, responseJSON: ""});
         }
-        throw new Error("error");
-    };
+    });
     blueslip.expect("error", "Failure fetching channel subscribers");
-    const subscribers = await peer_data.maybe_fetch_stream_subscribers_with_retry(india.stream_id);
+    const subscribers = await peer_data.fetch_stream_subscribers_with_retry(india.stream_id);
     assert.equal(num_attempts, 2);
     assert.deepEqual([...subscribers.keys()], [1, 2, 3, 4]);
     blueslip.reset();
@@ -387,6 +411,19 @@ test("maybe_fetch_stream_subscribers", async () => {
     num_attempts = 0;
     assert.equal(await peer_data.maybe_fetch_is_user_subscribed(india.stream_id, 5, true), false);
     assert.equal(num_attempts, 2);
+
+    // No retry if it's a bad request
+    num_attempts = 0;
+    mock_channel_get((opts) => {
+        num_attempts += 1;
+        assert.equal(num_attempts, 1);
+        opts.error({status: 400, responseJSON: "bad request"});
+    });
+    peer_data.clear_for_testing();
+    blueslip.expect("error", "Bad request to fetch channel subscribers.");
+    await peer_data.fetch_stream_subscribers_with_retry(india.stream_id);
+    assert.equal(num_attempts, 1);
+    blueslip.reset();
 });
 
 test("get_subscriber_count", async () => {
@@ -437,10 +474,12 @@ test("get_subscriber_count", async () => {
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 19);
 
     // Now fetch the actual subscribers
-    channel.get = () => ({
-        subscribers: [george.user_id, fred.user_id],
+    mock_channel_get((opts) => {
+        opts.success({
+            subscribers: [george.user_id, fred.user_id],
+        });
     });
-    await peer_data.maybe_fetch_stream_subscribers(india.stream_id);
+    await peer_data.fetch_stream_subscribers(india.stream_id);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 2);
     // Now we know Gail isn't subscribed, so we don't decrement the count
     peer_data.remove_subscriber(india.stream_id, gail.user_id);
@@ -502,9 +541,9 @@ test("is_subscriber_subset", async () => {
     blueslip.reset();
 
     // Errors when fetching subscriber data return `null`
-    channel.get = () => {
-        throw new Error("error");
-    };
+    mock_channel_get((opts) => {
+        opts.error({status: 500});
+    });
     peer_data.clear_for_testing();
     // Expect two calls, one for each channel
     blueslip.expect("error", "Failure fetching channel subscribers", 2);
@@ -528,7 +567,7 @@ test("get_unique_subscriber_count_for_streams", async () => {
     assert.equal(count, 2);
 });
 
-test("load_subscriptions_for_user", async () => {
+test("fetch_subscriptions_for_user", async () => {
     people.add_active_user(fred);
 
     const india = {
@@ -541,70 +580,73 @@ test("load_subscriptions_for_user", async () => {
     stream_data.add_sub_for_tests(rome);
 
     let channel_get_calls = 0;
-    channel.get = (opts) => {
+    mock_channel_get((opts) => {
         assert.equal(opts.url, `/json/users/${fred.user_id}/channels`);
         channel_get_calls += 1;
-        return {
+        return opts.success({
             subscribed_channel_ids: [india.stream_id],
-        };
-    };
+        });
+    });
 
     // Only one of these will do the fetch, and the other will wait
     // for the first fetch to complete.
-    const promise1 = peer_data.load_subscriptions_for_user(fred.user_id);
-    const promise2 = peer_data.load_subscriptions_for_user(fred.user_id);
+    const promise1 = peer_data.fetch_subscriptions_for_user(fred.user_id);
+    const promise2 = peer_data.fetch_subscriptions_for_user(fred.user_id);
     await promise1;
     await promise2;
     assert.equal(channel_get_calls, 1);
 
     peer_data.clear_for_testing();
-    channel.get = (payload) => {
-        payload.error({status: 500});
-    };
-    blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.", 5);
+    mock_channel_get((opts) => {
+        opts.error({status: 500});
+    });
+    blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.", 4);
     blueslip.expect("error", "Failure fetching user's subscribed channels. Giving up.");
-    await peer_data.load_subscriptions_for_user(fred.user_id);
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
     blueslip.reset();
 
     peer_data.clear_for_testing();
-    channel.get = (payload) => {
-        payload.error({status: 400});
-    };
+    mock_channel_get((opts) => {
+        opts.error({status: 400, responseJSON: {msg: "bad request"}});
+    });
     blueslip.expect("error", "Bad request to fetch user's subscribed channels.");
-    await peer_data.load_subscriptions_for_user(fred.user_id);
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
     blueslip.reset();
 
     peer_data.clear_for_testing();
     assert.ok(!stream_data.is_user_loaded_and_subscribed(india.stream_id, fred.user_id));
     let error_counter = 0;
-    channel.get = (payload) => {
+    mock_channel_get((opts) => {
         if (error_counter === 3) {
-            payload.success({
+            opts.success({
                 subscribed_channel_ids: [india.stream_id],
             });
         } else {
             error_counter += 1;
-            payload.error({status: 500});
+            opts.error({
+                status: 500,
+            });
         }
-    };
+    });
     blueslip.expect("warn", "Failure fetching user's subscribed channels. Retrying.", 3);
-    await peer_data.load_subscriptions_for_user(fred.user_id);
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
     assert.ok(stream_data.is_user_loaded_and_subscribed(india.stream_id, fred.user_id));
     blueslip.reset();
 
     channel_get_calls = 0;
-    channel.get = () => {
+    mock_channel_get((opts) => {
         channel_get_calls += 1;
-        return {
+        opts.success({
             subscribers: [fred.user_id],
-        };
-    };
-    await peer_data.maybe_fetch_stream_subscribers(india.stream_id);
-    await peer_data.maybe_fetch_stream_subscribers(rome.stream_id);
+        });
+    });
+    await peer_data.fetch_stream_subscribers(india.stream_id);
+    await peer_data.fetch_stream_subscribers(rome.stream_id);
     assert.equal(channel_get_calls, 2);
 
     // No get request here because we already have full subscriber data
     // for both streams.
-    await peer_data.load_subscriptions_for_user(fred.user_id);
-    assert.equal(channel_get_calls, 2);
+    channel_get_calls = 0;
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
+    assert.equal(channel_get_calls, 0);
 });
