@@ -14156,11 +14156,14 @@ paths:
                     The [home view](/help/configure-home-view) used when opening a new
                     Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                    - "recent_topics" - Recent conversations view
+                    - "recent" - Recent conversations view
                     - "inbox" - Inbox view
                     - "all_messages" - Combined feed view
 
-                    **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                    **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                    view had `"recent_topics"` as its string encoding.
+
+                    New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
                   type: string
                   example: all_messages
@@ -17897,11 +17900,14 @@ paths:
                               The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent conversations view
+                              - "recent" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - Combined feed view
 
-                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                              view had `"recent_topics"` as its string encoding.
+
+                              New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
                           web_escape_navigates_to_home_view:
                             type: boolean
@@ -20201,11 +20207,14 @@ paths:
                               The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent conversations view
+                              - "recent" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - Combined feed view
 
-                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                              view had `"recent_topics"` as its string encoding.
+
+                              New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
                           web_escape_navigates_to_home_view:
                             type: boolean
@@ -21516,12 +21525,15 @@ paths:
                     The [home view](/help/configure-home-view) used when opening a new
                     Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                    - "recent_topics" - Recent conversations view
+                    - "recent" - Recent conversations view
                     - "inbox" - Inbox view
                     - "all_messages" - Combined feed view
 
-                    **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
-                    called `default_view`, which was new in Zulip 4.0 (feature level 42).
+                    **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                    view had `"recent_topics"` as its string encoding.
+
+                    New in Zulip 8.0 (feature level 219). Previously, this was called
+                    `default_view`, which was new in Zulip 4.0 (feature level 42).
 
                     Before Zulip 5.0 (feature level 80), this setting was managed by
                     the `PATCH /settings/display` endpoint.

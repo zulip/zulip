@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 454**
+
+- [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`PATCH /settings`](/api/update-settings): Changed the `web_home_view`
+  value for the recent view to "recent".
+
 **Feature level 453**
 
 * [`POST /register`](/api/register-queue): `gif_rating_options`

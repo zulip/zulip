@@ -1443,7 +1443,7 @@ export function show(): void {
         const html_body = render_introduce_zulip_view_modal({
             zulip_view: "recent_conversations",
             current_home_view_and_escape_navigation_enabled:
-                user_settings.web_home_view === "recent_topics" &&
+                user_settings.web_home_view === "recent" &&
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
