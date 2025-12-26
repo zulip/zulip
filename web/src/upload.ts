@@ -28,13 +28,43 @@ let drag_drop_img: HTMLElement | null = null;
 let compose_upload_object: Uppy<ZulipMeta, TusBody>;
 const upload_objects_by_message_edit_row = new Map<number, Uppy<ZulipMeta, TusBody>>();
 
+// Helper function to detect if a drag/drop contains a folder
+function contains_folder(dataTransfer: DataTransfer): boolean {
+    // Some browsers do not expose dataTransfer.items.
+    // In that case, fall back to existing behavior.
+    if (!dataTransfer.items) {
+        return false;
+    }
+
+    // Iterate over all dragged items
+    for (const item of dataTransfer.items) {
+        // We only care about file-like items
+        if (item.kind !== "file") {
+            continue;
+        }
+
+        // webkitGetAsEntry lets us check if the item is a directory
+        const entry = item.webkitGetAsEntry?.();
+        if (entry?.isDirectory) {
+            // Folder detected
+            return true;
+        }
+    }
+
+    // No folders found
+    return false;
+}
+
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
 }
 
-export function feature_check(): XMLHttpRequestUpload {
-    // Show the upload button only if the browser supports it.
-    return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
+export function feature_check(): XMLHttpRequestUpload | undefined {
+    try {
+        return new XMLHttpRequest().upload;
+    } catch {
+        return undefined;
+    }
 }
 
 export function get_translated_status(filename: string): string {
@@ -456,13 +486,30 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         event.stopPropagation();
         assert(event.originalEvent !== undefined);
         assert(event.originalEvent.dataTransfer !== null);
+
+        // 🚫 If a folder is dropped, reject the entire drop early
+        if (contains_folder(event.originalEvent.dataTransfer)) {
+            show_error_message(
+                config,
+                $t({
+                    defaultMessage:
+                        "Folders can't be uploaded. Instead, please upload the files you need.",
+                }),
+            );
+            return; // Stop further processing
+        }
+
+        // ✅ Safe to read files now (only files, no folders)
         const files = event.originalEvent.dataTransfer.files;
+
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_reply.respond_to_message({
                 trigger: "file drop or paste",
                 keep_composebox_empty: true,
             });
         }
+
+        // Proceed with normal upload behavior
         upload_files(uppy, config, files);
     });
 
@@ -684,6 +731,7 @@ export function initialize(): void {
     $(".app, #navbar-fixed-container").on("drop", (event) => {
         event.preventDefault();
 
+        // Ignore dragging images already inside Zulip
         if (event.target.nodeName === "IMG" && event.target === drag_drop_img) {
             drag_drop_img = null;
             return;
@@ -692,19 +740,27 @@ export function initialize(): void {
         const $drag_drop_edit_containers = $(".message_edit_form form");
         assert(event.originalEvent !== undefined);
         assert(event.originalEvent.dataTransfer !== null);
+
+        // 🚫 If a folder is dropped anywhere in the app, reject it
+        if (contains_folder(event.originalEvent.dataTransfer)) {
+            show_error_message(
+                compose_config,
+                $t({
+                    defaultMessage:
+                        "Folders can't be uploaded. Instead, please upload the files you need.",
+                }),
+            );
+            return; // Stop further handling
+        }
+
+        // ✅ Only files remain
         const files = event.originalEvent.dataTransfer.files;
         const $last_drag_drop_edit_container = $drag_drop_edit_containers.last();
 
-        // Handlers registered on individual inputs will ensure that
-        // drag/dropping directly onto a compose/edit input will put
-        // the upload there. Here, we handle drag/drop events that
-        // land somewhere else in the center pane.
-
+        // Existing logic below remains unchanged
         if (compose_state.composing()) {
-            // Compose box is open; drop there.
             upload_files(compose_upload_object, compose_config, files);
         } else if ($last_drag_drop_edit_container[0] !== undefined) {
-            // A message edit box is open; drop there.
             const row_id = rows.get_message_id($last_drag_drop_edit_container[0]);
             const $drag_drop_container = edit_config(row_id).drag_drop_container();
             if ($drag_drop_container.closest("html").length === 0) {
@@ -715,14 +771,12 @@ export function initialize(): void {
 
             upload_files(edit_upload_object, edit_config(row_id), files);
         } else if (message_lists.current?.selected_message()) {
-            // Start a reply to selected message, if viewing a message feed.
             compose_reply.respond_to_message({
                 trigger: "drag_drop_file",
                 keep_composebox_empty: true,
             });
             upload_files(compose_upload_object, compose_config, files);
         } else {
-            // Start a new message in other views.
             compose_actions.start({
                 message_type: "stream",
                 trigger: "drag_drop_file",
