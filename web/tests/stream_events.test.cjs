@@ -15,6 +15,7 @@ const color_data = mock_esm("../src/color_data");
 const compose_recipient = mock_esm("../src/compose_recipient");
 const dialog_widget = mock_esm("../src/dialog_widget");
 const message_live_update = mock_esm("../src/message_live_update");
+const message_fetch = mock_esm("../src/message_fetch");
 const settings_streams = mock_esm("../src/settings_streams");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
@@ -112,6 +113,7 @@ function narrow_to_frontend() {
         data: {
             filter,
         },
+        update_trailing_bookend: noop,
     };
 }
 
@@ -479,6 +481,7 @@ test("marked_subscribed (normal)", ({override}) => {
 
     const stream_list_stub = make_stub();
     const message_view_header_stub = make_stub();
+    const maybe_load_newer_messages_stub = make_stub();
 
     override(stream_list, "add_sidebar_row", stream_list_stub.f);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
@@ -491,6 +494,7 @@ test("marked_subscribed (normal)", ({override}) => {
     override(message_lists.current, "update_trailing_bookend", () => {
         list_updated = true;
     });
+    override(message_fetch, "maybe_load_newer_messages", maybe_load_newer_messages_stub.f);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
     $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
@@ -502,6 +506,10 @@ test("marked_subscribed (normal)", ({override}) => {
     assert.equal(message_view_header_stub.num_calls, 1);
 
     assert.equal(list_updated, true);
+    assert.equal(maybe_load_newer_messages_stub.num_calls, 1);
+    const fetch_args = maybe_load_newer_messages_stub.get_args("opts");
+    assert.equal(fetch_args.opts.force, true);
+    assert.equal(fetch_args.opts.msg_list, message_lists.current);
 
     assert.equal(sub.color, "blue");
     message_lists.current = undefined;

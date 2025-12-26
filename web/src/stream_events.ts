@@ -13,6 +13,7 @@ import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as message_fetch from "./message_fetch.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view from "./message_view.ts";
@@ -319,6 +320,10 @@ export function mark_subscribed(
     if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend(true);
+        message_fetch.maybe_load_newer_messages({
+            msg_list: message_lists.current,
+            force: true,
+        });
         activity_ui.build_user_sidebar();
     }
 
