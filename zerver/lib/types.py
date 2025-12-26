@@ -29,6 +29,7 @@ class ProfileDataElementBase(TypedDict, total=False):
     display_in_profile_summary: bool
     required: bool
     editable_by_user: bool
+    use_for_user_matching: bool
     field_data: str
     order: int
 

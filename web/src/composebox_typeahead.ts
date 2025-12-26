@@ -781,7 +781,13 @@ export function get_person_suggestions(
         );
 
         return suggestion_items.filter((item) =>
-            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
+            typeahead_helper.query_matches_person(
+                query,
+                item,
+                should_remove_diacritics,
+                undefined,
+                true,
+            ),
         );
     };
 
@@ -1167,7 +1173,7 @@ export function content_item_html(item: TypeaheadSuggestion): string | undefined
         case "user_group":
         case "user":
         case "broadcast":
-            return typeahead_helper.render_person_or_user_group(item);
+            return typeahead_helper.render_person_or_user_group(item, token);
         case "slash":
             return typeahead_helper.render_typeahead_item({
                 primary: item.text,

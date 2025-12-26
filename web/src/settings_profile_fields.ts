@@ -83,6 +83,17 @@ function is_valid_to_display_in_summary(field_type: number): boolean {
     return true;
 }
 
+function is_valid_to_use_for_user_matching(field_type: number): boolean {
+    const field_types = realm.custom_profile_field_types;
+    if (
+        field_type === field_types.EXTERNAL_ACCOUNT.id ||
+        field_type === field_types.SHORT_TEXT.id
+    ) {
+        return true;
+    }
+    return false;
+}
+
 function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     e.preventDefault();
     e.stopPropagation();
@@ -219,6 +230,15 @@ function set_up_create_field_form(): void {
         $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
         $("#profile_field_display_in_profile_summary").prop("checked", false);
     }
+
+    if (is_valid_to_use_for_user_matching(profile_field_type)) {
+        $("#profile_field_use_for_user_matching").closest(".input-group").show();
+        const check_use_for_user_mentions = profile_field_type === field_types.EXTERNAL_ACCOUNT.id;
+        $("#profile_field_use_for_user_matching").prop("checked", check_use_for_user_mentions);
+    } else {
+        $("#profile_field_use_for_user_matching").closest(".input-group").hide();
+        $("#profile_field_use_for_user_matching").prop("checked", false);
+    }
 }
 
 function open_custom_profile_field_form_modal(): void {
@@ -247,6 +267,7 @@ function open_custom_profile_field_form_modal(): void {
             ),
             required: $("#profile-field-required").is(":checked"),
             editable_by_user: $("#profile_field_editable_by_user").is(":checked"),
+            use_for_user_matching: $("#profile_field_use_for_user_matching").is(":checked"),
         };
         const url = "/json/realm/profile_fields";
         const opts = {
@@ -499,9 +520,11 @@ function open_edit_form_modal(this: HTMLElement): void {
             display_in_profile_summary: field.display_in_profile_summary === true,
             required: field.required,
             editable_by_user: field.editable_by_user,
+            use_for_user_matching: field.use_for_user_matching,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
+            valid_to_use_for_user_matching: is_valid_to_use_for_user_matching(field.type),
         },
         realm_default_external_accounts: realm.realm_default_external_accounts,
     });
@@ -755,6 +778,9 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
                         profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
                     display_in_profile_summary,
                     valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
+                    valid_to_use_for_user_matching: is_valid_to_use_for_user_matching(
+                        profile_field.type,
+                    ),
                     required,
                 },
                 can_modify: current_user.is_admin,

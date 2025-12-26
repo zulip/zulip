@@ -1664,3 +1664,79 @@ test("compare_stream_or_group_members_options", () => {
         0,
     );
 });
+
+test("render_person shows value of custom profile fields in secondary", ({
+    mock_template,
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        EXTERNAL_ACCOUNT: {id: 2, name: "External account"},
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 51,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 51,
+        value: "Alpha",
+    });
+
+    let rendered = false;
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.primary, a_user.full_name);
+        assert.equal(args.secondary, "Alpha");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
+test("query_matches_person matches custom profile fields when they are enabled for user matching ", ({
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        EXTERNAL_ACCOUNT: {id: 2, name: "External account"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 51,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+        {
+            id: 52,
+            name: "Beta field",
+            type: realm.custom_profile_field_types.EXTERNAL_ACCOUNT.id,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 51,
+        value: "Alpha",
+    });
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 52,
+        value: "Beta",
+    });
+
+    assert.equal(th.query_matches_person("alpha", a_user_item, undefined, undefined, true), true);
+    assert.equal(th.query_matches_person("beta", a_user_item, undefined, undefined, true), false);
+});
