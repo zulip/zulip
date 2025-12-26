@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import tempfile
 from collections.abc import Iterator
 from io import BytesIO
 from typing import TYPE_CHECKING, Any
@@ -31,6 +32,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     download_and_export_upload_file,
+    get_emojis,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
@@ -62,8 +64,10 @@ from zerver.data_import.slack import (
 )
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
+from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import (
     Message,
@@ -3111,3 +3115,183 @@ by Pieter
             logs.output,
         )
         self.assertEqual("Failed downloading file.", str(e.exception))
+
+    @responses.activate
+    def test_slack_get_emojis(self) -> None:
+        realm_id = 0
+        output_dir = tempfile.mkdtemp()
+        emoji_name = "bow_tie"
+        emoji_url = "https://emoji.slack-edge.com/T06NRA6HM3P/bowtie/f3ec6f2bb0.png"
+
+        responses.add(
+            responses.GET,
+            emoji_url,
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
+
+        try:
+            emoji_file_name = get_emojis(
+                output_dir,
+                emoji_url,
+                emoji_name,
+                10,
+                realm_id,
+            )
+
+            assert emoji_file_name is not None
+            self.assertFalse(emoji_file_name.startswith(emoji_name))
+            self.assertRegex(emoji_file_name, r"^[a-f0-9]{8}\.\w+$")
+            self.assertTrue(emoji_file_name.endswith(".png"))
+            emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+            emoji_files = os.listdir(emoji_dir)
+            self.assert_length(emoji_files, 1)
+        finally:
+            shutil.rmtree(output_dir)
+
+    @responses.activate
+    def test_slack_get_gif_emoji(self) -> None:
+        realm_id = 0
+        output_dir = tempfile.mkdtemp()
+        emoji_name = "bow_tie"
+        emoji_url = "https://emoji.slack-edge.com/T06NRA6HM3P/slack_zulip/3d93d672c2ba4dfc.gif"
+
+        responses.add(
+            responses.GET,
+            emoji_url,
+            body=read_test_image_file("img.png"),
+            content_type="image/gif",
+            status=200,
+        )
+
+        try:
+            emoji_file_name = get_emojis(
+                output_dir,
+                emoji_url,
+                emoji_name,
+                10,
+                realm_id,
+            )
+
+            assert emoji_file_name is not None
+            self.assertFalse(emoji_file_name.startswith(emoji_name))
+            self.assertRegex(emoji_file_name, r"^[a-f0-9]{8}\.\w+$")
+            self.assertTrue(emoji_file_name.endswith(".gif"))
+            emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+            emoji_files = os.listdir(emoji_dir)
+            self.assert_length(emoji_files, 1)
+        finally:
+            shutil.rmtree(output_dir)
+
+    @responses.activate
+    def test_slack_get_emojis_unknown_content_type(self) -> None:
+        realm_id = 0
+        output_dir = tempfile.mkdtemp()
+        emoji_name = "bow_tie"
+        emoji_url = "https://emoji.slack-edge.com/T06NRA6HM3P/bowtie/f3ec6f2bb0.png"
+        unknown_image_type = "image/unknown"
+
+        self.assertTrue(
+            unknown_image_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES
+            or unknown_image_type not in INLINE_MIME_TYPES
+        )
+
+        responses.add(
+            responses.GET,
+            emoji_url,
+            body=read_test_image_file("img.png"),
+            content_type=unknown_image_type,
+            status=200,
+        )
+
+        with self.assertRaises(BadImageError) as e:
+            get_emojis(
+                output_dir,
+                emoji_url,
+                emoji_name,
+                10,
+                realm_id,
+            )
+        self.assertEqual(
+            f"Emoji {emoji_name} is not an image file. Content type: {unknown_image_type}",
+            str(e.exception),
+        )
+        emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+        self.assertFalse(os.path.exists(emoji_dir))
+
+    @responses.activate
+    def test_guess_emoji_content_type(self) -> None:
+        realm_id = 0
+        output_dir = tempfile.mkdtemp()
+        emoji_name = "unknown_content_type"
+        emoji_url = "https://emoji.slack-edge.com/T06NRA6HM3P/slack_zulip/3d93d672c2ba4dfc.gif"
+
+        responses.add(
+            responses.GET,
+            emoji_url,
+            body=read_test_image_file("img.png"),
+            content_type=None,
+            status=200,
+        )
+
+        try:
+            with self.assertLogs(level="WARN") as logs:
+                emoji_file_name = get_emojis(
+                    output_dir,
+                    emoji_url,
+                    emoji_name,
+                    10,
+                    realm_id,
+                )
+
+            self.assertIn(
+                f"WARNING:root:Emoji {emoji_name} has an unspecified content type. Guessing the file extension.",
+                logs.output,
+            )
+
+            assert emoji_file_name is not None
+            self.assertFalse(emoji_file_name.startswith(emoji_name))
+            self.assertRegex(emoji_file_name, r"^[a-f0-9]{8}\.\w+$")
+            self.assertTrue(emoji_file_name.endswith(".gif"))
+            emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+            emoji_files = os.listdir(emoji_dir)
+            self.assert_length(emoji_files, 1)
+        finally:
+            shutil.rmtree(output_dir)
+
+    @responses.activate
+    def test_failed_to_guess_emoji_content_type(self) -> None:
+        realm_id = 0
+        output_dir = tempfile.mkdtemp()
+        emoji_name = "unknown_content_type_and_not_guessable"
+        emoji_url = "https://emoji.slack-edge.com/T06NRA6HM3P/bowtie/f3ec6f2bb0.unknown"
+
+        responses.add(
+            responses.GET,
+            emoji_url,
+            body=read_test_image_file("img.png"),
+            content_type=None,
+            status=200,
+        )
+
+        with self.assertLogs(level="WARN") as logs, self.assertRaises(BadImageError) as e:
+            get_emojis(
+                output_dir,
+                emoji_url,
+                emoji_name,
+                10,
+                realm_id,
+            )
+
+        self.assertIn(
+            f"WARNING:root:Emoji {emoji_name} has an unspecified content type. Guessing the file extension.",
+            logs.output,
+        )
+
+        self.assertIn(
+            f"Unknown content type for: {emoji_name}",
+            str(e.exception),
+        )
+        emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
+        self.assertFalse(os.path.exists(emoji_dir))
