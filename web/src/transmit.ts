@@ -33,7 +33,7 @@ type SendMessageData = {
 export function send_message(
     request: SendMessageData,
     on_success: (raw_data: unknown) => void,
-    error: (response: string, code: string) => void,
+    error: (response: string, code: string, server_data?: unknown) => void,
 ): void {
     if (!request.resend) {
         sent_messages.start_tracking_message({
@@ -92,7 +92,7 @@ export function send_message(
 
                 const response = channel.xhr_error_message("Error sending message", xhr);
                 const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
-                error(response, parsed.success ? parsed.data.code : "");
+                error(response, parsed.success ? parsed.data.code : "", xhr.responseJSON);
             },
         });
     });
