@@ -7,8 +7,22 @@
     }
 
     .message_reaction_container {
+        .animated-emoji {
+            display: none;
+        }
+
         &.disabled {
             cursor: not-allowed;
+        }
+
+        &:hover {
+            .still-emoji {
+                display: none;
+            }
+
+            .animated-emoji {
+                display: inline;
+            }
         }
     }
 
@@ -252,6 +266,20 @@
             .emoji {
                 height: 1.6667em; /* 25px at 15px/em */
                 width: 1.6667em; /* 25px at 15px/em */
+            }
+
+            .animated-emoji {
+                display: none;
+            }
+
+            &:hover {
+                .still-emoji {
+                    display: none;
+                }
+
+                .animated-emoji {
+                    display: inline;
+                }
             }
         }
 
