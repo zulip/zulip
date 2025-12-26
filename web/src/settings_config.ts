@@ -1371,6 +1371,21 @@ export const bot_type_values = {
     },
 };
 
+export const message_delete_action_values = [
+    {
+        key: "delete_public_stream_messages",
+        value: $t({defaultMessage: "Delete messages in public channels"}),
+    },
+    {
+        key: "delete_private_stream_messages",
+        value: $t({defaultMessage: "Delete messages in private channels"}),
+    },
+    {
+        key: "delete_direct_messages",
+        value: $t({defaultMessage: "Delete direct messages"}),
+    },
+];
+
 export const realm_plan_types = {
     self_hosted: {code: 1},
     limited: {code: 2},
