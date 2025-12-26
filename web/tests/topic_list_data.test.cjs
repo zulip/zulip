@@ -218,12 +218,12 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
 
-    add_topic_message("After Brooklyn", 1008);
-    add_topic_message("Delhi", 1009);
+    add_topic_message("Backend Developer", 1008);
+    add_topic_message("Developer Backend", 1009);
 
     // When topic search input is not empty, we show topics
     // based on the search term.
-    let search_term = "b,d";
+    let search_term = "b d";
     list_info = get_list_info(zoomed, search_term);
     assert.equal(list_info.items.length, 2);
     assert.equal(list_info.more_topics_unreads, 0);
