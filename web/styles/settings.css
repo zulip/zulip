@@ -1580,6 +1580,10 @@ label.preferences-radio-choice-label {
             overflow: auto;
 
             background-color: hsl(0deg 0% 0% / 2%);
+
+            #channel-folder-settings .zulip-icon-preview {
+                font-size: 1.25em;
+            }
         }
     }
 }
@@ -1858,6 +1862,7 @@ label.preferences-radio-choice-label {
 
 .modal-textarea:disabled {
     background-color: var(--background-color-readonly-modal-input);
+    opacity: var(--opacity-readonly-modal-input);
 }
 
 @media (width < $lg_min) {
