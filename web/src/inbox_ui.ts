@@ -1038,7 +1038,10 @@ function show_empty_inbox_text(has_visible_unreads: boolean): void {
             $("#inbox-empty-without-search").hide();
         } else {
             $("#inbox-empty-with-search").hide();
-            // Use display value specified in CSS.
+            // Check if the current filter is "Followed Topics"
+            const is_followed_filter = filters.has(views_util.FILTERS.FOLLOWED_TOPICS);
+            // Update the text based on the filter
+            update_empty_inbox_text(is_followed_filter);
             $("#inbox-empty-without-search").css("display", "");
         }
     } else {
@@ -2271,6 +2274,45 @@ export function is_in_focus(): boolean {
     return inbox_util.is_visible() && views_util.is_in_focus();
 }
 
+function update_empty_inbox_text(is_followed: boolean): void {
+    const $container = $("#inbox-empty-without-search");
+    const $title = $container.find(".inbox-empty-title");
+    const $action = $container.find(".inbox-empty-action");
+
+    if (is_followed) {
+        // CASE 1: "Followed" filter is active
+        $title.text($t({defaultMessage: "There are no unread messages in your followed topics."}));
+        const action_html = $t_html(
+            {
+                defaultMessage:
+                    "You can <z-link-all>include topics you don't follow</z-link-all> or <z-link-recent>view recent conversations</z-link-recent>.",
+            },
+            {
+                "z-link-all": (content) =>
+                    `<a href="#" class="inbox-empty-action-link inbox-empty-action-include-unfollowed">${content.join(
+                        "",
+                    )}</a>`,
+                "z-link-recent": (content) =>
+                    `<a href="#recent" class="inbox-empty-action-link">${content.join("")}</a>`,
+            },
+        );
+        $action.html(action_html);
+    } else {
+        // CASE 2: Default view (Standard)
+        $title.text($t({defaultMessage: "There are no unread messages in your inbox."}));
+        const action_html = $t_html(
+            {
+                defaultMessage: "You might be interested in <z-link>recent conversations</z-link>.",
+            },
+            {
+                "z-link": (content) =>
+                    `<a href="#recent" class="inbox-empty-action-link">${content.join("")}</a>`,
+            },
+        );
+        $action.html(action_html);
+    }
+}
+
 export function initialize({hide_other_views}: {hide_other_views: () => void}): void {
     hide_other_views_callback = hide_other_views;
     $(document).on(
@@ -2443,4 +2485,15 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             revive_current_focus();
         }
     });
+    $("body").on(
+        "click",
+        "#inbox-empty-without-search .inbox-empty-action-include-unfollowed",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            filters = new Set([DEFAULT_FILTER]);
+            save_data_to_ls();
+            complete_rerender();
+        },
+    );
 }
