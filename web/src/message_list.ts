@@ -409,9 +409,13 @@ export class MessageList {
             this.should_trigger_message_selected_event = true;
         }
 
-        if (this.should_trigger_message_selected_event) {
-            $(document).trigger(new $.Event("message_selected.zulip", opts));
-        }
+        if (
+    this.should_trigger_message_selected_event &&
+    opts.previously_selected_id !== opts.id
+) {
+    $(document).trigger(new $.Event("message_selected.zulip", opts));
+}
+
     }
 
     selected_message(): Message | undefined {
