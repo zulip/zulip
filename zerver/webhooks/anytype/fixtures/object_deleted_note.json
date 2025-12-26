@@ -1,0 +1,20 @@
+{
+  "event": "object.deleted",
+  "timestamp": "2024-01-15T18:10:00Z",
+  "object": {
+    "id": "obj_old_note123",
+    "type": "note",
+    "title": "Old Draft Notes",
+    "created_at": "2024-01-05T12:00:00Z",
+    "deleted_at": "2024-01-15T18:10:00Z"
+  },
+  "space": {
+    "id": "space_xyz789",
+    "name": "Personal Notes"
+  },
+  "user": {
+    "id": "user_alice123",
+    "name": "Alice Johnson",
+    "email": "alice@example.com"
+  }
+}

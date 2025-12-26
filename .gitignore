@@ -18,6 +18,9 @@
 
 ## Config files for the dev environment
 /zproject/apns-dev.pem
+
+## Development documentation (personal notes)
+/ANYTYPE_INTEGRATION_DEVELOPMENT_LOG.md
 /zproject/apns-dev-key.p8
 /zproject/dev-secrets.conf
 /zproject/custom_dev_settings.py

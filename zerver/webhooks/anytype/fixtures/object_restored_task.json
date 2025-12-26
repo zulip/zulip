@@ -1,0 +1,22 @@
+{
+  "event": "object.restored",
+  "timestamp": "2024-01-16T09:15:00Z",
+  "object": {
+    "id": "obj_bug_fix_task",
+    "type": "task",
+    "title": "Fix Login Bug",
+    "status": "in_progress",
+    "priority": "urgent",
+    "created_at": "2024-01-10T14:00:00Z",
+    "restored_at": "2024-01-16T09:15:00Z"
+  },
+  "space": {
+    "id": "space_active_tasks",
+    "name": "Active Tasks"
+  },
+  "user": {
+    "id": "user_eve789",
+    "name": "Eve Martinez",
+    "email": "eve@example.com"
+  }
+}

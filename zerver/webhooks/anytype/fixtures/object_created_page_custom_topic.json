@@ -1,0 +1,16 @@
+{
+  "event": "object.created",
+  "timestamp": "2024-01-16T11:00:00Z",
+  "object": {
+    "id": "obj_proposal_page",
+    "type": "page",
+    "title": "Project Proposal",
+    "created_at": "2024-01-16T11:00:00Z",
+    "updated_at": "2024-01-16T11:00:00Z"
+  },
+  "user": {
+    "id": "user_frank123",
+    "name": "Frank Thompson",
+    "email": "frank@example.com"
+  }
+}

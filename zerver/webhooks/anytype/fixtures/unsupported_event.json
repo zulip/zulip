@@ -1,0 +1,8 @@
+{
+  "event": "user.login",
+  "timestamp": "2024-01-16T12:00:00Z",
+  "user": {
+    "id": "user_test123",
+    "name": "Test User"
+  }
+}
