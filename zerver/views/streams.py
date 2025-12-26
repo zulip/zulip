@@ -73,6 +73,7 @@ from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_name,
     access_stream_for_delete_or_update_requiring_metadata_access,
+    access_stream_for_send_message,
     access_web_public_stream,
     channel_events_topic_name,
     check_channel_creation_permissions,
@@ -1401,6 +1402,7 @@ def get_stream_email_address(
         user_profile,
         stream_id,
     )
+    access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
     email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
 
     if sender_id is None or sender_id == email_gateway_bot.id:
