@@ -1,13 +1,14 @@
 <div class="gif-grid-in-popover">
     <div class="arrow"></div>
     <div class="popover-inner">
-        <div class="popover-filter-input-wrapper">
+        <div class="gif-search-container filter-input has-input-icon has-input-button input-element-wrapper">
+            <i class="input-icon zulip-icon zulip-icon-search" aria-hidden="true"></i>
             {{#if is_giphy}}
-                <input type="text" id="gif-search-query" class="popover-filter-input filter_text_input" autocomplete="off" placeholder="{{t 'Filter' }}" autofocus/>
+                <input type="text" class="input-element stream-search" placeholder="{{t 'Filter' }}" id="gif-search-query" autocomplete="off" autofocus/>
             {{else}}
-                <input type="text" id="gif-search-query" class="popover-filter-input filter_text_input" autocomplete="off" placeholder="{{t 'Search Tenor' }}" autofocus/>
+                <input type="text" class="input-element stream-search" placeholder="{{t 'Search Tenor' }}" id="gif-search-query" autocomplete="off" autofocus/>
             {{/if}}
-            <button type="button" class="clear-search-button" id="gif-search-clear" tabindex="-1">
+            <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral" id="gif-search-clear" tabindex="-1">
                 <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
             </button>
         </div>
