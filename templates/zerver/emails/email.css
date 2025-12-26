@@ -249,6 +249,11 @@ p.digest_paragraph,
     font-weight: normal;
 }
 
+/* Styling for empty topic display ("general chat"). */
+.empty-topic-display {
+    font-style: italic;
+}
+
 /* Text and link colors for missed-message emails. */
 .email-preferences {
     color: #666;
