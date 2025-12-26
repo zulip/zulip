@@ -31,7 +31,8 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
+from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -344,3 +345,32 @@ def validate_webhook_signature(
 
     if signed_payload != signature:
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def guess_zulip_user_from_external_account(
+    realm: Realm, external_username: str, service: str
+) -> UserProfile | None:
+    service_field = CustomProfileField.objects.filter(
+        realm=realm,
+        field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+        name=service,
+    ).first()
+
+    if not service_field:
+        return None
+
+    zulip_users_matching_service = (
+        CustomProfileFieldValue.objects.filter(
+            field=service_field,
+            value__iexact=external_username,
+            user_profile__realm=realm,
+            user_profile__is_active=True,
+        )
+        .select_related("user_profile")
+        .only("user_profile__id", "user_profile__full_name")[:2]
+    )
+
+    if len(zulip_users_matching_service) == 1:
+        return zulip_users_matching_service[0].user_profile
+
+    return None
