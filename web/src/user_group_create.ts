@@ -192,6 +192,8 @@ export function show_new_user_group_modal(): void {
 function create_user_group(): void {
     const group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
     const description = $<HTMLInputElement>("input#create_user_group_description").val()!.trim();
+    const use_color = $<HTMLInputElement>("#create_user_group_use_color").prop("checked");
+    const color = use_color ? $<HTMLInputElement>("#create_user_group_color").val()! : "";
     set_name(group_name);
 
     // Even though we already check to make sure that while typing the user cannot enter
@@ -210,6 +212,7 @@ function create_user_group(): void {
     const data: Record<string, string> = {
         name: group_name,
         description,
+        color,
         members: JSON.stringify(user_ids),
         subgroups: JSON.stringify(subgroup_ids),
     };

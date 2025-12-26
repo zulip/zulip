@@ -1,3 +1,4 @@
+
 <div class="hide two-pane-settings-right-simplebar-container" id="user-group-creation" tabindex="-1" role="dialog"
   aria-label="{{t 'User group creation' }}">
     <form id="user_group_creation_form">
@@ -21,6 +22,18 @@
                         </label>
                         <input type="text" name="user_group_description" id="create_user_group_description" class="settings_text_input"
                           placeholder="{{t 'User group description' }}" value="" autocomplete="off" />
+                    </section>
+                    <section id="user-group-color-container">
+                        <label for="create_user_group_color" class="settings-field-label">
+                            {{t "Display color (optional)" }}
+                        </label>
+                        <input type="color" name="user_group_color" id="create_user_group_color" class="user-group-color-input"
+                          value="#808080" />
+                        <label class="checkbox">
+                            <input type="checkbox" id="create_user_group_use_color" />
+                            <span></span>
+                            {{t "Use custom color" }}
+                        </label>
                     </section>
                     <section id="user-group-permission-container">
                         <div class="group-permissions settings-subsection-parent" id="new_group_permission_settings">

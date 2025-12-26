@@ -3882,3 +3882,101 @@ class UserGroupAPITestCase(UserGroupTestCase):
             {"delete": orjson.dumps([other_user_group.id]).decode()},
         )
         self.assert_json_error(result, f"Invalid user group ID: {other_user_group.id}")
+
+
+class UserGroupColorTestCase(UserGroupTestCase):
+    """Tests for user group color feature."""
+
+    def test_create_user_group_with_color(self) -> None:
+        """Test creating a user group with a color."""
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        params = {
+            "name": "colored-group",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "A group with color",
+            "color": "#4287f5",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+
+        user_group = NamedUserGroup.objects.get(
+            name="colored-group", realm_for_sharding=hamlet.realm
+        )
+        self.assertEqual(user_group.color, "#4287f5")
+
+    def test_create_user_group_without_color(self) -> None:
+        """Test creating a user group without a color uses empty string default."""
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        params = {
+            "name": "no-color-group",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "A group without color",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+
+        user_group = NamedUserGroup.objects.get(
+            name="no-color-group", realm_for_sharding=hamlet.realm
+        )
+        self.assertEqual(user_group.color, "")
+
+    def test_update_user_group_color(self) -> None:
+        """Test updating a user group's color."""
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        # Create a group first
+        params = {
+            "name": "update-color-group",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test group",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+
+        user_group = NamedUserGroup.objects.get(
+            name="update-color-group", realm_for_sharding=hamlet.realm
+        )
+        self.assertEqual(user_group.color, "")
+
+        # Update the color
+        result = self.client_patch(
+            f"/json/user_groups/{user_group.id}",
+            {"color": "#ff5733"},
+        )
+        self.assert_json_success(result)
+
+        user_group.refresh_from_db()
+        self.assertEqual(user_group.color, "#ff5733")
+
+    def test_user_group_color_in_api_response(self) -> None:
+        """Test that color is included in API responses."""
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        # Create a group with color
+        params = {
+            "name": "api-color-group",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test group",
+            "color": "#123456",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+
+        # Get user groups and verify color is in response
+        result = self.client_get("/json/user_groups")
+        response_dict = self.assert_json_success(result)
+
+        api_color_group = None
+        for group in response_dict["user_groups"]:
+            if group["name"] == "api-color-group":
+                api_color_group = group
+                break
+
+        self.assertIsNotNone(api_color_group)
+        self.assertEqual(api_color_group["color"], "#123456")

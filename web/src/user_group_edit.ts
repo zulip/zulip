@@ -2009,6 +2009,8 @@ export function initialize(): void {
             const template_data = {
                 group_name: user_groups.get_display_group_name(user_group.name),
                 group_description: user_group.description,
+                group_color: user_group.color || "#808080",
+                has_color: user_group.color !== "",
                 max_user_group_name_length: user_groups.max_user_group_name_length,
                 allow_editing_description: true,
             };
@@ -2177,8 +2179,11 @@ export function initialize(): void {
         const url = `/json/user_groups/${group.id}`;
         let name;
         let description;
+        let color;
         const new_name = $<HTMLInputElement>("#change_user_group_name").val()!.trim();
         const new_description = $<HTMLInputElement>("#change_user_group_description").val()!.trim();
+        const use_color = $<HTMLInputElement>("#change_user_group_use_color").prop("checked");
+        const new_color = use_color ? $<HTMLInputElement>("#change_user_group_color").val()! : "";
 
         if (new_name !== group.name) {
             name = new_name;
@@ -2186,9 +2191,13 @@ export function initialize(): void {
         if (new_description !== group.description) {
             description = new_description;
         }
+        if (new_color !== group.color) {
+            color = new_color;
+        }
         const data = {
             name,
             description,
+            color,
         };
         dialog_widget.submit_api_request(channel.patch, url, data);
     }

@@ -56,6 +56,7 @@ def create_user_group_in_database(
     *,
     acting_user: UserProfile | None,
     description: str = "",
+    color: str = "",
     group_settings_map: Mapping[str, UserGroup] = {},
     is_system_group: bool = False,
 ) -> NamedUserGroup:
@@ -63,6 +64,7 @@ def create_user_group_in_database(
         name=name,
         realm=realm,
         description=description,
+        color=color,
         is_system_group=is_system_group,
         realm_for_sharding=realm,
         creator=acting_user,
@@ -241,13 +243,25 @@ def check_add_user_group(
     name: str,
     initial_members: list[UserProfile],
     description: str = "",
+    color: str = "",
     group_settings_map: Mapping[str, UserGroup] = {},
     *,
     acting_user: UserProfile | None,
 ) -> NamedUserGroup:
     try:
+<<<<<<< Updated upstream
         return check_add_user_group_core(
             realm, name, initial_members, description, group_settings_map, acting_user=acting_user
+=======
+        user_group = create_user_group_in_database(
+            name,
+            initial_members,
+            realm,
+            description=description,
+            color=color,
+            group_settings_map=group_settings_map,
+            acting_user=acting_user,
+>>>>>>> Stashed changes
         )
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
@@ -309,6 +323,27 @@ def do_update_user_group_description(
         },
     )
     do_send_user_group_update_event(user_group, dict(description=description))
+
+
+@transaction.atomic(savepoint=False)
+def do_update_user_group_color(
+    user_group: NamedUserGroup, color: str, *, acting_user: UserProfile | None
+) -> None:
+    old_value = user_group.color
+    user_group.color = color
+    user_group.save(update_fields=["color"])
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group=user_group,
+        event_type=AuditLogEventType.USER_GROUP_COLOR_CHANGED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: color,
+        },
+    )
+    do_send_user_group_update_event(user_group, dict(color=color))
 
 
 def do_send_user_group_members_update_event(
