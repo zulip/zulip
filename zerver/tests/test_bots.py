@@ -1398,9 +1398,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Test that PATCH endpoint rejects file uploads
         with get_test_image_file("img.png") as fp:
-            result = self.client_patch_multipart(
-                f"/json/bots/{bot_id}", dict(file=fp)
-            )
+            result = self.client_patch_multipart(f"/json/bots/{bot_id}", dict(file=fp))
         self.assert_json_error(result, "Avatar uploads must use the avatar upload endpoint.")
 
         profile = get_user(bot_email, bot_realm)
@@ -1408,9 +1406,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # HAPPY PATH - use the new dedicated avatar upload endpoint
         with get_test_image_file("img.png") as fp:
-            result = self.client_post(
-                f"/json/bots/{bot_id}/avatar", dict(file=fp)
-            )
+            result = self.client_post(f"/json/bots/{bot_id}/avatar", dict(file=fp))
             profile = get_user(bot_email, bot_realm)
             self.assertEqual(profile.avatar_version, 2)
             # Make sure that avatar image that we've uploaded is same with avatar image in the server
