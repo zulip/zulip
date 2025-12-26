@@ -519,10 +519,13 @@ export function get_custom_profile_field_data(
             );
             profile_field.value = field_value.value;
             profile_field.subtype = field_data.subtype;
-            profile_field.link = settings_profile_fields.get_external_account_link(
+            const link = settings_profile_fields.get_external_account_link(
                 field_data,
                 field_value.value,
             );
+            if (link !== undefined) {
+                profile_field.link = link;
+            }
             break;
         }
         default:

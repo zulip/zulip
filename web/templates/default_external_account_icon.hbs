@@ -1,0 +1,7 @@
+{{#unless (eq this.subtype "custom")}}
+    {{#unless (or (eq this.subtype "behance") (eq this.subtype "linkedin"))}}
+        <i class="zulip-icon zulip-icon-{{this.subtype}}" aria-hidden="true"></i>
+    {{else}}
+        <i class="fa fa-{{this.subtype}}" aria-hidden="true"></i>
+    {{/unless}}
+{{/unless}}
