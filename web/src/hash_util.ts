@@ -437,11 +437,8 @@ export function decode_stream_topic_from_url(
 }
 
 export function get_link_hash(link: string): string {
-    if (link.startsWith("/#narrow/")) {
-        return link.slice(1);
-    }
     try {
-        return new URL(link).hash;
+        return new URL(link, window.location.origin).hash;
     } catch {
         return "";
     }
