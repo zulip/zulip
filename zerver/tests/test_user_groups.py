@@ -55,6 +55,7 @@ from zerver.lib.user_groups import (
     has_user_group_access_for_subgroup,
     is_any_user_in_group,
     is_user_in_group,
+    user_group_ids_to_user_groups,
     user_groups_in_realm_serialized,
 )
 from zerver.models import (
@@ -716,6 +717,44 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertTrue(
             check_user_has_permission_by_role(polonius, everyone_group.id, system_groups_name_dict)
         )
+
+    def test_user_group_ids_to_user_groups(self) -> None:
+        realm = get_realm("zulip")
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        self.assertCountEqual(
+            user_group_ids_to_user_groups(
+                [hamletcharacters_group.id, admins_group.id, members_group.id], realm
+            ),
+            [hamletcharacters_group, admins_group, members_group],
+        )
+        self.assertCountEqual(
+            user_group_ids_to_user_groups([hamletcharacters_group.id, members_group.id], realm),
+            [hamletcharacters_group, members_group],
+        )
+
+        with self.assertRaises(JsonableError):
+            user_group_ids_to_user_groups([199, hamletcharacters_group.id], realm)
+
+        do_deactivate_user_group(hamletcharacters_group, acting_user=None)
+
+        self.assertCountEqual(
+            user_group_ids_to_user_groups(
+                [hamletcharacters_group.id, admins_group.id], realm, allow_deactivated=True
+            ),
+            [hamletcharacters_group, admins_group],
+        )
+
+        with self.assertRaises(JsonableError):
+            user_group_ids_to_user_groups([hamletcharacters_group.id, admins_group.id], realm)
 
 
 class UserGroupAPITestCase(UserGroupTestCase):

@@ -1161,16 +1161,12 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
         # Emails have missed message content when message content is enabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", True)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", False)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_user=True
@@ -1182,17 +1178,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", True)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_realm=True
         )
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", False)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False,
