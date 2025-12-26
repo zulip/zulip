@@ -28,6 +28,7 @@ from zerver.lib.validator import (
     check_short_string,
     check_url,
     validate_select_field,
+    validate_select_multiple_field,
 )
 from zerver.models.realms import Realm
 from zerver.models.users import UserProfile
@@ -93,12 +94,20 @@ class CustomProfileField(models.Model):
     USER = 6
     EXTERNAL_ACCOUNT = 7
     PRONOUNS = 8
+    SELECT_MULTIPLE = 9
 
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
         (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
+        (
+            SELECT_MULTIPLE,
+            gettext_lazy("Checkboxes"),
+            validate_select_multiple_field,
+            orjson.loads,
+            "SELECT_MULTIPLE",
+        ),
     ]
     USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),

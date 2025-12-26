@@ -70,6 +70,7 @@ def try_add_realm_custom_profile_field(
     if custom_profile_field.field_type in (
         CustomProfileField.SELECT,
         CustomProfileField.EXTERNAL_ACCOUNT,
+        CustomProfileField.SELECT_MULTIPLE,
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
@@ -130,6 +131,7 @@ def try_update_realm_custom_profile_field(
     if field.field_type in (
         CustomProfileField.SELECT,
         CustomProfileField.EXTERNAL_ACCOUNT,
+        CustomProfileField.SELECT_MULTIPLE,
     ):
         # If field_data is None, field_data is unchanged and there is no need for
         # comparing field_data values.

@@ -444,9 +444,17 @@ function set_up_select_field_edit_form(
     const $choice_list = $profile_field_form.find(".edit_profile_field_choices_container");
     $choice_list.off();
     $choice_list.empty();
-    const choices_data = parse_field_choices_from_field_data(
-        settings_components.select_field_data_schema.parse(JSON.parse(field.field_data)),
-    );
+    let choices_data: FieldChoice[] = [];
+    // We wrap this in a try/catch so that if the field data is malformed
+    // (e.g. invalid JSON), the edit form still opens (showing empty choices)
+    // rather than crashing. This allows the admin to recover by re-entering choices.
+    try {
+        choices_data = parse_field_choices_from_field_data(
+            settings_components.select_field_data_schema.parse(JSON.parse(field.field_data)),
+        );
+    } catch {
+        choices_data = [];
+    }
 
     for (const choice of choices_data) {
         $choice_list.append(
@@ -485,7 +493,7 @@ function open_edit_form_modal(this: HTMLElement): void {
         field_data = JSON.parse(field.field_data);
     }
     let choices: FieldChoice[] = [];
-    if (field.type === field_types.SELECT.id) {
+    if (field.type === field_types.SELECT.id || field.type === field_types.SELECT_MULTIPLE.id) {
         const select_field_data = settings_components.select_field_data_schema.parse(field_data);
         choices = parse_field_choices_from_field_data(select_field_data);
     }
@@ -499,7 +507,9 @@ function open_edit_form_modal(this: HTMLElement): void {
             display_in_profile_summary: field.display_in_profile_summary === true,
             required: field.required,
             editable_by_user: field.editable_by_user,
-            is_select_field: field.type === field_types.SELECT.id,
+            is_select_field:
+                field.type === field_types.SELECT.id ||
+                field.type === field_types.SELECT_MULTIPLE.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
         },
@@ -520,7 +530,7 @@ function open_edit_form_modal(this: HTMLElement): void {
                 .addClass("display_in_profile_summary_tooltip disabled_label");
         }
 
-        if (field.type === field_types.SELECT.id) {
+        if (field.type === field_types.SELECT.id || field.type === field_types.SELECT_MULTIPLE.id) {
             set_up_select_field_edit_form($profile_field_form, field);
         }
 
@@ -588,7 +598,11 @@ function open_edit_form_modal(this: HTMLElement): void {
             dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
-        if (field.type === field_types.SELECT.id && data["field_data"] !== undefined) {
+        if (
+            (field.type === field_types.SELECT.id ||
+                field.type === field_types.SELECT_MULTIPLE.id) &&
+            data["field_data"] !== undefined
+        ) {
             const new_values = new Set(
                 Object.keys(
                     settings_components.select_field_data_schema.parse(
@@ -733,7 +747,11 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
         },
         modifier_html(profile_field) {
             let choices: FieldChoice[] = [];
-            if (profile_field.field_data && profile_field.type === field_types.SELECT.id) {
+            if (
+                profile_field.field_data &&
+                (profile_field.type === field_types.SELECT.id ||
+                    profile_field.type === field_types.SELECT_MULTIPLE.id)
+            ) {
                 const field_data = settings_components.select_field_data_schema.parse(
                     JSON.parse(profile_field.field_data),
                 );
@@ -750,7 +768,9 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
                     hint: profile_field.hint,
                     type: field_type_id_to_string(profile_field.type),
                     choices,
-                    is_select_field: profile_field.type === field_types.SELECT.id,
+                    is_select_field:
+                        profile_field.type === field_types.SELECT.id ||
+                        profile_field.type === field_types.SELECT_MULTIPLE.id,
                     is_external_account_field:
                         profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
                     display_in_profile_summary,
@@ -800,7 +820,11 @@ function set_up_select_field(): void {
     }
 
     const field_type = $<HTMLSelectOneElement>("select:not([multiple])#profile_field_type").val()!;
-    if (Number.parseInt(field_type, 10) !== field_types.SELECT.id) {
+    const is_select_type =
+        Number.parseInt(field_type, 10) === field_types.SELECT.id ||
+        Number.parseInt(field_type, 10) === field_types.SELECT_MULTIPLE.id;
+
+    if (!is_select_type) {
         // If 'Select' type is already selected, show choice row.
         $("#profile_field_choices_row").hide();
     }
@@ -810,7 +834,10 @@ function set_up_select_field(): void {
         function (this: HTMLSelectOneElement) {
             $("#dialog_error").hide();
             const selected_field_id = Number.parseInt($<HTMLSelectOneElement>(this).val()!, 10);
-            if (selected_field_id === field_types.SELECT.id) {
+            if (
+                selected_field_id === field_types.SELECT.id ||
+                selected_field_id === field_types.SELECT_MULTIPLE.id
+            ) {
                 $("#profile_field_choices_row").show();
             } else {
                 $("#profile_field_choices_row").hide();
