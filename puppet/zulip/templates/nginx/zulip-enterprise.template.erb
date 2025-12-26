@@ -24,6 +24,7 @@ server {
 }
 <% end -%>
 
+include /etc/nginx/zulip-include/trusted-ip;
 include /etc/nginx/zulip-include/trusted-proto;
 include /etc/nginx/zulip-include/s3-cache;
 include /etc/nginx/zulip-include/upstreams;
