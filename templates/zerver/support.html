@@ -1,0 +1,81 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% set PAGE_TITLE = "Contact support | Zulip" %}
+
+{% block portico_content %}
+<div class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>Contact support</h1>
+        </div>
+
+        <form method="post" class="white-box" id="registration">
+            {{ csrf_input }}
+
+            <fieldset class="support-request">
+
+                <!-- Recipient notice -->
+                <div class="input-box support-form-field">
+                    <label class="inline-block label-title">From</label>
+                    <div class="not-editable-realm-field">
+                        {% if is_cloud %}
+                            Your message will be sent to
+                            <a href="mailto:support@zulip.com">Zulip Support</a>.
+                        {% else %}
+                            Your message will be sent to this Zulip server's administrators at
+                            <a href="mailto:{{ admin_email }}">{{ admin_email }}</a>.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Name -->
+                <div class="input-box support-form-field">
+                    <label for="support_name" class="inline-block label-title">Name</label>
+                    <input
+                        id="support_name"
+                        class="required"
+                        type="text"
+                        name="name"
+                        required
+                    />
+                </div>
+
+                <!-- Zulip URL -->
+                <div class="input-box support-form-field">
+                    <label class="inline-block label-title">Zulip URL</label>
+                    <div class="not-editable-realm-field">
+                        {{ request.scheme }}://{{ request.get_host }}
+                    </div>
+                </div>
+
+                <!-- Message -->
+                <div class="input-box support-form-field">
+                    <label for="support_message" class="inline-block label-title">
+                        How can we help?
+                    </label>
+                    <textarea
+                        id="support_message"
+                        name="message"
+                        cols="100"
+                        rows="5"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Submit -->
+                <div class="register-button-box">
+                    <button class="register-button support-submit-button" type="submit">
+                        <span>Submit</span>
+                        <object
+                            class="loader"
+                            type="image/svg+xml"
+                            data="{{ static('images/loading/loader-white.svg') }}"
+                        ></object>
+                    </button>
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+{% endblock %}
