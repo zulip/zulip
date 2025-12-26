@@ -59,7 +59,7 @@
         {{#if use_match_properties}}
             {{rendered_markdown msg/match_content}}
         {{else}}
-            {{rendered_markdown msg/content}}
+            {{rendered_markdown msg/content msg/stream msg/topic}}
         {{/if}}
     </div>
     {{else}}

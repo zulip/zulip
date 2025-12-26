@@ -19,7 +19,13 @@ class FakeComposeBox {
         );
 
         const $message_row_stub = $.set_results("message_row_stub", []);
+        const $container = $("#message-content-container, .edit-content-container");
+        $container.set_find_results(".reply", []);
         this.$content_textarea.set_closest_results(".message_row", $message_row_stub);
+        this.$content_textarea.set_closest_results(
+            "#message-content-container, .edit-content-container",
+            $container,
+        );
 
         this.reset();
     }

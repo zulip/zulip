@@ -149,6 +149,12 @@ const everyone = make_user_group({
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
+function mockComposeReplyContainer() {
+    const $reply_stub = $("#reply-stub");
+    $reply_stub[0].remove = noop;
+    $("#compose-reply-container").set_find_results(".reply", $reply_stub);
+}
+
 function test_ui(label, f) {
     // TODO: initialize data more aggressively.
     run_test(label, f);
@@ -212,6 +218,8 @@ test_ui("send_message_success", ({override, override_rewire}) => {
         assert.equal(data.id, 12);
         assert.equal(data.automatic_new_visibility_policy, 2);
     });
+
+    mockComposeReplyContainer();
 
     let request = {
         locally_echoed: false,
@@ -310,6 +318,8 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 return messages_data.raw_messages;
             });
         });
+
+        mockComposeReplyContainer();
 
         override(transmit, "send_message", (payload, success) => {
             const single_msg = {
@@ -441,6 +451,8 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     fake_compose_box.set_textarea_val("message me");
     fake_compose_box.show_message_preview();
 
+    mockComposeReplyContainer();
+
     override(user_settings, "enter_sends", true);
     let send_message_called = false;
     override_rewire(compose, "send_message", () => {
@@ -485,6 +497,7 @@ test_ui("finish", ({override, override_rewire}) => {
         assert.equal($spinner.selector, fake_compose_box.compose_spinner_selector());
         show_button_spinner_called = true;
     });
+    mockComposeReplyContainer();
 
     (function test_when_compose_validation_fails() {
         // To trigger the empty banner error instead of other errors
@@ -638,6 +651,10 @@ test_ui("update_fade", ({override, override_rewire}) => {
     override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override_rewire(drafts, "update_compose_draft_count", noop);
     override(compose_pm_pill, "get_user_ids", () => []);
+
+    const $stub_reply = $("#message-content-container");
+    $("textarea#compose-textarea").set_closest_results("#message-content-container", $stub_reply);
+    $stub_reply.set_find_results(".reply", []);
 
     compose_state.set_message_type(undefined);
     compose_recipient.update_on_recipient_change();
