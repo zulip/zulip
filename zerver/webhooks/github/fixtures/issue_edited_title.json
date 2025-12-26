@@ -1,0 +1,30 @@
+{
+  "action": "edited",
+  "issue": {
+    "url": "https://api.github.com/repos/public-repo/issues/2",
+    "html_url": "https://github.com/public-repo/issues/2",
+    "number": 2,
+    "title": "New Title",
+    "user": {
+      "login": "baxterthehacker"
+    },
+    "state": "open",
+    "body": "I'm having a problem with this."
+  },
+  "changes": {
+    "title": {
+      "from": "Old Title"
+    }
+  },
+  "repository": {
+    "name": "public-repo",
+    "full_name": "baxterthehacker/public-repo",
+    "private": false,
+    "owner": {
+      "login": "baxterthehacker"
+    }
+  },
+  "sender": {
+    "login": "baxterthehacker"
+  }
+}

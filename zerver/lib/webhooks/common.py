@@ -15,6 +15,10 @@ from django.utils.translation import gettext as _
 from pydantic import Json
 from typing_extensions import override
 
+from zerver.actions.message_edit import (  # type: ignore[attr-defined] # private export
+    StreamMessageEditRequest,
+    do_update_message,
+)
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -29,6 +33,8 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
+from zerver.lib.streams import access_stream_by_name
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
@@ -344,3 +350,57 @@ def validate_webhook_signature(
 
     if signed_payload != signature:
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def check_topic_rename(
+    user_profile: UserProfile,
+    stream_name: str,
+    old_topic: str,
+    new_topic: str,
+) -> None:
+    try:
+        stream = access_stream_by_name(user_profile, stream_name)[0]
+    except Exception:
+        return
+
+    if stream.recipient_id is None:  # nocoverage
+        return  # nocoverage
+
+    last_message = (
+        messages_for_topic(
+            realm_id=user_profile.realm_id,
+            stream_recipient_id=stream.recipient_id,
+            topic_name=old_topic,
+        )
+        .order_by("-date_sent")
+        .first()
+    )
+
+    if last_message is None:
+        return
+
+    edit_request = StreamMessageEditRequest(
+        target_topic_name=new_topic,
+        propagate_mode="change_all",
+        is_topic_edited=True,
+        is_content_edited=False,
+        is_stream_edited=False,
+        is_message_moved=False,
+        topic_resolved=False,
+        topic_unresolved=False,
+        content=last_message.content,
+        target_stream=stream,
+        orig_content=last_message.content,
+        orig_topic_name=old_topic,
+        orig_stream=stream,
+    )
+
+    do_update_message(
+        user_profile=user_profile,
+        target_message=last_message,
+        message_edit_request=edit_request,
+        send_notification_to_old_thread=False,
+        send_notification_to_new_thread=True,
+        rendering_result=None,
+        prior_mention_user_ids=set(),
+    )
