@@ -83,6 +83,7 @@ html_safelisted_schemes = (
     "magnet",
     "mailto",
     "matrix",
+    "mid",
     "mms",
     "news",
     "nntp",
@@ -267,7 +268,8 @@ def get_web_link_regex() -> Pattern[str]:
                 |
                 (?: \? (?![)\"\s]|\Z) {nested_paren_chunk} ) # Query starting with ? (must not be trailing punctuation)
             )?)              # Path is optional
-            | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
+            | (?<!mid:)(?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
+            | (?:mid:[^\s]+)            # Match mid: followed by non-whitespace
             {file_links}               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
             | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{{25,34}})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
         )

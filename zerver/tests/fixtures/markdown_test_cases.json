@@ -1457,6 +1457,11 @@
       "New logic with trailing dot: Go to https://podcasts.google.com?feed=abc.",
       "<p>New logic with trailing dot: Go to <a href=\"https://podcasts.google.com?feed=abc\">https://podcasts.google.com?feed=abc</a>.</p>",
       "Go to https://podcasts.google.com?feed=abc."
+    ],
+    [
+      "mid:960830.1639@XIson.com",
+      "<p><a href=\"mid:960830.1639@XIson.com\">mid:960830.1639@XIson.com</a></p>",
+      "mid:960830.1639@XIson.com"
     ]
   ]
 }
