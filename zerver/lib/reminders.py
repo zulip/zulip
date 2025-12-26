@@ -1,12 +1,14 @@
 from django.conf import settings
 from django.utils.translation import gettext as _
 
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import truncate_content
+from zerver.lib.message import get_user_mentions_for_display, truncate_content
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import get_message_link_syntax
+from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.url_encoding import message_link_url
 from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
@@ -71,20 +73,42 @@ def get_reminder_formatted_content(
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
     conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
     content += "\n\n"
+    if message.is_channel_message:
+        conversation_location = ""
+    else:
+        recipients: list[UserProfile | UserDisplayRecipient] = [
+            user
+            for user in get_display_recipient(message.recipient)
+            if user["id"] is not message.sender.id
+        ]
+        if not recipients:
+            recipients = [message.sender]
+        recipient_mentions = get_user_mentions_for_display(recipients)
+        conversation_location = f" to {recipient_mentions}"
+
     if message.content.startswith("/poll"):
-        content += _("{user_silent_mention} [sent]({conversation_url}) a poll.").format(
+        content += _(
+            "{user_silent_mention} [sent]({conversation_url}) a poll{conversation_location}."
+        ).format(
             user_silent_mention=user_silent_mention,
             conversation_url=conversation_url,
+            conversation_location=conversation_location,
         )
     elif message.content.startswith("/todo"):
-        content += _("{user_silent_mention} [sent]({conversation_url}) a todo list.").format(
+        content += _(
+            "{user_silent_mention} [sent]({conversation_url}) a todo list{conversation_location}."
+        ).format(
             user_silent_mention=user_silent_mention,
             conversation_url=conversation_url,
+            conversation_location=conversation_location,
         )
     else:
-        content += _("{user_silent_mention} [said]({conversation_url}):").format(
+        content += _(
+            "{user_silent_mention} [said]({conversation_url}){conversation_location}:"
+        ).format(
             user_silent_mention=user_silent_mention,
             conversation_url=conversation_url,
+            conversation_location=conversation_location,
         )
         content += "\n"
         fence = get_unused_fence(content)

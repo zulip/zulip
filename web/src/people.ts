@@ -1597,6 +1597,22 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     return mention;
 }
 
+export function get_user_mentions_for_display(users: User[], is_silent: boolean): string {
+    const mentions: string[] = [];
+    for (const user of users) {
+        mentions.push(get_mention_syntax(user.full_name, user.user_id, is_silent));
+    }
+    if (mentions.length === 1) {
+        return mentions[0]!;
+    }
+    const last_user = mentions.pop();
+    let other_users = mentions.join(", ");
+    if (mentions.length > 1) {
+        other_users += ", ";
+    }
+    return `${other_users} and ${last_user}`;
+}
+
 function full_name_matches_wildcard_mention(full_name: string): boolean {
     return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 }

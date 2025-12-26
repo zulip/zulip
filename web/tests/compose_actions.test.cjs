@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {quote_message_template} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
@@ -54,7 +55,6 @@ const compose_ui = mock_esm("../src/compose_ui", {
     set_focus: noop,
     compute_placeholder_text: noop,
 });
-const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
     filter: noop,
@@ -97,6 +97,11 @@ const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 const {set_realm} = zrequire("state_data");
+const internal_url = zrequire("internal_url");
+const topic_link_util = zrequire("topic_link_util");
+const sub_store = zrequire("sub_store");
+const hash_util = zrequire("hash_util");
+const fenced_code = zrequire("fenced_code");
 
 const realm = make_realm({
     realm_topics_policy: "disable_empty_topic",
@@ -482,11 +487,15 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         replaced = true;
     });
 
-    const denmark_stream = make_stream({
+    const channel_id = 20;
+    const channel_object = {
         subscribed: false,
         name: "Denmark",
-        stream_id: 20,
-    });
+        stream_id: channel_id,
+    };
+    const denmark_stream = make_stream(channel_object);
+
+    sub_store.add_hydrated_sub(channel_id, channel_object);
 
     selected_message = {
         type: "stream",
@@ -494,10 +503,8 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         topic: "python",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
+        id: 10,
     };
-    hash_util.by_conversation_and_time_url = () =>
-        "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado";
-
     let success_function;
     override(channel, "get", (opts) => {
         success_function = opts.success;
@@ -523,9 +530,23 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     $("textarea#compose-textarea").attr("id", "compose-textarea");
 
     replaced = false;
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
-
+    expected_replacement = quote_message_template({
+        channel_link_syntax: topic_link_util.get_stream_topic_link_syntax(
+            channel_object.name,
+            selected_message.topic,
+        ),
+        sender_full_name: selected_message.sender_full_name,
+        sender_id: selected_message.sender_id,
+        with_url: internal_url.by_stream_topic_url(
+            selected_message.stream_id,
+            selected_message.topic,
+            sub_store.maybe_get_stream_name,
+            selected_message.id,
+        ),
+        near_url: hash_util.by_conversation_and_time_url(selected_message),
+        fence: fenced_code.get_unused_fence("Testing."),
+        message: "Testing.",
+    });
     quote_message(opts);
 
     success_function({
@@ -561,9 +582,28 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
         raw_content: "Testing.",
+        id: 10,
     };
 
     replaced = false;
+    expected_replacement = quote_message_template({
+        channel_link_syntax: topic_link_util.get_stream_topic_link_syntax(
+            channel_object.name,
+            selected_message.topic,
+        ),
+        sender_full_name: selected_message.sender_full_name,
+        sender_id: selected_message.sender_id,
+        with_url: internal_url.by_stream_topic_url(
+            selected_message.stream_id,
+            selected_message.topic,
+            sub_store.maybe_get_stream_name,
+            selected_message.id,
+        ),
+        near_url: hash_util.by_conversation_and_time_url(selected_message),
+        fence: fenced_code.get_unused_fence("Testing."),
+        message: "Testing.",
+    });
+
     disallow(channel, "get");
     quote_message(opts);
     assert.ok(replaced);
@@ -590,11 +630,28 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
         raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
+        id: 10,
     };
 
     replaced = false;
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+    expected_replacement = quote_message_template({
+        channel_link_syntax: topic_link_util.get_stream_topic_link_syntax(
+            channel_object.name,
+            selected_message.topic,
+        ),
+        sender_full_name: selected_message.sender_full_name,
+        sender_id: selected_message.sender_id,
+        with_url: internal_url.by_stream_topic_url(
+            selected_message.stream_id,
+            selected_message.topic,
+            sub_store.maybe_get_stream_name,
+            selected_message.id,
+        ),
+        near_url: hash_util.by_conversation_and_time_url(selected_message),
+        fence: fenced_code.get_unused_fence(selected_message.raw_content),
+        message: selected_message.raw_content,
+    });
+
     quote_message(opts);
     assert.ok(replaced);
 
