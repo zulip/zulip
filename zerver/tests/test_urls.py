@@ -183,8 +183,18 @@ class ErrorPageTest(ZulipTestCase):
 class RedirectURLTest(ZulipTestCase):
     def test_api_redirects(self) -> None:
         for redirect in API_DOCUMENTATION_REDIRECTS:
-            result = self.client_get(redirect.old_url, follow=True)
-            self.assert_in_success_response(["Zulip homepage", "API documentation home"], result)
+            if redirect.old_url not in [
+                "/api/incoming-webhooks-overview",
+                "/api/incoming-webhooks-walkthrough",
+            ]:
+                result = self.client_get(redirect.old_url, follow=True)
+                self.assert_in_success_response(
+                    ["Zulip homepage", "API documentation home"], result
+                )
+
+            result = self.client_get(redirect.old_url)
+            self.assertEqual(result.status_code, 301)
+            self.assertIn(redirect.new_url, result["Location"])
 
     def test_policy_redirects(self) -> None:
         for redirect in POLICY_DOCUMENTATION_REDIRECTS:

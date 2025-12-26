@@ -3,7 +3,7 @@
 Render JSON payloads nicely in a Zulip code block! This is
 particularly useful when you want to capture a webhook payload as part
 of [writing an incoming webhook
-integration](/api/incoming-webhooks-overview).
+integration](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html).
 
 {start_tabs}
 

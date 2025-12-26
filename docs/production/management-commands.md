@@ -186,6 +186,6 @@ upgrade.
 [writing-bots]: https://zulip.com/api/writing-bots
 [integrations]: https://zulip.com/integrations
 [zulip-api]: https://zulip.com/api/rest
-[webhook-integrations]: https://zulip.com/api/incoming-webhooks-overview
+[webhook-integrations]: ../webhooks/incoming-webhooks-overview.md
 [management-commands-dev]: ../subsystems/management-commands.md
 [django-management]: https://docs.djangoproject.com/en/5.0/ref/django-admin/#django-admin-and-manage-py

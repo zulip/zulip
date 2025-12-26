@@ -79,7 +79,7 @@ class WebhookUrlOption:
         This creates a pre-configured WebhookUrlOption object to be used
         in various incoming webhook integrations.
 
-        See https://zulip.com/api/incoming-webhooks-walkthrough#webhookurloption-presets
+        See https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-walkthrough.html#webhookurloption-presets
         for more details on this system and what each option does.
         """
         match config:
