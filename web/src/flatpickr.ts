@@ -4,11 +4,20 @@ import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_flatpickr_extra_button from "../templates/flatpickr_extra_button.hbs";
+
 import {$t} from "./i18n.ts";
+import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export let flatpickr_instance: flatpickr.Instance | undefined;
+
+type ExtraButtonConfig = {
+    prefix?: string;
+    text: string;
+    callback: () => void;
+};
 
 export function is_open(): boolean {
     return Boolean(flatpickr_instance?.isOpen);
@@ -25,6 +34,7 @@ export function show_flatpickr(
     callback: (time: string) => void,
     default_timestamp: flatpickr.Options.DateOption,
     options: flatpickr.Options.Options = {},
+    extra_button: ExtraButtonConfig | undefined = undefined,
     hide_confirm_button = false,
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
@@ -99,6 +109,9 @@ export function show_flatpickr(
                 // navigate between the elements in flatpickr itself
                 // and the confirmation button at the bottom of the
                 // popover.
+                const extra_button_elem = extra_button
+                    ? $(instance.calendarContainer).find(".flatpickr-extra-button").get(0)
+                    : undefined;
                 const enabled_time_options = [
                     instance.hourElement,
                     instance.minuteElement,
@@ -108,6 +121,7 @@ export function show_flatpickr(
                     instance.selectedDateElem,
                     ...(options.enableTime ? enabled_time_options : []),
                     ...(hide_confirm_button ? [] : [$(".flatpickr-confirm")[0]]),
+                    ...(extra_button_elem ? [extra_button_elem] : []),
                 ];
                 assert(event.target instanceof HTMLElement);
                 const i = elems.indexOf(event.target);
@@ -179,6 +193,18 @@ export function show_flatpickr(
     if (!hide_confirm_button) {
         $container.on("click", ".flatpickr-confirm", () => {
             submit_and_close();
+        });
+    }
+
+    if (extra_button !== undefined) {
+        const extra_button_fragment = parse_html(render_flatpickr_extra_button(extra_button));
+        util.the($container).append(extra_button_fragment);
+        $container.on("click", ".flatpickr-extra-button", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            extra_button.callback();
+            flatpickr_instance?.close();
+            flatpickr_instance?.destroy();
         });
     }
     flatpickr_instance.open();
