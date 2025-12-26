@@ -8,6 +8,7 @@ import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
 import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
+import * as gif_state from "./gif_state.ts";
 import * as giphy_network from "./giphy_network.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -20,7 +21,6 @@ let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
 let network: GifNetwork;
-let provider: "tenor" | "giphy";
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -173,6 +173,7 @@ function toggle_picker_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
+                const provider = network.get_provider();
                 instance.setContent(
                     gif_picker_popover_content.get_gif_popover_content(provider === "giphy"),
                 );
@@ -244,34 +245,23 @@ function toggle_picker_popover(target: HTMLElement): void {
     );
 }
 
-function register_click_handlers(): void {
-    $("body").on(
-        "click",
-        ".compose_control_button.compose-gif-icon-tenor",
-        function (this: HTMLElement) {
-            compose_icon_session = new ComposeIconSession(this);
-            provider = "tenor";
-            if (network) {
-                network.abandon();
-            }
-            network = new tenor_network.TenorNetwork();
-            toggle_picker_popover(this);
-        },
-    );
+function get_gif_network(): GifNetwork {
+    // We prefer Tenor over GIPHY.
+    if (gif_state.is_tenor_enabled()) {
+        return new tenor_network.TenorNetwork();
+    }
+    return new giphy_network.GiphyNetwork();
+}
 
-    $("body").on(
-        "click",
-        ".compose_control_button.compose-gif-icon-giphy",
-        function (this: HTMLElement) {
-            compose_icon_session = new ComposeIconSession(this);
-            provider = "giphy";
-            if (network) {
-                network.abandon();
-            }
-            network = new giphy_network.GiphyNetwork();
-            toggle_picker_popover(this);
-        },
-    );
+function register_click_handlers(): void {
+    $("body").on("click", ".compose_control_button.compose-gif-icon", function (this: HTMLElement) {
+        compose_icon_session = new ComposeIconSession(this);
+        if (network) {
+            network.abandon();
+        }
+        network = get_gif_network();
+        toggle_picker_popover(this);
+    });
 }
 
 export function initialize(): void {
