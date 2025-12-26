@@ -18,6 +18,7 @@ import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 
 import * as avatar from "./avatar.ts";
+import * as banners from "./banners.ts";
 import * as bot_data from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
 import * as browser_history from "./browser_history.ts";
@@ -601,10 +602,15 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
     function add_user_to_next_group(): void {
         if (group_ids_successfully_added.length >= group_ids.length) {
             if (group_ids_successfully_added.length > 0) {
-                ui_report.success(
-                    $t_html({
-                        defaultMessage: "Added successfully!",
-                    }),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Added successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
@@ -652,7 +658,15 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
                           },
                       );
 
-                ui_report.client_error(error_message, $alert_box);
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
+                    $alert_box,
+                );
                 clear_successful_pills();
             },
         });
@@ -943,9 +957,17 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 $cancel_button.prop("disabled", false);
             },
             error(xhr) {
-                ui_report.error(
+                const error_message = channel.xhr_error_message(
                     $t_html({defaultMessage: "Failed"}),
                     xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
                     $("#bot-edit-form-error"),
                 );
                 // Scrolling modal to top, to make error visible to user.
@@ -1300,9 +1322,17 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $cancel_button.prop("disabled", false);
             },
             error(xhr) {
-                ui_report.error(
+                const error_message = channel.xhr_error_message(
                     $t_html({defaultMessage: "Failed"}),
                     xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
                     $("#edit-user-form-error"),
                 );
                 // Scrolling modal to top, to make error visible to user.
@@ -1337,21 +1367,45 @@ export function initialize(): void {
                 .parse(raw_data);
             if (Object.keys(data.subscribed).length > 0) {
                 reset_subscribe_widget();
-                ui_report.success(
-                    $t_html({defaultMessage: "Subscribed successfully!"}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Subscribed successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             } else {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Already subscribed."}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Already subscribed.",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             }
         }
         function addition_failure(xhr: JQuery.jqXHR): void {
-            ui_report.error("", xhr, $alert_box, 1200);
+            const message = channel.xhr_error_message("", xhr);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
         subscriber_api.add_user_ids_to_stream(
             [target_user_id],
@@ -1383,14 +1437,28 @@ export function initialize(): void {
                 })
                 .parse(raw_data);
             if (data.removed.length > 0) {
-                ui_report.success(
-                    $t_html({defaultMessage: "Unsubscribed successfully!"}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Unsubscribed successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             } else {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Already not subscribed."}),
+                banners.open_and_close(
+                    {
+                        intent: "danger",
+                        label: $t({
+                            defaultMessage: "Already not subscribed.",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
@@ -1412,7 +1480,16 @@ export function initialize(): void {
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
         assert(sub !== undefined);
         if (
@@ -1440,7 +1517,18 @@ export function initialize(): void {
         const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
 
         function removal_success(): void {
-            ui_report.success($t_html({defaultMessage: "Removed successfully!"}), $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "success",
+                    label: $t({
+                        defaultMessage: "Removed successfully!",
+                    }),
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
 
         function removal_failure(): void {
@@ -1458,7 +1546,16 @@ export function initialize(): void {
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
 
         user_group_edit_members.edit_user_group_membership({

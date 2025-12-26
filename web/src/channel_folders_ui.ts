@@ -233,7 +233,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
         );
 
         function on_success(): void {
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "success",
                     label: $t_html({
@@ -254,7 +254,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
                 }),
                 xhr,
             );
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "danger",
                     label: error_message,
@@ -355,7 +355,7 @@ function render_add_channel_folder_widget(): void {
         assert(folder_id !== undefined);
         function on_success(): void {
             reset_add_channel_widget();
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "success",
                     label: $t_html({
@@ -376,7 +376,7 @@ function render_add_channel_folder_widget(): void {
                 }),
                 xhr,
             );
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "danger",
                     label: error_message,
