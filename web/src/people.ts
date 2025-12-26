@@ -135,6 +135,12 @@ type FetchUserDataParams = {
     error?: (xhr?: JQuery.jqXHR) => void;
 };
 
+type WaitingPeriod = {
+    waiting_period: number;
+    waiting_period_time: number;
+    account_age: number;
+};
+
 export function add_valid_user_id(user_id: number): void {
     valid_user_ids.add(user_id);
 }
@@ -440,6 +446,47 @@ export function get_user_time(user_id: number): string | undefined {
         }
     }
     return undefined;
+}
+
+export function get_waiting_period_info(user_id: number): WaitingPeriod {
+    const user_profile = get_by_user_id(user_id);
+    const waiting_period = realm.realm_waiting_period_threshold ?? 0;
+    const account_age = Date.now() - new Date(user_profile.date_joined).getTime();
+    const waiting_period_time = waiting_period * 24 * 60 * 60 * 1000;
+
+    return {waiting_period, waiting_period_time, account_age};
+}
+
+export function get_user_type_with_waiting_period(user_id: number): string | undefined {
+    const user_profile = get_by_user_id(user_id);
+    const role_value = settings_config.user_role_map.get(user_profile.role);
+
+    const waiting_period_info = get_waiting_period_info(user_id);
+
+    if (
+        waiting_period_info.waiting_period > 0 &&
+        user_profile.role === settings_config.user_role_values.member.code
+    ) {
+        if (!settings_config.user_role_map.has(settings_config.new_member_code)) {
+            settings_config.user_role_map.set(
+                settings_config.new_member_code,
+                $t({defaultMessage: "New member"}),
+            );
+        }
+        if (!settings_config.user_role_map.has(settings_config.full_member_code)) {
+            settings_config.user_role_map.set(
+                settings_config.full_member_code,
+                $t({defaultMessage: "Full member"}),
+            );
+        }
+
+        if (waiting_period_info.account_age < waiting_period_info.waiting_period_time) {
+            return settings_config.user_role_map.get(settings_config.new_member_code);
+        }
+        return settings_config.user_role_map.get(settings_config.full_member_code);
+    }
+
+    return role_value;
 }
 
 export function get_user_type(user_id: number): string | undefined {
@@ -1835,6 +1882,19 @@ export function matches_user_settings_search(person: User, value: string): boole
 }
 
 function matches_user_settings_role(person: User, role_code: number): boolean {
+    const waiting_period_info = get_waiting_period_info(person.user_id);
+
+    if (
+        person.role === settings_config.user_role_values.member.code &&
+        waiting_period_info.waiting_period > 0 &&
+        role_code !== 0
+    ) {
+        if (waiting_period_info.account_age < waiting_period_info.waiting_period_time) {
+            return role_code === settings_config.new_member_code;
+        }
+        return role_code === settings_config.full_member_code;
+    }
+
     if (role_code === 0 || role_code === person.role) {
         return true;
     }

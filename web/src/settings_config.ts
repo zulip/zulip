@@ -442,6 +442,9 @@ export const user_role_values = {
     },
 };
 
+export const new_member_code = 700;
+export const full_member_code = 800;
+
 export const all_org_type_values = {
     // When org_type was added to the database model, 'unspecified'
     // was the default for existing organizations. To discourage

@@ -718,6 +718,88 @@ run_test("user_type", () => {
     assert.equal(people.get_user_type(realm_owner.user_id), $t({defaultMessage: "Owner"}));
     assert.equal(people.get_user_type(moderator.user_id), $t({defaultMessage: "Moderator"}));
     assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Moderator"}));
+
+    const original_threshold = realm.realm_waiting_period_threshold;
+
+    realm.realm_waiting_period_threshold = 0;
+    assert.equal(
+        people.get_user_type_with_waiting_period(me.user_id),
+        $t({defaultMessage: "Member"}),
+    );
+
+    realm.realm_waiting_period_threshold = 3;
+    const alex = {
+        email: "alex@example.com",
+        user_id: 101,
+        full_name: "alex",
+        timezone: "America/Los_Angeles",
+        is_admin: false,
+        is_guest: false,
+        is_moderator: false,
+        is_bot: false,
+        role: 400,
+        date_joined: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(alex);
+    assert.equal(
+        people.get_user_type_with_waiting_period(alex.user_id),
+        $t({defaultMessage: "New member"}),
+    );
+
+    const john = {
+        email: "john@example.com",
+        user_id: 102,
+        full_name: "john",
+        timezone: "America/Los_Angeles",
+        is_admin: false,
+        is_guest: false,
+        is_moderator: false,
+        is_bot: false,
+        role: settings_config.user_role_values.member.code,
+        date_joined: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(john);
+    assert.equal(
+        people.get_user_type_with_waiting_period(john.user_id),
+        $t({defaultMessage: "Full member"}),
+    );
+
+    const temp = {
+        email: "temp@example.com",
+        user_id: 103,
+        full_name: "temp",
+        timezone: "America/Los_Angeles",
+        is_admin: false,
+        is_guest: false,
+        is_moderator: false,
+        is_bot: false,
+        role: settings_config.user_role_values.member.code,
+        date_joined: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(temp);
+    assert.equal(
+        people.get_user_type_with_waiting_period(temp.user_id),
+        $t({defaultMessage: "Full member"}),
+    );
+
+    assert.equal(
+        people.get_user_type_with_waiting_period(realm_admin.user_id),
+        $t({defaultMessage: "Administrator"}),
+    );
+    assert.equal(
+        people.get_user_type_with_waiting_period(guest.user_id),
+        $t({defaultMessage: "Guest"}),
+    );
+    assert.equal(
+        people.get_user_type_with_waiting_period(realm_owner.user_id),
+        $t({defaultMessage: "Owner"}),
+    );
+    assert.equal(
+        people.get_user_type_with_waiting_period(moderator.user_id),
+        $t({defaultMessage: "Moderator"}),
+    );
+
+    realm.realm_waiting_period_threshold = original_threshold;
 });
 
 run_test("updates", () => {
@@ -1485,7 +1567,16 @@ run_test("predicate_for_user_settings_filters", ({override}) => {
     */
     override(current_user, "is_admin", false);
 
-    const fred_smith = {full_name: "Fred Smith", role: 100};
+    const fred_smith = {
+        user_id: 999,
+        delivery_email: "fred@example.com",
+        email: "fred@example.com",
+        full_name: "Fred Smith",
+        is_bot: false,
+        role: 100,
+        date_joined: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(fred_smith);
 
     // Test only when text_search filter is true
     assert.equal(
@@ -1520,6 +1611,116 @@ run_test("predicate_for_user_settings_filters", ({override}) => {
         people.predicate_for_user_settings_filters(fred_smith, {text_search: "de", role_code: 300}),
         false,
     );
+
+    const original_threshold = realm.realm_waiting_period_threshold;
+    realm.realm_waiting_period_threshold = 3;
+
+    // To check if guest user is treated as guest
+    assert.equal(
+        people.predicate_for_user_settings_filters(fred_smith, {
+            text_search: "fred",
+            role_code: 100,
+        }),
+        true,
+    );
+
+    const alex = {
+        email: "alex@example.com",
+        user_id: 304,
+        full_name: "alex",
+        timezone: "America/Los_Angeles",
+        is_admin: false,
+        is_guest: false,
+        is_moderator: false,
+        is_bot: false,
+        role: 400,
+        date_joined: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(alex);
+    // Test only when text_search filter is true
+    assert.equal(
+        people.predicate_for_user_settings_filters(alex, {text_search: "al", role_code: 0}),
+        true,
+    );
+    // Test only when role_code filter is true.
+    assert.equal(
+        people.predicate_for_user_settings_filters(alex, {text_search: "", role_code: 700}),
+        true,
+    );
+    // Test only when both text_search and role_code filters are true.
+    assert.equal(
+        people.predicate_for_user_settings_filters(alex, {text_search: "alex", role_code: 700}),
+        true,
+    );
+    // Test only when text_search filter is false.
+    assert.equal(
+        people.predicate_for_user_settings_filters(alex, {text_search: "hm", role_code: 0}),
+        false,
+    );
+    // Test only when role_code filter is false.
+    assert.equal(
+        people.predicate_for_user_settings_filters(alex, {text_search: "", role_code: 200}),
+        false,
+    );
+
+    const john = {
+        email: "john@example.com",
+        user_id: 404,
+        full_name: "john",
+        timezone: "America/Los_Angeles",
+        is_admin: false,
+        is_guest: false,
+        is_moderator: false,
+        is_bot: false,
+        role: 400,
+        date_joined: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(john);
+    // Test only when text_search filter is true
+    assert.equal(
+        people.predicate_for_user_settings_filters(john, {text_search: "jo", role_code: 0}),
+        true,
+    );
+    // Test only when role_code filter is true.
+    assert.equal(
+        people.predicate_for_user_settings_filters(john, {text_search: "", role_code: 800}),
+        true,
+    );
+    // Test only when both text_search and role_code filters are true.
+    assert.equal(
+        people.predicate_for_user_settings_filters(john, {text_search: "joh", role_code: 800}),
+        true,
+    );
+    // Test only when text_search filter is false.
+    assert.equal(
+        people.predicate_for_user_settings_filters(john, {text_search: "hm", role_code: 0}),
+        false,
+    );
+    // Test only when role_code filter is false.
+    assert.equal(
+        people.predicate_for_user_settings_filters(john, {text_search: "", role_code: 200}),
+        false,
+    );
+
+    realm.realm_waiting_period_threshold = 0;
+
+    // To check if no waiting period users are treated as members
+    assert.equal(
+        people.predicate_for_user_settings_filters(alex, {
+            text_search: "",
+            role_code: 700,
+        }),
+        false,
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(john, {
+            text_search: "",
+            role_code: 800,
+        }),
+        false,
+    );
+
+    realm.realm_waiting_period_threshold = original_threshold;
 });
 
 run_test("matches_user_settings_search", ({override}) => {
