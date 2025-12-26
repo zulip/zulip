@@ -18,6 +18,8 @@ function is_numeric_key(key: string): boolean {
     return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
 }
 
+const ENABLE_TIME_DEFAULT = true;
+
 export function show_flatpickr(
     element: HTMLElement,
     callback: (time: string) => void,
@@ -26,9 +28,9 @@ export function show_flatpickr(
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
 
+    options.enableTime = options.enableTime ?? ENABLE_TIME_DEFAULT;
     flatpickr_instance = flatpickr(util.the($flatpickr_input), {
         mode: "single",
-        enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
         plugins: [
@@ -58,11 +60,14 @@ export function show_flatpickr(
                 // navigate between the elements in flatpickr itself
                 // and the confirmation button at the bottom of the
                 // popover.
-                const elems = [
-                    instance.selectedDateElem,
+                const enabled_time_options = [
                     instance.hourElement,
                     instance.minuteElement,
                     ...(user_settings.twenty_four_hour_time ? [] : [instance.amPM]),
+                ];
+                const elems = [
+                    instance.selectedDateElem,
+                    ...(options.enableTime ? enabled_time_options : []),
                     $(".flatpickr-confirm")[0],
                 ];
                 assert(event.target instanceof HTMLElement);
