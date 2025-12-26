@@ -712,6 +712,17 @@ test("topic_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    suggestions = get_suggestions("topic:", `-channel:${office_id}`);
+    expected = [
+        `-channel:${office_id} topic:`,
+        `-channel:${office_id} channel:${devel_id} topic:REXX`,
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    suggestions = get_suggestions("topic:", `-channel:${office_id} -channel:${devel_id}`);
+    expected = [`-channel:${office_id} -channel:${devel_id} topic:`];
+    assert.deepEqual(suggestions.strings, expected);
+
     suggestions = get_suggestions(`is:alerted channel:${devel_id} is:starred topic:`);
     expected = [
         `is:alerted channel:${devel_id} is:starred topic:`,
