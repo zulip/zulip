@@ -240,7 +240,7 @@ function test_helper({override, override_rewire, change_tab}) {
 
 run_test("hash_interactions", ({override, override_rewire}) => {
     $window_stub = $.create("window-stub");
-    override(user_settings, "web_home_view", "recent_topics");
+    override(user_settings, "web_home_view", "recent");
 
     const helper = test_helper({override, override_rewire, change_tab: true});
 
