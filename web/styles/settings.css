@@ -1856,6 +1856,16 @@ label.preferences-radio-choice-label {
     opacity: 0.5;
 }
 
+/* This nicely displays uneditable user-generated content, such as
+   rendered realm and channel descriptions. */
+.settings-view-only-textarea {
+    margin: 0;
+    padding: 5px 10px;
+    background-color: var(--color-background-modal-bar);
+    border: 1px solid var(--color-border-modal-bar);
+    border-radius: 4px;
+}
+
 .modal-textarea:disabled {
     background-color: var(--background-color-readonly-modal-input);
 }
