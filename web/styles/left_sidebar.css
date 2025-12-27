@@ -266,6 +266,26 @@
     }
 }
 
+/* Because of how the divs move when scrolling, the line between the DM and channels
+   sections is in different places in the DOM depending on if the DM container is
+   scrolled past / collapsed. */
+.direct-message-section-bottom-border {
+    display: none;
+}
+
+#left_sidebar_scroll_container
+    .direct-messages-container:not(.section-collapsed)
+    + .direct-message-section-bottom-border,
+#direct-messages-section-header.section-collapsed
+    + .direct-message-section-bottom-border {
+    display: block;
+    border-color: var(--color-navbar-bottom-border);
+    border-width: 0.5px;
+    margin-right: var(--left-sidebar-right-margin);
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
 #direct-messages-section-header {
     cursor: pointer;
     white-space: nowrap;
