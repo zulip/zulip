@@ -23,6 +23,22 @@ class ZapierHookTests(WebhookTestCase):
         )
         self.check_webhook("weather_update", expected_topic_name, expected_message)
 
+    def test_zapier_removes_whitespace_inside_links(self) -> None:
+        """
+        Zapier sometimes provides URLs that contain whitespace characters
+        (for example from Mastodon). These should be sanitized so that the
+        final message contains a valid clickable link.
+        """
+
+        expected_topic = "test"
+        expected_message = "Check this link: https://example.org/this/is/broken"
+
+        self.check_webhook(
+            "removes_whitespace_inside_links",
+            expected_topic,
+            expected_message,
+        )
+
 
 class ZapierZulipAppTests(WebhookTestCase):
     CHANNEL_NAME = "zapier"
