@@ -1,3 +1,5 @@
+import re
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
@@ -10,6 +12,30 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
+def sanitize_links(content: str | None) -> str | None:
+    """
+    Remove whitespace inside URLs so links remain clickable.
+
+    Example:
+        "https://example.org/this /is /broken"
+        becomes:
+        "https://example.org/this/is/broken"
+    """
+
+    if content is None:
+        return None
+
+    # Match URLs that may contain spaces inside them
+    url_pattern = re.compile(r"https?://\S+(?:\s+\S+)*")
+
+    def _clean(match: re.Match[str]) -> str:
+        url = match.group(0)
+        # Remove ALL whitespace inside the URL
+        return re.sub(r"\s+", "", url)
+
+    return url_pattern.sub(_clean, content)
+
+
 @webhook_view("Zapier", notify_bot_owner_on_invalid_json=False)
 @typed_endpoint
 def api_zapier_webhook(
@@ -19,9 +45,6 @@ def api_zapier_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     if payload.get("type").tame(check_none_or(check_string)) == "auth":
-        # The bot's details are used by our Zapier app to format a connection
-        # label for users to be able to distinguish between different Zulip
-        # bots and API keys in their UI
         return json_success(
             request,
             data={
@@ -34,10 +57,11 @@ def api_zapier_webhook(
     topic_name = payload.get("topic").tame(check_none_or(check_string))
     content = payload.get("content").tame(check_none_or(check_string))
 
+    # 🔧 fix malformed Zapier links before sending
+    content = sanitize_links(content)
+
     if topic_name is None:
-        topic_name = payload.get("subject").tame(
-            check_none_or(check_string)
-        )  # Backwards-compatibility
+        topic_name = payload.get("subject").tame(check_none_or(check_string))
         if topic_name is None:
             raise JsonableError(_("Topic can't be empty"))
 
