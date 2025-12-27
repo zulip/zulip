@@ -131,3 +131,6 @@ select.bootstrap-focus-style {
         transition: none;
     }
 }
+.channel-privacy-type-icon {
+    margin-right: 0.25em;
+}
