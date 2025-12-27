@@ -2071,3 +2071,58 @@ textarea.new_message_textarea {
         overflow: hidden !important;
     }
 }
+
+/*
+ * This implementation uses a CSS Grid trick to allow the textarea to grow
+ * automatically with content, without requiring JavaScript layout calculations.
+ *
+ * The container is a grid with one cell. Both the textarea and a hidden ::after
+ * pseudo-element (which replicates the text) occupy this same cell.
+ * The ::after element grows with the text, pushing the container height open,
+ * and the textarea fills that space.
+ *
+ * Adapted from: https://css-tricks.com/the-cleanest-trick-for-autogrowing-textareas/
+ */
+
+/* Autosize Grid Setup */
+.autosize-container {
+    display: grid;
+    font-family: inherit;
+    min-width: 0;
+}
+
+/* The Replica (Hidden) */
+.autosize-container::after {
+    /* Essential "Physics" for the trick to work */
+    content: attr(data-replicated-value) " ";
+    white-space: pre-wrap;
+    visibility: hidden;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+    grid-area: 1 / 1 / 2 / 2;
+    font: inherit;
+    line-height: inherit;
+}
+
+.autosize-container:has(#compose-textarea)::after {
+    /* Specific Dimensions for the Main Compose Box */
+    margin-right: calc(var(--composebox-buttons-width) * -1);
+    padding: 5px var(--composebox-buttons-width) 5px 6px;
+    max-height: 22em;
+}
+
+/* The Textarea (Visible) */
+.autosize-container > #compose-textarea {
+    resize: none !important;
+    overflow: hidden !important;
+
+    /* Force textarea to fill the grid cell */
+    height: 100% !important;
+    max-height: 100% !important;
+    box-sizing: border-box;
+
+    /* Ensure it sits on top of the replica */
+    grid-area: 1 / 1 / 2 / 2;
+
+    overflow-y: auto !important;
+}

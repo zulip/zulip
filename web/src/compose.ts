@@ -1,6 +1,5 @@
 /* Main compose box module for sending messages. */
 
-import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -8,6 +7,7 @@ import * as z from "zod/mini";
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 
+import * as autosize from "./autosize.ts";
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_notifications from "./compose_notifications.ts";
@@ -75,12 +75,12 @@ export function clear_preview_area(): void {
     $("#compose .preview_message_area").hide();
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
-    autosize.update($("textarea#compose-textarea"));
 
     // While in preview mode we disable unneeded compose_control_buttons,
     // so here we are re-enabling those compose_control_buttons
     $("#compose").removeClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+    autosize.manual_resize($("textarea#compose-textarea"));
 }
 
 export function show_preview_area(): void {

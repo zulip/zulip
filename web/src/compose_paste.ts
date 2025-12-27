@@ -765,12 +765,14 @@ export function paste_handler(
                 },
             });
             setTimeout(() => {
-                $("textarea#compose-textarea").one("input", () => {
-                    // The banner only displays until the user does
-                    // some further input. This is both reasonable UI
-                    // and also is required for undo, see above.
-                    $banner.remove();
-                });
+                setTimeout(() => {
+                    $("textarea#compose-textarea").one("input", () => {
+                        // The banner only displays until the user does
+                        // some further input. This is both reasonable UI
+                        // and also is required for undo, see above.
+                        $banner.remove();
+                    });
+                }, 100);
             }, 0);
         }
 

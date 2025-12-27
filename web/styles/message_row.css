@@ -1279,3 +1279,55 @@
         }
     }
 }
+
+/*  The Replica (Hidden) */
+.autosize-container:has(.message_edit_content)::after {
+    min-height: 52px;
+    max-height: var(--max-message-edit-height);
+
+    padding: 5px 12px 0 5px; /* I have made right padding of replica to 12px because it needs to wrap first otherwise a scrollbar shows up before min height for a moment and goes away if we add 2-3 more characters, causing distracting effect */
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+    font-size: 1em;
+    scrollbar-gutter: stable;
+}
+
+.autosize-container > .message_edit_content {
+    width: 100%;
+    min-width: 206px;
+    min-height: 52px;
+    max-height: var(--max-message-edit-height);
+
+    box-sizing: border-box;
+    color: var(--color-text-default);
+    background-color: var(--background-color-textarea);
+    border-radius: 3px 3px 0 0;
+    vertical-align: middle;
+    border: none;
+    scrollbar-gutter: stable;
+
+    /* Match padding to replica */
+    padding: 5px 5px 0;
+    margin: 0;
+    box-shadow: none;
+
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
+    /* These ensure the box fills the grid cell created by the replica */
+    resize: none !important;
+    overflow: hidden !important;
+    height: 100% !important;
+    grid-area: 1 / 1 / 2 / 2; /* Stacks on top of replica */
+    overflow-y: auto !important; /* Enables scroll when full */
+}
+
+.autosize-container > .message_edit_content:focus {
+    outline: 0;
+}
+
+.autosize-container > .message_edit_content:read-only,
+.autosize-container > .message_edit_content:disabled {
+    cursor: not-allowed;
+}

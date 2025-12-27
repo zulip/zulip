@@ -1,4 +1,3 @@
-import autosize from "autosize";
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
@@ -18,6 +17,7 @@ import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import {detached_uploads_api_response_schema} from "./attachments.ts";
 import * as attachments_ui from "./attachments_ui.ts";
+import * as autosize from "./autosize.ts";
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as buttons from "./buttons.ts";
@@ -147,7 +147,7 @@ export function maybe_autosize_message_edit_box(): void {
     for (const message_id of message_ids) {
         const $edit_container = currently_editing_messages.get(message_id);
         if ($edit_container) {
-            autosize($edit_container);
+            autosize.manual_resize($edit_container);
         }
     }
     resized_edit_box_height.clear();
