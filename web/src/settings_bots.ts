@@ -111,11 +111,6 @@ const your_bots_section: BotSettingsSection = {
     list_widget: undefined,
 };
 
-function is_local_part(value: string): boolean {
-    // Adapted from Django's EmailValidator
-    return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
-}
-
 function sort_bot_email(a: BotInfo, b: BotInfo): number {
     function email(bot: BotInfo): string {
         return (bot.display_email ?? "").toLowerCase();
@@ -355,7 +350,7 @@ export function add_a_new_bot(): void {
     function validate_input(): boolean {
         const bot_short_name = $<HTMLInputElement>("input#create_bot_short_name").val()!;
 
-        if (is_local_part(bot_short_name)) {
+        if (bot_helper.validate_bot_short_name(bot_short_name)) {
             return true;
         }
         ui_report.error(
