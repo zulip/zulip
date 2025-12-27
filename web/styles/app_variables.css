@@ -878,6 +878,10 @@
         hsl(0deg 0% 93%),
         hsl(0deg 0% 0% / 20%)
     );
+    --background-color-view-only-textarea: light-dark(
+        hsl(0deg 0% 100% / 60%),
+        hsl(0deg 0% 0% / 30%)
+    );
     --border-color-textarea: light-dark(
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
