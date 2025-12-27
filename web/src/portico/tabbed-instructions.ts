@@ -9,14 +9,15 @@ export function detect_user_os(): UserOS {
     if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
         return "ios";
     }
-    if (common.has_mac_keyboard()) {
-        return "mac";
+    // Prioritize Linux detection
+    if (/linux/i.test(navigator.userAgent)) {
+        return "linux";
     }
     if (/win/i.test(navigator.userAgent)) {
         return "windows";
     }
-    if (/linux/i.test(navigator.userAgent)) {
-        return "linux";
+    if (common.has_mac_keyboard()) {
+        return "mac";
     }
     return "mac"; // if unable to determine OS return Mac by default
 }
