@@ -148,8 +148,6 @@ h3,
 }
 
 .admin-realm-description.rendered_markdown {
-    /* 5px at 16px and 10px at 16px */
-    padding: 0.3125em 0.625em;
     width: fit-content;
     /* 500px at 16px */
     max-width: 31.25em;
@@ -1861,6 +1859,17 @@ label.preferences-radio-choice-label {
 .settings-textarea:disabled {
     background-color: var(--background-color-disabled-textarea);
     opacity: 0.5;
+}
+
+/* This nicely displays uneditable user-generated content, such as
+   rendered realm and channel descriptions. */
+.settings-view-only-textarea {
+    margin: 0;
+    /* 5px at 16px and 10px at 16px */
+    padding: 0.3125em 0.625em;
+    background-color: var(--color-background-modal-bar);
+    border: 1px solid var(--color-border-modal-bar);
+    border-radius: 4px;
 }
 
 .modal-textarea:disabled {
