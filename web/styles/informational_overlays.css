@@ -121,3 +121,64 @@
 #search-operators-first-header {
     width: 40%;
 }
+
+.overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--grey-200);
+    background-color: var(--grey-50);
+}
+
+.overlay-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--grey-900);
+}
+
+.print-help-pane {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--grey-250);
+    background-color: var(--grey-0);
+    color: var(--grey-700);
+    cursor: pointer;
+    border-radius: 3px;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+    &:hover {
+        background-color: var(--grey-50);
+        border-color: var(--grey-300);
+        box-shadow: 0 1px 3px var(--grey-150);
+    }
+
+    &:active {
+        background-color: var(--grey-100);
+        box-shadow: inset 0 1px 2px var(--grey-150);
+    }
+
+    i.fa-print {
+        font-size: 14px;
+        color: var(--grey-700);
+    }
+}
+
+.overlay-scroll-container {
+    display: flex;
+    flex-direction: column;
+
+    > div:first-child {
+        flex: 1;
+        overflow: auto;
+        background-color: var(--grey-0);
+    }
+}

@@ -4,6 +4,7 @@ import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
@@ -17,6 +18,7 @@ import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {current_user} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
 import {user_settings} from "./user_settings.ts";
 
 // Make it explicit that our toggler is undefined until
@@ -319,6 +321,138 @@ export function set_up_toggler(): void {
 
     const $keyboard_shortcuts = $(render_keyboard_shortcut());
     $(".informational-overlays .overlay-body").append($keyboard_shortcuts);
+
+    // Handle print button clicks for all info overlay panes
+    $(document).on("click", ".print-help-pane", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Get which pane we're printing
+        const $button = $(this);
+        const paneId = $button.attr("data-pane-id") ?? "keyboard-shortcuts";
+
+        const $pane = $(`#${CSS.escape(paneId)} .overlay-scroll-container`);
+
+        if ($pane.length === 0) {
+            blueslip.warn("Pane not found", {pane_id: paneId});
+            return;
+        }
+
+        // Get pane title and content
+        let title: string;
+        const content = $pane.html() ?? "";
+
+        switch (paneId) {
+            case "keyboard-shortcuts":
+                title = $t({defaultMessage: "Keyboard shortcuts"});
+                break;
+            case "message-formatting":
+                title = $t({defaultMessage: "Message formatting"});
+                break;
+            case "search-operators":
+                title = $t({defaultMessage: "Search filters"});
+                break;
+            default:
+                title = $t({defaultMessage: "Help"});
+                break;
+        }
+
+        // Open print window
+        const printWindow = window.open("", "_blank");
+        if (!printWindow?.document) {
+            const $status_box = $("<div>").addClass("status-box").appendTo("body");
+            ui_report.message(
+                $t({defaultMessage: "Print window blocked. Please allow popups for this site."}),
+                $status_box,
+                "alert",
+                3000,
+            );
+            return;
+        }
+
+        const doc = printWindow.document;
+
+        // Reset document
+        doc.documentElement.innerHTML = "<!DOCTYPE html><html><head></head><body></body></html>";
+
+        // Fill <head>
+        doc.head.innerHTML = `
+        <meta charset="UTF-8">
+        <title>${title}</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+                margin: 20px;
+                color: #333;
+            }
+            h1 {
+                margin-top: 0;
+                font-size: 28px;
+                border-bottom: 2px solid #087e8b;
+                padding-bottom: 10px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-bottom: 20px;
+                border: 1px solid #ddd;
+            }
+            th {
+                background-color: #f5f5f5;
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            td {
+                border: 1px solid #ddd;
+                padding: 10px;
+            }
+            tr:nth-child(even) {
+                background-color: #fafafa;
+            }
+            .hotkey {
+                font-family: "Courier New", monospace;
+                background-color: #e8e8e8;
+                padding: 3px 8px;
+                border-radius: 4px;
+                font-weight: 500;
+            }
+            kbd {
+                font-family: "Courier New", monospace;
+                background-color: #e8e8e8;
+                border: 1px solid #999;
+                border-radius: 3px;
+                padding: 2px 6px;
+                margin: 0 2px;
+            }
+            .definition { width: 50%; }
+            .operator { font-family: monospace; }
+            .operator_value { background-color: #f0f0f0; padding: 2px 4px; }
+            hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
+            a { color: #087e8b; text-decoration: none; }
+
+            @media print {
+                body { margin: 0; padding: 10mm; }
+                a { color: #087e8b; }
+            }
+        </style>
+    `;
+
+        // Fill <body>
+        const h1 = doc.createElement("h1");
+        h1.textContent = title;
+        doc.body.append(h1);
+
+        const div = doc.createElement("div");
+        div.innerHTML = content;
+        doc.body.append(div);
+
+        // Trigger print after window loads
+        printWindow.addEventListener("load", () => {
+            printWindow.print();
+        });
+    });
 
     const opts = {
         selected: 0,

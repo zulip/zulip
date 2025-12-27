@@ -1,6 +1,17 @@
 <div class="overlay-modal" id="keyboard-shortcuts" tabindex="-1" role="dialog"
   aria-label="{{t 'Keyboard shortcuts' }}">
-    <div class="overlay-scroll-container" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+    <div class="overlay-header">
+        <h2 id="keyboard-shortcuts-title" class="overlay-title">
+            {{t "Keyboard shortcuts"}}
+        </h2>
+        <button class="btn btn-sm btn-default print-help-pane"
+          data-pane-id="keyboard-shortcuts"
+          aria-label="{{t 'Print keyboard shortcuts'}}"
+          >
+            <i class="fa fa-print"></i> {{t 'Print'}}
+        </button>
+    </div>
+    <div class="overlay-scroll-container" data-simplebar ...>
         <div>
             <table class="hotkeys_table table table-striped table-bordered">
                 <thead>
@@ -587,3 +598,4 @@
         <a href="/help/keyboard-shortcuts" target="_blank" rel="noopener noreferrer">{{t 'Detailed keyboard shortcuts documentation' }}</a>
     </div>
 </div>
+
