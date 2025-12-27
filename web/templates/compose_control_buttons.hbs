@@ -27,7 +27,7 @@
     {{#if (or tenor_enabled giphy_enabled)}}
         {{!-- We prefer showing the Tenor picker over the GIPHY picker, if both are enabled. --}}
         <div class="compose_control_button_container  preview_mode_disabled compose_button_tooltip" data-tippy-content="{{t 'Add GIF' }}">
-            <a role="button" class="compose_control_button {{#if tenor_enabled}}compose-gif-icon-tenor{{else}}compose-gif-icon-giphy{{/if}} zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
+            <a role="button" class="compose_control_button compose-gif-icon zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
         </div>
     {{/if}}
     {{#if message_id}}
