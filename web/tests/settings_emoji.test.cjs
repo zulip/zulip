@@ -17,12 +17,22 @@ run_test("add_custom_emoji_post_render", () => {
         input_error,
         clear_button,
         upload_button,
+        preview_text,
+        preview_image,
+        allow_cropping,
+        max_file_upload_size,
+        cropping_aspect_ratio,
     ) => {
         assert.deepEqual(get_file_input(), $("#emoji_file_input"));
         assert.deepEqual(file_name_field, $("#emoji-file-name"));
         assert.deepEqual(input_error, $("#emoji_file_input_error"));
         assert.deepEqual(clear_button, $("#emoji_image_clear_button"));
         assert.deepEqual(upload_button, $("#emoji_upload_button"));
+        assert.deepEqual(preview_text, $("#emoji_preview_text"));
+        assert.deepEqual(preview_image, $("#emoji_preview_image"));
+        assert.equal(allow_cropping, true);
+        assert.equal(max_file_upload_size, undefined);
+        assert.equal(cropping_aspect_ratio, undefined);
         build_widget_stub = true;
     };
     settings_emoji.add_custom_emoji_post_render();

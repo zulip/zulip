@@ -969,10 +969,10 @@ input[type="checkbox"] {
         font-style: italic;
         color: hsl(0deg 0% 67%);
     }
+}
 
-    #emoji_preview_text {
-        margin-top: 6px;
-    }
+#emoji_preview_text {
+    margin-top: 6px;
 }
 
 #emoji_file_input_error {
@@ -987,6 +987,53 @@ input[type="checkbox"] {
     &:hover {
         opacity: 1;
     }
+}
+
+.emoji-cancel-crop-button,
+.emoji-edit-button {
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+    border: 1px solid var(--color-exit-button-border);
+
+    &:hover {
+        background: var(--color-exit-button-background-interactive);
+    }
+}
+
+.emoji-save-crop-button {
+    margin-left: 12px;
+    background-color: hsl(240deg 96% 68%);
+    color: hsl(0deg 0% 100%) !important;
+}
+
+.add-emoji-modal-container {
+    .uppy-ImageCropper-controls {
+        /* This is needed to override the top padding set for narrow
+        screens by cropperJS. */
+        padding-top: 0;
+    }
+
+    .emoji-edit-button {
+        padding: 4px 8px;
+        border: none;
+        margin-top: 2px;
+        cursor: pointer;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
+        }
+    }
+}
+
+.add-emoji-modal-container .emoji-save-crop-button,
+.add-emoji-modal-container .emoji-cancel-crop-button {
+    margin-block: 12px;
 }
 
 .add-new-linkifier-box,
