@@ -1399,7 +1399,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # Test that PATCH endpoint rejects file uploads
         with get_test_image_file("img.png") as fp:
             result = self.client_patch_multipart(f"/json/bots/{bot_id}", dict(file=fp))
-        self.assert_json_error(result, "Avatar uploads must use the avatar upload endpoint.")
+        self.assert_json_error(result, "You may only upload one file at a time.")
 
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.avatar_version, 1)

@@ -6574,11 +6574,10 @@ paths:
                       A typical failed JSON response for when the user is not logged in:
   /bots/{bot_id}/avatar:
     post:
-      operationId: setBotAvatar
       summary: Upload a bot avatar
-      description: Upload a new avatar image for a bot.
+      operationId: uploadBotAvatar
       tags:
-        - bots
+        - users
       parameters:
         - name: bot_id
           in: path
@@ -6597,18 +6596,39 @@ paths:
                   format: binary
       responses:
         "200":
-          description: Avatar updated successfully
+          description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  avatar_url:
-                    type: string
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      avatar_url:
+                        type: string
+                        description: The URL of the bot's avatar
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "avatar_url": "https://secure.gravatar.com/avatar/abc123",
+                      }
         "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "code": "BAD_REQUEST",
+                        "msg": "You must upload exactly one avatar.",
+                      }
   /drafts:
     get:
       operationId: get-drafts

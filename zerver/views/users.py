@@ -463,7 +463,7 @@ def patch_bot_backend(
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
 ) -> HttpResponse:
     if request.FILES:
-        raise JsonableError(_("Avatar uploads must use POST /json/bots/{bot_id}/avatar"))
+        raise JsonableError(_("You may only upload one file at a time."))
 
     bot = access_bot_by_id(user_profile, bot_id)
 
