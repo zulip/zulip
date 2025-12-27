@@ -339,30 +339,42 @@ function generate_multiuse_invite(): void {
 
 function valid_to(): string {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
+    const $custom_expiration_time_elm = $<HTMLInputElement>("input#custom-expiration-time-input");
     const time_input_value = $expires_in.val()!;
 
     if (time_input_value === "null") {
+        $custom_expiration_time_elm.removeClass("invalid-input");
         return $t({defaultMessage: "Never expires"});
     }
 
     let time_in_minutes: number;
+
     if (time_input_value === "custom") {
-        if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
-            return $t({defaultMessage: "Invalid custom time"});
-        }
         time_in_minutes = util.get_custom_time_in_minutes(
             custom_expiration_time_unit,
             custom_expiration_time_input,
         );
+
+        // Validation Logic:
+        // 29 days * 24 hours * 60 minutes = 41760 minutes.
+        const max_minutes = 29 * 24 * 60;
+
+        if (
+            !util.validate_custom_time_input(custom_expiration_time_input, false) ||
+            time_in_minutes > max_minutes
+        ) {
+            $custom_expiration_time_elm.addClass("invalid-input");
+            return "";
+        }
     } else {
         time_in_minutes = Number.parseFloat(time_input_value);
     }
 
-    // The below is a duplicate of timerender.get_full_datetime, with a different base string.
     const valid_to = add(new Date(), {minutes: time_in_minutes});
     const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
     const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
 
+    $custom_expiration_time_elm.removeClass("invalid-input");
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
@@ -604,17 +616,30 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         });
 
-        $("#custom-expiration-time-input, #custom-expiration-time-unit").on("change", () => {
+        // FIX START: Split the input handler to use 'input' event for instant validation
+        $("#custom-expiration-time-input").on("input", () => {
             custom_expiration_time_input = util.check_time_input(
                 $<HTMLInputElement>("input#custom-expiration-time-input").val()!,
             );
-            custom_expiration_time_unit = $<HTMLSelectOneElement>(
-                "select:not([multiple])#custom-expiration-time-unit",
-            ).val()!;
+
+            // calling valid_to() triggers the logic that adds/removes the error class
             const valid_to_text = valid_to();
+
             settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
             toggle_invite_submit_button();
         });
+
+        $("#custom-expiration-time-unit").on("change", () => {
+            custom_expiration_time_unit = $<HTMLSelectOneElement>(
+                "select:not([multiple])#custom-expiration-time-unit",
+            ).val()!;
+
+            const valid_to_text = valid_to();
+
+            settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
+            toggle_invite_submit_button();
+        });
+        // FIX END
 
         $("#invite_check_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
