@@ -2276,7 +2276,8 @@ body:not(.spectator-view) {
                Calculated by eye to look good at 12px-20px. */
             top: 0.05em;
         }
-        .channel-privacy-type-icon{
+
+        .channel-privacy-type-icon {
             margin-right: 0.25em;
         }
 
