@@ -6572,6 +6572,63 @@ paths:
                       }
                     description: |
                       A typical failed JSON response for when the user is not logged in:
+  /bots/{bot_id}/avatar:
+    post:
+      summary: Upload a bot avatar
+      operationId: uploadBotAvatar
+      tags:
+        - users
+      parameters:
+        - name: bot_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      avatar_url:
+                        type: string
+                        description: The URL of the bot's avatar
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "avatar_url": "https://secure.gravatar.com/avatar/abc123",
+                      }
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "code": "BAD_REQUEST",
+                        "msg": "You must upload exactly one avatar.",
+                      }
   /drafts:
     get:
       operationId: get-drafts
