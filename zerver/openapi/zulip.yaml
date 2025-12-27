@@ -6574,23 +6574,17 @@ paths:
                       A typical failed JSON response for when the user is not logged in:
   /bots/{bot_id}/avatar:
     post:
-      operationId: upload-bot-avatar
+      operationId: setBotAvatar
       summary: Upload a bot avatar
-      tags: ["users"]
-      description: |
-        Upload and set a new avatar image for a bot user.
-
-        This endpoint is used to update a bot's avatar after the bot has been created.
-        The uploaded image will be cropped and resized to fit Zulip's avatar requirements.
+      description: Upload a new avatar image for a bot.
+      tags:
+        - bots
       parameters:
         - name: bot_id
           in: path
-          description: |
-            The ID of the bot user.
+          required: true
           schema:
             type: integer
-          example: 12
-          required: true
       requestBody:
         required: true
         content:
@@ -6601,46 +6595,20 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: |
-                    The image file to upload as the bot's avatar.
-              required:
-                - file
       responses:
         "200":
-          description: Success.
+          description: Avatar updated successfully
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported: {}
-                      avatar_url:
-                        type: string
-                        description: |
-                          The URL of the bot's new avatar.
-                    example:
-                      {
-                        "result": "success",
-                        "msg": "",
-                        "avatar_url": "https://secure.gravatar.com/avatar/1234567890abcdef?d=identicon",
-                      }
+                type: object
+                properties:
+                  avatar_url:
+                    type: string
         "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "result": "error",
-                        "code": "BAD_REQUEST",
-                        "msg": "You must upload exactly one avatar.",
-                      }
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /drafts:
     get:
       operationId: get-drafts
