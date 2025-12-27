@@ -27,6 +27,8 @@ const meta = {
     loaded: false,
 };
 
+let emoji_upload_widget: upload_widget.UploadWidget | undefined;
+
 function can_delete_emoji(emoji: ServerEmoji): boolean {
     if (current_user.is_admin) {
         return true;
@@ -176,7 +178,7 @@ export function add_custom_emoji_post_render(): void {
 
     $preview_image.hide();
 
-    upload_widget.build_widget(
+    emoji_upload_widget = upload_widget.build_widget(
         get_file_input,
         $file_name_field,
         $input_error,
@@ -184,6 +186,7 @@ export function add_custom_emoji_post_render(): void {
         $upload_button,
         $preview_text,
         $preview_image,
+        true,
     );
 
     get_file_input().on("input", () => {
@@ -246,6 +249,17 @@ function show_modal(): void {
             return;
         }
 
+        const emoji_file = emoji_upload_widget?.get_file();
+
+        if (emoji_file === null || emoji_file === undefined) {
+            ui_report.client_error(
+                $t_html({defaultMessage: "Failed: Please select an image."}),
+                $emoji_status,
+            );
+            dialog_widget.hide_dialog_spinner();
+            return;
+        }
+
         if (is_custom_emoji(emoji["name"])) {
             ui_report.client_error(
                 $t_html({
@@ -258,11 +272,7 @@ function show_modal(): void {
         }
 
         const formData = new FormData();
-        const files = util.the($<HTMLInputElement>("input#emoji_file_input")).files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
-        }
+        formData.append("file-0", emoji_file);
 
         if (is_default_emoji(emoji["name"])) {
             if (!current_user.is_admin) {
@@ -297,13 +307,19 @@ function show_modal(): void {
         html_heading: $t_html({defaultMessage: "Add a new emoji"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
-        id: "add-custom-emoji-modal",
+        id: "add-custom-emoji-modal-container",
         form_id: "add-custom-emoji-form",
         loading_spinner: true,
         on_click: add_custom_emoji,
         post_render: add_custom_emoji_post_render,
         on_shown() {
             $("#emoji_name").trigger("focus");
+        },
+        on_hidden() {
+            if (emoji_upload_widget !== undefined) {
+                emoji_upload_widget.close();
+                emoji_upload_widget = undefined;
+            }
         },
     });
 }
