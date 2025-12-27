@@ -75,6 +75,7 @@ EXEMPT_FILES = make_set(
         "web/src/compose_call_ui.ts",
         "web/src/compose_closed_ui.ts",
         "web/src/compose_fade.ts",
+        "web/src/compose_icon_session.ts",
         "web/src/compose_notifications.ts",
         "web/src/compose_paste.ts",
         "web/src/compose_recipient.ts",

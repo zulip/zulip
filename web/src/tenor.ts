@@ -8,10 +8,9 @@ import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as channel from "./channel.ts";
-import * as compose_ui from "./compose_ui.ts";
+import {ComposeIconSession} from "./compose_icon_session.ts";
 import {get_rating} from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
-import * as rows from "./rows.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
@@ -44,7 +43,7 @@ const tenor_result_schema = z.object({
 });
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
-let edit_message_id: number | undefined;
+let compose_icon_session: ComposeIconSession | undefined;
 let next_pos_identifier: string | number | undefined;
 let is_loading_more = false;
 let tenor_popover_instance: tippy.Instance | undefined;
@@ -52,6 +51,13 @@ let current_search_term: undefined | string;
 const BASE_URL = "https://tenor.googleapis.com/v2";
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
+
+function is_editing_existing_message(): boolean {
+    if (compose_icon_session === undefined) {
+        return false;
+    }
+    return compose_icon_session.is_editing_existing_message;
+}
 
 type TenorPayload = {
     key: string;
@@ -65,12 +71,12 @@ type TenorPayload = {
 };
 
 export function is_popped_from_edit_message(): boolean {
-    return tenor_popover_instance !== undefined && edit_message_id !== undefined;
+    return tenor_popover_instance !== undefined && is_editing_existing_message();
 }
 
 export function focus_current_edit_message(): void {
-    assert(edit_message_id !== undefined);
-    $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`).trigger("focus");
+    assert(compose_icon_session);
+    compose_icon_session.focus_on_edit_textarea();
 }
 
 function get_base_payload(): TenorPayload {
@@ -89,13 +95,8 @@ function get_base_payload(): TenorPayload {
 function handle_gif_click(img_element: HTMLElement): void {
     const insert_url = img_element.dataset["insertUrl"];
     assert(insert_url !== undefined);
-
-    let $textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    if (edit_message_id !== undefined) {
-        $textarea = $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`);
-    }
-
-    compose_ui.insert_syntax_and_focus(`[](${insert_url})`, $textarea, "block", 1);
+    assert(compose_icon_session !== undefined);
+    compose_icon_session.insert_block_markdown_into_textarea(`[](${insert_url})`, 1);
     hide_tenor_popover();
 }
 
@@ -156,9 +157,9 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
 export function hide_tenor_popover(): boolean {
     // Returns `true` if the popover was open.
     if (tenor_popover_instance) {
+        compose_icon_session = undefined;
         tenor_popover_instance.destroy();
         tenor_popover_instance = undefined;
-        edit_message_id = undefined;
         next_pos_identifier = undefined;
         current_search_term = undefined;
         is_loading_more = false;
@@ -269,14 +270,6 @@ function toggle_tenor_popover(target: HTMLElement): void {
                 const debounced_search = _.debounce((search_term: string) => {
                     update_grid_with_search_term(search_term);
                 }, 300);
-                const $click_target = $(instance.reference);
-                if ($click_target.parents(".message_edit_form").length === 1) {
-                    // Store message id in global variable edit_message_id so that
-                    // its value can be further used to correctly find the message textarea element.
-                    edit_message_id = rows.id($click_target.parents(".message_row"));
-                } else {
-                    edit_message_id = undefined;
-                }
                 $popper.on("keyup", "#gif-search-query", (e) => {
                     assert(e.target instanceof HTMLInputElement);
                     if (e.key === "ArrowDown") {
@@ -340,6 +333,7 @@ function register_click_handlers(): void {
         "click",
         ".compose_control_button.compose-gif-icon-tenor",
         function (this: HTMLElement) {
+            compose_icon_session = new ComposeIconSession(this);
             toggle_tenor_popover(this);
         },
     );

@@ -44,7 +44,7 @@ const condense = mock_esm("../src/condense");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
-    toggle_emoji_popover() {},
+    start_picker_for_message_reaction() {},
 });
 const gear_menu = mock_esm("../src/gear_menu");
 const lightbox = mock_esm("../src/lightbox");
@@ -471,7 +471,7 @@ test_while_not_editing_text("misc", ({override}) => {
     assert_mapping("K", navigate, "page_up", true);
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
-    assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
+    assert_mapping(":", emoji_picker, "start_picker_for_message_reaction", true);
     assert_mapping(">", compose_reply, "quote_message");
     assert_mapping("<", compose_reply, "quote_message");
     assert_mapping("e", message_edit, "start");

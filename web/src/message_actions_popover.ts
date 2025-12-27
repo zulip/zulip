@@ -228,14 +228,15 @@ export function initialize({
 
             $popper.one("click", ".reaction_button", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                // Don't propagate the click event since `toggle_emoji_popover` opens a
-                // emoji_picker which we don't want to hide after actions popover is hidden.
+                // Don't propagate the click event since the emoji_picker code opens a
+                // popover which we don't want to hide after actions popover is hidden.
                 e.stopPropagation();
                 e.preventDefault();
                 assert(instance.reference.parentElement !== null);
-                emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
-                    placement: "bottom",
-                });
+                emoji_picker.start_picker_for_message_reaction(
+                    instance.reference.parentElement,
+                    message_id,
+                );
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
