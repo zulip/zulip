@@ -1180,6 +1180,10 @@
             /* Align date with message time and recipient bar date. */
             margin-right: -1px;
         }
+
+        & .date_row_text {
+            cursor: pointer;
+        }
     }
 }
 

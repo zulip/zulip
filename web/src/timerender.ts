@@ -357,7 +357,8 @@ function maybe_add_update_list_entry(entry: UpdateEntry): void {
 }
 
 function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
-    $elem.text(rendered_time.time_str);
+    const $text = $("<span>").addClass("date_row_text").text(rendered_time.time_str);
+    $elem.empty().append($text);
     return $elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
 

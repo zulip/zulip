@@ -1515,6 +1515,18 @@ div.topic_edit_spinner .loading_indicator_spinner {
         font-weight: 600;
     }
 
+    .flatpickr-extra-button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 0 8px;
+    }
+
+    .flatpickr-extra-button-prefix {
+        margin-bottom: 6px;
+    }
+
     @media (width < $md_min) {
         /* Center align flatpickr on mobile
          * devices so that it doesn't go out of

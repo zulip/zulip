@@ -14,8 +14,10 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import {$t} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -407,6 +409,61 @@ export function initialize(): void {
             message_edit.render_preview_area($row);
         }
     });
+
+    function open_date_picker(trigger_element: HTMLElement, message_id: number): void {
+        assert(message_lists.current !== undefined);
+        const message = message_lists.current.get(message_id)!;
+
+        flatpickr.show_flatpickr(
+            trigger_element,
+            (time) => {
+                message_view.fast_track_current_msg_list_to_anchor(
+                    "date",
+                    new Date(time).toISOString(),
+                );
+            },
+            new Date(message.timestamp * 1000),
+            {
+                enableTime: false,
+                maxDate: "today",
+            },
+            {
+                prefix: $t({defaultMessage: "or"}),
+                text: $t({defaultMessage: "Scroll to top"}),
+                callback() {
+                    message_view.fast_track_current_msg_list_to_anchor("oldest");
+                },
+            },
+            true,
+        );
+    }
+
+    $("#message_feed_container").on(
+        "click",
+        ".date_row .date_row_text",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            assert(message_lists.current !== undefined);
+            const message_id = rows.id($(this).closest(".message_row"));
+            open_date_picker(this, message_id);
+        },
+    );
+
+    $("#message_feed_container").on(
+        "click",
+        ".recipient_row_date",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            assert(message_lists.current !== undefined);
+            const $recipient_row = $(this).closest(".recipient_row");
+            const message_id = rows.id_for_recipient_row($recipient_row);
+            open_date_picker(this, message_id);
+        },
+    );
 
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {

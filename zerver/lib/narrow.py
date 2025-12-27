@@ -1,7 +1,8 @@
 import re
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any, Generic, TypeAlias, TypeVar
+from datetime import datetime, timezone
+from typing import Any, Generic, Literal, TypeAlias, TypedDict, TypeVar
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -61,6 +62,7 @@ from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.lib.user_topics import exclude_stream_and_topic_mutes
 from zerver.lib.validator import (
     check_bool,
+    check_iso_datetime,
     check_required_string,
     check_string,
     check_string_or_int,
@@ -186,6 +188,14 @@ def is_web_public_narrow(narrow: Iterable[NarrowParameter] | None) -> bool:
 
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
+
+
+class AnchorInfo(TypedDict):
+    type: Literal["message_id", "first_unread", "date"]
+    value: int | datetime | None
+
+
+DEFAULT_ANCHOR_INFO: AnchorInfo = AnchorInfo(type="first_unread", value=None)
 
 
 class BadNarrowOperatorError(JsonableError):
@@ -1198,28 +1208,74 @@ def find_first_unread_anchor(
     return anchor
 
 
-def parse_anchor_value(anchor_val: str | None, use_first_unread_anchor: bool) -> int | None:
+def find_date_anchor(
+    *,
+    sa_conn: Connection,
+    anchor_date: datetime,
+    query: Select,
+    inner_msg_id_col: ColumnElement[Integer],
+) -> int | None:
+    date_sent_col = literal_column("zerver_message.date_sent")
+
+    first_row_after_date_anchor = sa_conn.execute(
+        query.where(date_sent_col >= anchor_date)
+        .order_by(date_sent_col.asc(), inner_msg_id_col.asc())
+        .limit(1)
+    ).fetchone()
+    if first_row_after_date_anchor is not None:
+        return first_row_after_date_anchor[0]
+
+    # If nothing is on/after the anchor date, fall back to the newest message.
+    last_row_before_date_anchor = sa_conn.execute(
+        query.order_by(date_sent_col.desc(), inner_msg_id_col.desc()).limit(1)
+    ).fetchone()
+    if last_row_before_date_anchor is not None:
+        return last_row_before_date_anchor[0]
+
+    return None
+
+
+def parse_anchor_value(
+    anchor_val: str | None,
+    use_first_unread_anchor: bool,
+    anchor_date: str | None = None,
+) -> AnchorInfo:
     """Given the anchor and use_first_unread_anchor parameters passed by
-    the client, computes what anchor value the client requested,
+    the client, computes what anchor type and value the client requested,
     handling backwards-compatibility and the various string-valued
-    fields.  We encode use_first_unread_anchor as anchor=None.
+    fields.
     """
     if use_first_unread_anchor:
         # Backwards-compatibility: Before we added support for the
         # special string-typed anchor values, clients would pass
         # anchor=None and use_first_unread_anchor=True to indicate
         # what is now expressed as anchor="first_unread".
-        return None
+        return AnchorInfo(type="first_unread", value=None)
     if anchor_val is None:
-        # Throw an exception if neither an anchor argument not
+        # Throw an exception if neither an anchor argument nor
         # use_first_unread_anchor was specified.
         raise JsonableError(_("Missing 'anchor' argument."))
+    if anchor_val == "date":
+        if anchor_date is None:
+            raise JsonableError(_("Missing 'anchor_date' argument."))
+        try:
+            # For date without time, this function will set the time to
+            # midnight.
+            anchor_datetime = check_iso_datetime("anchor_date", anchor_date)
+        except ValidationError as error:
+            raise JsonableError(error.message)
+        if anchor_datetime.tzinfo is None:
+            anchor_datetime = anchor_datetime.replace(tzinfo=timezone.utc)
+        return AnchorInfo(type="date", value=anchor_datetime)
     if anchor_val == "oldest":
-        return 0
+        return AnchorInfo(type="message_id", value=0)
     if anchor_val == "newest":
-        return LARGER_THAN_MAX_MESSAGE_ID
+        return AnchorInfo(
+            type="message_id",
+            value=LARGER_THAN_MAX_MESSAGE_ID,
+        )
     if anchor_val == "first_unread":
-        return None
+        return AnchorInfo(type="first_unread", value=None)
     try:
         # We don't use `.isnumeric()` to support negative numbers for
         # anchor.  We don't recommend it in the API (if you want the
@@ -1228,10 +1284,12 @@ def parse_anchor_value(anchor_val: str | None, use_first_unread_anchor: bool) ->
         # supporting it for backwards-compatibility
         anchor = int(anchor_val)
         if anchor < 0:
-            return 0
+            anchor_value = 0
         elif anchor > LARGER_THAN_MAX_MESSAGE_ID:
-            return LARGER_THAN_MAX_MESSAGE_ID
-        return anchor
+            anchor_value = LARGER_THAN_MAX_MESSAGE_ID
+        else:
+            anchor_value = anchor
+        return AnchorInfo(type="message_id", value=anchor_value)
     except ValueError:
         raise JsonableError(_("Invalid anchor"))
 
@@ -1420,7 +1478,7 @@ def fetch_messages(
     user_profile: UserProfile | None,
     realm: Realm,
     is_web_public_query: bool,
-    anchor: int | None,
+    anchor_info: AnchorInfo | None,
     include_anchor: bool,
     num_before: int,
     num_after: int,
@@ -1461,16 +1519,44 @@ def fetch_messages(
         is_web_public_query=is_web_public_query,
     )
 
+    if anchor_info is None:
+        anchor_info = DEFAULT_ANCHOR_INFO
     anchored_to_left = False
     anchored_to_right = False
+    anchor_type = anchor_info["type"]
+    anchor_value = anchor_info["value"]
     first_visible_message_id = get_first_visible_message_id(realm)
     with get_sqlalchemy_connection() as sa_conn:
         if client_requested_message_ids is not None:
             query = query.filter(inner_msg_id_col.in_(client_requested_message_ids))
         else:
-            if anchor is None:
-                # `anchor=None` corresponds to the anchor="first_unread" parameter.
-                anchor = find_first_unread_anchor(
+            if anchor_type == "date":
+                assert isinstance(anchor_value, datetime)
+                anchor_value = find_date_anchor(
+                    sa_conn=sa_conn,
+                    anchor_date=anchor_value,
+                    query=query,
+                    inner_msg_id_col=inner_msg_id_col,
+                )
+                # We did not find any message before or after the given timestamp,
+                # which means there are no messages in this narrow.
+                if anchor_value is None:
+                    return FetchedMessages(
+                        rows=[],
+                        found_anchor=False,
+                        found_newest=False,
+                        found_oldest=False,
+                        history_limited=False,
+                        # We first tried to find a message that was sent after our
+                        # anchor_date. When we did not find that, we went and looked
+                        # for the newest message i.e LARGER_THAN_MAX_MESSAGE_ID.
+                        anchor=LARGER_THAN_MAX_MESSAGE_ID,
+                        include_history=include_history,
+                        is_search=is_search,
+                    )
+
+            if anchor_type == "first_unread":
+                anchor_value = find_first_unread_anchor(
                     sa_conn,
                     user_profile,
                     narrow,
@@ -1480,11 +1566,13 @@ def fetch_messages(
                     need_user_message,
                 )
 
-            anchored_to_left = anchor == 0
+            assert isinstance(anchor_value, int)
+
+            anchored_to_left = anchor_value == 0
 
             # Set value that will be used to short circuit the after_query
             # altogether and avoid needless conditions in the before_query.
-            anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
+            anchored_to_right = anchor_value >= LARGER_THAN_MAX_MESSAGE_ID
             if anchored_to_right:
                 num_after = 0
 
@@ -1492,7 +1580,7 @@ def fetch_messages(
                 query=query,
                 num_before=num_before,
                 num_after=num_after,
-                anchor=anchor,
+                anchor=anchor_value,
                 include_anchor=include_anchor,
                 anchored_to_left=anchored_to_left,
                 anchored_to_right=anchored_to_right,
@@ -1528,12 +1616,12 @@ def fetch_messages(
             is_search=is_search,
         )
 
-    assert anchor is not None
+    assert isinstance(anchor_value, int)
     query_info = post_process_limited_query(
         rows=rows,
         num_before=num_before,
         num_after=num_after,
-        anchor=anchor,
+        anchor=anchor_value,
         anchored_to_left=anchored_to_left,
         anchored_to_right=anchored_to_right,
         first_visible_message_id=first_visible_message_id,
@@ -1545,7 +1633,7 @@ def fetch_messages(
         found_newest=query_info.found_newest,
         found_oldest=query_info.found_oldest,
         history_limited=query_info.history_limited,
-        anchor=anchor,
+        anchor=anchor_value,
         include_history=include_history,
         is_search=is_search,
     )
