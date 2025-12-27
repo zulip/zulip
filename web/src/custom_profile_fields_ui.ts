@@ -1,5 +1,6 @@
 import flatpickr from "flatpickr";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
@@ -18,6 +19,7 @@ import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 import type {UserPillWidget} from "./user_pill.ts";
 import * as user_pill from "./user_pill.ts";
+import {the} from "./util.ts";
 
 const user_value_schema = z.array(z.number());
 
@@ -358,12 +360,9 @@ export function initialize_custom_date_type_fields(
     // outside while the calendar popover is closed.
     $(element_id)
         .find<HTMLInputElement>("input.date-field-alt-input")
-        .on("change", function (this: HTMLInputElement) {
-            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-            const $datepicker = $(this).parent().find(".datepicker")[0] as HTMLInputElement & {
-                _flatpickr: flatpickr.Instance;
-            };
-            const instance = $datepicker._flatpickr;
+        .on("change", function () {
+            const instance = the($(this).parent().find(".datepicker"))._flatpickr;
+            assert(instance !== undefined);
             const date = new Date($(this).val()!);
             const date_str = format_date(date, "Y-m-d");
             update_date(instance, date_str);

@@ -139,8 +139,7 @@ export function build_widgets(): void {
 
     user_group_create_members_data.initialize_with_current_user();
     const current_user_id = current_user.user_id;
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const initial_members = [people.get_by_user_id(current_user_id)] as (User | UserGroup)[];
+    const initial_members: (User | UserGroup)[] = [people.get_by_user_id(current_user_id)];
 
     all_users_list_widget = ListWidget.create($("#create_user_group_members"), initial_members, {
         name: "new_user_group_add_users",
