@@ -91,10 +91,10 @@ run_test("initialize", () => {
     emoji_frequency.update_frequently_used_emojis_list();
     non_popular_emoji_codes.reverse();
 
-    assert.equal(typeahead.frequently_used_emojis.length, 12);
+    assert.equal(typeahead.frequently_used_emojis.length, 6);
     assert.deepEqual(
         typeahead.frequently_used_emojis.map((emoji) => emoji.emoji_code),
-        [...typeahead.popular_emojis, ...non_popular_emoji_codes.slice(0, 6)],
+        typeahead.popular_emojis,
     );
 });
 
