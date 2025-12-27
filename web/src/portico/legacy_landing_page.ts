@@ -3,10 +3,53 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import {page_params} from "../base_page_params.ts";
+import {$t} from "../i18n.ts";
 
 import type {UserOS} from "./tabbed-instructions.ts";
 import {detect_user_os} from "./tabbed-instructions.ts";
 import render_tabs from "./team.ts";
+
+// Type definitions for User-Agent Client Hints API
+type UserAgentHints = {
+    platform?: string;
+    architecture?: string;
+};
+
+type NavigatorUAData = {
+    getHighEntropyValues?: (hints: readonly string[]) => Promise<UserAgentHints>;
+};
+
+function hasUserAgentData(n: unknown): n is {userAgentData: NavigatorUAData} {
+    return typeof n === "object" && n !== null && "userAgentData" in n;
+}
+
+async function detectMacArchitecture(): Promise<"intel" | "arm" | null> {
+    if (!hasUserAgentData(navigator)) {
+        return null;
+    }
+
+    const uaData = navigator.userAgentData;
+    if (!uaData || typeof uaData.getHighEntropyValues !== "function") {
+        return null;
+    }
+
+    try {
+        const hints = await uaData.getHighEntropyValues(["platform", "architecture"]);
+
+        if (hints.platform === "macOS") {
+            if (hints.architecture?.startsWith("x86")) {
+                return "intel";
+            }
+            if (hints.architecture === "arm64") {
+                return "arm";
+            }
+        }
+    } catch {
+        // Silently fail if API is unavailable
+    }
+
+    return null;
+}
 
 type VersionInfo = {
     description: string;
@@ -151,7 +194,28 @@ const apps_events = function (): void {
         } else {
             $desktop_download_link.attr("href", version_info.download_link);
             if (version_info.alt === "macOS") {
-                $download_mac_intel.find("a").attr("href", version_info.mac_intel_link);
+                // Keep button hidden during detection to prevent flickering
+                $desktop_download_link.prop("disabled", true);
+                void detectMacArchitecture().then((arch) => {
+                    if (arch === "intel") {
+                        $desktop_download_link.attr("href", version_info.mac_intel_link);
+                        $desktop_download_link
+                            .find("span.button")
+                            .text($t({defaultMessage: "Download Zulip for macOS (Intel)"}));
+                        $download_mac_intel.html(
+                            `or <a href="${version_info.download_link}">download <strong>Apple Silicon</strong> processor build <i>(M1, M2, M3, etc.)</i></a>`,
+                        );
+                    } else {
+                        $desktop_download_link.attr("href", version_info.download_link);
+                        $desktop_download_link
+                            .find("span.button")
+                            .text($t({defaultMessage: "Download Zulip for macOS (Apple Silicon)"}));
+                        $download_mac_intel.html(
+                            `or <a href="${version_info.mac_intel_link}">download <strong>Intel</strong> processor build <i>(some older Macs)</i></a>`,
+                        );
+                    }
+                    $desktop_download_link.prop("disabled", false);
+                });
             }
             assert(version_info.download_instructions);
             $download_instructions.html(version_info.download_instructions);
