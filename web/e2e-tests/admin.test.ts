@@ -137,42 +137,89 @@ async function test_organization_permissions(page: Page): Promise<void> {
     console.log("Skipping", test_set_new_user_threshold_to_N_days);
 }
 
-async function test_add_emoji(page: Page): Promise<void> {
-    await common.fill_form(page, "#add-custom-emoji-form", {name: "zulip logo"});
+async function test_add_emoji_with_cropping(page: Page): Promise<void> {
+    await common.fill_form(page, "#add-custom-emoji-form", {name: "zulip cropped"});
 
     const emoji_upload_handle = await page.$("input#emoji_file_input");
     assert.ok(emoji_upload_handle);
     await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
-    await page.click("#add-custom-emoji-modal .dialog_submit_button");
+
+    // wait for state transition: form hidden, cropper visible
+    await page.waitForSelector(".emoji-upload-form-container[data-state='inactive']", {
+        hidden: true,
+    });
+    await page.waitForSelector(".emoji-cropper-container[data-state='active']", {visible: true});
+    await page.waitForSelector(".emoji-save-crop-button", {visible: true});
+    await page.waitForSelector(".emoji-cancel-crop-button", {visible: true});
+
+    await page.click(".emoji-save-crop-button");
+
+    await page.waitForSelector(".emoji-upload-form-container[data-state='active']", {
+        visible: true,
+    });
+    await page.waitForSelector(".emoji-cropper-container[data-state='inactive']", {hidden: true});
+    await page.waitForSelector(".emoji-preview-section", {visible: true});
+
+    await page.click(".dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
-    await page.waitForSelector("tr#emoji_zulip_logo", {visible: true});
+    await page.waitForSelector("tr#emoji_zulip_cropped", {visible: true});
     assert.strictEqual(
-        await common.get_text_from_selector(page, "tr#emoji_zulip_logo .emoji_name"),
-        "zulip logo",
-        "Emoji name incorrectly saved.",
+        await common.get_text_from_selector(page, "tr#emoji_zulip_cropped .emoji_name"),
+        "zulip cropped",
+        "Cropped emoji name incorrectly saved.",
     );
-    await page.waitForSelector("tr#emoji_zulip_logo img", {visible: true});
+    await page.waitForSelector("tr#emoji_zulip_cropped img", {visible: true});
 }
 
-async function test_delete_emoji(page: Page): Promise<void> {
-    await page.click("tr#emoji_zulip_logo button.delete");
+async function test_cancel_emoji_cropping(page: Page): Promise<void> {
+    await common.fill_form(page, "#add-custom-emoji-form", {name: "zulip cancelled"});
+
+    const emoji_upload_handle = await page.$("input#emoji_file_input");
+    assert.ok(emoji_upload_handle);
+    await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
+
+    await page.waitForSelector(".emoji-cropper-container[data-state='active']", {visible: true});
+    await page.waitForSelector(".emoji-save-crop-button", {visible: true});
+    await page.waitForSelector(".emoji-cancel-crop-button", {visible: true});
+
+    // Cancel cropping
+    await page.click(".emoji-cancel-crop-button");
+
+    await page.waitForSelector(".emoji-upload-form-container[data-state='active']", {
+        visible: true,
+    });
+    await page.waitForSelector(".emoji-cropper-container[data-state='inactive']", {hidden: true});
+
+    // Exit modal
+    await page.click(".dialog_exit_button");
+    await common.wait_for_micromodal_to_close(page);
+}
+
+async function test_delete_emoji(page: Page, emoji_id: string): Promise<void> {
+    await page.click(`tr#emoji_${emoji_id} button.delete`);
 
     await common.wait_for_micromodal_to_open(page);
     await page.click("#confirm_deactivate_custom_emoji_modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
     // assert the emoji is deleted.
-    await page.waitForSelector("tr#emoji_zulip_logo", {hidden: true});
+    await page.waitForSelector(`tr#emoji_${emoji_id}`, {hidden: true});
 }
 
 async function test_custom_realm_emoji(page: Page): Promise<void> {
     await page.click("li[data-section='emoji-settings']");
+
+    // upload with cropping
     await page.click("#add-custom-emoji-button");
     await common.wait_for_micromodal_to_open(page);
+    await test_add_emoji_with_cropping(page);
+    await test_delete_emoji(page, "zulip_cropped");
 
-    await test_add_emoji(page);
-    await test_delete_emoji(page);
+    // test cancel cropping
+    await page.click("#add-custom-emoji-button");
+    await common.wait_for_micromodal_to_open(page);
+    await test_cancel_emoji_cropping(page);
 }
 
 async function test_upload_realm_icon_image(page: Page): Promise<void> {

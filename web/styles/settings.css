@@ -956,7 +956,7 @@ input[type="checkbox"] {
     }
 }
 
-#add-custom-emoji-modal {
+#add-custom-emoji-modal-container {
     & form {
         margin: 0;
     }
@@ -992,6 +992,45 @@ input[type="checkbox"] {
     &:hover {
         opacity: 1;
     }
+}
+
+.emoji-cancel-crop-button {
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+    border: 1px solid var(--color-exit-button-border);
+
+    &:hover {
+        background: var(--color-exit-button-background-interactive);
+    }
+}
+
+.emoji-save-crop-button {
+    margin-left: 12px;
+    background-color: hsl(240deg 96% 68%);
+    color: hsl(0deg 0% 100%) !important;
+}
+
+.add-emoji-modal-container {
+    .uppy-ImageCropper-controls {
+        /* This is needed to override the top padding set for narrow
+        screens by cropperJS. */
+        padding-top: 0;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
+        }
+    }
+}
+
+.add-emoji-modal-container .emoji-save-crop-button,
+.add-emoji-modal-container .emoji-cancel-crop-button {
+    margin-block: 12px;
 }
 
 .add-new-linkifier-box,
