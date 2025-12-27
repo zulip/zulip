@@ -4,16 +4,15 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
 import render_tenor_gif from "../templates/tenor_gif.hbs";
 
 import * as channel from "./channel.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
+import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
 import {get_rating} from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
-import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 
 const tenor_rating_map = {
@@ -261,7 +260,7 @@ function toggle_tenor_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_gif_picker_ui({is_giphy: false})));
+                instance.setContent(gif_picker_popover_content.get_gif_popover_content(false));
                 $(instance.popper).addClass("tenor-popover");
             },
             onShow(instance) {

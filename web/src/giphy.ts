@@ -5,9 +5,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
-
 import * as compose_ui from "./compose_ui.ts";
+import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
 import * as gif_state from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
@@ -138,7 +137,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_gif_picker_ui({is_giphy: true})));
+                instance.setContent(gif_picker_popover_content.get_gif_popover_content(true));
                 $(instance.popper).addClass("giphy-popover");
             },
             onShow(instance) {
