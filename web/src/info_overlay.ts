@@ -431,7 +431,7 @@ export function set_up_toggler(): void {
             .operator_value { background-color: #f0f0f0; padding: 2px 4px; }
             hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
             a { color: #087e8b; text-decoration: none; }
-            
+
             @media print {
                 body { margin: 0; padding: 10mm; }
                 a { color: #087e8b; }
