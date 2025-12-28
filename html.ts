@@ -28,7 +28,7 @@ export function trusted_var(label: string): TrustedVar {
     return new TrustedVar(label);
 }
 
-class TrustedSimpleString {
+export class TrustedSimpleString {
     s: string;
 
     constructor(s: string) {
@@ -38,10 +38,6 @@ class TrustedSimpleString {
     to_source(): string {
         return this.s;
     }
-}
-
-export function trusted_simple_string(s: string): TrustedString {
-    return new TrustedSimpleString(s);
 }
 
 export class TrustedIfElseString {

@@ -23,28 +23,28 @@ function test(info: {
 
     const rotation_class = new h.TrustedIfElseString(
         new h.Bool("is_collapsed", is_collapsed),
-        h.trusted_simple_string("rotate-icon-right"),
-        h.trusted_simple_string("rotate-icon-left"),
+        new h.TrustedSimpleString("rotate-icon-right"),
+        new h.TrustedSimpleString("rotate-icon-left"),
     )
 
     const section_icon = h.i_tag({
         class_first: true,
         classes: [
-            h.trusted_simple_string("buddy-list-section-toggle"),
-            h.trusted_simple_string("zulip-icon"),
-            h.trusted_simple_string("zulip-icon-heading-triangle-right"),
+            new h.TrustedSimpleString("buddy-list-section-toggle"),
+            new h.TrustedSimpleString("zulip-icon"),
+            new h.TrustedSimpleString("zulip-icon-heading-triangle-right"),
             rotation_class,
         ],
         attrs: [
-            new h.Attr("aria-hidden", h.trusted_simple_string("true")),
+            new h.Attr("aria-hidden", new h.TrustedSimpleString("true")),
         ]
     });
 
     const h5 = h.h5_tag({
         class_first: false,
         classes: [
-            h.trusted_simple_string("buddy-list-heading"),
-            h.trusted_simple_string("hidden-for-spectators"),
+            new h.TrustedSimpleString("buddy-list-heading"),
+            new h.TrustedSimpleString("hidden-for-spectators"),
         ],
         attrs: [
             new h.Attr("id", h.trusted_var("id")),
@@ -54,8 +54,8 @@ function test(info: {
     const user_count_outer_span = h.span_tag({
         class_first: true,
         classes: [
-            h.trusted_simple_string("buddy-list-heading-user-count-with-parens"),
-            h.trusted_simple_string("hide"),
+            new h.TrustedSimpleString("buddy-list-heading-user-count-with-parens"),
+            new h.TrustedSimpleString("hide"),
         ],
         attrs: [],
     });
