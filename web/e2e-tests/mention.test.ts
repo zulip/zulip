@@ -43,4 +43,4 @@ async function test_mention(page: Page): Promise<void> {
     ]);
 }
 
-common.run_test(test_mention);
+await common.run_test(test_mention);

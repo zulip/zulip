@@ -258,4 +258,4 @@ async function admin_test(page: Page): Promise<void> {
     await test_authentication_methods(page);
 }
 
-common.run_test(admin_test);
+await common.run_test(admin_test);

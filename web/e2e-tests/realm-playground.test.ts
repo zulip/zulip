@@ -104,4 +104,4 @@ async function playground_test(page: Page): Promise<void> {
     await test_successful_playground_deletion(page);
 }
 
-common.run_test(playground_test);
+await common.run_test(playground_test);

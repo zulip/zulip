@@ -621,7 +621,7 @@ export async function wait_for_micromodal_to_close(page: Page): Promise<void> {
     await page.waitForFunction(() => document.querySelector(".modal--open") === null);
 }
 
-export async function run_test_async(test_function: (page: Page) => Promise<void>): Promise<void> {
+export async function run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
     // Pass a page instance to test so we can take
     // a screenshot of it when the test fails.
     const browser = await ensure_browser();
@@ -728,13 +728,6 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
         await console_ready;
         await browser.close();
     }
-}
-
-export function run_test(test_function: (page: Page) => Promise<void>): void {
-    run_test_async(test_function).catch((error: unknown) => {
-        console.error(error);
-        process.exit(1);
-    });
 }
 
 export async function get_current_msg_list_id(
