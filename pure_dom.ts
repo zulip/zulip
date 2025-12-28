@@ -21,6 +21,7 @@ export function buddy_list_section_header(info: {
             rotation_class,
         ],
         attrs: [new h.Attr("aria-hidden", new h.TrustedSimpleString("true"))],
+        children: [],
     });
 
     const h5 = h.h5_tag({
@@ -30,20 +31,23 @@ export function buddy_list_section_header(info: {
             new h.TrustedSimpleString("hidden-for-spectators"),
         ],
         attrs: [new h.Attr("id", new h.TrustedAttrStringVar("id", new h.UnEscapedAttrString(id)))],
-    });
-
-    const user_count_outer_span = h.span_tag({
-        class_first: true,
-        classes: [
-            new h.TrustedSimpleString(
-                "buddy-list-heading-user-count-with-parens",
-            ),
-            new h.TrustedSimpleString("hide"),
+        children: [
+            // user count outer span
+            h.span_tag({
+                class_first: true,
+                classes: [
+                    new h.TrustedSimpleString(
+                        "buddy-list-heading-user-count-with-parens",
+                    ),
+                    new h.TrustedSimpleString("hide"),
+                ],
+                attrs: [],
+                children: [],
+            }),
         ],
-        attrs: [],
     });
 
-    const result = new h.Block([section_icon, h5, user_count_outer_span]);
+    const result = new h.Block([section_icon, h5]);
 
     return result;
 }

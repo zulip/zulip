@@ -65,6 +65,7 @@ export class TrustedIfElseString {
     }
 }
 
+type Element = Tag;
 type TrustedString = TrustedSimpleString | TrustedIfElseString | TrustedAttrStringVar;
 
 export class Attr {
@@ -85,6 +86,7 @@ interface TagSpec {
     class_first: boolean;
     classes: TrustedString[];
     attrs: Attr[];
+    children: Element[];
 }
 
 class Tag {
@@ -92,15 +94,17 @@ class Tag {
     class_first: boolean;
     classes: TrustedString[];
     attrs: Attr[];
+    children: Element[];
 
     constructor(tag: string, tag_spec: TagSpec) {
         this.tag = tag;
         this.class_first = tag_spec.class_first;
         this.classes = tag_spec.classes;
         this.attrs = tag_spec.attrs;
+        this.children = tag_spec.children;
     }
 
-    to_source(): string {
+    to_source(indent: string): string {
         let start_tag = "<" + this.tag;
 
         const classes = this.classes;
@@ -132,7 +136,17 @@ class Tag {
         }
 
         start_tag += ">";
-        return start_tag + `</${this.tag}>`;
+
+        let innards = "";
+        if (this.children.length > 0) {
+            innards += "\n";
+            for (const child of this.children) {
+                innards += child.to_source(indent + "    ") + "\n";
+            }
+            innards += indent;
+        }
+
+        return indent + start_tag + innards + `</${this.tag}>`;
     }
 }
 
@@ -158,7 +172,7 @@ export class Block {
     to_source(indent: string = "") {
         let source = "";
         for (const tag of this.tags) {
-            source += indent + tag.to_source() + "\n";
+            source += tag.to_source(indent) + "\n";
         }
         return source;
     }
