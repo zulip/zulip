@@ -1646,10 +1646,7 @@ export function add_active_user(person: User, source = "initial_fetch"): void {
     non_active_user_dict.delete(person.user_id);
 }
 
-export const is_person_active = (
-    user_id: number,
-    allow_missing_user: boolean | undefined = undefined,
-): boolean => {
+export const is_person_active = (user_id: number, allow_missing_user?: boolean): boolean => {
     if (!people_by_user_id_dict.has(user_id)) {
         // settings_data.user_can_access_all_other_users can be
         // cheap, so we avoid computing it unless it's actually

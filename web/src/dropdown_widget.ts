@@ -28,6 +28,7 @@ export type DataType = "number" | "string";
 export type Option = {
     unique_id: number | string;
     name: string;
+    aliases?: string[];
     description?: string;
     is_direct_message?: boolean;
     is_setting_disabled?: boolean;
@@ -365,7 +366,15 @@ export class DropdownWidget {
                         filter: {
                             $element: $search_input,
                             predicate(item, value) {
-                                return item.name.toLowerCase().includes(value);
+                                if (item.name.toLowerCase().includes(value)) {
+                                    return true;
+                                }
+                                if (item.aliases) {
+                                    return item.aliases.some((alias) =>
+                                        alias.toLowerCase().includes(value),
+                                    );
+                                }
+                                return false;
                             },
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),

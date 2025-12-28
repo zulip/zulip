@@ -101,8 +101,10 @@ mock_esm("../src/compose_closed_ui", {
 mock_esm("../src/hash_util", {
     channel_url_by_user_setting: test_url,
     by_stream_topic_url: test_url,
-    by_channel_topic_permalink: test_permalink,
     by_conversation_and_time_url: test_url,
+});
+mock_esm("../src/stream_topic_history", {
+    channel_topic_permalink_hash: test_permalink,
 });
 mock_esm("../src/message_list_data", {
     MessageListData: class {},

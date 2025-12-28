@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_search_description from "../templates/search_description.hbs";
 
+import * as filter_util from "./filter_util.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
@@ -17,12 +18,11 @@ import * as resolved_topic from "./resolved_topic.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
 import {
     current_user,
-    narrow_canonical_operator_schema,
     narrow_canonical_term_schema,
     narrow_operator_schema,
     narrow_term_schema,
 } from "./state_data.ts";
-import type {NarrowCanonicalOperator, NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
@@ -267,36 +267,6 @@ export class Filter {
         this.narrow_requires_hash_change = false;
     }
 
-    static canonicalize_operator(operator: NarrowTerm["operator"]): NarrowCanonicalOperator {
-        if (operator === "pm-with") {
-            // "pm-with:" was renamed to "dm:"
-            return "dm";
-        }
-
-        if (operator === "group-pm-with") {
-            // "group-pm-with:" was replaced with "dm-including:"
-            return "dm-including";
-        }
-
-        if (operator === "from") {
-            return "sender";
-        }
-
-        if (util.is_topic_synonym(operator)) {
-            return "topic";
-        }
-
-        if (util.is_channel_synonym(operator)) {
-            return "channel";
-        }
-
-        if (util.is_channels_synonym(operator)) {
-            return "channels";
-        }
-
-        return narrow_canonical_operator_schema.parse(operator);
-    }
-
     static canonicalize_term({
         negated = false,
         operator,
@@ -304,7 +274,7 @@ export class Filter {
     }: NarrowTerm): NarrowCanonicalTerm {
         // Make negated explicitly default to false for both clarity and
         // simplifying deepEqual checks in the tests.
-        const canonical_operator = Filter.canonicalize_operator(operator);
+        const canonical_operator = filter_util.canonicalize_operator(operator);
         const narrow_term = narrow_canonical_term_schema.parse({
             negated,
             operator: canonical_operator,
@@ -371,7 +341,7 @@ export class Filter {
         let contains_dm_term = false;
 
         for (const term of orig_terms) {
-            switch (Filter.canonicalize_operator(term.operator)) {
+            switch (filter_util.canonicalize_operator(term.operator)) {
                 case "channel":
                     contains_channel_term = true;
                     break;
@@ -393,7 +363,7 @@ export class Filter {
         const conversation_terms = new Set(["channel", "topic", "dm"]);
 
         const non_conversation_terms = orig_terms.filter((term) => {
-            const operator = Filter.canonicalize_operator(term.operator);
+            const operator = filter_util.canonicalize_operator(term.operator);
             return !conversation_terms.has(operator);
         });
 
@@ -504,7 +474,7 @@ export class Filter {
                     maybe_add_search_terms();
                     term = narrow_term_schema.parse({
                         negated,
-                        operator: Filter.canonicalize_operator(parsed_operator.data),
+                        operator: filter_util.canonicalize_operator(parsed_operator.data),
                         operand,
                     });
                     terms.push(term);
@@ -597,7 +567,7 @@ export class Filter {
             if (term.operator === "") {
                 return term.operand;
             }
-            const operator = Filter.canonicalize_operator(term.operator);
+            const operator = filter_util.canonicalize_operator(term.operator);
             const operand = is_operator_suggestion
                 ? ""
                 : Filter.encodeOperand(term.operand, term.operator);
@@ -671,7 +641,7 @@ export class Filter {
     }
 
     static operator_to_prefix(operator: NarrowTerm["operator"], negated?: boolean): string {
-        operator = Filter.canonicalize_operator(operator);
+        operator = filter_util.canonicalize_operator(operator);
 
         if (operator === "search") {
             return negated ? "exclude" : "search for";
@@ -909,7 +879,7 @@ export class Filter {
             }
             const conversation_terms = new Set(["channel", "topic", "dm"]);
             const filtered_terms = raw_terms.filter((term) => {
-                const operator = Filter.canonicalize_operator(term.operator);
+                const operator = filter_util.canonicalize_operator(term.operator);
                 return !conversation_terms.has(operator);
             });
 
