@@ -1,0 +1,3 @@
+# Documentation requirements for building the docs
+# Add packages required by Sphinx extensions here
+sphinx-copybutton
