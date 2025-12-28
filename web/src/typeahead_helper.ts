@@ -1035,7 +1035,7 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person_name(
     query: string,
     person: UserPillData,
-    should_remove_diacritics: boolean | undefined = undefined,
+    should_remove_diacritics?: boolean,
     match_prefix?: boolean,
 ): boolean {
     query = query.toLowerCase();
@@ -1057,7 +1057,7 @@ export function query_matches_person_name(
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
-    should_remove_diacritics: boolean | undefined = undefined,
+    should_remove_diacritics?: boolean,
     match_prefix?: boolean,
 ): boolean {
     if (

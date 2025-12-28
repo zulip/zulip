@@ -1514,7 +1514,7 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-export let scroll_stream_into_view = function ($stream_li: JQuery | undefined = undefined): void {
+export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
     if ($stream_li === undefined) {
         if (narrow_state.filter()?.terms_with_operator("topic").length === 1) {
             topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
