@@ -69,7 +69,7 @@ export class TrustedIfElseString {
 
 type TrustedString = TrustedSimpleString | TrustedIfElseString | TrustedVar;
 
-class Attr {
+export class Attr {
     k: string;
     v: TrustedString;
 
@@ -81,10 +81,6 @@ class Attr {
     to_source(): string {
         return `${this.k}="${this.v.to_source()}"`;
     }
-}
-
-export function attr(s: string, v: TrustedString): Attr {
-    return new Attr(s, v);
 }
 
 interface TagSpec {

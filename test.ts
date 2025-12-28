@@ -36,7 +36,7 @@ function test(info: {
             rotation_class,
         ],
         attrs: [
-            h.attr("aria-hidden", h.trusted_simple_string("true")),
+            new h.Attr("aria-hidden", h.trusted_simple_string("true")),
         ]
     });
 
@@ -47,7 +47,7 @@ function test(info: {
             h.trusted_simple_string("hidden-for-spectators"),
         ],
         attrs: [
-            h.attr("id", h.trusted_var("id")),
+            new h.Attr("id", h.trusted_var("id")),
         ],
     });
 
