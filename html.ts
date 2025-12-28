@@ -41,15 +41,11 @@ export class TrustedSimpleString {
 }
 
 export class TrustedIfElseString {
-    bool : Bool;
+    bool: Bool;
     yes_val: TrustedString;
     no_val: TrustedString;
 
-    constructor(
-        bool: Bool,
-        yes_val: TrustedString,
-        no_val: TrustedString,
-    ) {
+    constructor(bool: Bool, yes_val: TrustedString, no_val: TrustedString) {
         this.bool = bool;
         this.yes_val = yes_val;
         this.no_val = no_val;
@@ -59,7 +55,7 @@ export class TrustedIfElseString {
         const b = this.bool.to_source();
         const yes = this.yes_val.to_source();
         const no = this.no_val.to_source();
-        return `{{#if ${b}}}${yes}{{else}}${no}{{/if}}`
+        return `{{#if ${b}}}${yes}{{else}}${no}{{/if}}`;
     }
 }
 
@@ -83,7 +79,7 @@ interface TagSpec {
     class_first: boolean;
     classes: TrustedString[];
     attrs: Attr[];
-};
+}
 
 class Tag {
     tag: string;
@@ -110,7 +106,7 @@ class Tag {
                 for (const c of classes) {
                     class_frags.push(c.to_source());
                 }
-                const full_class = class_frags.join(" ")
+                const full_class = class_frags.join(" ");
                 start_tag += ` class="${full_class}"`;
             }
         }
