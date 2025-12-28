@@ -1103,7 +1103,12 @@ export function change_state(
     }
 
     toggler.goto("subscribed");
-    stream_edit.empty_right_panel();
+    if (right_side_tab === "new") {
+        do_open_create_stream(folder_id);
+        show_right_section();
+    } else {
+        stream_edit.empty_right_panel();
+    }
 }
 
 export function launch(
