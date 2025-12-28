@@ -121,6 +121,8 @@ jobs:
         if: ${{ matrix.include_documentation_tests }}
         run: |
           source tools/ci/activate-venv
+          # Ensure documentation-only Python dependencies are installed
+          pip install -r docs/requirements.txt
           ./tools/build-help-center
           # In CI, we only test links we control in test-documentation to avoid flakes
           ./tools/test-documentation --skip-external-links
