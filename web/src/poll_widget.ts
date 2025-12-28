@@ -2,7 +2,6 @@ import $ from "jquery";
 import * as z from "zod/mini";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
-import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -18,6 +17,7 @@ import type {
     VoteOutboundData,
 } from "./poll_data.ts";
 import {PollData} from "./poll_data.ts";
+import * as pure_dom from "./pure_dom.ts";
 import type {WidgetExtraData} from "./widgetize.ts";
 
 export type Event = {sender_id: number; data: InboundData};
@@ -27,6 +27,10 @@ export const poll_widget_extra_data_schema = z.object({
     options: z.optional(z.array(z.string())),
 });
 
+function render_widgets_poll_widget(): DocumentFragment {
+    const block = pure_dom.poll_widget();
+    return block.to_dom();
+}
 export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
 
 export type PollWidgetOutboundData =
@@ -156,7 +160,7 @@ export function activate({
     }
 
     function build_widget(): void {
-        const html = render_widgets_poll_widget({});
+        const html = render_widgets_poll_widget();
         $elem.html(html);
 
         $elem.find("input.poll-question").on("keyup", (e) => {
