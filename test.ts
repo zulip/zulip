@@ -21,47 +21,49 @@ function test(info: {
 }): void {
     const { is_collapsed } = info;
 
-    const rotation = h.trusted_if_else_string(
+    const rotation_class = h.trusted_if_else_string(
         h.bool("is_collapsed"),
         h.trusted_simple_string("rotate-icon-right"),
         h.trusted_simple_string("rotate-icon-left"),
     )
 
-    const icon_classes = [
-        h.trusted_simple_string("buddy-list-section-toggle"),
-        h.trusted_simple_string("zulip-icon"),
-        h.trusted_simple_string("zulip-icon-heading-triangle-right"),
-        rotation,
-    ]
-
-    const icon_attrs = [
-        h.attr("aria-hidden", h.trusted_simple_string("true")),
-    ]
-    
     const section_icon = h.i_tag({
         class_first: true,
-        classes: icon_classes,
-        attrs: icon_attrs,
+        classes: [
+            h.trusted_simple_string("buddy-list-section-toggle"),
+            h.trusted_simple_string("zulip-icon"),
+            h.trusted_simple_string("zulip-icon-heading-triangle-right"),
+            rotation_class,
+        ],
+        attrs: [
+            h.attr("aria-hidden", h.trusted_simple_string("true")),
+        ]
     });
-
-    const h5_classes = [
-        h.trusted_simple_string("buddy-list-heading"),
-        h.trusted_simple_string("hidden-for-spectators"),
-    ]
-
-    const h5_attrs = [
-        h.attr("id", h.trusted_var("id")),
-    ]
 
     const h5 = h.h5_tag({
         class_first: false,
-        classes: h5_classes,
-        attrs: h5_attrs,
+        classes: [
+            h.trusted_simple_string("buddy-list-heading"),
+            h.trusted_simple_string("hidden-for-spectators"),
+        ],
+        attrs: [
+            h.attr("id", h.trusted_var("id")),
+        ],
+    });
+
+    const user_count_outer_span = h.span_tag({
+        class_first: true,
+        classes: [
+            h.trusted_simple_string("buddy-list-heading-user-count-with-parens"),
+            h.trusted_simple_string("hide"),
+        ],
+        attrs: [],
     });
 
     const result = new h.Block([
         section_icon,
         h5,
+        user_count_outer_span,
     ])
 
     p(result.to_source());

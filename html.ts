@@ -160,6 +160,9 @@ export function h5_tag(tag_spec: TagSpec): Tag {
     return new Tag("h5", tag_spec);
 }
 
+export function span_tag(tag_spec: TagSpec): Tag {
+    return new Tag("span", tag_spec);
+}
 
 export class Block {
     tags: Tag[];
