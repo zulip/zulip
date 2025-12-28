@@ -226,9 +226,8 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 e.stopPropagation();
             });
 
-            $popper.on("click", ".copy_stream_link", (e) => {
-                assert(e.currentTarget instanceof HTMLElement);
-                clipboard_handler.popover_copy_link_to_clipboard(instance, $(e.currentTarget));
+            $popper.on("click", ".copy_stream_link", function (this: HTMLElement) {
+                void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
             });
         },
         onHidden(instance) {
