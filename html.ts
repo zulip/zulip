@@ -1,17 +1,15 @@
-class Bool {
+export class Bool {
     label: string;
+    b: boolean;
 
-    constructor(label: string) {
+    constructor(label: string, b: boolean) {
         this.label = label;
+        this.b = b;
     }
 
     to_source(): string {
         return this.label;
     }
-}
-
-export function bool(label: string): Bool {
-    return new Bool(label);
 }
 
 class TrustedVar {
@@ -46,7 +44,7 @@ export function trusted_simple_string(s: string): TrustedString {
     return new TrustedSimpleString(s);
 }
 
-class TrustedIfElseString {
+export class TrustedIfElseString {
     bool : Bool;
     yes_val: TrustedString;
     no_val: TrustedString;
@@ -67,14 +65,6 @@ class TrustedIfElseString {
         const no = this.no_val.to_source();
         return `{{#if ${b}}}${yes}{{else}}${no}{{/if}}`
     }
-}
-
-export function trusted_if_else_string(
-    bool: Bool,
-    yes_val: TrustedString,
-    no_val: TrustedString,
-): TrustedIfElseString {
-    return new TrustedIfElseString(bool, yes_val, no_val);
 }
 
 type TrustedString = TrustedSimpleString | TrustedIfElseString | TrustedVar;

@@ -21,8 +21,8 @@ function test(info: {
 }): void {
     const { is_collapsed } = info;
 
-    const rotation_class = h.trusted_if_else_string(
-        h.bool("is_collapsed"),
+    const rotation_class = new h.TrustedIfElseString(
+        new h.Bool("is_collapsed", is_collapsed),
         h.trusted_simple_string("rotate-icon-right"),
         h.trusted_simple_string("rotate-icon-left"),
     )
