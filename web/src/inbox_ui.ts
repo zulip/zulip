@@ -784,7 +784,7 @@ function rerender_topic_inbox_row_if_needed(
     }
 }
 
-function get_sorted_stream_keys(channel_folder_id: number | undefined = undefined): string[] {
+function get_sorted_stream_keys(channel_folder_id?: number): string[] {
     function compare_function(a: string, b: string): number {
         const stream_a = streams_dict.get(a);
         const stream_b = streams_dict.get(b);

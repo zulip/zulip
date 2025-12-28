@@ -153,11 +153,7 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
     loading.destroy_indicator($spinner);
 }
 
-export function ajaxSubscribe(
-    stream: string,
-    color: string | undefined = undefined,
-    $stream_row: JQuery | undefined = undefined,
-): void {
+export function ajaxSubscribe(stream: string, color?: string, $stream_row?: JQuery): void {
     // Subscribe yourself to a single stream.
     let true_stream_name;
 
@@ -275,10 +271,7 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     });
 }
 
-export function sub_or_unsub(
-    sub: StreamSubscription,
-    $stream_row: JQuery | undefined = undefined,
-): void {
+export function sub_or_unsub(sub: StreamSubscription, $stream_row?: JQuery): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (
