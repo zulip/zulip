@@ -2,13 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_section_header from "../templates/buddy_list/section_header.hbs";
-import render_view_all_subscribers from "../templates/buddy_list/view_all_subscribers.hbs";
-import render_view_all_users from "../templates/buddy_list/view_all_users.hbs";
-import render_empty_list_widget_for_list from "../templates/empty_list_widget_for_list.hbs";
-import render_presence_row from "../templates/presence_row.hbs";
-import render_presence_rows from "../templates/presence_rows.hbs";
-
 import * as background_task from "./background_task.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -22,6 +15,7 @@ import * as padded_widget from "./padded_widget.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
+import * as pure_dom from "./pure_dom.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
 import {current_user} from "./state_data.ts";
@@ -31,6 +25,34 @@ import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
+
+function render_section_header(info: {
+    id: string;
+    header_text: string;
+    is_collapsed: boolean;
+}): string {
+    const block = pure_dom.buddy_list_section_header(info);
+    // We return the HTML here to appease the legacy
+    // tests in `activity.test.cjs`
+    return block.as_raw_html();
+}
+
+function render_view_all_subscribers(info: {stream_edit_hash: string}): DocumentFragment {
+    const block = pure_dom.view_all_subscribers(info);
+    return block.to_dom();
+}
+
+function render_view_all_users(): DocumentFragment {
+    const block = pure_dom.view_all_users();
+    return block.to_dom();
+}
+
+function render_empty_list_widget_for_list(info: {empty_list_message: string}): DocumentFragment {
+    const block = pure_dom.empty_list_widget_for_list(info);
+    const dom = block.to_dom();
+
+    return dom;
+}
 
 function get_formatted_user_count(sub_count: number): string {
     if (sub_count < 1000) {
@@ -116,12 +138,12 @@ class BuddyListConf {
     compare_function = buddy_data.compare_function;
 
     items_to_html(opts: {items: BuddyUserInfo[]}): string {
-        const html = render_presence_rows({presence_rows: opts.items});
+        const html = pure_dom.presence_rows({presence_rows: opts.items}).as_raw_html();
         return html;
     }
 
     item_to_html(opts: {item: BuddyUserInfo}): string {
-        const html = render_presence_row(opts.item);
+        const html = pure_dom.presence_row(opts.item).as_raw_html();
         return html;
     }
 

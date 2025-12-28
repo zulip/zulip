@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {JSDOM} = require("jsdom");
+
 const {
     clear_buddy_list,
     override_user_matches_narrow_using_loaded_data,
@@ -16,12 +18,6 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
-const _document = {
-    hasFocus() {
-        return true;
-    },
-};
-
 const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
@@ -32,14 +28,24 @@ const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
 const background_task = mock_esm("../src/background_task");
 
-set_global("document", _document);
+// Set document to get past the annoying setFocus()
+// call in web/src/activity.ts
+set_global("document", {
+    hasFocus() {
+        return true;
+    },
+});
+const activity = zrequire("activity");
+
+// But then use a simulated DOM.
+const dom = new JSDOM(`<!DOCTYPE html>`);
+global.document = dom.window.document;
 
 const muted_users = zrequire("muted_users");
 const presence = zrequire("presence");
 const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
-const activity = zrequire("activity");
 const activity_ui = zrequire("activity_ui");
 const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");

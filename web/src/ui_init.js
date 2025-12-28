@@ -125,6 +125,7 @@ import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_sections from "./settings_sections.ts";
 import * as settings_toggle from "./settings_toggle.ts";
+import * as showcase from "./showcase.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spoilers from "./spoilers.ts";
 import * as starred_messages from "./starred_messages.ts";
@@ -755,6 +756,7 @@ export async function initialize_everything(state_data) {
     hotkey.initialize();
     desktop_integration.initialize();
 
+    showcase.initialize();
     group_permission_settings.initialize();
     overlays.trap_focus_for_settings_overlay();
 

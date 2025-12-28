@@ -214,10 +214,7 @@ run_test("wrong person editing question", () => {
     });
 });
 
-run_test("activate another person poll", ({mock_template}) => {
-    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
-    mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
-
+run_test("activate another person poll", () => {
     const $widget_elem = $("<div>").addClass("widget-content");
 
     let out_data; // Used to check the event data sent to the server
@@ -244,7 +241,7 @@ run_test("activate another person poll", ({mock_template}) => {
 
     const $poll_option = set_widget_find_result("button.poll-option");
     const $poll_option_input = set_widget_find_result("input.poll-option");
-    const $widget_option_container = set_widget_find_result("ul.poll-widget");
+    set_widget_find_result("ul.poll-widget");
 
     const $poll_question_submit = set_widget_find_result("button.poll-question-check");
     const $poll_edit_question = set_widget_find_result(".poll-edit-question");
@@ -268,8 +265,6 @@ run_test("activate another person poll", ({mock_template}) => {
     assert.ok(!$poll_edit_question.visible());
     assert.ok(!$poll_please_wait.visible());
 
-    assert.equal($widget_elem.html(), "widgets/poll_widget");
-    assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
     assert.equal($poll_question_header.text(), "What do you want?");
 
     {
@@ -327,10 +322,7 @@ run_test("activate another person poll", ({mock_template}) => {
     handle_events(add_question_event);
 });
 
-run_test("activate own poll", ({mock_template}) => {
-    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
-    mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
-
+run_test("activate own poll", () => {
     const $widget_elem = $("<div>").addClass("widget-content");
     let out_data;
     const callback = (data) => {
@@ -355,7 +347,7 @@ run_test("activate own poll", ({mock_template}) => {
 
     set_widget_find_result("button.poll-option");
     const $poll_option_input = set_widget_find_result("input.poll-option");
-    const $widget_option_container = set_widget_find_result("ul.poll-widget");
+    set_widget_find_result("ul.poll-widget");
 
     const $poll_question_submit = set_widget_find_result("button.poll-question-check");
     const $poll_edit_question = set_widget_find_result(".poll-edit-question");
@@ -382,8 +374,6 @@ run_test("activate own poll", ({mock_template}) => {
     assert_visibility();
     assert.ok(!$poll_question_submit.visible());
 
-    assert.equal($widget_elem.html(), "widgets/poll_widget");
-    assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
     assert.equal($poll_question_header.text(), "Where to go?");
 
     {

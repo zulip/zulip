@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
 const {
@@ -29,6 +30,8 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
+const {window} = new JSDOM();
+global.document = window.document;
 
 function init_simulated_scrolling() {
     const elem = {
@@ -64,7 +67,7 @@ people.add_active_user(chris);
 const $alice_li = $.create("alice-stub");
 const $bob_li = $.create("bob-stub");
 
-run_test("basics", ({override, mock_template}) => {
+run_test("basics", ({override}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
@@ -72,7 +75,6 @@ run_test("basics", ({override, mock_template}) => {
     override(message_viewport, "height", () => 550);
     override(padded_widget, "update_padding", noop);
     stub_buddy_list_elements();
-    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     override(background_task, "run_async_function_without_await", noop);
     buddy_list.populate({
@@ -94,11 +96,10 @@ run_test("basics", ({override, mock_template}) => {
     assert.equal($li, $alice_li);
 });
 
-run_test("split list", ({override, override_rewire, mock_template}) => {
+run_test("split list", ({override, override_rewire}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
     stub_buddy_list_elements();
-    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     override_rewire(
         buddy_data,
@@ -158,11 +159,10 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
     assert.ok(appended_to_other_users);
 });
 
-run_test("find_li", ({override, mock_template}) => {
+run_test("find_li", ({override}) => {
     const buddy_list = new BuddyList();
 
     override(buddy_list, "fill_screen_with_content", noop);
-    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
     stub_buddy_list_elements();
     override(background_task, "run_async_function_without_await", noop);
     clear_buddy_list(buddy_list);
@@ -180,12 +180,11 @@ run_test("find_li", ({override, mock_template}) => {
     assert.equal($li, $bob_li);
 });
 
-run_test("fill_screen_with_content early break on big list", ({override, mock_template}) => {
+run_test("fill_screen_with_content early break on big list", ({override}) => {
     stub_buddy_list_elements();
     const buddy_list = new BuddyList();
     const elem = init_simulated_scrolling();
     stub_buddy_list_elements();
-    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     let chunks_inserted = 0;
     override(buddy_list, "render_more", () => {
@@ -220,7 +219,7 @@ run_test("fill_screen_with_content early break on big list", ({override, mock_te
     assert.equal(chunks_inserted, 6);
 });
 
-run_test("big_list", ({override, override_rewire, mock_template}) => {
+run_test("big_list", ({override, override_rewire}) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
@@ -232,7 +231,6 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
         "user_matches_narrow_using_loaded_data",
         override_user_matches_narrow_using_loaded_data,
     );
-    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
     let items_to_html_call_count = 0;
     override(buddy_list, "items_to_html", () => {
@@ -358,13 +356,12 @@ run_test("find_li w/bad key", ({override}) => {
     assert.deepEqual($undefined_li, undefined);
 });
 
-run_test("scrolling", ({override, mock_template}) => {
+run_test("scrolling", ({override}) => {
     const buddy_list = new BuddyList();
     let tried_to_fill;
     override(buddy_list, "fill_screen_with_content", () => {
         tried_to_fill = true;
     });
-    mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
     stub_buddy_list_elements();
     init_simulated_scrolling();
     stub_buddy_list_elements();
