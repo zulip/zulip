@@ -63,6 +63,7 @@ html_static_path = ["_static"]
 copybutton_prompt_text = r"^\s*(?:\$|>|>>>|\.\.\.)\s+"
 copybutton_prompt_is_regexp = True
 
+
 def setup(app: Any) -> None:
     # overrides for wide tables in RTD theme
     app.add_css_file("theme_overrides.css")  # path relative to _static
