@@ -2054,25 +2054,23 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
     let third_promise_resolved = false;
     let first_promise_resolved = false;
 
-    const promise_first = people.get_or_fetch_users_from_ids([1, 2]);
-    promise_first.then(() => {
-        first_promise_resolved = true;
-        assert.ok(third_promise_resolved);
-    });
-    const promise_second = people.get_or_fetch_users_from_ids([1, 2, 3]);
-    promise_second.then(() => {
-        assert.ok(first_promise_resolved);
-        assert.ok(third_promise_resolved);
-    });
-    const promise_third = people.get_or_fetch_users_from_ids([3]);
-    promise_third.then(() => {
-        third_promise_resolved = true;
-        assert.ok(!first_promise_resolved);
-    });
-
-    // Only wait for second promise as we expect it be resolved at last.
-    await promise_second;
-    assert.ok(third_promise_resolved);
+    await Promise.all([
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2]);
+            first_promise_resolved = true;
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2, 3]);
+            assert.ok(first_promise_resolved);
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([3]);
+            third_promise_resolved = true;
+            assert.ok(!first_promise_resolved);
+        })(),
+    ]);
 
     const user1 = people.get_by_user_id(1);
     const user2 = people.get_by_user_id(2);
