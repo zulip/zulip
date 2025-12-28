@@ -393,7 +393,8 @@ export function set_up(settings_panel: SettingsPanel): void {
         // This is only accessed via the notifications banner, so we
         // do not need to do a mobile check here--as that banner is
         // not shown in a mobile context anyway.
-        void Notification.requestPermission().then((permission) => {
+        void (async () => {
+            const permission = await Notification.requestPermission();
             if (permission === "granted") {
                 update_desktop_notification_banner();
             } else if (permission === "denied") {
@@ -403,7 +404,7 @@ export function set_up(settings_panel: SettingsPanel): void {
                     "noopener noreferrer",
                 );
             }
-        });
+        })();
     });
 
     set_enable_digest_emails_visibility($container, for_realm_settings);
