@@ -2,10 +2,9 @@ import * as h from "./html";
 
 export function buddy_list_section_header(info: {
     id: string;
-    header_text: string;
     is_collapsed: boolean;
 }): h.Block {
-    const {is_collapsed} = info;
+    const {id, is_collapsed} = info;
 
     const rotation_class = new h.TrustedIfElseString(
         new h.Bool("is_collapsed", is_collapsed),
@@ -30,7 +29,7 @@ export function buddy_list_section_header(info: {
             new h.TrustedSimpleString("buddy-list-heading"),
             new h.TrustedSimpleString("hidden-for-spectators"),
         ],
-        attrs: [new h.Attr("id", h.trusted_var("id"))],
+        attrs: [new h.Attr("id", new h.TrustedStringVar("id", h.escape_attr(id)))],
     });
 
     const user_count_outer_span = h.span_tag({

@@ -16,7 +16,6 @@ function p(s: unknown): void {
 
 function test(info: {
     id: string;
-    header_text: string;
     is_collapsed: boolean;
 }): void {
     const result = pure_dom.buddy_list_section_header(info);
@@ -29,4 +28,4 @@ function test(info: {
     // return render_section_header(info);
 }
 
-test({id: "some_id", header_text: "HEADER TEXT", is_collapsed: false});
+test({id: "some_id", is_collapsed: false});
