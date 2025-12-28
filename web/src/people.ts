@@ -2067,7 +2067,7 @@ function get_combined_promise_for_user_ids(user_ids: Set<number>): {
     };
 }
 
-function start_fetch_for_requested_users(): void {
+async function start_fetch_for_requested_users(): Promise<void> {
     const user_ids_to_fetch = fetch_users_storage.pending_user_ids;
     fetch_users_storage.pending_user_ids = new Set();
     fetch_users_storage.in_transit_user_ids =
@@ -2085,51 +2085,49 @@ function start_fetch_for_requested_users(): void {
     fetch_users_storage.promise_for_pending = undefined;
     fetch_users_storage.promise_resolver_for_pending = undefined;
 
-    const fetch_request_with_retry = (num_attempts = 1): void => {
-        void fetch_users(user_ids_pending_fetch).then(
-            async (fetched_users) => {
-                for (const user of fetched_users) {
-                    if (user.is_active) {
-                        add_active_user(user);
-                    } else {
-                        non_active_user_dict.set(user.user_id, user);
-                        _add_user(user);
-                    }
-                }
+    let fetched_users;
+    for (let num_attempts = 1; ; num_attempts += 1) {
+        try {
+            fetched_users = await fetch_users(user_ids_pending_fetch);
+            break;
+        } catch (error) {
+            // Retry on error.
+            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
 
-                // Resolve promises waiting on this fetch after updating the data locally.
-                fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
-                // Clean up in transit promise for this fetch.
-                fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
-                // Remove fetched users from in transit user ids.
-                fetch_users_storage.in_transit_user_ids =
-                    fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
+            // Since users are in `valid_user_ids`, we expect
+            // the fetch to eventually succeed, so we log a warning
+            // and retry after a delay.
+            blueslip.warn(
+                `Fetch for users failed, retrying after ${Math.round(retry_delay_secs)} seconds. ` +
+                    String(error),
+            );
+            await new Promise((resolve) => {
+                setTimeout(resolve, retry_delay_secs * 1000);
+            });
+        }
+    }
 
-                await promise_for_all_requested_users;
-                // Resolve promises waiting on the complete fetch.
-                fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
-                fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
-            },
-            (error: unknown) => {
-                // Retry on error.
-                num_attempts += 1;
-                const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+    for (const user of fetched_users) {
+        if (user.is_active) {
+            add_active_user(user);
+        } else {
+            non_active_user_dict.set(user.user_id, user);
+            _add_user(user);
+        }
+    }
 
-                // Since users are in `valid_user_ids`, we expect
-                // the fetch to eventually succeed, so we log a warning
-                // and retry after a delay.
-                blueslip.warn(
-                    `Fetch for users failed, retrying after ${Math.round(retry_delay_secs)} seconds. ` +
-                        String(error),
-                );
-                setTimeout(() => {
-                    fetch_request_with_retry(num_attempts);
-                }, retry_delay_secs * 1000);
-            },
-        );
-    };
+    // Resolve promises waiting on this fetch after updating the data locally.
+    fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
+    // Clean up in transit promise for this fetch.
+    fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
+    // Remove fetched users from in transit user ids.
+    fetch_users_storage.in_transit_user_ids =
+        fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
 
-    fetch_request_with_retry();
+    await promise_for_all_requested_users;
+    // Resolve promises waiting on the complete fetch.
+    fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
+    fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
 }
 
 export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<unknown> => {
@@ -2175,7 +2173,7 @@ export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<u
     // we queue the fetch after current call stack.
     setTimeout(() => {
         if (fetch_users_storage.pending_user_ids.size > 0) {
-            start_fetch_for_requested_users();
+            void start_fetch_for_requested_users();
         }
     }, 0);
     return promise;
