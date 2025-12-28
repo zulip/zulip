@@ -490,4 +490,4 @@ async function settings_tests(page: Page): Promise<void> {
     // returning a 401. (We reset the test database after each file).
 }
 
-common.run_test(settings_tests);
+await common.run_test(settings_tests);

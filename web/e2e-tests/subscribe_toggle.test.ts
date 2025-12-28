@@ -52,4 +52,4 @@ async function subscriptions_tests(page: Page): Promise<void> {
     await test_subscription_button(page);
 }
 
-common.run_test(subscriptions_tests);
+await common.run_test(subscriptions_tests);

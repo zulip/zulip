@@ -94,4 +94,4 @@ async function test_custom_profile(page: Page): Promise<void> {
     await test_delete_custom_profile_field(page);
 }
 
-common.run_test(test_custom_profile);
+await common.run_test(test_custom_profile);

@@ -535,4 +535,4 @@ async function message_basic_tests(page: Page): Promise<void> {
     await test_narrow_public_streams(page);
 }
 
-common.run_test(message_basic_tests);
+await common.run_test(message_basic_tests);

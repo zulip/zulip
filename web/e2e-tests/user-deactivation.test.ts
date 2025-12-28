@@ -143,4 +143,4 @@ async function user_deactivation_test(page: Page): Promise<void> {
     await test_bot_deactivation_and_reactivation(page);
 }
 
-common.run_test(user_deactivation_test);
+await common.run_test(user_deactivation_test);

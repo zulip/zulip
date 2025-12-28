@@ -165,4 +165,4 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_messages_from_several_topics(page);
 }
 
-common.run_test(copy_paste_test);
+await common.run_test(copy_paste_test);
