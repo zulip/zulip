@@ -228,7 +228,7 @@
 
     & tr {
         display: table-row;
-        vertical-align: inherit;
+        vertical-align: top;
     }
 
     & tr th {
