@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 442
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (362, 0)  # bumped 2025-12-27 to upgrade JavaScript dependencies
+PROVISION_VERSION = (362, 1)  # bumped 2025-12-29 to add eslint-plugin-promise
