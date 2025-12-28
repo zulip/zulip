@@ -62,7 +62,7 @@ html_static_path = ["_static"]
 # Copy button settings
 copybutton_prompt_text = r"^\s*(?:\$|>|>>>|\.\.\.)\s+"
 copybutton_prompt_is_regexp = True
-copybutton_only_copy_prompt_lines = False
+
 
 
 def setup(app: Any) -> None:
