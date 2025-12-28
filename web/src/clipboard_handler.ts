@@ -1,6 +1,5 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip.ts";
 import * as hash_util from "./hash_util.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as stream_data from "./stream_data.ts";
@@ -60,22 +59,13 @@ export async function copy_link_to_clipboard(link: string): Promise<void> {
 }
 
 /* istanbul ignore next */
-export function popover_copy_link_to_clipboard(
+export async function popover_copy_link_to_clipboard(
     instance: typeof popover_menus.popover_instances.message_actions,
     $element: JQuery,
-    success_callback?: () => void,
-): void {
+): Promise<void> {
     // Wrapper for copy_link_to_clipboard handling closing a popover
     // and error handling.
     const clipboard_text = String($element.attr("data-clipboard-text"));
-    void copy_link_to_clipboard(clipboard_text)
-        .then(() => {
-            popover_menus.hide_current_popover_if_visible(instance);
-            if (success_callback !== undefined) {
-                success_callback();
-            }
-        })
-        .catch((error: unknown) => {
-            blueslip.error("Failed to copy to clipboard: ", {error: String(error)});
-        });
+    await copy_link_to_clipboard(clipboard_text);
+    popover_menus.hide_current_popover_if_visible(instance);
 }

@@ -223,10 +223,13 @@ export function initialize(): void {
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 
-                $popper.on("click", ".sidebar-popover-copy-link-to-topic", (e) => {
-                    assert(e.currentTarget instanceof HTMLElement);
-                    clipboard_handler.popover_copy_link_to_clipboard(instance, $(e.currentTarget));
-                });
+                $popper.on(
+                    "click",
+                    ".sidebar-popover-copy-link-to-topic",
+                    function (this: HTMLElement) {
+                        void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
+                    },
+                );
             },
             onHidden(instance) {
                 const $elt = $(instance.reference).closest(".recent_view_focusable");
