@@ -178,8 +178,6 @@
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
-      "@uppy/utils": "patches/@uppy__utils.patch",
-      "eslint-plugin-astro": "patches/eslint-plugin-astro.patch",
       "handlebars": "patches/handlebars.patch",
       "simplebar": "patches/simplebar.patch",
       "stylelint-high-performance-animation": "patches/stylelint-high-performance-animation.patch",
