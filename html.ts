@@ -12,17 +12,25 @@ export class Bool {
     }
 }
 
-export class TrustedStringVar {
+export class TrustedAttrStringVar {
     label: string;
-    s: TrustedSimpleString;
+    s: UnEscapedAttrString;
 
-    constructor(label: string, s: TrustedSimpleString) {
+    constructor(label: string, s: UnEscapedAttrString) {
         this.label = label;
         this.s = s;
     }
 
     to_source(): string {
         return `{{${this.label}}}`;
+    }
+}
+
+export class UnEscapedAttrString {
+    s: string;
+
+    constructor(s: string) {
+        this.s = s;
     }
 }
 
@@ -57,12 +65,7 @@ export class TrustedIfElseString {
     }
 }
 
-export function escape_attr(s: string): TrustedSimpleString {
-    // TODO: actually escape
-    return new TrustedSimpleString("escape: " + s);
-}
-
-type TrustedString = TrustedSimpleString | TrustedIfElseString | TrustedStringVar;
+type TrustedString = TrustedSimpleString | TrustedIfElseString | TrustedAttrStringVar;
 
 export class Attr {
     k: string;

@@ -29,7 +29,7 @@ export function buddy_list_section_header(info: {
             new h.TrustedSimpleString("buddy-list-heading"),
             new h.TrustedSimpleString("hidden-for-spectators"),
         ],
-        attrs: [new h.Attr("id", new h.TrustedStringVar("id", h.escape_attr(id)))],
+        attrs: [new h.Attr("id", new h.TrustedAttrStringVar("id", new h.UnEscapedAttrString(id)))],
     });
 
     const user_count_outer_span = h.span_tag({
