@@ -214,7 +214,7 @@ $(() => {
             if (error_map["password"]) {
                 $("#login_form .alert.alert-error").remove();
             }
-            this.defaultShowErrors!();
+            this.defaultShowErrors();
         },
     });
 

@@ -9,6 +9,9 @@ overrides:
   source-map@^0.6: npm:source-map-js@^1.2.1
 
 patchedDependencies:
+  '@types/jquery.validation':
+    hash: 947ac3c5e9d74134f0eef9c0cfe7d0e5bb804351b54d5522641a5e2d18517743
+    path: patches/@types__jquery.validation.patch
   '@uppy/utils':
     hash: 7ff02b9be1df41a3ba1f786e42045424d40f814a420ad05e6252979768ac3923
     path: patches/@uppy__utils.patch
@@ -359,7 +362,7 @@ importers:
         version: 3.5.33
       '@types/jquery.validation':
         specifier: ^1.16.7
-        version: 1.17.0
+        version: 1.17.0(patch_hash=947ac3c5e9d74134f0eef9c0cfe7d0e5bb804351b54d5522641a5e2d18517743)
       '@types/js-cookie':
         specifier: ^3.0.6
         version: 3.0.6
@@ -12360,7 +12363,7 @@ snapshots:
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
 
-  '@types/jquery.validation@1.17.0':
+  '@types/jquery.validation@1.17.0(patch_hash=947ac3c5e9d74134f0eef9c0cfe7d0e5bb804351b54d5522641a5e2d18517743)':
     dependencies:
       '@types/jquery': 3.5.33
 
