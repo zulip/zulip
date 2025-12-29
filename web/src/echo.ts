@@ -13,6 +13,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import type {InsertNewMessagesOpts} from "./message_events.ts";
@@ -110,7 +111,7 @@ export type PostMessageAPIData = z.output<typeof send_message_api_response_schem
 // which runs when a msg is sent, if no ack from server in 15s we show a warning in UI.
 function start_hang_timer(local_id: string): void {
     const timeout = window.setTimeout(() => {
-        if(echo_state.get_message_waiting_for_ack(local_id) !== undefined){
+        if (echo_state.get_message_waiting_for_ack(local_id) !== undefined) {
             show_msg_hang_warning(local_id);
         }
     }, 15000);
@@ -120,34 +121,36 @@ function start_hang_timer(local_id: string): void {
 // This function clears a timer of 15s after ack is received from server
 function clear_hang_timer(local_id: string): void {
     const timer = hang_timer.get(local_id);
-    if(timer !== undefined){
+    if (timer !== undefined) {
         clearTimeout(timer);
         hang_timer.delete(local_id);
     }
 }
 
 function show_msg_hang_warning(local_id: string): void {
-    const selector = `div[zid="${CSS.escape(local_id)}"]`;
+    const selector = `div[zid="${local_id}"]`;
     const $row = $(selector);
 
-    if($row.length === 0){
+    if ($row.length === 0) {
         return;
     }
 
-    if($row.find(".message_not_received").length > 0){
+    if ($row.find(".message_not_received").length > 0) {
         return;
     }
 
-    $row
-        .find(".message_content")
-        .after("<div class='message_not_received'>Message not received by server</div>")
+    const $warning = $("<div>")
+        .addClass("message_not_received")
+        .text($t({defaultMessage: "Message not received by server"}));
+
+    $row.find(".message_content").after($warning);
 }
 
 function clear_msg_hang_warning(local_id: string): void {
-    const selector = `div[zid="${CSS.escape(local_id)}"]`;
+    const selector = `div[zid="${local_id}"]`;
     const $row = $(selector);
 
-    if($row.length === 0){
+    if ($row.length === 0) {
         return;
     }
     $row.find(".message_not_received").remove();
@@ -668,7 +671,6 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 }
 
 export let message_send_error = (message_id: number, error_response: string): void => {
-    clear_hang_timer(String(message_id));
     // Error sending message, show inline
     const message = message_store.get(message_id)!;
     message.failed_request = true;

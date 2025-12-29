@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const $ = require("jquery");
 const MockDate = require("mockdate");
 
 const {make_user_group} = require("./lib/example_group.cjs");
@@ -454,20 +455,21 @@ run_test("reset MockDate", () => {
     MockDate.reset();
 });
 
-run_test("message_hand_warning cleared on late ack", ({override}) => {
+run_test("message_hang_warning cleared on late ack", ({override}) => {
     let timeout_callback;
 
     override(global, "setTimeout", (callback, _delay) => {
         timeout_callback = callback;
         return 1;
-    })
+    });
 
-    //Fake DOM msg row
+    // Fake DOM msg row
     const local_id = "001.01";
-    $("#main_div").append(`<div class="message_row" zid="${local_id}">
-        <div class="message_content">Hello</div>
-        </div>
-    `);
+
+    const $row = $("<div>").addClass("message_row").attr("zid", local_id);
+
+    $row.append($("<div>").addClass("message_content").text("Hello"));
+    $("#main_div").append($row);
 
     // Insert local msg
     echo.insert_local_message(
@@ -479,11 +481,14 @@ run_test("message_hand_warning cleared on late ack", ({override}) => {
             sender_full_name: "Iago",
             sender_id: 143,
         },
-        Number(local_id), (message_data) => {
+        Number(local_id),
+        (message_data) => {
             const messages = message_data.raw_messages;
-            messages.forEach((message) => echo.track_local_message(message));
+            for (const message of messages) {
+                echo.track_local_message(message);
+            }
             return messages;
-        }
+        },
     );
 
     timeout_callback();
@@ -492,14 +497,14 @@ run_test("message_hand_warning cleared on late ack", ({override}) => {
 
     echo.process_from_server([
         {
-            local_id: local_id,
+            local_id,
             id: 200,
             content: "Hello",
             timestamp: 123,
             flags: [],
             is_me_message: false,
-        }
+        },
     ]);
 
     assert.equal($(".message_not_received").length, 0);
-})
+});

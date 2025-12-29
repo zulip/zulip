@@ -2512,7 +2512,7 @@ body:not(.spectator-view) {
 }
 
 .message_not_received {
-    color: red;
+    color: var(--color-danger);
     font-size: 13px;
     margin-left: 46px;
     margin-top: 4px;
