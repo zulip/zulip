@@ -16,13 +16,8 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import type {UserPillItem} from "./search_suggestion.ts";
-import {
-    current_user,
-    narrow_canonical_term_schema,
-    narrow_operator_schema,
-    narrow_term_schema,
-} from "./state_data.ts";
-import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
+import {current_user, narrow_canonical_term_schema, narrow_operator_schema} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
@@ -401,13 +396,13 @@ export class Filter {
         return util.robust_url_decode(encoded);
     }
 
-    // Parse a string into a list of terms (see below).
-    static parse(str: string, for_pills = false): NarrowTerm[] {
-        const terms: NarrowTerm[] = [];
+    // Parse a string into a list of search terms.
+    static parse(str: string, for_pills = false): NarrowTermSuggestion[] {
+        const terms: NarrowTermSuggestion[] = [];
         let search_term: string[] = [];
         let negated;
         let operand;
-        let term: NarrowTerm;
+        let term: NarrowTermSuggestion;
 
         function maybe_add_search_terms(): void {
             if (search_term.length > 0) {
@@ -472,11 +467,11 @@ export class Filter {
                     // terms list. This is done so that the last active filter is correctly
                     // detected by the `get_search_result` function (in search_suggestions.ts).
                     maybe_add_search_terms();
-                    term = narrow_term_schema.parse({
+                    term = {
                         negated,
                         operator: filter_util.canonicalize_operator(parsed_operator.data),
                         operand,
-                    });
+                    };
                     terms.push(term);
                 } else {
                     // Put it as a search term, to not have duplicate operators
@@ -487,6 +482,22 @@ export class Filter {
 
         maybe_add_search_terms();
         return terms;
+    }
+
+    static convert_suggestion_to_term(suggestion: NarrowTermSuggestion): NarrowTerm | undefined {
+        // NOTE: We will add more logic here once `NarrowTerm`
+        // operand has different type based on operator.
+        const potential_narrow_term: NarrowTerm = {
+            operator: suggestion.operator,
+            operand: suggestion.operand,
+            negated: suggestion.negated,
+        };
+
+        if (!Filter.is_valid_search_term(potential_narrow_term)) {
+            return undefined;
+        }
+
+        return potential_narrow_term;
     }
 
     static is_valid_search_term(term: NarrowTerm): boolean {
