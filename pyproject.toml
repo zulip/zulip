@@ -2,6 +2,9 @@
 name = "zulip-server"
 version = "0.1.0"
 requires-python = ">=3.10"
+dependencies = [
+    "sphinx-copybutton>=0.5.2",
+]
 
 [dependency-groups]
 prod = [
