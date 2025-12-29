@@ -58,18 +58,18 @@ function full_search_query_in_terms(): NarrowTerm[] | undefined {
     return [...search_pill.get_current_search_pill_terms(search_pill_widget), ...search_terms];
 }
 
-function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): string {
+function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): void {
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
         // `updater` is also triggered when 'enter' is triggered
         // while using input tool
-        return get_search_bar_text();
+        return;
     }
 
     const terms = full_search_query_in_terms();
     if (!terms || terms.length === 0) {
         exit_search({keep_search_narrow_open: true});
-        return "";
+        return;
     }
     // Reset the search bar to display as many pills as possible for `terms`.
     // We do this in case some of these terms haven't been pillified yet
@@ -91,7 +91,7 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     // Narrowing will have already put some terms in the search box,
     // so leave the current text in.
     $("#search_query").trigger("blur");
-    return get_search_bar_text();
+    return;
 }
 
 function focus_search_input_at_end(): void {
