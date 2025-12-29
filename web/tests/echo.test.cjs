@@ -466,7 +466,7 @@ run_test("message_hand_warning cleared on late ack", ({override}) => {
     const local_id = "001.01";
     $("#main_div").append(`<div class="message_row" zid="${local_id}">
         <div class="message_content">Hello</div>
-        </div?>
+        </div>
     `);
 
     // Insert local msg
