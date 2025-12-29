@@ -484,6 +484,14 @@ export class Filter {
         return terms;
     }
 
+    static convert_term_to_suggestion(term: NarrowTerm): NarrowTermSuggestion {
+        return {
+            operator: term.operator,
+            operand: term.operand,
+            negated: term.negated,
+        };
+    }
+
     static convert_suggestion_to_term(suggestion: NarrowTermSuggestion): NarrowTerm | undefined {
         // NOTE: We will add more logic here once `NarrowTerm`
         // operand has different type based on operator.

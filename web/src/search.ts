@@ -77,7 +77,7 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     assert(search_pill_widget !== null);
     search_pill_widget.clear(true);
     search_pill.set_search_bar_contents(
-        terms,
+        terms.map((term) => Filter.convert_term_to_suggestion(term)),
         search_pill_widget,
         search_typeahead.shown,
         set_search_bar_text,
@@ -401,7 +401,7 @@ function reset_searchbox(clear = false): void {
     search_input_has_changed = false;
     if (!clear) {
         search_pill.set_search_bar_contents(
-            narrow_state.search_terms(),
+            narrow_state.search_terms().map((term) => Filter.convert_term_to_suggestion(term)),
             search_pill_widget,
             search_typeahead.shown,
             set_search_bar_text,
