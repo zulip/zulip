@@ -47,12 +47,15 @@ type NarrowSearchOptions = {
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
 
-function full_search_query_in_terms(): NarrowTerm[] {
+function full_search_query_in_terms(): NarrowTerm[] | undefined {
     assert(search_pill_widget !== null);
-    return [
-        ...search_pill.get_current_search_pill_terms(search_pill_widget),
-        ...Filter.parse(get_search_bar_text(), true),
-    ];
+    const search_terms = convert_search_text_to_terms();
+
+    if (search_terms === undefined) {
+        return undefined;
+    }
+
+    return [...search_pill.get_current_search_pill_terms(search_pill_widget), ...search_terms];
 }
 
 function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): string {
@@ -64,7 +67,7 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     }
 
     const terms = full_search_query_in_terms();
-    if (terms.length === 0) {
+    if (!terms || terms.length === 0) {
         exit_search({keep_search_narrow_open: true});
         return "";
     }
