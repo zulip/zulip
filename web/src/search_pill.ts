@@ -118,9 +118,6 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
     const search_terms = Filter.parse(suggestion.search_string);
 
     const pill_render_data = search_terms.map((term, index) => {
-        if (user_pill_operators.has(term.operator) && term.operand !== "") {
-            return search_user_pill_data_from_term(term);
-        }
         const narrow_term: NarrowTerm = {
             operator: term.operator,
             operand: term.operand,
@@ -131,56 +128,68 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
             ...narrow_term,
         };
 
-        if (search_pill.operator === "topic" && search_pill.operand === "") {
-            // There are three variants of this suggestion state:
-            //
-            // (1) This is an already formed pill, i.e. not in the text input
-            // (`text_query`), or is not the last term in the text input, and
-            //  therefore the empty operand represents "general chat".
-            //
-            // (2) The user has selected a topic operator, and and thus has
-            // exactly `topic:` or `-topic:` written out, and it's appropriate
-            // to suggest the "general chat" operand.
-            //
-            // (3) We're suggesting `topic` as a potential operator to add, say
-            // if the user has typed `-to` so far. For that case, we want to
-            // suggest adding a topic operator, but the user hasn't done anything
-            // that would suggest we should further complete "general chat" as an
-            // operand for that topic operator.
-            if (
-                // case 1
-                text_query === "" ||
-                index < search_terms.length - 1 ||
-                // case 2
-                text_query.trim().endsWith("topic:")
-            ) {
+        switch (term.operator) {
+            case "dm":
+            case "dm-including":
+            case "sender":
+                if (term.operand === "") {
+                    break;
+                }
+                return search_user_pill_data_from_term(term);
+            case "topic":
+                if (search_pill.operand === "") {
+                    // There are three variants of this suggestion state:
+                    //
+                    // (1) This is an already formed pill, i.e. not in the text input
+                    // (`text_query`), or is not the last term in the text input, and
+                    //  therefore the empty operand represents "general chat".
+                    //
+                    // (2) The user has selected a topic operator, and and thus has
+                    // exactly `topic:` or `-topic:` written out, and it's appropriate
+                    // to suggest the "general chat" operand.
+                    //
+                    // (3) We're suggesting `topic` as a potential operator to add, say
+                    // if the user has typed `-to` so far. For that case, we want to
+                    // suggest adding a topic operator, but the user hasn't done anything
+                    // that would suggest we should further complete "general chat" as an
+                    // operand for that topic operator.
+                    if (
+                        // case 1
+                        text_query === "" ||
+                        index < search_terms.length - 1 ||
+                        // case 2
+                        text_query.trim().endsWith("topic:")
+                    ) {
+                        return {
+                            ...search_pill,
+                            is_empty_string_topic: true,
+                            sign: search_pill.negated ? "-" : "",
+                            topic_display_name: util.get_final_topic_display_name(""),
+                        };
+                    }
+                    // case 3
+                    return {
+                        ...search_pill,
+                        is_empty_string_topic: true,
+                        sign: search_pill.negated ? "-" : "",
+                    };
+                }
+                break;
+            case "search": {
+                let description_html = search_term_description_html(search_pill.operand);
+                // We capitalize the beginning of the suggestion line if it's text (not
+                // pills), which is only relevant for suggestions with search operators.
+                if (index === 0) {
+                    const capitalized_first_letter = description_html.charAt(0).toUpperCase();
+                    description_html = capitalized_first_letter + description_html.slice(1);
+                }
                 return {
                     ...search_pill,
-                    is_empty_string_topic: true,
-                    sign: search_pill.negated ? "-" : "",
-                    topic_display_name: util.get_final_topic_display_name(""),
+                    description_html,
                 };
             }
-            // case 3
-            return {
-                ...search_pill,
-                is_empty_string_topic: true,
-                sign: search_pill.negated ? "-" : "",
-            };
         }
-        if (search_pill.operator === "search") {
-            let description_html = search_term_description_html(search_pill.operand);
-            // We capitalize the beginning of the suggestion line if it's text (not
-            // pills), which is only relevant for suggestions with search operators.
-            if (index === 0) {
-                const capitalized_first_letter = description_html.charAt(0).toUpperCase();
-                description_html = capitalized_first_letter + description_html.slice(1);
-            }
-            return {
-                ...search_pill,
-                description_html,
-            };
-        }
+
         return {
             ...search_pill,
             display_value: get_search_string_from_item(search_pill),
