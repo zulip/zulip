@@ -1,7 +1,11 @@
+{% set demo_organization_deletion = realm.demo_organization_scheduled_deletion_date %}
 <div class="realm-support-information">
     <span class="cloud-label">Cloud realm</span>
     {% if realm.deactivated %}
     <span class="deactivated-label">DEACTIVATED</span>
+    {% endif %}
+    {% if demo_organization_deletion %}
+    <span class="demo-label">DEMO ORGANIZATION</span>
     {% endif %}
     <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
     {% if realm.plan_type == SPONSORED_PLAN_TYPE %}
@@ -9,6 +13,9 @@
     {% endif %}
     {% if realm_support_data[realm.id].sponsorship_data.has_discount %}
         <p class="support-section-header">Has a discount 💸</p>
+    {% endif %}
+    {% if demo_organization_deletion %}
+        <p class="support-section-header">Scheduled deletion on {{ demo_organization_deletion.strftime('%B %d, %Y') }} 🗑️</p>
     {% endif %}
     {% set realm_is_scrubbed = realm_support_data[realm.id].is_scrubbed %}
     {% if realm_is_scrubbed %}
@@ -24,6 +31,11 @@
     <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
     <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
     <b>Date created</b>: {{ realm.date_created|timesince }} ago<br />
+    {% set first_human_user = realm.get_first_human_user() %}
+    {% if demo_organization_deletion and first_human_user.delivery_email == "" %}
+    <b>Demo organization owner has not configured an email address.</b>
+    <br />
+    {% else %}
     {% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
     <b>Owners</b>: {{ owner_emails_string }}
     {% if owner_emails_string %}
@@ -40,7 +52,6 @@
     </a>
     {% endif %}
     <br />
-    {% set first_human_user = realm.get_first_human_user() %}
     {% if first_human_user %}
     <b>First human user</b>: {{ first_human_user.delivery_email  }}
     <a title="Copy emails" class="copy-button" data-clipboard-text="{{ first_human_user.delivery_email }}">
@@ -61,6 +72,7 @@
     {% else %}
     <b>Billing admins</b>:
     <br />
+    {% endif %}
     {% endif %}
     <br />
     {% with %}
@@ -142,6 +154,7 @@
         </form>
         {% endif %}
     </div>
+    {% if not demo_organization_deletion %}
     {% if realm.deactivated %}
     <div class="support-sponsorship-container">
         {% with %}
@@ -197,6 +210,7 @@
             {% include 'corporate/support/next_plan_forms_support.html' %}
         {% endwith %}
     </div>
+    {% endif %}
     {% endif %}
     {% if realm.deactivated %}
     <form method="POST" class="scrub-realm-form support-form">
