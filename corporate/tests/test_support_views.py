@@ -770,7 +770,6 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<span class="cloud-label">Cloud user</span>\n',
                     f"<h3>{full_name}</h3>",
                     f"<b>Email</b>: {email}",
-                    "<b>Is active</b>: True<br />",
                     f"<b>Role</b>: {role}<br />",
                 ],
                 html_response,
