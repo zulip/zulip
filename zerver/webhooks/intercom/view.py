@@ -60,6 +60,8 @@ CONVERSATION_ADMIN_INITIATED_CONVERSATION = """
 
 EVENT_CREATED = "New event **{event_name}** created."
 
+PING_MESSAGE = "Intercom integration test successful."
+
 USER_CREATED = """
 New user created:
 * **Name**: {name}
@@ -290,6 +292,10 @@ def get_user_unsubscribed_message(payload: WildValue) -> tuple[str, str]:
     return (topic_name, body)
 
 
+def get_ping_message(payload: WildValue) -> tuple[str, str]:
+    return ("Ping", PING_MESSAGE)
+
+
 EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
     "company.created": get_company_created_message,
     "contact.added_email": get_contact_added_email_message,
@@ -308,6 +314,7 @@ EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
     "conversation.user.created": get_conversation_user_created_message,
     "conversation.user.replied": get_conversation_user_replied_message,
     "event.created": get_event_created_message,
+    "ping": get_ping_message,
     "user.created": get_user_created_message,
     "user.deleted": get_user_deleted_message,
     "user.email.updated": get_user_email_updated_message,
@@ -333,8 +340,6 @@ def api_intercom_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     event_type = payload["topic"].tame(check_string)
-    if event_type == "ping":
-        return json_success(request)
 
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
