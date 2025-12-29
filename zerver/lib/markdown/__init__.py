@@ -1399,11 +1399,23 @@ class Tex(markdown.inlinepatterns.Pattern):
             return span
 
 
+def _remove_internal_url_whitespace(url: str) -> str:
+    """
+    Remove internal whitespace characters from URLs (spaces, tabs, newlines, etc.)
+    without touching percent-encoded sequences such as %20.
+    This makes malformed incoming URLs usable while keeping valid ones unchanged.
+    """
+    return re.sub(r"\s+", "", url)
+
+
 def sanitize_url(url: str) -> str | None:
     """
     Sanitize a URL against XSS attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
     """
+    # NEW: remove internal whitespace from malformed URLs
+    url = _remove_internal_url_whitespace(url)
+
     try:
         parts = urlsplit(url.replace(" ", "%20"))
         scheme, netloc, path, query, fragment = parts
