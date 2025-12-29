@@ -41,6 +41,8 @@ import * as util from "./util.ts";
 
 type ServerMessage = RawMessage & {local_id?: string};
 
+const hang_timer = new Map<string, number>();
+
 const send_message_api_response_schema = z.object({
     id: z.number(),
     automatic_new_visibility_policy: z.optional(z.number()),
@@ -103,6 +105,53 @@ export type RawLocalMessage = MessageRequestObject & {
 } & (StreamMessageObject | PrivateMessageObject);
 
 export type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
+
+// This function creates a timer of 15s
+// which runs when a msg is sent, if no ack from server in 15s we show a warning in UI.
+function start_hang_timer(local_id: string): void {
+    const timeout = window.setTimeout(() => {
+        if(echo_state.get_message_waiting_for_ack(local_id) !== undefined){
+            show_msg_hang_warning(local_id);
+        }
+    }, 15000);
+    hang_timer.set(local_id, timeout);
+}
+
+// This function clears a timer of 15s after ack is received from server
+function clear_hang_timer(local_id: string): void {
+    const timer = hang_timer.get(local_id);
+    if(timer !== undefined){
+        clearTimeout(timer);
+        hang_timer.delete(local_id);
+    }
+}
+
+function show_msg_hang_warning(local_id: string): void {
+    const selector = `div[zid="${CSS.escape(local_id)}"]`;
+    const $row = $(selector);
+
+    if($row.length === 0){
+        return;
+    }
+
+    if($row.find(".message_not_received").length > 0){
+        return;
+    }
+
+    $row
+        .find(".message_content")
+        .after("<div class='message_not_received'>Message not received by server</div>")
+}
+
+function clear_msg_hang_warning(local_id: string): void {
+    const selector = `div[zid="${CSS.escape(local_id)}"]`;
+    const $row = $(selector);
+
+    if($row.length === 0){
+        return;
+    }
+    $row.find(".message_not_received").remove();
+}
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
@@ -277,6 +326,7 @@ export function insert_local_message(
         reactions: [],
     };
 
+    start_hang_timer(raw_local_message.local_id);
     raw_local_message.display_recipient = build_display_recipient(raw_local_message);
 
     const [message] = insert_new_messages({
@@ -542,6 +592,8 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
         }
 
         reify_message_id(local_id, message.id);
+        clear_hang_timer(local_id);
+        clear_msg_hang_warning(local_id);
 
         if (message_store.get(message.id)?.failed_request) {
             failed_message_success(message.id);
@@ -616,6 +668,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 }
 
 export let message_send_error = (message_id: number, error_response: string): void => {
+    clear_hang_timer(String(message_id));
     // Error sending message, show inline
     const message = message_store.get(message_id)!;
     message.failed_request = true;

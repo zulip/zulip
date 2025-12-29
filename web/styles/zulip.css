@@ -2510,3 +2510,10 @@ body:not(.spectator-view) {
         right: -2px;
     }
 }
+
+.message_not_received {
+    color: red;
+    font-size: 13px;
+    margin-left: 46px;
+    margin-top: 4px;
+}
