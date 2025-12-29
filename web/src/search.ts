@@ -97,6 +97,24 @@ function focus_search_input_at_end(): void {
     window.getSelection()!.modify("move", "forward", "line");
 }
 
+function convert_search_text_to_terms(shake_pill_if_invalid = true): NarrowTerm[] | undefined {
+    const text_terms = Filter.parse(get_search_bar_text());
+    const narrow_terms: NarrowTerm[] = [];
+    for (const term of text_terms) {
+        const narrow_term = Filter.convert_suggestion_to_term(term);
+        if (narrow_term === undefined) {
+            if (shake_pill_if_invalid) {
+                // The shake animation will show if there is any invalid term in the,
+                // search bar, even if it's not what the user just typed or selected.
+                $("#search_query").addClass("shake");
+            }
+            return undefined;
+        }
+        narrow_terms.push(narrow_term);
+    }
+    return narrow_terms;
+}
+
 function narrow_to_search_contents_with_search_bar_open(): void {
     // We skip validation when we're dealing with partial pills
     // since we don't want to do the shake animation for e.g. "dm:"
@@ -105,10 +123,13 @@ function narrow_to_search_contents_with_search_bar_open(): void {
     if (text_terms.at(-1)?.operand === "") {
         return;
     }
-    if (!validate_text_terms()) {
+
+    let terms = convert_search_text_to_terms() ?? [];
+    terms = [...search_pill.get_current_search_pill_terms(search_pill_widget!), ...terms];
+    if (terms.length === 0) {
         return;
     }
-    const terms = full_search_query_in_terms();
+
     on_narrow_search(terms, {trigger: "search"});
 
     // We want to keep the search bar open here, not show the
@@ -121,17 +142,6 @@ function narrow_to_search_contents_with_search_bar_open(): void {
         search_typeahead.lookup(false);
         search_input_has_changed = true;
     }
-}
-
-function validate_text_terms(): boolean {
-    const text_terms = Filter.parse(get_search_bar_text());
-    // The shake animation will show if there is any invalid term in the,
-    // search bar, even if it's not what the user just typed or selected.
-    if (!text_terms.every((term) => Filter.is_valid_search_term(term))) {
-        $("#search_query").addClass("shake");
-        return false;
-    }
-    return true;
 }
 
 export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
@@ -305,7 +315,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 // from the typeahead. When that's the case, we don't want to call
                 // narrow_or_search_for_term which exits the search bar, since the user
                 // might have more terms to add still.
-                if (!validate_text_terms()) {
+                if (convert_search_text_to_terms() === undefined) {
                     return;
                 }
                 narrow_or_search_for_term({on_narrow_search});
