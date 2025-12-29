@@ -12,7 +12,7 @@ import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import type {NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
@@ -297,7 +297,7 @@ function append_user_pill(
 }
 
 export function set_search_bar_contents(
-    search_terms: NarrowTerm[],
+    search_terms: NarrowTermSuggestion[],
     pill_widget: SearchPillWidget,
     is_typeahead_visible: boolean,
     set_search_bar_text: (text: string) => void,
