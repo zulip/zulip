@@ -8,6 +8,13 @@
     <span class="demo-label">DEMO ORGANIZATION</span>
     {% endif %}
     <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
+    {% if realm.deactivated %}
+    {% if realm.scheduled_deletion_date %}
+        <p class="support-section-header">Scheduled data deletion on {{ realm.scheduled_deletion_date.strftime('%B, %d %Y') }} ⏰</p>
+    {% else %}
+        <p class="support-section-header">No scheduled data deletion date ⛔</p>
+    {% endif %}
+    {% endif %}
     {% if realm.plan_type == SPONSORED_PLAN_TYPE %}
         <p class="support-section-header">On 100% sponsored Zulip Standard Free 🎉</p>
     {% endif %}
