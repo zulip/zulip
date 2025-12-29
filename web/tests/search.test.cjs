@@ -356,6 +356,12 @@ run_test("initiate_search", ({override_rewire}) => {
     assert.equal($("#search_query").text(), "");
 });
 
+run_test("create_item_from_search_string with invalid string", () => {
+    search_pill.create_item_from_search_string("is:invalid");
+    const pills = search.search_pill_widget._get_pills_for_testing();
+    assert.equal(pills.length, 0);
+});
+
 run_test("set_search_bar_contents with duplicate pills", () => {
     const duplicate_attachment_terms = [
         {

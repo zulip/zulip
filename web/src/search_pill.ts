@@ -43,14 +43,16 @@ const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
-    if (!Filter.is_valid_search_term(search_term)) {
-        // This will cause pill validation to fail and trigger a shake animation.
-        return undefined;
+    const potential_narrow_term = Filter.convert_suggestion_to_term(search_term);
+
+    if (potential_narrow_term) {
+        return {
+            type: "generic_operator",
+            ...potential_narrow_term,
+        };
     }
-    return {
-        type: "generic_operator",
-        ...search_term,
-    };
+
+    return undefined;
 }
 
 export function get_search_string_from_item(item: SearchPill): string {
