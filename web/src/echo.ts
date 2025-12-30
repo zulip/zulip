@@ -116,10 +116,10 @@ function start_hang_timer(local_id: string): void {
             show_msg_hang_warning(local_id);
         }
     }, 15000);
+
     hang_timer.set(local_id, timeout);
 }
 
-// This function clears a timer of 15s after ack is received from server
 function clear_hang_timer(local_id: string): void {
     const timer = hang_timer.get(local_id);
     if (timer !== undefined) {
@@ -133,8 +133,14 @@ function show_msg_hang_warning(local_id: string): void {
         return;
     }
 
-    const $row = $(`div[zid="${local_id}"]`);
-    if ($row.length === 0) {
+    const msg_id = Number.parseFloat(local_id);
+    const $row = message_lists.current?.get_row(msg_id);
+
+    if (!$row || $row.length === 0) {
+        return;
+    }
+
+    if ($row.find(".message_not_received").length > 0) {
         return;
     }
 
@@ -151,8 +157,10 @@ function clear_msg_hang_warning(local_id: string): void {
         return;
     }
 
-    const $row = $(`div[zid="${local_id}"]`);
-    if ($row.length === 0) {
+    const msg_id = Number.parseFloat(local_id);
+    const $row = message_lists.current?.get_row(msg_id);
+
+    if (!$row || $row.length === 0) {
         return;
     }
 
