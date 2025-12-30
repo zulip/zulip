@@ -32,6 +32,8 @@ type Media = {
 };
 
 let is_open = false;
+let open_image: ($media: JQuery<HTMLMediaElement | HTMLImageElement>) => void;
+let open_video: ($media: JQuery<HTMLMediaElement | HTMLImageElement>) => void;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
 // being looked up multiple times. It is keyed by the message id with each value being the
@@ -619,6 +621,25 @@ function remove_video_players(): void {
     $("#lightbox_overlay .video-player").html("");
 }
 
+export function handle_inline_media_element_click(
+    e: JQuery.ClickEvent,
+    $media: JQuery<HTMLMediaElement> | JQuery<HTMLImageElement>,
+): void {
+    // prevent the link from opening in a new page.
+    e.preventDefault();
+    // prevent the message compose dialog from happening.
+    e.stopPropagation();
+    let open_media;
+
+    if ($media instanceof HTMLImageElement) {
+        open_media = open_image;
+    } else {
+        open_media = open_video;
+    }
+    set_selected_media_element($media);
+    open_media($media);
+}
+
 // this is a block of events that are required for the lightbox to work.
 export function initialize(): void {
     // Renders the DOM for the lightbox.
@@ -640,30 +661,21 @@ export function initialize(): void {
         }
     };
 
-    const open_image = build_open_media_function(reset_lightbox_state);
-    const open_video = build_open_media_function(undefined);
+    open_image = build_open_media_function(reset_lightbox_state);
+    open_video = build_open_media_function(undefined);
 
     $("#main_div, #compose .preview_content").on(
         "click",
         ".message-media-inline-image a, .message-media-preview-image:not(.message_inline_video) a, .message_inline_animated_image_still",
         function (e) {
-            // prevent the link from opening in a new page.
-            e.preventDefault();
-            // prevent the message compose dialog from happening.
-            e.stopPropagation();
             const $img = $(this).find<HTMLImageElement>("img");
-            set_selected_media_element($img);
-            open_image($img);
+            handle_inline_media_element_click(e, $img);
         },
     );
 
     $("#main_div, #compose .preview_content").on("click", ".message_inline_video", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
         const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
-        set_selected_media_element($video);
-        open_video($video);
+        handle_inline_media_element_click(e, $video);
     });
 
     $("#lightbox_overlay .download").on("click", function () {
