@@ -75,6 +75,7 @@ from zerver.views.invite import (
     revoke_multiuse_invite,
     revoke_user_invite,
 )
+from zerver.views.message_count import get_message_count_backend
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -432,6 +433,10 @@ v1_api_and_json_patterns = [
             # Not documented since the API details haven't been finalized yet.
             {"intentionally_undocumented"},
         ),
+    ),
+    rest_path(
+        "messages/count",
+        GET=(get_message_count_backend, {"allow_anonymous_user_web"}),
     ),
     rest_path("messages/render", POST=render_message_backend),
     rest_path("messages/flags", POST=update_message_flags),

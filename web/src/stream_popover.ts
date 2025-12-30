@@ -13,6 +13,7 @@ import render_left_sidebar_stream_actions_popover from "../templates/popovers/le
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as browser_history from "./browser_history.ts";
+import * as channel from "./channel.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
@@ -955,73 +956,6 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
-    // The following logic is correct only when
-    // both message_lists.current.data.fetch_status.has_found_newest
-    // and message_lists.current.data.fetch_status.has_found_oldest are true;
-    // otherwise, we cannot be certain of the correct count.
-    function get_count_of_messages_to_be_moved(
-        selected_option: string,
-        message_id?: number,
-    ): number {
-        if (selected_option === "change_one") {
-            return 1;
-        }
-        if (selected_option === "change_later" && message_id !== undefined) {
-            return message_util.get_count_of_messages_in_topic_sent_after_current_message(
-                current_stream_id,
-                topic_name,
-                message_id,
-            );
-        }
-        return message_util.get_loaded_messages_in_topic(current_stream_id, topic_name).length;
-    }
-
-    function update_move_messages_count_text(selected_option: string, message_id?: number): void {
-        const message_move_count = get_count_of_messages_to_be_moved(selected_option, message_id);
-        const is_topic_narrowed = narrow_state.narrowed_by_topic_reply();
-        const is_stream_narrowed = narrow_state.narrowed_by_stream_reply();
-        const is_same_stream = narrow_state.stream_id() === current_stream_id;
-        const is_same_topic = narrow_state.topic() === topic_name;
-
-        const can_have_exact_count_in_narrow =
-            (is_stream_narrowed && is_same_stream) ||
-            (is_topic_narrowed && is_same_stream && is_same_topic);
-        let exact_message_count = false;
-        if (selected_option === "change_one") {
-            exact_message_count = true;
-        } else if (can_have_exact_count_in_narrow) {
-            const has_found_newest = message_lists.current?.data.fetch_status.has_found_newest();
-            const has_found_oldest = message_lists.current?.data.fetch_status.has_found_oldest();
-
-            if (selected_option === "change_later" && has_found_newest) {
-                exact_message_count = true;
-            }
-            if (selected_option === "change_all" && has_found_newest && has_found_oldest) {
-                exact_message_count = true;
-            }
-        }
-
-        let message_text;
-        if (exact_message_count) {
-            message_text = $t(
-                {
-                    defaultMessage:
-                        "{count, plural, one {# message} other {# messages}} will be moved.",
-                },
-                {count: message_move_count},
-            );
-        } else {
-            message_text = $t(
-                {
-                    defaultMessage:
-                        "At least {count, plural, one {# message} other {# messages}} will be moved.",
-                },
-                {count: message_move_count},
-            );
-        }
-
-        $("#move_messages_count").text(message_text);
-    }
 
     function update_topic_input_placeholder(): void {
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
@@ -1166,7 +1100,7 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
         $topic_input.on("input", () => {
             assert(stream_widget_value !== undefined);
-            update_submit_button_disabled_state(stream_widget_value);
+            update_submit_button_disabled_state(stream_widget_value!);
             maybe_show_topic_already_exists_warning();
             update_topic_input_placeholder();
         });
@@ -1174,7 +1108,12 @@ export async function build_move_topic_to_stream_popover(
         update_topic_input_placeholder();
 
         if (!args.from_message_actions_popover) {
-            update_move_messages_count_text("change_all");
+            update_move_messages_count_text(
+                $("#move_messages_count"),
+                "change_all",
+                current_stream_id,
+                topic_name,
+            );
         } else {
             // Generate unique key for this conversation
             const conversation_key = `${current_stream_id}_${topic_name}`;
@@ -1191,14 +1130,26 @@ export async function build_move_topic_to_stream_popover(
                 $("#message_move_select_options").val(selected_option);
             }
 
-            update_move_messages_count_text(selected_option, message?.id);
+            update_move_messages_count_text(
+                $("#move_messages_count"),
+                selected_option,
+                current_stream_id,
+                topic_name,
+                message?.["id"],
+            );
 
             $("#message_move_select_options").on("change", function () {
                 selected_option = String($(this).val());
                 last_propagate_mode_for_conversation.set(conversation_key, selected_option);
                 void warn_unsubscribed_participants(selected_option);
                 maybe_show_topic_already_exists_warning();
-                update_move_messages_count_text(selected_option, message?.id);
+                update_move_messages_count_text(
+                    $("#move_messages_count"),
+                    selected_option,
+                    current_stream_id,
+                    topic_name,
+                    message?.["id"],
+                );
             });
         }
         disable_topic_input_if_topics_are_disabled_in_channel(current_stream_id);
@@ -1223,6 +1174,87 @@ export async function build_move_topic_to_stream_popover(
             move_topic_to_stream_topic_typeahead = undefined;
         },
         post_render: move_topic_post_render,
+    });
+}
+
+export function get_count_of_messages_to_be_moved(
+    selected_option: string,
+    current_stream_id: number,
+    topic_name: string,
+    message_id?: number,
+): number {
+    if (selected_option === "change_one") {
+        return 1;
+    }
+    if (selected_option === "change_later" && message_id !== undefined) {
+        return message_util.get_count_of_messages_in_topic_sent_after_current_message(
+            current_stream_id,
+            topic_name,
+            message_id,
+        );
+    }
+    return message_util.get_loaded_messages_in_topic(current_stream_id, topic_name).length;
+}
+
+export function update_move_messages_count_text(
+    $count_element: any,
+    selected_option: string,
+    current_stream_id: number,
+    topic_name: string,
+    message_id?: number,
+): void {
+    if (selected_option === "change_one") {
+        $count_element.text($t({defaultMessage: "1 message will be moved."}));
+        return;
+    }
+
+    $count_element.text($t({defaultMessage: "Calculating…"}));
+
+    const narrow = [
+        {operator: "channel", operand: current_stream_id},
+        {operator: "topic", operand: topic_name},
+    ];
+
+    const data: Record<string, string | number | boolean> = {
+        narrow: JSON.stringify(narrow),
+    };
+
+    if (selected_option === "change_later" && message_id !== undefined) {
+        data["anchor"] = message_id;
+        data["include_anchor"] = true;
+    }
+
+    void channel.get({
+        url: "/json/messages/count",
+        data,
+        success(response) {
+            const {count} = z.object({count: z.number()}).parse(response);
+            const message_text = $t(
+                {
+                    defaultMessage: "{count, plural, one {# message} other {# messages}} will be moved.",
+                },
+                {count},
+            );
+            $count_element.text(message_text);
+        },
+        error() {
+            // Fallback to local estimate if server call fails
+            const message_move_count = get_count_of_messages_to_be_moved(
+                selected_option,
+                current_stream_id,
+                topic_name,
+                message_id,
+            );
+            $count_element.text(
+                $t(
+                    {
+                        defaultMessage:
+                            "At least {count, plural, one {# message} other {# messages}} will be moved.",
+                    },
+                    {count: message_move_count},
+                ),
+            );
+        },
     });
 }
 

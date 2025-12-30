@@ -918,8 +918,7 @@ ul.popover-group-menu-member-list {
     }
 
     #move_messages_count {
-        /* Disabled pending fixes to the logic. */
-        display: none;
+        margin: 5px 0 10px;
     }
 
     .topic_stream_edit_header {
