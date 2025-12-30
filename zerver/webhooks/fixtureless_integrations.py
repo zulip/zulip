@@ -63,6 +63,11 @@ class ScreenshotContent(TypedDict):
     content: str
 
 
+class ThreadMessage(TypedDict):
+    sender: str
+    content: str
+
+
 ASANA = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"{BO_NAME} created a new task **[{TASK_TITLE}]()**.\n> {TASK_DESCRIPTION}",
@@ -207,3 +212,76 @@ TRAC = ScreenshotContent(
 
 status: **new** => **closed**, resolution: => **fixed**""",
 )
+
+ERRBOT = ScreenshotContent(topic="errbot", content="Errbot message")
+
+GITHUB_DETAIL = ScreenshotContent(topic="github", content="GitHub message")
+
+HUBOT = ScreenshotContent(topic="hubot", content="Hubot message")
+
+IRC = ScreenshotContent(topic="irc", content="IRC message")
+
+MATRIX = ScreenshotContent(topic="matrix", content="Matrix message")
+
+XKCD = ScreenshotContent(topic="xkcd", content="XKCD message")
+
+
+ERRBOT_MESSAGES: list[ThreadMessage] = [
+    {"sender": "Verona", "content": "@**Errbot** help"},
+    {"sender": "Errbot", "content": "I am a bot. I can help you with ..."},
+    {"sender": "Verona", "content": "Can you list available commands?"},
+    {"sender": "Errbot", "content": "Sure! Try `!status`, `!deploy`, or `!help <command>`."},
+]
+
+GITHUB_DETAIL_MESSAGES: list[ThreadMessage] = [
+    {"sender": "Verona", "content": "check out #123"},
+    {
+        "sender": "GitHub Detail Bot",
+        "content": "**Issue #123: Feature request**\nStatus: Open\n...",
+    },
+    {"sender": "Verona", "content": "Is anyone assigned to this issue?"},
+    {
+        "sender": "GitHub Detail Bot",
+        "content": "Assignee: @octocat\nLast updated: 2 days ago.",
+    },
+]
+
+HUBOT_MESSAGES: list[ThreadMessage] = [
+    {"sender": "Verona", "content": "hubot help"},
+    {"sender": "Hubot", "content": "I am a bot. I can help you with ..."},
+    {"sender": "Verona", "content": "Can you deploy staging?"},
+    {"sender": "Hubot", "content": "Deploying to staging now. I’ll update once it’s done."},
+]
+
+IRC_MESSAGES: list[ThreadMessage] = [
+    {"sender": "Verona", "content": "Hello from Zulip"},
+    {"sender": "IRC Bot", "content": "**<irc_user>** Hello from IRC"},
+    {"sender": "Verona", "content": "How’s the discussion going there?"},
+    {
+        "sender": "IRC Bot",
+        "content": "**<irc_user>** We’re discussing the release timeline.",
+    },
+]
+
+MATRIX_MESSAGES: list[ThreadMessage] = [
+    {"sender": "Verona", "content": "Hello from Zulip"},
+    {"sender": "Matrix Bot", "content": "**<matrix_user>** Hello from Matrix"},
+    {"sender": "Verona", "content": "Any updates from your side?"},
+    {
+        "sender": "Matrix Bot",
+        "content": "**<matrix_user>** The sync is complete. Everything looks good.",
+    },
+]
+
+XKCD_MESSAGES: list[ThreadMessage] = [
+    {"sender": "Verona", "content": "@**xkcd** get 353"},
+    {
+        "sender": "xkcd",
+        "content": "[Python](https://imgs.xkcd.com/comics/python.png)",
+    },
+    {"sender": "Verona", "content": "Classic 😄 what’s the title?"},
+    {
+        "sender": "xkcd",
+        "content": "**Title:** Python\n**Alt text:** I wrote 20 short programs in Python yesterday...",
+    },
+]

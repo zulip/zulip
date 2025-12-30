@@ -87,6 +87,12 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "rss",
     "svn",
     "trac",
+    "errbot",
+    "github_detail",
+    "hubot",
+    "irc",
+    "matrix",
+    "xkcd",
 ]
 FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[fixtureless_integrations.ScreenshotContent]] = {
     key: [getattr(fixtureless_integrations, key.upper().replace("-", "_"))]
@@ -117,6 +123,7 @@ class FixturelessScreenshotConfigOptions:
     image_name: str = "001.png"
     image_dir: str | None = None
     bot_name: str | None = None
+    thread_messages: list[dict[str, Any]] | None = None
 
 
 @dataclass
@@ -127,6 +134,7 @@ class FixturelessScreenshotConfig:
     image_name: str = "001.png"
     image_dir: str | None = None
     bot_name: str | None = None
+    thread_messages: list[dict[str, Any]] | None = None
 
 
 def get_screenshot_configs(
@@ -1023,14 +1031,32 @@ PLUGIN_INTEGRATIONS: list[Integration] = [
 
 # Each of these integrations have their own Zulip repository in GitHub.
 STANDALONE_REPO_INTEGRATIONS: list[Integration] = [
-    Integration("errbot", ["meta-integration", "bots"]),
+    Integration(
+        "errbot",
+        ["meta-integration", "bots"],
+        [
+            FixturelessScreenshotConfigOptions(
+                thread_messages=fixtureless_integrations.ERRBOT_MESSAGES,
+                channel="errbot",
+            )
+        ],
+    ),
     Integration(
         "github-actions",
         ["continuous-integration"],
         [FixturelessScreenshotConfigOptions(channel="github-actions updates")],
         display_name="GitHub Actions",
     ),
-    Integration("hubot", ["meta-integration", "bots"]),
+    Integration(
+        "hubot",
+        ["meta-integration", "bots"],
+        [
+            FixturelessScreenshotConfigOptions(
+                thread_messages=fixtureless_integrations.HUBOT_MESSAGES,
+                channel="hubot",
+            )
+        ],
+    ),
     Integration("puppet", ["deployment"]),
     Integration("redmine", ["project-management"]),
 ]
@@ -1061,7 +1087,16 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         directory_name="google",
     ),
     PythonAPIIntegration(
-        "irc", ["communication"], display_name="IRC", directory_name="bridge_with_irc"
+        "irc",
+        ["communication"],
+        [
+            FixturelessScreenshotConfigOptions(
+                thread_messages=fixtureless_integrations.IRC_MESSAGES,
+                channel="irc",
+            )
+        ],
+        display_name="IRC",
+        directory_name="bridge_with_irc",
     ),
     PythonAPIIntegration(
         "jira-plugin",
@@ -1073,7 +1108,17 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         directory_name="jira",
         legacy=True,
     ),
-    PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
+    PythonAPIIntegration(
+        "matrix",
+        ["communication"],
+        [
+            FixturelessScreenshotConfigOptions(
+                thread_messages=fixtureless_integrations.MATRIX_MESSAGES,
+                channel="matrix",
+            )
+        ],
+        directory_name="bridge_with_matrix",
+    ),
     PythonAPIIntegration(
         "mercurial",
         ["version-control"],
@@ -1095,8 +1140,28 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
 ]
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
-    BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
-    BotIntegration("xkcd", ["bots", "entertainment"], display_name="xkcd"),
+    BotIntegration(
+        "github_detail",
+        ["version-control", "bots"],
+        [
+            FixturelessScreenshotConfigOptions(
+                thread_messages=fixtureless_integrations.GITHUB_DETAIL_MESSAGES,
+                channel="github",
+            )
+        ],
+        display_name="GitHub Detail",
+    ),
+    BotIntegration(
+        "xkcd",
+        ["bots", "entertainment"],
+        [
+            FixturelessScreenshotConfigOptions(
+                thread_messages=fixtureless_integrations.XKCD_MESSAGES,
+                channel="xkcd",
+            )
+        ],
+        display_name="xkcd",
+    ),
 ]
 
 HUBOT_INTEGRATIONS: list[HubotIntegration] = [
@@ -1143,15 +1208,6 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # Integrations that call external API endpoints.
     | {"slack"}
     # Integrations that require screenshots of message threads - support is yet to be added
-    | {
-        "errbot",
-        "github_detail",
-        "hubot",
-        "irc",
-        # Also requires a screenshot on the Matrix side of the bridge
-        "matrix",
-        "xkcd",
-    }
     | hubot_integration_names
 )
 
