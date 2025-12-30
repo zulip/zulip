@@ -381,6 +381,10 @@ function bot_info(bot_user_id: number): BotInfo {
 
     const is_bot_owner = owner_id === current_user.user_id;
     const can_modify_bot = current_user.is_admin || is_bot_owner;
+    const is_system_bot = bot_user.is_system_bot ?? false;
+
+    const cannot_edit = is_system_bot && current_user.is_admin;
+    const cannot_deactivate = is_system_bot && current_user.is_admin;
 
     return {
         is_bot: true,
@@ -397,8 +401,8 @@ function bot_info(bot_user_id: number): BotInfo {
         no_owner: !owner_full_name,
         is_current_user: false,
         can_modify: can_modify_bot,
-        cannot_deactivate: (bot_user.is_system_bot ?? false) || !can_modify_bot,
-        cannot_edit: (bot_user.is_system_bot ?? false) || !can_modify_bot,
+        cannot_deactivate,
+        cannot_edit,
         // It's always safe to show the real email addresses for bot users
         display_email: bot_user.email,
         ...(owner_id
@@ -416,6 +420,36 @@ function bot_info(bot_user_id: number): BotInfo {
         show_generate_integration_url_button:
             can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
     };
+}
+
+function should_show_actions_column(bot_user_ids: number[]): boolean {
+    for (const bot_user_id of bot_user_ids) {
+        const bot_user = people.get_by_user_id(bot_user_id);
+        if (!bot_user.is_bot) {
+            continue;
+        }
+
+        const owner_id = bot_user.bot_owner_id;
+        const is_bot_owner = owner_id === current_user.user_id;
+        const can_modify_bot = current_user.is_admin || is_bot_owner;
+        const is_system_bot = bot_user.is_system_bot ?? false;
+
+        const has_download_button = is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE;
+        const has_integration_url_button =
+            can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE;
+        const has_edit_button = can_modify_bot || (is_system_bot && current_user.is_admin);
+        const has_deactivate_button = can_modify_bot || (is_system_bot && current_user.is_admin);
+
+        if (
+            has_download_button ||
+            has_integration_url_button ||
+            has_edit_button ||
+            has_deactivate_button
+        ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function handle_bot_deactivation($tbody: JQuery): void {
@@ -578,10 +612,14 @@ function create_all_bots_table(): void {
     $all_bots_table.hide();
     const bot_user_ids = people.get_bot_ids();
 
+    const show_actions = should_show_actions_column(bot_user_ids);
+
     all_bots_section.list_widget = ListWidget.create($all_bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html(item) {
+            return render_settings_user_list_row({...item, show_actions_column: show_actions});
+        },
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
@@ -591,7 +629,15 @@ function create_all_bots_table(): void {
                 const $search_input = $("#admin-all-bots-list .search");
                 return are_filters_active(all_bots_section.filters, $search_input);
             },
-            onupdate: reset_scrollbar($all_bots_table),
+            onupdate() {
+                const current_list = all_bots_section.list_widget?.get_current_list() ?? [];
+                const filtered_ids = current_list.map((item) => item.user_id);
+                const show_actions_filtered = should_show_actions_column(filtered_ids);
+
+                $("#admin-all-bots-list .actions-header").toggle(show_actions_filtered);
+
+                reset_scrollbar($all_bots_table)();
+            },
         },
         $parent_container: $("#admin-all-bots-list").expectOne(),
         init_sort: "full_name_alphabetic",
@@ -605,6 +651,8 @@ function create_all_bots_table(): void {
     });
     settings_users.set_text_search_value($all_bots_table, all_bots_section.filters.text_search);
 
+    $("#admin-all-bots-list .actions-header").toggle(show_actions);
+
     loading.destroy_indicator($("#admin_page_all_bots_loading_indicator"));
     $all_bots_table.show();
 }
@@ -616,10 +664,15 @@ function create_your_bots_table(): void {
     const $your_bots_table = $("#admin_your_bots_table");
     $your_bots_table.hide();
     const bot_user_ids = bot_data.get_all_bots_ids_for_current_user();
+
+    const show_actions = should_show_actions_column(bot_user_ids);
+
     your_bots_section.list_widget = ListWidget.create($your_bots_table, bot_user_ids, {
         name: "admin_your_bot_list",
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html(item) {
+            return render_settings_user_list_row({...item, show_actions_column: show_actions});
+        },
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
@@ -629,7 +682,15 @@ function create_your_bots_table(): void {
                 const $search_input = $("#admin-your-bots-list .search");
                 return are_filters_active(your_bots_section.filters, $search_input);
             },
-            onupdate: reset_scrollbar($your_bots_table),
+            onupdate() {
+                const current_list = your_bots_section.list_widget?.get_current_list() ?? [];
+                const filtered_ids = current_list.map((item) => item.user_id);
+                const show_actions_filtered = should_show_actions_column(filtered_ids);
+
+                $("#admin-your-bots-list .actions-header").toggle(show_actions_filtered);
+
+                reset_scrollbar($your_bots_table)();
+            },
         },
         $parent_container: $("#admin-your-bots-list").expectOne(),
         init_sort: "full_name_alphabetic",
@@ -642,6 +703,8 @@ function create_your_bots_table(): void {
         $simplebar_container: $("#admin-your-bots-list .progressive-table-wrapper"),
     });
     settings_users.set_text_search_value($your_bots_table, your_bots_section.filters.text_search);
+
+    $("#admin-your-bots-list .actions-header").toggle(show_actions);
 
     loading.destroy_indicator($("#admin_page_your_bots_loading_indicator"));
     $your_bots_table.show();
