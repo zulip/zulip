@@ -168,6 +168,14 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
         self.check_webhook("issue_comment", expected_topic_name, expected_message)
 
+    def test_issue_edited_compact(self) -> None:
+        self.url = self.build_webhook_url(compact_edit="true")
+        expected_topic_name = "test-repo / issue #1 hello bug"
+        expected_message = (
+            "Pritesh-30 edited [issue #1](https://github.com/Pritesh-30/test-repo/issues/1)."
+        )
+        self.check_webhook("issues__edited", expected_topic_name, expected_message)
+
     def test_issue_comment_pull_request_comment_msg(self) -> None:
         expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/public-repo/pull/1#issuecomment-1631445420) on [PR #1](https://github.com/sbansal1999/public-repo/pull/1):\n\n~~~ quote\nSome comment\n~~~"
         self.check_webhook("issue_comment__pull_request_comment", TOPIC_PR, expected_message)

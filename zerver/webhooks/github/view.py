@@ -63,15 +63,19 @@ class Helper:
         payload: WildValue,
         include_title: bool,
         include_repository_name: bool,
+        compact_edit: bool,
     ) -> None:
         self.request = request
         self.payload = payload
         self.include_title = include_title
         self.include_repository_name = include_repository_name
+        self.compact_edit = compact_edit
 
     def log_unsupported(self, event: str) -> None:
-        summary = f"The '{event}' event isn't currently supported by the GitHub webhook; ignoring"
-        log_unsupported_webhook_event(request=self.request, summary=summary)
+        event_message = (
+            f"The '{event}' event isn't currently supported by the GitHub webhook; ignoring"
+        )
+        log_unsupported_webhook_event(self.request, event_message)
 
 
 def get_opened_or_update_pull_request_body(helper: Helper) -> str:
@@ -170,16 +174,17 @@ def get_issue_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
+    message_content = issue["body"].tame(check_none_or(check_string))
+    if action in ("assigned", "unassigned"):
+        message_content = None
+    if action == "edited" and helper.compact_edit:
+        message_content = None
     return get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
-        message=(
-            None
-            if action in ("assigned", "unassigned")
-            else issue["body"].tame(check_none_or(check_string))
-        ),
+        message=message_content,
         title=issue["title"].tame(check_string) if include_title else None,
         assignee_updated=(
             payload["assignee"]["login"].tame(check_string) if "assignee" in payload else None
@@ -1018,6 +1023,7 @@ def api_github_webhook(
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
+    compact_edit: Json[bool] = False,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1062,6 +1068,7 @@ def api_github_webhook(
         payload=payload,
         include_title=user_specified_topic is not None,
         include_repository_name=include_repository_name,
+        compact_edit=compact_edit,
     )
     body = body_function(helper)
 
