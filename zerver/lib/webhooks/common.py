@@ -16,6 +16,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json
 from typing_extensions import override
 
+from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -30,7 +31,10 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
+from zerver.lib.streams import access_stream_by_name
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import Realm, UserProfile
 from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
@@ -378,3 +382,58 @@ def guess_zulip_user_from_external_account(
         return matching_user.user_profile
     except (CustomProfileFieldValue.DoesNotExist, CustomProfileFieldValue.MultipleObjectsReturned):
         return None
+
+
+def check_topic_rename(
+    user_profile: UserProfile,
+    stream_name: str,
+    old_topic: str,
+    new_topic: str,
+) -> bool:
+    try:
+        stream, _ = access_stream_by_name(user_profile, stream_name)
+    except JsonableError:
+        return False
+
+    assert stream.recipient_id is not None
+
+    last_message = (
+        messages_for_topic(
+            realm_id=user_profile.realm_id,
+            stream_recipient_id=stream.recipient_id,
+            topic_name=old_topic,
+        )
+        .order_by("-date_sent")
+        .first()
+    )
+
+    if last_message is None:
+        return False
+
+    edit_request = StreamMessageEditRequest(
+        target_topic_name=new_topic,
+        propagate_mode="change_all",
+        is_topic_edited=True,
+        is_content_edited=False,
+        is_stream_edited=False,
+        is_message_moved=True,
+        topic_resolved=False,
+        topic_unresolved=False,
+        content=last_message.content,
+        target_stream=stream,
+        orig_content=last_message.content,
+        orig_topic_name=old_topic,
+        orig_stream=stream,
+    )
+
+    do_update_message(
+        user_profile=user_profile,
+        target_message=last_message,
+        message_edit_request=edit_request,
+        send_notification_to_old_thread=False,
+        send_notification_to_new_thread=False,
+        rendering_result=None,
+        prior_mention_user_ids=set(),
+    )
+
+    return True

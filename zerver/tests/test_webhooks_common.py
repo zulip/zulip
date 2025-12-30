@@ -23,6 +23,7 @@ from zerver.lib.webhooks.common import (
     MissingHTTPEventHeaderError,
     call_fixture_to_headers,
     check_send_webhook_message,
+    check_topic_rename,
     get_event_header,
     guess_zulip_user_from_external_account,
     standardize_headers,
@@ -275,6 +276,61 @@ class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
             external_username_case_insensitive=True,
         )
         self.assertEqual(result, self.hamlet)
+
+
+class TopicRenameTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.realm = get_realm("zulip")
+        self.user_profile = get_user("webhook-bot@zulip.com", self.realm)
+        self.stream_name = "webhook-rename-test"
+        self.make_stream(self.stream_name)
+        self.subscribe(self.user_profile, self.stream_name)
+
+    def test_topic_rename_success(self) -> None:
+        old_topic = "Old Topic"
+        new_topic = "New Topic"
+
+        self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=old_topic, content="Test message"
+        )
+
+        with patch("zerver.lib.webhooks.common.do_update_message") as mock_update:
+            check_topic_rename(self.user_profile, self.stream_name, old_topic, new_topic)
+
+            mock_update.assert_called_once()
+            kwargs = mock_update.call_args[1]
+            request = kwargs["message_edit_request"]
+            self.assertEqual(request.target_topic_name, new_topic)
+            self.assertEqual(request.propagate_mode, "change_all")
+
+    def test_topic_rename_failure_cases(self) -> None:
+        cases = [
+            ("NonExistentStream", "Old"),
+            (self.stream_name, "Ghost Topic"),
+        ]
+
+        for stream, topic in cases:
+            with patch("zerver.lib.webhooks.common.do_update_message") as mock_update:
+                check_topic_rename(self.user_profile, stream, topic, "New")
+                mock_update.assert_not_called()
+
+    def test_topic_rename_multiple_messages(self) -> None:
+        old_topic = "Topic To Move"
+        new_topic = "Moved Topic"
+
+        msg_ids = [
+            self.send_stream_message(
+                self.user_profile, self.stream_name, topic_name=old_topic, content=f"Msg {i}"
+            )
+            for i in range(3)
+        ]
+
+        check_topic_rename(self.user_profile, self.stream_name, old_topic, new_topic)
+
+        messages = Message.objects.filter(id__in=msg_ids)
+        self.assertTrue(all(message.topic_name() == new_topic for message in messages))
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):
