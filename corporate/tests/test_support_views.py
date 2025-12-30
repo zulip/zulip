@@ -1884,15 +1884,24 @@ class TestSupportEndpoint(ZulipTestCase):
         self.login("iago")
 
         result = self.client_post(
-            "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"}
+            "/activity/support",
+            {
+                "realm_id": f"{lear_realm.id}",
+                "new_subdomain": "new-name",
+                "add_redirect_url": "true",
+            },
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/activity/support?q=new-name")
         realm_id = lear_realm.id
         lear_realm = get_realm("new-name")
         self.assertEqual(lear_realm.id, realm_id)
+
+        # Old subdomain redirects to new subdomain
         self.assertTrue(Realm.objects.filter(string_id="lear").exists())
         self.assertTrue(Realm.objects.filter(string_id="lear")[0].deactivated)
+        result = self.client_get("/activity/support?q=lear")
+        self.assert_in_success_response(["Placeholder realm", "Redirects to", "new-name"], result)
 
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"}
@@ -1922,6 +1931,24 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assert_in_success_response(
             ["Subdomain reserved. Please choose a different one."], result
         )
+
+        # Test not adding a redirect
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-lear"}
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/activity/support?q=new-lear")
+        realm_id = lear_realm.id
+        lear_realm = get_realm("new-lear")
+        self.assertEqual(lear_realm.id, realm_id)
+
+        # Realm on previous subdomain does not exist
+        self.assertFalse(Realm.objects.filter(string_id="new-name").exists())
+
+        # Original subdomain exists and redirects to new subdomain
+        self.assertTrue(Realm.objects.filter(string_id="lear").exists())
+        result = self.client_get("/activity/support?q=lear")
+        self.assert_in_success_response(["Placeholder realm", "Redirects to", "new-lear"], result)
 
     def test_modify_plan_for_downgrade_at_end_of_billing_cycle(self) -> None:
         realm = get_realm("zulip")
