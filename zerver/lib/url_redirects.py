@@ -7,6 +7,13 @@ class URLRedirect:
     new_url: str
 
 
+# If redirecting to the help center, we no longer test the old URL
+# in the backend test suite, so it should be added to this list
+# even if it was originally in the API or policies documentation.
+REDIRECTED_TO_HELP_DOCUMENTATION: list[URLRedirect] = [
+    URLRedirect("/api/outgoing-webhooks", "/help/outgoing-webhooks"),
+]
+
 API_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     # Add URL redirects for REST API documentation here:
     URLRedirect("/api/delete-stream", "/api/archive-stream"),
@@ -35,7 +42,9 @@ LANDING_PAGE_REDIRECTS = [
     URLRedirect("/try-zulip/", "https://chat.zulip.org/?show_try_zulip_modal"),
 ]
 
-DOCUMENTATION_REDIRECTS = API_DOCUMENTATION_REDIRECTS + POLICY_DOCUMENTATION_REDIRECTS
+DOCUMENTATION_REDIRECTS = (
+    API_DOCUMENTATION_REDIRECTS + POLICY_DOCUMENTATION_REDIRECTS + REDIRECTED_TO_HELP_DOCUMENTATION
+)
 
 # List of category slugs at the time of changing the URL scheme to have
 # `/category` be appended before the category slug. This list does not

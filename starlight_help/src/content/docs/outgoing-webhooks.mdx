@@ -1,7 +1,14 @@
-# Outgoing webhooks
+---
+title: Outgoing webhooks
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
 
 Outgoing webhooks allow you to build or set up Zulip integrations
-which are notified when certain types of messages are sent in Zulip
+which are notified when certain types of messages are sent in Zulip.
 When one of those events is [triggered](#triggering), the Zulip server
 will send an HTTP POST [payload](/api/outgoing-webhook-payload) to the
 webhook's configured URL.
@@ -12,34 +19,31 @@ is built on top of this API.
 
 ## Create an outgoing webhook bot user
 
-{start_tabs}
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/your-bots" />
 
-{tab|desktop-web}
-
-{settings_tab|your-bots}
-
-1. Click **Add a new bot**.
-
-1. Set **Bot type** to **Outgoing webhook**.
-
-1. Fill out the fields, with **Endpoint URL** set to the URL you'd like
-   Zulip to post to, and the outgoing webhook [format](/api/outgoing-webhook-payload)
-   you plan on using.
-
-1. Click **Add**.
-
-{end_tabs}
+      1. Click **Add a new bot**.
+      1. Set **Bot type** to **Outgoing webhook**.
+      1. Fill out the fields, with **Endpoint URL** set to the URL you'd like
+         Zulip to post to, and the outgoing webhook [format](/api/outgoing-webhook-payload)
+         you plan on using.
+      1. Click **Add**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
 
 ## Triggering
 
 There are currently two ways to trigger an outgoing webhook:
 
-*  **@-mention** the bot user in a channel.  If the bot
-   [replies](#replying-with-a-message), its reply will be sent to that
-   channel and topic.
-*  **Send a direct message** with the bot user as one of the recipients.
-    If the bot [replies](#replying-with-a-message), its reply will be
-    sent to that direct message conversation.
+* **@-mention** the bot user in a channel.  If the bot
+  [replies](#replying-with-a-message), its reply will be sent to that
+  channel and topic.
+* **Send a direct message** with the bot user as one of the recipients.
+  If the bot [replies](#replying-with-a-message), its reply will be
+  sent to that direct message conversation.
 
 ## Timeouts
 

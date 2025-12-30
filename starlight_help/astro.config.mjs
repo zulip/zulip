@@ -667,6 +667,7 @@ export default defineConfig({
                         },
                         "view-your-bots",
                         "view-all-bots-in-your-organization",
+                        "outgoing-webhooks",
                     ],
                 },
                 {
