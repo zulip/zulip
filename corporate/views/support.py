@@ -450,11 +450,6 @@ def support(
     acting_user = request.user
     assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
-        # We check that request.POST only has two keys in it: The
-        # realm_id and a field to change.
-        keys = set(request.POST.keys())
-        keys.discard("csrfmiddlewaretoken")
-
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
