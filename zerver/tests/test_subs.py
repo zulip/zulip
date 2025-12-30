@@ -4041,7 +4041,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(44),
+            self.assert_database_query_count(45),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -4950,7 +4950,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(45):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[0]],
@@ -4958,7 +4958,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(53):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
@@ -4970,7 +4970,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(56):
+        with self.assert_database_query_count(58):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[2]],
