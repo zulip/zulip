@@ -153,7 +153,13 @@ function clear_msg_hang_warning(local_id: string): void {
     if ($row.length === 0) {
         return;
     }
-    $row.children(".message_not_received").remove();
+
+    const $warning = $row.children().filter(".message_not_received");
+    if ($warning.length === 0) {
+        return;
+    }
+
+    $warning.remove();
 }
 
 // These retry spinner functions return true if and only if the
