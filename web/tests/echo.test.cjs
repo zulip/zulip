@@ -495,6 +495,9 @@ run_test("message_hang_warning cleared on late ack", ({override}) => {
 
     assert.equal($(".message_not_received").length, 1);
 
+    const $warning = $("<div>").addClass("message_not_received");
+    $row.set_children_results(".message_not_received", $warning);
+
     echo.process_from_server([
         {
             local_id,
