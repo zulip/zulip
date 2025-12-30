@@ -43,6 +43,7 @@ import * as util from "./util.ts";
 type ServerMessage = RawMessage & {local_id?: string};
 
 const hang_timer = new Map<string, number>();
+const messages_with_hang_warning = new Set<string>();
 
 const send_message_api_response_schema = z.object({
     id: z.number(),
@@ -128,14 +129,12 @@ function clear_hang_timer(local_id: string): void {
 }
 
 function show_msg_hang_warning(local_id: string): void {
-    const selector = `div[zid="${local_id}"]`;
-    const $row = $(selector);
-
-    if ($row.length === 0) {
+    if (messages_with_hang_warning.has(local_id)) {
         return;
     }
 
-    if ($row.find(".message_not_received").length > 0) {
+    const $row = $(`div[zid="${local_id}"]`);
+    if ($row.length === 0) {
         return;
     }
 
@@ -144,22 +143,21 @@ function show_msg_hang_warning(local_id: string): void {
         .text($t({defaultMessage: "Message not received by server"}));
 
     $row.find(".message_content").after($warning);
+    messages_with_hang_warning.add(local_id);
 }
 
 function clear_msg_hang_warning(local_id: string): void {
-    // If we never set a hang timer, a hang warning cannot exist.
-    if (!hang_timer.has(local_id)) {
+    if (!messages_with_hang_warning.has(local_id)) {
         return;
     }
 
-    const selector = `div[zid="${local_id}"]`;
-    const $row = $(selector);
-
+    const $row = $(`div[zid="${local_id}"]`);
     if ($row.length === 0) {
         return;
     }
 
     $row.find(".message_not_received").remove();
+    messages_with_hang_warning.delete(local_id);
 }
 
 // These retry spinner functions return true if and only if the
