@@ -943,6 +943,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: UserProfile |
         "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
+        "is_demo_organization": realm.demo_organization_scheduled_deletion_date is not None,
     }
     language = realm.default_language
     send_email_to_admins(
