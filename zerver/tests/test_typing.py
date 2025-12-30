@@ -481,7 +481,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
 
         with (
-            self.assert_database_query_count(6),
+            self.assert_database_query_count(8),
             self.capture_send_event_calls(expected_num_events=1) as events,
         ):
             result = self.api_post(sender, "/api/v1/typing", params)
@@ -514,7 +514,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
 
         with (
-            self.assert_database_query_count(6),
+            self.assert_database_query_count(8),
             self.capture_send_event_calls(expected_num_events=1) as events,
         ):
             result = self.api_post(sender, "/api/v1/typing", params)
@@ -549,7 +549,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
         with self.settings(MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS=5):
             with (
-                self.assert_database_query_count(5),
+                self.assert_database_query_count(7),
                 self.capture_send_event_calls(expected_num_events=0) as events,
             ):
                 result = self.api_post(sender, "/api/v1/typing", params)
@@ -606,7 +606,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
 
         with (
-            self.assert_database_query_count(6),
+            self.assert_database_query_count(8),
             self.capture_send_event_calls(expected_num_events=1) as events,
         ):
             result = self.api_post(sender, "/api/v1/typing", params)

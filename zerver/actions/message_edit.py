@@ -54,7 +54,6 @@ from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_i
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_by_id,
-    access_stream_by_id_for_message,
     can_access_stream_history,
     can_edit_topic,
     can_move_messages_out_of_channel,
@@ -83,6 +82,7 @@ from zerver.lib.topic import (
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
+from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -98,11 +98,8 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
-from zerver.models.streams import (
-    StreamTopicsPolicyEnum,
-    get_stream_by_id_for_sending_message,
-    get_stream_by_id_in_realm,
-)
+from zerver.models.groups import get_realm_system_groups_name_dict
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -1492,15 +1489,12 @@ def build_message_edit_request(
         )
 
     orig_stream_id = message.recipient.type_id
-    # We call get_stream_by_id_for_sending_message instead of
-    # get_stream_by_id_in_realm here so that "can_create_topic_group" is
-    # fetched using select_related and we can save a couple of DB queries.
-    orig_stream = get_stream_by_id_for_sending_message(orig_stream_id, message.realm)
+    orig_stream = get_stream_by_id_in_realm(orig_stream_id, message.realm)
 
     is_stream_edited = False
     target_stream = orig_stream
     if stream_id is not None:
-        target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
+        target_stream = access_stream_by_id(user_profile, stream_id)[0]
         is_stream_edited = True
 
     topics_policy = get_stream_topics_policy(message.realm, target_stream)
@@ -1660,13 +1654,20 @@ def check_update_message(
             check_user_group_mention_allowed(user_profile, mentioned_group_ids)
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
+        user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+        system_groups_name_dict = get_realm_system_groups_name_dict(user_profile.realm_id)
         if message_edit_request.is_stream_edited:
             assert message.is_channel_message
             if not can_move_messages_out_of_channel(user_profile, message_edit_request.orig_stream):
                 raise JsonableError(_("You don't have permission to move this message"))
 
             check_stream_access_based_on_can_send_message_group(
-                user_profile, message_edit_request.target_stream
+                user_profile,
+                message_edit_request.target_stream,
+                user_recursive_group_ids,
+                system_groups_name_dict,
             )
 
             if (
@@ -1702,6 +1703,8 @@ def check_update_message(
                 user_profile,
                 message_edit_request.target_stream,
                 message_edit_request.target_topic_name,
+                user_recursive_group_ids,
+                system_groups_name_dict,
             )
 
     updated_message_result = do_update_message(
