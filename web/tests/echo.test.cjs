@@ -458,6 +458,9 @@ run_test("reset MockDate", () => {
 run_test("message_hang_warning cleared on late ack", ({override}) => {
     let timeout_callback;
 
+    override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
+
     override(global, "setTimeout", (callback, _delay) => {
         timeout_callback = callback;
         return 1;
