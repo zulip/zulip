@@ -83,6 +83,9 @@ APIs](https://learn.microsoft.com/en-us/microsoftteams/migration-from-teams#step
 Some organization data are not exported by the Teams data export tool. The Zulip import
 tool will call several Microsoft Graph APIs to collect the following data:
 
+* [**Hosted contents**](https://learn.microsoft.com/en-us/graph/api/resources/chatmessagehostedcontent?view=graph-rest-1.0).
+  Teams content hosted in a chat message, such as images or code snippets.
+
 * **User roles**. The [user roles](#user-roles) section explains how  Microsoft
   Teams users roles and user types are mapped to Zulip user roles.
 
@@ -106,6 +109,7 @@ token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-clien
   1. Select **Application permissions** as the permission type.
   1. Search and add these permissions:
 
+     * `ChannelMessage.Read.All`
      * `User.Read.All`
      * `RoleManagement.Read.Directory`
 
@@ -163,6 +167,7 @@ tool:
 | [directory role list member](https://learn.microsoft.com/en-us/graph/api/directoryrole-list-members?view=graph-rest-1.0\&tabs=http) | Used to find users who are global administrators.      | `User.Read.All`                 |
 | [list directory role](https://learn.microsoft.com/en-us/graph/api/directoryrole-list?view=graph-rest-1.0\&tabs=http)                | Used to find the ID for the global administrator role. | `RoleManagement.Read.Directory` |
 | [list user](https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0\&tabs=http)                                   | Used to find guest accounts.                           | `User.Read.All`                 |
+| [get hosted content](https://learn.microsoft.com/en-us/graph/api/chatmessagehostedcontent-get?view=graph-rest-1.0\&tabs=http)       | Used to download hosted content attachments.           | `ChannelMessage.Read.All`       |
 
 ### Import your data into Zulip
 
@@ -216,7 +221,7 @@ can be extended to include it.
 
 * Direct messages and messages in private channels
 * Meeting chats and recordings
-* Message attachments
+* Message attachments stored in Microsoft SharePoint are not imported.
 * Message reactions
 * Message edit history, and system messages such as `@user_a added @user_b to the chat`
 * Custom emoji
