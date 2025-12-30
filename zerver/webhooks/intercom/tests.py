@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock, patch
-
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -8,13 +6,10 @@ class IntercomWebHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/intercom?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "intercom"
 
-    @patch("zerver.webhooks.intercom.view.check_send_webhook_message")
-    def test_ping_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
-        self.url = self.build_webhook_url()
-        payload = self.get_body("ping")
-        result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
+    def test_ping(self) -> None:
+        expected_topic_name = "Intercom"
+        expected_message = "Intercom webhook has been successfully configured."
+        self.check_webhook("ping", expected_topic_name, expected_message)
 
     def test_company_created(self) -> None:
         expected_topic_name = "Companies"
