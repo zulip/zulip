@@ -10,6 +10,61 @@ To learn about ways to contribute without writing code, please see our
 suggestions for how you can [support the Zulip
 project](https://zulip.com/help/support-zulip-project).
 
+## How to use Zulip's documentation for contributors
+
+::: note
+
+**Reading and following our written guidelines** to the very best of your ability is
+the only way to become a successful Zulip contributor.
+
+:::
+
+Zulip has a documentation-based approach to onboarding new contributors. As you
+are getting started, this page will be your go-to for figuring out what to do
+next. You will also explore other guides, learning about how to put together
+your first pull request, diving into [Zulip's
+subsystems](https://zulip.readthedocs.io/en/latest/subsystems/index.html), and
+much more.
+
+We hope you'll find this process to be a great learning experience. If you
+_aren't_ excited to learn from our series of contributor guides, then Zulip is
+not the right project for you.
+
+Please read the following sections of this guide at the times described (or
+earlier!).
+
+Prior to picking up your first issue:
+
+- [How to be a successful contributor](#how-to-be-a-successful-contributor)
+- [Getting started](#getting-started)
+- [Finding an issue to work on](#finding-an-issue-to-work-on)
+
+When starting to work on your first issue:
+
+- [Getting help](#getting-help) as you work on your first pull request
+- Learning [best practices](#best-practices)
+- [AI use policy and guidelines](#ai-use-policy-and-guidelines)
+
+When getting ready to submit your first pull request:
+
+- [Submitting a pull request](#submitting-a-pull-request)
+
+After submitting your first pull request:
+
+- [Going beyond the first issue](#beyond-the-first-issue)
+
+Any time you feel lost, come back to this guide. The information you need is
+likely somewhere on this page (perhaps in the list of [common
+questions](#common-questions)), or in one of the many references it points to.
+
+If you've done all you can with the documentation and are still feeling stuck,
+join the [Zulip development community](https://zulip.com/development-community/)
+to ask for help! Before you post, be sure to review [community
+norms](https://zulip.com/development-community/#community-norms) and [where to
+post](https://zulip.com/development-community/#where-do-i-send-my-message) your
+question. The Zulip community is governed by a [code of
+conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
+
 ## How to be a successful contributor
 
 In our experience, to become an effective Zulip contributor, you should be
@@ -26,7 +81,8 @@ excited to:
 - **Take pride in your work**. Strive to write the best
   [commits][commit discipline] you can, carefully [review][reviewing code] your
   own work, and take the time to [explain][submitting a PR] it clearly to
-  project maintainers.
+  project maintainers. Do your very best to overcome any challenges you run in
+  to before asking for help.
 - **Learn from feedback.** Every pull request undergoes a rigorous [review
   process][review process]. We need contributors to carefully apply and respond
   to the feedback they receive, and to take advantage of the learning experience
@@ -55,37 +111,6 @@ and focus on learning the relevant software engineering skills for now.
 [submitting a PR]: https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html
 [review process]: https://zulip.readthedocs.io/en/latest/contributing/review-process.html
 [how we communicate]: https://zulip.readthedocs.io/en/latest/contributing/how-we-communicate.html
-
-## Learning from the docs
-
-Zulip has a documentation-based approach to onboarding new contributors. As you
-are getting started, this page will be your go-to for figuring out what to do
-next. You will also explore other guides, learning about how to put together
-your first pull request, diving into [Zulip's
-subsystems](https://zulip.readthedocs.io/en/latest/subsystems/index.html), and
-much more. We hope you'll find this process to be a great learning experience.
-
-This page will guide you through the following topics:
-
-1. [Getting started](#getting-started)
-1. [Finding an issue to work on](#finding-an-issue-to-work-on)
-1. [Getting help](#getting-help) as you work on your first pull request
-1. Learning [best practices](#best-practices)
-1. [AI use policy and guidelines](#ai-use-policy-and-guidelines)
-1. [Submitting a pull request](#submitting-a-pull-request)
-1. [Going beyond the first issue](#beyond-the-first-issue)
-
-Any time you feel lost, come back to this guide. The information you need is
-likely somewhere on this page (perhaps in the list of [common
-questions](#common-questions)), or in one of the many references it points to.
-
-If you've done all you can with the documentation and are still feeling stuck,
-join the [Zulip development community](https://zulip.com/development-community/)
-to ask for help! Before you post, be sure to review [community
-norms](https://zulip.com/development-community/#community-norms) and [where to
-post](https://zulip.com/development-community/#where-do-i-send-my-message) your
-question. The Zulip community is governed by a [code of
-conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
 ## Getting started
 
@@ -360,16 +385,18 @@ integrate. Maintainer time and attention is very limited, so it's
 important that changes you ask us to review represent
 your _best_ work.
 
-You are encouraged to use tools that help you write good
-code, including AI tools. However, as noted above, you always need to
-understand and explain the changes you're proposing to make, whether
-or not you used an LLM as part of your process to produce them. The
-answer to “Why did you make change X?” should never be “I'm not sure.
-The AI did it.”
+You can use any tools that help you understand the Zulip codebase and
+write good code, including AI tools. However, as noted above, you
+always need to understand and explain the changes you're proposing to
+make, whether or not you used an LLM as part of your process to
+produce them. The answer to “Why is X an improvement?” should never be
+“I'm not sure. The AI did it.”
 
+::: warning
 **Do not submit an AI-generated PR you haven't personally understood and
 tested**, as this wastes maintainers' time. PRs that appear to violate this
 guideline will be closed without review.
+:::
 
 ### Using AI as a coding assistant
 
@@ -456,6 +483,8 @@ labels.
 
 ## Common questions
 
+### Picking up issues
+
 - **Can I work on an issue that's not marked as "help wanted"?** The entire
   purpose of the "help wanted" label is to indicate which issues are open for
   contribution, so the answer is generally "no". Please feel free to ask if you
@@ -527,6 +556,9 @@ labels.
   PRs), and asking for the issue to be assigned to you. Note that addressing
   feedback on in-progress PRs should always take priority over starting a new
   PR.
+
+### Review process
+
 - **I think my PR is done, but it hasn't been merged yet. What's going on?**
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
@@ -556,12 +588,12 @@ labels.
 ## Outreach programs
 
 Zulip regularly participates in [Google Summer of Code
-(GSoC)](https://developers.google.com/open-source/gsoc/) and
-[Outreachy](https://www.outreachy.org/). We have been a GSoC mentoring
-organization since 2016, and we accept 15-20 GSoC participants each summer. In
-the past, we’ve also participated in [Google
-Code-In](https://developers.google.com/open-source/gci/), and hosted summer
-interns from Harvard, MIT, and Stanford.
+(GSoC)](https://developers.google.com/open-source/gsoc/). We have been a GSoC
+mentoring organization since 2016, and we accept 10-20 GSoC participants each
+summer. In the past, we’ve also participated in [Google
+Code-In](https://developers.google.com/open-source/gci/) and
+[Outreachy](https://www.outreachy.org/), and hosted summer interns from Harvard,
+MIT, and Stanford.
 
 Check out our [outreach programs
 overview](https://zulip.readthedocs.io/en/latest/outreach/overview.html) to learn
