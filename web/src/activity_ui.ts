@@ -29,6 +29,10 @@ export let user_filter: UserSearch | undefined;
 // Function initialized from `ui_init` to avoid importing narrow.js and causing circular imports.
 let narrow_by_email: (email: string) => void;
 
+export function get_narrow_by_email_function_for_test_code(): (email: string) => void {
+    return narrow_by_email;
+}
+
 function get_pm_list_item(user_id: string): JQuery | undefined {
     return buddy_list.find_li({
         key: Number.parseInt(user_id, 10),
@@ -289,7 +293,7 @@ function keydown_enter_key(): void {
     popovers.hide_all();
 }
 
-export function set_cursor_and_filter(): void {
+export let set_cursor_and_filter = (): void => {
     user_cursor = new ListCursor({
         list: buddy_list,
         highlight_class: "highlighted_user",
@@ -329,6 +333,10 @@ export function set_cursor_and_filter(): void {
             },
         },
     });
+};
+
+export function rewire_set_cursor_and_filter(value: typeof set_cursor_and_filter): void {
+    set_cursor_and_filter = value;
 }
 
 export function initiate_search(): void {

@@ -17,17 +17,12 @@ const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
-const $window_stub = $.create("window-stub");
-set_global("to_$", () => $window_stub);
-$(window).idle = noop;
-
 const _document = {
     hasFocus() {
         return true;
     },
 };
 
-const channel = mock_esm("../src/channel");
 const electron_bridge = mock_esm("../src/electron_bridge");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
@@ -36,7 +31,6 @@ const popovers = mock_esm("../src/popovers");
 const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
-const watchdog = mock_esm("../src/watchdog");
 
 set_global("document", _document);
 
@@ -761,97 +755,6 @@ test("update_presence_info", ({override, override_rewire}) => {
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
-test("initialize", ({override, override_rewire}) => {
-    override(document, "to_$", () => $("document-stub"));
-    override(pm_list, "update_private_messages", noop);
-    override(watchdog, "check_for_unsuspend", noop);
-    override(buddy_list, "fill_screen_with_content", noop);
-    override_rewire(activity_ui, "update_presence_indicators", noop);
-
-    let payload;
-    override(channel, "post", (arg) => {
-        if (payload === undefined) {
-            // This "if" block is added such that we can execute "success"
-            // function when want_redraw is true.
-            payload = arg;
-        }
-    });
-
-    function clear() {
-        $.clear_all_elements();
-        buddy_list.$users_matching_view_list = $("#buddy-list-users-matching-view");
-        buddy_list.$users_matching_view_list.append = noop;
-        buddy_list.$other_users_list = $("#buddy-list-other-users");
-        buddy_list.$other_users_list.append = noop;
-        stub_buddy_list_elements();
-        clear_buddy_list(buddy_list);
-        page_params.presences = {};
-    }
-
-    clear();
-
-    let scroll_handler_started;
-    buddy_list.start_scroll_handler = () => {
-        scroll_handler_started = true;
-    };
-
-    activity.mark_client_idle();
-
-    $(window).off("focus");
-
-    let set_timeout_function_called = false;
-    set_global("setTimeout", (func) => {
-        if (set_timeout_function_called) {
-            // This conditional is needed to avoid indefinite calls.
-            return;
-        }
-        set_timeout_function_called = true;
-        func();
-    });
-
-    activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
-    payload.success({
-        presences: {},
-        msg: "",
-        result: "success",
-        server_timestamp: 0,
-        presence_last_update_id: -1,
-    });
-    $(window).trigger("focus");
-    clear();
-
-    assert.ok(scroll_handler_started);
-    assert.ok(!activity.new_user_input);
-    assert.equal(activity.compute_active_status(), "active");
-
-    $(window).idle = (params) => {
-        params.onIdle();
-    };
-    payload = undefined;
-    set_timeout_function_called = false;
-
-    $(window).off("focus");
-    activity.initialize();
-    activity_ui.initialize({narrow_by_email() {}});
-    payload.success({
-        presences: {},
-        msg: "",
-        result: "success",
-        server_timestamp: 0,
-        presence_last_update_id: -1,
-    });
-
-    assert.ok(!activity.new_user_input);
-    assert.equal(activity.compute_active_status(), "idle");
-
-    // Exercise the mousemove handler, which just
-    // sets a flag.
-    $(document).get_on_handler("mousemove")();
-
-    clear();
-});
-
 test("electron_bridge", ({override_rewire}) => {
     override_rewire(activity, "send_presence_to_server", noop);
 
@@ -889,11 +792,6 @@ test("electron_bridge", ({override_rewire}) => {
     assert.ok(!activity.received_new_messages);
     activity.set_received_new_messages(true);
     assert.ok(activity.received_new_messages);
-});
-
-test("test_send_or_receive_no_presence_for_spectator", () => {
-    page_params.is_spectator = true;
-    activity.send_presence_to_server();
 });
 
 test("check_should_redraw_new_user", ({override}) => {
