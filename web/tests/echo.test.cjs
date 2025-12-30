@@ -466,15 +466,16 @@ run_test("message_hang_warning cleared on late ack", ({override}) => {
         return 1;
     });
 
-    // Fake DOM msg row
     const local_id = "001.01";
-
     const $row = $("<div>").addClass("message_row").attr("zid", local_id);
 
-    $row.append($("<div>").addClass("message_content").text("Hello"));
+    const $content = $("<div>").addClass("message_content").text("Hello");
+    $row.append($content);
     $("#main_div").append($row);
 
-    // Insert local msg
+    $row.set_find_results(".message_not_received", $());
+    $row.set_find_results(".message_content", $content);
+
     echo.insert_local_message(
         {
             type: "stream",
@@ -486,20 +487,15 @@ run_test("message_hang_warning cleared on late ack", ({override}) => {
         },
         Number(local_id),
         (message_data) => {
-            const messages = message_data.raw_messages;
-            for (const message of messages) {
+            for (const message of message_data.raw_messages) {
                 echo.track_local_message(message);
             }
-            return messages;
+            return message_data.raw_messages;
         },
     );
 
     timeout_callback();
-
     assert.equal($(".message_not_received").length, 1);
-
-    const $warning = $("<div>").addClass("message_not_received");
-    $row.set_children_results(".message_not_received", $warning);
 
     echo.process_from_server([
         {
