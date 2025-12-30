@@ -577,6 +577,22 @@ def build_message(
     return zulip_message_dict
 
 
+# Keep this in sync with the Attachment table.
+@dataclass
+class AttachmentRecordData:
+    content_type: str
+    create_time: float
+    file_name: str
+    id: int
+    is_realm_public: bool
+    messages: list[int]
+    owner: int
+    path_id: str
+    realm: int
+    scheduled_messages: list[int]
+    size: int
+
+
 def build_attachment(
     realm_id: int,
     message_ids: set[int],
