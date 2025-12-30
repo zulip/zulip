@@ -5,7 +5,7 @@ import orjson
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
-from zerver.models import CustomProfileField
+from zerver.models import CustomProfileField, Message
 from zerver.models.realms import get_realm
 
 TOPIC_REPO = "public-repo"
@@ -186,6 +186,45 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker opened [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.check_webhook("issues__opened", TOPIC_ISSUE, expected_message)
 
+    def test_pull_request_title_edit_moves_topic(self) -> None:
+        self.subscribe(self.test_user, "commits")
+        self.channel_name = "commits"
+        self.url = f"{self.build_webhook_url()}&stream=commits"
+
+        expected_topic = "public-repo / PR #1 This is a very long Pull request titl..."
+        expected_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+
+        self.check_webhook("pull_request__opened", expected_topic, expected_message)
+
+        self.client_post(
+            self.url,
+            self.get_body("pull_request__edited_title"),
+            content_type="application/json",
+            HTTP_X_GITHUB_EVENT="pull_request",
+        )
+
+        self.assertFalse(
+            Message.objects.filter(realm=self.test_user.realm, subject=expected_topic).exists(),
+            "Old truncated topic should have been renamed.",
+        )
+
+        new_topic = "public-repo / PR #1 New Short Title"
+        self.assertTrue(
+            Message.objects.filter(realm=self.test_user.realm, subject=new_topic).exists(),
+            f"Message should have moved to new topic: {new_topic}",
+        )
+
+    def test_pull_request_body_edited_not_renamed(self) -> None:
+        self.subscribe(self.test_user, "commits")
+        expected_topic = "public-repo / PR #1 Update the README with new information"
+        expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n~~~ quote\nPR EDITED\n~~~"
+
+        self.send_stream_message(
+            self.test_user, "commits", topic_name=expected_topic, content="Original content"
+        )
+
+        self.check_webhook("pull_request__edited_body", expected_topic, expected_message)
+
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
@@ -282,8 +321,9 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("member", TOPIC_REPO, expected_message)
 
     def test_pull_request_opened_msg(self) -> None:
+        expected_topic_name = "public-repo / PR #1 This is a very long Pull request titl..."
         expected_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
-        self.check_webhook("pull_request__opened", TOPIC_PR, expected_message)
+        self.check_webhook("pull_request__opened", expected_topic_name, expected_message)
 
     def test_pull_request_opened_with_preassigned_assignee_msg(self) -> None:
         expected_topic_name = "Scheduler / PR #4 Improve README"
@@ -295,7 +335,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_pull_request_opened_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = "baxterthehacker opened [PR #1 This is a very long Pull request title to test topic truncation when renaming](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.check_webhook("pull_request__opened", expected_topic_name, expected_message)
 
     def test_pull_request_synchronized_msg(self) -> None:
@@ -434,10 +474,11 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("push__tag", TOPIC_REPO, expected_message)
 
     def test_pull_request_edited_msg(self) -> None:
+        expected_topic = "public-repo / PR #1 New Short Title"
         expected_message = (
             "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         )
-        self.check_webhook("pull_request__edited_title", TOPIC_PR, expected_message)
+        self.check_webhook("pull_request__edited_title", expected_topic, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
         expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n~~~ quote\nPR EDITED\n~~~"
