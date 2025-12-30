@@ -147,6 +147,11 @@ function show_msg_hang_warning(local_id: string): void {
 }
 
 function clear_msg_hang_warning(local_id: string): void {
+    // If we never set a hang timer, a hang warning cannot exist.
+    if (!hang_timer.has(local_id)) {
+        return;
+    }
+
     const selector = `div[zid="${local_id}"]`;
     const $row = $(selector);
 
@@ -154,12 +159,7 @@ function clear_msg_hang_warning(local_id: string): void {
         return;
     }
 
-    const $warning = $row.children().filter(".message_not_received");
-    if ($warning.length === 0) {
-        return;
-    }
-
-    $warning.remove();
+    $row.find(".message_not_received").remove();
 }
 
 // These retry spinner functions return true if and only if the
