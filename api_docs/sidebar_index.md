@@ -12,7 +12,7 @@
 * [Writing tests for bots](/api/writing-tests-for-interactive-bots)
 * [Running bots](/api/running-bots)
 * [Deploying bots](/api/deploying-bots)
-* [Outgoing webhooks](/api/outgoing-webhooks)
+* [Outgoing webhooks](/help/outgoing-webhooks)
 
 ## REST API
 
