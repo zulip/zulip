@@ -42,7 +42,7 @@ import * as util from "./util.ts";
 
 type ServerMessage = RawMessage & {local_id?: string};
 
-const hang_timer = new Map<string, number>();
+const hang_timer = new Map<string, ReturnType<typeof setTimeout>>();
 const messages_with_hang_warning = new Set<string>();
 
 const send_message_api_response_schema = z.object({
@@ -111,7 +111,7 @@ export type PostMessageAPIData = z.output<typeof send_message_api_response_schem
 // This function creates a timer of 15s
 // which runs when a msg is sent, if no ack from server in 15s we show a warning in UI.
 function start_hang_timer(local_id: string): void {
-    const timeout = window.setTimeout(() => {
+    const timeout = setTimeout(() => {
         if (echo_state.get_message_waiting_for_ack(local_id) !== undefined) {
             show_msg_hang_warning(local_id);
         }
@@ -133,14 +133,8 @@ function show_msg_hang_warning(local_id: string): void {
         return;
     }
 
-    const msg_id = Number.parseFloat(local_id);
-    const $row = message_lists.current?.get_row(msg_id);
-
-    if (!$row || $row.length === 0) {
-        return;
-    }
-
-    if ($row.find(".message_not_received").length > 0) {
+    const $row = $(`div[zid="${local_id}"]`);
+    if ($row.length === 0) {
         return;
     }
 
@@ -157,16 +151,15 @@ function clear_msg_hang_warning(local_id: string): void {
         return;
     }
 
-    const msg_id = Number.parseFloat(local_id);
-    const $row = message_lists.current?.get_row(msg_id);
-
-    if (!$row || $row.length === 0) {
+    const $row = $(`div[zid="${local_id}"]`);
+    if ($row.length === 0) {
         return;
     }
 
     $row.find(".message_not_received").remove();
     messages_with_hang_warning.delete(local_id);
 }
+
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
