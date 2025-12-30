@@ -89,13 +89,6 @@
         </form>
         {% if not realm.deactivated %}
         <form method="POST" class="support-form">
-            <b>New subdomain</b>:<br />
-            {{ csrf_input }}
-            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            <input type="text" name="new_subdomain" required />
-            <button type="submit" class="support-submit-button">Update</button>
-        </form>
-        <form method="POST" class="support-form">
             <b>Organization type</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
@@ -134,6 +127,17 @@
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
             <input type="number" name="max_invites" value="{{ realm.max_invites }}" min="0" required />
+            <button type="submit" class="support-submit-button">Update</button>
+        </form>
+        <form method="POST" class="support-form">
+            <b>New subdomain</b>: (max 40 characters)<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="text" id="new_subdomain" name="new_subdomain" placeholder="lowercase letters, numbers, and '-'s" required />
+            <span class="support-add-redirect-url-section">
+                <input type="checkbox" id="add_redirect_url" name="add_redirect_url" value="true" checked />
+                <label class="support-redirect-url-label" for="add_redirect_url">Redirect to new subdomain?</label>
+            </span>
             <button type="submit" class="support-submit-button">Update</button>
         </form>
         {% endif %}

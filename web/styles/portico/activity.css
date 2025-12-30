@@ -191,6 +191,25 @@ tr.admin td:first-child {
     }
 }
 
+.realm-management-actions {
+    #new_subdomain {
+        width: 225px;
+    }
+
+    .support-add-redirect-url-section {
+        display: block;
+        padding: 6px 10px;
+
+        #add_redirect_url {
+            width: auto;
+        }
+
+        .support-redirect-url-label {
+            display: inline;
+        }
+    }
+}
+
 .reactivate-remote-server-button,
 .deactivate-remote-server-button,
 .delete-next-fixed-price-plan-button,

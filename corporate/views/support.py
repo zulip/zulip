@@ -417,6 +417,7 @@ def support(
     minimum_licenses: Json[NonNegativeInt] | None = None,
     required_plan_tier: Json[NonNegativeInt] | None = None,
     new_subdomain: str | None = None,
+    add_redirect_url: str | None = None,
     status: RemoteServerStatus | None = None,
     billing_modality: BillingModality | None = None,
     sponsorship_pending: Json[bool] | None = None,
@@ -535,13 +536,23 @@ def support(
                     f"Cannot update maximum number of daily invitations for {realm.string_id}, because {update_text}."
                 )
         elif new_subdomain is not None:
+            add_deactivated_redirect = True
+            if add_redirect_url is None:
+                add_deactivated_redirect = False
+            else:
+                assert add_redirect_url == "true"
             old_subdomain = realm.string_id
             try:
                 check_subdomain_available(new_subdomain)
             except ValidationError as error:
                 context["error_message"] = error.message
             else:
-                do_change_realm_subdomain(realm, new_subdomain, acting_user=acting_user)
+                do_change_realm_subdomain(
+                    realm,
+                    new_subdomain,
+                    acting_user=acting_user,
+                    add_deactivated_redirect=add_deactivated_redirect,
+                )
                 request.session["success_message"] = (
                     f"Subdomain changed from {old_subdomain} to {new_subdomain}"
                 )
