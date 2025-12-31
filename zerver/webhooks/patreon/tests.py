@@ -13,8 +13,6 @@ IGNORED_EVENTS = [
 
 
 class PatreonHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/patreon?&api_key={api_key}&stream={stream}"
-
     def test_patreon_members_create(self) -> None:
         expected_message = "Kopi has joined as a member!"
         self.check_webhook(

@@ -5,7 +5,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class TaigaHookTests(WebhookTestCase):
     TOPIC_NAME = "subject"
-    URL_TEMPLATE = "/api/v1/external/taiga?stream={stream}&api_key={api_key}"
 
     @override
     def setUp(self) -> None:

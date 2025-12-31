@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class DropboxHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/dropbox?&api_key={api_key}&stream={stream}"
-
     def test_file_updated(self) -> None:
         expected_topic_name = "Dropbox"
         expected_message = "File has been updated on Dropbox!"

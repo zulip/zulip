@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class WordPressHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/wordpress?api_key={api_key}&stream={stream}"
-
     def test_publish_post(self) -> None:
         expected_topic_name = "WordPress Post"
         expected_message = "New post published:\n* [New Blog Post](http://example.com\n)"

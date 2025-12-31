@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class IntercomWebHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/intercom?&api_key={api_key}&stream={stream}"
-
     def test_ping(self) -> None:
         expected_topic_name = "Intercom"
         expected_message = "Intercom webhook has been successfully configured."

@@ -2466,8 +2466,11 @@ class WebhookTestCase(ZulipTestCase):
     """
 
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
-    URL_TEMPLATE: str
+    URL_TEMPLATE: str = ""
     WEBHOOK_DIR_NAME: str | None = None
+    DEFAULT_URL_TEMPLATE: str = (
+        "/api/v1/external/{webhook_dir_name}?stream={stream}&api_key={api_key}"
+    )
 
     def get_webhook_dir_name(self) -> str:
         module_parts = self.__module__.split(".")
@@ -2481,6 +2484,7 @@ class WebhookTestCase(ZulipTestCase):
         self.test_user = self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
         self.webhook_dir_name = self.WEBHOOK_DIR_NAME or self.get_webhook_dir_name()
         self.channel_name = self.webhook_dir_name
+        self.url_template = self.URL_TEMPLATE or self.DEFAULT_URL_TEMPLATE
         self.url = self.build_webhook_url()
 
         function = import_string(
@@ -2659,12 +2663,12 @@ one or more new messages.
         return msg
 
     def build_webhook_url(self, *args: str, **kwargs: str) -> str:
-        url = self.URL_TEMPLATE
-        if url.find("api_key") >= 0:
-            api_key = self.test_user.api_key
-            url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.channel_name)
-        else:
-            url = self.URL_TEMPLATE.format(stream=self.channel_name)
+        url = self.url_template
+        assert url.find("api_key") >= 0
+        api_key = self.test_user.api_key
+        url = self.url_template.format(
+            webhook_dir_name=self.webhook_dir_name, api_key=api_key, stream=self.channel_name
+        )
 
         has_arguments = kwargs or args
         if has_arguments and url.find("?") == -1:

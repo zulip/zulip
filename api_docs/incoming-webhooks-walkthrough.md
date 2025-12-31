@@ -410,7 +410,6 @@ class `HelloWorldHookTests`:
 
 ```python
 class HelloWorldHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     DIRECT_MESSAGE_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
 
     # Note: Include a test function per each distinct message condition your integration supports
@@ -426,13 +425,6 @@ class HelloWorldHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 ```
-
-In the above example, `URL_TEMPLATE` refers to class attributes from the
-base class, `WebhookTestCase`. It is needed by the helper function
-`check_webhook` to determine how to execute your test. `URL_TEMPLATE`
-defines how the test runner will call your incoming webhook, in the same way
-you would provide a webhook URL to the 3rd party service.
-`api_key={api_key}` says that an API key is expected.
 
 When writing tests for your webhook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
@@ -666,7 +658,6 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 class QuerytestHookTests(WebhookTestCase):
 
     TOPIC = "Default topic"
-    URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'
 
     def test_querytest_test_one(self) -> None:

@@ -19,8 +19,6 @@ TOPIC_SPONSORS = "sponsors"
 
 
 class GitHubWebhookTest(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
-
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
         self.check_webhook("ping", TOPIC_REPO, expected_message)

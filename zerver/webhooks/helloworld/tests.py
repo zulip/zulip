@@ -6,7 +6,6 @@ from zerver.models.users import get_system_bot
 
 
 class HelloWorldHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     DIRECT_MESSAGE_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
 
     # Note: Include a test function per each distinct message condition your integration supports
@@ -36,7 +35,7 @@ class HelloWorldHookTests(WebhookTestCase):
 
     def test_pm_to_bot_owner(self) -> None:
         # Note that this is really just a test for check_send_webhook_message
-        self.URL_TEMPLATE = self.DIRECT_MESSAGE_URL_TEMPLATE
+        self.url_template = self.DIRECT_MESSAGE_URL_TEMPLATE
         self.url = self.build_webhook_url()
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**"
 

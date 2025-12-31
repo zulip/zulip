@@ -3,8 +3,6 @@ from zerver.webhooks.appfollow.view import convert_markdown
 
 
 class AppFollowHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
-
     def test_sample(self) -> None:
         expected_topic_name = "Webhook integration was successful."
         expected_message = """Webhook integration was successful.
@@ -33,11 +31,7 @@ Acme enables me to manage the flow of information quite well. I only wish I coul
         )
 
     def test_reviews_with_topic(self) -> None:
-        # This temporary patch of URL_TEMPLATE is code smell but required due to the way
-        # WebhookTestCase is built.
-        original_url_template = self.URL_TEMPLATE
-        self.URL_TEMPLATE = original_url_template + "&topic=foo"
-        self.url = self.build_webhook_url()
+        self.url = self.build_webhook_url() + "&topic=foo"
         expected_topic_name = "foo"
         expected_message = """Acme - Group chat
 App Store, Acme Technologies, Inc.
@@ -52,7 +46,6 @@ Acme enables me to manage the flow of information quite well. I only wish I coul
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
-        self.URL_TEMPLATE = original_url_template
 
 
 class ConvertMarkdownTest(ZulipTestCase):

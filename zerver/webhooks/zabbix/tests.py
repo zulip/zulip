@@ -5,8 +5,6 @@ from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class ZabbixHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/zabbix?api_key={api_key}&stream={stream}"
-
     def test_zabbix_alert_message(self) -> None:
         """
         Tests if zabbix alert is handled correctly

@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class AirbrakeHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/airbrake?stream={stream}&api_key={api_key}"
-
     def test_airbrake_error_message(self) -> None:
         expected_topic_name = "ZulipIntegrationTest"
         expected_message = '[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): "Error message from logger" occurred.'

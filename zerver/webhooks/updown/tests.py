@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class UpdownHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/updown?stream={stream}&api_key={api_key}"
-
     def test_updown_check_down_event(self) -> None:
         expected_topic_name = "https://updown.io"
         expected_message = (

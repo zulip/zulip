@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class PagerDutyHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/pagerduty?api_key={api_key}&stream={stream}"
-
     def test_trigger(self) -> None:
         expected_message = "Incident [3](https://zulip-test.pagerduty.com/incidents/P140S4Y) triggered by [Test service](https://zulip-test.pagerduty.com/services/PIL5CUQ) (assigned to [armooo](https://zulip-test.pagerduty.com/users/POBCFRJ)).\n\n``` quote\nfoo\n```"
         self.check_webhook("trigger", "Incident 3", expected_message)

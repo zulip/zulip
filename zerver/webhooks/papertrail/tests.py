@@ -6,8 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class PapertrailHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/papertrail?&api_key={api_key}&stream={stream}"
-
     def test_short_message(self) -> None:
         expected_topic_name = "logs"
         expected_message = """

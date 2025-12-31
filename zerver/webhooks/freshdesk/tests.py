@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FreshdeskHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/freshdesk?stream={stream}"
-
     def test_ticket_creation(self) -> None:
         """
         Messages are generated on ticket creation through Freshdesk's

@@ -6,7 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/travis?stream={stream}&api_key={api_key}"
     TOPIC_NAME = "builds"
     EXPECTED_MESSAGE = """
 Author: josh_mandel

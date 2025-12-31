@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GiteaHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/gitea?&api_key={api_key}&stream={stream}"
-
     def test_multiple_commits(self) -> None:
         expected_topic_name = "test / d"
         expected_message = """kostekIV [pushed](https://try.gitea.io/kostekIV/test/compare/21138d2ca0ce18f8e037696fdbe1b3f0c211f630...2ec0c971d04723523aa20f2b378f8b419b47d4ec) 5 commits to branch d.

@@ -202,7 +202,6 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):
     WEBHOOK_DIR_NAME = "helloworld"
-    URL_TEMPLATE = "/api/v1/external/helloworld?stream={stream}&api_key={api_key}"
 
     @override
     def setUp(self) -> None:

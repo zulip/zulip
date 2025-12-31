@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class LinearHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/linear?&api_key={api_key}&stream={stream}"
-
     def test_issue_create_simple_without_description(self) -> None:
         expected_topic_name = "Issue: Drop-down overflow in the select menu."
         expected_message = "[Issue](https://linear.app/webhooks/issue/WEB-42/drop-down-overflow-in-the-select-menu) was created in team Webhooks.\nPriority: High, Status: Todo."

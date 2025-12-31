@@ -5,8 +5,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class GogsHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/gogs?&api_key={api_key}&stream={stream}"
-
     def test_push(self) -> None:
         expected_topic_name = "try-git / master"
         expected_message = """john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 1 commit to branch master. Commits by John (1).

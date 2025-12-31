@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ZenDeskHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/zendesk?stream={stream}"
-
     @override
     def get_payload(self, fixture_name: str) -> dict[str, str]:
         return {
