@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FrontHookTests(WebhookTestCase):
-    CHANNEL_NAME = "front"
     URL_TEMPLATE = "/api/v1/external/front?&api_key={api_key}&stream={stream}"
 
     # Scenario 1: Conversation starts from an outbound message.

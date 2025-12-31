@@ -9,7 +9,6 @@ from zerver.webhooks.pivotal.view import api_pivotal_webhook_v5
 
 
 class PivotalV3HookTests(WebhookTestCase):
-    CHANNEL_NAME = "pivotal"
     URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
 
     def test_accepted(self) -> None:
@@ -111,7 +110,6 @@ class PivotalV3HookTests(WebhookTestCase):
 
 
 class PivotalV5HookTests(WebhookTestCase):
-    CHANNEL_NAME = "pivotal"
     URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
 
     def test_accepted(self) -> None:

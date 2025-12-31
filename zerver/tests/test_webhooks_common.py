@@ -201,25 +201,24 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):
-    CHANNEL_NAME = "helloworld"
     WEBHOOK_DIR_NAME = "helloworld"
     URL_TEMPLATE = "/api/v1/external/helloworld?stream={stream}&api_key={api_key}"
 
     @override
     def setUp(self) -> None:
         super().setUp()
-        stream = self.subscribe(self.test_user, self.CHANNEL_NAME)
+        stream = self.subscribe(self.test_user, self.channel_name)
 
         # In actual webhook tests, we will not need to use stream id.
-        # We assign stream id to CHANNEL_NAME for testing URL configuration only.
-        self.CHANNEL_NAME = str(stream.id)
+        # We assign stream id to channel_name for testing URL configuration only.
+        self.channel_name = str(stream.id)
         do_rename_stream(stream, "helloworld_renamed", self.test_user)
 
         self.url = self.build_webhook_url()
 
     def test_trigger_stream_message_by_id(self) -> None:
         # check_webhook cannot be used here as it
-        # subscribes the test user to self.CHANNEL_NAME
+        # subscribes the test user to self.channel_name
         payload = self.get_body("hello")
 
         self.send_webhook_payload(
@@ -239,14 +238,13 @@ class WebhookURLConfigurationTestCase(WebhookTestCase):
 
 
 class MissingEventHeaderTestCase(WebhookTestCase):
-    CHANNEL_NAME = "groove"
     URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "groove"
 
     # This tests the get_event_header function with an actual webhook,
     # instead of just making a mock
     def test_missing_event_header(self) -> None:
-        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        self.subscribe(self.test_user, self.channel_name)
         with self.assertNoLogs("zulip.zerver.webhooks.anomalous", level="INFO"):
             result = self.client_post(
                 self.url,

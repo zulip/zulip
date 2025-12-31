@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class PagerDutyHookTests(WebhookTestCase):
-    CHANNEL_NAME = "pagerduty"
     URL_TEMPLATE = "/api/v1/external/pagerduty?api_key={api_key}&stream={stream}"
 
     def test_trigger(self) -> None:

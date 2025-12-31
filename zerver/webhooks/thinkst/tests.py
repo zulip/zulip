@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ThinkstHookTests(WebhookTestCase):
-    CHANNEL_NAME = "thinkst"
     URL_TEMPLATE = "/api/v1/external/thinkst?stream={stream}&api_key={api_key}"
 
     def test_canary_dummy(self) -> None:

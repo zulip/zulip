@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class RundeckHookTests(WebhookTestCase):
-    CHANNEL_NAME = "Rundeck"
     TOPIC_NAME = "Global Log Filter Usage"
     URL_TEMPLATE = "/api/v1/external/rundeck?&api_key={api_key}&stream={stream}"
 

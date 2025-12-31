@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class CanarytokensHookTests(WebhookTestCase):
-    CHANNEL_NAME = "canarytoken"
     URL_TEMPLATE = "/api/v1/external/canarytoken?stream={stream}&api_key={api_key}"
 
     def test_canarytoken_new(self) -> None:

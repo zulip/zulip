@@ -410,7 +410,6 @@ class `HelloWorldHookTests`:
 
 ```python
 class HelloWorldHookTests(WebhookTestCase):
-    CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     DIRECT_MESSAGE_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
 
@@ -428,20 +427,12 @@ class HelloWorldHookTests(WebhookTestCase):
         )
 ```
 
-In the above example, `CHANNEL_NAME`, and `URL_TEMPLATE` refer
-to class attributes from the base class, `WebhookTestCase`. These are needed by
-the helper function `check_webhook` to determine how to execute
-your test. `CHANNEL_NAME` should be set to your default channel. If it doesn't exist,
-`check_webhook` will create it while executing your test.
-
-If your test expects a channel name from a test fixture, the value in the fixture
-and the value you set for `CHANNEL_NAME` must match. The test helpers use `CHANNEL_NAME`
-to create the destination channel, and then create the message to send using the
-value from the fixture. If these don't match, the test will fail.
-
-`URL_TEMPLATE` defines how the test runner will call your incoming webhook, in the same way
- you would provide a webhook URL to the 3rd party service. `api_key={api_key}` says
-that an API key is expected.
+In the above example, `URL_TEMPLATE` refers to class attributes from the
+base class, `WebhookTestCase`. It is needed by the helper function
+`check_webhook` to determine how to execute your test. `URL_TEMPLATE`
+defines how the test runner will call your incoming webhook, in the same way
+you would provide a webhook URL to the 3rd party service.
+`api_key={api_key}` says that an API key is expected.
 
 When writing tests for your webhook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
@@ -613,10 +604,10 @@ def test_unknown_action_no_data(self) -> None:
     # return if no params are sent. The fixture for this test is an empty file.
 
     # subscribe to the target channel
-    self.subscribe(self.test_user, self.CHANNEL_NAME)
+    self.subscribe(self.test_user, self.channel_name)
 
     # post to the webhook url
-    post_params = {'stream_name': self.CHANNEL_NAME,
+    post_params = {'stream_name': self.channel_name,
                    'content_type': 'application/x-www-form-urlencoded'}
     result = self.client_post(self.url, 'unknown_action', **post_params)
 
@@ -629,9 +620,9 @@ and then check that the incoming webhook's response matches the expected result.
 the webhook returns an error, the test fails. Instead, explicitly do the
 setup it would have done, and check the result yourself.
 
-Here, `subscribe_to_stream` is a test helper that uses `TEST_USER_EMAIL` and
-`CHANNEL_NAME` (attributes from the base class) to register the user to receive
-messages in the given channel. If the channel doesn't exist, it creates it.
+Here, `subscribe` is a test helper that uses `test_user` and `channel_name`
+(attributes from the base class) to register the user to receive messages in
+the given channel. If the channel doesn't exist, it creates it.
 
 `client_post`, another helper, performs the HTTP POST that calls the incoming
 webhook. As long as `self.url` is correct, you don't need to construct the webhook
@@ -674,7 +665,6 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 ```python
 class QuerytestHookTests(WebhookTestCase):
 
-    CHANNEL_NAME = 'querytest'
     TOPIC = "Default topic"
     URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'

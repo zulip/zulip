@@ -2465,7 +2465,6 @@ class WebhookTestCase(ZulipTestCase):
       supported event types.
     """
 
-    CHANNEL_NAME: str | None = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
     WEBHOOK_DIR_NAME: str | None = None
@@ -2480,8 +2479,9 @@ class WebhookTestCase(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.test_user = self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
-        self.url = self.build_webhook_url()
         self.webhook_dir_name = self.WEBHOOK_DIR_NAME or self.get_webhook_dir_name()
+        self.channel_name = self.webhook_dir_name
+        self.url = self.build_webhook_url()
 
         function = import_string(
             f"zerver.webhooks.{self.webhook_dir_name}.view.api_{self.webhook_dir_name}_webhook"
@@ -2559,7 +2559,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         We use `fixture_name` to find the payload data in of our test
         fixtures.  Then we verify that a message gets sent to a stream:
 
-            self.CHANNEL_NAME: stream name
+            self.channel_name: stream name
             expected_topic_name: topic name
             expected_message: content
 
@@ -2571,8 +2571,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
 
         When no message is expected to be sent, set `expect_noop` to True.
         """
-        assert self.CHANNEL_NAME is not None
-        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        self.subscribe(self.test_user, self.channel_name)
 
         payload = self.get_payload(fixture_name)
         if content_type is not None:
@@ -2607,7 +2606,7 @@ one or more new messages.
 
         self.assert_channel_message(
             message=msg,
-            channel_name=self.CHANNEL_NAME,
+            channel_name=self.channel_name,
             topic_name=expected_topic_name,
             content=expected_message,
         )
@@ -2663,9 +2662,9 @@ one or more new messages.
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
             api_key = self.test_user.api_key
-            url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.CHANNEL_NAME)
+            url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.channel_name)
         else:
-            url = self.URL_TEMPLATE.format(stream=self.CHANNEL_NAME)
+            url = self.URL_TEMPLATE.format(stream=self.channel_name)
 
         has_arguments = kwargs or args
         if has_arguments and url.find("?") == -1:

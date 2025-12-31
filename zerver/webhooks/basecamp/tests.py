@@ -4,7 +4,6 @@ TOPIC_NAME = "Zulip HQ"
 
 
 class BasecampHookTests(WebhookTestCase):
-    CHANNEL_NAME = "basecamp"
     URL_TEMPLATE = "/api/v1/external/basecamp?stream={stream}&api_key={api_key}"
 
     def test_basecamp_makes_doc_active(self) -> None:

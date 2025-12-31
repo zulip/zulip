@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class OpenCollectiveHookTests(WebhookTestCase):
-    CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/opencollective?&api_key={api_key}&stream={stream}"
 
     # Note: Include a test function per each distinct message condition your integration supports

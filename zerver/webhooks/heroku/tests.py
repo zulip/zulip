@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class HerokuHookTests(WebhookTestCase):
-    CHANNEL_NAME = "heroku"
     URL_TEMPLATE = "/api/v1/external/heroku?stream={stream}&api_key={api_key}"
 
     def test_deployment(self) -> None:

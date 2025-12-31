@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ZenDeskHookTests(WebhookTestCase):
-    CHANNEL_NAME = "zendesk"
     URL_TEMPLATE = "/api/v1/external/zendesk?stream={stream}"
 
     @override
@@ -13,7 +12,7 @@ class ZenDeskHookTests(WebhookTestCase):
             "ticket_title": self.TICKET_TITLE,
             "ticket_id": str(self.TICKET_ID),
             "message": self.MESSAGE,
-            "stream": self.CHANNEL_NAME,
+            "stream": self.channel_name,
         }
 
     def do_test(self, expected_topic: str, expected_message: str) -> None:
