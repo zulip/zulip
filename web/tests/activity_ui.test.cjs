@@ -7,6 +7,7 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
 
 const activity = mock_esm("../src/activity");
+const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const scroll_util = mock_esm("../src/scroll_util");
 const pm_list = mock_esm("../src/pm_list");
 const util = mock_esm("../src/util");
@@ -18,7 +19,7 @@ run_test("redraw", ({override, override_rewire}) => {
     override_rewire(activity_ui, "build_user_sidebar", noop);
     activity_ui.set_cursor_and_filter();
     override(pm_list, "update_private_messages", noop);
-    override_rewire(activity_ui, "update_presence_indicators", noop);
+    override(buddy_list_presence, "update_indicators", noop);
 
     activity_ui.redraw();
 });
