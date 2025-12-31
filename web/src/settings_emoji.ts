@@ -125,6 +125,7 @@ export function populate_emoji(): void {
                     source_url: item.source_url,
                     author,
                     can_delete_emoji: can_delete_emoji(item),
+                    is_overriding_default: is_default_emoji(item.name),
                 },
             });
         },

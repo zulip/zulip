@@ -116,4 +116,4 @@ async function navigation_tests(page: Page): Promise<void> {
     );
 }
 
-common.run_test(navigation_tests);
+await common.run_test(navigation_tests);

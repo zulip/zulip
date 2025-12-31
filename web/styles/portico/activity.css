@@ -158,15 +158,20 @@ tr.admin td:first-child {
         }
     }
 
+    .demo-label,
     .cloud-label,
     .deactivated-label,
     .remote-label {
-        padding: 2px 8px;
+        padding: 4px 8px 0;
         font-size: 0.9em;
         font-weight: bold;
         color: hsl(0deg 0% 100%);
         text-shadow: 0 -1px 0 hsl(0deg 0% 0% / 25%);
         border-radius: 3px;
+    }
+
+    .demo-label {
+        background-color: hsl(0deg 0% 0%);
     }
 
     .cloud-label {
@@ -188,6 +193,25 @@ tr.admin td:first-child {
     .current-plan-data-missing,
     .stale-audit-log {
         color: hsl(2deg 64% 53%);
+    }
+}
+
+.realm-management-actions {
+    #new_subdomain {
+        width: 225px;
+    }
+
+    .support-add-redirect-url-section {
+        display: block;
+        padding: 6px 10px;
+
+        #add_redirect_url {
+            width: auto;
+        }
+
+        .support-redirect-url-label {
+            display: inline;
+        }
     }
 }
 

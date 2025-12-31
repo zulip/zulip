@@ -32,6 +32,8 @@ type Media = {
 };
 
 let is_open = false;
+let open_image: ($media: JQuery<HTMLImageElement>) => void;
+let open_video: ($media: JQuery<HTMLMediaElement>) => void;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
 // being looked up multiple times. It is keyed by the message id with each value being the
@@ -619,6 +621,23 @@ function remove_video_players(): void {
     $("#lightbox_overlay .video-player").html("");
 }
 
+export function handle_inline_media_element_click(
+    $media: JQuery<HTMLMediaElement> | JQuery<HTMLImageElement>,
+    hide_navigation_arrows = false,
+): void {
+    set_selected_media_element($media);
+
+    const media_element = $media[0];
+    assert(media_element !== undefined);
+
+    if (media_element instanceof HTMLImageElement) {
+        open_image($(media_element));
+    } else {
+        open_video($(media_element));
+    }
+    $("#lightbox_overlay .center").toggleClass("invisible", hide_navigation_arrows);
+}
+
 // this is a block of events that are required for the lightbox to work.
 export function initialize(): void {
     // Renders the DOM for the lightbox.
@@ -640,8 +659,8 @@ export function initialize(): void {
         }
     };
 
-    const open_image = build_open_media_function(reset_lightbox_state);
-    const open_video = build_open_media_function(undefined);
+    open_image = build_open_media_function(reset_lightbox_state);
+    open_video = build_open_media_function(undefined);
 
     $("#main_div, #compose .preview_content").on(
         "click",
@@ -652,8 +671,7 @@ export function initialize(): void {
             // prevent the message compose dialog from happening.
             e.stopPropagation();
             const $img = $(this).find<HTMLImageElement>("img");
-            set_selected_media_element($img);
-            open_image($img);
+            handle_inline_media_element_click($img);
         },
     );
 
@@ -662,8 +680,7 @@ export function initialize(): void {
         e.stopPropagation();
 
         const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
-        set_selected_media_element($video);
-        open_video($video);
+        handle_inline_media_element_click($video);
     });
 
     $("#lightbox_overlay .download").on("click", function () {
@@ -707,7 +724,10 @@ export function initialize(): void {
         // element returned. The logic below for removing and adding the
         // "selected" class ensures that the correct thumbnail will
         // still be highlighted.
-        open_image($original_media_element);
+        const media_element = $original_media_element[0];
+        if (media_element instanceof HTMLImageElement) {
+            open_image($(media_element));
+        }
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
             pan_zoom_control.reset();

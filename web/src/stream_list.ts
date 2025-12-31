@@ -1306,7 +1306,7 @@ export function on_sidebar_channel_click(
     if (stream_data.is_empty_topic_only_channel(stream_id)) {
         // If the channel doesn't support topics, take you
         // directly to general chat regardless of settings.
-        const empty_topic_url = hash_util.by_channel_topic_permalink(stream_id, "");
+        const empty_topic_url = stream_topic_history.channel_topic_permalink_hash(stream_id, "");
         browser_history.go_to_location(empty_topic_url);
         return;
     }
@@ -1514,7 +1514,7 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-export let scroll_stream_into_view = function ($stream_li: JQuery | undefined = undefined): void {
+export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
     if ($stream_li === undefined) {
         if (narrow_state.filter()?.terms_with_operator("topic").length === 1) {
             topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();

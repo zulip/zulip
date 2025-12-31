@@ -35,7 +35,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 442
+API_FEATURE_LEVEL = 443
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 442
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (361, 1)  # bumped 2025-12-03 to add backports-datetime-fromisoformat
+PROVISION_VERSION = (362, 1)  # bumped 2025-12-29 to add eslint-plugin-promise

@@ -188,4 +188,4 @@ async function subscriptions_tests(page: Page): Promise<void> {
     await test_streams_search_feature(page);
 }
 
-common.run_test(subscriptions_tests);
+await common.run_test(subscriptions_tests);

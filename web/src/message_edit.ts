@@ -1655,7 +1655,7 @@ export function move_topic_containing_message_to_stream(
     send_notification_to_new_thread: boolean,
     send_notification_to_old_thread: boolean,
     propagate_mode: string,
-    toast_params: ToastParams | undefined = undefined,
+    toast_params?: ToastParams,
 ): void {
     function reset_modal_ui(): void {
         currently_topic_editing_message_ids = currently_topic_editing_message_ids.filter(

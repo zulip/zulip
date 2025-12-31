@@ -15,7 +15,7 @@ from confirmation.models import Confirmation, create_confirmation_link, generate
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
-from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.actions.user_settings import do_scrub_avatar_image
 from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
@@ -722,7 +722,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
         do_delete_messages_by_sender(user)
-        do_delete_avatar_image(user, acting_user=acting_user)
+        do_scrub_avatar_image(user, acting_user=acting_user)
         user.full_name = f"Scrubbed {generate_key()[:15]}"
         scrubbed_email = Address(
             username=f"scrubbed-{generate_key()[:15]}", domain=realm.host
@@ -943,6 +943,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: UserProfile |
         "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
+        "is_demo_organization": realm.demo_organization_scheduled_deletion_date is not None,
     }
     language = realm.default_language
     send_email_to_admins(

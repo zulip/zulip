@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 
 import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
-import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
@@ -1403,10 +1402,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             } else {
                 emoji_picker_reference = util.the($row.find(".message-actions-menu-button"));
             }
-
-            emoji_picker.toggle_emoji_popover(emoji_picker_reference, msg.id, {
-                placement: "bottom",
-            });
+            emoji_picker.start_picker_for_message_reaction(emoji_picker_reference, msg.id);
             return true;
         }
         case "thumbs_up_emoji": {
@@ -1490,21 +1486,16 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             return true;
         }
         case "vim_right": {
-            if (msg.url && !msg.locally_echoed) {
+            const url = msg.url;
+            if (url && !msg.locally_echoed) {
                 const $row = message_lists.current.selected_row();
                 const $message_time = $row.find("a.message-time");
-                void clipboard_handler
-                    .copy_link_to_clipboard(msg.url)
-                    .then(() => {
-                        show_copied_confirmation(util.the($message_time), {
-                            custom_content: $t({defaultMessage: "Message link copied!"}),
-                        });
-                    })
-                    .catch((error: unknown) => {
-                        blueslip.error("Failed to copy link to clipboard: ", {
-                            error: String(error),
-                        });
+                void (async () => {
+                    await clipboard_handler.copy_link_to_clipboard(url);
+                    show_copied_confirmation(util.the($message_time), {
+                        custom_content: $t({defaultMessage: "Message link copied!"}),
                     });
+                });
                 return true;
             }
             return false;

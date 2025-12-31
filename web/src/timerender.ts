@@ -388,7 +388,7 @@ export function format_markdown_time(time: number | Date): string {
     return get_localized_date_or_time_for_format(time, "weekday_dayofyear_year_time");
 }
 
-export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragment | string {
+export function get_markdown_time_tooltip(reference: Element): DocumentFragment | string {
     if (reference instanceof HTMLTimeElement) {
         const time = parseISO(reference.dateTime);
         const tz_offset_str = get_tz_with_UTC_offset(time);

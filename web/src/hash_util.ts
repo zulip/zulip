@@ -5,7 +5,7 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
-import {Filter} from "./filter.ts";
+import * as filter_util from "./filter_util.ts";
 import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
@@ -19,7 +19,6 @@ import {
 } from "./state_data.ts";
 import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
@@ -108,29 +107,6 @@ export function channel_url_by_user_setting(channel_id: number): string {
 export function by_stream_topic_url(stream_id: number, topic: string): string {
     // Wrapper for web use of internal_url.by_stream_topic_url
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
-}
-
-// We use the topic permalinks if we have access to the last message
-// id of the topic in the cache, by encoding it at the end of the
-// traditional channel-topic url using a `with` operator. If client
-// cache doesn't have a message, we use the traditional link format.
-export function by_channel_topic_permalink(stream_id: number, topic: string): string {
-    // From an API perspective, any message ID in the topic is a valid
-    // choice. In the client code, we choose the latest message ID in
-    // the topic, since display in recent conversations, the left
-    // sidebar, and most other elements are placed in a way reflecting
-    // the recency of the latest message in the topic.
-    const target_message_id = stream_topic_history.get_latest_known_message_id_in_topic(
-        stream_id,
-        topic,
-    );
-
-    return internal_url.by_stream_topic_url(
-        stream_id,
-        topic,
-        sub_store.maybe_get_stream_name,
-        target_message_id,
-    );
 }
 
 // Encodes a term list into the
@@ -241,7 +217,7 @@ export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined 
             return undefined;
         }
 
-        const canonical_operator = Filter.canonicalize_operator(
+        const canonical_operator = filter_util.canonicalize_operator(
             narrow_operator_schema.parse(operator),
         );
         const operand = decode_operand(canonical_operator, raw_operand);
@@ -457,5 +433,16 @@ export function decode_stream_topic_from_url(
         return {stream_id, topic_name: terms[1].operand, message_id: terms[2].operand};
     } catch {
         return null;
+    }
+}
+
+export function get_link_hash(link: string): string {
+    if (link.startsWith("/#narrow/")) {
+        return link.slice(1);
+    }
+    try {
+        return new URL(link).hash;
+    } catch {
+        return "";
     }
 }

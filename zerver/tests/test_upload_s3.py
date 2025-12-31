@@ -14,7 +14,7 @@ from mypy_boto3_s3.type_defs import CopySourceTypeDef
 
 import zerver.lib.upload
 from zerver.actions.create_user import do_create_user
-from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.actions.user_settings import do_scrub_avatar_image
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.test_classes import ZulipTestCase
@@ -525,7 +525,7 @@ class S3Test(ZulipTestCase):
         self.assertIsNotNone(bucket.Object(avatar_original_image_path_id))
         self.assertIsNotNone(bucket.Object(avatar_medium_path_id))
 
-        do_delete_avatar_image(user, acting_user=user)
+        do_scrub_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
