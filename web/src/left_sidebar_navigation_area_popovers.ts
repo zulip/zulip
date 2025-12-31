@@ -309,6 +309,12 @@ export function initialize(): void {
                     `.web_stream_unreads_count_display_policy_choice[value=${current_unread_policy}]`,
                 )
                 .prop("checked", true);
+
+            // Set the checked radio buttons for channel default view
+            const current_channel_view = user_settings.web_channel_default_view;
+            $popper
+                .find(`.web_channel_default_view_choice[value=${current_channel_view}]`)
+                .prop("checked", true);
         },
         onShow(instance) {
             const built_in_popover_condensed_views =
@@ -348,6 +354,30 @@ export function initialize(): void {
             const current_policy = user_settings.web_stream_unreads_count_display_policy;
 
             if (current_policy === policy_value) {
+                popovers.hide_all();
+                return;
+            }
+
+            void channel.patch({
+                url: "/json/settings",
+                data,
+                success() {
+                    popovers.hide_all();
+                },
+            });
+        },
+    );
+
+    // Handle channel default view changes
+    $("body").on(
+        "click",
+        ".condensed-views-popover-menu .channel-links-selector",
+        function (this: HTMLElement) {
+            const view_value = Number($(this).val());
+            const data = {web_channel_default_view: view_value};
+            const current_view = user_settings.web_channel_default_view;
+
+            if (current_view === view_value) {
                 popovers.hide_all();
                 return;
             }
