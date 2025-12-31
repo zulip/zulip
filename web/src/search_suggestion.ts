@@ -218,6 +218,8 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
         return [];
     }
 
+    assert(last.operator === "channel" || last.operator === "search" || last.operator === "");
+
     const query = last.operand;
     let channels = stream_data.subscribed_streams();
 
