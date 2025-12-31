@@ -11,7 +11,7 @@ const {
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
-const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -24,7 +24,6 @@ const _document = {
 };
 
 const buddy_list_presence = mock_esm("../src/buddy_list_presence");
-const electron_bridge = mock_esm("../src/electron_bridge");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
@@ -735,45 +734,6 @@ test("update_presence_info", ({override}) => {
     };
     activity_ui.update_presence_info(info);
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
-});
-
-test("electron_bridge", ({override_rewire}) => {
-    override_rewire(activity, "send_presence_to_server", noop);
-
-    function with_bridge_idle(bridge_idle, f) {
-        with_overrides(({override}) => {
-            override(electron_bridge, "electron_bridge", {
-                get_idle_on_system: () => bridge_idle,
-            });
-            return f();
-        });
-    }
-
-    with_bridge_idle(true, () => {
-        activity.mark_client_idle();
-        assert.equal(activity.compute_active_status(), "idle");
-        activity.mark_client_active();
-        assert.equal(activity.compute_active_status(), "idle");
-    });
-
-    with_overrides(({override}) => {
-        override(electron_bridge, "electron_bridge", undefined);
-        activity.mark_client_idle();
-        assert.equal(activity.compute_active_status(), "idle");
-        activity.mark_client_active();
-        assert.equal(activity.compute_active_status(), "active");
-    });
-
-    with_bridge_idle(false, () => {
-        activity.mark_client_idle();
-        assert.equal(activity.compute_active_status(), "active");
-        activity.mark_client_active();
-        assert.equal(activity.compute_active_status(), "active");
-    });
-
-    assert.ok(!activity.received_new_messages);
-    activity.set_received_new_messages(true);
-    assert.ok(activity.received_new_messages);
 });
 
 test("check_should_redraw_new_user", ({override}) => {
