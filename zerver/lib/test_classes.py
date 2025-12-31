@@ -2470,13 +2470,10 @@ class WebhookTestCase(ZulipTestCase):
     URL_TEMPLATE: str
     WEBHOOK_DIR_NAME: str | None = None
 
-    @property
-    def test_user(self) -> UserProfile:
-        return self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
-
     @override
     def setUp(self) -> None:
         super().setUp()
+        self.test_user = self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
         self.url = self.build_webhook_url()
 
         if self.WEBHOOK_DIR_NAME is not None:
