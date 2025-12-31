@@ -108,7 +108,6 @@ const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
-mock_esm("../src/giphy");
 const {Filter} = zrequire("filter");
 const {initialize: initialize_realm_user_settings_defaults} = zrequire(
     "realm_user_settings_defaults",
