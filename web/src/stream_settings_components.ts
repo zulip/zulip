@@ -45,9 +45,14 @@ function set_visibility_for_stream_title_buttons(sub: StreamSubscription): void 
         `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
     );
 
+    const $edit_stream_button = $(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] #channel_title_open_channel_info_modal`,
+    );
+
     if (!stream_data.can_administer_channel(sub)) {
         $archive_button.hide();
         $unarchive_button.hide();
+        $edit_stream_button.hide();
         return;
     }
 
@@ -116,6 +121,7 @@ export const show_subs_pane = {
                             name: "",
                             invite_only: false,
                             is_web_public: false,
+                            can_change_name_description: false,
                         },
                     }),
                 )

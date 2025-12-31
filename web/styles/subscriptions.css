@@ -1204,15 +1204,13 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header,
-    .stream-header {
+    .group-header {
         white-space: nowrap;
         padding-top: 5px;
         display: flex;
         align-items: center;
 
-        .group-name-wrapper,
-        .stream-name {
+        .group-name-wrapper {
             position: relative;
             font-size: 1.5em;
             font-weight: 600;
@@ -1223,8 +1221,7 @@ h4.user_group_setting_subsection_title {
             overflow-x: clip;
             text-overflow: ellipsis;
 
-            .group-name,
-            .sub-stream-name {
+            .group-name {
                 display: block;
                 width: 100%;
                 overflow: hidden;
@@ -1235,32 +1232,35 @@ h4.user_group_setting_subsection_title {
         .button-group {
             margin-left: auto;
         }
+    }
 
-        .large-icon {
-            display: flex;
-            margin-right: 5px;
+    .stream_change_property_info {
+        vertical-align: top;
+        margin: 0 5px 0 0;
+    }
 
-            &.hash::after {
-                top: -1px;
-                font-size: 1.09em;
-                font-weight: 700;
-            }
+    .channel-description-field {
+        display: flex;
+        /* 10px at 16px */
+        margin: 0 0 0.625em;
 
-            .zulip-icon {
-                font-size: 1.2857em; /* 18px at 14px/em */
-            }
-        }
-
-        .stream_change_property_info {
-            vertical-align: top;
-            margin: 0 5px 0 0;
+        /* The .right pane in .two-pane-settings-container uses box-sizing: border-box,
+           subtract the total horizontal padding from .settings-view-only-textarea so
+           that the width for this field matches all other fields using
+           --modal-input-width in the same menu. */
+        .settings-view-only-textarea {
+            width: calc(
+                var(--modal-input-width) - 2 *
+                    var(--view-only-field-horizontal-padding)
+            );
         }
     }
 
     .group-description-wrapper,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
 
         .no-description {
             font-style: italic;
@@ -1554,8 +1554,7 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
         }
 
-        .group-header,
-        .stream-header {
+        .group-header {
             .button-group {
                 margin-top: -5px;
             }
