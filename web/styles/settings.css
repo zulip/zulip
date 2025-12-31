@@ -2241,6 +2241,10 @@ label.preferences-radio-choice-label {
     }
 }
 
+.deactivate-user-container {
+    width: fit-content;
+}
+
 .settings_url_input,
 .settings_text_input {
     padding: var(--input-vertical-padding) var(--input-horizontal-padding);

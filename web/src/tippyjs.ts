@@ -414,7 +414,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#deactivate_account_container.disabled_setting_tooltip",
+        target: "#deactivate_account_container.disabled_setting_tooltip, .deactivate-user-container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
                 "Because you are the only organization owner, you cannot deactivate your account.",
