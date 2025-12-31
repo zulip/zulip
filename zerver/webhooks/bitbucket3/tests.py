@@ -7,7 +7,6 @@ TOPIC_BRANCH_EVENTS = "sandbox / {branch}"
 class Bitbucket3HookTests(WebhookTestCase):
     CHANNEL_NAME = "bitbucket3"
     URL_TEMPLATE = "/api/v1/external/bitbucket3?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "bitbucket3"
 
     # Diagnostics events:
     def test_ping(self) -> None:

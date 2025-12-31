@@ -7,7 +7,6 @@ class OpensearchHookTests(WebhookTestCase):
     CHANNEL_NAME = "Opensearch Alerts"
     TOPIC_NAME = "OpenSearch alerts"
     URL_TEMPLATE = "/api/v1/external/opensearch?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "opensearch"
 
     @override
     def setUp(self) -> None:
@@ -16,7 +15,7 @@ class OpensearchHookTests(WebhookTestCase):
 
     @override
     def get_body(self, fixture_name: str) -> str:
-        body = self.webhook_fixture_data(self.WEBHOOK_DIR_NAME, fixture_name, file_type="txt")
+        body = self.webhook_fixture_data(self.webhook_dir_name, fixture_name, file_type="txt")
         return body
 
     def test_test_notification_from_channel(self) -> None:

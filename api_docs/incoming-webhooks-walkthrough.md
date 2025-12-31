@@ -413,7 +413,6 @@ class HelloWorldHookTests(WebhookTestCase):
     CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}&stream={stream}"
     DIRECT_MESSAGE_URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "helloworld"
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
@@ -429,7 +428,7 @@ class HelloWorldHookTests(WebhookTestCase):
         )
 ```
 
-In the above example, `CHANNEL_NAME`, `URL_TEMPLATE`, and `WEBHOOK_DIR_NAME` refer
+In the above example, `CHANNEL_NAME`, and `URL_TEMPLATE` refer
 to class attributes from the base class, `WebhookTestCase`. These are needed by
 the helper function `check_webhook` to determine how to execute
 your test. `CHANNEL_NAME` should be set to your default channel. If it doesn't exist,

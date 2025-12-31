@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class HomeAssistantHookTests(WebhookTestCase):
     CHANNEL_NAME = "homeassistant"
     URL_TEMPLATE = "/api/v1/external/homeassistant?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "homeassistant"
 
     def test_simplereq(self) -> None:
         expected_topic_name = "homeassistant"

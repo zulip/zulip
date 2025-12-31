@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class AppveyorHookTests(WebhookTestCase):
     CHANNEL_NAME = "appveyor"
     URL_TEMPLATE = "/api/v1/external/appveyor?api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "appveyor"
 
     def test_appveyor_build_success_message(self) -> None:
         """

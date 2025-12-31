@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class SonarrHookTests(WebhookTestCase):
     CHANNEL_NAME = "sonarr"
     URL_TEMPLATE = "/api/v1/external/sonarr?api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "sonarr"
 
     def test_sonarr_test(self) -> None:
         """

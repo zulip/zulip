@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class ZapierHookTests(WebhookTestCase):
     CHANNEL_NAME = "zapier"
     URL_TEMPLATE = "/api/v1/external/zapier?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "zapier"
 
     def test_zapier_when_subject_and_body_are_correct(self) -> None:
         expected_topic_name = "New email from zulip@zulip.com"
@@ -27,7 +26,6 @@ class ZapierHookTests(WebhookTestCase):
 class ZapierZulipAppTests(WebhookTestCase):
     CHANNEL_NAME = "zapier"
     URL_TEMPLATE = "/api/v1/external/zapier?api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "zapier"
 
     def test_auth(self) -> None:
         payload = self.get_body("zapier_zulip_app_auth")

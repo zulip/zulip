@@ -241,6 +241,7 @@ class WebhookURLConfigurationTestCase(WebhookTestCase):
 class MissingEventHeaderTestCase(WebhookTestCase):
     CHANNEL_NAME = "groove"
     URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
+    WEBHOOK_DIR_NAME = "groove"
 
     # This tests the get_event_header function with an actual webhook,
     # instead of just making a mock

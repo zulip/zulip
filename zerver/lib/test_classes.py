@@ -2460,9 +2460,9 @@ class WebhookTestCase(ZulipTestCase):
     * Tests can override get_body for cases where there is no
       available fixture file.
 
-    * Tests should specify WEBHOOK_DIR_NAME to enforce that all event
-      types are declared in the @webhook_view decorator. This is
-      important for ensuring we document all fully supported event types.
+    * We enforce that all event types are declared in the @webhook_view
+      decorator. This is important for ensuring we document all fully
+      supported event types.
     """
 
     CHANNEL_NAME: str | None = None
@@ -2470,52 +2470,57 @@ class WebhookTestCase(ZulipTestCase):
     URL_TEMPLATE: str
     WEBHOOK_DIR_NAME: str | None = None
 
+    def get_webhook_dir_name(self) -> str:
+        module_parts = self.__module__.split(".")
+        if len(module_parts) >= 3 and module_parts[0] == "zerver" and module_parts[1] == "webhooks":
+            return module_parts[2]
+        raise AssertionError(f"Cannot determine webhook directory from module: {self.__module__}")
+
     @override
     def setUp(self) -> None:
         super().setUp()
         self.test_user = self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
         self.url = self.build_webhook_url()
+        self.webhook_dir_name = self.WEBHOOK_DIR_NAME or self.get_webhook_dir_name()
 
-        if self.WEBHOOK_DIR_NAME is not None:
-            function = import_string(
-                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.api_{self.WEBHOOK_DIR_NAME}_webhook"
+        function = import_string(
+            f"zerver.webhooks.{self.webhook_dir_name}.view.api_{self.webhook_dir_name}_webhook"
+        )
+
+        all_event_types = None
+        if hasattr(function, "_all_event_types"):
+            all_event_types = function._all_event_types
+        if all_event_types is None:
+            return  # nocoverage
+
+        def side_effect(*args: Any, **kwargs: Any) -> int | None:
+            complete_event_type = (
+                kwargs.get("complete_event_type")
+                if len(args) < 5
+                else args[4]  # complete_event_type is the argument at index 4
             )
-            all_event_types = None
-
-            if hasattr(function, "_all_event_types"):
-                all_event_types = function._all_event_types
-
-            if all_event_types is None:
-                return  # nocoverage
-
-            def side_effect(*args: Any, **kwargs: Any) -> int | None:
-                complete_event_type = (
-                    kwargs.get("complete_event_type")
-                    if len(args) < 5
-                    else args[4]  # complete_event_type is the argument at index 4
-                )
-                if (
-                    complete_event_type is not None
-                    and all_event_types is not None
-                    and complete_event_type not in all_event_types
-                ):  # nocoverage
-                    raise Exception(
-                        f"""
+            if (
+                complete_event_type is not None
+                and all_event_types is not None
+                and complete_event_type not in all_event_types
+            ):  # nocoverage
+                raise Exception(
+                    f"""
 Error: This test triggered a message using the event "{complete_event_type}", which was not properly
 registered via the @webhook_view(..., event_types=[...]). These registrations are important for Zulip
 self-documenting the supported event types for this integration.
 
 You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
 """.strip()
-                    )
-                return check_send_webhook_message(*args, **kwargs)
+                )
+            return check_send_webhook_message(*args, **kwargs)
 
-            self.patch = mock.patch(
-                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.check_send_webhook_message",
-                side_effect=side_effect,
-            )
-            self.patch.start()
-            self.addCleanup(self.patch.stop)
+        self.patch = mock.patch(
+            f"zerver.webhooks.{self.webhook_dir_name}.view.check_send_webhook_message",
+            side_effect=side_effect,
+        )
+        self.patch.start()
+        self.addCleanup(self.patch.stop)
 
     def api_channel_message(
         self,
@@ -2572,10 +2577,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         payload = self.get_payload(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
-        if self.WEBHOOK_DIR_NAME is not None:
-            headers = call_fixture_to_headers(self.WEBHOOK_DIR_NAME, fixture_name)
-            headers = standardize_headers(headers)
-            extra.update(headers)
+        headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
+        headers = standardize_headers(headers)
+        extra.update(headers)
         try:
             msg = self.send_webhook_payload(
                 self.test_user,
@@ -2638,10 +2642,9 @@ one or more new messages.
         payload = self.get_payload(fixture_name)
         extra["content_type"] = content_type
 
-        if self.WEBHOOK_DIR_NAME is not None:
-            headers = call_fixture_to_headers(self.WEBHOOK_DIR_NAME, fixture_name)
-            headers = standardize_headers(headers)
-            extra.update(headers)
+        headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
+        headers = standardize_headers(headers)
+        extra.update(headers)
 
         if sender is None:
             sender = self.test_user
@@ -2684,8 +2687,7 @@ one or more new messages.
         return self.get_body(fixture_name)
 
     def get_body(self, fixture_name: str) -> str:
-        assert self.WEBHOOK_DIR_NAME is not None
-        body = self.webhook_fixture_data(self.WEBHOOK_DIR_NAME, fixture_name)
+        body = self.webhook_fixture_data(self.webhook_dir_name, fixture_name)
         # fail fast if we don't have valid json
         orjson.loads(body)
         return body

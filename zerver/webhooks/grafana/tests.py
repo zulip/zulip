@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class GrafanaHookTests(WebhookTestCase):
     CHANNEL_NAME = "grafana"
     URL_TEMPLATE = "/api/v1/external/grafana?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "grafana"
 
     def test_alert_v7(self) -> None:
         expected_topic_name = "[Alerting] Test notification"

@@ -16,7 +16,6 @@ TOPIC_BRANCH_EVENTS = "Repository name / master"
 class Bitbucket2HookTests(WebhookTestCase):
     CHANNEL_NAME = "bitbucket2"
     URL_TEMPLATE = "/api/v1/external/bitbucket2?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "bitbucket2"
 
     def test_bitbucket2_on_push_event(self) -> None:
         commit_info = "* first commit ([84b96adc644](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))"
