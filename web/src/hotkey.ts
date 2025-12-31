@@ -787,10 +787,16 @@ export function process_shift_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_element = document.activeElement;
 
-    if ($("#compose-send-button").is(":focus")) {
-        // Shift-Tab: go back to content textarea and restore
-        // cursor position.
+    if (!(focused_element instanceof HTMLElement)) {
+        return false;
+    }
+
+    const $focused_element = $(focused_element);
+    const $message_edit_form = $focused_element.closest(".message_edit_form");
+
+    if (focused_element.id === "compose-send-button") {
         compose_textarea.restore_compose_cursor();
         return true;
     }
