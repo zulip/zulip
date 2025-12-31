@@ -758,20 +758,35 @@ export function process_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_element = document.activeElement;
 
-    let $message_edit_form;
+    if (!(focused_element instanceof HTMLElement)) {
+        return false;
+    }
 
-    const $focused_message_edit_content = $(".message_edit_content:focus");
-    if ($focused_message_edit_content.length > 0) {
-        $message_edit_form = $focused_message_edit_content.closest(".message_edit_form");
+    const $focused_element = $(focused_element);
+    const $message_edit_form = $focused_element.closest(".message_edit_form");
+
+    if ($message_edit_form.length === 0) {
+        return false;
+    }
+
+    const form_element = $message_edit_form[0];
+    if (!form_element) {
+        return false;
+    }
+
+    // 1. Content -> Save
+    if ($focused_element.hasClass("message_edit_content")) {
+        const $message_edit_form = $focused_element.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
         $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
         return true;
     }
 
-    const $focused_message_edit_save = $(".message_edit_save:focus");
-    if ($focused_message_edit_save.length > 0) {
-        $message_edit_form = $focused_message_edit_save.closest(".message_edit_form");
+    // 2. Save -> Cancel
+    if ($focused_element.hasClass("message_edit_save")) {
+        const $message_edit_form = $focused_element.closest(".message_edit_form");
         $message_edit_form.find(".message_edit_cancel").trigger("focus");
         return true;
     }
