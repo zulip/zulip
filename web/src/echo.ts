@@ -128,7 +128,7 @@ function clear_hang_timer(local_id: string): void {
     }
 }
 
-function show_msg_hang_warning(local_id: string): void {
+let show_msg_hang_warning: (local_id: string) => void = (local_id) => {
     if (messages_with_hang_warning.has(local_id)) {
         return;
     }
@@ -138,15 +138,16 @@ function show_msg_hang_warning(local_id: string): void {
         return;
     }
 
-    const $warning = $("<div>")
-        .addClass("message_not_received")
-        .text($t({defaultMessage: "Message not received by server"}));
+    $row.find(".message_content");
 
+    const $warning = $("<div>").addClass("message_not_received");
+
+    $warning.text($t({defaultMessage: "Message not received by server"}));
     $row.find(".message_content").after($warning);
     messages_with_hang_warning.add(local_id);
 }
 
-function clear_msg_hang_warning(local_id: string): void {
+let clear_msg_hang_warning: (local_id: string) => void = (local_id) => {
     if (!messages_with_hang_warning.has(local_id)) {
         return;
     }
@@ -159,7 +160,6 @@ function clear_msg_hang_warning(local_id: string): void {
     $row.find(".message_not_received").remove();
     messages_with_hang_warning.delete(local_id);
 }
-
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
@@ -752,4 +752,16 @@ export function initialize({
 
     on_failed_action(".remove-failed-message", abort_message);
     on_failed_action(".refresh-failed-message", resend_message);
+}
+
+export function rewire_show_msg_hang_warning(
+    value: (local_id: string) => void,
+): void {
+    show_msg_hang_warning = value;
+}
+
+export function rewire_clear_msg_hang_warning(
+    value: (local_id: string) => void,
+): void {
+    clear_msg_hang_warning = value;
 }
