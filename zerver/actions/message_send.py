@@ -82,6 +82,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
+from zerver.lib.url_encoding import encode_hash_component, message_link_url
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     check_any_user_has_permission_by_role,
@@ -235,6 +236,8 @@ class UserProfileAnnotations(TypedDict):
 @dataclass
 class SentMessageResult:
     message_id: int
+    message_url: str
+    message_link: str
     automatic_new_visibility_policy: int | None = None
 
 
@@ -1091,10 +1094,25 @@ def do_send_messages(
                         visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
                     )
 
-        # Deliver events to the real-time push system, as well as
-        # enqueuing any additional processing triggered by the message.
         wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
 
+        # Compute URL of the message.
+        if send_request.stream:
+            # We manually construct the URL using only the stream ID (ignoring the
+            # stream name) to prevent leaking private stream names to bots that
+            # might have write-only access.
+            encoded_topic = encode_hash_component(send_request.message.topic_name())
+            relative_url = f"#narrow/channel/{send_request.stream.id}/topic/{encoded_topic}/near/{send_request.message.id}"
+
+            send_request.message_url = f"{send_request.realm.url}/{relative_url}"
+            send_request.message_link = send_request.message_url
+        else:
+            # For DMs, there is no stream name to leak, so standard helpers are safe.
+            send_request.message_url = message_link_url(send_request.realm, wide_message_dict)
+            send_request.message_link = send_request.message_url
+
+        # Deliver events to the real-time push system, as well as
+        # enqueuing any additional processing triggered by the message.
         user_flags = user_message_flags.get(send_request.message.id, {})
 
         """
@@ -1301,13 +1319,19 @@ def do_send_messages(
                     },
                 )
 
-    sent_message_results = [
-        SentMessageResult(
+    sent_message_results = []
+    for send_request in send_message_requests:
+        assert send_request.message_url is not None
+        assert send_request.message_link is not None
+
+        result = SentMessageResult(
             message_id=send_request.message.id,
+            message_url=send_request.message_url,
+            message_link=send_request.message_link,
             automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
         )
-        for send_request in send_message_requests
-    ]
+        sent_message_results.append(result)
+
     return sent_message_results
 
 
