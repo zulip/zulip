@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ReviewBoardHookTests(WebhookTestCase):
-    CHANNEL_NAME = "reviewboard"
     URL_TEMPLATE = "/api/v1/external/reviewboard?&api_key={api_key}&stream={stream}"
 
     def test_review_request_published(self) -> None:

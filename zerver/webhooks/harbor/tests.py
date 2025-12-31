@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class HarborHookTests(WebhookTestCase):
-    CHANNEL_NAME = "harbor"
     URL_TEMPLATE = "/api/v1/external/harbor?api_key={api_key}&stream={stream}"
 
     def test_push_image(self) -> None:

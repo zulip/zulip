@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ErrBitHookTests(WebhookTestCase):
-    CHANNEL_NAME = "errbit"
     URL_TEMPLATE = "/api/v1/external/errbit?stream={stream}&api_key={api_key}"
 
     def test_errbit_error_message(self) -> None:

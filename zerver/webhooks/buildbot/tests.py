@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class BuildbotHookTests(WebhookTestCase):
-    CHANNEL_NAME = "buildbot"
     URL_TEMPLATE = "/api/v1/external/buildbot?api_key={api_key}&stream={stream}"
 
     def test_build_started(self) -> None:

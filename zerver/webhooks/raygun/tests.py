@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class RaygunHookTests(WebhookTestCase):
-    CHANNEL_NAME = "raygun"
     URL_TEMPLATE = "/api/v1/external/raygun?&api_key={api_key}&stream={stream}"
 
     def test_status_changed_message(self) -> None:

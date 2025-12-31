@@ -7,7 +7,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class BeanstalkHookTests(WebhookTestCase):
-    CHANNEL_NAME = "commits"
     URL_TEMPLATE = "/api/v1/external/beanstalk?stream={stream}"
 
     def test_git_single(self) -> None:

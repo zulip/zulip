@@ -6,7 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class LibratoHookTests(WebhookTestCase):
-    CHANNEL_NAME = "librato"
     URL_TEMPLATE = "/api/v1/external/librato?api_key={api_key}&stream={stream}"
     IS_ATTACHMENT = False
 

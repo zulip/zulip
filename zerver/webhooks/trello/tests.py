@@ -6,7 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TrelloHookTests(WebhookTestCase):
-    CHANNEL_NAME = "trello"
     URL_TEMPLATE = "/api/v1/external/trello?stream={stream}&api_key={api_key}"
 
     def test_trello_confirmation_request(self) -> None:

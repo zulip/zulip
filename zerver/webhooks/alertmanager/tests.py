@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class AlertmanagerHookTests(WebhookTestCase):
-    CHANNEL_NAME = "alertmanager"
     URL_TEMPLATE = "/api/v1/external/alertmanager?&api_key={api_key}&stream={stream}&name=topic&desc=description"
 
     def test_error_issue_message(self) -> None:

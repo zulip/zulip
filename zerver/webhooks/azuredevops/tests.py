@@ -5,7 +5,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class AzuredevopsHookTests(WebhookTestCase):
-    CHANNEL_NAME = "azure-devops"
     URL_TEMPLATE = "/api/v1/external/azuredevops?&api_key={api_key}&stream={stream}"
 
     def test_push_event_message(self) -> None:

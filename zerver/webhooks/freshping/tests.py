@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FreshpingHookTests(WebhookTestCase):
-    CHANNEL_NAME = "freshping"
     URL_TEMPLATE = "/api/v1/external/freshping?api_key={api_key}&stream={stream}"
 
     def test_freshping_check_test(self) -> None:

@@ -2,7 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class LidarrHookTests(WebhookTestCase):
-    CHANNEL_NAME = "lidarr"
     URL_TEMPLATE = "/api/v1/external/lidarr?api_key={api_key}&stream={stream}"
 
     def test_lidarr_test(self) -> None:

@@ -7,7 +7,6 @@ TOPIC_BRANCH_EVENTS = "Repository name / master"
 
 
 class BitbucketHookTests(WebhookTestCase):
-    CHANNEL_NAME = "bitbucket"
     URL_TEMPLATE = "/api/v1/external/bitbucket?stream={stream}"
 
     def test_bitbucket_on_push_event(self) -> None:

@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class HelloSignHookTests(WebhookTestCase):
-    CHANNEL_NAME = "hellosign"
     URL_TEMPLATE = "/api/v1/external/hellosign?stream={stream}&api_key={api_key}"
 
     def test_signatures_message(self) -> None:

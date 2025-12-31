@@ -5,7 +5,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ClubhouseWebhookTest(WebhookTestCase):
-    CHANNEL_NAME = "clubhouse"
     URL_TEMPLATE = "/api/v1/external/clubhouse?stream={stream}&api_key={api_key}"
 
     def test_story_create(self) -> None:

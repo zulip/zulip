@@ -5,7 +5,6 @@ from zerver.lib.webhooks.common import parse_multipart_string
 
 
 class JotformHookTests(WebhookTestCase):
-    CHANNEL_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/jotform?stream={stream}&api_key={api_key}"
 
     def test_response(self) -> None:

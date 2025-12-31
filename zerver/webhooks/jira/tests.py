@@ -5,7 +5,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class JiraHookTests(WebhookTestCase):
-    CHANNEL_NAME = "jira"
     URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}&stream={stream}"
 
     def test_custom_channel(self) -> None:
@@ -63,9 +62,9 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
             self.assert_json_success(result)
 
     def test_created_with_channel_with_spaces_escaped(self) -> None:
-        self.CHANNEL_NAME = quote("jira alerts")
+        self.channel_name = quote("jira alerts")
         self.url = self.build_webhook_url()
-        self.subscribe(self.test_user, unquote(self.CHANNEL_NAME))
+        self.subscribe(self.test_user, unquote(self.channel_name))
 
         payload = self.get_body("created_v1")
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -84,9 +83,9 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
         self.assertEqual(msg.topic_name(), expected_topic_name)
 
     def test_created_with_channel_with_spaces_double_escaped(self) -> None:
-        self.CHANNEL_NAME = quote(quote("jira alerts"))
+        self.channel_name = quote(quote("jira alerts"))
         self.url = self.build_webhook_url()
-        self.subscribe(self.test_user, unquote(unquote(self.CHANNEL_NAME)))
+        self.subscribe(self.test_user, unquote(unquote(self.channel_name)))
 
         payload = self.get_body("created_v1")
         result = self.client_post(self.url, payload, content_type="application/json")

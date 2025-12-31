@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GiteaHookTests(WebhookTestCase):
-    CHANNEL_NAME = "commits"
     URL_TEMPLATE = "/api/v1/external/gitea?&api_key={api_key}&stream={stream}"
 
     def test_multiple_commits(self) -> None:
