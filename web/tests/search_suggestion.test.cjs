@@ -348,6 +348,7 @@ test("group_suggestions", ({mock_template}) => {
 
     // Doesn't show dms because it's invalid in combination
     // with a channel. (Random channel id.)
+    stream_data.add_sub_for_tests({stream_id: 66, name: "misc", subscribed: true});
     query = "channel:66 has:link dm:bob@zulip.com,Smit";
     suggestions = get_suggestions(query);
     expected = [];
@@ -466,7 +467,7 @@ test("has_suggestions", ({override, mock_template}) => {
     expected = ["att", "has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
 
-    // 66 is misc channel id.
+    stream_data.add_sub_for_tests({stream_id: 66, name: "misc", subscribed: true});
     query = "channel:66 is:alerted has:lin";
     suggestions = get_suggestions(query);
     expected = ["channel:66 is:alerted has:link"];
@@ -567,6 +568,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
     expected = ["st", "channels:", "channel:", "is:starred"];
     assert.deepEqual(suggestions.strings, expected);
 
+    stream_data.add_sub_for_tests({stream_id: 66, name: "misc", subscribed: true});
     query = "channel:66 has:link is:sta";
     suggestions = get_suggestions(query);
     expected = ["channel:66 has:link is:starred"];
@@ -1042,6 +1044,7 @@ test("people_suggestions", ({override, mock_template}) => {
 test("operator_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
+    override(stream_topic_history_util, "get_server_history", noop);
     override(narrow_state, "stream_id", () => undefined);
 
     // Completed operator should return nothing
@@ -1060,7 +1063,7 @@ test("operator_suggestions", ({override, mock_template}) => {
     expected = ["-s", "-sender:", "-channels:", "-channel:", "-sender:myself@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
-    // 66 is a misc channel id.
+    stream_data.add_sub_for_tests({stream_id: 66, name: "misc", subscribed: true});
     query = "channel:66 is:alerted -f";
     suggestions = get_suggestions(query);
     expected = [
