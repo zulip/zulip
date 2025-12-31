@@ -8450,10 +8450,25 @@ paths:
                           user automatically unmuting or following the topic in question.
 
                           **Changes**: New in Zulip 8.0 (feature level 218).
+                      message_url:
+                        type: string
+                        description: |
+                          A URL that links to the sent message within its conversation.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-1aabde).
+                      message_link:
+                        type: string
+                        description: |
+                          A [Zulip-flavored Markdown string](/help/format-your-message-using-markdown#links)
+                          representing a link to the sent message within its conversation.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-1aabde).
                     example:
                       {
                         "msg": "",
                         "id": 42,
+                        "message_url": "https://example.zulipchat.com/#narrow/channel/399637-core-team/topic/private.20streams/near/382320733",
+                        "message_link": "[#core team > private streams @ 💬](#narrow/channel/399637-core-team/topic/private.20streams/near/382320733)",
                         "automatic_new_visibility_policy": 2,
                         "result": "success",
                       }
