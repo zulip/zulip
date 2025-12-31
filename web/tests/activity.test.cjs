@@ -23,6 +23,7 @@ const _document = {
     },
 };
 
+const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const electron_bridge = mock_esm("../src/electron_bridge");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
@@ -462,6 +463,7 @@ test("first/prev/next", ({override, override_rewire, mock_template}) => {
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
+    override(buddy_list_presence, "update_indicators", noop);
     override(user_settings, "user_list_style", 2);
 
     override(padded_widget, "update_padding", noop);
@@ -492,25 +494,10 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     override(buddy_list.$users_matching_view_list, "append", ($element) => {
         $users_matching_view_appended = $element;
     });
+
     let $other_users_appended;
     override(buddy_list.$other_users_list, "append", ($element) => {
         $other_users_appended = $element;
-    });
-
-    $.create("[data-presence-indicator-user-id]", {
-        children: [
-            {
-                to_$() {
-                    return {
-                        attr: () => 1,
-                        removeClass() {
-                            return this;
-                        },
-                        addClass: noop,
-                    };
-                },
-            },
-        ],
     });
 
     add_sub_and_set_as_current_narrow(rome_sub);
@@ -529,7 +516,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     assert.ok($other_users_appended.selector.includes("user-circle-active"));
 });
 
-test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
+test("insert_alice_then_fred", ({override, mock_template}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
     let $other_users_appended;
@@ -537,7 +524,7 @@ test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
         $other_users_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
-    override_rewire(activity_ui, "update_presence_indicators", noop);
+    override(buddy_list_presence, "update_indicators", noop);
 
     activity_ui.redraw_user(alice.user_id);
     assert.ok($other_users_appended.selector.includes('data-user-id="1"'));
@@ -550,7 +537,6 @@ test("insert_alice_then_fred", ({override, override_rewire, mock_template}) => {
 
 test("insert_fred_then_alice_then_rename, both as users matching view", ({
     override,
-    override_rewire,
     mock_template,
 }) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
@@ -563,7 +549,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
         $users_matching_view_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
-    override_rewire(activity_ui, "update_presence_indicators", noop);
+    override(buddy_list_presence, "update_indicators", noop);
     buddy_list_add_user_matching_view(alice.user_id, $alice_stub);
     buddy_list_add_user_matching_view(fred.user_id, $fred_stub);
 
@@ -605,11 +591,7 @@ test("insert_fred_then_alice_then_rename, both as users matching view", ({
     people.add_active_user(fred);
 });
 
-test("insert_fred_then_alice_then_rename, both as other users", ({
-    override,
-    override_rewire,
-    mock_template,
-}) => {
+test("insert_fred_then_alice_then_rename, both as other users", ({override, mock_template}) => {
     mock_template("presence_row.hbs", true, (_data, html) => html);
 
     add_sub_and_set_as_current_narrow(rome_sub);
@@ -620,7 +602,7 @@ test("insert_fred_then_alice_then_rename, both as other users", ({
         $other_users_appended = $element;
     });
     override(padded_widget, "update_padding", noop);
-    override_rewire(activity_ui, "update_presence_indicators", noop);
+    override(buddy_list_presence, "update_indicators", noop);
 
     buddy_list_add_other_user(alice.user_id, $alice_stub);
     buddy_list_add_other_user(fred.user_id, $fred_stub);
@@ -684,9 +666,9 @@ test("redraw_muted_user", () => {
     activity_ui.redraw_user(mark.user_id);
 });
 
-test("update_presence_info", ({override, override_rewire}) => {
+test("update_presence_info", ({override}) => {
     override(pm_list, "update_private_messages", noop);
-    override_rewire(activity_ui, "update_presence_indicators", noop);
+    override(buddy_list_presence, "update_indicators", noop);
 
     override(realm, "realm_presence_disabled", false);
     override(realm, "server_presence_ping_interval_seconds", 60);
