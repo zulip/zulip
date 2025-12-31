@@ -1215,15 +1215,13 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header,
-    .stream-header {
+    .group-header {
         white-space: nowrap;
         padding-top: 5px;
         display: flex;
         align-items: center;
 
-        .group-name-wrapper,
-        .stream-name {
+        .group-name-wrapper {
             position: relative;
             font-size: 1.5em;
             font-weight: 600;
@@ -1234,8 +1232,7 @@ h4.user_group_setting_subsection_title {
             overflow-x: clip;
             text-overflow: ellipsis;
 
-            .group-name,
-            .sub-stream-name {
+            .group-name {
                 display: block;
                 width: 100%;
                 overflow: hidden;
@@ -1246,27 +1243,28 @@ h4.user_group_setting_subsection_title {
         .button-group {
             margin-left: auto;
         }
+    }
 
-        .large-icon {
-            display: flex;
-            margin-right: 5px;
+    .channel-description-field {
+        display: flex;
+        flex-wrap: wrap;
+        /* 10px at 16px */
+        margin: 0 0 0.625em;
 
-            &.hash::after {
-                top: -1px;
-                font-size: 1.09em;
-                font-weight: 700;
-            }
-
-            .zulip-icon {
-                font-size: 1.2857em; /* 18px at 14px/em */
-            }
+        /* Subtract the total horizontal padding and border width from the input width
+           so that this matches other setting elements using box-sizing: border-box. */
+        .settings-view-only-textarea {
+            width: calc(
+                var(--modal-input-width) - 2 *
+                    var(--view-only-field-horizontal-padding) - 2 *
+                    var(--input-border-width)
+            );
         }
     }
 
     .group-description-wrapper,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 10px;
 
         .no-description {
             font-style: italic;
@@ -1571,8 +1569,7 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
         }
 
-        .group-header,
-        .stream-header {
+        .group-header {
             .button-group {
                 margin-top: -5px;
             }
