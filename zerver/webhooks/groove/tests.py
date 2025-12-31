@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GrooveHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
-
     # This test simulates the condition when a new ticket comes.
     def test_groove_ticket_started(self) -> None:
         expected_topic_name = "notifications"

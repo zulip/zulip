@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class BuildbotHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/buildbot?api_key={api_key}&stream={stream}"
-
     def test_build_started(self) -> None:
         expected_topic_name = "buildbot-hello"
         expected_message = (

@@ -5,8 +5,6 @@ from zerver.lib.webhooks.common import parse_multipart_string
 
 
 class JotformHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/jotform?stream={stream}&api_key={api_key}"
-
     def test_response(self) -> None:
         expected_title = "Tutor Appointment Form"
         expected_message = """

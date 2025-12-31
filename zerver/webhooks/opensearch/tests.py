@@ -5,7 +5,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class OpensearchHookTests(WebhookTestCase):
     TOPIC_NAME = "OpenSearch alerts"
-    URL_TEMPLATE = "/api/v1/external/opensearch?stream={stream}&api_key={api_key}"
 
     @override
     def setUp(self) -> None:

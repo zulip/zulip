@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GocdHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/gocd?stream={stream}&api_key={api_key}"
-
     def test_building_pipeline(self) -> None:
         expected_topic = "Pipeline / Stage"
         expected_message = """**Pipeline building**: Pipeline / Stage

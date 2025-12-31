@@ -3,8 +3,6 @@ from zerver.webhooks.gosquared.view import CHAT_MESSAGE_TEMPLATE
 
 
 class GoSquaredHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/gosquared?stream={stream}&api_key={api_key}"
-
     # Note: Include a test function per each distinct message condition your integration supports
     def test_traffic_message(self) -> None:
         expected_topic_name = "GoSquared - requestb.in"

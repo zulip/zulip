@@ -5,8 +5,6 @@ from zerver.webhooks.freshstatus.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class FreshstatusHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/freshstatus?api_key={api_key}&stream={stream}"
-
     def test_freshstatus_incident_open_multiple_services(self) -> None:
         """
         Tests if freshstatus incident open multiple services is handled correctly

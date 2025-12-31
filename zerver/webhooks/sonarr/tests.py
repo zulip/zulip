@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class SonarrHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/sonarr?api_key={api_key}&stream={stream}"
-
     def test_sonarr_test(self) -> None:
         """
         Tests if sonarr test payload is handled correctly

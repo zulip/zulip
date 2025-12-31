@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FrontHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/front?&api_key={api_key}&stream={stream}"
-
     # Scenario 1: Conversation starts from an outbound message.
 
     # Conversation automatically assigned to a teammate who started it.

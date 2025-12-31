@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class HarborHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/harbor?api_key={api_key}&stream={stream}"
-
     def test_push_image(self) -> None:
         expected_topic_name = "example/test"
         expected_message = """**admin** pushed image `example/test:latest`"""

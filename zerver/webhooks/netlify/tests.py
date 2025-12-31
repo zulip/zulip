@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class NetlifyHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/netlify?stream={stream}&api_key={api_key}"
-
     def test_building_message(self) -> None:
         expected_topic_name = "master"
         expected_message = "The build [objective-jepsen-35fbb2](http://objective-jepsen-35fbb2.netlify.com) on branch master is now building."

@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class SonarqubeHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/sonarqube?api_key={api_key}&stream={stream}"
-
     def test_analysis_success(self) -> None:
         expected_topic_name = "test-sonar / master"
 

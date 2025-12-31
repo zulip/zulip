@@ -5,8 +5,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class JiraHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/jira?api_key={api_key}&stream={stream}"
-
     def test_custom_channel(self) -> None:
         api_key = self.test_user.api_key
         self.subscribe(self.test_user, "jira_custom")

@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class OpenProjectHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/openproject?api_key={api_key}&stream={stream}"
-
     def test_project_with_parent_created(self) -> None:
         expected_topic = "AI Backend"
         expected_message = (

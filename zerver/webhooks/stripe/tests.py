@@ -5,8 +5,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class StripeHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}&stream={stream}"
-
     def test_charge_dispute_closed(self) -> None:
         expected_topic_name = "disputes"
         expected_message = "[Dispute](https://dashboard.stripe.com/disputes/dp_00000000000000) closed. Current status: won."

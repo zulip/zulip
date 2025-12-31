@@ -5,8 +5,6 @@ from zerver.webhooks.uptimerobot.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class UptimeRobotHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/uptimerobot?stream={stream}&api_key={api_key}"
-
     def test_uptimerobot_monitor_down(self) -> None:
         """
         Tests if uptimerobot monitor down is handled correctly

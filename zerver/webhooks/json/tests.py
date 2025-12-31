@@ -4,8 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class JsonHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/json?api_key={api_key}&stream={stream}"
-
     def test_json_github_push__1_commit_message(self) -> None:
         """
         Tests if json github push 1 commit is handled correctly

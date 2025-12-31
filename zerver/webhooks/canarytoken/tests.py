@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class CanarytokensHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/canarytoken?stream={stream}&api_key={api_key}"
-
     def test_canarytoken_new(self) -> None:
         expected_message = (
             "**:alert: Canarytoken has been triggered on <time:2020-06-09T14:04:39+00:00>!**\n\n"

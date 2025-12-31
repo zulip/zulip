@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class PingdomHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/pingdom?stream={stream}&api_key={api_key}"
-
     def test_pingdom_from_up_to_down_http_check_message(self) -> None:
         """
         Tests if pingdom http check from up to down is handled correctly

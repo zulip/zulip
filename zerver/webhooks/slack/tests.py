@@ -411,8 +411,6 @@ class SlackWebhookTests(WebhookTestCase):
 
 
 class SlackLegacyWebhookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/slack?stream={stream}&api_key={api_key}"
-
     def test_slack_only_stream_parameter(self) -> None:
         expected_topic_name = "Message from Slack"
         expected_message = EXPECTED_MESSAGE.format(user=LEGACY_USER, message="test")

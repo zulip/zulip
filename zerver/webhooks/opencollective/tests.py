@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class OpenCollectiveHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/opencollective?&api_key={api_key}&stream={stream}"
-
     # Note: Include a test function per each distinct message condition your integration supports
     def test_one_time_donation(self) -> None:  # test one time donation
         expected_topic_name = "New Member"

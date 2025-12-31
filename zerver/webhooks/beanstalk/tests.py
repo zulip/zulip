@@ -7,8 +7,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class BeanstalkHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/beanstalk?stream={stream}"
-
     def test_git_single(self) -> None:
         expected_topic_name = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 1 commit to branch master.

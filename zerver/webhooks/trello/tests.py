@@ -6,8 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TrelloHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/trello?stream={stream}&api_key={api_key}"
-
     def test_trello_confirmation_request(self) -> None:
         response = self.client_head(self.build_webhook_url())
         self.assertEqual(response.status_code, 200, response)

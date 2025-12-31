@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class NewRelicHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/newrelic?stream={stream}&api_key={api_key}"
-
     def test_incident_activated_new_default_payload(self) -> None:
         expected_topic_name = "zulip_app query result is > 1.0 for 1 minutes on 'Zulip S..."
         expected_message = """

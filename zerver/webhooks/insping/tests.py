@@ -2,8 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class InspingHookTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/insping?&api_key={api_key}&stream={stream}"
-
     def test_website_state_available_message(self) -> None:
         expected_topic_name = "insping"
         expected_message = """
