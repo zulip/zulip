@@ -2469,9 +2469,6 @@ class WebhookTestCase(ZulipTestCase):
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
     WEBHOOK_DIR_NAME: str | None = None
-    # This last parameter is a workaround to handle webhooks that do not
-    # name the main function api_{WEBHOOK_DIR_NAME}_webhook.
-    VIEW_FUNCTION_NAME: str | None = None
 
     @property
     def test_user(self) -> UserProfile:
@@ -2483,19 +2480,9 @@ class WebhookTestCase(ZulipTestCase):
         self.url = self.build_webhook_url()
 
         if self.WEBHOOK_DIR_NAME is not None:
-            # If VIEW_FUNCTION_NAME is explicitly specified and
-            # WEBHOOK_DIR_NAME is not None, an exception will be
-            # raised when a test triggers events that are not
-            # explicitly specified via the event_types parameter to
-            # the @webhook_view decorator.
-            if self.VIEW_FUNCTION_NAME is None:
-                function = import_string(
-                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.api_{self.WEBHOOK_DIR_NAME}_webhook"
-                )
-            else:
-                function = import_string(
-                    f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.{self.VIEW_FUNCTION_NAME}"
-                )
+            function = import_string(
+                f"zerver.webhooks.{self.WEBHOOK_DIR_NAME}.view.api_{self.WEBHOOK_DIR_NAME}_webhook"
+            )
             all_event_types = None
 
             if hasattr(function, "_all_event_types"):
