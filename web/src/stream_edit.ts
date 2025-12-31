@@ -739,6 +739,22 @@ export function initialize(): void {
         },
     );
 
+    $("body").on(
+        "click",
+        ".selected-channel-title-container #channel_title_open_channel_info_modal",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const stream_id = Number.parseInt(
+                $(e.currentTarget).parent().attr("data-stream-id")!,
+                10,
+            );
+
+            dialog_widget.close();
+            open_stream_edit_modal(stream_id);
+        },
+    );
+
     $("body").on("click", "#change_stream_info_modal #archived_stream_rename", (e) => {
         e.preventDefault();
         e.stopPropagation();
