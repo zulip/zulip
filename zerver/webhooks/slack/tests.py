@@ -48,7 +48,6 @@ def mock_slack_api_calls(
 class SlackWebhookTests(WebhookTestCase):
     CHANNEL_NAME = "slack"
     URL_TEMPLATE = "/api/v1/external/slack?stream={stream}&api_key={api_key}&slack_app_token=xoxp-XXXXXXXXXXXXXXXXXXXXX"
-    WEBHOOK_DIR_NAME = "slack"
 
     @mock_slack_api_calls
     def test_slack_only_stream_parameter(self) -> None:
@@ -415,7 +414,6 @@ class SlackWebhookTests(WebhookTestCase):
 class SlackLegacyWebhookTests(WebhookTestCase):
     CHANNEL_NAME = "slack"
     URL_TEMPLATE = "/api/v1/external/slack?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "slack"
 
     def test_slack_only_stream_parameter(self) -> None:
         expected_topic_name = "Message from Slack"

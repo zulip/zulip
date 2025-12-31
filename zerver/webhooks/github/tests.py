@@ -21,7 +21,6 @@ TOPIC_SPONSORS = "sponsors"
 class GitHubWebhookTest(WebhookTestCase):
     CHANNEL_NAME = "github"
     URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "github"
 
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
@@ -778,7 +777,6 @@ A temporary team so that I can get some webhook fixtures!
 class GitHubSponsorsHookTests(WebhookTestCase):
     CHANNEL_NAME = "github"
     URL_TEMPLATE = "/api/v1/external/githubsponsors?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "github"
 
     def test_cancelled_message(self) -> None:
         expected_message = "monalisa cancelled their $5 a month subscription."

@@ -7,7 +7,6 @@ class TaigaHookTests(WebhookTestCase):
     CHANNEL_NAME = "taiga"
     TOPIC_NAME = "subject"
     URL_TEMPLATE = "/api/v1/external/taiga?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "taiga"
 
     @override
     def setUp(self) -> None:

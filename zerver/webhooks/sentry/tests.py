@@ -4,7 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class SentryHookTests(WebhookTestCase):
     CHANNEL_NAME = "sentry"
     URL_TEMPLATE = "/api/v1/external/sentry?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "sentry"
 
     def test_event_for_exception_golang(self) -> None:
         expected_topic_name = '*url.Error: Get "bad_url": unsupported protocol scheme ""'

@@ -6,7 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class BeeminderHookTests(WebhookTestCase):
     CHANNEL_NAME = "beeminder"
     URL_TEMPLATE = "/api/v1/external/beeminder?api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "beeminder"
 
     @patch("zerver.webhooks.beeminder.view.time.time")
     def test_beeminder_derail(self, time: MagicMock) -> None:

@@ -6,7 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 class SlackIncomingHookTests(WebhookTestCase):
     CHANNEL_NAME = "slack_incoming"
     URL_TEMPLATE = "/api/v1/external/slack_incoming?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "slack_incoming"
 
     def test_message(self) -> None:
         expected_topic_name = ""

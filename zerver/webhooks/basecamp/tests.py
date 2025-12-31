@@ -6,7 +6,6 @@ TOPIC_NAME = "Zulip HQ"
 class BasecampHookTests(WebhookTestCase):
     CHANNEL_NAME = "basecamp"
     URL_TEMPLATE = "/api/v1/external/basecamp?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "basecamp"
 
     def test_basecamp_makes_doc_active(self) -> None:
         expected_message = "Tomasz activated the document [Sponsorship Package Outline](https://3.basecamp.com/3688623/buckets/2957043/documents/432522214)."

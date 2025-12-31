@@ -6,7 +6,6 @@ class AirbyteHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/airbyte?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = "airbyte"
     CHANNEL_NAME = "test"
-    WEBHOOK_DIR_NAME = "airbyte"
 
     def test_airbyte_job_success(self) -> None:
         expected_topic = "Zulip Airbyte Integration - Google Sheets → Postgres"

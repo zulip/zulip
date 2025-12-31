@@ -7,7 +7,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 class RhodecodeHookTests(WebhookTestCase):
     CHANNEL_NAME = "rhodecode"
     URL_TEMPLATE = "/api/v1/external/rhodecode?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "rhodecode"
 
     def test_push_event_message(self) -> None:
         expected_topic_name = "u/yuroitaki/zulip-testing / master"

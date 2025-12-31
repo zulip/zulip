@@ -12,7 +12,6 @@ class TeamCityHookTests(WebhookTestCase):
     CHANNEL_NAME = "teamcity"
     URL_TEMPLATE = "/api/v1/external/teamcity?stream={stream}&api_key={api_key}"
     TOPIC_NAME = "Project :: Compile"
-    WEBHOOK_DIR_NAME = "teamcity"
 
     def test_teamcity_success(self) -> None:
         expected_message = "Project :: Compile build 5535 - CL 123456 was successful! :thumbs_up: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
@@ -38,7 +37,7 @@ class TeamCityHookTests(WebhookTestCase):
     def test_teamcity_personal(self) -> None:
         expected_message = "Your personal build for Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
         payload = orjson.dumps(
-            orjson.loads(self.webhook_fixture_data(self.WEBHOOK_DIR_NAME, "personal"))
+            orjson.loads(self.webhook_fixture_data(self.webhook_dir_name, "personal"))
         )
         self.client_post(self.url, payload, content_type="application/json")
         msg = self.get_last_message()
