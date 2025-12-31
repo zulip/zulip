@@ -301,6 +301,14 @@ export function initialize(): void {
                 {instance},
                 register_toggle_unread_message_count,
             );
+
+            // Set the checked radio buttons for unread counts
+            const current_unread_policy = user_settings.web_stream_unreads_count_display_policy;
+            $popper
+                .find(
+                    `.web_stream_unreads_count_display_policy_choice[value=${current_unread_policy}]`,
+                )
+                .prop("checked", true);
         },
         onShow(instance) {
             const built_in_popover_condensed_views =
@@ -329,4 +337,28 @@ export function initialize(): void {
     });
 
     common_click_handlers();
+
+    // Handle unread counts display policy changes
+    $("body").on(
+        "click",
+        ".condensed-views-popover-menu .unread-counts-selector",
+        function (this: HTMLElement) {
+            const policy_value = Number($(this).val());
+            const data = {web_stream_unreads_count_display_policy: policy_value};
+            const current_policy = user_settings.web_stream_unreads_count_display_policy;
+
+            if (current_policy === policy_value) {
+                popovers.hide_all();
+                return;
+            }
+
+            void channel.patch({
+                url: "/json/settings",
+                data,
+                success() {
+                    popovers.hide_all();
+                },
+            });
+        },
+    );
 }
