@@ -1,7 +1,9 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as ui_util from "./ui_util.ts";
 
 /* USAGE:
     Toggle x = components.toggle({
@@ -132,6 +134,11 @@ export function toggle(opts: {
         handlers: {
             ArrowLeft: maybe_go_left,
             ArrowRight: maybe_go_right,
+            Enter(e?: JQuery.KeyDownEvent) {
+                assert(e !== undefined);
+                ui_util.convert_enter_to_click(e);
+                return true;
+            },
         },
     });
 
