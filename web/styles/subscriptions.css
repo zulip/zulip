@@ -1132,15 +1132,13 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header,
-    .stream-header {
+    .group-header {
         white-space: nowrap;
         padding-top: 5px;
         display: flex;
         align-items: center;
 
-        .group-name-wrapper,
-        .stream-name {
+        .group-name-wrapper {
             position: relative;
             font-size: 1.5em;
             font-weight: 600;
@@ -1151,8 +1149,7 @@ h4.user_group_setting_subsection_title {
             overflow-x: clip;
             text-overflow: ellipsis;
 
-            .group-name,
-            .sub-stream-name {
+            .group-name {
                 display: block;
                 width: 100%;
                 overflow: hidden;
@@ -1181,33 +1178,29 @@ h4.user_group_setting_subsection_title {
                 text-decoration: none;
             }
         }
+    }
 
-        .large-icon {
-            display: flex;
-            margin-right: 5px;
+    .group_change_property_info,
+    .stream_change_property_info {
+        vertical-align: top;
+        margin: 0 5px 0 0;
+    }
 
-            &.hash::after {
-                top: -1px;
-                font-size: 1.09em;
-                font-weight: 700;
-            }
+    .channel-description-field {
+        display: flex;
+        /* 10px at 16px */
+        margin: 0 0 0.625em;
 
-            .zulip-icon {
-                font-size: 1.2857em; /* 18px at 14px/em */
-            }
-        }
-
-        .group_change_property_info,
-        .stream_change_property_info {
-            vertical-align: top;
-            margin: 0 5px 0 0;
+        .settings-view-only-textarea {
+            width: calc(var(--modal-input-width) - 1.25em);
         }
     }
 
     .group-description-wrapper,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
 
         .no-description {
             font-style: italic;
@@ -1291,6 +1284,16 @@ h4.user_group_setting_subsection_title {
 
     .icon-button {
         font-size: 1.2em;
+
+        .channel-settings-header-actions & {
+            font-size: var(--base-font-size-px);
+        }
+    }
+
+    .selected-channel-title-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
 }
 
@@ -1501,8 +1504,7 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
         }
 
-        .group-header,
-        .stream-header {
+        .group-header {
             .button-group {
                 margin-top: -5px;
             }
