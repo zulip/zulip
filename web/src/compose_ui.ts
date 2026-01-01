@@ -1436,6 +1436,7 @@ async function poll_thumbnail_status(
                 $preview_spinner,
                 $preview_content_box,
                 content,
+                false,
             );
             return;
         }
@@ -1468,6 +1469,7 @@ export function render_and_show_preview(
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    show_spinner = true,
 ): void {
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
@@ -1507,7 +1509,7 @@ export function render_and_show_preview(
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
-        if (markdown.contains_backend_only_syntax(content)) {
+        if (markdown.contains_backend_only_syntax(content) && show_spinner) {
             const $spinner = $preview_spinner.expectOne();
             loading.make_indicator($spinner);
         } else {
