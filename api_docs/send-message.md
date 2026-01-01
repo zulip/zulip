@@ -27,6 +27,10 @@ curl -X POST {{ api_url }}/v1/messages \
     --data-urlencode 'content=With mirth and laughter let old wrinkles come.'
 ```
 
+**Note:** `BOT_EMAIL_ADDRESS` refers to the bot's unique username identifier
+(in email format, e.g., `othello-bot@example.com`), not an actual email inbox.
+Bots cannot receive emails; this identifier is used solely for authentication purposes.
+
 {tab|zulip-send}
 
 You can use `zulip-send`
