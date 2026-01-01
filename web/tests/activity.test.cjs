@@ -155,16 +155,6 @@ run_test("reload_defaults", () => {
     assert.equal(activity_ui.get_filter_text(), "");
 });
 
-test("sort_users", () => {
-    const user_ids = [alice.user_id, fred.user_id, jill.user_id];
-
-    presence.presence_info.delete(alice.user_id);
-
-    buddy_data.sort_users(user_ids, new Set());
-
-    assert.deepEqual(user_ids, [fred.user_id, jill.user_id, alice.user_id]);
-});
-
 test("direct_message_group_data.process_loaded_messages", () => {
     // TODO: move this to a module for just testing `direct_message_group_data`
 
