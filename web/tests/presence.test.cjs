@@ -11,6 +11,7 @@ mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
 
+const buddy_data = zrequire("buddy_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
 const {set_realm} = zrequire("state_data");
@@ -154,6 +155,26 @@ test("status_from_raw", () => {
         status: "offline",
         last_active: raw.active_timestamp,
     });
+});
+
+test("sort_users", () => {
+    const user_ids = [alice.user_id, fred.user_id, jane.user_id];
+
+    const now = 5000;
+
+    const presences = {
+        [alice.user_id.toString()]: {active_timestamp: now},
+        [fred.user_id.toString()]: {active_timestamp: now},
+        [jane.user_id.toString()]: {active_timestamp: now},
+    };
+
+    presence.initialize({presences, server_timestamp: now});
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id, jane.user_id]);
+
+    presence.presence_info.delete(alice.user_id);
+
+    buddy_data.sort_users(user_ids, new Set());
+    assert.deepEqual(user_ids, [fred.user_id, jane.user_id, alice.user_id]);
 });
 
 test("set_presence_info", () => {
