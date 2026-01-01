@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -222,6 +223,32 @@ test("set_presence_info", () => {
     assert.equal(presence.get_status(unknown_user_id), "idle");
 
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
+});
+
+test("get_status", ({override}) => {
+    page_params.realm_users = [];
+
+    const current_user = me;
+
+    presence.presence_info.set(alice.user_id, {status: "active"});
+    presence.presence_info.set(fred.user_id, {status: "active"});
+    presence.presence_info.set(sally.user_id, {status: "idle"});
+    presence.presence_info.set(zoe.user_id, {status: "active"});
+
+    assert.equal(presence.get_status(alice.user_id), "active");
+    assert.equal(presence.get_status(sally.user_id), "idle");
+    assert.equal(presence.get_status(fred.user_id), "active");
+
+    override(user_settings, "presence_enabled", false);
+    assert.equal(presence.get_status(current_user.user_id), "offline");
+    override(user_settings, "presence_enabled", true);
+    assert.equal(presence.get_status(current_user.user_id), "active");
+
+    presence.presence_info.delete(zoe.user_id);
+    assert.equal(presence.get_status(zoe.user_id), "offline");
+
+    presence.presence_info.set(alice.user_id, {status: "whatever"});
+    assert.equal(presence.get_status(alice.user_id), "whatever");
 });
 
 test("missing values", () => {

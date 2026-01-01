@@ -15,7 +15,6 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
-const {page_params} = require("./lib/zpage_params.cjs");
 
 const _document = {
     hasFocus() {
@@ -155,27 +154,6 @@ run_test("reload_defaults", () => {
     activity_ui.clear_for_testing();
     blueslip.expect("warn", "get_filter_text() is called before initialization");
     assert.equal(activity_ui.get_filter_text(), "");
-});
-
-test("get_status", ({override}) => {
-    page_params.realm_users = [];
-    override(current_user, "user_id", 999);
-
-    assert.equal(presence.get_status(current_user.user_id), "active");
-    assert.equal(presence.get_status(alice.user_id), "active");
-    assert.equal(presence.get_status(mark.user_id), "idle");
-    assert.equal(presence.get_status(fred.user_id), "active");
-
-    override(user_settings, "presence_enabled", false);
-    assert.equal(presence.get_status(current_user.user_id), "offline");
-    override(user_settings, "presence_enabled", true);
-    assert.equal(presence.get_status(current_user.user_id), "active");
-
-    presence.presence_info.delete(zoe.user_id);
-    assert.equal(presence.get_status(zoe.user_id), "offline");
-
-    presence.presence_info.set(alice.user_id, {status: "whatever"});
-    assert.equal(presence.get_status(alice.user_id), "whatever");
 });
 
 test("sort_users", () => {
