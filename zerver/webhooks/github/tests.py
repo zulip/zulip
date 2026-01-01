@@ -491,9 +491,16 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_check_run(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
-Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+:green_circle: Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed", expected_topic_name, expected_message)
+
+    def test_check_run_failure(self) -> None:
+        expected_topic_name = "hello-world / checks"
+        expected_message = """
+:red_circle: Check [randscape](http://github.com/github/hello-world/runs/4) completed (failure). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+""".strip()
+        self.check_webhook("check_run__completed_failure", expected_topic_name, expected_message)
 
     def test_team_edited_description(self) -> None:
         expected_topic_name = "team Testing"

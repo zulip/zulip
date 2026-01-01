@@ -39,6 +39,19 @@ from zerver.models import UserProfile
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
+
+# Mapping of GitHub check run conclusions to status emojis
+CHECK_RUN_CONCLUSION_EMOJI = {
+    "success": ":green_circle:",
+    "failure": ":red_circle:",
+    "cancelled": ":white_circle:",
+    "skipped": ":white_circle:",
+    "timed_out": ":orange_circle:",
+    "action_required": ":yellow_circle:",
+    "neutral": ":white_circle:",
+    "stale": ":grey_question:",
+}
+
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
@@ -680,10 +693,14 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
 def get_check_run_body(helper: Helper) -> str:
     payload = helper.payload
     template = """
-Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
+{emoji} Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
 """.strip()
 
+    conclusion = payload["check_run"]["conclusion"].tame(check_string)
+    emoji = CHECK_RUN_CONCLUSION_EMOJI.get(conclusion, "")
+
     kwargs = {
+        "emoji": emoji,
         "name": payload["check_run"]["name"].tame(check_string),
         "html_url": payload["check_run"]["html_url"].tame(check_string),
         "status": payload["check_run"]["status"].tame(check_string),
@@ -692,7 +709,7 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
             payload["repository"]["html_url"].tame(check_string),
             payload["check_run"]["head_sha"].tame(check_string),
         ),
-        "conclusion": payload["check_run"]["conclusion"].tame(check_string),
+        "conclusion": conclusion,
     }
 
     return template.format(**kwargs)
