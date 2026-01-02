@@ -19,6 +19,7 @@ const $ = require("./lib/zjquery.cjs");
 
 const padded_widget = mock_esm("../src/padded_widget");
 const message_viewport = mock_esm("../src/message_viewport");
+const background_task = mock_esm("../src/background_task");
 
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
@@ -73,6 +74,7 @@ run_test("basics", ({override, mock_template}) => {
     stub_buddy_list_elements();
     mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
+    override(background_task, "run_async_function_without_await", noop);
     buddy_list.populate({
         all_user_ids: [alice.user_id],
     });
@@ -127,6 +129,7 @@ run_test("split list", ({override, override_rewire, mock_template}) => {
 
     // one user matching the view
     buddy_list_add_user_matching_view(alice.user_id, $alice_li);
+    override(background_task, "run_async_function_without_await", noop);
     buddy_list.populate({
         all_user_ids: [alice.user_id],
     });
@@ -161,7 +164,7 @@ run_test("find_li", ({override, mock_template}) => {
     override(buddy_list, "fill_screen_with_content", noop);
     mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
     stub_buddy_list_elements();
-
+    override(background_task, "run_async_function_without_await", noop);
     clear_buddy_list(buddy_list);
     buddy_list_add_user_matching_view(alice.user_id, $alice_li);
     buddy_list_add_other_user(bob.user_id, $bob_li);
@@ -208,6 +211,7 @@ run_test("fill_screen_with_content early break on big list", ({override, mock_te
         user_ids.push(person.user_id);
     });
 
+    override(background_task, "run_async_function_without_await", noop);
     buddy_list.populate({
         all_user_ids: user_ids,
     });
@@ -270,6 +274,7 @@ run_test("big_list", ({override, override_rewire, mock_template}) => {
         user_ids.push(person.user_id);
     });
 
+    override(background_task, "run_async_function_without_await", noop);
     buddy_list.populate({
         all_user_ids: user_ids,
     });
@@ -364,6 +369,7 @@ run_test("scrolling", ({override, mock_template}) => {
     init_simulated_scrolling();
     stub_buddy_list_elements();
 
+    override(background_task, "run_async_function_without_await", noop);
     clear_buddy_list(buddy_list);
     assert.ok(tried_to_fill);
     tried_to_fill = false;
