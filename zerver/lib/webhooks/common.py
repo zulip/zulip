@@ -235,9 +235,7 @@ def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
     return canonical_headers
 
 
-def validate_extract_webhook_http_header(
-    request: HttpRequest, header: str, integration_name: str
-) -> str:
+def get_event_header(request: HttpRequest, header: str, integration_name: str) -> str:
     assert request.user.is_authenticated
 
     extracted_header = request.headers.get(header)

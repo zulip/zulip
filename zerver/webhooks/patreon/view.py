@@ -7,10 +7,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
-from zerver.lib.webhooks.common import (
-    check_send_webhook_message,
-    validate_extract_webhook_http_header,
-)
+from zerver.lib.webhooks.common import check_send_webhook_message, get_event_header
 from zerver.models import UserProfile
 
 
@@ -155,7 +152,7 @@ def api_patreon_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    header_event = validate_extract_webhook_http_header(request, "X-Patreon-Event", "Patreon")
+    header_event = get_event_header(request, "X-Patreon-Event", "Patreon")
 
     event_name = get_zulip_event_name(header_event, payload)
     if event_name is None:

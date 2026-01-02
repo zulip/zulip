@@ -12,7 +12,7 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     default_fixture_to_headers,
-    validate_extract_webhook_http_header,
+    get_event_header,
 )
 from zerver.models import UserProfile
 
@@ -109,7 +109,7 @@ def api_groove_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    event = validate_extract_webhook_http_header(request, "X-Groove-Event", "Groove")
+    event = get_event_header(request, "X-Groove-Event", "Groove")
     handler = EVENTS_FUNCTION_MAPPER.get(event)
     if handler is None:
         raise UnsupportedWebhookEventTypeError(event)

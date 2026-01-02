@@ -14,7 +14,7 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
-    validate_extract_webhook_http_header,
+    get_event_header,
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -684,7 +684,7 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
 
 
 def get_event(request: HttpRequest, payload: WildValue, branches: str | None) -> str | None:
-    event = validate_extract_webhook_http_header(request, "X-GitLab-Event", "GitLab")
+    event = get_event_header(request, "X-GitLab-Event", "GitLab")
     if event == "System Hook":
         # Convert the event name to a GitLab event title
         if "event_name" in payload:
