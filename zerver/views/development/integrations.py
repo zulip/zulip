@@ -13,7 +13,7 @@ from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
-from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
+from zerver.lib.webhooks.common import call_fixture_to_headers, standardize_headers
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
 
@@ -90,7 +90,7 @@ def get_fixtures(request: HttpRequest, *, integration_name: PathOnly[str]) -> Ht
         with suppress(orjson.JSONDecodeError):
             body = orjson.loads(body)
 
-        headers_raw = get_fixture_http_headers(
+        headers_raw = call_fixture_to_headers(
             valid_integration_name, "".join(fixture.split(".")[:-1])
         )
 
@@ -145,7 +145,7 @@ def send_all_webhook_fixture_messages(
             content = f.read()
         x = fixture.split(".")
         fixture_name, fixture_format = "".join(_ for _ in x[:-1]), x[-1]
-        headers = get_fixture_http_headers(valid_integration_name, fixture_name)
+        headers = call_fixture_to_headers(valid_integration_name, fixture_name)
         is_json = fixture_format == "json"
         response = send_webhook_fixture_message(url, content, is_json, headers)
         responses.append(

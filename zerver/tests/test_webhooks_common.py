@@ -20,8 +20,8 @@ from zerver.lib.webhooks.common import (
     INVALID_JSON_MESSAGE,
     MISSING_EVENT_HEADER_MESSAGE,
     MissingHTTPEventHeaderError,
+    call_fixture_to_headers,
     check_send_webhook_message,
-    get_fixture_http_headers,
     standardize_headers,
     validate_extract_webhook_http_header,
     validate_webhook_signature,
@@ -108,7 +108,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(msg.content, expected_msg.strip())
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
-    def test_get_fixture_http_headers_for_success(self, import_module_mock: MagicMock) -> None:
+    def test_call_fixture_to_headers_for_success(self, import_module_mock: MagicMock) -> None:
         def fixture_to_headers(fixture_name: str) -> dict[str, str]:
             # A sample function which would normally perform some
             # extra operations before returning a dictionary
@@ -119,15 +119,15 @@ class WebhooksCommonTestCase(ZulipTestCase):
         fake_module = SimpleNamespace(fixture_to_headers=fixture_to_headers)
         import_module_mock.return_value = fake_module
 
-        headers = get_fixture_http_headers("some_integration", "complex_fixture")
+        headers = call_fixture_to_headers("some_integration", "complex_fixture")
         self.assertEqual(headers, {"key": "value"})
 
-    def test_get_fixture_http_headers_for_non_existent_integration(self) -> None:
-        headers = get_fixture_http_headers("some_random_nonexistent_integration", "fixture_name")
+    def test_call_fixture_to_headers_for_non_existent_integration(self) -> None:
+        headers = call_fixture_to_headers("some_random_nonexistent_integration", "fixture_name")
         self.assertEqual(headers, {})
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
-    def test_get_fixture_http_headers_with_no_fixtures_to_headers_function(
+    def test_call_fixture_to_headers_with_no_fixtures_to_headers_function(
         self,
         import_module_mock: MagicMock,
     ) -> None:
@@ -135,7 +135,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         import_module_mock.return_value = fake_module
 
         self.assertEqual(
-            get_fixture_http_headers("some_integration", "simple_fixture"),
+            call_fixture_to_headers("some_integration", "simple_fixture"),
             {},
         )
 

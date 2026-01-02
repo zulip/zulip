@@ -54,7 +54,7 @@ from zerver.lib.integrations import (
 from zerver.lib.storage import static_path
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.webhooks.common import get_fixture_http_headers, parse_multipart_string
+from zerver.lib.webhooks.common import call_fixture_to_headers, parse_multipart_string
 from zerver.models import Message, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user_by_delivery_email
@@ -129,7 +129,7 @@ def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
 
 
 def get_requests_headers(integration_dir_name: str, fixture_name: str) -> dict[str, Any]:
-    headers = get_fixture_http_headers(integration_dir_name, fixture_name)
+    headers = call_fixture_to_headers(integration_dir_name, fixture_name)
 
     def fix_name(header: str) -> str:
         return header.removeprefix("HTTP_").replace("_", "-")
