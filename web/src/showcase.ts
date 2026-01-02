@@ -1,8 +1,7 @@
-import $ from "jquery";
-
 import render_user_full_name from "../templates/user_full_name.hbs";
 
 import * as h from "./html.ts";
+import * as pure_dom from "./pure_dom.ts";
 
 export function partial_demo_with_user_full_name(info: {
     should_add_guest_user: boolean;
@@ -23,14 +22,4 @@ export function partial_demo_with_user_full_name(info: {
     }
     return h.block({elements: [h5_wrapper()]});
 }
-
-export function initialize(): void {
-    $(".right-sidebar")[0]!.append(
-        partial_demo_with_user_full_name({
-            should_add_guest_user: true,
-            name: "Apoorva",
-            is_hidden: false,
-            is_current_user: true,
-        }).to_dom(),
-    );
-}
+document.querySelector("#app")!.innerHTML = pure_dom.poll_widget().as_raw_html();

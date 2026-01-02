@@ -12,6 +12,7 @@ if [ "$#" -eq 0 ]; then
     FILES_TO_BE_CHECKED="$(
         git ls-files -- \
             ':!*.asc' \
+            ':!web/showcase-build/*' \
             ':!*.svg' \
             ':!*/fixtures/*' \
             ':!docs/THIRDPARTY' \
