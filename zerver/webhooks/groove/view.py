@@ -11,7 +11,7 @@ from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, check_url
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
-    get_http_headers_from_filename,
+    default_fixture_to_headers,
     validate_extract_webhook_http_header,
 )
 from zerver.models import UserProfile
@@ -123,4 +123,4 @@ def api_groove_webhook(
     return json_success(request)
 
 
-fixture_to_headers = get_http_headers_from_filename("HTTP_X_GROOVE_EVENT")
+fixture_to_headers = default_fixture_to_headers("HTTP_X_GROOVE_EVENT")

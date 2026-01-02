@@ -7,7 +7,7 @@ from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
-    get_http_headers_from_filename,
+    default_fixture_to_headers,
     validate_extract_webhook_http_header,
 )
 from zerver.models import UserProfile
@@ -20,7 +20,7 @@ ALL_EVENT_TYPES = [
     "deploy_created",
 ]
 
-fixture_to_headers = get_http_headers_from_filename("HTTP_X_NETLIFY_EVENT")
+fixture_to_headers = default_fixture_to_headers("HTTP_X_NETLIFY_EVENT")
 
 
 @webhook_view("Netlify", all_event_types=ALL_EVENT_TYPES)

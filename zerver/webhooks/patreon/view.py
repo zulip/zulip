@@ -15,7 +15,7 @@ from zerver.models import UserProfile
 
 
 # The events for this integration contain the ":" character, which is not appropriate in a
-# filename and requires us to deviate from the common `get_http_headers_from_filename` method
+# filename and requires us to deviate from the `default_fixture_to_headers` method
 # from zerver.lib.webhooks.common.
 def get_custom_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict[str, str]]:
     def fixture_to_headers(filename: str) -> dict[str, str]:
