@@ -9,6 +9,7 @@ import render_empty_list_widget_for_list from "../templates/empty_list_widget_fo
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
 
+import * as background_task from "./background_task.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import type {BuddyUserInfo} from "./buddy_data.ts";
@@ -379,9 +380,13 @@ export class BuddyList extends BuddyListConf {
         // This must happen after `fill_screen_with_content`
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").empty();
         $("#buddy-list-other-users-container .view-all-users-link").empty();
-        void this.render_view_user_list_links();
+        background_task.run_async_function_without_await(
+            this.render_view_user_list_links.bind(this),
+        );
         this.display_or_hide_sections();
-        void this.update_empty_list_placeholders();
+        background_task.run_async_function_without_await(
+            this.update_empty_list_placeholders.bind(this),
+        );
 
         // `populate` always rerenders all user rows, so we need new load handlers.
         // This logic only does something is a user has enabled the setting to
@@ -1102,8 +1107,10 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.display_or_hide_sections();
-        void this.update_empty_list_placeholders();
-        void this.render_section_headers();
+        background_task.run_async_function_without_await(
+            this.update_empty_list_placeholders.bind(this),
+        );
+        background_task.run_async_function_without_await(this.render_section_headers.bind(this));
     }
 
     rerender_participants(): void {
@@ -1148,7 +1155,7 @@ export class BuddyList extends BuddyListConf {
                 chunk_size,
             });
         }
-        void this.render_section_headers();
+        background_task.run_async_function_without_await(this.render_section_headers.bind(this));
     }
 
     start_scroll_handler(): void {

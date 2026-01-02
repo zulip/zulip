@@ -37,6 +37,7 @@ const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
 const watchdog = mock_esm("../src/watchdog");
+const background_task = mock_esm("../src/background_task");
 
 set_global("document", _document);
 
@@ -133,7 +134,6 @@ function test(label, f) {
         });
 
         stub_buddy_list_elements();
-        helpers.override(buddy_list, "render_view_user_list_links", noop);
 
         presence.presence_info.set(alice.user_id, {status: "active"});
         presence.presence_info.set(fred.user_id, {status: "active"});
@@ -143,6 +143,7 @@ function test(label, f) {
         presence.presence_info.set(zoe.user_id, {status: "active"});
         presence.presence_info.set(me.user_id, {status: "active"});
 
+        helpers.override(background_task, "run_async_function_without_await", noop);
         clear_buddy_list(buddy_list);
         muted_users.set_muted_users([]);
 
