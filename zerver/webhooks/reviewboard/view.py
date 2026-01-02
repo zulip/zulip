@@ -7,7 +7,7 @@ from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
-    get_http_headers_from_filename,
+    default_fixture_to_headers,
     validate_extract_webhook_http_header,
 )
 from zerver.models import UserProfile
@@ -53,7 +53,7 @@ REPLY_PUBLISHED = """
 
 BRANCH_TEMPLATE = "**Branch**: {branch_name}"
 
-fixture_to_headers = get_http_headers_from_filename("HTTP_X_REVIEWBOARD_EVENT")
+fixture_to_headers = default_fixture_to_headers("HTTP_X_REVIEWBOARD_EVENT")
 
 
 def get_target_people_string(payload: WildValue) -> str:

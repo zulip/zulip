@@ -11,7 +11,7 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
-    get_http_headers_from_filename,
+    default_fixture_to_headers,
     validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
@@ -27,7 +27,7 @@ from zerver.lib.webhooks.git import (
 )
 from zerver.models import UserProfile
 
-fixture_to_headers = get_http_headers_from_filename("HTTP_X_GOGS_EVENT")
+fixture_to_headers = default_fixture_to_headers("HTTP_X_GOGS_EVENT")
 
 
 def get_issue_url(repo_url: str, issue_nr: int) -> str:
