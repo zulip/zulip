@@ -64,6 +64,7 @@ type BotInfo = {
     cannot_deactivate: boolean;
     cannot_edit: boolean;
     display_email: string;
+    date_joined: string;
     show_download_zuliprc_button: boolean;
     show_generate_integration_url_button: boolean;
 } & (
