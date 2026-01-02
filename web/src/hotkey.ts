@@ -64,6 +64,7 @@ import * as unread_ops from "./unread_ops.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 import * as util from "./util.ts";
 
@@ -163,6 +164,7 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
         {name: "view_selected_stream", message_view_only: false},
         {name: "toggle_read_receipts", message_view_only: true},
     ],
+    "Shift+Y": {name: "set_status", message_view_only: false},
     "Shift+Tab": {name: "shift_tab", message_view_only: false},
     "Shift+ ": {name: "shift_spacebar", message_view_only: true},
     "Shift+ArrowLeft": {name: "left_arrow", message_view_only: false},
@@ -1165,6 +1167,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             return true;
         case "gear_menu":
             gear_menu.toggle();
+            return true;
+        case "set_status":
+            if (page_params.is_spectator) {
+                return false;
+            }
+            user_status_ui.open_user_status_modal();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");
