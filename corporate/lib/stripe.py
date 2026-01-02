@@ -1797,6 +1797,7 @@ class BillingSession(ABC):
     @catch_stripe_errors
     def process_initial_upgrade(
         self,
+        *,
         plan_tier: int,
         licenses: int,
         automanage_licenses: bool,
@@ -2124,14 +2125,14 @@ class BillingSession(ABC):
         # Create NEVER_STARTED plan for complimentary access plans.
         if upgrade_when_complimentary_access_plan_ends or free_trial:
             self.process_initial_upgrade(
-                upgrade_request.tier,
-                licenses,
-                automanage_licenses,
-                billing_schedule,
-                charge_automatically,
-                free_trial,
-                complimentary_access_plan,
-                upgrade_when_complimentary_access_plan_ends,
+                plan_tier=upgrade_request.tier,
+                licenses=licenses,
+                automanage_licenses=automanage_licenses,
+                billing_schedule=billing_schedule,
+                charge_automatically=charge_automatically,
+                free_trial=free_trial,
+                complimentary_access_plan=complimentary_access_plan,
+                upgrade_when_complimentary_access_plan_ends=upgrade_when_complimentary_access_plan_ends,
             )
             data["organization_upgrade_successful"] = True
         else:
