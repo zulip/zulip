@@ -558,7 +558,7 @@ body.has-overlay-scrollbar {
 
             & i {
                 color: var(--color-navbar-icon);
-                font-size: 1.6em;
+                font-size: 1em;
             }
         }
     }
@@ -2436,12 +2436,12 @@ body:not(.spectator-view) {
     }
 
     .zulip-icon-gear {
-        font-size: 1.125em; /* 18px at 16px em */
+        font-size: 1em; /* 18px at 16px em */
     }
 
     .zulip-icon-help-bigger,
     .zulip-icon-user-list {
-        font-size: 1.25em; /* 20px at 16px em */
+        font-size: 1em; /* 20px at 16px em */
     }
 
     .zulip-icon-help {
@@ -2454,7 +2454,7 @@ body:not(.spectator-view) {
 .left-sidebar-toggle-button {
     .zulip-icon-panel-left,
     .zulip-icon-panel-left-dashed {
-        font-size: 1.25em; /* 20px at 16px em */
+        font-size: 1em; /* 20px at 16px em */
     }
 }
 
