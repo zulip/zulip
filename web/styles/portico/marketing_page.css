@@ -3392,6 +3392,10 @@ button {
     }
 }
 
+.call-to-action-subhead {
+    text-align: center;
+}
+
 .solutions-page .for-education-pricing-model {
     .padded-content {
         padding-bottom: 10px;
