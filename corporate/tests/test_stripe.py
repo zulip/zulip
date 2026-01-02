@@ -784,12 +784,12 @@ class StripeTestCase(ZulipTestCase):
             hamlet = self.example_user("hamlet")
             billing_session = RealmBillingSession(hamlet)
             return billing_session.process_initial_upgrade(
-                CustomerPlan.TIER_CLOUD_STANDARD,
-                licenses,
-                automanage_licenses,
-                billing_schedule,
-                charge_automatically,
-                free_trial,
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                licenses=licenses,
+                automanage_licenses=automanage_licenses,
+                billing_schedule=billing_schedule,
+                charge_automatically=charge_automatically,
+                free_trial=free_trial,
                 stripe_invoice_paid=stripe_invoice_paid,
             )
 
