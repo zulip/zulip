@@ -89,8 +89,8 @@ from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_mes
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.webhooks.common import (
+    call_fixture_to_headers,
     check_send_webhook_message,
-    get_fixture_http_headers,
     standardize_headers,
 )
 from zerver.models import (
@@ -2589,7 +2589,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         if content_type is not None:
             extra["content_type"] = content_type
         if self.WEBHOOK_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
+            headers = call_fixture_to_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             extra.update(headers)
         try:
@@ -2655,7 +2655,7 @@ one or more new messages.
         extra["content_type"] = content_type
 
         if self.WEBHOOK_DIR_NAME is not None:
-            headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
+            headers = call_fixture_to_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             extra.update(headers)
 
