@@ -8,7 +8,7 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     default_fixture_to_headers,
-    validate_extract_webhook_http_header,
+    get_event_header,
 )
 from zerver.models import UserProfile
 
@@ -184,9 +184,7 @@ def api_reviewboard_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    event_type = validate_extract_webhook_http_header(
-        request, "X-ReviewBoard-Event", "Review Board"
-    )
+    event_type = get_event_header(request, "X-ReviewBoard-Event", "Review Board")
 
     body_function = RB_MESSAGE_FUNCTIONS.get(event_type)
     if body_function is not None:

@@ -14,7 +14,7 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
-    validate_extract_webhook_http_header,
+    get_event_header,
 )
 from zerver.lib.webhooks.git import (
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -187,14 +187,14 @@ def get_type(request: HttpRequest, payload: WildValue) -> str:
         pull_request_template = "pull_request_{}"
         # Note that we only need the HTTP header to determine pullrequest events.
         # We rely on the payload itself to determine the other ones.
-        event_key = validate_extract_webhook_http_header(request, "X-Event-Key", "BitBucket")
+        event_key = get_event_header(request, "X-Event-Key", "BitBucket")
         action = re.match(r"pullrequest:(?P<action>.*)$", event_key)
         if action:
             action_group = action.group("action")
             if action_group in PULL_REQUEST_SUPPORTED_ACTIONS:
                 return pull_request_template.format(action_group)
     else:
-        event_key = validate_extract_webhook_http_header(request, "X-Event-Key", "BitBucket")
+        event_key = get_event_header(request, "X-Event-Key", "BitBucket")
         if event_key == "repo:updated":
             return event_key
 

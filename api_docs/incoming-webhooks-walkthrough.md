@@ -704,11 +704,10 @@ in `zerver/lib/test_classes.py`, or just grep for examples.
 
 Some third-party services set a custom HTTP header to indicate the event type that
 generates a particular payload. To extract such headers, we recommend using the
-`validate_extract_webhook_http_header` function in `zerver/lib/webhooks/common.py`,
-like so:
+`get_event_header` function in `zerver/lib/webhooks/common.py`, like so:
 
 ```python
-event = validate_extract_webhook_http_header(request, header, integration_name)
+event = get_event_header(request, header, integration_name)
 ```
 
 `request` is the `HttpRequest` object passed to your main webhook function. `header`

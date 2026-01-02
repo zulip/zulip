@@ -8,7 +8,7 @@ from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     default_fixture_to_headers,
-    validate_extract_webhook_http_header,
+    get_event_header,
 )
 from zerver.models import UserProfile
 
@@ -49,7 +49,7 @@ def api_netlify_webhook(
 
 def get_template(request: HttpRequest, payload: WildValue) -> tuple[str, str]:
     message_template = "The build [{build_name}]({build_url}) on branch {branch_name} "
-    event = validate_extract_webhook_http_header(request, "X-Netlify-Event", "Netlify")
+    event = get_event_header(request, "X-Netlify-Event", "Netlify")
 
     if event == "deploy_failed":
         message_template += payload["error_message"].tame(check_string)

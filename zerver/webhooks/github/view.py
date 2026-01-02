@@ -16,8 +16,8 @@ from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
     default_fixture_to_headers,
+    get_event_header,
     get_setup_webhook_message,
-    validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -1096,7 +1096,7 @@ def api_github_webhook(
     directly to the X-GitHub-Event header's event, but we sometimes
     refine it based on the payload.
     """
-    header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
+    header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
 
     # Check if the repository is private and skip processing if ignore_private_repositories is True
     if (

@@ -22,8 +22,8 @@ from zerver.lib.webhooks.common import (
     MissingHTTPEventHeaderError,
     call_fixture_to_headers,
     check_send_webhook_message,
+    get_event_header,
     standardize_headers,
-    validate_extract_webhook_http_header,
     validate_webhook_signature,
 )
 from zerver.models import Client, Message, UserProfile
@@ -38,9 +38,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
         request.user = webhook_bot
 
-        header_value = validate_extract_webhook_http_header(
-            request, "X-Custom-Header", "test_webhook"
-        )
+        header_value = get_event_header(request, "X-Custom-Header", "test_webhook")
 
         self.assertEqual(header_value, "custom_value")
 
@@ -55,7 +53,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
         exception_msg = "Missing the HTTP event header 'X-Custom-Header'"
         with self.assertRaisesRegex(MissingHTTPEventHeaderError, exception_msg):
-            validate_extract_webhook_http_header(request, "X-Custom-Header", "test_webhook")
+            get_event_header(request, "X-Custom-Header", "test_webhook")
 
         msg = self.get_last_message()
         expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
@@ -244,8 +242,8 @@ class MissingEventHeaderTestCase(WebhookTestCase):
     CHANNEL_NAME = "groove"
     URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
 
-    # This tests the validate_extract_webhook_http_header function with
-    # an actual webhook, instead of just making a mock
+    # This tests the get_event_header function with an actual webhook,
+    # instead of just making a mock
     def test_missing_event_header(self) -> None:
         self.subscribe(self.test_user, self.CHANNEL_NAME)
         with self.assertNoLogs("zulip.zerver.webhooks.anomalous", level="INFO"):
