@@ -1,8 +1,6 @@
 # Zulip Bitbucket integration
 
-Zulip supports both Git and Mercurial notifications from
-Bitbucket. This integration is for the new-style Bitbucket
-webhooks used by the Bitbucket SAAS service.
+Zulip supports both Git and Mercurial notifications from Bitbucket.
 
 {start_tabs}
 
@@ -22,7 +20,7 @@ webhooks used by the Bitbucket SAAS service.
 
 {!congrats.md!}
 
-![](/static/images/integrations/bitbucket/003.png)
+![](/static/images/integrations/bitbucket/001.png)
 
 {!event-filtering-additional-feature.md!}
 
