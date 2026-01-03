@@ -542,22 +542,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Beeminder",
     ),
     IncomingWebhookIntegration(
-        "bitbucket",
-        ["version-control"],
-        [
-            WebhookScreenshotConfig(
-                "push.json",
-                "002.png",
-                channel="commits",
-                use_basic_auth=True,
-                payload_as_query_param=True,
-            )
-        ],
-        display_name="Bitbucket",
-        secondary_line_text="(Enterprise)",
-        legacy=True,
-    ),
-    IncomingWebhookIntegration(
         "bitbucket2",
         ["version-control"],
         [
