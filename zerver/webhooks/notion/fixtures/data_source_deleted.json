@@ -1,0 +1,27 @@
+{
+  "id": "4e443c81-a332-40af-9300-c7eb6e514737",
+  "timestamp": "2025-09-03T17:54:38.833Z",
+  "workspace_id": "13950b26-c203-4f3b-b97d-93ec06319565",
+  "workspace_name": "Quantify Labs",
+  "subscription_id": "29d75c0d-5546-4414-8459-7b7a92f1fc4b",
+  "integration_id": "0ef2e755-4912-8096-91c1-00376a88a5ca",
+  "authors": [
+    {
+      "id": "c7c11cca-1d73-471d-9b6e-bdef51470190",
+      "type": "person"
+    }
+  ],
+  "attempt_number": 1,
+  "api_version": "2025-09-03",
+  "entity": {
+    "id": "263104cd-477e-804b-8c32-000b2fcd241a",
+    "type": "data_source"
+  },
+  "type": "data_source.deleted",
+  "data": {
+    "parent": {
+      "id": "263104cd-477e-80ef-8afe-c488d39a5cdb",
+      "type": "page"
+    }
+  }
+}

@@ -802,6 +802,24 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="New Relic",
     ),
     IncomingWebhookIntegration(
+        "notion",
+        ["productivity"],
+        [WebhookScreenshotConfig("page_created.json")],
+        display_name="Notion",
+        url_options=[
+            WebhookUrlOption(
+                name="notion_token",
+                label="Notion API integration token",
+                validator=check_string,
+            ),
+            WebhookUrlOption(
+                name="map_pages_to_topics",
+                label="Send each Notion page/data source to a separate Zulip topic",
+                validator=check_bool,
+            ),
+        ],
+    ),
+    IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
         [WebhookScreenshotConfig("one_time_donation.json")],
@@ -1008,7 +1026,6 @@ ZAPIER_INTEGRATIONS: list[Integration] = [
     Integration("asana", ["project-management"]),
     # Can be used with RSS integration too
     Integration("mastodon", ["communication"]),
-    Integration("notion", ["productivity", "project-management"]),
 ]
 
 PLUGIN_INTEGRATIONS: list[Integration] = [
