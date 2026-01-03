@@ -75,14 +75,17 @@ export function set_from_emails(value: string): void {
     }
 }
 
-export function set_from_user_ids(value: number[]): void {
+export function set_from_user_ids(value: number[], skip_pill_callbacks: boolean): void {
     clear();
     for (const user_id of value) {
         const person = people.get_by_user_id(user_id);
-        user_pill.append_person({
-            pill_widget: widget,
-            person,
-        });
+        user_pill.append_person(
+            {
+                pill_widget: widget,
+                person,
+            },
+            !skip_pill_callbacks,
+        );
     }
 }
 
