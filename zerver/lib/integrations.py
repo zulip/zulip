@@ -551,22 +551,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     IncomingWebhookIntegration(
-        "bitbucket3",
-        ["version-control"],
-        [
-            WebhookScreenshotConfig(
-                "repo_push_update_single_branch.json",
-                "004.png",
-                "bitbucket",
-                bot_name="Bitbucket Server Bot",
-                channel="commits",
-            )
-        ],
-        logo="images/integrations/logos/bitbucket.svg",
-        display_name="Bitbucket Server",
-        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
-    ),
-    IncomingWebhookIntegration(
         "buildbot", ["continuous-integration"], [WebhookScreenshotConfig("started.json")]
     ),
     IncomingWebhookIntegration(
