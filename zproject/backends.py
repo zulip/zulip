@@ -66,6 +66,8 @@ from social_core.exceptions import (
     SocialAuthBaseException,
 )
 from social_core.pipeline.partial import partial
+from social_core.storage import UserProtocol
+from social_core.strategy import HttpResponseProtocol
 from social_django.utils import load_backend, load_strategy
 from typing_extensions import override
 from zxcvbn import zxcvbn
@@ -2619,7 +2621,9 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION]
 
     @override
-    def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
+    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+        self, *args: Any, **kwargs: Any
+    ) -> UserProtocol | HttpResponseProtocol | None:
         """This is a small wrapper around the core `auth_complete` method of
         python-social-auth, designed primarily to prevent 500s for
         exceptions in the social auth code from situations that are
@@ -2724,7 +2728,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         ]
 
     @override
-    def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> dict[str, str]:
+    def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> dict[str, Any] | None:
         """This patched user_data function lets us combine together the 3
         social auth backends into a single Zulip backend for GitHub OAuth2"""
         team_id = settings.SOCIAL_AUTH_GITHUB_TEAM_ID
@@ -2946,7 +2950,9 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         return user_details
 
     @override
-    def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
+    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+        self, *args: Any, **kwargs: Any
+    ) -> UserProtocol | HttpResponseProtocol | None:
         if not self.is_native_flow():
             # The default implementation in python-social-auth is the browser flow.
             return super().auth_complete(*args, **kwargs)
@@ -3349,7 +3355,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         )
         raise AuthFailed(self, error_msg)
 
-    def process_logout_request(self, subdomain: str, idp_name: str) -> HttpResponse | None:
+    def process_logout_request(self, subdomain: str, idp_name: str) -> HttpResponseProtocol | None:
         """
         We don't use process_logout, because we need to customize
         the way of revoking sessions and introduce NameID validation.
@@ -3418,10 +3424,14 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         delete_user_sessions(user_profile)
         do_regenerate_api_key(user_profile, user_profile)
 
-        return HttpResponseRedirect(url)
+        return cast(
+            HttpResponseProtocol, HttpResponseRedirect(url)
+        )  # https://github.com/python-social-auth/social-core/pull/1511
 
     @override
-    def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
+    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+        self, *args: Any, **kwargs: Any
+    ) -> UserProtocol | HttpResponseProtocol | None:
         """
         Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
         We handle two things for processing SAMLResponses here:
@@ -3760,7 +3770,9 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         return data
 
     @override
-    def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
+    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+        self, *args: Any, **kwargs: Any
+    ) -> UserProtocol | HttpResponseProtocol | None:
         """
         Overridden in order to support multiple IdPs being enabled on the server.
         Needs to safely determine:
@@ -3932,7 +3944,9 @@ class SAMLSPInitiatedLogout:
         return HttpResponseRedirect(slo_url)
 
     @classmethod
-    def process_logout_response(cls, logout_response: SAMLResponse, idp_name: str) -> HttpResponse:
+    def process_logout_response(
+        cls, logout_response: SAMLResponse, idp_name: str
+    ) -> HttpResponseProtocol:
         """
         Validates the LogoutResponse and logs out the user if successful,
         finishing the SP-initiated logout flow.
@@ -3948,7 +3962,9 @@ class SAMLSPInitiatedLogout:
             raise JsonableError(f"LogoutResponse error: {errors}")
 
         logout(logout_response.backend.strategy.request)
-        return HttpResponseRedirect(settings.LOGIN_URL)
+        return cast(
+            HttpResponseProtocol, HttpResponseRedirect(settings.LOGIN_URL)
+        )  # https://github.com/python-social-auth/social-core/pull/1511
 
 
 def get_external_method_dicts(realm: Realm | None = None) -> list[ExternalAuthMethodDictT]:
