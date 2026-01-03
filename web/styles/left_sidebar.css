@@ -245,7 +245,26 @@
     margin: 0;
 }
 
-#hide-more-direct-messages,
+#left-sidebar-modal-content #direct-messages-modal {
+    display: grid;
+    grid-template-rows: minmax(0, max-content) minmax(0, 1fr);
+    max-height: 100%;
+
+    #direct-messages-modal-section-header,
+    .dm-list {
+        margin-right: var(--left-sidebar-right-margin);
+    }
+
+    .dm-list {
+        margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
+    }
+
+    &.no-display {
+        display: none;
+    }
+}
+
+#direct-messages-modal-section-header,
 #direct-messages-section-header {
     grid-template-columns:
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
@@ -253,55 +272,12 @@
             --left-sidebar-vdots-width
         )
         0;
-}
-
-#hide-more-direct-messages {
-    /* Keep the DM zoom-out option hidden until zoomed-in. */
-    display: none;
-    margin-right: var(--left-sidebar-right-margin);
-    line-height: var(--line-height-sidebar-row);
-    border-radius: 4px;
-    text-decoration: none;
-    color: inherit;
-
-    .hide-more-direct-messages-text {
-        color: var(--color-text-sidebar-action-heading);
-        font-size: var(--font-size-sidebar-action-heading);
-        font-weight: var(--font-weight-sidebar-action-heading);
-        font-variant: var(--font-variant-sidebar-action-heading);
-        text-transform: var(--text-transform-sidebar-action-heading);
-        grid-area: row-content;
-    }
-
-    &:hover {
-        background-color: var(--color-background-sidebar-action-heading-hover);
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-    }
-
-    &:focus {
-        outline: none;
-    }
-}
-
-#direct-messages-section-header {
     cursor: pointer;
     white-space: nowrap;
     position: sticky;
     top: 0;
     z-index: 3;
     background-color: var(--color-background);
-
-    /* Prevent hover styles set on other rows when zoomed in. */
-    &:not(.zoom-in):hover {
-        background-color: var(--color-background-hover-narrow-filter);
-        border-radius: 4px;
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-
-        .left-sidebar-title,
-        .sidebar-heading-icon {
-            opacity: var(--opacity-sidebar-heading-hover);
-        }
-    }
 
     #toggle-direct-messages-section-icon {
         grid-area: starting-anchor-element;
@@ -329,7 +305,7 @@
     .compose-new-direct-message,
     .show-all-direct-messages {
         color: var(--color-sidebar-action);
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
@@ -341,6 +317,31 @@
             color: var(--color-sidebar-action-hover);
             background-color: var(--color-background-sidebar-action-hover);
         }
+    }
+}
+
+#direct-messages-section-header {
+    grid-template-columns:
+        0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
+        minmax(0, max-content) minmax(0, max-content) var(
+            --left-sidebar-vdots-width
+        )
+        0;
+
+    &:hover {
+        background-color: var(--color-background-hover-narrow-filter);
+        border-radius: 4px;
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+        .left-sidebar-title,
+        .sidebar-heading-icon {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+    }
+
+    .compose-new-direct-message,
+    .show-all-direct-messages {
+        display: none;
 
         @media (hover: none) {
             display: flex;
@@ -348,13 +349,27 @@
     }
 
     &.hover-over-dm-section,
-    &.zoom-in,
     &:hover {
         .compose-new-direct-message,
         .show-all-direct-messages {
             display: flex;
         }
     }
+}
+
+#direct-messages-modal-section-header {
+    display: grid;
+    align-items: center;
+    /* This is a simplified version of left sidebar rows, and includes a
+       second grid row for placing filter boxes. */
+    grid-template:
+        "starting-offset   row-content       controls          markers-and-unreads ending-offset" var(
+            --line-height-sidebar-row-prominent
+        )
+        "filter-container  filter-container  filter-container  filter-container    filter-container"
+        minmax(0, max-content)
+        / 0.6em minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
+        var(--left-sidebar-vdots-width);
 }
 
 .spectator-view #left-sidebar-search {
@@ -626,11 +641,14 @@
     }
 }
 
-.direct-messages-container {
+.direct-messages-container.zoomed-out {
     /* Properly offset all the grid rows
        in the DM section. */
     margin-right: var(--left-sidebar-right-margin);
+}
 
+.direct-messages-container,
+#left-sidebar-modal-content {
     & ul.dm-list {
         list-style-type: none;
         font-weight: 400;
@@ -807,6 +825,7 @@
 
 #views-label-container,
 #direct-messages-section-header,
+#direct-messages-modal-section-header,
 .stream-list-subsection-header,
 .top_left_row,
 .bottom_left_row {
@@ -821,8 +840,8 @@
     .topic-list
     .bottom_left_row:has(a.topic-box:focus-visible),
 #direct-messages-list .dm-list .bottom_left_row:has(a.dm-box:focus-visible),
+#modal-direct-messages-list .bottom_left_row:has(a.dm-box:focus-visible),
 #show-more-direct-messages:has(a.dm-name:focus-visible),
-#hide-more-direct-messages:focus-visible,
 #topics_header .show-all-streams:focus-visible,
 #subscribe-to-more-streams:has(.subscribe-more-link:focus-visible),
 #login-to-more-streams:has(.subscribe-more-link:focus-visible) {
@@ -1069,6 +1088,7 @@ li.active-sub-filter {
 
 .top_left_mentions,
 #direct-messages-section-header,
+#direct-messages-modal-section-header,
 .dm-list-item {
     /* To highlight the background when a new unread arrives,
        we set the background on the .new-unread class. */
@@ -1428,7 +1448,6 @@ li.active-sub-filter {
 
 /* New grid definitions here. */
 #views-label-container,
-#hide-more-direct-messages.dm-zoomed-in,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
@@ -1545,20 +1564,6 @@ li.active-sub-filter {
         }
     }
 
-    &.showing-expanded-navigation {
-        /* When the expanded navigation is visible,
-           hide the condensed navigation's controls. */
-        #left-sidebar-navigation-list-condensed,
-        .left-sidebar-navigation-menu-icon {
-            display: none;
-        }
-        /* Give the sidebar title through the end of the markers
-           area, if needed. */
-        .left-sidebar-title {
-            grid-column: row-content-start / markers-and-unreads-end;
-        }
-    }
-
     /* Use a next-sibling combinator (+) to use CSS to show and hide
        filter rows as needed, based on the narrow. */
     &.showing-condensed-navigation {
@@ -1630,6 +1635,38 @@ li.active-sub-filter {
             color: var(--color-vdots-hover);
             background-color: var(--color-background-sidebar-action-hover);
         }
+    }
+}
+
+.left-sidebar:not(.zoom-in) #views-label-container.showing-expanded-navigation {
+    /* When the expanded navigation is visible,
+        hide the condensed navigation's controls. */
+    #left-sidebar-navigation-list-condensed,
+    .left-sidebar-navigation-menu-icon {
+        display: none;
+    }
+    /* Give the sidebar title through the end of the markers
+        area, if needed. */
+    .left-sidebar-title {
+        grid-column: row-content-start / markers-and-unreads-end;
+    }
+}
+
+/* When we collapsed the views section because we're zoomed in, hide
+   the condensed navigation's controls (except the unread counter). */
+.left-sidebar.zoom-in #views-label-container {
+    grid-template-columns:
+        0 var(--left-sidebar-header-icon-toggle-width)
+        0 minmax(0, 1fr) 0 minmax(0, max-content) var(
+            --left-sidebar-vdots-width
+        )
+        0;
+
+    .left-sidebar-navigation-condensed-item:not(
+            .top_left_condensed_unread_marker
+        ),
+    .left-sidebar-navigation-menu-icon {
+        display: none;
     }
 }
 
@@ -2209,21 +2246,8 @@ li.topic-list-item {
     }
 }
 
-/* Since direct-messages-sticky-header also has the `input-append`
-   class accompanying it. The display property of that class will
-   overwrite display: none if we don't have a more specific CSS
-   rule. It will also overwrite `display: none` even if `.zoom-out`
-   properties are declared after the `.input-append` properties since
-   the latter is more specific. */
-#direct-messages-sticky-header.zoom-out,
-.zoom-out {
-    #topics_header {
-        display: none;
-    }
-
-    .zoom-out-hide {
-        display: none;
-    }
+#streams_list.zoom-out #topics_header {
+    display: none;
 }
 
 #topics_header {
@@ -2339,24 +2363,9 @@ li.topic-list-item {
         display: none;
     }
 
-    &.direct-messages-container ul.dm-list {
-        margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
-    }
-
-    .direct-messages-search-section {
-        grid-column: filter-container;
-        margin: 5px 0;
-    }
-
     .zoom-in-hide,
     #left-sidebar-search.zoom-in-hide {
         display: none;
-    }
-
-    .zoom-in-sticky {
-        position: sticky;
-        top: 0;
-        z-index: 1;
     }
 }
 
@@ -2379,5 +2388,85 @@ li.topic-list-item {
 
     .stream-list-subsection-header {
         top: 0;
+    }
+}
+
+#left-sidebar.zoom-out #left-sidebar-modal {
+    /* Hidden instead of display: none so that we scroll to the
+       correct height more easily as it becomes visible again */
+    visibility: hidden;
+}
+
+#left-sidebar.zoom-in {
+    #left_sidebar_scroll_container {
+        /* Hidden instead of display: none so that we scroll to the
+        correct height more easily as it becomes visible again */
+        visibility: hidden;
+    }
+
+    #left-sidebar-search {
+        display: none;
+    }
+}
+
+#left-sidebar.zoom-in #left-sidebar-modal {
+    position: absolute;
+    left: 0;
+    top: var(--navbar-fixed-height);
+    width: var(--left-sidebar-width);
+    color: var(--color-left-sidebar-navigation-icon);
+
+    .left-sidebar-modal-close-area {
+        position: relative;
+        z-index: 1;
+        height: var(--left-sidebar-modal-close-area-height);
+        padding-top: var(--left-sidebar-modal-close-area-padding-top);
+        display: flex;
+        margin: 0 10px;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9375em; /* 15px at 16px/em */
+        font-weight: 600;
+        letter-spacing: 0.75px;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        .left-sidebar-modal-back {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    #direct-messages-modal-section-header {
+        margin-top: 5px;
+    }
+
+    #left-sidebar-modal-content {
+        padding: 0 0 5px 5px;
+        background: var(--color-background);
+        border-radius: 6px 6px 0 0;
+        height: calc(
+            100dvh - var(--navbar-fixed-height) -
+                var(--left-sidebar-modal-close-area-padding-top) -
+                var(--left-sidebar-modal-close-area-height)
+        );
+        box-shadow:
+            0 -3px 12px 0 var(--color-left-sidebar-inner-box-shadow),
+            0 -2.2em 24px 0 var(--color-left-sidebar-middle-box-shadow),
+            0 -122px 16px 0 var(--color-left-sidebar-outer-box-shadow);
+    }
+
+    .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+        box-shadow:
+            0 -3px 12px 0 var(--color-left-sidebar-inner-box-shadow),
+            0 -2.2em 24px 0 var(--color-left-sidebar-middle-box-shadow-hover),
+            0 -122px 16px 0 var(--color-left-sidebar-outer-box-shadow-hover);
+    }
+
+    .left-sidebar-filter-input-container {
+        display: block;
+        margin-bottom: 5px;
     }
 }

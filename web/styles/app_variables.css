@@ -318,6 +318,12 @@
     /* 5px / 16px em */
     --left-sidebar-direct-messages-bottom-divider-padding: 0.3125em;
 
+    /* Left sidebar modal */
+    --left-sidebar-modal-close-area-height: 1.9em;
+    --left-sidebar-modal-close-area-padding-top: calc(
+        1.9em + var(--header-padding-bottom)
+    );
+
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
        as well as navigation items. Everything else takes
@@ -841,6 +847,23 @@
     --color-left-sidebar-direct-messages-bottom-divider: light-dark(
         hsl(0deg 0% 0% / 15%),
         hsl(0deg 0% 100% / 15%)
+    );
+    --color-left-sidebar-inner-box-shadow: light-dark(
+        hsl(0deg 0% 0% / 20%),
+        hsl(0deg 0% 0% / 80%)
+    );
+    --color-left-sidebar-middle-box-shadow: var(--color-background);
+    --color-left-sidebar-outer-box-shadow: light-dark(
+        hsl(0deg 0% 94% / 20%),
+        hsl(0deg 0% 11% / 30%)
+    );
+    --color-left-sidebar-middle-box-shadow-hover: light-dark(
+        hsl(244deg 36% 91%),
+        hsl(240deg 19% 24%)
+    );
+    --color-left-sidebar-outer-box-shadow-hover: light-dark(
+        hsl(240deg 100% 50% / 7%),
+        hsl(240deg 100% 75% / 20%)
     );
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: light-dark(
