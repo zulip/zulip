@@ -1569,7 +1569,10 @@ ul.popover-menu-list {
         cursor: default;
     }
 
-    .popover-menu-link:not(.unread-counts-selector-header):not(.channel-links-selector-header) {
+    .popover-menu-link:not(
+            .unread-counts-selector-header,
+            .channel-links-selector-header
+        ) {
         .web_stream_unreads_count_display_policy_choice,
         .web_channel_default_view_choice {
             width: auto;
@@ -1586,7 +1589,28 @@ ul.popover-menu-list {
         }
     }
 
+    .unread-counts-selector,
+    .channel-links-selector {
+        .popover-menu-link {
+            display: grid;
+            grid-template: "left-icon row-content" auto / 18px minmax(
+                    max-content,
+                    1fr
+                );
+            align-items: center;
+            gap: 5px;
 
+            .web_stream_unreads_count_display_policy_choice,
+            .web_channel_default_view_choice {
+                grid-area: left-icon;
+                justify-self: baseline;
+            }
+
+            .popover-menu-label {
+                grid-area: row-content;
+            }
+        }
+    }
 }
 
 #groups-to-add {

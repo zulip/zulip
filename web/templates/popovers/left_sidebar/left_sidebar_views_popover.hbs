@@ -41,6 +41,21 @@
                 </label>
             </li>
         {{/each}}
-
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item">
+            <label class="channel-links-selector-header popover-menu-link" role="menuitem">
+                <span class="popover-menu-label">
+                    {{t 'Channel links go to' }}
+                </span>
+            </label>
+        </li>
+        {{#each channel_default_view_options}}
+            <li role="none" class="channel-links-selector link-item" value="{{this.code}}">
+                <label class="popover-menu-link" role="menuitem" tabindex="0">
+                    <input type="radio" class="web_channel_default_view_choice" name="channel_default_view" value="{{this.code}}"/>
+                    <span class="popover-menu-label">{{this.description}}</span>
+                </label>
+            </li>
+        {{/each}}
     </ul>
 </div>

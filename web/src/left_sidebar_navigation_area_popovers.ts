@@ -383,5 +383,32 @@ export function initialize(): void {
         },
     );
 
+    // Handle channel default view changes
+    $("body").on(
+        "click",
+        ".condensed-views-popover-menu .channel-links-selector",
+        function (this: HTMLElement) {
+            const $selector = $(this);
+            const radio_value = $selector.find(".web_channel_default_view_choice").val();
+            if (radio_value === undefined) {
+                return;
+            }
+            const view_value = Number(radio_value);
+            const data = {web_channel_default_view: view_value};
+            const current_view = user_settings.web_channel_default_view;
 
+            if (current_view === data.web_channel_default_view) {
+                popovers.hide_all();
+                return;
+            }
+
+            void channel.patch({
+                url: "/json/settings",
+                data,
+                success() {
+                    popovers.hide_all();
+                },
+            });
+        },
+    );
 }
