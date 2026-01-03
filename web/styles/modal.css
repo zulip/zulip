@@ -309,6 +309,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    /* Padding for icon outlines to occupy the space so that they don't get clipped. */
+    padding: 0 1px;
     /* This line-height is to increase the vertical clickable areas on the icons. */
     line-height: 1.2727em; /* 28px at 22px font-size at 14px em */
 
