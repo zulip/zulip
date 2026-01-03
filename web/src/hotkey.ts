@@ -1503,7 +1503,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                     show_copied_confirmation(util.the($message_time), {
                         custom_content: $t({defaultMessage: "Message link copied!"}),
                     });
-                });
+                })();
                 return true;
             }
             return false;
