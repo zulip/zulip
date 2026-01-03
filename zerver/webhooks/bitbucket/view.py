@@ -79,7 +79,7 @@ ALL_EVENT_TYPES = [
 
 @webhook_view("Bitbucket2", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
-def api_bitbucket2_webhook(
+def api_bitbucket_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,

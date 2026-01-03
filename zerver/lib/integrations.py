@@ -550,20 +550,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Beeminder",
     ),
     IncomingWebhookIntegration(
-        "bitbucket2",
+        "bitbucket",
         ["version-control"],
-        [
-            WebhookScreenshotConfig(
-                "push.json",
-                "003.png",
-                "bitbucket",
-                bot_name="Bitbucket Bot",
-                channel="commits",
-            )
-        ],
-        logo="images/integrations/logos/bitbucket.svg",
-        display_name="Bitbucket",
+        [WebhookScreenshotConfig("issue_created.json", channel="commits")],
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        legacy_names=["bitbucket2"],
     ),
     IncomingWebhookIntegration(
         "buildbot", ["continuous-integration"], [WebhookScreenshotConfig("started.json")]
