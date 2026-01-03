@@ -250,8 +250,11 @@ export function private_message_recipient_ids(): number[] {
     return compose_pm_pill.get_user_ids();
 }
 
+// This sets new user ids with `skip_pill_callbacks=true`.
+// If anything in `UserPillWidget.onPillCreate` is desired, call
+// that directly after calling `set_private_message_recipient_ids`.
 export function set_private_message_recipient_ids(value: number[]): void {
-    compose_pm_pill.set_from_user_ids(value);
+    compose_pm_pill.set_from_user_ids(value, true);
 }
 
 export function has_message_content(): boolean {
