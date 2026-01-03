@@ -48,6 +48,7 @@ async function run(): Promise<void> {
         defaultViewport: null,
         headless: true,
     });
+
     try {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
