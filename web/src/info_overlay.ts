@@ -2,11 +2,13 @@ import $ from "jquery";
 
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
+import render_print_info_overlay from "../templates/print_info_overlay.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 import render_status_message_example from "../templates/status_message_example.hbs";
 import render_poll_widget_example from "../templates/widgets/poll_widget_example.hbs";
 import render_todo_widget_example from "../templates/widgets/todo_widget_example.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
@@ -20,11 +22,70 @@ import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {current_user} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
 import {user_settings} from "./user_settings.ts";
 
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 export let toggler: Toggle | undefined;
+
+const PRINT_CONTAINER_ID = "zulip-print-container";
+
+const INFO_PANE_TITLES: Record<string, string> = {
+    "keyboard-shortcuts": $t({defaultMessage: "Keyboard shortcuts"}),
+    "message-formatting": $t({defaultMessage: "Message formatting"}),
+    "search-operators": $t({defaultMessage: "Search filters"}),
+};
+
+function get_printable_overlay_html($pane: JQuery): string {
+    const $clone = $pane.clone(true, true);
+    $clone.find(".simplebar-track, .simplebar-scrollbar").remove();
+
+    const $content = $clone.find(".simplebar-content");
+    return $content.length > 0 ? ($content.html() ?? "") : ($clone.html() ?? "");
+}
+
+function render_and_attach_print_container(title: string, body_html: string): JQuery {
+    const html = render_print_info_overlay({title, body_html});
+    const $container = $(html).hide();
+    $("body").append($container);
+    return $container;
+}
+
+function remove_print_container(): void {
+    $(`#${PRINT_CONTAINER_ID}`).remove();
+}
+
+export function print_pane(pane_id: string): void {
+    const $pane = $(`#${CSS.escape(pane_id)} .overlay-scroll-container`);
+    if ($pane.length === 0) {
+        blueslip.warn("print_pane: pane not found", {pane_id});
+        return;
+    }
+
+    const title = INFO_PANE_TITLES[pane_id] ?? $t({defaultMessage: "Help"});
+    const body_html = get_printable_overlay_html($pane);
+    const $container = render_and_attach_print_container(title, body_html);
+
+    const after_print = (): void => {
+        remove_print_container();
+        window.removeEventListener("afterprint", after_print);
+    };
+
+    window.addEventListener("afterprint", after_print);
+    $container.show();
+
+    try {
+        window.print();
+    } catch {
+        after_print();
+        ui_report.error(
+            $t({defaultMessage: "Unable to open print dialog."}),
+            undefined,
+            $("#status"),
+        );
+    }
+}
 
 function format_usage_html(...keys: string[]): string {
     return $t_html(
@@ -303,6 +364,35 @@ export function set_up_toggler(): void {
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");
 }
 
+function get_visible_info_overlay_pane_id(): string {
+    const $overlay = $(".informational-overlays");
+
+    const $visibleModal = $overlay
+        .find(".overlay-modal")
+        .filter((_, elem) => elem.offsetParent !== null)
+        .first();
+
+    return $visibleModal.attr("id") ?? "keyboard-shortcuts";
+}
+
+function informational_overlay_print_key_handler(e: JQuery.KeyDownEvent): void {
+    const is_print_key = (e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P");
+
+    if (!is_print_key) {
+        return;
+    }
+
+    const $overlay = $(".informational-overlays");
+    if (!$overlay.hasClass("show")) {
+        return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    print_pane(get_visible_info_overlay_pane_id());
+}
+
 export function show(target: string | undefined): void {
     const $overlay = $(".informational-overlays");
 
@@ -312,6 +402,7 @@ export function show(target: string | undefined): void {
             $overlay,
             on_close() {
                 browser_history.exit_overlay();
+                $(document).off("keydown", informational_overlay_print_key_handler);
             },
         });
     }
@@ -319,6 +410,9 @@ export function show(target: string | undefined): void {
     if (!toggler) {
         set_up_toggler();
     }
+
+    $(document).off("keydown", informational_overlay_print_key_handler);
+    $(document).on("keydown", informational_overlay_print_key_handler);
 
     if (target) {
         toggler!.goto(target);

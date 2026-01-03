@@ -121,3 +121,59 @@
 #search-operators-first-header {
     width: 40%;
 }
+
+@media print {
+    body > * {
+        display: none !important;
+    }
+
+    #zulip-print-container {
+        display: block !important;
+        position: static !important;
+        width: auto !important;
+        margin: 0;
+        padding: 12mm;
+        background: var(--grey-0);
+    }
+
+    #zulip-print-container .overlay-scroll-container {
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    #zulip-print-container table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    #zulip-print-container th,
+    #zulip-print-container td {
+        border: 1px solid var(--grey-200);
+        padding: 8px;
+        text-align: left;
+        vertical-align: top;
+        color: var(--grey-900);
+    }
+
+    #zulip-print-container th {
+        background-color: var(--grey-50);
+        font-weight: 600;
+    }
+
+    #zulip-print-container kbd {
+        background: var(--grey-50);
+        border: 1px solid var(--grey-400);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 0.95em;
+        color: var(--grey-900);
+    }
+
+    .zulip-print-title {
+        font-size: 22px;
+        margin: 0 0 12px;
+        color: var(--grey-900);
+    }
+}
