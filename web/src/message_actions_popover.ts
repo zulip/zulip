@@ -246,7 +246,7 @@ export function initialize({
                     show_copied_confirmation(
                         the($(instance.reference).closest(".message_controls")),
                     );
-                });
+                })();
             });
         },
         onHidden(instance) {
