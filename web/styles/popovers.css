@@ -1561,6 +1561,32 @@ ul.popover-menu-list {
             align-self: baseline;
         }
     }
+
+    /* No hover effect on the section headers */
+    .unread-counts-selector-header:hover,
+    .channel-links-selector-header:hover {
+        background: inherit;
+        cursor: default;
+    }
+
+    .popover-menu-link:not(.unread-counts-selector-header):not(.channel-links-selector-header) {
+        .web_stream_unreads_count_display_policy_choice,
+        .web_channel_default_view_choice {
+            width: auto;
+            cursor: pointer;
+            height: 1em;
+            accent-color: hsl(217deg 100% 60%);
+            margin: 0 8px 0 0;
+
+            &:focus {
+                outline: 1px dotted hsl(0deg 0% 20%);
+                outline: 5px auto -webkit-focus-ring-color;
+                outline-offset: -2px;
+            }
+        }
+    }
+
+
 }
 
 #groups-to-add {

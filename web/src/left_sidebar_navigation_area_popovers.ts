@@ -301,6 +301,22 @@ export function initialize(): void {
                 {instance},
                 register_toggle_unread_message_count,
             );
+
+            // Set the checked radio buttons for unread counts display policy
+            const current_unread_policy = user_settings.web_stream_unreads_count_display_policy;
+            $popper
+                .find(
+                    `.web_stream_unreads_count_display_policy_choice[value=${CSS.escape(String(current_unread_policy))}]`,
+                )
+                .prop("checked", true);
+
+            // Set the checked radio buttons for channel default view
+            const current_channel_view = user_settings.web_channel_default_view;
+            $popper
+                .find(
+                    `.web_channel_default_view_choice[value=${CSS.escape(String(current_channel_view))}]`,
+                )
+                .prop("checked", true);
         },
         onShow(instance) {
             const built_in_popover_condensed_views =
@@ -318,6 +334,12 @@ export function initialize(): void {
                         is_home_view_active,
                         unread_messages_present,
                         show_unread_count,
+                        unread_counts_display_options: Object.values(
+                            settings_config.web_stream_unreads_count_display_policy_values,
+                        ),
+                        channel_default_view_options: Object.values(
+                            settings_config.web_channel_default_view_values,
+                        ),
                     }),
                 ),
             );
@@ -329,4 +351,37 @@ export function initialize(): void {
     });
 
     common_click_handlers();
+
+    // Handle unread counts display policy changes
+    $("body").on(
+        "click",
+        ".condensed-views-popover-menu .unread-counts-selector",
+        function (this: HTMLElement) {
+            const $selector = $(this);
+            const radio_value = $selector
+                .find(".web_stream_unreads_count_display_policy_choice")
+                .val();
+            if (radio_value === undefined) {
+                return;
+            }
+            const policy_value = Number(radio_value);
+            const data = {web_stream_unreads_count_display_policy: policy_value};
+            const current_policy = user_settings.web_stream_unreads_count_display_policy;
+
+            if (current_policy === data.web_stream_unreads_count_display_policy) {
+                popovers.hide_all();
+                return;
+            }
+
+            void channel.patch({
+                url: "/json/settings",
+                data,
+                success() {
+                    popovers.hide_all();
+                },
+            });
+        },
+    );
+
+
 }

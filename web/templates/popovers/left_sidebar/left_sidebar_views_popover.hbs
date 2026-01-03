@@ -25,5 +25,22 @@
             </a>
         </li>
         {{/unless}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item">
+            <label class="unread-counts-selector-header popover-menu-link" role="menuitem">
+                <span class="popover-menu-label">
+                    {{t 'Show unread counts for' }}
+                </span>
+            </label>
+        </li>
+        {{#each unread_counts_display_options}}
+            <li role="none" class="unread-counts-selector link-item" value="{{this.code}}">
+                <label class="popover-menu-link" role="menuitem" tabindex="0">
+                    <input type="radio" class="web_stream_unreads_count_display_policy_choice" name="stream_unreads_display" value="{{this.code}}"/>
+                    <span class="popover-menu-label">{{this.description}}</span>
+                </label>
+            </li>
+        {{/each}}
+
     </ul>
 </div>
