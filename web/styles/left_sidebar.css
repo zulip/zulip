@@ -228,7 +228,26 @@
     }
 }
 
-#hide-more-direct-messages,
+#direct-messages-modal {
+    display: grid;
+    grid-template-rows: minmax(0, max-content) minmax(0, 1fr);
+    max-height: 100%;
+
+    #direct-messages-modal-section-header,
+    .dm-list {
+        margin-right: var(--left-sidebar-right-margin);
+    }
+
+    .dm-list {
+        margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
+    }
+
+    &.no-display {
+        display: none;
+    }
+}
+
+#direct-messages-modal-section-header,
 #direct-messages-section-header {
     grid-template-columns:
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
@@ -236,51 +255,9 @@
             --left-sidebar-vdots-width
         )
         0;
-}
-
-#hide-more-direct-messages {
-    /* Keep the DM zoom-out option hidden until zoomed-in. */
-    display: none;
-    margin-right: var(--left-sidebar-right-margin);
-    line-height: var(--line-height-sidebar-row);
-    border-radius: 4px;
-    text-decoration: none;
-    color: inherit;
-
-    .hide-more-direct-messages-text {
-        color: var(--color-text-sidebar-action-heading);
-        font-size: var(--font-size-sidebar-action-heading);
-        font-weight: var(--font-weight-sidebar-action-heading);
-        font-variant: var(--font-variant-sidebar-action-heading);
-        text-transform: var(--text-transform-sidebar-action-heading);
-        grid-area: row-content;
-    }
-
-    &:hover {
-        background-color: var(--color-background-sidebar-action-heading-hover);
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-    }
-
-    &:focus {
-        outline: none;
-    }
-}
-
-#direct-messages-section-header {
     cursor: pointer;
     white-space: nowrap;
     border-radius: 4px;
-
-    /* Prevent hover styles set on other rows when zoomed in. */
-    &:not(.zoom-in):hover {
-        background-color: var(--color-background-hover-narrow-filter);
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-
-        .left-sidebar-title,
-        .sidebar-heading-icon {
-            opacity: var(--opacity-sidebar-heading-hover);
-        }
-    }
 
     #toggle-direct-messages-section-icon {
         grid-area: starting-anchor-element;
@@ -308,7 +285,7 @@
     .compose-new-direct-message,
     .show-all-direct-messages {
         color: var(--color-sidebar-action);
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
@@ -320,6 +297,23 @@
             color: var(--color-sidebar-action-hover);
             background-color: var(--color-background-sidebar-action-hover);
         }
+    }
+}
+
+#direct-messages-section-header {
+    &:hover {
+        background-color: var(--color-background-hover-narrow-filter);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+        .left-sidebar-title,
+        .sidebar-heading-icon {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+    }
+
+    .compose-new-direct-message,
+    .show-all-direct-messages {
+        display: none;
 
         @media (hover: none) {
             display: flex;
@@ -327,13 +321,27 @@
     }
 
     &.hover-over-dm-section,
-    &.zoom-in,
     &:hover {
         .compose-new-direct-message,
         .show-all-direct-messages {
             display: flex;
         }
     }
+}
+
+#direct-messages-modal-section-header {
+    display: grid;
+    align-items: center;
+    /* This is a simplified version of left sidebar rows, and includes a
+       second grid row for placing filter boxes. */
+    grid-template:
+        "starting-offset   row-content       controls          markers-and-unreads ending-offset" var(
+            --line-height-sidebar-row-prominent
+        )
+        "filter-container  filter-container  filter-container  filter-container    filter-container"
+        minmax(0, max-content)
+        / 0.6em minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
+        var(--left-sidebar-vdots-width);
 }
 
 .spectator-view #left-sidebar-search {
@@ -595,11 +603,14 @@
     }
 }
 
-.direct-messages-container {
+.not-modal-direct-messages-container {
     /* Properly offset all the grid rows
        in the DM section. */
     margin-right: var(--left-sidebar-right-margin);
+}
 
+.direct-messages-container,
+#left-sidebar-modal-content {
     & ul.dm-list {
         list-style-type: none;
         font-weight: 400;
@@ -776,6 +787,7 @@
 
 #views-label-container,
 #direct-messages-section-header,
+#direct-messages-modal-section-header,
 .stream-list-subsection-header,
 .top_left_row,
 .bottom_left_row {
@@ -791,7 +803,6 @@
     .bottom_left_row:has(a.topic-box:focus-visible),
 #direct-messages-list .dm-list .bottom_left_row:has(a.dm-box:focus-visible),
 #show-more-direct-messages:has(a.dm-name:focus-visible),
-#hide-more-direct-messages:focus-visible,
 #topics_header .show-all-streams:focus-visible,
 #subscribe-to-more-streams:has(.subscribe-more-link:focus-visible),
 #login-to-more-streams:has(.subscribe-more-link:focus-visible) {
@@ -1038,6 +1049,7 @@ li.active-sub-filter {
 
 .top_left_mentions,
 #direct-messages-section-header,
+#direct-messages-modal-section-header,
 .dm-list-item {
     /* To highlight the background when a new unread arrives,
        we set the background on the .new-unread class. */
@@ -1397,7 +1409,6 @@ li.active-sub-filter {
 
 /* New grid definitions here. */
 #views-label-container,
-#hide-more-direct-messages.dm-zoomed-in,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
@@ -2178,21 +2189,12 @@ li.topic-list-item {
     }
 }
 
-/* Since direct-messages-sticky-header also has the `input-append`
-   class accompanying it. The display property of that class will
-   overwrite display: none if we don't have a more specific CSS
-   rule. It will also overwrite `display: none` even if `.zoom-out`
-   properties are declared after the `.input-append` properties since
-   the latter is more specific. */
-#direct-messages-sticky-header.zoom-out,
-.zoom-out {
-    #topics_header {
-        display: none;
-    }
+#streams_list.zoom-out #topics_header {
+    display: none;
+}
 
-    .zoom-out-hide {
-        display: none;
-    }
+.zoom-out .zoom-out-hide {
+    display: none;
 }
 
 #topics_header {
@@ -2308,24 +2310,9 @@ li.topic-list-item {
         display: none;
     }
 
-    &.direct-messages-container ul.dm-list {
-        margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
-    }
-
-    .direct-messages-search-section {
-        grid-column: filter-container;
-        margin: 5px 0;
-    }
-
     .zoom-in-hide,
     #left-sidebar-search.zoom-in-hide {
         display: none;
-    }
-
-    .zoom-in-sticky {
-        position: sticky;
-        top: 0;
-        z-index: 1;
     }
 }
 
@@ -2336,4 +2323,91 @@ li.topic-list-item {
 #left-sidebar-navigation-area.hidden-by-filters,
 #direct-messages-section-header.hidden-by-filters {
     display: none;
+}
+
+#left-sidebar.zoom-out #left-sidebar-modal {
+    /* Hidden instead of display: none so that we scroll to the
+       correct height more easily as it becomes visible again */
+    visibility: hidden;
+}
+
+#left-sidebar.zoom-in {
+    #left_sidebar_scroll_container {
+        /* Hidden instead of display: none so that we scroll to the
+        correct height more easily as it becomes visible again */
+        visibility: hidden;
+    }
+
+    #left-sidebar-search {
+        display: none;
+    }
+}
+
+#left-sidebar.zoom-in #left-sidebar-modal {
+    position: absolute;
+    left: 0;
+    top: var(--navbar-fixed-height);
+    width: var(--left-sidebar-width);
+    color: var(--color-left-sidebar-navigation-icon);
+
+    .left-sidebar-modal-close-area {
+        position: relative;
+        z-index: 1;
+        height: var(--left-sidebar-modal-close-area-height);
+        padding-top: var(--left-sidebar-modal-close-area-padding-top);
+        display: flex;
+        margin: 0 10px;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9375em; /* 15px at 16px/em */
+        font-weight: 600;
+        letter-spacing: 0.75px;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        .left-sidebar-modal-back {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    #direct-messages-modal-section-header {
+        margin-top: 5px;
+    }
+
+    #left-sidebar-modal-content {
+        padding: 0 0 5px 5px;
+        background: var(--color-background);
+        border-radius: 6px 6px 0 0;
+        height: calc(
+            100vh - var(--navbar-fixed-height) -
+                var(--left-sidebar-modal-close-area-padding-top) -
+                var(--left-sidebar-modal-close-area-height)
+        );
+        box-shadow:
+            0 -3px 12px 0
+                light-dark(hsl(0deg 0% 0% / 20%), hsl(0deg 0% 0% / 80%)),
+            0 -2.2em 12px 0 var(--color-background),
+            0 -122px 16px 0
+                light-dark(hsl(0deg 0% 94% / 20%), hsl(0deg 0% 11% / 30%));
+    }
+
+    .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+        box-shadow:
+            0 -3px 12px 0
+                light-dark(hsl(0deg 0% 0% / 20%), hsl(0deg 0% 0% / 80%)),
+            0 -2.2em 12px 0 light-dark(hsl(244deg 36% 91%), hsl(240deg 19% 24%)),
+            0 -122px 16px 0
+                light-dark(
+                    hsl(240deg 100% 50% / 7%),
+                    hsl(240deg 100% 75% / 20%)
+                );
+    }
+
+    .left-sidebar-filter-input-container {
+        display: block;
+        margin-bottom: 5px;
+    }
 }
