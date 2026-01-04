@@ -1,9 +1,9 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div id="left-sidebar-search" class="zoom-in-hide">
         <div class="input-wrapper-for-tooltip tippy-zulip-delayed-tooltip" data-tooltip-template-id="filter-left-sidebar-tooltip-template">
-            {{#> input_wrapper input_type="filter-input" custom_classes="left-sidebar-search-section" icon="search" input_button_icon="close"}}
+            {{#> components/input_wrapper input_type="filter-input" custom_classes="left-sidebar-search-section" icon="search" input_button_icon="close"}}
                 <input type="text" class="input-element left-sidebar-search-input home-page-input" autocomplete="off" placeholder="{{t 'Filter left sidebar' }}" />
-            {{/input_wrapper}}
+            {{/components/input_wrapper}}
         </div>
         <span id="add_streams_tooltip" class="add-stream-icon-container hidden-for-spectators">
             <i id="streams_inline_icon" class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
@@ -55,9 +55,9 @@
             <span class="unread_count"></span>
         </div>
         <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-input-container">
-            {{#> input_wrapper input_type="filter-input" icon="search" input_button_icon="close"}}
+            {{#> components/input_wrapper input_type="filter-input" icon="search" input_button_icon="close"}}
                 <input type="text" class="input-element direct-messages-list-filter home-page-input" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
-            {{/input_wrapper}}
+            {{/components/input_wrapper}}
         </div>
     </div>
     {{~!-- squash whitespace --~}}
