@@ -15,6 +15,9 @@ const presetEnvOptions = {
 
 /** @type {import("@babel/core").TransformOptions} */
 export default {
-    plugins: [["formatjs", formatJsOptions]],
+    plugins: [
+        ["formatjs", formatJsOptions],
+        ["@babel/plugin-transform-react-jsx", {runtime: "automatic"}],
+    ],
     presets: [["@babel/preset-env", presetEnvOptions], "@babel/typescript"],
 };

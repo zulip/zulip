@@ -12,6 +12,9 @@ patchedDependencies:
   handlebars:
     hash: 53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9
     path: patches/handlebars.patch
+  hastx:
+    hash: 765e4228db8b026d1a1cf870aa182c6f9056c7f5672b107decad372610c48681
+    path: patches/hastx.patch
   simplebar:
     hash: b02691a06d37a4991c993e8b03c1860e01f2edef7c18ad0b958d9b222ba9be9b
     path: patches/simplebar.patch
@@ -35,6 +38,9 @@ importers:
       '@babel/core':
         specifier: ^7.5.5
         version: 7.28.5
+      '@babel/plugin-transform-react-jsx':
+        specifier: ^7.27.1
+        version: 7.27.1(@babel/core@7.28.5)
       '@babel/preset-env':
         specifier: ^7.5.5
         version: 7.28.5(@babel/core@7.28.5)
@@ -167,6 +173,12 @@ importers:
       handlebars-loader:
         specifier: ^1.7.1
         version: 1.7.3(handlebars@4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9))
+      hast-util-to-html:
+        specifier: ^9.0.5
+        version: 9.0.5
+      hastx:
+        specifier: ^0.0.11
+        version: 0.0.11(patch_hash=765e4228db8b026d1a1cf870aa182c6f9056c7f5672b107decad372610c48681)
       html-webpack-plugin:
         specifier: ^5.3.2
         version: 5.6.5(webpack@5.104.1)
@@ -1145,6 +1157,12 @@ packages:
 
   '@babel/plugin-transform-property-literals@7.27.1':
     resolution: {integrity: sha512-oThy3BCuCha8kDZ8ZkgOg2exvPYUlprMukKQXI1r1pJ47NCvxfkEy8vK+r/hT9nF0Aa4H1WUPZZjHTFtAhGfmQ==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+
+  '@babel/plugin-transform-react-jsx@7.27.1':
+    resolution: {integrity: sha512-2KH4LWGSrJIkVf5tSiBFYuXDAoWRq2MMwgivCf+93dd0GQi8RXLjKA/0EvRnVV5G0hrHczsquXuD01L8s6dmBw==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
@@ -5495,6 +5513,10 @@ packages:
 
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
+
+  hastx@0.0.11:
+    resolution: {integrity: sha512-Q333Ifi2Tr9OGB8K/bprsyc5EgXwpkJAIQKGk7dBSCH8tpRraZ5RAdcZLPlJt97TwbZh3WmmiIAf6vfY/nipeg==}
+    engines: {node: '>= 16'}
 
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
@@ -10632,6 +10654,17 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.5
       '@babel/helper-plugin-utils': 7.27.1
+
+  '@babel/plugin-transform-react-jsx@7.27.1(@babel/core@7.28.5)':
+    dependencies:
+      '@babel/core': 7.28.5
+      '@babel/helper-annotate-as-pure': 7.27.3
+      '@babel/helper-module-imports': 7.27.1
+      '@babel/helper-plugin-utils': 7.27.1
+      '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.5)
+      '@babel/types': 7.28.5
+    transitivePeerDependencies:
+      - supports-color
 
   '@babel/plugin-transform-regenerator@7.28.4(@babel/core@7.28.5)':
     dependencies:
@@ -15863,6 +15896,10 @@ snapshots:
       hast-util-parse-selector: 4.0.0
       property-information: 7.1.0
       space-separated-tokens: 2.0.2
+
+  hastx@0.0.11(patch_hash=765e4228db8b026d1a1cf870aa182c6f9056c7f5672b107decad372610c48681):
+    dependencies:
+      '@types/hast': 3.0.4
 
   he@1.2.0: {}
 

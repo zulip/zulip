@@ -1,0 +1,117 @@
+diff --git a/esm/html.d.ts b/esm/html.d.ts
+index 4fca10d7b485fcf8c8b28ea990b23f07417cc783..dacf9cd14918dcca073346b87904bb715f3a8967 100644
+--- a/esm/html.d.ts
++++ b/esm/html.d.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ export type HTMLChild = string | number | boolean | hast.Element | hast.Root | hast.Text;
+ export type HTMLChildren = HTMLChild | Iterable<HTMLChild>;
+ export interface HTMLVoidElement extends HTMLElement {
+@@ -1252,7 +1252,7 @@ export interface HTMLButton extends HTMLElement {
+     /**
+      * The default behavior of the button.
+      */
+-    type?: "submit" | "reset" | "action";
++    type?: "submit" | "reset" | "button";
+     /**
+      * Defines the value associated with the button's name when it's
+      * submitted with the form data. This value is passed to the server
+diff --git a/esm/jsx-runtime.d.ts b/esm/jsx-runtime.d.ts
+index 9dcc229e62a99676f4fd91e91e94808dcb483c40..edabdc65eca3149d65b4b3a7e639c5160dddbaf9 100644
+--- a/esm/jsx-runtime.d.ts
++++ b/esm/jsx-runtime.d.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ import type * as html from "./html.js";
+ import type * as svg from "./svg.js";
+ export type Element = hast.Element;
+diff --git a/esm/svg.d.ts b/esm/svg.d.ts
+index f8ee2991d8642e92ae10362418f4017a5b68d4b1..151599e1831067a83a8e545ab33112a3efd67719 100644
+--- a/esm/svg.d.ts
++++ b/esm/svg.d.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ export type SVGChild = string | number | boolean | hast.Element | hast.Root | hast.Text;
+ export type SVGChildren = SVGChild | Iterable<SVGChild>;
+ export interface SVGElement extends SVGAttributes, SVGPresentationAttributes {
+diff --git a/script/html.d.ts b/script/html.d.ts
+index 4fca10d7b485fcf8c8b28ea990b23f07417cc783..f5a00289bf3de58208ae05fdedff6b4da6c3d801 100644
+--- a/script/html.d.ts
++++ b/script/html.d.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ export type HTMLChild = string | number | boolean | hast.Element | hast.Root | hast.Text;
+ export type HTMLChildren = HTMLChild | Iterable<HTMLChild>;
+ export interface HTMLVoidElement extends HTMLElement {
+@@ -1252,7 +1252,7 @@ export interface HTMLButton extends HTMLElement {
+     /**
+      * The default behavior of the button.
+      */
+-    type?: "submit" | "reset" | "action";
++    type?: "submit" | "reset" | "button";
+     /**
+      * Defines the value associated with the button's name when it's
+      * submitted with the form data. This value is passed to the server
+diff --git a/script/jsx-runtime.d.ts b/script/jsx-runtime.d.ts
+index 9dcc229e62a99676f4fd91e91e94808dcb483c40..8d9da482c4c0d566969b1f3a8b1ce4ca4fed32b5 100644
+--- a/script/jsx-runtime.d.ts
++++ b/script/jsx-runtime.d.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ import type * as html from "./html.js";
+ import type * as svg from "./svg.js";
+ export type Element = hast.Element;
+diff --git a/script/svg.d.ts b/script/svg.d.ts
+index f8ee2991d8642e92ae10362418f4017a5b68d4b1..3f0b45e65b2e96fb3edb489c60750fab70c465b6 100644
+--- a/script/svg.d.ts
++++ b/script/svg.d.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ export type SVGChild = string | number | boolean | hast.Element | hast.Root | hast.Text;
+ export type SVGChildren = SVGChild | Iterable<SVGChild>;
+ export interface SVGElement extends SVGAttributes, SVGPresentationAttributes {
+diff --git a/src/html.ts b/src/html.ts
+index 535dac02a157c9a783e682df264a555691cc94d8..2c44b4dff4347d1c5fa228310b9cb2af3251de08 100644
+--- a/src/html.ts
++++ b/src/html.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ 
+ export type HTMLChild =
+   | string
+@@ -1511,7 +1511,7 @@ export interface HTMLButton extends HTMLElement {
+   /**
+    * The default behavior of the button.
+    */
+-  type?: "submit" | "reset" | "action";
++  type?: "submit" | "reset" | "button";
+ 
+   /**
+    * Defines the value associated with the button's name when it's
+diff --git a/src/jsx-runtime.ts b/src/jsx-runtime.ts
+index b919b50e4d998a24d93d2d4c8042aec066f5095b..63d829a36fa297ef79269e4bd2476060f6c7f556 100644
+--- a/src/jsx-runtime.ts
++++ b/src/jsx-runtime.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ import type * as html from "./html.js";
+ import type * as svg from "./svg.js";
+ 
+diff --git a/src/svg.ts b/src/svg.ts
+index 4f7e855e565f194f35dbbaf4c5f0717e1b355e0b..acf012ed98f6f7a9c628d8128f4df2c578aed1e1 100644
+--- a/src/svg.ts
++++ b/src/svg.ts
+@@ -1,4 +1,4 @@
+-import type * as hast from "@types/hast";
++import type * as hast from "hast";
+ 
+ export type SVGChild =
+   | string

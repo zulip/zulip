@@ -15,7 +15,7 @@ switch_case_indent = true
 [*.{astro,bash,css,cjs,cts,js,json,hbs,html,mjs,mts,sh,ts}]
 indent_size = 4
 
-[*.{cjs,cts,js,json,mjs,mts,ts}]
+[*.{cjs,cts,js,json,mjs,mts,ts,tsx}]
 max_line_length = 100
 
 [*.{py,pyi}]
