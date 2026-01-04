@@ -33,9 +33,8 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
-DESIGN_COMMENT_MESSAGE_TEMPLATE = (
-    "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
-)
+DESIGN_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action}{design_part}:\n{content_message}"
+DESIGN_PART_TEMPLATE = " on design [{design_name}]({design_url})"
 
 FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
 
@@ -250,7 +249,8 @@ def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> 
 
 def get_commented_merge_request_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"].tame(check_string))
+    comment_url = comment["url"].tame(check_string)
+    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     url = payload["merge_request"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
@@ -260,13 +260,15 @@ def get_commented_merge_request_event_body(payload: WildValue, include_title: bo
         number=payload["merge_request"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="MR",
-        title=payload["merge_request"]["title"].tame(check_string) if include_title else None,
+        title=payload["merge_request"]["title"].tame(check_string),
+        include_topic_reference=include_title,
     )
 
 
 def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"].tame(check_string))
+    comment_url = comment["url"].tame(check_string)
+    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     url = payload["issue"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
@@ -276,7 +278,8 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
         number=payload["issue"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="issue",
-        title=payload["issue"]["title"].tame(check_string) if include_title else None,
+        title=payload["issue"]["title"].tame(check_string),
+        include_topic_reference=include_title,
     )
 
 
@@ -288,18 +291,24 @@ def get_commented_design_event_body(payload: WildValue, include_title: bool) -> 
     action = f"[commented]({comment_url})"
     content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
 
+    design_part = (
+        DESIGN_PART_TEMPLATE.format(design_name=design_name, design_url=design_url)
+        if include_title
+        else ""
+    )
+
     return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
         user_name=get_issue_user_name(payload),
         action=action,
-        design_name=design_name,
-        design_url=design_url,
         content_message=content_message,
+        design_part=design_part,
     )
 
 
 def get_commented_snippet_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"].tame(check_string))
+    comment_url = comment["url"].tame(check_string)
+    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     # Snippet URL is only available in GitLab 16.1+
     if "url" in payload["snippet"]:
         url = payload["snippet"]["url"].tame(check_string)
@@ -316,7 +325,8 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool) ->
         number=payload["snippet"]["id"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="snippet",
-        title=payload["snippet"]["title"].tame(check_string) if include_title else None,
+        title=payload["snippet"]["title"].tame(check_string),
+        include_topic_reference=include_title,
     )
 
 
