@@ -21,17 +21,11 @@ const void_elements = new Set([
     "wbr",
 ]);
 
-type Element =
-    | Tag
-    | Comment
-    | ParenthesizedTag
-    | TextVar
-    | TranslatedText
-    | InputTextTag
-    | SorryBlock
-    | Partial
-    | IfElseIfElseBlock
-    | UnlessBlock;
+export type SourceFormat = "inline" | "block" | "strange_block";
+
+type TextElement = ParenthesizedTag | TextVar | TranslatedText | InputTextTag;
+
+type Element = Tag | Comment | SorryBlock | Partial | TextElement | CustomElement;
 
 type TrustedString =
     | TrustedSimpleString
@@ -78,8 +72,6 @@ type TranslatedTextSpec = {translated_text: string; force_single_quotes?: boolea
 type TrustedAttrStringVarSpec = {label: string; s: UnEscapedAttrString};
 
 type TextVarSpec = {label: string; s: UnEscapedTextString; pink?: boolean};
-
-type ConditionalBlockSpec = {bool: BoolVar; block: Block; source_format?: SourceFormat};
 
 type TrustedClassWithVarSuffixSpec = {prefix: string; var_suffix: TrustedAttrStringVar};
 
@@ -316,7 +308,7 @@ export class SorryBlock {
     }
 }
 
-function format_block(info: {
+export function format_block(info: {
     source_format: SourceFormat;
     indent: string;
     start_tag: string;
@@ -337,112 +329,6 @@ function format_block(info: {
     const child_indent = source_format === "strange_block" ? indent : indent + "    ";
     const block = children.map((e) => e.to_source(child_indent)).join("\n");
     return indent + start_tag + "\n" + block + "\n" + indent + end_tag;
-}
-
-export class IfBlock {
-    block: Block;
-    bool: BoolVar;
-    source_format: SourceFormat;
-
-    constructor(info: ConditionalBlockSpec) {
-        this.bool = info.bool;
-        this.block = info.block;
-        this.source_format = info.source_format ?? "inline";
-    }
-
-    to_source(indent: string): string {
-        return format_block({
-            source_format: this.source_format,
-            indent,
-            start_tag: `{{#if ${this.bool.to_source()}}}`,
-            end_tag: "{{/if}}",
-            children: this.block.elements,
-        });
-    }
-
-    to_dom(): Node {
-        if (this.bool.b) {
-            return this.block.to_dom();
-        }
-        return document.createDocumentFragment();
-    }
-}
-
-export class UnlessBlock {
-    block: Block;
-    bool: BoolVar;
-    source_format: SourceFormat;
-
-    constructor(info: ConditionalBlockSpec) {
-        this.block = info.block;
-        this.bool = info.bool;
-        this.source_format = info.source_format ?? "inline";
-    }
-
-    to_source(indent: string): string {
-        return format_block({
-            source_format: this.source_format,
-            indent,
-            start_tag: `{{#unless ${this.bool.to_source()}}}`,
-            end_tag: "{{/unless}}",
-            children: this.block.elements,
-        });
-    }
-
-    to_dom(): Node {
-        if (!this.bool.b) {
-            return this.block.to_dom();
-        }
-        return document.createDocumentFragment();
-    }
-}
-
-type IfElseIfElseBlockSpec = {
-    if_info: ConditionalBlockSpec;
-    else_if_info: ConditionalBlockSpec;
-    else_block: Block;
-};
-export class IfElseIfElseBlock {
-    if_bool: BoolVar;
-    else_if_bool: BoolVar;
-
-    if_block: Block;
-    else_if_block: Block;
-    else_block: Block;
-
-    constructor(info: IfElseIfElseBlockSpec) {
-        const {if_info, else_if_info, else_block} = info;
-        this.if_bool = if_info.bool;
-        this.if_block = if_info.block;
-        this.else_if_bool = else_if_info.bool;
-        this.else_if_block = else_if_info.block;
-        this.else_block = else_block;
-    }
-
-    to_source(indent: string): string {
-        return (
-            indent +
-            `{{#if ${this.if_bool.to_source()}}}\n` +
-            this.if_block.to_source(indent + "    ") +
-            indent +
-            `{{else if ${this.else_if_bool.to_source()}}}\n` +
-            this.else_if_block.to_source(indent + "    ") +
-            indent +
-            `{{else}}\n` +
-            this.else_block.to_source(indent + "    ") +
-            indent +
-            "{{/if}}"
-        );
-    }
-
-    to_dom(): Node {
-        if (this.if_bool.b) {
-            return this.if_block.to_dom();
-        } else if (this.else_if_bool.b) {
-            return this.else_if_block.to_dom();
-        }
-        return this.else_block.to_dom();
-    }
 }
 
 class TranslatedText {
@@ -573,6 +459,34 @@ export class Attr {
     }
 }
 
+export class CustomElement {
+    custom_to_source: (indent: string) => string;
+    custom_to_dom: () => Node;
+
+    constructor(info: {custom_to_source: (indent: string) => string; custom_to_dom: () => Node}) {
+        this.custom_to_source = info.custom_to_source;
+        this.custom_to_dom = info.custom_to_dom;
+    }
+
+    static create(info: {
+        to_source: (indent: string) => string;
+        to_dom: () => Node;
+    }): CustomElement {
+        return new CustomElement({
+            custom_to_source: info.to_source,
+            custom_to_dom: info.to_dom,
+        });
+    }
+
+    to_source(indent: string): string {
+        return this.custom_to_source(indent);
+    }
+
+    to_dom(): Node {
+        return this.custom_to_dom();
+    }
+}
+
 export class Block {
     elements: Element[] = [];
 
@@ -652,7 +566,6 @@ export class SimpleEach {
     }
 }
 
-type SourceFormat = "inline" | "block" | "strange_block";
 export class Tag {
     tag: string;
     // Class strings are implicitly trusted
@@ -926,20 +839,6 @@ export function trusted_attr_string_var(info: TrustedAttrStringVarSpec): Trusted
 
 export function comment(str: string): Comment {
     return new Comment(str);
-}
-
-export function if_bool_then_block(info: ConditionalBlockSpec): IfBlock {
-    return new IfBlock(info);
-}
-
-export function unless_bool_then_block(info: ConditionalBlockSpec): UnlessBlock {
-    return new UnlessBlock(info);
-}
-
-export function if_bool_then_x_else_if_bool_then_y_else_z(
-    info: IfElseIfElseBlockSpec,
-): IfElseIfElseBlock {
-    return new IfElseIfElseBlock(info);
 }
 
 export function simple_each(info: SimpleEachSpec): SimpleEach {

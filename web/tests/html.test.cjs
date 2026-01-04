@@ -10,6 +10,7 @@ const {run_test} = require("./lib/test.cjs");
 const dom = new JSDOM(`<!DOCTYPE html>`);
 global.document = dom.window.document;
 global.Node = dom.window.Node;
+const hbs = zrequire("hbs_bridge");
 const html = zrequire("html");
 
 function assert_dom_is_empty(dom) {
@@ -111,20 +112,20 @@ run_test("test pink translated_text", () => {
 });
 
 run_test("test IfBlock", () => {
-    let frag = html.if_bool_then_block({
+    let frag = hbs.if_bool_then_block({
         bool: html.bool_var({label: "condition", b: true}),
         block: html.block({elements: [html.div_tag({})]}),
     });
     assert.equal(only_child_element_of(frag.to_dom()).tagName, "DIV");
 
-    frag = html.if_bool_then_block({
+    frag = hbs.if_bool_then_block({
         bool: html.bool_var({label: "condition", b: false}),
         block: html.block({elements: [html.div_tag({})]}),
     });
     const dom = frag.to_dom();
     assert_dom_is_empty(dom);
 
-    frag = html.if_bool_then_block({
+    frag = hbs.if_bool_then_block({
         source_format: "block",
         bool: html.bool_var({label: "condition", b: true}),
         block: html.block({elements: [html.div_tag({})]}),
@@ -140,20 +141,20 @@ run_test("test IfBlock", () => {
 });
 
 run_test("test UnlessBlock", () => {
-    let frag = html.unless_bool_then_block({
+    let frag = hbs.unless_bool_then_block({
         bool: html.bool_var({label: "condition", b: false}),
         block: html.block({elements: [html.div_tag({})]}),
     });
     assert.equal(only_child_element_of(frag.to_dom()).tagName, "DIV");
 
-    frag = html.unless_bool_then_block({
+    frag = hbs.unless_bool_then_block({
         bool: html.bool_var({label: "condition", b: true}),
         block: html.block({elements: [html.div_tag({})]}),
     });
     const dom = frag.to_dom();
     assert_dom_is_empty(dom);
 
-    frag = html.unless_bool_then_block({
+    frag = hbs.unless_bool_then_block({
         source_format: "block",
         bool: html.bool_var({label: "condition", b: false}),
         block: html.block({elements: [html.div_tag({})]}),
@@ -215,7 +216,7 @@ run_test("test IfElseIfElseBlock", () => {
                 }),
             ],
         });
-        return html.if_bool_then_x_else_if_bool_then_y_else_z({
+        return hbs.if_bool_then_x_else_if_bool_then_y_else_z({
             if_info: if_spec,
             else_if_info: else_if_spec,
             else_block,

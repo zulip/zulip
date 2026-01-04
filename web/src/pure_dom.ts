@@ -2,9 +2,10 @@ import render_status_emoji from "../templates/status_emoji.hbs";
 import render_user_full_name from "../templates/user_full_name.hbs";
 
 import type {BuddyUserInfo} from "./buddy_data.ts";
+import * as hbs from "./hbs_bridge.ts";
 import * as h from "./html.ts";
-// import {$t} from "./i18n.ts";
-// import * as h from "./html";
+
+// FIX THIS!!! (we can import it)
 function $t(info: {defaultMessage: string}): string {
     return info.defaultMessage;
 }
@@ -550,7 +551,7 @@ export function presence_row(info: BuddyUserInfo): h.Block {
                 h.div_tag({
                     classes: ["selectable_sidebar_block"],
                     children: [
-                        h.if_bool_then_x_else_if_bool_then_y_else_z({
+                        hbs.if_bool_then_x_else_if_bool_then_y_else_z({
                             if_info: {
                                 bool: h.bool_var({
                                     label: "user_list_style.WITH_STATUS",
@@ -580,7 +581,7 @@ export function presence_row(info: BuddyUserInfo): h.Block {
                                 }),
                             ],
                             children: [
-                                h.if_bool_then_block({
+                                hbs.if_bool_then_block({
                                     bool: h.bool_var({
                                         label: "num_unread",
                                         b: Boolean(info.num_unread),
@@ -600,7 +601,7 @@ export function presence_row(info: BuddyUserInfo): h.Block {
                         }),
                     ],
                 }),
-                h.unless_bool_then_block({
+                hbs.unless_bool_then_block({
                     source_format: "strange_block",
                     bool: h.bool_var({
                         label: "user_list_style.WITH_AVATAR",
