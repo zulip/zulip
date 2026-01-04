@@ -55,6 +55,7 @@ ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE = "[{user_name}]({user_url}) {
 ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({user_url}) {action} milestone [{milestone_name}]({milestone_url}) {preposition} [issue #{id} {title}]({url})."
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}{id}{title}]({url})"
+PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITHOUT_REFERENCE = "{user_name} {action}"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 
@@ -206,6 +207,7 @@ def get_pull_request_event_message(
     type: str = "PR",
     title: str | None = None,
     suffix: str | None = None,
+    include_topic_reference: bool = True,
 ) -> str:
     action_messages = {
         "approval": "added their approval for",
@@ -229,7 +231,12 @@ def get_pull_request_event_message(
         }.get(action, ""),
     }
 
-    main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
+    message_template = (
+        PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE
+        if include_topic_reference
+        else PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITHOUT_REFERENCE
+    )
+    main_message = message_template.format(**kwargs)
 
     if target_branch and base_branch:
         branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
