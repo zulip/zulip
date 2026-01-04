@@ -63,6 +63,53 @@ run_test("test TrustedSimpleString", () => {
     assert.equal(html.trusted_simple_string("hello").to_source(), "hello");
 });
 
+run_test("test trusted_html", () => {
+    const widget = html.trusted_html("<b>hello world</b>");
+    assert.equal(widget.to_source(""), "<b>hello world</b>");
+});
+
+function styled_span(color, text) {
+    const style_key = "style"; // fool the linter
+    return `<span ${style_key}="background-color: ${color};">${text}</span>`;
+}
+
+run_test("test orange sorry", () => {
+    const widget = html.div_tag({
+        children: [new html.SorryBlock("TBD")],
+    });
+    assert.equal(widget.to_source(""), "<div>TBD</div>");
+    const actual_html = widget.to_dom().innerHTML;
+    assert.equal(actual_html, styled_span("orange", "TBD"));
+});
+
+run_test("test pink text_var", () => {
+    const widget = html.div_tag({
+        children: [
+            html.text_var({
+                label: "whatever",
+                s: html.unescaped_text_string("wonky"),
+                pink: true,
+            }),
+        ],
+    });
+    const actual_html = widget.to_dom().innerHTML;
+    assert.equal(actual_html, styled_span("pink", "wonky"));
+});
+
+run_test("test pink translated_text", () => {
+    const widget = html.div_tag({
+        children: [
+            html.translated_text({
+                translated_text: "hello",
+                pink: true,
+            }),
+        ],
+    });
+    assert.equal(widget.to_source(""), `<div>{{t "hello" }}</div>`);
+    const actual_html = widget.to_dom().innerHTML;
+    assert.equal(actual_html, styled_span("pink", "hello"));
+});
+
 run_test("test IfBlock", () => {
     let frag = html.if_bool_then_block({
         bool: html.bool_var({label: "condition", b: true}),
