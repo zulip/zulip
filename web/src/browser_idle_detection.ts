@@ -2,7 +2,7 @@ declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface Window {
         IdleDetector: {
-            requestPermission: () => Promise<"granted" | "rejected">;
+            requestPermission: () => Promise<"granted" | "denied">;
             new (): {
                 start: (options: {threshold: number}) => Promise<void>;
                 userState: "active" | "idle";
@@ -27,9 +27,9 @@ export function supported(): boolean {
 }
 
 // Must be called from a handler in a user gesture (ie, click, keypress etc)
-export async function request_permission(): Promise<"granted" | "rejected"> {
+export async function request_permission(): Promise<"granted" | "denied"> {
     if (!supported()) {
-        return "rejected";
+        return "denied";
     }
     return window.IdleDetector.requestPermission();
 }
