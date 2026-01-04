@@ -290,16 +290,11 @@ export const update_elements = ($content: JQuery): void => {
         }
     });
 
-    $content.find("span.timestamp-error").each(function (): void {
-        const match_array = /^Invalid time format: (.*)$/.exec($(this).text());
-        assert(match_array !== null);
-        const [, time_str] = match_array;
-        const text = $t(
-            {defaultMessage: "Invalid time format: {timestamp}"},
-            {timestamp: time_str},
-        );
-        $(this).text(text);
-    });
+    $content.find("span.timestamp-error").each(function (): void  {
+    // Just show the original text without special error rendering
+    // so the message appears normally.
+    // No transformation needed.
+});
 
     $content.find("div.spoiler-header").each(function (): void {
         // If a spoiler block has no header content, it should have a default header.
