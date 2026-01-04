@@ -43,11 +43,11 @@ function poll_widget() {
     return pure_dom.poll_widget();
 }
 
-function presence_row() {
-    return pure_dom.presence_row({
+function buddy_info({user_id}) {
+    return {
         href: "url",
         name: "test",
-        user_id: 1,
+        user_id,
         profile_picture: "profile_picture_url",
         status_emoji_info: undefined,
         is_current_user: true,
@@ -61,6 +61,20 @@ function presence_row() {
             WITH_AVATAR: true,
         },
         should_add_guest_user_indicator: false,
+    };
+}
+
+function presence_row() {
+    return pure_dom.presence_row(buddy_info({user_id: 101}));
+}
+
+function presence_rows() {
+    return pure_dom.presence_rows({
+        presence_rows: [
+            buddy_info({user_id: 201}),
+            buddy_info({user_id: 202}),
+            buddy_info({user_id: 203}),
+        ],
     });
 }
 
@@ -79,5 +93,11 @@ run_test("template equivalence", () => {
     verify_template_equivalence(empty_list_widget_for_list, "empty_list_widget_for_list");
     verify_template_equivalence(poll_widget, "widgets/poll_widget");
     verify_template_equivalence(presence_row, "presence_row");
+    verify_template_equivalence(presence_rows, "presence_rows");
     // TODO: start looking at widget.as_raw_html();
+});
+
+run_test("dom check on presence_rows", () => {
+    const widget = presence_rows();
+    assert.ok(widget.as_raw_html().includes("user_sidebar_entry"));
 });

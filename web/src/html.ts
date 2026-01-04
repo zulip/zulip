@@ -42,8 +42,11 @@ type TrustedString =
     | TranslatedAttrValue
     | TrustedClassWithVarSuffix;
 
+// class strings are implicitly trusted.
+type ClassString = string | TrustedString;
+
 type TagSpec = {
-    classes?: TrustedString[];
+    classes?: ClassString[];
     attrs?: Attr[];
     children?: Element[];
     force_attrs_before_class?: boolean;
@@ -54,6 +57,12 @@ type TagSpec = {
 type BlockSpec = {
     elements: (Element | Block)[];
     source_format?: SourceFormat;
+};
+
+type SimpleEachSpec = {
+    each_label: string;
+    loop_var_partial_label: string;
+    get_blocks: () => Block[];
 };
 
 type BoolVarSpec = {label: string; b: boolean};
@@ -80,14 +89,28 @@ type PartialSpec = {
     custom_context?: string;
 };
 
-function build_classes(classes: TrustedString[]): string {
+function get_class_source(c: ClassString): string {
+    if (typeof c === "string") {
+        return c;
+    }
+    return c.to_source();
+}
+
+function get_class_render_val(c: ClassString): string | undefined {
+    if (typeof c === "string") {
+        return c;
+    }
+    return c.render_val();
+}
+
+function build_classes(classes: ClassString[]): string {
     if (classes.length === 0) {
         return "";
     }
 
     const class_frags = [];
     for (const c of classes) {
-        class_frags.push(c.to_source());
+        class_frags.push(get_class_source(c));
     }
     const full_class = class_frags.join(" ");
     return ` class="${full_class}"`;
@@ -101,11 +124,19 @@ function build_attrs(attrs: Attr[]): string {
     return result;
 }
 
-function text_wrapped_in_pink_span(text: string): HTMLSpanElement {
+function text_wrapped_in_color_span(text: string, color: string): HTMLSpanElement {
     const wrapper_span = document.createElement("span");
     wrapper_span.textContent = text;
-    wrapper_span.style.backgroundColor = "pink";
+    wrapper_span.style.backgroundColor = color;
     return wrapper_span;
+}
+
+function text_wrapped_in_pink_span(text: string): HTMLSpanElement {
+    return text_wrapped_in_color_span(text, "pink");
+}
+
+function text_wrapped_in_orange_span(text: string): HTMLSpanElement {
+    return text_wrapped_in_color_span(text, "orange");
 }
 
 class Comment {
@@ -249,18 +280,16 @@ class Partial {
     // Only meant to make the `to_source` generation match with the
     // existing templates, this is supposed to be shortlived, as partials
     // themselves are transient and only relevant for migration purposes.
-    custom_context: string | undefined;
+    context: string | undefined;
+
     constructor(info: PartialSpec) {
         this.inner_label = info.inner_label;
         this.trusted_html = info.trusted_html;
-        this.custom_context = info.custom_context;
+        this.context = info.custom_context ?? ".";
     }
 
     to_source(indent: string): string {
-        if (this.custom_context) {
-            return indent + `{{> ${this.inner_label} ${this.custom_context}}}`;
-        }
-        return indent + `{{> ${this.inner_label} .}}`;
+        return indent + `{{> ${this.inner_label} ${this.context}}}`;
     }
 
     to_dom(): DocumentFragment {
@@ -283,41 +312,54 @@ export class SorryBlock {
     }
 
     to_dom(): Node {
-        return text_wrapped_in_pink_span(this.placeholder_text);
+        return text_wrapped_in_orange_span(this.placeholder_text);
     }
+}
+
+function format_block(info: {
+    source_format: SourceFormat;
+    indent: string;
+    start_tag: string;
+    end_tag: string;
+    children: Element[];
+}): string {
+    const {source_format, indent, start_tag, end_tag, children} = info;
+
+    if (source_format === "inline") {
+        const inlined_block = children.map((e) => e.to_source("")).join("");
+        return indent + start_tag + inlined_block + end_tag;
+    }
+
+    if (children.length === 0) {
+        return indent + start_tag + "\n" + indent + end_tag;
+    }
+
+    const child_indent = source_format === "strange_block" ? indent : indent + "    ";
+    const block = children.map((e) => e.to_source(child_indent)).join("\n");
+    return indent + start_tag + "\n" + block + "\n" + indent + end_tag;
 }
 
 export class IfBlock {
     block: Block;
     bool: BoolVar;
     source_format: SourceFormat;
+
     constructor(info: ConditionalBlockSpec) {
         this.bool = info.bool;
         this.block = info.block;
         this.source_format = info.source_format ?? "inline";
     }
+
     to_source(indent: string): string {
-        if (this.source_format === "inline") {
-            return (
-                indent + `{{#if ${this.bool.to_source()}}}` + this.block.to_source("") + "{{/if}}"
-            );
-        } else if (this.source_format === "strange_block") {
-            return (
-                indent +
-                `{{#if ${this.bool.to_source()}}}\n` +
-                this.block.to_source(indent) +
-                indent +
-                "{{/if}}"
-            );
-        }
-        return (
-            indent +
-            `{{#if ${this.bool.to_source()}}}\n` +
-            this.block.to_source(indent + "    ") +
-            indent +
-            "{{/if}}"
-        );
+        return format_block({
+            source_format: this.source_format,
+            indent,
+            start_tag: `{{#if ${this.bool.to_source()}}}`,
+            end_tag: "{{/if}}",
+            children: this.block.elements,
+        });
     }
+
     to_dom(): Node {
         if (this.bool.b) {
             return this.block.to_dom();
@@ -330,36 +372,23 @@ export class UnlessBlock {
     block: Block;
     bool: BoolVar;
     source_format: SourceFormat;
+
     constructor(info: ConditionalBlockSpec) {
         this.block = info.block;
         this.bool = info.bool;
         this.source_format = info.source_format ?? "inline";
     }
+
     to_source(indent: string): string {
-        if (this.source_format === "inline") {
-            return (
-                indent +
-                `{{#unless ${this.bool.to_source()}}}` +
-                this.block.to_source("") +
-                "{{/unless}}"
-            );
-        } else if (this.source_format === "strange_block") {
-            return (
-                indent +
-                `{{#unless ${this.bool.to_source()}}}\n` +
-                this.block.to_source(indent) +
-                indent +
-                "{{/unless}}"
-            );
-        }
-        return (
-            indent +
-            `{{#unless ${this.bool.to_source()}}}\n` +
-            this.block.to_source(indent + "    ") +
-            indent +
-            "{{/unless}}"
-        );
+        return format_block({
+            source_format: this.source_format,
+            indent,
+            start_tag: `{{#unless ${this.bool.to_source()}}}`,
+            end_tag: "{{/unless}}",
+            children: this.block.elements,
+        });
     }
+
     to_dom(): Node {
         if (!this.bool.b) {
             return this.block.to_dom();
@@ -367,11 +396,11 @@ export class UnlessBlock {
         return document.createDocumentFragment();
     }
 }
+
 type IfElseIfElseBlockSpec = {
     if_info: ConditionalBlockSpec;
     else_if_info: ConditionalBlockSpec;
     else_block: Block;
-    source_format?: SourceFormat;
 };
 export class IfElseIfElseBlock {
     if_bool: BoolVar;
@@ -380,7 +409,6 @@ export class IfElseIfElseBlock {
     if_block: Block;
     else_if_block: Block;
     else_block: Block;
-    source_format: SourceFormat;
 
     constructor(info: IfElseIfElseBlockSpec) {
         const {if_info, else_if_info, else_block} = info;
@@ -389,49 +417,24 @@ export class IfElseIfElseBlock {
         this.else_if_bool = else_if_info.bool;
         this.else_if_block = else_if_info.block;
         this.else_block = else_block;
-        this.source_format = info.source_format ?? "block";
     }
+
     to_source(indent: string): string {
-        if (this.source_format === "block") {
-            return (
-                indent +
-                `{{#if ${this.if_bool.to_source()}}}\n` +
-                this.if_block.to_source(indent + "    ") +
-                indent +
-                `{{else if ${this.else_if_bool.to_source()}}}\n` +
-                this.else_if_block.to_source(indent + "    ") +
-                indent +
-                `{{else}}\n` +
-                this.else_block.to_source(indent + "    ") +
-                indent +
-                "{{/if}}"
-            );
-        } else if (this.source_format === "inline") {
-            return (
-                indent +
-                `{{#if ${this.if_bool.to_source()}}}` +
-                this.if_block.to_source("") +
-                `{{else if ${this.else_if_bool.to_source()}}}` +
-                this.else_if_block.to_source("") +
-                `{{else}}` +
-                this.else_block.to_source("") +
-                "{{/if}}"
-            );
-        }
         return (
             indent +
             `{{#if ${this.if_bool.to_source()}}}\n` +
-            this.if_block.to_source(indent) +
+            this.if_block.to_source(indent + "    ") +
             indent +
             `{{else if ${this.else_if_bool.to_source()}}}\n` +
-            this.else_if_block.to_source(indent) +
+            this.else_if_block.to_source(indent + "    ") +
             indent +
             `{{else}}\n` +
-            this.else_block.to_source(indent) +
+            this.else_block.to_source(indent + "    ") +
             indent +
             "{{/if}}"
         );
     }
+
     to_dom(): Node {
         if (this.if_bool.b) {
             return this.if_block.to_dom();
@@ -494,6 +497,7 @@ export class TrustedIfElseString {
         return this.no_val.render_val()?.trim();
     }
 }
+
 class TrustedIfString {
     bool: BoolVar;
     val: TrustedString;
@@ -571,7 +575,6 @@ export class Attr {
 
 export class Block {
     elements: Element[] = [];
-    source_format: SourceFormat;
 
     constructor(info: BlockSpec) {
         for (const member of info.elements) {
@@ -581,16 +584,13 @@ export class Block {
                 this.elements.push(member);
             }
         }
-        this.source_format = info.source_format ?? "block";
     }
 
     to_source(indent: string): string {
         let source = "";
         for (const element of this.elements) {
             source += element.to_source(indent);
-            if (this.source_format !== "inline") {
-                source += "\n";
-            }
+            source += "\n";
         }
         return source;
     }
@@ -614,10 +614,49 @@ export class Block {
     }
 }
 
+export class SimpleEach {
+    each_label: string;
+    loop_var_partial_label: string;
+    get_blocks: () => Block[];
+
+    constructor(info: SimpleEachSpec) {
+        this.each_label = info.each_label;
+        this.loop_var_partial_label = info.loop_var_partial_label;
+        this.get_blocks = info.get_blocks;
+    }
+
+    to_source(indent: string): string {
+        return (
+            indent +
+            `{{#each ${this.each_label}}}\n` +
+            indent +
+            `    {{> ${this.loop_var_partial_label} .}}\n` +
+            indent +
+            `{{/each}}`
+        );
+    }
+
+    to_dom(): DocumentFragment {
+        const dom = document.createDocumentFragment();
+        for (const block of this.get_blocks()) {
+            dom.append(block.to_dom());
+        }
+        return dom;
+    }
+
+    as_raw_html(): string {
+        const div = document.createElement("div");
+        const frag = this.to_dom();
+        div.append(frag);
+        return div.innerHTML;
+    }
+}
+
 type SourceFormat = "inline" | "block" | "strange_block";
 export class Tag {
     tag: string;
-    classes: TrustedString[];
+    // Class strings are implicitly trusted
+    classes: ClassString[];
     attrs: Attr[];
     children: Element[];
     force_attrs_before_class: boolean | undefined;
@@ -641,29 +680,6 @@ export class Tag {
         return "block";
     }
 
-    children_source(indent: string): string {
-        if (this.source_format === "strange_block") {
-            if (this.children.length === 0) {
-                return "\n" + indent;
-            }
-            return this.children.map((c) => c.to_source(indent)).join("\n");
-        }
-
-        if (this.source_format === "inline") {
-            return this.children.map((c) => c.to_source("")).join(",");
-        }
-
-        return this.indented_child_source(indent);
-    }
-
-    indented_child_source(indent: string): string {
-        let innards = "";
-        innards += "\n";
-        innards += new Block({elements: this.children}).to_source(indent + "    ");
-        innards += indent;
-        return innards;
-    }
-
     to_source(indent: string): string {
         let start_tag = `<${this.tag}`;
 
@@ -678,16 +694,23 @@ export class Tag {
         if (void_elements.has(this.tag)) {
             return indent + start_tag + "/>";
         }
+
         start_tag += ">";
         const end_tag = `</${this.tag}>`;
 
-        return indent + start_tag + this.children_source(indent) + end_tag;
+        return format_block({
+            source_format: this.source_format,
+            indent,
+            start_tag,
+            end_tag,
+            children: this.children,
+        });
     }
 
     to_dom(): HTMLElement {
         const element = document.createElement(this.tag);
         for (const el_class of this.classes) {
-            const render_val = el_class.render_val();
+            const render_val = get_class_render_val(el_class);
             if (render_val) {
                 element.classList.add(render_val);
             }
@@ -707,11 +730,11 @@ export class Tag {
 }
 
 export class InputTextTag {
-    classes: TrustedString[];
+    classes: ClassString[];
     attrs: Attr[];
     pink: boolean | undefined;
     constructor(info: {
-        classes: TrustedString[];
+        classes: ClassString[];
         attrs?: Attr[];
         placeholder_value: TranslatedAttrValue;
         pink?: boolean;
@@ -738,7 +761,7 @@ export class InputTextTag {
         element.setAttribute("type", "text");
 
         for (const el_class of this.classes) {
-            const render_val = el_class.render_val();
+            const render_val = get_class_render_val(el_class);
             if (render_val) {
                 element.classList.add(render_val);
             }
@@ -781,8 +804,8 @@ export function icon_button({
     button_classes,
     icon_classes,
 }: {
-    button_classes: TrustedString[];
-    icon_classes: TrustedString[];
+    button_classes: ClassString[];
+    icon_classes: ClassString[];
 }): Tag {
     return button_tag({
         classes: button_classes,
@@ -837,7 +860,7 @@ export function img_tag(tag_spec: TagSpec): Tag {
 }
 
 export function input_text_tag(info: {
-    classes: TrustedString[];
+    classes: ClassString[];
     attrs?: Attr[];
     placeholder_value: TranslatedAttrValue;
     pink?: boolean;
@@ -860,7 +883,8 @@ export function trusted_if_else_string(info: TrustedIfElseStringSpec): TrustedIf
 export function trusted_if_string(info: TrustedConditionalStringSpec): TrustedIfString {
     return new TrustedIfString(info);
 }
-export function trusted_unless_string(info: TrustedConditionalStringSpec): TrustedIfString {
+
+export function trusted_unless_string(info: TrustedConditionalStringSpec): TrustedUnlessString {
     return new TrustedUnlessString(info);
 }
 
@@ -916,6 +940,10 @@ export function if_bool_then_x_else_if_bool_then_y_else_z(
     info: IfElseIfElseBlockSpec,
 ): IfElseIfElseBlock {
     return new IfElseIfElseBlock(info);
+}
+
+export function simple_each(info: SimpleEachSpec): SimpleEach {
+    return new SimpleEach(info);
 }
 
 export function trusted_html(html: string): TrustedHtml {
