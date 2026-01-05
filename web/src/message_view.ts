@@ -510,7 +510,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
         }
         if (filter.has_operator("id")) {
-            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("id")[0]!.operand, 10);
         }
 
         if (
