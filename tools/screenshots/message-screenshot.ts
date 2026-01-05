@@ -74,7 +74,7 @@ async function run(): Promise<void> {
         // Wait for the message list to be available
         // eslint-disable-next-line no-undef
         await page.waitForFunction(() => zulip_test?.current_msg_list?.id !== undefined, {
-    timeout: 10000,
+        timeout: 10000,
         });
 
         // eslint-disable-next-line no-undef
