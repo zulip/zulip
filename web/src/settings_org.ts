@@ -3,9 +3,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_action_button from "../templates/components/action_button.hbs";
-import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
-import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
+import render_action_button from "../templates/components/action_button.ts";
+import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.ts";
+import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.ts";
 
 import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";

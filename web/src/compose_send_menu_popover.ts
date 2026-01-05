@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_schedule_message_popover from "../templates/popovers/schedule_message_popover.hbs";
-import render_send_later_popover from "../templates/popovers/send_later_popover.hbs";
+import render_schedule_message_popover from "../templates/popovers/schedule_message_popover.ts";
+import render_send_later_popover from "../templates/popovers/send_later_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

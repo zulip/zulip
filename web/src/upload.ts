@@ -6,7 +6,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
+import render_upload_banner from "../templates/compose_banner/upload_banner.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_actions from "./compose_actions.ts";

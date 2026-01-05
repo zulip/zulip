@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.hbs";
+import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar_gear_menu_popover.ts";
 
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as information_density from "./information_density.ts";

@@ -2,12 +2,12 @@ import $ from "jquery";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
-import render_export_modal_warning_notes from "../templates/export_modal_warning_notes.hbs";
-import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.hbs";
-import render_admin_export_consent_list from "../templates/settings/admin_export_consent_list.hbs";
-import render_admin_export_list from "../templates/settings/admin_export_list.hbs";
-import render_start_export_modal from "../templates/start_export_modal.hbs";
+import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.ts";
+import render_export_modal_warning_notes from "../templates/export_modal_warning_notes.ts";
+import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.ts";
+import render_admin_export_consent_list from "../templates/settings/admin_export_consent_list.ts";
+import render_admin_export_list from "../templates/settings/admin_export_list.ts";
+import render_start_export_modal from "../templates/start_export_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as components from "./components.ts";

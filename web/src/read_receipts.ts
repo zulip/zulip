@@ -3,8 +3,8 @@ import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
 import * as z from "zod/mini";
 
-import render_read_receipts from "../templates/read_receipts.hbs";
-import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
+import render_read_receipts from "../templates/read_receipts.ts";
+import render_read_receipts_modal from "../templates/read_receipts_modal.ts";
 
 import * as channel from "./channel.ts";
 import {html} from "./html.ts";

@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import render_new_user_group_user from "../templates/stream_settings/new_stream_user.hbs";
-import render_new_user_group_subgroup from "../templates/user_group_settings/new_user_group_subgroup.hbs";
-import render_new_user_group_users from "../templates/user_group_settings/new_user_group_users.hbs";
+import render_new_user_group_user from "../templates/stream_settings/new_stream_user.ts";
+import render_new_user_group_subgroup from "../templates/user_group_settings/new_user_group_subgroup.ts";
+import render_new_user_group_users from "../templates/user_group_settings/new_user_group_users.ts";
 
 import * as add_group_members_pill from "./add_group_members_pill.ts";
 import * as ListWidget from "./list_widget.ts";

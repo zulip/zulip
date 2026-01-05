@@ -2,10 +2,10 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
-import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
-import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
-import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
+import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.ts";
+import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.ts";
+import render_narrow_tooltip from "../templates/narrow_tooltip.ts";
+import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.ts";
 
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";

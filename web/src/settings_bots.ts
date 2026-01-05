@@ -2,9 +2,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
-import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
-import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
+import render_add_new_bot_form from "../templates/settings/add_new_bot_form.ts";
+import render_bot_settings_tip from "../templates/settings/bot_settings_tip.ts";
+import render_settings_user_list_row from "../templates/settings/settings_user_list_row.ts";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";

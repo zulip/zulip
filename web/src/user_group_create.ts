@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
+import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";

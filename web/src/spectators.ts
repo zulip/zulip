@@ -7,7 +7,7 @@
 
 import $ from "jquery";
 
-import render_login_to_access_modal from "../templates/login_to_access.hbs";
+import render_login_to_access_modal from "../templates/login_to_access.ts";
 
 import {page_params} from "./base_page_params.ts";
 import * as browser_history from "./browser_history.ts";

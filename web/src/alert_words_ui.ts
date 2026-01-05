@@ -1,8 +1,8 @@
 import Handlebars from "handlebars";
 import $ from "jquery";
 
-import render_add_alert_word from "../templates/settings/add_alert_word.hbs";
-import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.hbs";
+import render_add_alert_word from "../templates/settings/add_alert_word.ts";
+import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.ts";
 
 import * as alert_words from "./alert_words.ts";
 import * as banners from "./banners.ts";

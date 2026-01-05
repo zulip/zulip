@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.hbs";
+import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.ts";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";

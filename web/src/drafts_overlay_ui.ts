@@ -3,9 +3,9 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_banner from "../templates/components/banner.hbs";
-import render_draft_table_body from "../templates/draft_table_body.hbs";
-import render_drafts_list from "../templates/drafts_list.hbs";
+import render_banner from "../templates/components/banner.ts";
+import render_draft_table_body from "../templates/draft_table_body.ts";
+import render_drafts_list from "../templates/drafts_list.ts";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";

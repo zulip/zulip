@@ -4,8 +4,8 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_gif_picker_ui from "../templates/gif_picker_ui.hbs";
-import render_tenor_gif from "../templates/tenor_gif.hbs";
+import render_gif_picker_ui from "../templates/gif_picker_ui.ts";
+import render_tenor_gif from "../templates/tenor_gif.ts";
 
 import * as channel from "./channel.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";

@@ -2,9 +2,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal.hbs";
-import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
-import render_edit_saved_snippet_modal from "../templates/edit_saved_snippet_modal.hbs";
+import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal.ts";
+import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.ts";
+import render_edit_saved_snippet_modal from "../templates/edit_saved_snippet_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";

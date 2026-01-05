@@ -3,8 +3,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
-import render_user_display_only_pill from "../templates/user_display_only_pill.hbs";
+import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.ts";
+import render_user_display_only_pill from "../templates/user_display_only_pill.ts";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";

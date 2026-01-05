@@ -4,9 +4,9 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
-import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
-import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
-import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
+import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.ts";
+import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.ts";
+import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";

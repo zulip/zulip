@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 
-import render_admin_channel_folder_list_item from "../templates/settings/admin_channel_folder_list_item.hbs";
+import render_admin_channel_folder_list_item from "../templates/settings/admin_channel_folder_list_item.ts";
 
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";

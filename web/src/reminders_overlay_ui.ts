@@ -1,8 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_reminder_list from "../templates/reminder_list.hbs";
-import render_reminders_overlay from "../templates/reminders_overlay.hbs";
+import render_reminder_list from "../templates/reminder_list.ts";
+import render_reminders_overlay from "../templates/reminders_overlay.ts";
 
 import * as browser_history from "./browser_history.ts";
 import * as message_reminder from "./message_reminder.ts";

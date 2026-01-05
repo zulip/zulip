@@ -1,7 +1,7 @@
 import $ from "jquery";
 import * as z from "zod/mini";
 
-import render_topic_summary from "../templates/topic_summary.hbs";
+import render_topic_summary from "../templates/topic_summary.ts";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";

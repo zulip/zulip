@@ -3,10 +3,10 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
-import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
-import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
-import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
+import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.ts";
+import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.ts";
+import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.ts";
+import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.ts";
 
 import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";

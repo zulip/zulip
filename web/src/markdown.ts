@@ -4,8 +4,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type {Template} from "url-template";
 
-import render_channel_message_link from "../templates/channel_message_link.hbs";
-import render_topic_link from "../templates/topic_link.hbs";
+import render_channel_message_link from "../templates/channel_message_link.ts";
+import render_topic_link from "../templates/topic_link.ts";
 import marked from "../third/marked/lib/marked.cjs";
 import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 

@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.hbs";
-import render_demo_organization_warning_container from "../templates/settings/demo_organization_warning.hbs";
+import render_convert_demo_organization_form from "../templates/settings/convert_demo_organization_form.ts";
+import render_demo_organization_warning_container from "../templates/settings/demo_organization_warning.ts";
 
 import * as banners from "./banners.ts";
 import type {ActionButton} from "./buttons.ts";
