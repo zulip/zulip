@@ -26,6 +26,7 @@ import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as transmit from "./transmit.ts";
+import * as typing from "./typing.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 import * as zcommand from "./zcommand.ts";
@@ -402,6 +403,7 @@ export function do_post_send_tasks(): void {
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger("compose_finished.zulip");
+    typing.stop_typing_notifications();
     reload.maybe_reset_pending_reload_timeout("compose_end");
 }
 
