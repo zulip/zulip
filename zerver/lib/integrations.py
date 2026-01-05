@@ -742,7 +742,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"
     ),
-    IncomingWebhookIntegration("heroku", ["deployment"], [WebhookScreenshotConfig("deploy.txt")]),
+    IncomingWebhookIntegration(
+        "heroku", ["deployment"], [WebhookScreenshotConfig("build_update.json")]
+    ),
     IncomingWebhookIntegration(
         "homeassistant",
         ["misc"],
