@@ -1,0 +1,19 @@
+<div class="deactivation-information">
+    <p class="support-section-header">❌ Scrub realm:</p>
+    {% if deactivation_data %}
+    <b>Deactivation audit log data:</b><br />
+    <ul>
+        <li><b>Event time (UTC)</b>: {{ format_optional_datetime(deactivation_data.event_time, True) }}</li>
+        {% if deactivation_data.acting_user %}
+        <li><b>Acting user</b>: {{ deactivation_data.acting_user.delivery_email}} (ID: {{deactivation_data.acting_user.id }})</li>
+        {% else %}
+        <li><b>Acting user</b>: Not in audit log data</li>
+        {% endif %}
+        {% if deactivation_data.reason %}
+        <li><b>Deactivation reason</b>: {{ deactivation_data.reason }}</li>
+        {% else %}
+        <li><b>Deactivation reason</b>: Not in audit log data</li>
+        {% endif %}
+    </ul>
+    {% endif %}
+</div>

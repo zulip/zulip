@@ -702,6 +702,7 @@ def support(
     )
     context["DEACTIVATION_REASONS"] = get_args(RealmDeactivationReasonType)
     context["remote_support_view"] = False
+    context["format_optional_datetime"] = format_optional_datetime
 
     return render(request, "corporate/support/support.html", context=context)
 
