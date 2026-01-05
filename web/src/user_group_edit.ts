@@ -10,7 +10,6 @@ import render_settings_checkbox from "../templates/settings/settings_checkbox.hb
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
-import render_selected_group_title from "../templates/user_group_settings/selected_group_title.hbs";
 import render_stream_group_permission_settings from "../templates/user_group_settings/stream_group_permission_settings.hbs";
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_permission_settings from "../templates/user_group_settings/user_group_permission_settings.hbs";
@@ -103,7 +102,7 @@ const GROUP_INFO_BANNER: Banner = {
 
 function get_user_group_id(target: HTMLElement): number {
     const $row = $(target).closest(
-        ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header",
+        ".group-row, .user_group_settings_wrapper, .save-button, .selected-group-buttons",
     );
     return Number.parseInt($row.attr("data-group-id")!, 10);
 }
@@ -245,27 +244,27 @@ function show_general_settings(group: UserGroup): void {
 function update_deactivate_and_reactivate_buttons(group: UserGroup): void {
     if (!settings_data.can_manage_user_group(group.id)) {
         $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
         ).hide();
         $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
         ).hide();
         return;
     }
 
     if (group.deactivated) {
         $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
         ).hide();
         $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
         ).show();
     } else {
         $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
         ).show();
         $(
-            `.group_settings_header[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
         ).hide();
     }
 }
@@ -313,7 +312,7 @@ export function update_group_management_ui(): void {
 
 function group_membership_button(group_id: number): JQuery {
     return $(
-        `.group_settings_header[data-group-id='${CSS.escape(group_id.toString())}'] .join_leave_button`,
+        `.selected-group-buttons[data-group-id='${CSS.escape(group_id.toString())}'] .join_leave_button`,
     );
 }
 
@@ -1549,9 +1548,10 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title").html(
-                render_selected_group_title({group_name: group.name}),
-            );
+            user_group_components.set_right_panel_title(group);
+            // We call this to make sure that correct button is shown
+            // after re-rendering of the title template.
+            update_deactivate_and_reactivate_buttons(group);
         }
 
         if (changed_group_settings.length > 0) {
@@ -2026,7 +2026,7 @@ export function initialize(): void {
 
     $("#groups_overlay_container").on(
         "click",
-        ".group_settings_header .deactivate-group-button",
+        ".user-group-info-title .deactivate-group-button",
         () => {
             const active_group_data = get_active_data();
             const group_id = active_group_data.id;
@@ -2134,7 +2134,7 @@ export function initialize(): void {
 
     $("#groups_overlay_container").on(
         "click",
-        ".group_settings_header .reactivate-group-button",
+        ".user-group-info-title .reactivate-group-button",
         function (this: HTMLElement) {
             const active_group_data = get_active_data();
             const group_id = active_group_data.id;

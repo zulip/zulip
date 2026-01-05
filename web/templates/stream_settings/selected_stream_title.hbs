@@ -1,8 +1,52 @@
-<a {{#if preview_url}}class="tippy-zulip-delayed-tooltip selected-stream-title" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="top" href="{{preview_url}}"{{/if}}>
-{{#unless preview_url}}{{t "Add subscribers to "}}{{/unless}}
-{{> stream_privacy_icon
-  invite_only=sub.invite_only
-  is_web_public=sub.is_web_public
-  is_archived=sub.is_archived }}
-<span class="stream-name-title">{{sub.name}}</span>
-</a>
+<div class="selected-stream-title">
+    <a {{#if preview_url}}class="tippy-zulip-delayed-tooltip selected-stream" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="top" href="{{preview_url}}"{{/if}}>
+    {{#unless preview_url}}{{t "Add subscribers to "}}{{/unless}}
+    {{> stream_privacy_icon
+      invite_only=sub.invite_only
+      is_web_public=sub.is_web_public
+      is_archived=sub.is_archived }}
+    <span class="stream-name-title">{{sub.name}}</span>
+    </a>
+    {{#with sub}}
+    <div class="button-group stream-title-buttons" data-stream-id="{{stream_id}}">
+        <div class="sub_unsub_button_wrapper inline-block {{#unless should_display_subscription_button }}cannot-subscribe-tooltip{{/unless}}" data-tooltip-template-id="cannot-subscribe-tooltip-template">
+            <template id="cannot-subscribe-tooltip-template">
+                <span>
+                    {{#tr}}
+                        Cannot subscribe to private channel <z-stream></z-stream>
+                        {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=sub}}{{/inline}}
+                    {{/tr}}
+                </span>
+            </template>
+            <button class="action-button subscribe-button sub_unsub_button {{#if subscribed}}action-button-subtle-neutral{{else}}action-button-subtle-brand{{/if}} {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
+                {{#if subscribed }}
+                    {{t "Unsubscribe" }}
+                {{else}}
+                    {{t "Subscribe" }}
+                {{/if}}
+            </button>
+        </div>
+        {{> ../components/action_button
+          icon="eye"
+          variant="subtle"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip"
+          data-tooltip-template-id="view-stream-tooltip-template"
+          id="preview-stream-button"
+          hidden=(not should_display_preview_button)
+          }}
+        {{> ../components/icon_button
+          icon="archive"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip deactivate"
+          data-tippy-content=(t 'Archive channel')
+          }}
+        {{> ../components/icon_button
+          icon="unarchive"
+          intent="success"
+          custom_classes="tippy-zulip-delayed-tooltip reactivate"
+          data-tippy-content=(t 'Unarchive channel')
+          }}
+    </div>
+    {{/with}}
+</div>

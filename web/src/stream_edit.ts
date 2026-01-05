@@ -204,7 +204,7 @@ export function get_display_text_for_realm_message_retention_setting(): string {
 
 function get_stream_id(target: HTMLElement): number {
     const $row = $(target).closest(
-        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
+        ".stream-row, .stream-title-buttons, .subscription_settings, .save-button",
     );
     return Number.parseInt($row.attr("data-stream-id")!, 10);
 }
@@ -486,7 +486,6 @@ export function show_settings_for(node: HTMLElement): void {
 
     $edit_container.addClass("show");
 
-    stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     set_up_channel_privacy_dropdown_widget(undefined, sub);

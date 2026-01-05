@@ -431,7 +431,7 @@ export function update_settings_for_subscribed(slim_sub: StreamSubscription): vo
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
     $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(
             sub.stream_id.toString(),
         )}'] #preview-stream-button`,
     ).show();
@@ -478,7 +478,6 @@ export function update_settings_for_archived_and_unarchived(slim_sub: StreamSubs
     const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
         stream_settings_components.set_right_panel_title(sub);
-        stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
         stream_ui_updates.update_toggler_for_sub(sub);
         stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
         stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
@@ -1427,7 +1426,7 @@ export function initialize(): void {
     });
 
     $("#channels_overlay_container").on("click", "#preview-stream-button", () => {
-        const stream_id = Number.parseInt($(".stream_settings_header").attr("data-stream-id")!, 10);
+        const stream_id = Number.parseInt($(".stream-title-buttons").attr("data-stream-id")!, 10);
         window.location.href = hash_util.channel_url_by_user_setting(stream_id);
     });
 }

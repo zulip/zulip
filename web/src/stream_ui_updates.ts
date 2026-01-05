@@ -34,7 +34,7 @@ function settings_button_for_sub(sub: StreamSubscription): JQuery {
     // We don't do expectOne() here, because this button is only
     // visible if the user has that stream selected in the streams UI.
     return $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .subscribe-button`,
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .subscribe-button`,
     );
 }
 
@@ -167,7 +167,9 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
 }
 
 export function initialize_cant_subscribe_popover(): void {
-    const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
+    const $button_wrapper = $(
+        "#subscription_overlay .stream-title-buttons .sub_unsub_button_wrapper",
+    );
     settings_components.initialize_disable_button_hint_popover($button_wrapper, undefined);
 }
 
@@ -250,34 +252,6 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
         initialize_cant_subscribe_popover();
         $settings_button.prop("disabled", true);
         $settings_button.removeClass("toggle-subscription-tooltip");
-    }
-}
-
-export function update_settings_button_for_archive_and_unarchive(sub: StreamSubscription): void {
-    if (!hash_parser.is_editing_stream(sub.stream_id)) {
-        return;
-    }
-
-    // This is for the Archive/Unarchive button in the right panel.
-    const $archive_button = $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
-    );
-    const $unarchive_button = $(
-        `.stream_settings_header[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
-    );
-
-    if (!stream_data.can_administer_channel(sub)) {
-        $archive_button.hide();
-        $unarchive_button.hide();
-        return;
-    }
-
-    if (sub.is_archived) {
-        $archive_button.hide();
-        $unarchive_button.show();
-    } else {
-        $unarchive_button.hide();
-        $archive_button.show();
     }
 }
 
