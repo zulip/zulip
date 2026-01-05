@@ -21,7 +21,10 @@ import * as util from "./util.ts";
 
 export type SearchUserPill = {
     type: "search_user";
-    operator: NarrowTerm["operator"];
+} & SearchUserPillContext;
+
+export type SearchUserPillContext = {
+    operator: "dm" | "dm-including" | "sender";
     negated: boolean;
     users: {
         full_name: string;
@@ -259,6 +262,9 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
 }
 
 function search_user_pill_data_from_term(term: NarrowTerm): SearchUserPill {
+    assert(
+        term.operator === "dm" || term.operator === "dm-including" || term.operator === "sender",
+    );
     const emails = term.operand.split(",");
     const users = emails.map((email) => {
         const person = people.get_by_email(email);
@@ -278,7 +284,7 @@ function is_sent_by_me_pill(pill: SearchUserPill): boolean {
 
 function search_user_pill_data(
     users: User[],
-    operator: NarrowTerm["operator"],
+    operator: "dm" | "dm-including" | "sender",
     negated: boolean,
 ): SearchUserPill {
     return {
@@ -300,7 +306,7 @@ function search_user_pill_data(
 function append_user_pill(
     users: User[],
     pill_widget: SearchPillWidget,
-    operator: NarrowTerm["operator"],
+    operator: "dm" | "dm-including" | "sender",
     negated: boolean,
 ): void {
     const pill_data = search_user_pill_data(users, operator, negated);
