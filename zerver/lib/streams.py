@@ -607,8 +607,17 @@ def check_stream_access_based_on_can_send_message_group(
     ):
         return
 
-    if stream.can_send_message_group_id not in user_recursive_group_ids:
-        raise JsonableError(_("You do not have permission to post in this channel."))
+    if stream.can_send_message_group_id in user_recursive_group_ids:
+        return
+
+    if sender.is_bot and sender.bot_owner is not None:
+        bot_owner_recursive_group_ids = set(
+            get_recursive_membership_groups(sender.bot_owner).values_list("id", flat=True)
+        )
+        if stream.can_send_message_group_id in bot_owner_recursive_group_ids:
+            return
+
+    raise JsonableError(_("You do not have permission to post in this channel."))
 
 
 def access_stream_for_send_message(
@@ -629,20 +638,9 @@ def access_stream_for_send_message(
     if system_groups_name_dict is None:
         system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
 
-    try:
-        check_stream_access_based_on_can_send_message_group(
-            sender, stream, user_recursive_group_ids, system_groups_name_dict
-        )
-    except JsonableError as e:
-        if sender.is_bot and sender.bot_owner is not None:
-            bot_owner_recursive_group_ids = set(
-                get_recursive_membership_groups(sender.bot_owner).values_list("id", flat=True)
-            )
-            check_stream_access_based_on_can_send_message_group(
-                sender.bot_owner, stream, bot_owner_recursive_group_ids, system_groups_name_dict
-            )
-        else:
-            raise JsonableError(e.msg)
+    check_stream_access_based_on_can_send_message_group(
+        sender, stream, user_recursive_group_ids, system_groups_name_dict
+    )
 
     # forwarder_user_profile cases should be analyzed first, as incorrect
     # message forging is cause for denying access regardless of any other factors.
