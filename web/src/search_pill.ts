@@ -38,9 +38,6 @@ type SearchPill = ({type: "generic_operator"} & NarrowTerm) | SearchUserPill;
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
-// These operator types use user pills as operands.
-const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
-
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
     const potential_narrow_term = Filter.convert_suggestion_to_term(search_term);
@@ -354,21 +351,29 @@ export function set_search_bar_contents(
             continue;
         }
 
-        if (user_pill_operators.has(term.operator) && term.operand !== "") {
-            const users = term.operand.split(",").map((email) => {
-                // This is definitely not undefined, because we just validated it
-                // with `Filter.convert_suggestion_to_term`.
-                const user = people.get_by_email(email)!;
-                return user;
-            });
-            append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
-            added_pills_as_input_strings.add(input);
-        } else if (term.operator === "search") {
-            // This isn't a pill, so we don't add it to `added_pills_as_input_strings`
-            search_operator_strings.push(input);
-        } else {
-            pill_widget.appendValue(input);
-            added_pills_as_input_strings.add(input);
+        switch (term.operator) {
+            case "dm":
+            case "dm-including":
+            case "sender":
+                if (term.operand !== "") {
+                    const users = term.operand.split(",").map((email) => {
+                        // This is definitely not undefined, because we just validated it
+                        // with `Filter.is_valid_search_term`.
+                        const user = people.get_by_email(email)!;
+                        return user;
+                    });
+                    append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+                    added_pills_as_input_strings.add(input);
+                }
+                break;
+            case "search":
+                // This isn't a pill, so we don't add it to `added_pills_as_input_strings`
+                search_operator_strings.push(input);
+                break;
+            default:
+                pill_widget.appendValue(input);
+                added_pills_as_input_strings.add(input);
+                break;
         }
     }
     pill_widget.clear_text();
