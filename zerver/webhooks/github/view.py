@@ -52,6 +52,17 @@ CHECK_RUN_CONCLUSION_EMOJI = {
     "stale": ":grey_question:",
 }
 
+# Mapping of GitHub deployment status states to emojis
+DEPLOYMENT_STATUS_EMOJI = {
+    "success": ":green_circle:",
+    "failure": ":red_circle:",
+    "error": ":red_circle:",
+    "inactive": ":white_circle:",
+    "in_progress": ":orange_circle:",
+    "queued": ":white_circle:",
+    "pending": ":yellow_circle:",
+}
+
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
@@ -267,8 +278,11 @@ def get_deployment_body(helper: Helper) -> str:
 
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = DEPLOYMENT_STATUS_EMOJI.get(state, "")
+    return "{emoji}Deployment changed status to {state}.".format(
+        emoji=f"{emoji} " if emoji else "",
+        state=state,
     )
 
 

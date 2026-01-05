@@ -146,8 +146,12 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_msg(self) -> None:
-        expected_message = "Deployment changed status to success."
+        expected_message = ":green_circle: Deployment changed status to success."
         self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
+
+    def test_deployment_status_failure_msg(self) -> None:
+        expected_message = ":red_circle: Deployment changed status to failure."
+        self.check_webhook("deployment_status__failure", TOPIC_DEPLOYMENT, expected_message)
 
     def test_fork_msg(self) -> None:
         expected_message = "baxterandthehackers forked [public-repo](https://github.com/baxterandthehackers/public-repo)."
