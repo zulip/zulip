@@ -546,7 +546,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ["version-control"],
         [
             WebhookScreenshotConfig(
-                "issue_created.json",
+                "push.json",
                 "003.png",
                 "bitbucket",
                 bot_name="Bitbucket Bot",
@@ -1022,7 +1022,11 @@ OTHER_INTEGRATIONS = [
 ]
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
-    PythonAPIIntegration("codebase", ["version-control", "project-management"]),
+    PythonAPIIntegration(
+        "codebase",
+        ["version-control", "project-management"],
+        [FixturelessScreenshotConfigOptions(channel="commits")],
+    ),
     PythonAPIIntegration(
         "git", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
     ),
@@ -1051,9 +1055,16 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         [FixturelessScreenshotConfigOptions(channel="deployments")],
         display_name="OpenShift",
     ),
-    PythonAPIIntegration("perforce", ["version-control"]),
+    PythonAPIIntegration(
+        "perforce", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
+    ),
     PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
-    PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
+    PythonAPIIntegration(
+        "svn",
+        ["version-control"],
+        [FixturelessScreenshotConfigOptions(channel="commits")],
+        display_name="Subversion",
+    ),
     PythonAPIIntegration("trac", ["project-management"]),
 ]
 
