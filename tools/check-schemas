@@ -22,7 +22,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 
-EVENTS_JS = "web/tests/lib/events.cjs"
+EVENTS_JS = "web/tests/lib/events.ts"
 
 # check for the venv
 from tools.lib import sanity_check
@@ -94,7 +94,7 @@ def check_event(name: str, event: dict[str, Any]) -> None:
 def read_fixtures() -> dict[str, Any]:
     cmd = [
         "node",
-        os.path.join(TOOLS_DIR, "node_lib/dump_fixtures.js"),
+        os.path.join(TOOLS_DIR, "node_lib/dump_fixtures.ts"),
     ]
     schema = subprocess.check_output(cmd)
     return orjson.loads(schema)
@@ -106,7 +106,7 @@ def verify_fixtures_are_sorted(names: list[str]) -> None:
             raise Exception(
                 f"""
                 Please keep your fixtures in order within
-                your events.cjs file.  The following
+                your events.ts file.  The following
                 key is out of order
 
                 {names[i]}
