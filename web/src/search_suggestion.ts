@@ -12,9 +12,9 @@ import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {RESOLVED_TOPIC_PREFIX} from "./resolved_topic.ts";
 import type {
+    NarrowCanonicalOperator,
     NarrowCanonicalTerm,
     NarrowCanonicalTermSuggestion,
-    NarrowOperator,
     NarrowTerm,
     NarrowTermSuggestion,
 } from "./state_data.ts";
@@ -158,7 +158,7 @@ function channel_matches_query(channel_name: string, q: string): boolean {
     return common.phrase_match(q, channel_name);
 }
 
-function match_criteria(terms: NarrowTerm[], criteria: TermPattern[]): boolean {
+function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): boolean {
     const filter = new Filter(terms);
     return criteria.some((cr) => {
         if (cr.operand !== undefined) {
@@ -169,8 +169,8 @@ function match_criteria(terms: NarrowTerm[], criteria: TermPattern[]): boolean {
 }
 
 function check_validity(
-    last_operator: NarrowOperator,
-    terms: NarrowTerm[],
+    last_operator: NarrowCanonicalOperator,
+    terms: NarrowCanonicalTerm[],
     valid: string[],
     incompatible_patterns: TermPattern[],
 ): boolean {
@@ -225,7 +225,10 @@ function compare_by_direct_message_group(
     };
 }
 
-function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_channel_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
@@ -257,23 +260,24 @@ function get_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggest
 
 function get_group_suggestions(
     group_operator: "dm" | "dm-including",
-): (last: NarrowTerm, terms: NarrowTerm[]) => Suggestion[] {
-    return (last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] => {
+): (last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]) => Suggestion[] {
+    return (last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]): Suggestion[] => {
         // We only suggest groups once a term with a valid user already exists
         if (terms.length === 0) {
             return [];
         }
         const last_complete_term = terms.at(-1)!;
-        // For users with "pm-with" in their muscle memory, still
-        // have group direct message suggestions with "dm:" operator.
-        const valid_terms = group_operator === "dm" ? ["dm", "pm-with"] : [group_operator];
         if (
-            !check_validity(last_complete_term.operator, terms.slice(-1), valid_terms, [
-                {operator: "channel"},
-            ])
+            !check_validity(
+                last_complete_term.operator,
+                terms.slice(-1),
+                [group_operator],
+                [{operator: "channel"}],
+            )
         ) {
             return [];
         }
+        assert(last_complete_term.operator === group_operator);
 
         // If they started typing since a user pill, we'll parse that as "search"
         // but they might actually want to parse that as a user instead to add to
@@ -364,7 +368,7 @@ function get_group_suggestions(
     };
 }
 
-function make_people_getter(last: NarrowTerm): () => User[] {
+function make_people_getter(last: NarrowCanonicalTermSuggestion): () => User[] {
     let persons: User[];
 
     /* The next function will be called between 0 and 4
@@ -392,21 +396,14 @@ function make_people_getter(last: NarrowTerm): () => User[] {
     };
 }
 
-// Possible args for autocomplete_operator: dm, pm-with, sender, from, dm-including
 function get_person_suggestions(
     people_getter: () => User[],
-    last: NarrowTerm,
-    terms: NarrowTerm[],
-    autocomplete_operator: NarrowTerm["operator"],
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+    autocomplete_operator: "dm" | "sender" | "dm-including",
 ): Suggestion[] {
-    if ((last.operator === "is" && last.operand === "dm") || last.operator === "pm-with") {
-        // Interpret "is:dm" or "pm-with:" operator as equivalent to "dm:".
+    if (last.operator === "is" && last.operand === "dm") {
         last = {operator: "dm", operand: "", negated: false};
-    }
-
-    // Be especially strict about the less common "from" operator.
-    if (autocomplete_operator === "from" && last.operator !== "from") {
-        return [];
     }
 
     const valid = ["search", autocomplete_operator];
@@ -427,11 +424,7 @@ function get_person_suggestions(
                 negated: last.negated,
             },
         ];
-
-        if (
-            last.negated &&
-            (autocomplete_operator === "dm" || autocomplete_operator === "pm-with")
-        ) {
+        if (last.negated && autocomplete_operator === "dm") {
             // In the special case of "-dm" or "-pm-with", add "is:dm" before
             // it because we assume the user still wants to narrow to direct
             // messages.
@@ -444,7 +437,7 @@ function get_person_suggestions(
     });
 }
 
-function get_default_suggestion_line(terms: NarrowTerm[]): SuggestionLine {
+function get_default_suggestion_line(terms: NarrowCanonicalTerm[]): SuggestionLine {
     if (terms.length === 0) {
         return [{search_string: ""}];
     }
@@ -512,7 +505,10 @@ function ignore_resolved_topic_prefix(entry: ChannelTopicEntry, case_insensitive
     return topic_name;
 }
 
-function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_topic_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
     if (
         !check_validity(
             last.operator,
@@ -524,9 +520,8 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         return [];
     }
 
-    const operator = filter_util.canonicalize_operator(last.operator);
     const operand = last.operand;
-    const negated = operator === "topic" && last.negated;
+    const negated = last.operator === "topic" && last.negated;
     let channel_id_str: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
@@ -549,7 +544,7 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // i.e. "foo" and "search:foo" both become [{operator: 'search', operand: 'foo'}].
 
     let show_topics_from_other_channels = true;
-    switch (operator) {
+    switch (last.operator) {
         case "channel":
             guess = "";
             channel_id_str = operand;
@@ -676,8 +671,8 @@ function get_topic_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
 type SuggestionAndIncompatiblePatterns = Suggestion & {incompatible_patterns: TermPattern[]};
 
 function get_special_filter_suggestions(
-    last: NarrowTerm,
-    terms: NarrowTerm[],
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
     suggestions: SuggestionAndIncompatiblePatterns[],
 ): Suggestion[] {
     const is_search_operand_negated = last.operator === "search" && last.operand.startsWith("-");
@@ -727,7 +722,10 @@ function get_special_filter_suggestions(
     return filtered_suggestions;
 }
 
-function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_channels_filter_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
     if (last.operator !== "channels") {
         return [];
     }
@@ -752,7 +750,10 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     return get_special_filter_suggestions(last, terms, suggestions);
 }
 
-function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_is_filter_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
     let suggestions: SuggestionAndIncompatiblePatterns[];
     if (page_params.is_spectator) {
         suggestions = [
@@ -822,7 +823,10 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
     return all_suggestions;
 }
 
-function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_has_filter_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
     const suggestions: SuggestionAndIncompatiblePatterns[] = [
         {
             search_string: "has:link",
@@ -844,7 +848,10 @@ function get_has_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     return get_special_filter_suggestions(last, terms, suggestions);
 }
 
-function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_sent_by_me_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
     const last_string = Filter.unparse([last]).toLowerCase();
     const negated =
         last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
@@ -875,7 +882,10 @@ function get_sent_by_me_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugg
     return [];
 }
 
-function get_operator_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+function get_operator_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
     if (!(last.operator === "search" || last.operator === "")) {
         return [];
     }
