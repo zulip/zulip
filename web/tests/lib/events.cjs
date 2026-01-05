@@ -103,8 +103,8 @@ const streams = exports.test_streams;
 const message_detail = {
     type: "stream",
     mentioned: false,
-    sender_id: test_user.id,
-    stream_id: streams.devel.test_id,
+    sender_id: test_user.user_id,
+    stream_id: streams.devel.stream_id,
 };
 
 exports.test_realm_emojis = {
