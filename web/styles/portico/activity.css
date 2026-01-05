@@ -396,7 +396,7 @@ tr.admin td:first-child {
 }
 
 .scrub-realm-form {
-    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 .search-query.input-xxlarge {
@@ -498,6 +498,7 @@ tr.admin td:first-child {
     padding-bottom: 25px;
 }
 
+.deactivation-information-container,
 .activity-header-information,
 .push-notification-status,
 .realm-management-actions,
@@ -524,6 +525,11 @@ tr.admin td:first-child {
 .realm-management-actions {
     border: 2px solid hsl(186deg 76% 36%);
     background-color: hsl(188deg 35% 87%);
+}
+
+.deactivation-information-container {
+    border: 2px solid hsl(2deg 64% 58%);
+    background-color: hsl(23deg 100% 95%);
 }
 
 .next-plan-container,

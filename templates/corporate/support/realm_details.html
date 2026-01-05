@@ -234,13 +234,18 @@
     {% endif %}
     {% endif %}
     {% if realm.deactivated %}
-    <form method="POST" class="scrub-realm-form support-form">
-        <h3>❌ Scrub realm</h3>
-        {{ csrf_input }}
-        <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-        <input type="hidden" name="scrub_realm" value="true" />
-        <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
-    </form>
+    <div class="deactivation-information-container">
+        {% with %}
+            {% set deactivation_data = realm_support_data[realm.id].deactivation_data %}
+            {% include 'corporate/support/deactivation_data.html' %}
+        {% endwith %}
+        <form method="POST" class="scrub-realm-form support-form">
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="hidden" name="scrub_realm" value="true" />
+            <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
+        </form>
+    </div>
     {% endif %}
 </div>
 {% endif %}
