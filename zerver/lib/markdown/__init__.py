@@ -2213,8 +2213,8 @@ def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.
     return new_r
 
 
-# These are used as keys ("linkifiers_keys") to md_engines and the respective
-# linkifier caches
+# This is used as a "linkifiers_key" for linkifiers_for_realm when
+# there is no realm (e.g. docs)
 DEFAULT_MARKDOWN_KEY = -1
 
 
