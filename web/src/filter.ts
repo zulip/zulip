@@ -542,7 +542,7 @@ export class Filter {
    might need to support multiple terms of the same type.
 */
     static unparse(
-        search_terms: NarrowTerm[],
+        search_terms: NarrowTerm[] | NarrowTermSuggestion[],
         // If the `unparse` is being done to just generate
         // operator suggestions, we don't need to parse
         // operands. See `search_suggestion.ts` for related logic.

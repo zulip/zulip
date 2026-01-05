@@ -12,7 +12,7 @@ import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
-import type {NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
@@ -37,7 +37,7 @@ export type SearchUserPillContext = {
     }[];
 };
 
-type SearchPill = ({type: "generic_operator"} & NarrowTerm) | SearchUserPill;
+type SearchPill = ({type: "generic_operator"} & NarrowCanonicalTerm) | SearchUserPill;
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
@@ -112,25 +112,39 @@ function on_pill_exit(
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
     const search_terms = Filter.parse(suggestion.search_string);
 
-    const pill_render_data = search_terms.map((term, index) => {
-        const narrow_term: NarrowTerm = {
-            operator: term.operator,
-            operand: term.operand,
-            negated: term.negated,
-        };
+    type PillRenderData =
+        | ({type: "generic_operator"} & (NarrowCanonicalTerm | NarrowTermSuggestion) & {
+                  display_value?: string;
+                  is_empty_string_topic?: boolean;
+                  sign?: string;
+                  topic_display_name?: string;
+                  description_html?: string;
+              })
+        | SearchUserPill;
+    const pill_render_data: PillRenderData[] = search_terms.map((term, index) => {
+        const narrow_term: NarrowCanonicalTerm | undefined =
+            Filter.convert_suggestion_to_term(term);
+
+        // For invalid terms, we just return a generic operator pill
+        // with the unparsed value.
+        if (narrow_term === undefined) {
+            return {
+                type: "generic_operator",
+                ...term,
+                display_value: Filter.unparse([term]),
+            };
+        }
+
         const search_pill: SearchPill = {
             type: "generic_operator",
             ...narrow_term,
         };
 
-        switch (term.operator) {
+        switch (search_pill.operator) {
             case "dm":
             case "dm-including":
             case "sender":
-                if (term.operand === "") {
-                    break;
-                }
-                return search_user_pill_data_from_term(term);
+                return search_user_pill_data_from_term(narrow_term);
             case "topic":
                 if (search_pill.operand === "") {
                     // There are three variants of this suggestion state:
@@ -261,7 +275,7 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
     return pills;
 }
 
-function search_user_pill_data_from_term(term: NarrowTerm): SearchUserPill {
+function search_user_pill_data_from_term(term: NarrowCanonicalTerm): SearchUserPill {
     assert(
         term.operator === "dm" || term.operator === "dm-including" || term.operator === "sender",
     );
