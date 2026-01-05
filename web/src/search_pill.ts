@@ -12,7 +12,7 @@ import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
-import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
@@ -427,7 +427,9 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
     return item.operand;
 }
 
-export function get_current_search_pill_terms(pill_widget: SearchPillWidget): NarrowTerm[] {
+export function get_current_search_pill_terms(
+    pill_widget: SearchPillWidget,
+): NarrowCanonicalTerm[] {
     return pill_widget.items().map((item) => ({
         operator: item.operator,
         operand: get_search_operand(item, false),
