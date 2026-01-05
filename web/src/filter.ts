@@ -468,31 +468,28 @@ export class Filter {
         };
     }
 
-    static convert_suggestion_to_term(suggestion: NarrowTermSuggestion): NarrowTerm | undefined {
+    static convert_suggestion_to_term(
+        suggestion: NarrowTermSuggestion,
+    ): NarrowCanonicalTerm | undefined {
+        // We don't want to raise exceptions in this function; just
+        // return undefined for invalid terms.
+        //
         // NOTE: We will add more logic here once `NarrowTerm`
         // operand has different type based on operator.
-        const potential_narrow_term: NarrowTerm = {
-            operator: suggestion.operator,
-            operand: suggestion.operand,
-            negated: suggestion.negated,
-        };
+        try {
+            const potential_narrow_term: NarrowCanonicalTerm = Filter.canonicalize_term(suggestion);
 
-        if (!Filter.is_valid_search_term(potential_narrow_term)) {
+            if (!Filter.is_valid_canonical_term(potential_narrow_term)) {
+                return undefined;
+            }
+
+            return potential_narrow_term;
+        } catch {
             return undefined;
         }
-
-        return potential_narrow_term;
     }
 
-    static is_valid_search_term(term: NarrowTerm): boolean {
-        // We don't want to raise exceptions in this function; just
-        // return false for invalid terms.
-        try {
-            term = Filter.canonicalize_term(term);
-        } catch {
-            return false;
-        }
-
+    static is_valid_canonical_term(term: NarrowCanonicalTerm): boolean {
         switch (term.operator) {
             case "has":
                 return ["image", "link", "attachment", "reaction"].includes(term.operand);

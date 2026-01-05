@@ -349,7 +349,7 @@ export function set_search_bar_contents(
             continue;
         }
 
-        if (!Filter.is_valid_search_term(term)) {
+        if (Filter.convert_suggestion_to_term(term) === undefined) {
             invalid_inputs.push(input);
             continue;
         }
@@ -357,7 +357,7 @@ export function set_search_bar_contents(
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
             const users = term.operand.split(",").map((email) => {
                 // This is definitely not undefined, because we just validated it
-                // with `Filter.is_valid_search_term`.
+                // with `Filter.convert_suggestion_to_term`.
                 const user = people.get_by_email(email)!;
                 return user;
             });

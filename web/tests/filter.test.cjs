@@ -2089,7 +2089,7 @@ test("first_valid_id_from", ({override}) => {
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
 
-test("is_valid_search_term", () => {
+test("convert_suggestion_to_term", () => {
     const denmark = {
         stream_id: 100,
         name: "Denmark",
@@ -2118,16 +2118,17 @@ test("is_valid_search_term", () => {
     ];
     for (const [search_term_string, expected_is_valid] of test_data) {
         assert.equal(
-            Filter.is_valid_search_term(Filter.parse(search_term_string)[0]),
+            Filter.convert_suggestion_to_term(Filter.parse(search_term_string)[0]) !== undefined,
             expected_is_valid,
         );
     }
 
+    // Invalid operator.
     assert.equal(
-        Filter.is_valid_search_term({
+        Filter.convert_suggestion_to_term({
             operator: "foo",
             operand: "bar",
-        }),
+        }) !== undefined,
         false,
     );
 });
