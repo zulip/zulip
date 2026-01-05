@@ -24,6 +24,7 @@ export let display_time_zone = browser_time_zone();
 export let display_tz = tz(display_time_zone);
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
+const relative_formatter_map = new Map<string, Intl.RelativeTimeFormat>();
 
 export function browser_time_zone(): string {
     return new Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -38,6 +39,7 @@ export function set_display_time_zone(time_zone: string): void {
     display_time_zone = time_zone;
     display_tz = tz(display_time_zone);
     formatter_map.clear();
+    relative_formatter_map.clear();
 }
 
 type DateFormat = "weekday" | "dayofyear" | "weekday_dayofyear_year" | "dayofyear_year";
@@ -270,9 +272,17 @@ export function relative_time_string_from_date(date: Date): string {
 // Current date is passed as an argument for unit testing
 export function last_seen_status_from_date(last_active_date: Date): string {
     const current_date = new Date();
+    const locale = user_settings.default_language;
+
+    if (!relative_formatter_map.has(locale)) {
+        relative_formatter_map.set(locale, new Intl.RelativeTimeFormat(locale, {numeric: "auto"}));
+    }
+    const rtf = relative_formatter_map.get(locale);
+
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes < 60) {
-        return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
+        const time = rtf?.format(-minutes, "minute");
+        return $t({defaultMessage: "Active {time}"}, {time});
     }
 
     const days_old = differenceInCalendarDays(current_date, last_active_date, {
@@ -281,18 +291,13 @@ export function last_seen_status_from_date(last_active_date: Date): string {
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-        if (hours === 1) {
-            return $t({defaultMessage: "Active an hour ago"});
-        }
-        return $t({defaultMessage: "Active {hours} hours ago"}, {hours});
-    }
-
-    if (days_old === 1) {
-        return $t({defaultMessage: "Active yesterday"});
+        const time = rtf?.format(-hours, "hour");
+        return $t({defaultMessage: "Active {time}"}, {time});
     }
 
     if (days_old < 90) {
-        return $t({defaultMessage: "Active {days_old} days ago"}, {days_old});
+        const time = rtf?.format(-days_old, "day");
+        return $t({defaultMessage: "Active {time}"}, {time});
     } else if (
         days_old > 90 &&
         days_old < 365 &&
