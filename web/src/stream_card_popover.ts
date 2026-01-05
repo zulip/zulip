@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_stream_card_popover from "../templates/popovers/stream_card_popover.hbs";
+import render_stream_card_popover from "../templates/popovers/stream_card_popover.ts";
 
 import * as browser_history from "./browser_history.ts";
 import * as hash_util from "./hash_util.ts";

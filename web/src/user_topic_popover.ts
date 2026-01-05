@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_change_visibility_policy_popover from "../templates/popovers/change_visibility_policy_popover.hbs";
+import render_change_visibility_policy_popover from "../templates/popovers/change_visibility_policy_popover.ts";
 
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";

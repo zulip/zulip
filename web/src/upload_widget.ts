@@ -3,7 +3,7 @@ import type {Body, Meta} from "@uppy/core";
 import ImageEditor from "@uppy/image-editor";
 import assert from "minimalistic-assert";
 
-import render_image_editor_modal from "../templates/image_editor_modal.hbs";
+import render_image_editor_modal from "../templates/image_editor_modal.ts";
 
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";

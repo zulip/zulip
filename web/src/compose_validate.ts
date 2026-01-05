@@ -2,16 +2,16 @@ import $ from "jquery";
 import _ from "lodash";
 import type {ReferenceElement} from "tippy.js";
 
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-import render_compose_mention_group_warning from "../templates/compose_banner/compose_mention_group_warning.hbs";
-import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.hbs";
-import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
-import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
-import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.hbs";
-import render_topic_moved_banner from "../templates/compose_banner/topic_moved_banner.hbs";
-import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
-import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
-import render_topics_required_error_message from "../templates/topics_required_error_message.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.ts";
+import render_compose_mention_group_warning from "../templates/compose_banner/compose_mention_group_warning.ts";
+import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.ts";
+import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.ts";
+import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.ts";
+import render_stream_wildcard_warning from "../templates/compose_banner/stream_wildcard_warning.ts";
+import render_topic_moved_banner from "../templates/compose_banner/topic_moved_banner.ts";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.ts";
+import render_compose_limit_indicator from "../templates/compose_limit_indicator.ts";
+import render_topics_required_error_message from "../templates/topics_required_error_message.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";

@@ -1,4 +1,4 @@
-import render_input_pill from "../templates/input_pill.hbs";
+import render_input_pill from "../templates/input_pill.ts";
 
 import {set_up_handlers_for_add_button_state} from "./add_subscribers_pill.ts";
 import * as input_pill from "./input_pill.ts";

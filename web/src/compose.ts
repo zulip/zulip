@@ -5,8 +5,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
-import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
+import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.ts";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.ts";
 
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";

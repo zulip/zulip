@@ -1,6 +1,7 @@
 import Handlebars from "handlebars/runtime.js";
 
 import * as common from "./common.ts";
+import {to_html} from "./html.ts";
 import {default_html_elements, intl} from "./i18n.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 
@@ -141,35 +142,11 @@ Handlebars.registerHelper("numberFormat", (number: number) => number.toLocaleStr
 Handlebars.registerHelper("tooltip_hotkey_hints", (...args) => {
     args.pop(); // Handlebars options
     const hotkeys: string[] = args;
-    let hotkey_hints = "";
-    common.adjust_mac_hotkey_hints(hotkeys);
-    for (const hotkey of hotkeys) {
-        hotkey_hints += `<span class="tooltip-hotkey-hint">${hotkey}</span>`;
-    }
-    const result = `<span class="tooltip-hotkey-hints">${hotkey_hints}</span>`;
-    return new Handlebars.SafeString(result);
+    return new Handlebars.SafeString(to_html(common.tooltip_hotkey_hints(...hotkeys)));
 });
 
 Handlebars.registerHelper("popover_hotkey_hints", (...args) => {
     args.pop(); // Handlebars options
     const hotkeys: string[] = args;
-    let hotkey_hints = "";
-    common.adjust_mac_hotkey_hints(hotkeys);
-    const shift_hotkey_exists = common.adjust_shift_hotkey(hotkeys);
-    for (const hotkey of hotkeys) {
-        // The ⌘ symbol isn't vertically centered, so we use an icon.
-        if (hotkey === "⌘") {
-            hotkey_hints += `<span class="popover-menu-hotkey-hint"><i class="zulip-icon zulip-icon-mac-command" aria-hidden="true"></i></span>`;
-        } else {
-            hotkey_hints += `<span class="popover-menu-hotkey-hint">${hotkey}</span>`;
-        }
-    }
-    if (shift_hotkey_exists) {
-        return new Handlebars.SafeString(
-            `<span class="popover-menu-hotkey-hints popover-contains-shift-hotkey" data-hotkey-hints="${hotkeys.join(",")}">${hotkey_hints}</span>`,
-        );
-    }
-    return new Handlebars.SafeString(
-        `<span class="popover-menu-hotkey-hints">${hotkey_hints}</span>`,
-    );
+    return new Handlebars.SafeString(to_html(common.popover_hotkey_hints(...hotkeys)));
 });

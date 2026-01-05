@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
+import render_settings_user_list_row from "../templates/settings/settings_user_list_row.ts";
 
 import {compute_active_status, post_presence_response_schema} from "./activity.ts";
 import * as browser_history from "./browser_history.ts";

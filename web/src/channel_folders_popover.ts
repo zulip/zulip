@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_channel_folder_setting_popover from "../templates/popovers/channel_folder_setting_popover.hbs";
+import render_channel_folder_setting_popover from "../templates/popovers/channel_folder_setting_popover.ts";
 
 import * as channel from "./channel.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";

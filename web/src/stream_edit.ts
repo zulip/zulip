@@ -4,15 +4,15 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
-import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
-import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
-import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
-import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
-import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
-import render_stream_description from "../templates/stream_settings/stream_description.hbs";
-import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
+import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.ts";
+import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.ts";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.ts";
+import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.ts";
+import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.ts";
+import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.ts";
+import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.ts";
+import render_stream_description from "../templates/stream_settings/stream_description.ts";
+import render_stream_settings from "../templates/stream_settings/stream_settings.ts";
 
 import * as blueslip from "./blueslip.ts";
 import type {Bot} from "./bot_data.ts";

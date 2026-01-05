@@ -2,7 +2,7 @@
 
 /** @type {import("babel-plugin-formatjs/types").Options} */
 const formatJsOptions = {
-    additionalFunctionNames: ["$t", "$t_html"],
+    additionalFunctionNames: ["$html_t", "$t", "$t_html"],
     overrideIdFn: (_id, defaultMessage) => defaultMessage ?? "",
 };
 

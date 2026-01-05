@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_editing_notifications from "../templates/editing_notifications.hbs";
-import render_typing_notifications from "../templates/typing_notifications.hbs";
+import render_editing_notifications from "../templates/editing_notifications.ts";
+import render_typing_notifications from "../templates/typing_notifications.ts";
 
 import * as message_lists from "./message_lists.ts";
 import * as narrow_state from "./narrow_state.ts";

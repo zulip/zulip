@@ -1,7 +1,7 @@
 import $ from "jquery";
 
-import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
-import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
+import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.ts";
+import render_admin_playground_list from "../templates/settings/admin_playground_list.ts";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";

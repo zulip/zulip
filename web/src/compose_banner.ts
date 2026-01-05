@@ -1,11 +1,11 @@
 import $ from "jquery";
 
-import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-import render_long_paste_options from "../templates/compose_banner/long_paste_options.hbs";
-import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
-import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
-import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
+import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.ts";
+import render_compose_banner from "../templates/compose_banner/compose_banner.ts";
+import render_long_paste_options from "../templates/compose_banner/long_paste_options.ts";
+import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.ts";
+import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.ts";
+import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.ts";
 
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";

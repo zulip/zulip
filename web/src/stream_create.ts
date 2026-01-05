@@ -2,8 +2,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
-import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
+import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.ts";
+import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.ts";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";

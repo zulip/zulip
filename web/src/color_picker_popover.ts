@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import type * as tippy from "tippy.js";
 
-import render_color_picker_popover from "../templates/popovers/color_picker_popover.hbs";
+import render_color_picker_popover from "../templates/popovers/color_picker_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as popover_menus from "./popover_menus.ts";

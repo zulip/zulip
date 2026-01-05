@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.ts";
 
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";

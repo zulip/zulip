@@ -2,7 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
+import render_message_actions_popover from "../templates/popovers/message_actions_popover.ts";
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as compose_reply from "./compose_reply.ts";

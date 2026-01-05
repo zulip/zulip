@@ -3,14 +3,14 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_filter_topics from "../templates/filter_topics.hbs";
-import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
-import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.hbs";
-import render_show_inactive_or_muted_channels from "../templates/show_inactive_or_muted_channels.hbs";
-import render_stream_list_section_container from "../templates/stream_list_section_container.hbs";
-import render_stream_privacy from "../templates/stream_privacy.hbs";
-import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
-import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
+import render_filter_topics from "../templates/filter_topics.ts";
+import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.ts";
+import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.ts";
+import render_show_inactive_or_muted_channels from "../templates/show_inactive_or_muted_channels.ts";
+import render_stream_list_section_container from "../templates/stream_list_section_container.ts";
+import render_stream_privacy from "../templates/stream_privacy.ts";
+import render_stream_sidebar_row from "../templates/stream_sidebar_row.ts";
+import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";

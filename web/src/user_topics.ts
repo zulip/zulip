@@ -1,6 +1,6 @@
 import type * as z from "zod/mini";
 
-import render_topic_muted from "../templates/topic_muted.hbs";
+import render_topic_muted from "../templates/topic_muted.ts";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";

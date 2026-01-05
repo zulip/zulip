@@ -3,11 +3,11 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import timezones from "../generated/timezones.json";
-import render_change_email_modal from "../templates/change_email_modal.hbs";
-import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
-import render_dialog_change_password from "../templates/dialog_change_password.hbs";
-import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
-import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
+import render_change_email_modal from "../templates/change_email_modal.ts";
+import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.ts";
+import render_dialog_change_password from "../templates/dialog_change_password.ts";
+import render_settings_api_key_modal from "../templates/settings/api_key_modal.ts";
+import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.ts";
 
 import * as avatar from "./avatar.ts";
 import * as bot_helper from "./bot_helper.ts";
@@ -18,6 +18,7 @@ import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import type {CustomProfileFieldData, PillUpdateField} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import {html} from "./html.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as modals from "./modals.ts";
@@ -860,10 +861,10 @@ export function set_up(): void {
                                 "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
                         },
                         {
-                            "z-link": (content_html) =>
-                                `<a target="_blank" href="/#organization/organization-profile">${content_html.join(
-                                    "",
-                                )}</a>`,
+                            "z-link": (content) =>
+                                html`<a target="_blank" href="/#organization/organization-profile"
+                                    >${content}</a
+                                >`,
                         },
                     );
                     let rendered_error_msg = "";

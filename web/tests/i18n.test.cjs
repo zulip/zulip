@@ -26,6 +26,7 @@ page_params.translation_data = {
 // `templates.ts`.
 unmock_module("../src/i18n");
 const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");
+const {html} = zrequire("html");
 
 run_test("$t", () => {
     // Normally the id would be provided by babel-plugin-formatjs, but
@@ -43,7 +44,7 @@ run_test("$t", () => {
     );
 });
 
-run_test("$tr", () => {
+run_test("$t_html", () => {
     assert.equal(
         $t_html(
             {
@@ -53,10 +54,10 @@ run_test("$tr", () => {
             },
             {
                 name: "l'abonnement",
-                "z-link": (content_html) => `<a href='#channels/all'>${content_html.join("")}</a>`,
+                "z-link": (content) => html`<a href="#channels/all">${content}</a>`,
             },
         ),
-        "<p>Le canal <b>l&#39;abonnement</b> n'existe pas.</p><p>Gérez vos abonnements <a href='#channels/all'>sur votre page canaux</a>.</p>",
+        '<p>Le canal <b>l&#39;abonnement</b> n\'existe pas.</p><p>Gérez vos abonnements <a href="#channels/all">sur votre page canaux</a>.</p>',
     );
 });
 

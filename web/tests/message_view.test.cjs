@@ -286,7 +286,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
+            `translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option"
+                    >publicly accessible</a
+                > conversation.`,
         ),
     );
 
@@ -299,7 +301,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
+            `translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option"
+                    >publicly accessible</a
+                > conversation.`,
         ),
     );
 
@@ -327,7 +331,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no starred messages.",
-            'translated HTML: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">Learn more</a>',
+            `translated HTML: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message"
+                    >Learn more</a
+                >`,
         ),
     );
 
@@ -337,7 +343,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: This view will show messages where you are mentioned.",
-            'translated HTML: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you\'d like to mention from the list of suggestions. <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">Learn more</a>',
+            `translated HTML: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you'd like to mention from the list of suggestions. <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="/help/mention-a-user-or-group"
+                    >Learn more</a
+                >`,
         ),
     );
 
@@ -349,7 +360,9 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages yet!",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            `translated HTML: Why not <a href="#" class="empty_feed_compose_private"
+                                        >start the conversation</a
+                                    >?`,
         ),
     );
 
@@ -405,7 +418,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            `translated HTML: <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href="/help/restrict-direct-messages"
+                                    >Learn more.</a
+                                >`,
         ),
     );
 
@@ -430,7 +448,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            `translated HTML: <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href="/help/restrict-direct-messages"
+                                    >Learn more.</a
+                                >`,
         ),
     );
 
@@ -513,7 +536,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            `translated HTML: <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href="/help/restrict-direct-messages"
+                                    >Learn more.</a
+                                >`,
         ),
     );
 
@@ -635,7 +663,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: None of your messages have emoji reactions yet.",
-            'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+            `translated HTML: Learn more about emoji reactions <a
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href="/help/emoji-reactions"
+                                >here</a
+                            >.`,
         ),
     );
 

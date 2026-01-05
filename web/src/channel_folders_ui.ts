@@ -3,10 +3,10 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_confirm_archive_channel_folder from "../templates/confirm_dialog/confirm_archive_channel_folder.hbs";
-import render_stream_list_item from "../templates/stream_list_item.hbs";
-import render_create_channel_folder_modal from "../templates/stream_settings/create_channel_folder_modal.hbs";
-import render_edit_channel_folder_modal from "../templates/stream_settings/edit_channel_folder_modal.hbs";
+import render_confirm_archive_channel_folder from "../templates/confirm_dialog/confirm_archive_channel_folder.ts";
+import render_stream_list_item from "../templates/stream_list_item.ts";
+import render_create_channel_folder_modal from "../templates/stream_settings/create_channel_folder_modal.ts";
+import render_edit_channel_folder_modal from "../templates/stream_settings/edit_channel_folder_modal.ts";
 
 import * as banners from "./banners.ts";
 import * as buttons from "./buttons.ts";

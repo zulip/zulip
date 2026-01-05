@@ -66,7 +66,7 @@ export default defineConfig(
         },
         settings: {
             formatjs: {
-                additionalFunctionNames: ["$t", "$t_html"],
+                additionalFunctionNames: ["$html_t", "$t", "$t_html"],
             },
             "import/resolver": {
                 node: {
@@ -75,7 +75,7 @@ export default defineConfig(
             },
             "no-jquery": {
                 collectionReturningPlugins: {expectOne: "always"},
-                variablePattern: "^\\$(?!t$|t_html$).",
+                variablePattern: "^\\$(?!html_t$|t$|t_html$).",
             },
         },
         rules: {

@@ -3,12 +3,12 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
-import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
-import render_topic_already_exists_warning_banner from "../templates/modal_banner/topic_already_exists_warning_banner.hbs";
-import render_unsubscribed_participants_warning_banner from "../templates/modal_banner/unsubscribed_participants_warning_banner.hbs";
-import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
-import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.ts";
+import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.ts";
+import render_topic_already_exists_warning_banner from "../templates/modal_banner/topic_already_exists_warning_banner.ts";
+import render_unsubscribed_participants_warning_banner from "../templates/modal_banner/unsubscribed_participants_warning_banner.ts";
+import render_move_topic_to_stream from "../templates/move_topic_to_stream.ts";
+import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.ts";
 
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";

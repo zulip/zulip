@@ -3,8 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_add_poll_modal from "../templates/add_poll_modal.hbs";
-import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
+import render_add_poll_modal from "../templates/add_poll_modal.ts";
+import render_add_todo_list_modal from "../templates/add_todo_list_modal.ts";
 
 import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";

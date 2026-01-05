@@ -5,10 +5,10 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
-import render_invite_user_modal from "../templates/invite_user_modal.hbs";
-import render_invite_users_tips from "../templates/modal_banner/invite_users_tips.hbs";
-import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
+import render_invitation_failed_error from "../templates/invitation_failed_error.ts";
+import render_invite_user_modal from "../templates/invite_user_modal.ts";
+import render_invite_users_tips from "../templates/modal_banner/invite_users_tips.ts";
+import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.ts";
 
 import * as banners from "./banners.ts";
 import type {Banner} from "./banners.ts";

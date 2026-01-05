@@ -4,12 +4,13 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_dialog_default_language from "../templates/default_language_modal.hbs";
+import render_dialog_default_language from "../templates/default_language_modal.ts";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as emojisets from "./emojisets.ts";
+import {html} from "./html.ts";
 import {$t_html, get_language_list_columns} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as loading from "./loading.ts";
@@ -398,7 +399,7 @@ function language_select_callback(
                     "Saved. Please <z-link>reload</z-link> for the change to take effect.",
             },
             {
-                "z-link": (content_html) => `<a class='reload_link'>${content_html.join("")}</a>`,
+                "z-link": (content) => html`<a class="reload_link">${content}</a>`,
             },
         ),
         true,

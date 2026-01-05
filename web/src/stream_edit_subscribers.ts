@@ -3,11 +3,11 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_subscription_banner from "../templates/components/subscription_banner.hbs";
-import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
-import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
-import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
+import render_subscription_banner from "../templates/components/subscription_banner.ts";
+import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.ts";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.ts";
+import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.ts";
+import render_stream_members_table from "../templates/stream_settings/stream_members_table.ts";
 
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as blueslip from "./blueslip.ts";

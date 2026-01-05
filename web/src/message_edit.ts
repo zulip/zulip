@@ -6,15 +6,15 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
-import render_confirm_edit_messages from "../templates/confirm_dialog/confirm_edit_messages.hbs";
-import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
-import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
-import render_intro_resolve_topic_modal from "../templates/confirm_dialog/intro_resolve_topic.hbs";
-import render_message_edit_form from "../templates/message_edit_form.hbs";
-import render_message_moved_widget_body from "../templates/message_moved_widget_body.hbs";
-import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
-import render_topic_edit_form from "../templates/topic_edit_form.hbs";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.ts";
+import render_confirm_edit_messages from "../templates/confirm_dialog/confirm_edit_messages.ts";
+import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.ts";
+import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.ts";
+import render_intro_resolve_topic_modal from "../templates/confirm_dialog/intro_resolve_topic.ts";
+import render_message_edit_form from "../templates/message_edit_form.ts";
+import render_message_moved_widget_body from "../templates/message_moved_widget_body.ts";
+import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.ts";
+import render_topic_edit_form from "../templates/topic_edit_form.ts";
 
 import {detached_uploads_api_response_schema} from "./attachments.ts";
 import * as attachments_ui from "./attachments_ui.ts";

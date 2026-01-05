@@ -2,12 +2,12 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 
-import render_confirm_delete_profile_field from "../templates/confirm_dialog/confirm_delete_profile_field.hbs";
-import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.hbs";
-import render_add_new_custom_profile_field_form from "../templates/settings/add_new_custom_profile_field_form.hbs";
-import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.hbs";
-import render_edit_custom_profile_field_form from "../templates/settings/edit_custom_profile_field_form.hbs";
-import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.hbs";
+import render_confirm_delete_profile_field from "../templates/confirm_dialog/confirm_delete_profile_field.ts";
+import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.ts";
+import render_add_new_custom_profile_field_form from "../templates/settings/add_new_custom_profile_field_form.ts";
+import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.ts";
+import render_edit_custom_profile_field_form from "../templates/settings/edit_custom_profile_field_form.ts";
+import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.ts";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";

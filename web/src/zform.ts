@@ -1,7 +1,7 @@
 import $ from "jquery";
 import type * as z from "zod/mini";
 
-import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";
+import render_widgets_zform_choices from "../templates/widgets/zform_choices.ts";
 
 import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
