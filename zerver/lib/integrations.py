@@ -759,12 +759,10 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ["customer-support"],
         [WebhookScreenshotConfig("conversation_admin_replied.json")],
     ),
-    # Avoid collision with jira-plugin's doc "jira/doc.md".
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
         [WebhookScreenshotConfig("created_v1.json")],
-        doc="jira/jira-doc.md",
     ),
     IncomingWebhookIntegration(
         "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
