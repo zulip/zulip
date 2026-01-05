@@ -213,6 +213,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
 
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(opts.message_type);
+    message_viewport.bottom_of_feed.reset();
     reload.maybe_reset_pending_reload_timeout("compose_start");
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -531,7 +532,7 @@ export let cancel = (): void => {
     call_hooks(compose_cancel_hooks);
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
-    $(document).trigger("compose_canceled.zulip");
+    message_viewport.bottom_of_feed.reset();
     reload.maybe_reset_pending_reload_timeout("compose_end");
 };
 

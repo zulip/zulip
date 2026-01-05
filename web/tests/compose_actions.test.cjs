@@ -31,9 +31,7 @@ const everyone = make_user_group({
 });
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
-set_global("document", {
-    to_$: () => $("document-stub"),
-});
+set_global("document", {});
 
 set_global("requestAnimationFrame", (func) => func());
 

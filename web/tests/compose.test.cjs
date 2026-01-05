@@ -162,16 +162,8 @@ function initialize_handlers({override}) {
     compose_setup.initialize();
 }
 
-function disable_document_triggers(override) {
-    override(document, "to_$", () => $("document-stub"));
-}
-
 function disable_window_triggers(override) {
     override(window, "to_$", () => $("window-stub"));
-}
-
-function on_compose_finished_trigger_do(f) {
-    $(document).on("compose_finished.zulip", f);
 }
 
 function simulate_draft_ui_interactions() {
@@ -437,8 +429,6 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
     window.addEventListener = noop;
 
-    disable_document_triggers(override);
-
     let show_button_spinner_called = false;
 
     const fake_compose_box = new FakeComposeBox();
@@ -485,7 +475,6 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
 
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
-    disable_document_triggers(override);
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -534,12 +523,6 @@ test_ui("finish", ({override, override_rewire}) => {
         override(realm, "realm_direct_message_permission_group", everyone.id);
         override(realm, "realm_direct_message_initiator_group", everyone.id);
 
-        let compose_finished_event_checked = false;
-
-        on_compose_finished_trigger_do(() => {
-            compose_finished_event_checked = true;
-        });
-
         let send_message_called = false;
         override_rewire(compose, "send_message", () => {
             send_message_called = true;
@@ -549,7 +532,6 @@ test_ui("finish", ({override, override_rewire}) => {
 
         fake_compose_box.assert_preview_mode_is_off();
         assert.ok(send_message_called);
-        assert.ok(compose_finished_event_checked);
     })();
 });
 
