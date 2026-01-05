@@ -96,17 +96,31 @@
 <div>
     <div class="realm-management-actions">
         <p class="support-section-header">🛠️ Realm management:</p>
+        {% if realm.deactivated %}
         <form method="POST" class="support-form">
-            <b>Status</b>:<br />
+            <b>Reactivate</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            <select name="status">
-                <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
-                <option value="deactivated" {% if realm.deactivated %}selected{% endif %}>Deactivated</option>
-            </select>
-            <button type="submit" class="support-submit-button">Update</button>
+            <input type="hidden" name="status" value="active" />
+            <button type="submit" class="support-submit-button">Send reactivation email to owners</button>
         </form>
-        {% if not realm.deactivated %}
+        {% else %}
+        <form method="POST" class="support-form">
+            <b>Deactivate</b>: (select reason)<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="hidden" name="status" value="deactivated" />
+            <select name="deactivation_reason" id="deactivation_reason">
+                {% for reason in DEACTIVATION_REASONS %}
+                    {% if reason == "owner_request" %}
+                        <option value="{{ reason }}" selected>{{ reason }}</option>
+                    {% else %}
+                        <option value="{{ reason }}">{{ reason }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="support-submit-button">Deactivate realm</button>
+        </form>
         <form method="POST" class="support-form">
             <b>Organization type</b>:<br />
             {{ csrf_input }}

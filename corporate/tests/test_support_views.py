@@ -835,13 +835,14 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="2">Limited</option>',
                     'input type="number" name="monthly_discounted_price" value="None"',
                     'input type="number" name="annual_discounted_price" value="None"',
-                    '<option value="active" selected>Active</option>',
-                    '<option value="deactivated" >Deactivated</option>',
+                    '<button type="submit" class="support-submit-button">Deactivate realm</button>',
                     f'<option value="{zulip_realm.org_type}" selected>',
                 ],
                 result,
             )
-            self.assert_not_in_success_response(["scrub-realm-button"], result)
+            self.assert_not_in_success_response(
+                ["scrub-realm-button", "Send reactivation email to owners"], result
+            )
 
         def check_lear_realm_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
@@ -852,8 +853,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="2">Limited</option>',
                     'input type="number" name="monthly_discounted_price" value="None"',
                     'input type="number" name="annual_discounted_price" value="None"',
-                    '<option value="active" selected>Active</option>',
-                    '<option value="deactivated" >Deactivated</option>',
+                    '<button type="submit" class="support-submit-button">Deactivate realm</button>',
                     "<b>Plan name</b>: Zulip Cloud Standard",
                     "<b>Status</b>: Active",
                     "<b>Billing schedule</b>: Annual",
@@ -866,7 +866,9 @@ class TestSupportEndpoint(ZulipTestCase):
                 ],
                 result,
             )
-            self.assert_not_in_success_response(["scrub-realm-button"], result)
+            self.assert_not_in_success_response(
+                ["scrub-realm-button", "Send reactivation email to owners"], result
+            )
 
         def check_preregistration_user_query_result(
             result: "TestHttpResponse", email: str, invite: bool = False
@@ -1824,9 +1826,12 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        # Confirm scrub realm button is shown for deactivated realms.
+        # Confirm reactivate and scrub realm buttons are shown for
+        # deactivated realms.
         result = self.client_get("/activity/support", {"q": "limited"})
-        self.assert_in_success_response(["scrub-realm-button"], result)
+        self.assert_in_success_response(
+            ["scrub-realm-button", "Send reactivation email to owners"], result
+        )
 
         result = self.client_post(
             "/activity/support",
@@ -1851,12 +1856,17 @@ class TestSupportEndpoint(ZulipTestCase):
 
         with mock.patch("corporate.views.support.do_deactivate_realm") as m:
             result = self.client_post(
-                "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"}
+                "/activity/support",
+                {
+                    "realm_id": f"{lear_realm.id}",
+                    "status": "deactivated",
+                    "deactivation_reason": "inactivity",
+                },
             )
             m.assert_called_once_with(
                 lear_realm,
                 acting_user=self.example_user("iago"),
-                deactivation_reason="owner_request",
+                deactivation_reason="inactivity",
                 email_owners=True,
             )
             self.assert_in_success_response(["lear deactivated"], result)

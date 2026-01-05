@@ -4,7 +4,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from operator import attrgetter
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, get_args
 from urllib.parse import urlsplit
 
 from django import forms
@@ -30,6 +30,7 @@ from corporate.lib.billing_types import BillingModality
 from corporate.models.plans import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
+    RealmDeactivationReasonType,
     do_change_realm_max_invites,
     do_change_realm_org_type,
     do_change_realm_plan_type,
@@ -419,6 +420,7 @@ def support(
     new_subdomain: str | None = None,
     add_redirect_url: str | None = None,
     status: RemoteServerStatus | None = None,
+    deactivation_reason: RealmDeactivationReasonType | None = None,
     billing_modality: BillingModality | None = None,
     sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
@@ -564,12 +566,11 @@ def support(
                     f"Realm reactivation email sent to admins of {realm.string_id}."
                 )
             elif status == "deactivated":
-                # TODO: Add support for deactivation reason in the support UI that'll be passed
-                # here.
+                assert deactivation_reason is not None
                 do_deactivate_realm(
                     realm,
                     acting_user=acting_user,
-                    deactivation_reason="owner_request",
+                    deactivation_reason=deactivation_reason,
                     email_owners=True,
                 )
                 context["success_message"] = f"{realm.string_id} deactivated."
@@ -699,6 +700,7 @@ def support(
     context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
+    context["DEACTIVATION_REASONS"] = get_args(RealmDeactivationReasonType)
     context["remote_support_view"] = False
 
     return render(request, "corporate/support/support.html", context=context)
