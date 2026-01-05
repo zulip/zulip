@@ -7,6 +7,7 @@ import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
@@ -627,6 +628,7 @@ class ChangeSettingsTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
         hamletcharacters_group = NamedUserGroup.objects.get(
             name="hamletcharacters", realm_for_sharding=iago.realm
         )
@@ -668,10 +670,24 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(iago.web_font_size_px, 18)
 
         # Test skip users who have already edited their specific settings
+        # themselves.
+        do_change_user_setting(
+            hamlet, "automatically_follow_topics_where_mentioned", False, acting_user=hamlet
+        )
+        do_change_user_setting(
+            othello, "automatically_follow_topics_where_mentioned", False, acting_user=othello
+        )
+        do_change_user_setting(
+            cordelia, "automatically_follow_topics_where_mentioned", False, acting_user=iago
+        )
+        do_change_user_setting(
+            iago, "automatically_follow_topics_where_mentioned", False, acting_user=desdemona
+        )
+
         target_users_dict["skip_if_already_edited"] = True
         data = {
             "target_users": orjson.dumps(target_users_dict).decode(),
-            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(True).decode(),
         }
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
@@ -680,9 +696,9 @@ class ChangeSettingsTest(ZulipTestCase):
         iago.refresh_from_db()
         hamlet.refresh_from_db()
         self.assertEqual(cordelia.automatically_follow_topics_where_mentioned, True)
-        self.assertEqual(othello.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(othello.automatically_follow_topics_where_mentioned, False)
         self.assertEqual(iago.automatically_follow_topics_where_mentioned, True)
-        self.assertEqual(hamlet.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(hamlet.automatically_follow_topics_where_mentioned, False)
 
         # Admin cannot change sensitive settings for other users.
         data = {
