@@ -82,7 +82,7 @@ from zerver.lib.topic import (
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
-from zerver.lib.user_groups import get_recursive_membership_groups
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -1658,9 +1658,7 @@ def check_update_message(
             check_user_group_mention_allowed(user_profile, mentioned_group_ids)
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
-        user_recursive_group_ids = set(
-            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-        )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
         system_groups_name_dict = get_realm_system_groups_name_dict(user_profile.realm_id)
         if message_edit_request.is_stream_edited:
             assert message.is_channel_message
@@ -1670,7 +1668,7 @@ def check_update_message(
             check_stream_access_based_on_can_send_message_group(
                 user_profile,
                 message_edit_request.target_stream,
-                user_recursive_group_ids,
+                user_group_membership_details,
                 system_groups_name_dict,
             )
 
@@ -1707,7 +1705,7 @@ def check_update_message(
                 user_profile,
                 message_edit_request.target_stream,
                 message_edit_request.target_topic_name,
-                user_recursive_group_ids,
+                user_group_membership_details,
                 system_groups_name_dict,
             )
 

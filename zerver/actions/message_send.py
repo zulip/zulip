@@ -84,9 +84,9 @@ from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     check_any_user_has_permission_by_role,
     check_user_has_permission_by_role,
-    get_recursive_membership_groups,
     is_any_user_in_group,
     is_user_in_group,
 )
@@ -1788,9 +1788,7 @@ def check_message(
             type=Recipient.STREAM,
         )
 
-        user_recursive_group_ids = set(
-            get_recursive_membership_groups(sender).values_list("id", flat=True)
-        )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
         system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
         if not skip_stream_access_check:
             access_stream_for_send_message(
@@ -1798,7 +1796,7 @@ def check_message(
                 stream=stream,
                 forwarder_user_profile=forwarder_user_profile,
                 archived_channel_notice=archived_channel_notice,
-                user_recursive_group_ids=user_recursive_group_ids,
+                user_group_membership_details=user_group_membership_details,
                 system_groups_name_dict=system_groups_name_dict,
             )
         else:
@@ -1812,7 +1810,7 @@ def check_message(
             user_profile=sender,
             stream=stream,
             topic_name=topic_name,
-            user_recursive_group_ids=user_recursive_group_ids,
+            user_group_membership_details=user_group_membership_details,
             system_groups_name_dict=system_groups_name_dict,
         )
 
