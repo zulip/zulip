@@ -557,7 +557,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
                 max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
-    upload_avatar_image(user_file, user_profile)
+    upload_avatar_image(user_file, user_profile, content_type=user_file.content_type)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
 
