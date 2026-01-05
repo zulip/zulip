@@ -10,7 +10,7 @@ import * as popovers from "./popovers.ts";
 import * as search_pill from "./search_pill.ts";
 import type {SearchPillWidget} from "./search_pill.ts";
 import * as search_suggestion from "./search_suggestion.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as util from "./util.ts";
 
 // Exported for unit testing
@@ -47,7 +47,7 @@ type NarrowSearchOptions = {
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
 
-function full_search_query_in_terms(): NarrowTerm[] | undefined {
+function full_search_query_in_terms(): NarrowCanonicalTerm[] | undefined {
     assert(search_pill_widget !== null);
     const search_terms = convert_search_text_to_terms();
 
@@ -100,9 +100,11 @@ function focus_search_input_at_end(): void {
     window.getSelection()!.modify("move", "forward", "line");
 }
 
-function convert_search_text_to_terms(shake_pill_if_invalid = true): NarrowTerm[] | undefined {
+function convert_search_text_to_terms(
+    shake_pill_if_invalid = true,
+): NarrowCanonicalTerm[] | undefined {
     const text_terms = Filter.parse(get_search_bar_text());
-    const narrow_terms: NarrowTerm[] = [];
+    const narrow_terms: NarrowCanonicalTerm[] = [];
     for (const term of text_terms) {
         const narrow_term = Filter.convert_suggestion_to_term(term);
         if (narrow_term === undefined) {

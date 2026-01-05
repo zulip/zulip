@@ -460,7 +460,7 @@ export class Filter {
         return terms;
     }
 
-    static convert_term_to_suggestion(term: NarrowTerm): NarrowTermSuggestion {
+    static convert_term_to_suggestion(term: NarrowCanonicalTerm): NarrowTermSuggestion {
         return {
             operator: term.operator,
             operand: term.operand,
