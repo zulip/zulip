@@ -438,6 +438,7 @@ h4.user_group_setting_subsection_title {
         font-weight: 600;
         padding: 10px;
         overflow: hidden;
+        width: 100%;
 
         & a {
             color: inherit;
@@ -456,20 +457,79 @@ h4.user_group_setting_subsection_title {
             content: "Preferences";
         }
 
-        .stream-info-title,
+        .stream-info-title {
+            display: flex;
+            justify-content: center;
+        }
+
         .user-group-info-title {
             display: block;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-left: 5px;
+        }
+
+        .stream-info-title,
+        .user-group-info-title {
             font-size: 1.5em; /* 21px at 14px/em */
             line-height: 1.25;
             font-weight: 600;
             overflow-wrap: break-word;
             overflow: hidden;
+            width: 100%;
 
             &.new-channel-members-title {
                 line-clamp: 2;
                 display: -webkit-box;
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
+                width: unset;
+            }
+
+            .selected-group-title,
+            .selected-stream-title {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+
+                .selected-stream,
+                .selected-group-name {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                .button-group {
+                    height: 1.25em;
+                    display: flex;
+
+                    .subscribe-button,
+                    .join_leave_button,
+                    #preview-stream-button {
+                        height: 100%;
+                        margin-left: 3px;
+                    }
+
+                    .icon-button {
+                        /* Equal to to font sizes for other icon buttons
+                        in the channel and group settings UI. */
+                        font-size: calc(1.2 * var(--base-font-size-px));
+                    }
+                }
+
+                .selected-group {
+                    display: flex;
+                    align-items: center;
+                    overflow: hidden;
+                }
+
+                .deactivated-user-group-icon-right {
+                    margin-right: 5px;
+                    margin-left: 3px;
+                    opacity: 0.6;
+                    font-size: var(--base-font-size-px);
+                }
             }
 
             .large-icon {
@@ -480,35 +540,6 @@ h4.user_group_setting_subsection_title {
                     font-size: 0.75em; /* 18px at 24px/em */
                 }
             }
-        }
-
-        .selected-group {
-            display: flex;
-            align-items: center;
-        }
-
-        .selected-stream-title,
-        .selected-group-name,
-        .user-group-info-title {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .selected-stream-title {
-            display: block;
-            margin: auto;
-        }
-
-        .user-group-info-title {
-            margin-left: 5px;
-        }
-
-        .deactivated-user-group-icon-right {
-            margin-right: 5px;
-            margin-left: 3px;
-            opacity: 0.6;
-            font-size: var(--base-font-size-px);
         }
     }
 }
@@ -1129,21 +1160,6 @@ h4.user_group_setting_subsection_title {
                 min-width: 5.7142em; /* 80px at 14px/em */
                 width: auto;
                 display: flex;
-            }
-        }
-
-        .button-group {
-            padding-top: 5px;
-            margin-left: auto;
-            margin-right: 18px;
-            height: var(--settings-overlay-header-button-height);
-            display: flex;
-
-            .subscribe-button,
-            .join_leave_button,
-            #preview-stream-button {
-                height: 100%;
-                margin-left: 3px;
             }
         }
     }

@@ -35,6 +35,30 @@ export let archived_status_filter_dropdown_widget: DropdownWidget;
 export let channel_creation_privacy_widget: DropdownWidget;
 let folder_filter_dropdown_widget: DropdownWidget;
 
+function set_visibility_for_archive_and_unarchive_buttons(sub: StreamSubscription): void {
+    // This is for the Archive/Unarchive button in the right panel.
+    const $archive_button = $(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
+    );
+    const $unarchive_button = $(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
+    );
+
+    if (!stream_data.can_administer_channel(sub)) {
+        $archive_button.hide();
+        $unarchive_button.hide();
+        return;
+    }
+
+    if (sub.is_archived) {
+        $archive_button.hide();
+        $unarchive_button.show();
+    } else {
+        $unarchive_button.hide();
+        $archive_button.show();
+    }
+}
+
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
     if (settings_data.using_dark_theme()) {
@@ -42,9 +66,17 @@ export function set_right_panel_title(sub: StreamSubscription): void {
     }
 
     const preview_url = hash_util.channel_url_by_user_setting(sub.stream_id);
+    const settings_sub = stream_settings_data.get_sub_for_settings(sub);
     $("#subscription_overlay .stream-info-title")
-        .html(render_selected_stream_title({sub, title_icon_color, preview_url}))
+        .html(
+            render_selected_stream_title({
+                sub: settings_sub,
+                title_icon_color,
+                preview_url,
+            }),
+        )
         .toggleClass("new-channel-members-title", false);
+    set_visibility_for_archive_and_unarchive_buttons(sub);
 }
 
 export const show_subs_pane = {
