@@ -12,6 +12,7 @@ const {
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -19,16 +20,22 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
-$(window).idle = noop;
+const idle_handler_cancel_stub = make_stub();
+const idle_handler = {cancel: idle_handler_cancel_stub.f};
+$(window).idle = () => noop;
 
 const _document = {
     hasFocus() {
         return true;
     },
+    to_$() {
+        return $("document-stub");
+    },
 };
 
 const channel = mock_esm("../src/channel");
 const electron_bridge = mock_esm("../src/electron_bridge");
+const browser_idle_detection = mock_esm("../src/browser_idle_detection");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
@@ -809,6 +816,8 @@ test("initialize", ({override, override_rewire}) => {
         func();
     });
 
+    override(browser_idle_detection, "supported", () => false);
+
     activity.initialize();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
@@ -911,4 +920,42 @@ test("check_should_redraw_new_user", ({override}) => {
     override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
+});
+
+test("browser_idle_detection", ({override}) => {
+    // Browser APIs `IdleDetector` and `navigator` handle much of the logic
+    // around switching to browser IdleDetector, so there's very little to
+    // test.
+    override(browser_idle_detection, "supported", () => false);
+    $(window).idle = () => idle_handler;
+    activity.setup_idle_handler();
+    blueslip.expect("log", "Browser idle detector not supported");
+    assert.equal(idle_handler_cancel_stub.num_calls, 0);
+
+    override(browser_idle_detection, "supported", () => true);
+
+    let on_granted;
+    override(browser_idle_detection, "init", () => ({
+        // eslint-disable-next-line unicorn/no-thenable
+        then(cb) {
+            on_granted = cb;
+        },
+    }));
+    override(browser_idle_detection, "on_permission_change", (cb) => cb());
+    $(window).idle = () => idle_handler;
+    activity.setup_idle_handler();
+    blueslip.expect("info", "Browser IdleDetector started");
+    on_granted("started");
+    assert.equal(idle_handler_cancel_stub.num_calls, 1);
+
+    on_granted({name: "NotAllowedError"});
+    assert.equal(idle_handler_cancel_stub.num_calls, 1);
+
+    blueslip.expect("error", "Browser IdleDetector failed to start: error message");
+    on_granted({name: "SomeOtherError", message: "error message"});
+    assert.equal(idle_handler_cancel_stub.num_calls, 1);
+
+    // For full coverage.
+    override(browser_idle_detection, "request_permission", noop);
+    $(document).trigger("keypress click");
 });
