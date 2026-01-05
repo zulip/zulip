@@ -595,7 +595,7 @@ def is_user_in_can_remove_subscribers_group(
 def check_stream_access_based_on_can_send_message_group(
     sender: UserProfile,
     stream: Stream,
-    user_recursive_group_ids: set[int],
+    user_group_membership_details: UserGroupMembershipDetails,
     system_groups_name_dict: dict[int, str],
 ) -> None:
     if is_cross_realm_bot_email(sender.delivery_email):
@@ -607,7 +607,12 @@ def check_stream_access_based_on_can_send_message_group(
     ):
         return
 
-    if stream.can_send_message_group_id in user_recursive_group_ids:
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(sender).values_list("id", flat=True)
+        )
+
+    if stream.can_send_message_group_id in user_group_membership_details.user_recursive_group_ids:
         return
 
     if sender.is_bot and sender.bot_owner is not None:
@@ -625,21 +630,19 @@ def access_stream_for_send_message(
     stream: Stream,
     forwarder_user_profile: UserProfile | None,
     archived_channel_notice: bool = False,
-    user_recursive_group_ids: set[int] | None = None,
+    user_group_membership_details: UserGroupMembershipDetails | None = None,
     system_groups_name_dict: dict[int, str] | None = None,
 ) -> None:
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
-    if user_recursive_group_ids is None:
-        user_recursive_group_ids = set(
-            get_recursive_membership_groups(sender).values_list("id", flat=True)
-        )
-
     if system_groups_name_dict is None:
         system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
 
+    if user_group_membership_details is None:
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+
     check_stream_access_based_on_can_send_message_group(
-        sender, stream, user_recursive_group_ids, system_groups_name_dict
+        sender, stream, user_group_membership_details, system_groups_name_dict
     )
 
     # forwarder_user_profile cases should be analyzed first, as incorrect
@@ -692,12 +695,16 @@ def access_stream_for_send_message(
         # Bots can send to any stream their owner can.
         return
 
-    if (
-        stream.history_public_to_subscribers
-        and is_user_in_groups_granting_content_access(stream, user_recursive_group_ids)
-        and not sender.is_guest
-    ):
-        return
+    if stream.history_public_to_subscribers and not sender.is_guest:
+        if user_group_membership_details.user_recursive_group_ids is None:
+            user_group_membership_details.user_recursive_group_ids = set(
+                get_recursive_membership_groups(sender).values_list("id", flat=True)
+            )
+
+        if is_user_in_groups_granting_content_access(
+            stream, user_group_membership_details.user_recursive_group_ids
+        ):
+            return
 
     # All other cases are an error.
     raise JsonableError(
@@ -709,7 +716,7 @@ def check_for_can_create_topic_group_violation(
     user_profile: UserProfile,
     stream: Stream,
     topic_name: str,
-    user_recursive_group_ids: set[int],
+    user_group_membership_details: UserGroupMembershipDetails,
     system_groups_name_dict: dict[int, str],
 ) -> None:
     if is_cross_realm_bot_email(user_profile.delivery_email):
@@ -721,7 +728,12 @@ def check_for_can_create_topic_group_violation(
     ):
         return
 
-    if stream.can_create_topic_group_id in user_recursive_group_ids:
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    if stream.can_create_topic_group_id in user_group_membership_details.user_recursive_group_ids:
         return
 
     assert stream.recipient_id is not None
