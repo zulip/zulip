@@ -66,6 +66,17 @@ async function run(): Promise<void> {
         await page.goto(`${realmUrl}/#narrow/id/${messageId}`, {
             waitUntil: "networkidle2",
         });
+        // Navigate to message and capture screenshot
+        await page.goto(`${realmUrl}/#narrow/id/${messageId}`, {
+            waitUntil: "networkidle2",
+        });
+
+        // Wait for the message list to be available
+        // eslint-disable-next-line no-undef
+        await page.waitForFunction(() => zulip_test?.current_msg_list?.id !== undefined, {
+    timeout: 10000,
+        });
+
         // eslint-disable-next-line no-undef
         const message_list_id = await page.evaluate(() => zulip_test.current_msg_list?.id);
         assert.ok(message_list_id !== undefined);
