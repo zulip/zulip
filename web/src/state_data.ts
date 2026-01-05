@@ -28,6 +28,12 @@ export type NarrowTermSuggestion = {
     negated?: boolean | undefined;
 };
 
+export type NarrowCanonicalTermSuggestion = {
+    operator: NarrowCanonicalTerm["operator"];
+    operand: string;
+    negated?: boolean | undefined;
+};
+
 export const narrow_canonical_operator_schema = z.enum([
     "", // Used for search suggestions.
     "channel",

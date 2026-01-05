@@ -11,7 +11,13 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {RESOLVED_TOPIC_PREFIX} from "./resolved_topic.ts";
-import type {NarrowOperator, NarrowTerm} from "./state_data.ts";
+import type {
+    NarrowCanonicalTerm,
+    NarrowCanonicalTermSuggestion,
+    NarrowOperator,
+    NarrowTerm,
+    NarrowTermSuggestion,
+} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
@@ -1059,12 +1065,19 @@ export function search_term_description_html(operand: string): string {
 }
 
 export function get_search_result(
-    pill_search_terms: NarrowTerm[],
-    text_search_terms: NarrowTerm[],
+    pill_search_terms: NarrowCanonicalTerm[],
+    text_search_terms_non_canonical: NarrowTermSuggestion[],
     add_current_filter = false,
 ): Suggestion[] {
     let suggestion_line: SuggestionLine;
-    text_search_terms = text_search_terms.map((term) => Filter.canonicalize_term(term));
+    const text_search_terms: NarrowCanonicalTermSuggestion[] = text_search_terms_non_canonical.map(
+        (term) =>
+            Filter.convert_suggestion_to_term(term) ?? {
+                operator: filter_util.canonicalize_operator(term.operator),
+                operand: term.operand,
+                negated: term.negated,
+            },
+    );
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
     // terms correspond to the terms for the entire query entered in the searchbox.
@@ -1072,12 +1085,12 @@ export function get_search_result(
 
     // `last` will always be a text term, not a pill term. If there is no
     // text, then `last` is this default empty term.
-    let last: NarrowTerm = {operator: "", operand: "", negated: false};
+    let last: NarrowCanonicalTermSuggestion = {operator: "", operand: "", negated: false};
     if (text_search_terms.length > 0) {
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
+    const person_suggestion_ops = ["sender", "dm", "dm-including"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1102,10 +1115,14 @@ export function get_search_result(
             all_search_terms = [...pill_search_terms, ...text_search_terms];
         }
     }
-
-    const base_terms = [...pill_search_terms, ...text_search_terms.slice(0, -1)];
+    const valid_base_text_search_terms = text_search_terms
+        .slice(0, -1)
+        .map((term) => Filter.convert_suggestion_to_term(term))
+        .filter((term) => term !== undefined);
+    const base_terms = [...pill_search_terms, ...valid_base_text_search_terms];
     const base = get_default_suggestion_line(base_terms);
     const attacher = new Attacher(base, all_search_terms.length === 0, add_current_filter);
+    const last_term = Filter.convert_suggestion_to_term(last);
 
     // Display the default first, unless it has invalid terms.
     if (last.operator === "search") {
@@ -1116,10 +1133,12 @@ export function get_search_result(
         ];
         attacher.push([...attacher.base, ...suggestion_line]);
     } else if (
+        // Check all provided terms are valid.
         all_search_terms.length > 0 &&
-        all_search_terms.every((term) => Filter.convert_suggestion_to_term(term) !== undefined)
+        last_term !== undefined &&
+        base_terms.length + 1 === all_search_terms.length
     ) {
-        suggestion_line = get_default_suggestion_line(all_search_terms);
+        suggestion_line = get_default_suggestion_line([...base_terms, last_term]);
         attacher.push(suggestion_line);
     }
 
@@ -1127,9 +1146,12 @@ export function get_search_result(
     const people_getter = make_people_getter(last);
 
     function get_people(
-        flavor: NarrowTerm["operator"],
-    ): (last: NarrowTerm, base_terms: NarrowTerm[]) => Suggestion[] {
-        return function (last: NarrowTerm, base_terms: NarrowTerm[]): Suggestion[] {
+        flavor: "dm" | "sender" | "dm-including",
+    ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
+        return function (
+            last: NarrowCanonicalTermSuggestion,
+            base_terms: NarrowCanonicalTerm[],
+        ): Suggestion[] {
             return get_person_suggestions(people_getter, last, base_terms, flavor);
         };
     }
@@ -1150,7 +1172,6 @@ export function get_search_result(
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
-        get_people("from"),
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];
@@ -1162,7 +1183,6 @@ export function get_search_result(
             get_is_filter_suggestions,
             get_channel_suggestions,
             get_people("sender"),
-            get_people("from"),
             get_topic_suggestions,
             get_has_filter_suggestions,
         ];
@@ -1181,8 +1201,8 @@ export function get_search_result(
 }
 
 export let get_suggestions = function (
-    pill_search_terms: NarrowTerm[],
-    text_search_terms: NarrowTerm[],
+    pill_search_terms: NarrowCanonicalTerm[],
+    text_search_terms: NarrowTermSuggestion[],
     add_current_filter = false,
 ): {
     strings: string[];
