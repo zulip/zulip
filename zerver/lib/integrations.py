@@ -75,7 +75,6 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "github-actions",
     "google-calendar",
     "jenkins",
-    "jira-plugin",
     "mastodon",
     "mercurial",
     "nagios",
@@ -1062,16 +1061,6 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     ),
     PythonAPIIntegration(
         "irc", ["communication"], display_name="IRC", directory_name="bridge_with_irc"
-    ),
-    PythonAPIIntegration(
-        "jira-plugin",
-        ["project-management"],
-        [FixturelessScreenshotConfigOptions(channel="jira")],
-        logo="images/integrations/logos/jira.svg",
-        secondary_line_text="(locally installed)",
-        display_name="Jira",
-        directory_name="jira",
-        legacy=True,
     ),
     PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
     PythonAPIIntegration(

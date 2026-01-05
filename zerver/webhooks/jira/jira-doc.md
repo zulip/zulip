@@ -2,12 +2,6 @@
 
 Get Zulip notifications for your Jira projects!
 
-!!! warn ""
-
-      **Note**: These instructions apply to Atlassian Cloud's hosted Jira, and Jira
-      Server versions 5.2 or greater. For older versions, you'll need our
-      [Jira plugin](./jira-plugin).
-
 {start_tabs}
 
 1. {!create-an-incoming-webhook.md!}
