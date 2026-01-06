@@ -734,9 +734,13 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     // TODO: Update the cache instead of discarding it.
                     message_list_data_cache.remove(new_filter);
                     const terms = new_filter.terms();
+                    // If all the message in the topic were moved, we don't need to
+                    // keep the current hash in the history.
+                    const remove_current_hash_from_history = event.propagate_mode === "change_all";
                     const opts = {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
+                        remove_current_hash_from_history,
                     };
                     message_view.show(terms, opts);
                 }

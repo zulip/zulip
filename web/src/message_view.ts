@@ -115,6 +115,7 @@ export function changehash(
     if (remove_current_hash_from_history) {
         switch (trigger) {
             case "retarget topic location":
+            case "stream/topic change":
                 // It is important to use `replaceState` rather than `replace`
                 // here for the `back` button to work; we don't want to use
                 // any metadata potentially stored by
