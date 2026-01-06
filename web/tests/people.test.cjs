@@ -2090,3 +2090,32 @@ run_test("fetch inaccessible user", async ({override, override_rewire}) => {
     assert.equal(inaccessible_user.user_id, 1);
     assert.equal(inaccessible_user.is_inaccessible_user, true);
 });
+
+run_test("get_by_user_id", () => {
+    initialize();
+    people.add_active_user(maria);
+
+    const user = people.get_by_user_id(maria.user_id);
+    assert.equal(user.full_name, maria.full_name);
+    assert.throws(
+        () => {
+            people.get_by_user_id(9999);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 9999",
+        },
+    );
+
+    blueslip.expect("error", "User ID: 8888 is valid but not found in people_by_user_id_dict");
+    people.add_valid_user_id(8888);
+    assert.throws(
+        () => {
+            people.get_by_user_id(8888);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 8888",
+        },
+    );
+});
