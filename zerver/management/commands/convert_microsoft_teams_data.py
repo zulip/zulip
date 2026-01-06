@@ -34,9 +34,9 @@ class Command(ZulipBaseCommand):
         )
 
         parser.add_argument(
-            "--threads",
+            "--processes",
             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-            help="Threads to use in exporting UserMessage objects in parallel",
+            help="Processes to use in exporting UserMessage objects in parallel",
         )
 
         parser.formatter_class = argparse.RawTextHelpFormatter
@@ -53,8 +53,8 @@ class Command(ZulipBaseCommand):
         if token is None:
             raise CommandError("Enter Microsoft Graph API token!")
 
-        num_threads = int(options["threads"])
-        if num_threads < 1:
+        num_processes = int(options["processes"])
+        if num_processes < 1:
             raise CommandError("You must have at least one thread.")
 
         for path in options["microsoft_teams_data_path"]:
@@ -68,7 +68,7 @@ class Command(ZulipBaseCommand):
                     path,
                     output_dir,
                     token,
-                    threads=num_threads,
+                    processes=num_processes,
                 )
             elif os.path.isfile(path) and path.endswith(".zip"):
                 raise ValueError(
