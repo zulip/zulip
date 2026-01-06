@@ -22,7 +22,7 @@
         <p class="support-section-header">Has a discount 💸</p>
     {% endif %}
     {% if demo_organization_deletion %}
-        <p class="support-section-header">Scheduled deletion on {{ demo_organization_deletion.strftime('%B %d, %Y') }} 🗑️</p>
+        <p class="support-section-header">Demo data deletion on {{ demo_organization_deletion.strftime('%B %d, %Y') }} 🗑️</p>
     {% endif %}
     {% set realm_is_scrubbed = realm_support_data[realm.id].is_scrubbed %}
     {% if realm_is_scrubbed %}
