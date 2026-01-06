@@ -21187,12 +21187,7 @@ paths:
         settings for specified users or members of user groups using
         the `target_users` parameter.
 
-        **Changes**: Added support for bulk updating the settings
-        for specified users or members of user groups in
-        Zulip 12.0 (feature level 444) using the `target_users`
-        and `skip_if_already_edited` parameters.
-
-        Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
         as we now have `web_font_size_px` and `web_line_height_percent`
         settings for more control.
 
@@ -21275,7 +21270,7 @@ paths:
                     {
                       "user_ids": [6, 8],
                       "group_ids": [24],
-                      skip_if_alread_edited: false,
+                      "skip_if_alread_edited": false,
                     }
                 full_name:
                   description: |
@@ -22011,8 +22006,6 @@ paths:
                   example: true
             encoding:
               target_users:
-                contentType: application/json
-              skip_if_already_edited:
                 contentType: application/json
               twenty_four_hour_time:
                 contentType: application/json
