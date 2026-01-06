@@ -100,4 +100,6 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
         .order_by("id")
     )
     if message_ids:
-        move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+        move_messages_to_archive(
+            message_ids, user.realm, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE
+        )

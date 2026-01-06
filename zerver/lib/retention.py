@@ -510,7 +510,7 @@ def get_realms_and_streams_for_archiving() -> list[tuple[Realm, list[Stream]]]:
 
 
 def move_messages_to_archive(
-    message_ids: list[int], realm: Realm | None = None, chunk_size: int = MESSAGE_BATCH_SIZE
+    message_ids: list[int], realm: Realm, chunk_size: int = MESSAGE_BATCH_SIZE
 ) -> None:
     """
     Callers using this to archive a large amount of messages should ideally make sure the message_ids are
