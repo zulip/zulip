@@ -416,9 +416,8 @@ def is_microsoft_teams_event_message(message: MicrosoftTeamsFieldsT) -> bool:
 
 def process_messages(
     added_teams: dict[str, TeamMetadata],
-    domain_name: str,
     channel_metadata: None | dict[str, ChannelMetadata],
-    is_private: bool,
+    domain_name: str,
     messages: list[MicrosoftTeamsFieldsT],
     microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
     realm: dict[str, Any],
@@ -580,12 +579,11 @@ def convert_messages(
             added_teams=added_teams,
             channel_metadata=microsoft_teams_channel_metadata,
             domain_name=domain_name,
-            is_private=False,
             messages=message_chunk,
             microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
-            subscriber_map=subscriber_map,
             realm=realm,
             realm_id=realm_id,
+            subscriber_map=subscriber_map,
         )
 
         create_converted_data_files(
