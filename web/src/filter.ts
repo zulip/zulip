@@ -1797,6 +1797,21 @@ export class Filter {
         );
     }
 
+    excludes_muted_users(): boolean {
+        return (
+            // Don't exclude messages sent by muted users if we're
+            // searching for a specific group or user, since the user
+            // presumably wants to see those messages.
+            !this.is_search_for_specific_group_or_user() &&
+            // not narrowed to starred messages
+            !this.has_operand("is", "starred") &&
+            // not narrowed to negated home messages
+            !this.has_negated_operand("in", "home") &&
+            // not narrowed to muted users messages
+            !this.has_operand("is", "muted")
+        );
+    }
+
     try_adjusting_for_moved_with_target(message?: Message): void {
         // If we have the message named in a `with` operator
         // available, either via parameter or message_store,
