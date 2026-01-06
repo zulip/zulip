@@ -62,6 +62,12 @@ class ChannelMetadata:
     team_id: str
 
 
+@dataclass
+class MessageConversionResult:
+    zerver_messages: list[ZerverFieldsT]
+    zerver_usermessages: list[ZerverFieldsT]
+
+
 AddedTeamsT: TypeAlias = dict[str, TeamMetadata]
 TeamIdToZulipRecipientIdT: TypeAlias = dict[str, int]
 MicrosoftTeamsUserIdToZulipUserIdT: TypeAlias = dict[str, int]
@@ -418,7 +424,7 @@ def process_messages(
     realm: dict[str, Any],
     realm_id: int,
     subscriber_map: dict[int, set[int]],
-) -> tuple[list[ZerverFieldsT], list[ZerverFieldsT]]:
+) -> MessageConversionResult:
     zerver_usermessage: list[ZerverFieldsT] = []
     zerver_messages: list[ZerverFieldsT] = []
 
@@ -504,9 +510,9 @@ def process_messages(
             num_skipped,
         )
 
-    return (
-        zerver_messages,
-        zerver_usermessage,
+    return MessageConversionResult(
+        zerver_messages=zerver_messages,
+        zerver_usermessages=zerver_usermessage,
     )
 
 
@@ -570,7 +576,7 @@ def convert_messages(
 
     dump_file_id = 1
     for message_chunk in get_batched_export_message_data(message_file_paths, chunk_size):
-        (zerver_messages, zerver_usermessage) = process_messages(
+        conversion_result = process_messages(
             added_teams=added_teams,
             channel_metadata=microsoft_teams_channel_metadata,
             domain_name=domain_name,
@@ -583,7 +589,10 @@ def convert_messages(
         )
 
         create_converted_data_files(
-            dict(zerver_message=zerver_messages, zerver_usermessage=zerver_usermessage),
+            dict(
+                zerver_message=conversion_result.zerver_messages,
+                zerver_usermessage=conversion_result.zerver_usermessages,
+            ),
             output_dir,
             f"/messages-{dump_file_id:06}.json",
         )
