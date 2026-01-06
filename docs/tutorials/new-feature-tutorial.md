@@ -26,6 +26,18 @@ organized. And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
 the additional complexity involved in sending messages.
 
+> **Pro-tip: Finding code with `git grep`**
+>
+> The fastest way to find where a feature is implemented is often to search for a specific string you see in the user interface (UI).
+>
+> For example, if you want to find the code for a button labeled **"Deactivate account"**, you can search for that exact string:
+>
+> ```bash
+> git grep "Deactivate account"
+> ```
+>
+> This will usually point you directly to the HTML template or JavaScript file where that text is defined, giving you a starting point for your changes.
+
 ## General process
 
 ### Files impacted
