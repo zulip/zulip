@@ -160,6 +160,7 @@ function create_and_update_message_list(
     restore_rendered_list: boolean;
 } {
     const excludes_muted_topics = filter.excludes_muted_topics();
+    const excludes_muted_users = filter.excludes_muted_users();
 
     // Check if we already have a rendered message list for the `filter`.
     // TODO: If we add a message list other than `is_in_home` to be save as rendered,
@@ -189,6 +190,7 @@ function create_and_update_message_list(
         let msg_data = new MessageListData({
             filter,
             excludes_muted_topics,
+            excludes_muted_users,
         });
 
         const original_id_info = {...id_info};
@@ -214,6 +216,7 @@ function create_and_update_message_list(
                 msg_data = new MessageListData({
                     filter,
                     excludes_muted_topics,
+                    excludes_muted_users,
                 });
             }
         }
@@ -228,6 +231,7 @@ function create_and_update_message_list(
             msg_data = new MessageListData({
                 filter,
                 excludes_muted_topics,
+                excludes_muted_users,
             });
         }
 
@@ -986,6 +990,7 @@ function navigate_to_anchor_message(opts: {
         const msg_list_data = new MessageListData({
             filter: message_lists.current.data.filter,
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+            excludes_muted_users: message_lists.current.data.excludes_muted_users,
         });
         load_local_messages(msg_list_data, all_messages_data);
         // It is still possible that `all_messages_data` doesn't have any messages
@@ -999,6 +1004,7 @@ function navigate_to_anchor_message(opts: {
     const msg_list_data = new MessageListData({
         filter: message_lists.current.data.filter,
         excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+        excludes_muted_users: message_lists.current.data.excludes_muted_users,
     });
 
     message_fetch.load_messages_around_anchor(

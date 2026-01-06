@@ -246,10 +246,7 @@ export class MessageListData {
     }
 
     messages_filtered_for_user_mutes(messages: Message[]): Message[] {
-        // Don't exclude messages sent by muted users if we're
-        // searching for a specific group or user, since the user
-        // presumably wants to see those messages.
-        if (!this.excludes_muted_users || this.filter.is_search_for_specific_group_or_user()) {
+        if (!this.excludes_muted_users) {
             return [...messages];
         }
 
