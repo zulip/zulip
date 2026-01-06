@@ -1,10 +1,8 @@
-from collections import defaultdict
 from collections.abc import Iterable
 from typing import TypedDict
 
-from zerver.actions.message_flags import do_clear_mobile_push_notifications_for_ids
 from zerver.lib import retention
-from zerver.lib.retention import _process_grouped_messages_deletion, move_messages_to_archive
+from zerver.lib.retention import move_messages_to_archive
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -56,40 +54,13 @@ def do_delete_messages(
     When the Recipient.PERSONAL is no longer a case to consider, this
     restriction can be deleted.
     """
-    message_ids = []
-    private_messages_by_recipient: defaultdict[int, list[Message]] = defaultdict(list)
-    stream_messages_by_recipient_and_topic: defaultdict[tuple[int, str], list[Message]] = (
-        defaultdict(list)
+    message_ids = [message.id for message in messages]
+    move_messages_to_archive(
+        message_ids,
+        realm=realm,
+        chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE,
+        acting_user=acting_user,
     )
-    stream_by_recipient_id = {}
-    for message in messages:
-        message_ids.append(message.id)
-        if message.is_channel_message:
-            recipient_id = message.recipient_id
-            # topics are case-insensitive.
-            topic_name = message.topic_name().lower()
-            stream_messages_by_recipient_and_topic[(recipient_id, topic_name)].append(message)
-        else:
-            recipient_id = message.recipient.id
-            private_messages_by_recipient[recipient_id].append(message)
-
-    do_clear_mobile_push_notifications_for_ids(user_profile_ids=None, message_ids=message_ids)
-
-    for recipient_id, grouped_messages in sorted(private_messages_by_recipient.items()):
-        _process_grouped_messages_deletion(
-            realm, grouped_messages, stream=None, topic=None, acting_user=acting_user
-        )
-
-    for (
-        (recipient_id, topic_name),
-        grouped_messages,
-    ) in sorted(stream_messages_by_recipient_and_topic.items()):
-        if recipient_id not in stream_by_recipient_id:
-            stream_by_recipient_id[recipient_id] = Stream.objects.get(recipient_id=recipient_id)
-        stream = stream_by_recipient_id[recipient_id]
-        _process_grouped_messages_deletion(
-            realm, grouped_messages, stream=stream, topic=topic_name, acting_user=acting_user
-        )
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
