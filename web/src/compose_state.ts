@@ -246,14 +246,12 @@ export function private_message_recipient_emails(value?: string): string | undef
     return compose_pm_pill.get_emails();
 }
 
-export function private_message_recipient_ids(): number[];
-export function private_message_recipient_ids(value: number[]): undefined;
-export function private_message_recipient_ids(value?: number[]): number[] | undefined {
-    if (value === undefined) {
-        return compose_pm_pill.get_user_ids();
-    }
+export function private_message_recipient_ids(): number[] {
+    return compose_pm_pill.get_user_ids();
+}
+
+export function set_private_message_recipient_ids(value: number[]): void {
     compose_pm_pill.set_from_user_ids(value);
-    return undefined;
 }
 
 export function has_message_content(): boolean {

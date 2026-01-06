@@ -430,7 +430,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     }
     compose_recipient.update_topic_displayed_text(opts.topic);
 
-    compose_state.private_message_recipient_ids(opts.private_message_recipient_ids);
+    compose_state.set_private_message_recipient_ids(opts.private_message_recipient_ids);
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
