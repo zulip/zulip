@@ -8,6 +8,7 @@ import ZulipNote from "../../components/ZulipNote.astro";
 import CreateADemoOrganization from "../include/_CreateADemoOrganization.mdx";
 import DemoOrgsConversion from "../include/_DemoOrgsConversion.mdx";
 import DemoOrgsIntro from "../include/_DemoOrgsIntro.mdx";
+import ZulipCloudOnly from "../include/_ZulipCloudOnly.mdx";
 
 It only takes a minute to create a new organization on Zulip Cloud, or on a
 self-hosted Zulip server you've set up.
@@ -15,6 +16,8 @@ self-hosted Zulip server you've set up.
 <DemoOrgsIntro />
 
 ## Create a demo organization
+
+<ZulipCloudOnly />
 
 <DemoOrgsConversion />
 
