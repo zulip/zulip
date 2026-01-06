@@ -23,7 +23,7 @@ const base_em_px = 16;
 const settings_overlay_sidebar_collapse_breakpoint = 800;
 
 // Breakpoint for hiding message action buttons
-const message_actions_hide_width = 730;
+const message_actions_hide_width = 600;
 
 export const media_breakpoints = {
     xs_min: xs + "px",
