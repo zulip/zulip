@@ -361,6 +361,10 @@ img.screenshot {
     width: 33%;
 }
 
+.portico-container:not(.help) h1 {
+    font-weight: 300;
+}
+
 label.text-error {
     display: inline;
 
