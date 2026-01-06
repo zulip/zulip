@@ -78,6 +78,19 @@ PAGE_BUILD_STATUS_EMOJI = {
     "building": ":orange_circle:",
 }
 
+# Mapping of GitHub pull request review states to emojis
+PR_REVIEW_STATE_EMOJI = {
+    "approved": ":green_circle:",
+    "changes_requested": ":red_circle:",
+    "commented": ":speech_balloon:",
+}
+
+# Mapping of GitHub pull request close actions to emojis
+PR_CLOSE_ACTION_EMOJI = {
+    "merged": ":purple_circle:",
+    "closed without merge": ":white_circle:",
+}
+
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
@@ -167,13 +180,15 @@ def get_closed_pull_request_body(helper: Helper) -> str:
     include_title = helper.include_title
     pull_request = payload["pull_request"]
     action = "merged" if pull_request["merged"].tame(check_bool) else "closed without merge"
-    return get_pull_request_event_message(
+    emoji = PR_CLOSE_ACTION_EMOJI.get(action, "")
+    message = get_pull_request_event_message(
         user_name=get_sender_name(payload),
         action=action,
         url=pull_request["html_url"].tame(check_string),
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
     )
+    return f"{emoji} {message}" if emoji else message
 
 
 def get_membership_body(helper: Helper) -> str:
@@ -652,11 +667,13 @@ def get_pull_request_ready_for_review_body(helper: Helper) -> str:
 def get_pull_request_review_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
+    review_state = payload["review"]["state"].tame(check_string)
+    emoji = PR_REVIEW_STATE_EMOJI.get(review_state, "")
     title = "for #{} {}".format(
         payload["pull_request"]["number"].tame(check_int),
         payload["pull_request"]["title"].tame(check_string),
     )
-    return get_pull_request_event_message(
+    message = get_pull_request_event_message(
         user_name=get_sender_name(payload),
         action="submitted",
         url=payload["review"]["html_url"].tame(check_string),
@@ -664,6 +681,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         title=title if include_title else None,
         message=payload["review"]["body"].tame(check_none_or(check_string)),
     )
+    return f"{emoji} {message}" if emoji else message
 
 
 def get_pull_request_review_comment_body(helper: Helper) -> str:
