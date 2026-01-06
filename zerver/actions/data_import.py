@@ -1,4 +1,6 @@
+import glob
 import logging
+import os
 import shutil
 import tempfile
 from typing import Any
@@ -18,7 +20,7 @@ from zerver.models.prereg_users import PreregistrationRealm
 from zerver.models.realms import Realm
 from zerver.models.users import RealmUserDefault, UserProfile, get_user_by_delivery_email
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("zulip.registration")
 
 
 def import_slack_data(event: dict[str, Any]) -> None:
@@ -32,6 +34,12 @@ def import_slack_data(event: dict[str, Any]) -> None:
         prefix=f"import-{preregistration_realm.id}-converted-",
         dir=settings.IMPORT_TMPFILE_DIRECTORY,
     )
+    logger.info(
+        "(%s) Starting Slack import from %s / %s",
+        string_id,
+        event["filename"],
+        event["slack_access_token"],
+    )
 
     try:
         with tempfile.NamedTemporaryFile(
@@ -41,13 +49,30 @@ def import_slack_data(event: dict[str, Any]) -> None:
         ) as fh:
             save_attachment_contents(event["filename"], fh)
             fh.flush()
+            logger.info(
+                "(%s) Wrote %d bytes of %s to %s", string_id, fh.tell(), event["filename"], fh.name
+            )
             do_convert_zipfile(
                 fh.name,
                 output_dir,
                 event["slack_access_token"],
             )
+            attachment_size = sum(
+                os.path.getsize(os.path.join(dirpath, filename))
+                for dirpath, dirnames, filenames in os.walk(f"{output_dir}/uploads/")
+                for filename in filenames
+            )
+            message_count = len(glob.glob(f"{output_dir}/messages-*.json")) * 1000
+            logger.info(
+                "(%s) Completed conversion into %s (%d MB attachments, <= %d messages)",
+                string_id,
+                output_dir,
+                attachment_size / 1024 / 1024,
+                message_count,
+            )
 
             realm = do_import_realm(output_dir, string_id)
+            logger.info("(%s) Completed import, performing post-import steps", string_id)
             realm.org_type = preregistration_realm.org_type
             realm.default_language = preregistration_realm.default_language
             realm.save()
@@ -88,6 +113,7 @@ def import_slack_data(event: dict[str, Any]) -> None:
             preregistration_realm.created_realm = realm
             preregistration_realm.data_import_metadata["is_import_work_queued"] = False
             preregistration_realm.save()
+            logger.info("(%s) All done!", string_id)
     except Exception as e:
         logger.exception(e)
         try:

@@ -346,6 +346,7 @@ def registration_helper(
             prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
             prereg_realm.save(update_fields=["data_import_metadata"])
 
+            logger.info("(%s) Enqueueing Slack import", prereg_realm.string_id)
             queue_json_publish_rollback_unsafe(
                 "deferred_work",
                 {
@@ -423,6 +424,9 @@ def registration_helper(
                         check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
                     except Exception as e:
                         context["slack_access_token_validation_error"] = str(e)
+                        logger.info(
+                            "(%s) Slack token failed validation: %s", prereg_realm.string_id, str(e)
+                        )
                         return TemplateResponse(
                             request,
                             "zerver/slack_import.html",
