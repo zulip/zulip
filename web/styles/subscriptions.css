@@ -489,6 +489,17 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.no-groups-to-show-message {
+    text-align: center;
+}
+
+.user-groups-top-align {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
 .two-pane-settings-container {
     display: grid;
     grid-template:
@@ -573,7 +584,7 @@ h4.user_group_setting_subsection_title {
 
     .left .no-streams-to-show,
     .left .no-groups-to-show {
-        margin-top: calc(45vh - 75px);
+        margin-top: 40px;
     }
 
     .right .nothing-selected {
