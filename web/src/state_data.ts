@@ -377,6 +377,7 @@ const custom_profile_field_types_schema = z.object({
     LONG_TEXT: z.object({id: z.number(), name: z.string()}),
     DATE: z.object({id: z.number(), name: z.string()}),
     SELECT: z.object({id: z.number(), name: z.string()}),
+    SELECT_MULTIPLE: z.object({id: z.number(), name: z.string()}),
     URL: z.object({id: z.number(), name: z.string()}),
     EXTERNAL_ACCOUNT: z.object({id: z.number(), name: z.string()}),
     USER: z.object({id: z.number(), name: z.string()}),

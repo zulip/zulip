@@ -2361,3 +2361,17 @@ label.preferences-radio-choice-label {
         }
     }
 }
+
+/* Custom Profile Fields - Multi Select */
+.custom_user_field_value_multiple_container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.custom_user_field_value_multiple_container .profile-field-checkbox {
+    margin-right: 15px;
+}
+
+.custom_user_field_value_multiple_container .rendered-checkbox {
+    margin-right: 4px;
+}

@@ -35,6 +35,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
         [all_field_types.LONG_TEXT.id, "text"],
         [all_field_types.SHORT_TEXT.id, "text"],
         [all_field_types.SELECT.id, "select"],
+        [all_field_types.SELECT_MULTIPLE.id, "select"],
         [all_field_types.USER.id, "user"],
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
@@ -48,18 +49,44 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             rendered_value: "",
         };
         const editable_by_user = current_user.is_admin || field.editable_by_user;
-        const is_select_field = field.type === all_field_types.SELECT.id;
+        const is_select_field =
+            field.type === all_field_types.SELECT.id ||
+            field.type === all_field_types.SELECT_MULTIPLE.id;
         const field_choices = [];
 
         if (is_select_field) {
-            const field_choice_dict = settings_components.select_field_data_schema.parse(
-                JSON.parse(field.field_data),
-            );
+            let field_choice_dict: Record<string, {text: string; order: string}> = {};
+            try {
+                field_choice_dict = settings_components.select_field_data_schema.parse(
+                    JSON.parse(field.field_data),
+                );
+            } catch {
+                field_choice_dict = {};
+            }
+            const current_val = field_value.value;
+            const selected_values = new Set<string>();
+            if (field.type === all_field_types.SELECT_MULTIPLE.id) {
+                let parsed: unknown;
+                // We defensively parse the value to ensure the profile UI doesn't crash
+                // if the database contains malformed JSON or data that doesn't match
+                // the expected schema (array of strings).
+                try {
+                    parsed = JSON.parse(current_val);
+                } catch {
+                    parsed = [];
+                }
+                const result = z.array(z.string()).safeParse(parsed);
+                if (result.success) {
+                    for (const item of result.data) {
+                        selected_values.add(item);
+                    }
+                }
+            }
             for (const [value, {order, text}] of Object.entries(field_choice_dict)) {
                 field_choices[Number(order)] = {
                     value,
                     text,
-                    selected: value === field_value.value,
+                    selected: selected_values.has(value),
                 };
             }
         }
@@ -73,7 +100,8 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             is_date_field: field.type === all_field_types.DATE.id,
             is_url_field: field.type === all_field_types.URL.id,
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
-            is_select_field,
+            is_select_field: field.type === all_field_types.SELECT.id,
+            is_select_multiple_field: field.type === all_field_types.SELECT_MULTIPLE.id,
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
             is_empty_required_field: field.required && !field_value.value,
@@ -422,4 +450,23 @@ export function initialize_custom_pronouns_type_fields(element_id: string): void
                 },
             });
         });
+}
+
+export function initialize_custom_select_multiple_type_fields(element_id: string): void {
+    $(element_id).on("change", ".custom_user_field_value_multiple", function (this: HTMLElement) {
+        const $input_elem = $(this);
+        const field_id = Number.parseInt($input_elem.attr("name")!, 10);
+        const $container = $input_elem.closest(".custom_user_field_value_multiple_container");
+        const values: string[] = [];
+        $container.find("input:checked").each(function (this: HTMLElement) {
+            const val = $(this).val();
+            if (val !== undefined) {
+                values.push(String(val));
+            }
+        });
+        update_user_custom_profile_fields(
+            [{id: field_id, value: JSON.stringify(values)}],
+            channel.patch,
+        );
+    });
 }

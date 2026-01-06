@@ -2,11 +2,12 @@ import itertools
 import re
 import unicodedata
 from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from email.headerregistry import Address
 from operator import itemgetter
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
+import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
@@ -520,6 +521,19 @@ def validate_user_custom_profile_field(
         # Put an assertion so that mypy doesn't complain.
         assert field_data is not None
         return choice_field_validator(var_name, field_data, value)
+    elif field_type == CustomProfileField.SELECT_MULTIPLE:
+        val_to_validate = value
+        if isinstance(value, str):
+            try:
+                val_to_validate = orjson.loads(value)
+            except orjson.JSONDecodeError:
+                raise ValidationError(_("Invalid value (not valid JSON)."))
+        multiselect_validator = cast(
+            Callable[[str, str, object], Any],
+            CustomProfileField.SELECT_FIELD_VALIDATORS[field_type],
+        )
+        multiselect_validator(var_name, field.field_data, val_to_validate)
+        return value
     elif field_type == CustomProfileField.USER:
         user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
         return user_field_validator(realm_id, value, False)
