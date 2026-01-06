@@ -17,9 +17,9 @@ const LONG_TEXT_ID = 2;
 const USER_FIELD_ID = 6;
 
 const SHORT_TEXT_NAME = "Short text";
-const SELECT_NAME = "Select";
+const SELECT_NAME = "Dropdown";
 const EXTERNAL_ACCOUNT_NAME = "External account";
-const LONG_TEXT_NAME = "Long text";
+const LONG_TEXT_NAME = "Paragraph";
 const USER_FIELD_NAME = "Person";
 
 const custom_profile_field_types = {

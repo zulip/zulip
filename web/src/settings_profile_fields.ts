@@ -305,9 +305,13 @@ function update_form_for_field_type_selection(): void {
 }
 
 function open_custom_profile_field_creation_form_modal(): void {
+    const sorted_custom_profile_field_types = Object.values(
+        realm.custom_profile_field_types,
+    ).toSorted((a, b) => util.strcmp(a.name, b.name));
+
     const html_body = render_add_new_custom_profile_field_form({
         realm_default_external_accounts: realm.realm_default_external_accounts,
-        custom_profile_field_types: realm.custom_profile_field_types,
+        custom_profile_field_types: sorted_custom_profile_field_types,
     });
 
     function create_profile_field(): void {

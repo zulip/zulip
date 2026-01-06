@@ -1545,12 +1545,12 @@ class Migration(migrations.Migration):
                     models.PositiveSmallIntegerField(
                         choices=[
                             (4, "Date"),
+                            (3, "Dropdown"),
                             (7, "External account"),
                             (5, "Link"),
-                            (3, "List of options"),
+                            (2, "Paragraph"),
                             (8, "Pronouns"),
-                            (2, "Text (long)"),
-                            (1, "Text (short)"),
+                            (1, "Short text"),
                             (6, "Users"),
                         ],
                         default=1,
