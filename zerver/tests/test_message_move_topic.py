@@ -1492,6 +1492,43 @@ class MessageMoveTopicTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "edited")
         self.assert_length(messages, 3)
 
+    def test_move_notice_uses_latest_topic_link(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+
+        msg_ids = [
+            self.send_stream_message(user_profile, stream.name, topic_name="test", content="First"),
+            self.send_stream_message(
+                user_profile, stream.name, topic_name="test", content="Second"
+            ),
+            self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third"),
+        ]
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_ids[0]),
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 1)
+        notice = messages[0]
+
+        max_moved_id = max(msg_ids)
+        # The automated notice should render the topic link using a permalink with the latest
+        # moved message id ("with/<id>") so users land in the right conversation.
+        rendered_notice = notice.rendered_content
+        assert rendered_notice is not None
+        self.assertIn(f"/with/{max_moved_id}", rendered_notice)
+
     def test_notify_both_topics(self) -> None:
         user_profile = self.example_user("iago")
         self.login("iago")

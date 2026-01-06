@@ -1563,7 +1563,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(60), self.assert_memcached_count(17):
+        with self.assert_database_query_count(59), self.assert_memcached_count(17):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
