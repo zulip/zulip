@@ -126,7 +126,7 @@ def move_rows(
 def run_archiving(
     query: SQL,
     type: int,
-    realm: Realm | None = None,
+    realm: Realm,
     chunk_size: int | None = MESSAGE_BATCH_SIZE,
     **kwargs: Composable,
 ) -> int:
