@@ -364,12 +364,12 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_page_build_msg(self) -> None:
         expected_message = (
-            "GitHub Pages build, triggered by baxterthehacker, has finished building."
+            ":green_circle: GitHub Pages build, triggered by baxterthehacker, has finished building."
         )
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
     def test_page_build_errored_msg(self) -> None:
-        expected_message = "GitHub Pages build, triggered by baxterthehacker, has failed: \n~~~ quote\nSomething went wrong.\n~~~."
+        expected_message = ":red_circle: GitHub Pages build, triggered by baxterthehacker, has failed: \n~~~ quote\nSomething went wrong.\n~~~."
         self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:

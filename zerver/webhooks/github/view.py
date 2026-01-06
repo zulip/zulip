@@ -71,6 +71,13 @@ STATUS_STATE_EMOJI = {
     "pending": ":yellow_circle:",
 }
 
+# Mapping of GitHub Pages build status to emojis
+PAGE_BUILD_STATUS_EMOJI = {
+    "built": ":green_circle:",
+    "errored": ":red_circle:",
+    "building": ":orange_circle:",
+}
+
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
@@ -556,6 +563,7 @@ def get_page_build_body(helper: Helper) -> str:
     payload = helper.payload
     build = payload["build"]
     status = build["status"].tame(check_string)
+    emoji = PAGE_BUILD_STATUS_EMOJI.get(status, "")
     actions = {
         "null": "has yet to be built",
         "building": "is being built",
@@ -569,9 +577,10 @@ def get_page_build_body(helper: Helper) -> str:
             CONTENT_MESSAGE_TEMPLATE.format(message=build["error"]["message"].tame(check_string)),
         )
 
-    return "GitHub Pages build, triggered by {}, {}.".format(
-        payload["build"]["pusher"]["login"].tame(check_string),
-        action,
+    return "{emoji}GitHub Pages build, triggered by {pusher}, {action}.".format(
+        emoji=f"{emoji} " if emoji else "",
+        pusher=payload["build"]["pusher"]["login"].tame(check_string),
+        action=action,
     )
 
 
