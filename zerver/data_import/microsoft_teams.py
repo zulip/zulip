@@ -594,7 +594,7 @@ def do_convert_directory(
     microsoft_teams_dir: str,
     output_dir: str,
     microsoft_graph_api_token: str,
-    threads: int = 6,
+    processes: int = 6,
 ) -> None:
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):  # nocoverage
