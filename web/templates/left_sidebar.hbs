@@ -1,5 +1,5 @@
-<div class="left-sidebar zoom-out" id="left-sidebar" role="navigation">
-    <div id="left-sidebar-search" class="zoom-in-hide">
+<div class="left-sidebar" id="left-sidebar" role="navigation">
+    <div id="left-sidebar-search">
         <div class="input-wrapper-for-tooltip tippy-zulip-delayed-tooltip" data-tooltip-template-id="filter-left-sidebar-tooltip-template">
             {{#> components/input_wrapper input_type="filter-input" custom_classes="left-sidebar-search-section" icon="search" input_button_icon="close"}}
                 <input type="text" class="input-element left-sidebar-search-input" autocomplete="off" placeholder="{{t 'Filter left sidebar' }}" />
@@ -59,10 +59,7 @@
         <div class="direct-message-section-bottom-divider-container">
             <hr class="direct-message-section-bottom-divider"/>
         </div>
-        <div id="streams_list" class="zoom-out">
-            <div id="topics_header">
-                <a class="show-all-streams trigger-click-on-enter" tabindex="0">{{t 'Back to channels' }}</a> <span class="unread_count quiet-count"></span>
-            </div>
+        <div id="streams_list">
             <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
                 {{#unless is_guest }}
@@ -108,7 +105,7 @@
                 </div>
                 <div id="modal-direct-messages-list" class="scrolling_list" data-simplebar data-simplebar-tab-index="-1"></div>
             </div>
-            {{!-- TODO: Put "more topics modal here --}}
+            <div id="more-topics-modal"></div>
         </div>
     </div>
 </div>

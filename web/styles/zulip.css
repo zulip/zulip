@@ -1850,7 +1850,9 @@ body:not(.spectator-view) {
     }
 
     .app-main .column-right.expanded .right-sidebar,
-    .app-main .column-left.expanded .left-sidebar {
+    .app-main .column-left.expanded .left-sidebar,
+    .app-main #left-sidebar.zoom-in-topics #left-sidebar-modal,
+    .app-main #left-sidebar.zoom-in-conversations #left-sidebar-modal {
         width: 100vw;
         max-width: 100%;
     }
