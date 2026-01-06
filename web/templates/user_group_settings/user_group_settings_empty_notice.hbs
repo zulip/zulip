@@ -3,26 +3,14 @@
         {{empty_user_group_list_message}}
         {{#if all_groups_tab}}
             {{#if can_create_user_groups}}
-                {{#unless is_filtered}}
-                    <button type="button" class="action-button action-button-quiet-brand">
-                        <span class="action-button-label">{{t "Create user group"}}</span>
-                    </button>
-                {{/unless}}
+                <button type="button" class="action-button action-button-quiet-brand">
+                    <span class="action-button-label">{{t "Create user group"}}</span>
+                </button>
             {{/if}}
         {{else}}
-            {{#if organization_has_zero_groups}}
-                {{#if can_create_user_groups}}
-                    <button type="button" class="action-button action-button-quiet-brand">
-                        <span class="action-button-label">{{t "Create user group"}}</span>
-                    </button>
-                {{/if}}
-            {{else}}
-                {{#unless is_filtered}}
-                    <button type="button" class="action-button action-button-quiet-neutral">
-                        <span class="action-button-label">{{t "View all groups"}}</span>
-                    </button>
-                {{/unless}}
-            {{/if}}
+            <button type="button" class="action-button action-button-quiet-neutral">
+                <span class="action-button-label">{{t "View all groups"}}</span>
+            </button>
         {{/if}}
     </span>
 </div>
