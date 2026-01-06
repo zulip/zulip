@@ -213,7 +213,7 @@ class Integration:
             doc = self.DEFAULT_DOC_PATH.format(name=self.name)
         self.doc = doc
 
-    def is_enabled(self) -> bool:
+    def is_enabled_in_catalog(self) -> bool:
         return True
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:

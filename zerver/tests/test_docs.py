@@ -473,6 +473,8 @@ class DocPageTest(ZulipTestCase):
 
         bot_subdirs = [integration.name for integration in BOT_INTEGRATIONS]
         for integration in INTEGRATIONS:
+            if not INTEGRATIONS[integration].is_enabled_in_catalog():
+                continue
             url = f"/integrations/{integration}"
             response = self._test(url, expected_strings=[])
             doc = response.content.decode("utf-8")
