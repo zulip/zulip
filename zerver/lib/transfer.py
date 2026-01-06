@@ -49,7 +49,11 @@ def _transfer_avatar_to_s3(user: UserProfile) -> None:
 
 
 def transfer_avatars_to_s3(processes: int) -> None:
-    run_parallel(_transfer_avatar_to_s3, UserProfile.objects.all(), processes)
+    run_parallel(
+        _transfer_avatar_to_s3,
+        UserProfile.objects.exclude(avatar_source=UserProfile.AVATAR_FROM_GRAVATAR),
+        processes,
+    )
 
 
 def _transfer_message_files_to_s3(attachment: Attachment) -> None:
