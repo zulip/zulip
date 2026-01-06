@@ -11,6 +11,7 @@ from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
+from typing_extensions import override
 
 from zerver.lib.storage import static_path
 from zerver.lib.validator import check_bool, check_string
@@ -457,6 +458,12 @@ class EmbeddedBotIntegration(Integration):
         kwargs["client_name"] = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         kwargs["fallback_logo_path"] = self.ZULIP_LOGO_STATIC_PATH_PNG
         super().__init__(name, *args, **kwargs)
+
+    @override
+    def is_enabled_in_catalog(self) -> bool:
+        # Only integrations with docs can be part of the catalog
+        # Embedded bots do not have docs
+        return False
 
 
 EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
@@ -1111,12 +1118,18 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
 
 
 INTEGRATIONS: dict[str, Integration] = {
-    integration.name: integration
+    (
+        # To avoid namespace collisions, use a prefix for embedded bots
+        f"embedded_bot_{integration.name}"
+        if isinstance(integration, EmbeddedBotIntegration)
+        else integration.name
+    ): integration
     for integration in chain(
         INCOMING_WEBHOOK_INTEGRATIONS,
         PYTHON_API_INTEGRATIONS,
         BOT_INTEGRATIONS,
         HUBOT_INTEGRATIONS,
+        EMBEDDED_BOTS,
         OTHER_INTEGRATIONS,
     )
 }
