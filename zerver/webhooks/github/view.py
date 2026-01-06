@@ -63,6 +63,14 @@ DEPLOYMENT_STATUS_EMOJI = {
     "pending": ":yellow_circle:",
 }
 
+# Mapping of GitHub commit status states to emojis
+STATUS_STATE_EMOJI = {
+    "success": ":green_circle:",
+    "failure": ":red_circle:",
+    "error": ":red_circle:",
+    "pending": ":yellow_circle:",
+}
+
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
@@ -569,17 +577,20 @@ def get_page_build_body(helper: Helper) -> str:
 
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
+    state = payload["state"].tame(check_string)
+    emoji = STATUS_STATE_EMOJI.get(state, "")
     if payload["target_url"]:
         status = "[{}]({})".format(
-            payload["state"].tame(check_string),
+            state,
             payload["target_url"].tame(check_string),
         )
     else:
-        status = payload["state"].tame(check_string)
-    return "[{}]({}) changed its status to {}.".format(
-        get_short_sha(payload["sha"].tame(check_string)),
-        payload["commit"]["html_url"].tame(check_string),
-        status,
+        status = state
+    return "{emoji}[{sha}]({commit_url}) changed its status to {status}.".format(
+        emoji=f"{emoji} " if emoji else "",
+        sha=get_short_sha(payload["sha"].tame(check_string)),
+        commit_url=payload["commit"]["html_url"].tame(check_string),
+        status=status,
     )
 
 

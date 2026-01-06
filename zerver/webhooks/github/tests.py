@@ -373,11 +373,15 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:
-        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
+        expected_message = ":green_circle: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
         self.check_webhook("status", TOPIC_REPO, expected_message)
 
+    def test_status_failure_msg(self) -> None:
+        expected_message = ":red_circle: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to failure."
+        self.check_webhook("status__failure", TOPIC_REPO, expected_message)
+
     def test_status_with_target_url_msg(self) -> None:
-        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
+        expected_message = ":green_circle: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
