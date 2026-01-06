@@ -172,6 +172,20 @@ function toggle_picker_popover(target: HTMLElement): void {
         {
             theme: "popover-menu",
             placement: "top",
+            popperOptions: {
+                modifiers: [
+                    {
+                        // The placement is set to top by default, and we use
+                        // bottom and left configurations as fallback, which is
+                        // useful for scenarios when opening the picker while editing
+                        // messages near the top of the viewport.
+                        name: "flip",
+                        options: {
+                            fallbackPlacements: ["bottom", "left"],
+                        },
+                    },
+                ],
+            },
             onCreate(instance) {
                 const provider = network.get_provider();
                 instance.setContent(
