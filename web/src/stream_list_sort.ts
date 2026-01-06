@@ -41,7 +41,7 @@ function current_section_ids_for_streams(): Map<number, StreamListSection> {
     const map = new Map<number, StreamListSection>();
     for (const section of current_sections) {
         for (const stream_id of [
-            ...section.streams,
+            ...section.default_visible_streams,
             ...section.muted_streams,
             ...section.inactive_streams,
         ]) {
@@ -106,7 +106,7 @@ export type StreamListSection = {
     id: string;
     folder_id: number | null;
     section_title: string;
-    streams: number[];
+    default_visible_streams: number[];
     muted_streams: number[];
     inactive_streams: number[];
     order?: number; // Only used for folder sections
@@ -125,7 +125,7 @@ export function sort_groups(
         id: "pinned-streams",
         folder_id: null,
         section_title: $t({defaultMessage: "PINNED CHANNELS"}),
-        streams: [],
+        default_visible_streams: [],
         muted_streams: [],
         inactive_streams: [],
     };
@@ -133,7 +133,7 @@ export function sort_groups(
         id: "normal-streams",
         folder_id: null,
         section_title: $t({defaultMessage: "CHANNELS"}),
-        streams: [],
+        default_visible_streams: [],
         muted_streams: [],
         inactive_streams: [],
     };
@@ -233,7 +233,7 @@ export function sort_groups(
             } else {
                 // Inactive channels aren't treated differently when pinned,
                 // since the user wants chose to put them in the pinned section.
-                pinned_section.streams.push(stream_id);
+                pinned_section.default_visible_streams.push(stream_id);
             }
         } else if (user_settings.web_left_sidebar_show_channel_folders && sub.folder_id) {
             const folder = channel_folders.get_channel_folder_by_id(sub.folder_id);
@@ -243,7 +243,7 @@ export function sort_groups(
                     id: sub.folder_id.toString(),
                     folder_id: sub.folder_id,
                     section_title: folder.name.toUpperCase(),
-                    streams: [],
+                    default_visible_streams: [],
                     muted_streams: [],
                     inactive_streams: [],
                     order: folder.order,
@@ -255,7 +255,7 @@ export function sort_groups(
             } else if (sub.is_muted) {
                 section.muted_streams.push(stream_id);
             } else {
-                section.streams.push(stream_id);
+                section.default_visible_streams.push(stream_id);
             }
         } else {
             if (!has_recent_activity(sub)) {
@@ -263,7 +263,7 @@ export function sort_groups(
             } else if (sub.is_muted) {
                 normal_section.muted_streams.push(stream_id);
             } else {
-                normal_section.streams.push(stream_id);
+                normal_section.default_visible_streams.push(stream_id);
             }
         }
     }
@@ -276,14 +276,18 @@ export function sort_groups(
 
     // Demote folders where all channels are muted or inactive.
     const regular_folder_sections = sort_by_order(
-        [...folder_sections.values()].filter((section) => section.streams.length > 0),
+        [...folder_sections.values()].filter(
+            (section) => section.default_visible_streams.length > 0,
+        ),
     );
     const demoted_folder_sections = sort_by_order(
-        [...folder_sections.values()].filter((section) => section.streams.length === 0),
+        [...folder_sections.values()].filter(
+            (section) => section.default_visible_streams.length === 0,
+        ),
     );
 
     if (
-        pinned_section.streams.length > 0 ||
+        pinned_section.default_visible_streams.length > 0 ||
         pinned_section.muted_streams.length > 0 ||
         pinned_section.inactive_streams.length > 0 ||
         folder_sections.size > 0 ||
@@ -309,7 +313,7 @@ export function sort_groups(
     ];
 
     for (const section of new_sections) {
-        section.streams.sort(compare_function);
+        section.default_visible_streams.sort(compare_function);
         section.muted_streams.sort(compare_function);
         section.inactive_streams.sort(compare_function);
     }
@@ -321,7 +325,10 @@ export function sort_groups(
             return (
                 new_section.id === current_section?.id &&
                 new_section.section_title === current_section.section_title &&
-                util.array_compare(new_section.streams, current_section.streams) &&
+                util.array_compare(
+                    new_section.default_visible_streams,
+                    current_section.default_visible_streams,
+                ) &&
                 util.array_compare(new_section.muted_streams, current_section.muted_streams) &&
                 util.array_compare(new_section.inactive_streams, current_section.inactive_streams)
             );
@@ -331,7 +338,7 @@ export function sort_groups(
         first_render_completed = true;
         current_sections = new_sections;
         all_rows = current_sections.flatMap((section) => [
-            ...section.streams,
+            ...section.default_visible_streams,
             ...section.muted_streams,
             ...section.inactive_streams,
         ]);
