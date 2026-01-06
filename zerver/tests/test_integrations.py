@@ -78,7 +78,11 @@ class IntegrationsTestCase(ZulipTestCase):
             integration = Integration("alertmanager", ["misc"])
 
     def test_no_missing_doc_screenshot_config(self) -> None:
-        integration_names = {integration.name for integration in INTEGRATIONS.values()}
+        integration_names = {
+            integration.name
+            for integration in INTEGRATIONS.values()
+            if integration.is_enabled_in_catalog()
+        }
         integrations_with_screenshot_configs = {
             integration_name
             for integration_name, integration in INTEGRATIONS.items()
