@@ -5,7 +5,7 @@ type Block = h.Block;
 
 type ConditionalBlockSpec = {bool: BoolVar; block: Block; source_format?: h.SourceFormat};
 
-class IfBlock {
+class IfBlock implements h.CustomElement {
     block: Block;
     bool: BoolVar;
     source_format: h.SourceFormat;
@@ -34,7 +34,7 @@ class IfBlock {
     }
 }
 
-class UnlessBlock {
+class UnlessBlock implements h.CustomElement {
     block: Block;
     bool: BoolVar;
     source_format: h.SourceFormat;
@@ -69,7 +69,7 @@ type IfElseIfElseBlockSpec = {
     else_block: Block;
 };
 
-export class IfElseIfElseBlock {
+export class IfElseIfElseBlock implements h.CustomElement {
     if_bool: BoolVar;
     else_if_bool: BoolVar;
 
@@ -112,28 +112,16 @@ export class IfElseIfElseBlock {
     }
 }
 
-export function if_bool_then_block(info: ConditionalBlockSpec): h.CustomElement {
-    const block = new IfBlock(info);
-    return h.CustomElement.create({
-        to_source: (indent) => block.to_source(indent),
-        to_dom: () => block.to_dom(),
-    });
+export function if_bool_then_block(info: ConditionalBlockSpec): IfBlock {
+    return new IfBlock(info);
 }
 
-export function unless_bool_then_block(info: ConditionalBlockSpec): h.CustomElement {
-    const block = new UnlessBlock(info);
-    return h.CustomElement.create({
-        to_source: (indent) => block.to_source(indent),
-        to_dom: () => block.to_dom(),
-    });
+export function unless_bool_then_block(info: ConditionalBlockSpec): UnlessBlock {
+    return new UnlessBlock(info);
 }
 
 export function if_bool_then_x_else_if_bool_then_y_else_z(
     info: IfElseIfElseBlockSpec,
-): h.CustomElement {
-    const block = new IfElseIfElseBlock(info);
-    return h.CustomElement.create({
-        to_source: (indent) => block.to_source(indent),
-        to_dom: () => block.to_dom(),
-    });
+): IfElseIfElseBlock {
+    return new IfElseIfElseBlock(info);
 }

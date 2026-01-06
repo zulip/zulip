@@ -23,6 +23,11 @@ const void_elements = new Set([
 
 export type SourceFormat = "inline" | "block" | "strange_block";
 
+export type CustomElement = {
+    to_source: (indent: string) => string;
+    to_dom: () => Node;
+};
+
 type TextElement = ParenthesizedTag | TextVar | TranslatedText | InputTextTag;
 
 type Element = Tag | Comment | SorryBlock | Partial | TextElement | CustomElement;
@@ -462,34 +467,6 @@ export class Attr {
 
     to_source(): string {
         return `${this.k}="${this.v.to_source()}"`;
-    }
-}
-
-export class CustomElement {
-    custom_to_source: (indent: string) => string;
-    custom_to_dom: () => Node;
-
-    constructor(info: {custom_to_source: (indent: string) => string; custom_to_dom: () => Node}) {
-        this.custom_to_source = info.custom_to_source;
-        this.custom_to_dom = info.custom_to_dom;
-    }
-
-    static create(info: {
-        to_source: (indent: string) => string;
-        to_dom: () => Node;
-    }): CustomElement {
-        return new CustomElement({
-            custom_to_source: info.to_source,
-            custom_to_dom: info.to_dom,
-        });
-    }
-
-    to_source(indent: string): string {
-        return this.custom_to_source(indent);
-    }
-
-    to_dom(): Node {
-        return this.custom_to_dom();
     }
 }
 
