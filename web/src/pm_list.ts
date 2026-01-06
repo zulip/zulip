@@ -329,8 +329,6 @@ function zoom_in(): void {
     ui_util.disable_left_sidebar_search();
     update_private_messages();
     $("#left-sidebar").removeClass("zoom-out").addClass("zoom-in");
-    $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
-    $("#streams_list").hide();
     $("#direct-messages-modal").toggleClass("no-display", false);
 
     const $filter = $(".direct-messages-list-filter").expectOne();
@@ -342,8 +340,6 @@ function zoom_out(): void {
     ui_util.enable_left_sidebar_search();
     clear_search();
     $("#left-sidebar").removeClass("zoom-in").addClass("zoom-out");
-    $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
-    $("#streams_list").show();
     $("#direct-messages-modal").toggleClass("no-display", true);
 }
 
