@@ -323,6 +323,7 @@ details summary::-webkit-details-marker {
 
     .top-menu-submenu-list {
         margin: 0;
+        padding-left: 0;
         list-style: none;
 
         .top-menu-submenu-list-item {
