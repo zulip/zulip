@@ -1696,6 +1696,4 @@ export function initialize(): void {
             show_check_icon: true,
         });
     });
-
-    bot_helper.initialize_zuliprc_clipboard_handlers();
 }

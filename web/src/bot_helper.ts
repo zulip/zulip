@@ -6,8 +6,10 @@ import * as z from "zod/mini";
 import render_bot_api_key_details from "../templates/settings/bot_api_key_details.hbs";
 
 import * as bot_data from "./bot_data.ts";
+import type {Bot} from "./bot_data.ts";
 import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
@@ -111,21 +113,16 @@ function initialize_api_key_clipboard_handlers(): void {
     });
 }
 
-export function initialize_zuliprc_clipboard_handlers(): void {
-    new ClipboardJS("#copy-zuliprc-config", {
-        text(trigger) {
-            const $bot_info = $(trigger).closest("#bot-edit-form");
-            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-            const bot = bot_data.get(bot_id);
-            assert(bot !== undefined);
-            const data = generate_zuliprc_content(bot);
-            return data;
-        },
-    }).on("success", (e) => {
-        assert(e.trigger instanceof HTMLElement);
-        show_copied_confirmation(e.trigger, {
-            show_check_icon: true,
-        });
+async function copy_zuliprc_content(bot: Bot, api_key: string): Promise<void> {
+    const zuliprc_content = generate_zuliprc_content({...bot, api_key});
+
+    return new Promise((resolve) => {
+        function handle_copy_event(e: ClipboardEvent): void {
+            e.clipboardData?.setData("text/plain", zuliprc_content);
+            e.preventDefault();
+            resolve();
+        }
+        clipboard_handler.execute_copy(handle_copy_event, zuliprc_content);
     });
 }
 
@@ -210,6 +207,23 @@ export function initialize_bot_click_handlers(): void {
             const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
             $zuliprc_link.attr("href", generate_zuliprc_url(bot_id, api_key));
             $zuliprc_link[0]?.click();
+        })();
+    });
+
+    $("body").on("click", "#copy-zuliprc-config", function (this: HTMLElement) {
+        void (async () => {
+            const $bot_info = $(this).closest("#bot-edit-form");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+            const bot = bot_data.get(bot_id)!;
+            const api_key = await fetch_bot_api_key(bot_id, $("#bot-edit-form-error"), $(this));
+            if (!api_key) {
+                return;
+            }
+
+            await copy_zuliprc_content(bot, api_key);
+            show_copied_confirmation(this, {
+                show_check_icon: true,
+            });
         })();
     });
 }
