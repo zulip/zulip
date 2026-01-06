@@ -188,6 +188,51 @@ export class BuddyList extends BuddyListConf {
         const total_human_subscribers_count = (): number =>
             this.render_data.total_human_subscribers_count;
 
+        async function set_tooltip_text(instance: tippy.Instance): Promise<void> {
+            let tooltip_text;
+            const stream_sub = narrow_state.stream_sub();
+            if (stream_sub) {
+                // If we need to fetch the full data, show the total subscriber
+                // count in the meantime.
+                if (!peer_data.has_full_subscriber_data(stream_sub.stream_id)) {
+                    instance.setContent(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {# total subscriber} other {# total subscribers}}",
+                            },
+                            {N: total_human_subscribers_count()},
+                        ),
+                    );
+                }
+                const users_matching_view_count = await non_participant_users_matching_view_count();
+                // This means a request failed and we don't know the count. So we can
+                // leave the text as the total subscriber count.
+                if (users_matching_view_count === null) {
+                    return;
+                }
+                tooltip_text = $t(
+                    {
+                        defaultMessage:
+                            "{N, plural, one {# other subscriber} other {# other subscribers}}",
+                    },
+                    {N: users_matching_view_count},
+                );
+            } else {
+                // This will happen immediately because we don't need
+                // to fetch subscriber data.
+                const users_matching_view_count = await non_participant_users_matching_view_count();
+                assert(users_matching_view_count !== null);
+                tooltip_text = $t(
+                    {
+                        defaultMessage: "{N, plural, one {# participant} other {# participants}}",
+                    },
+                    {N: users_matching_view_count},
+                );
+            }
+            instance.setContent(tooltip_text);
+        }
+
         $("#right-sidebar").on(
             "mouseenter",
             ".buddy-list-heading",
@@ -233,53 +278,8 @@ export class BuddyList extends BuddyListConf {
                             );
                             instance.setContent(tooltip_text);
                         } else if (elem_id === "buddy-list-users-matching-view-section-heading") {
-                            void (async () => {
-                                let tooltip_text;
-                                const stream_sub = narrow_state.stream_sub();
-                                if (stream_sub) {
-                                    // If we need to fetch the full data, show the total subscriber
-                                    // count in the meantime.
-                                    if (!peer_data.has_full_subscriber_data(stream_sub.stream_id)) {
-                                        instance.setContent(
-                                            $t(
-                                                {
-                                                    defaultMessage:
-                                                        "{N, plural, one {# total subscriber} other {# total subscribers}}",
-                                                },
-                                                {N: total_human_subscribers_count()},
-                                            ),
-                                        );
-                                    }
-                                    const users_matching_view_count =
-                                        await non_participant_users_matching_view_count();
-                                    // This means a request failed and we don't know the count. So we can
-                                    // leave the text as the total subscriber count.
-                                    if (users_matching_view_count === null) {
-                                        return;
-                                    }
-                                    tooltip_text = $t(
-                                        {
-                                            defaultMessage:
-                                                "{N, plural, one {# other subscriber} other {# other subscribers}}",
-                                        },
-                                        {N: users_matching_view_count},
-                                    );
-                                } else {
-                                    // This will happen immediately because we don't need
-                                    // to fetch subscriber data.
-                                    const users_matching_view_count =
-                                        await non_participant_users_matching_view_count();
-                                    assert(users_matching_view_count !== null);
-                                    tooltip_text = $t(
-                                        {
-                                            defaultMessage:
-                                                "{N, plural, one {# participant} other {# participants}}",
-                                        },
-                                        {N: users_matching_view_count},
-                                    );
-                                }
-                                instance.setContent(tooltip_text);
-                            })();
+                            // Set the tooltip without awaiting for the async function to return.
+                            void set_tooltip_text(instance);
                         } else {
                             const other_users_count =
                                 people.get_active_human_count() - total_human_subscribers_count();
