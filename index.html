@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zulip Poll Widget - Multi-User Sync Showcase</title>
+    <style>
+        body {
+            font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #app {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .user-container {
+            flex: 1;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        h2 { color: #666; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .widget-target {
+            min-height: 300px;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+        }
+        .status-bar {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e8f4fd;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #2b7bb9;
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+        window.DEVELOPMENT = false;
+        window.ZULIP_VERSION = "showcase-demo";
+    </script>
+
+    <div id="page-params" data-params='{"is_admin": false, "realm_uri": "http://localhost:9991", "full_name": "Showcase User", "user_id": 1, "realm_poll_widgets_enabled": true}'></div>
+
+    <h1>Zulip Poll Widget Showcase</h1>
+    <p>Simulating real-time state synchronization between two users without a server.</p>
+
+    <div id="app">
+        <div class="user-container">
+            <h2>Alice (User 9)</h2>
+            <div id="alice-widget" class="widget-target"></div>
+        </div>
+
+        <div class="user-container">
+            <h2>Bob (User 10)</h2>
+            <div id="bob-widget" class="widget-target"></div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <strong>Status:</strong> Virtual Server Active. Events are broadcasted locally between widget instances.
+    </div>
+
+    <script src="dist/bundle.js"></script>
+</body>
+</html>

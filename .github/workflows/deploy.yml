@@ -1,0 +1,39 @@
+name: Deploy Showcase
+on:
+  push:
+    branches: [poll-widget-showcase]
+permissions:
+  contents: write
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Deps
+        run: npm install
+      - name: Bundle Showcase
+        run: |
+          npx esbuild web/src/showcase.ts \
+          --bundle \
+          --outfile=dist/bundle.js \
+          --loader:.ts=ts \
+          --loader:.hbs=text \
+          --loader:.svg=dataurl \
+          --loader:.png=dataurl \
+          --platform=browser \
+          --format=iife \
+          --define:global=window \
+          --define:process.env.NODE_ENV='"production"' \
+          --alias:jquery=./web/src/jquery-shim.js \
+          --log-level=error
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
