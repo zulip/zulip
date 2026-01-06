@@ -98,6 +98,13 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "A field with that label already exists.")
 
+        data["name"] = "Phone"
+        data["hint"] = "Contact number"
+        data["field_type"] = CustomProfileField.LONG_TEXT
+        data["use_for_user_matching"] = "true"
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "Field type not supported for use for user matching.")
+
     def test_create_select_field(self) -> None:
         self.login("iago")
         data: dict[str, str | int] = {}
@@ -391,6 +398,16 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(result, "Must be an organization administrator")
         result = self.client_delete("/json/realm/profile_fields/1")
         self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_create_field_use_for_user_matching(self) -> None:
+        self.login("iago")
+        data = {
+            "name": "use for user matching",
+            "field_type": CustomProfileField.SHORT_TEXT,
+            "use_for_user_matching": "true",
+        }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
 
 
 class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
@@ -702,6 +719,59 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         self.assert_json_error(
             result, "Only 2 custom profile fields can be displayed in the profile summary."
+        )
+
+    def test_update_use_for_user_matching(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "use_for_user_matching": "invalid value",
+            },
+        )
+        msg = "use_for_user_matching is not valid JSON"
+        self.assert_json_error(result, msg)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "use_for_user_matching": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertEqual(field.use_for_user_matching, True)
+
+        # Not sending use_for_user_matching should not set it to false.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "Number",
+            },
+        )
+
+        field.refresh_from_db()
+        self.assertEqual(field.name, "Number")
+        self.assertEqual(field.use_for_user_matching, True)
+        self.assert_json_success(result)
+
+        # Setting use_for_user_matching as true for field types which cannot have that value set to true.
+        field = CustomProfileField.objects.get(name="Biography", realm=realm)
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "use_for_user_matching": "true",
+            },
+        )
+
+        self.assert_json_error(
+            result,
+            "Field type not supported for use for user matching.",
         )
 
     def test_update_field_data(self) -> None:

@@ -2063,6 +2063,7 @@ paths:
                                         "order": 8,
                                         "required": true,
                                         "editable_by_user": true,
+                                        "use_for_user_matching": true,
                                       },
                                     ],
                                   "id": 0,
@@ -13781,6 +13782,7 @@ paths:
                               "order": 8,
                               "required": true,
                               "editable_by_user": true,
+                              "use_for_user_matching": true,
                             },
                             {
                               "id": 9,
@@ -13929,6 +13931,17 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 296).
                   type: boolean
                   example: true
+                use_for_user_matching:
+                  description: |
+                    Whether this custom profile field should be used to match users in typeahead
+                    suggestions. Only allowed for Short Text and External Account
+                    [profile field types](/help/custom-profile-fields#profile-field-types).
+
+                    This field is only included when its value is `true`.
+
+                    **Changes**: New in Zulip 12.0 (feature level 455).
+                  type: boolean
+                  example: false
               required:
                 - field_type
             encoding:
@@ -13941,6 +13954,8 @@ paths:
               required:
                 contentType: application/json
               editable_by_user:
+                contentType: application/json
+              use_for_user_matching:
                 contentType: application/json
       responses:
         "200":
@@ -25871,6 +25886,17 @@ components:
 
             **Changes**: New in Zulip 10.0 (feature level 296).
           default: true
+        use_for_user_matching:
+          type: boolean
+          description: |
+            Whether this custom profile field should be used to match users in typeahead
+            suggestions. Only allowed for Short Text and External Account
+            [profile field types](/help/custom-profile-fields#profile-field-types).
+
+            This field is only included when its value is `true`.
+
+            **Changes**: New in Zulip 12.0 (feature level 455).
+          default: false
       required:
         - id
         - type
