@@ -10,6 +10,7 @@ import render_settings_checkbox from "../templates/settings/settings_checkbox.hb
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
+import render_selected_group_title from "../templates/user_group_settings/selected_group_title.hbs";
 import render_stream_group_permission_settings from "../templates/user_group_settings/stream_group_permission_settings.hbs";
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_permission_settings from "../templates/user_group_settings/user_group_permission_settings.hbs";
@@ -1548,8 +1549,8 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title").text(
-                user_groups.get_display_group_name(group.name),
+            $("#groups_overlay .user-group-info-title").html(
+                render_selected_group_title({group_name: group.name}),
             );
         }
 

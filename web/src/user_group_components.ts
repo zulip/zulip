@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_selected_group_title from "../templates/user_group_settings/selected_group_title.hbs";
+
 import {$t_html} from "./i18n.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -35,7 +37,7 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .settings").show();
         set_active_group_id(group.id);
         const group_name = user_groups.get_display_group_name(group.name);
-        $("#groups_overlay .user-group-info-title").text(group_name);
+        $("#groups_overlay .user-group-info-title").html(render_selected_group_title({group_name}));
         if (group.deactivated) {
             $("#groups_overlay .deactivated-user-group-icon-right").show();
         } else {

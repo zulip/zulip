@@ -482,7 +482,13 @@ h4.user_group_setting_subsection_title {
             }
         }
 
+        .selected-group {
+            display: flex;
+            align-items: center;
+        }
+
         .selected-stream-title,
+        .selected-group-name,
         .user-group-info-title {
             overflow: hidden;
             text-overflow: ellipsis;
@@ -502,6 +508,7 @@ h4.user_group_setting_subsection_title {
             margin-right: 5px;
             margin-left: 3px;
             opacity: 0.6;
+            font-size: var(--base-font-size-px);
         }
     }
 }
