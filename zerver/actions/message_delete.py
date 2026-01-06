@@ -4,8 +4,7 @@ from typing import TypedDict
 
 from zerver.actions.message_flags import do_clear_mobile_push_notifications_for_ids
 from zerver.lib import retention
-from zerver.lib.message import event_recipient_ids_for_action_on_messages
-from zerver.lib.retention import move_messages_to_archive
+from zerver.lib.retention import _process_grouped_messages_deletion, move_messages_to_archive
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -45,56 +44,6 @@ def check_update_first_message_id(
         name=stream.name,
     )
     send_event_on_commit(realm, stream_event, users_to_notify)
-
-
-def _process_grouped_messages_deletion(
-    realm: Realm,
-    grouped_messages: list[Message],
-    *,
-    stream: Stream | None,
-    topic: str | None,
-    acting_user: UserProfile | None,
-) -> None:
-    """
-    Helper for do_delete_messages. Should not be called directly otherwise.
-    """
-
-    message_ids = [message.id for message in grouped_messages]
-    if not message_ids:
-        return  # nocoverage
-
-    event: DeleteMessagesEvent = {
-        "type": "delete_message",
-        "message_ids": sorted(message_ids),
-    }
-    if stream is None:
-        assert topic is None
-        message_type = "private"
-        archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
-    else:
-        assert topic is not None
-        message_type = "stream"
-        event["stream_id"] = stream.id
-        event["topic"] = topic
-        archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
-    event["message_type"] = message_type
-
-    # We exclude long-term idle users, since they by definition have no active clients.
-    users_to_notify = event_recipient_ids_for_action_on_messages(
-        message_ids,
-        is_channel_message=message_type == "stream",
-        channel=stream if message_type == "stream" else None,
-    )
-
-    if acting_user is not None:
-        # Always send event to the user who deleted the message.
-        users_to_notify.add(acting_user.id)
-
-    move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
-    if stream is not None:
-        check_update_first_message_id(realm, stream, message_ids, users_to_notify)
-
-    send_event_on_commit(realm, event, users_to_notify)
 
 
 def do_delete_messages(
