@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 455**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`POST
+  /realm/profile_fields`](/api/create-custom-profile-field), [`GET
+  /realm/profile_fields`](/api/get-custom-profile-fields) Added a new
+  parameter `use_for_user_matching` to custom profile field objects,
+  which indicates whether this custom profile field should be used to
+  match users in typeahead.
+
 **Feature level 454**
 
 - [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)

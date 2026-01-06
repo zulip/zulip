@@ -603,6 +603,7 @@ export function filter_and_sort_mentions(
         want_broadcast: !is_silent,
         filter_pills: false,
         filter_groups_for_mention: !is_silent,
+        allow_custom_profile_field_matching: true,
         ...opts,
     }).map((item) => ({
         ...item,
@@ -648,6 +649,7 @@ type PersonSuggestionOpts = {
     topic: string | undefined;
     filter_groups_for_dm?: boolean;
     filter_groups_for_mention?: boolean;
+    allow_custom_profile_field_matching?: boolean;
 };
 
 function filter_persons<T>(
@@ -845,7 +847,13 @@ export function get_person_suggestions(
         );
 
         return suggestion_items.filter((item) =>
-            typeahead_helper.query_matches_person(query, item, should_remove_diacritics),
+            typeahead_helper.query_matches_person(
+                query,
+                item,
+                should_remove_diacritics,
+                undefined,
+                opts.allow_custom_profile_field_matching,
+            ),
         );
     };
 
