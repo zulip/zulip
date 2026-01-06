@@ -192,7 +192,7 @@ test("no_subscribed_streams", () => {
                 inactive_streams: [],
                 muted_streams: [],
                 section_title: "translated: PINNED CHANNELS",
-                streams: [],
+                default_visible_streams: [],
             },
             {
                 id: "normal-streams",
@@ -200,7 +200,7 @@ test("no_subscribed_streams", () => {
                 inactive_streams: [],
                 muted_streams: [],
                 section_title: "translated: CHANNELS",
-                streams: [],
+                default_visible_streams: [],
             },
         ],
         same_as_before: sorted.same_as_before,
@@ -214,11 +214,11 @@ test("basics", ({override}) => {
     let sorted_sections = sort_groups("").sections;
     const pinned = sorted_sections[0];
     assert.deepEqual(pinned.id, "pinned-streams");
-    assert.deepEqual(pinned.streams, [scalene.stream_id]);
+    assert.deepEqual(pinned.default_visible_streams, [scalene.stream_id]);
     assert.deepEqual(pinned.muted_streams, [muted_pinned.stream_id]);
     const normal = sorted_sections[1];
     assert.deepEqual(normal.id, "normal-streams");
-    assert.deepEqual(normal.streams, [
+    assert.deepEqual(normal.default_visible_streams, [
         clarinet.stream_id,
         fast_tortoise.stream_id,
         stream_hyphen_underscore_slash_colon.stream_id,
@@ -251,80 +251,90 @@ test("basics", ({override}) => {
     sorted_sections = sort_groups("s").sections;
     assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].id, "pinned-streams");
-    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
-    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [
+        stream_hyphen_underscore_slash_colon.stream_id,
+    ]);
 
     // Test searching entire word, case-insensitive
     sorted_sections = sort_groups("PnEuMoNiA").sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
-    assert.deepEqual(sorted_sections[1].streams, []);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, []);
     assert.deepEqual(sorted_sections[1].inactive_streams, [pneumonia.stream_id]);
 
     // Test searching part of word
     sorted_sections = sort_groups("tortoise").sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
-    assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     // Test searching stream with spaces
     sorted_sections = sort_groups("fast t").sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
-    assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
 
     // Test searching part of stream name with non space word separators
     sorted_sections = sort_groups("hyphen").sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
-    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [
+        stream_hyphen_underscore_slash_colon.stream_id,
+    ]);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     sorted_sections = sort_groups("hyphen_underscore").sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
-    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [
+        stream_hyphen_underscore_slash_colon.stream_id,
+    ]);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     sorted_sections = sort_groups("colon").sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
-    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [
+        stream_hyphen_underscore_slash_colon.stream_id,
+    ]);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     sorted_sections = sort_groups("underscore").sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
-    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [
+        stream_hyphen_underscore_slash_colon.stream_id,
+    ]);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
 
     // Only show pinned channels
     sorted_sections = sort_groups("pinned").sections;
     assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].id, "pinned-streams");
-    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].id, "normal-streams");
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
-    assert.deepEqual(sorted_sections[1].streams, []);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, []);
 
     override(user_settings, "web_left_sidebar_show_channel_folders", true);
     sorted_sections = sort_groups("").sections;
@@ -343,19 +353,21 @@ test("basics", ({override}) => {
     // If both `pin_to_top` is true and folder_id is set, as in
     // the channel `scalene`, then the channel ends up in the pinned
     // section and `folder_id` is ignored.
-    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
     assert.deepEqual(sorted_sections[0].muted_streams, [muted_pinned.stream_id]);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
-    assert.deepEqual(sorted_sections[1].streams, [stream_hyphen_underscore_slash_colon.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [
+        stream_hyphen_underscore_slash_colon.stream_id,
+    ]);
     assert.deepEqual(sorted_sections[1].muted_streams, []);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
-    assert.deepEqual(sorted_sections[2].streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[2].default_visible_streams, [fast_tortoise.stream_id]);
     assert.deepEqual(sorted_sections[2].muted_streams, [muted_active.stream_id]);
     assert.deepEqual(sorted_sections[2].inactive_streams, [pneumonia.stream_id]);
-    assert.deepEqual(sorted_sections[3].streams, [clarinet.stream_id]);
+    assert.deepEqual(sorted_sections[3].default_visible_streams, [clarinet.stream_id]);
     assert.deepEqual(sorted_sections[3].muted_streams, []);
     assert.deepEqual(sorted_sections[3].inactive_streams, []);
-    assert.deepEqual(sorted_sections[4].streams, []);
+    assert.deepEqual(sorted_sections[4].default_visible_streams, []);
     assert.deepEqual(sorted_sections[4].muted_streams, [muted.stream_id]);
     assert.deepEqual(sorted_sections[4].inactive_streams, [inactive.stream_id]);
 
@@ -375,10 +387,10 @@ test("basics", ({override}) => {
     sorted_sections = sort_groups("other").sections;
     assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].id, "pinned-streams");
-    assert.deepEqual(sorted_sections[0].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[0].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].section_title, "translated: OTHER");
-    assert.deepEqual(sorted_sections[1].streams, [clarinet.stream_id]);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [clarinet.stream_id]);
     assert.deepEqual(sorted_sections[1].muted_streams, []);
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
 });
@@ -431,7 +443,7 @@ test("current_section_id_for_stream", ({override}) => {
             inactive_streams: [],
             muted_streams: [8],
             section_title: "translated: PINNED CHANNELS",
-            streams: [1],
+            default_visible_streams: [1],
         },
         {
             folder_id: 2,
@@ -440,7 +452,7 @@ test("current_section_id_for_stream", ({override}) => {
             muted_streams: [],
             order: 2,
             section_title: "BACKEND",
-            streams: [6],
+            default_visible_streams: [6],
         },
         {
             folder_id: 1,
@@ -449,7 +461,7 @@ test("current_section_id_for_stream", ({override}) => {
             muted_streams: [7],
             order: 3,
             section_title: "FRONTEND",
-            streams: [2],
+            default_visible_streams: [2],
         },
         {
             folder_id: null,
@@ -457,7 +469,7 @@ test("current_section_id_for_stream", ({override}) => {
             inactive_streams: [],
             muted_streams: [],
             section_title: "translated: OTHER",
-            streams: [4],
+            default_visible_streams: [4],
         },
         {
             folder_id: 3,
@@ -466,7 +478,7 @@ test("current_section_id_for_stream", ({override}) => {
             muted_streams: [10],
             order: 1,
             section_title: "EMPTY",
-            streams: [],
+            default_visible_streams: [],
         },
     ]);
 });
@@ -491,15 +503,15 @@ test("left_sidebar_search", ({override}) => {
     // The topic matches the search query, so the stream appears in the search result.
     // Since `pin_to_top` is true for scalene, it should be in that section.
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, [scalene.stream_id]);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
 
     sorted_sections = stream_list_sort.sort_groups(
         stream_data.subscribed_stream_ids().filter((id) => id !== scalene.stream_id),
         "any",
     ).sections;
     assert.deepEqual(sorted_sections.length, 2);
-    assert.deepEqual(sorted_sections[0].streams, []);
-    assert.deepEqual(sorted_sections[1].streams, []);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, []);
 
     // Testing the same for custom sections.
     override(user_settings, "web_left_sidebar_show_channel_folders", true);
@@ -508,9 +520,9 @@ test("left_sidebar_search", ({override}) => {
     // didn't make it to here.
     assert.deepEqual(sorted_sections.length, 3);
     assert.deepEqual(sorted_sections[1].folder_id, fast_tortoise.folder_id);
-    assert.deepEqual(sorted_sections[1].streams, [fast_tortoise.stream_id]);
-    assert.deepEqual(sorted_sections[0].streams, []);
-    assert.deepEqual(sorted_sections[2].streams, []);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
+    assert.deepEqual(sorted_sections[2].default_visible_streams, []);
 });
 
 test("filter inactives", ({override}) => {

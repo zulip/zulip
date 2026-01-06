@@ -369,12 +369,12 @@ export function build_stream_list(force_rerender: boolean): void {
             $(stream_list_section_container_html(section, can_create_streams)),
         );
         const is_empty =
-            section.streams.length === 0 &&
+            section.default_visible_streams.length === 0 &&
             section.muted_streams.length === 0 &&
             section.inactive_streams.length === 0;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
-        for (const stream_id of section.streams) {
+        for (const stream_id of section.default_visible_streams) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
         const muted_and_inactive_streams = [...section.muted_streams, ...section.inactive_streams];
@@ -415,7 +415,7 @@ export function build_stream_list(force_rerender: boolean): void {
         // we collapse it, since there's nothing to easily see. But don't do this during
         // search, since sections can enter that state temporarily.
         if (!searching()) {
-            if (!is_empty && section.streams.length === 0) {
+            if (!is_empty && section.default_visible_streams.length === 0) {
                 collapsed_sections.add(section.id);
                 sections_with_only_inactive_or_muted.add(section.id);
             } else {
@@ -1602,7 +1602,11 @@ export function get_sorted_channel_ids_for_next_unread_navigation(): {
     // Get sorted section ids.
     const sections = stream_list_sort.get_current_sections().map((section) => ({
         id: section.id,
-        channels: [...section.streams, ...section.muted_streams, ...section.inactive_streams],
+        channels: [
+            ...section.default_visible_streams,
+            ...section.muted_streams,
+            ...section.inactive_streams,
+        ],
         is_collapsed: collapsed_sections.has(section.id),
     }));
 
