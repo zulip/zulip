@@ -68,7 +68,10 @@ export function initialize(): void {
         );
         assert(topic_a_tag instanceof HTMLAnchorElement);
         const topic_url = topic_a_tag.href;
-        void clipboard_handler.copy_link_to_clipboard(topic_url).then(() => {
+
+        void (async () => {
+            await clipboard_handler.copy_link_to_clipboard(topic_url);
+
             // After copying successfully, change the tooltip text to "Copied!".
             const tippy_reference: tippy.ReferenceElement | undefined = $copy_button.get(0);
             const tippy_instance: tippy.Instance | undefined = tippy_reference!._tippy;
@@ -79,7 +82,7 @@ export function initialize(): void {
                     tippy_instance.hide();
                 }, 1000);
             }
-        });
+        })();
     });
 
     popover_menus.register_popover_menu(
