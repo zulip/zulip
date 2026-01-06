@@ -26,7 +26,7 @@
             {{#if this.rendered_value}}
             <span class="value rendered_markdown {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>
             {{else}}
-            <span class="value {{#if ../for_user_card_popover}}tippy-zulip-tooltip"{{/if}} data-tippy-content="{{this.name}}">{{this.value}}</span>
+            <span class="value {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">{{this.value}}</span>
             {{/if}}
         {{/if}}
     </li>
