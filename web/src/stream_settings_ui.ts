@@ -1238,7 +1238,11 @@ export function do_open_create_stream(folder_id?: number): void {
 
 export function open_create_stream(): void {
     do_open_create_stream();
-    browser_history.update("#channels/new");
+    if (window.location.hash === "#channels/all") {
+        browser_history.update("#channels/all/new");
+    } else {
+        browser_history.update("#channels/new");
+    }
 }
 
 export function initialize(): void {
