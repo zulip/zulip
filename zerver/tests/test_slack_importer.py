@@ -3267,7 +3267,7 @@ To Do
             download_and_export_upload_file(
                 "",
                 UploadFileRequest(
-                    output_file_path="text.txt",
+                    output_file_path_id="text.txt",
                     request_url=request_url,
                     params=None,
                     headers=None,
