@@ -238,8 +238,6 @@ export function dispatch_normal_event(event: ServerEvent): void {
                     navigation_views.add_navigation_view(event.navigation_view);
                     break;
                 case "update":
-                    // TODO(evy): problem 2
-                    // find a way to fix the type to be only optional and not `| undefined`
                     navigation_views.update_navigation_view(event.fragment, event.data);
                     break;
                 case "remove":

@@ -245,7 +245,10 @@ const server_event_union = z.discriminatedUnion("type", [
             type: z.literal("navigation_view"),
             op: z.literal("update"),
             fragment: z.string(),
-            data: z.partial(z.object({is_pinned: z.boolean(), name: z.string()})),
+            data: z.object({
+                is_pinned: z.exactOptional(z.boolean()),
+                name: z.exactOptional(z.string()),
+            }),
         }),
     ]),
     z.object({
