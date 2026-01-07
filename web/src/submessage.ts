@@ -5,30 +5,15 @@ import * as channel from "./channel.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
-import {poll_widget_extra_data_schema} from "./poll_data.ts";
-import type {PollWidgetOutboundData} from "./poll_data.ts";
-import {todo_widget_extra_data_schema} from "./todo_widget.ts";
-import type {TodoWidgetOutboundData} from "./todo_widget.ts";
+import {widget_data_schema} from "./widget_schema.ts";
+import type {WidgetOutboundData} from "./widget_schema.ts";
 import * as widgetize from "./widgetize.ts";
-import {zform_widget_extra_data_schema} from "./zform_data.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
-type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
-
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
-    data: z.discriminatedUnion("widget_type", [
-        z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
-        z.object({
-            widget_type: z.literal("zform"),
-            extra_data: z.nullable(zform_widget_extra_data_schema),
-        }),
-        z.object({
-            widget_type: z.literal("todo"),
-            extra_data: z.nullable(todo_widget_extra_data_schema),
-        }),
-    ]),
+    data: widget_data_schema,
 });
 
 const inbound_data_event_schema = z.object({
