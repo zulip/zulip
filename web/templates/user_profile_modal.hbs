@@ -69,7 +69,7 @@
                                         {{/if}}
                                     </div>
                                     <div id="date-joined" class="default-field">
-                                        <div class="name">{{t "Joined" }}</div>
+                                        <div class="name">{{#if is_bot}}{{t "Created" }}{{else}}{{t "Joined" }}{{/if}}</div>
                                         <div class="value">{{date_joined}}</div>
                                     </div>
                                     {{#if user_time}}
