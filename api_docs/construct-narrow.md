@@ -58,6 +58,11 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 13.0 (feature level ZF-f8cdda), support was added for a new
+  direct message operator:  `dm-with`. The `dm-with`  operator is an
+  alias for the `dm-including` operator, which is now deprecated. Both
+  operators return the same exact results.
+
 * In Zulip 12.0 (feature level 489), support was added for a new
   filter, `channels:archived`, which returns messages the current user
   received in channels that have been [archived](/help/archive-a-channel).
@@ -177,7 +182,7 @@ help center because they are primarily useful to API clients:
   you and user ID `1234`.
 * `dm:1234,5678`: Search the direct message conversation between
   you, user ID `1234`, and user ID `5678`.
-* `dm-including:1234`: Search all direct messages (1-on-1 and group)
+* `dm-with:1234`: Search all direct messages (1-on-1 and group)
   that include you and user ID `1234`.
 
 !!! tip ""

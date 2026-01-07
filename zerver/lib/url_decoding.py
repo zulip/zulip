@@ -33,12 +33,15 @@ def is_same_server_message_link(url: str) -> bool:
 
 CHANNEL_SYNONYMS = {"stream": "channel", "streams": "channels"}
 
+# See the "Changes" section of the API documentation for constructing
+# a narrow for details on these operator synonyms, including cases
+# where a synonym returns different results from the operator it
+# replaced: https://zulip.com/api/construct-narrow#changes
 OPERATOR_SYNONYMS = {
     **CHANNEL_SYNONYMS,
-    # "pm-with:" was renamed to "dm:"
     "pm-with": "dm",
-    # "group-pm-with:" was replaced with "dm-including:"
-    "group-pm-with": "dm-including",
+    "group-pm-with": "dm-with",
+    "dm-including": "dm-with",
     "from": "sender",
     DB_TOPIC_NAME: "topic",
 }
@@ -88,7 +91,7 @@ def decode_hash_component(string: str) -> str:
 def decode_narrow_operand(operator: str, operand: str) -> str | int | list[int]:
     # These have the similar slug formatting for their operands which
     # contain object ID(s).
-    if operator in ["dm-including", "dm", "mentions", "sender", "channel"]:
+    if operator in ["dm-with", "dm", "mentions", "sender", "channel"]:
         result = parse_recipient_slug(operand)
         return result[0] if isinstance(result, tuple) else ""
 
