@@ -10,23 +10,11 @@ import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {todo_widget_extra_data_schema} from "./todo_widget.ts";
 import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as widgetize from "./widgetize.ts";
+import {zform_widget_extra_data_schema} from "./zform_data.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
 type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
-
-export const zform_widget_extra_data_schema = z.object({
-    choices: z.array(
-        z.object({
-            type: z.string(),
-            long_name: z.string(),
-            reply: z.string(),
-            short_name: z.string(),
-        }),
-    ),
-    heading: z.string(),
-    type: z.literal("choices"),
-});
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
