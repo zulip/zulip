@@ -5085,14 +5085,17 @@ paths:
                                         [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
                                         **Changes**: New in Zulip 5.0 (feature level 109).
-                                    giphy_rating:
+                                    gif_rating_policy:
                                       type: integer
                                       description: |
                                         Maximum rating of the GIFs that will be retrieved by the
                                         GIPHY and Tenor integrations in this organization.
 
-                                        **Changes**: In Zulip 12.0 (feature level 442), is now used for
-                                        both the Tenor and GIPHY integrations.
+                                        **Changes**: Before Zulip 12.0 (feature level ZF-dd836d),
+                                        this was called `giphy_rating`.
+
+                                        Before Zulip 12.0 (feature level 442), this was only used
+                                        for the Giphy integration.
 
                                         New in Zulip 4.0 (feature level 55).
                                     icon_source:
@@ -19133,7 +19136,7 @@ paths:
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
                           available as a server-level configuration, which was available via the
                           `jitsi_server_url` field.
-                      realm_giphy_rating:
+                      realm_gif_rating_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -19141,8 +19144,11 @@ paths:
                           Maximum rating of the GIFs that will be retrieved by the
                           GIPHY and Tenor integrations in this organization.
 
-                          **Changes**: In Zulip 12.0 (feature level 442), is now used for
-                          both the Tenor and GIPHY integrations.
+                          **Changes**: Before Zulip 12.0 (feature level ZF-dd836d), this was called
+                          `realm_giphy_rating`.
+
+                          **Changes**: Before Zulip 12.0 (feature level 442), this was only used by
+                          the Giphy integration.
 
                           New in Zulip 4.0 (feature level 55).
                       realm_waiting_period_threshold:

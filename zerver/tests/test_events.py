@@ -4398,7 +4398,7 @@ class RealmPropertyActionTest(BaseAction):
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],
             jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com", None],
-            giphy_rating=[
+            gif_rating_policy=[
                 Realm.GIF_RATING_OPTIONS["disabled"]["id"],
             ],
             default_code_block_language=["python", "javascript"],

@@ -240,9 +240,9 @@ function set_video_chat_provider_dropdown(): void {
     set_jitsi_server_url_dropdown();
 }
 
-function set_gif_rating_dropdown(): void {
-    const rating_id = realm.realm_giphy_rating;
-    $("#id_realm_giphy_rating").val(rating_id);
+function set_gif_rating_policy_dropdown(): void {
+    const rating_id = realm.realm_gif_rating_policy;
+    $("#id_realm_gif_rating_policy").val(rating_id);
 }
 
 function update_message_edit_sub_settings(is_checked: boolean): void {
@@ -1535,7 +1535,7 @@ export function build_page(): void {
 
     set_realm_waiting_period_setting();
     set_video_chat_provider_dropdown();
-    set_gif_rating_dropdown();
+    set_gif_rating_policy_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
     set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");
