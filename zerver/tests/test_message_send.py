@@ -880,9 +880,10 @@ class MessagePOSTTest(ZulipTestCase):
             response_dict["message_url"],
             f"http://zulip.testserver/#narrow/channel/{stream.id}-{stream.name}/topic/Test.20topic/near/{message_id}",
         )
+
         self.assertEqual(
             response_dict["message_link"],
-            f"[#Verona > Test topic @ 💬](#narrow/channel/{stream.id}-{stream.name}/topic/Test.20topic/near/{message_id})",
+            f"[#{stream.name} > Test topic]({response_dict['message_url']})",
         )
 
         # Test message URL when sending a direct message.
@@ -898,9 +899,12 @@ class MessagePOSTTest(ZulipTestCase):
         response_dict = self.assert_json_success(result)
 
         message_id = response_dict["id"]
+        dm_user_ids = sorted([user_profile.id, othello.id])
+        dm_user_ids_str = ",".join(str(uid) for uid in dm_user_ids)
+
         self.assertEqual(
             response_dict["message_url"],
-            f"http://zulip.testserver/#narrow/dm/10,12/near/{message_id}",
+            f"http://zulip.testserver/#narrow/dm/{dm_user_ids_str}/near/{message_id}",
         )
         self.assertEqual(response_dict["message_link"], response_dict["message_url"])
 
