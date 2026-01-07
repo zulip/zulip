@@ -147,7 +147,7 @@ from zproject.backends import (
     password_auth_enabled,
 )
 
-logger = logging.getLogger("")
+ldap_logger = logging.getLogger("zulip.ldap")
 
 
 @typed_endpoint
@@ -536,7 +536,9 @@ def registration_helper(
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
                     except NoMatchingLDAPUserError:
-                        logger.warning("New account email %s could not be found in LDAP", email)
+                        ldap_logger.warning(
+                            "New account email %s could not be found in LDAP", email
+                        )
                         break
 
                     # Note that this `ldap_user` object is not a
@@ -864,7 +866,7 @@ def registration_helper(
         )
         if return_data.get("invalid_subdomain"):
             # By construction, this should never happen.
-            logger.error(
+            logging.error(
                 "Subdomain mismatch in registration %s: %s",
                 realm.subdomain,
                 user_profile.delivery_email,
@@ -1371,7 +1373,7 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
                     request=request,
                 )
             except EmailNotDeliveredError:
-                logger.exception("Failed to deliver email during realm creation")
+                logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
@@ -1705,7 +1707,7 @@ def accounts_home(
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
-                logger.exception("Failed to deliver email during user registration")
+                logging.exception("Failed to deliver email during user registration")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
