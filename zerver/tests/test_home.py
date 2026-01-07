@@ -180,7 +180,7 @@ class HomeTest(ZulipTestCase):
         "realm_enable_read_receipts",
         "realm_enable_spectator_access",
         "realm_filters",
-        "realm_giphy_rating",
+        "realm_gif_rating_policy",
         "realm_icon_source",
         "realm_icon_url",
         "realm_incoming_webhook_bots",

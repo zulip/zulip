@@ -512,7 +512,7 @@ export const realm_schema = z.object({
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
-    realm_giphy_rating: z.number(),
+    realm_gif_rating_policy: z.number(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
     realm_incoming_webhook_bots: z.array(

@@ -169,11 +169,11 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="id_realm_giphy_rating" class="settings-field-label">
+                    <label for="id_realm_gif_rating_policy" class="settings-field-label">
                         {{t 'GIF integration' }}
                         {{> ../help_link_widget link=gif_help_link }}
                     </label>
-                    <select name="realm_giphy_rating" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if gif_api_key_empty}}disabled{{/if}}>
+                    <select name="realm_gif_rating_policy" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_gif_rating_policy" data-setting-widget-type="number" {{#if gif_api_key_empty}}disabled{{/if}}>
                         {{#each gif_rating_options}}
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}

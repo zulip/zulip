@@ -692,9 +692,8 @@ class Realm(models.Model):
         },
     }
 
-    # maximum rating of the GIFs that will be retrieved.
-    # This is now used as a common rating for both Tenor and GIPHY.
-    giphy_rating = models.PositiveSmallIntegerField(default=GIF_RATING_OPTIONS["g"]["id"])
+    # Rating policy of the GIFs that will be retrieved.
+    gif_rating_policy = models.PositiveSmallIntegerField(default=GIF_RATING_OPTIONS["g"]["id"])
 
     default_code_block_language = models.TextField(default="")
 
@@ -724,7 +723,7 @@ class Realm(models.Model):
         enable_guest_user_indicator=bool,
         enable_read_receipts=bool,
         enable_spectator_access=bool,
-        giphy_rating=int,
+        gif_rating_policy=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,

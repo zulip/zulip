@@ -1142,7 +1142,7 @@ class RealmTest(ZulipTestCase):
         invalid_values = dict(
             message_retention_days=10,
             video_chat_provider=10,
-            giphy_rating=10,
+            gif_rating_policy=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
             message_content_delete_limit_seconds=-10,
@@ -2209,7 +2209,7 @@ class RealmAPITest(ZulipTestCase):
                 Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
             ],
             jitsi_server_url=["https://example.jit.si"],
-            giphy_rating=[
+            gif_rating_policy=[
                 Realm.GIF_RATING_OPTIONS["g"]["id"],
                 Realm.GIF_RATING_OPTIONS["r"]["id"],
             ],
