@@ -331,6 +331,16 @@ export class DropdownWidget {
             // Custom theme defined in popovers.css
             theme: "dropdown-widget",
             arrow: false,
+            onClickOutside(instance, event) {
+                instance.hide();
+
+                const target = event.target;
+                if (target instanceof Element && $(target).is("div.overlay")) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }
+            },
+
             onShow: (instance: tippy.Instance) => {
                 if (util.is_mobile()) {
                     // The dropdown trigger button can be hidden by the
