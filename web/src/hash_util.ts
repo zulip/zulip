@@ -39,7 +39,7 @@ export function get_reload_hash(): string {
 export function encode_operand(term: NarrowCanonicalTerm): string {
     let slug: string | undefined;
     switch (term.operator) {
-        case "dm-including":
+        case "dm-with":
         case "dm":
             slug = people.user_ids_to_slug(term.operand);
             break;
@@ -69,12 +69,13 @@ export function decode_operand(
         switch (operator) {
             case "sender":
                 return people.my_current_user_id();
+            case "dm-with":
             case "dm":
                 return [people.my_current_user_id()];
         }
     }
 
-    if (operator === "dm-including" || operator === "dm") {
+    if (operator === "dm-with" || operator === "dm") {
         const user_ids = people.slug_to_user_ids(operand);
         if (user_ids) {
             return user_ids;
