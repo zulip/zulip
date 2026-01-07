@@ -1091,9 +1091,15 @@ class RealmTest(ZulipTestCase):
 
         # Test when language with percent_translated is
         # less than 5, correct validation error is raised.
+        mocked_language_list = [
+            {"code": "de", "locale": "de", "name": "Deutsch", "percent_translated": 97},
+            {"code": "en", "locale": "en", "name": "English"},
+            {"code": "gl", "locale": "gl", "name": "galego", "percent_translated": 1},
+        ]
         invalid_lang = "gl"
         req = dict(default_language=invalid_lang)
-        result = self.client_patch("/json/realm", req)
+        with mock.patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, f"Invalid language '{invalid_lang}'")
 
     def test_deactivate_realm_by_owner(self) -> None:
