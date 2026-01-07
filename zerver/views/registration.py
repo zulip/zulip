@@ -148,6 +148,7 @@ from zproject.backends import (
 )
 
 ldap_logger = logging.getLogger("zulip.ldap")
+logger = logging.getLogger("zulip.registration")
 
 
 @typed_endpoint
@@ -866,7 +867,7 @@ def registration_helper(
         )
         if return_data.get("invalid_subdomain"):
             # By construction, this should never happen.
-            logging.error(
+            logger.error(
                 "Subdomain mismatch in registration %s: %s",
                 realm.subdomain,
                 user_profile.delivery_email,
@@ -1373,7 +1374,7 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
                     request=request,
                 )
             except EmailNotDeliveredError:
-                logging.exception("Failed to deliver email during realm creation")
+                logger.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
@@ -1707,7 +1708,7 @@ def accounts_home(
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
             except EmailNotDeliveredError:
-                logging.exception("Failed to deliver email during user registration")
+                logger.exception("Failed to deliver email during user registration")
                 if settings.CORPORATE_ENABLED:
                     return render(request, "500.html", status=500)
                 return config_error(request, "smtp")
