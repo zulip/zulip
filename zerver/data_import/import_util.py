@@ -83,7 +83,7 @@ class UploadRecordData:
 
 @dataclass
 class UploadFileRequest:
-    output_file_path: str
+    output_file_path_id: str
     request_url: str
     params: dict[str, Any] | None
     headers: dict[str, Any] | None
@@ -710,7 +710,7 @@ def request_file_stream(
 def download_and_export_upload_file(
     output_dir: str, upload_file_request: UploadFileRequest
 ) -> None:
-    file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path)
+    file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path_id)
 
     response = request_file_stream(
         upload_file_request.request_url,
