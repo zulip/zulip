@@ -6,7 +6,7 @@ import type {Message} from "./message_store.ts";
 import type {PollWidgetExtraData, PollWidgetOutboundData} from "./poll_data.ts";
 import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
 import type {Event} from "./widget_data.ts";
-import type {ZFormExtraData} from "./zform.ts";
+import type {ZFormExtraData} from "./zform_data.ts";
 
 export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
