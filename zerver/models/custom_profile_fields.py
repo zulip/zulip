@@ -98,7 +98,7 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
-        (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
+        (SELECT, gettext_lazy("Dropdown"), validate_select_field, str, "SELECT"),  # <-- changed
     ]
     USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
@@ -113,8 +113,8 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: list[FieldElement] = [
         # Type, display name, validator, converter, keyword
-        (SHORT_TEXT, gettext_lazy("Text (short)"), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, gettext_lazy("Text (long)"), check_long_string, str, "LONG_TEXT"),
+        (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),  # <-- changed
+        (LONG_TEXT, gettext_lazy("Paragraph"), check_long_string, str, "LONG_TEXT"),      # <-- changed
         (DATE, gettext_lazy("Date"), check_date, str, "DATE"),
         (URL, gettext_lazy("Link"), check_url, str, "URL"),
         (
@@ -146,15 +146,6 @@ class CustomProfileField(models.Model):
         default=SHORT_TEXT,
     )
 
-    # A JSON blob of any additional data needed to define the field beyond
-    # type/name/hint.
-    #
-    # The format depends on the type.  Field types SHORT_TEXT, LONG_TEXT,
-    # DATE, URL, and USER leave this empty.  Fields of type SELECT store the
-    # choices' descriptions.
-    #
-    # Note: There is no performance overhead of using TextField in PostgreSQL.
-    # See https://www.postgresql.org/docs/9.0/static/datatype-character.html
     field_data = models.TextField(default="")
 
     class Meta:
