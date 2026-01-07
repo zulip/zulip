@@ -9,22 +9,21 @@ import type {ZFormExtraData} from "./zform.ts";
 
 export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
+type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
+
 type WidgetOptions = {
     widget_type: string;
     extra_data: WidgetExtraData;
     events: Event[];
     $row: JQuery;
     message: Message;
-    post_to_server: (data: {
-        msg_type: string;
-        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
-    }) => void;
+    post_to_server: (data: {msg_type: string; data: WidgetOutboundData}) => void;
 };
 
 export type WidgetValue = Record<string, unknown> & {
     activate: (data: {
         $elem: JQuery;
-        callback: (data: string | PollWidgetOutboundData | TodoWidgetOutboundData) => void;
+        callback: (data: WidgetOutboundData) => void;
         message: Message;
         extra_data: WidgetExtraData;
     }) => (events: Event[]) => void;
@@ -58,9 +57,7 @@ export function activate(in_opts: WidgetOptions): void {
         return;
     }
 
-    const callback = function (
-        data: string | PollWidgetOutboundData | TodoWidgetOutboundData,
-    ): void {
+    const callback = function (data: WidgetOutboundData): void {
         post_to_server({
             msg_type: "widget",
             data,

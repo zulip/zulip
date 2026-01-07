@@ -12,6 +12,8 @@ import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
+type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
+
 export const zform_widget_extra_data_schema = z.object({
     choices: z.array(
         z.object({
@@ -202,14 +204,8 @@ export function handle_event(submsg: Submessage): void {
 
 export function make_server_callback(
     message_id: number,
-): (opts: {
-    msg_type: string;
-    data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
-}) => void {
-    return function (opts: {
-        msg_type: string;
-        data: string | PollWidgetOutboundData | TodoWidgetOutboundData;
-    }) {
+): (opts: {msg_type: string; data: WidgetOutboundData}) => void {
+    return function (opts: {msg_type: string; data: WidgetOutboundData}) {
         const url = "/json/submessage";
 
         void channel.post({
