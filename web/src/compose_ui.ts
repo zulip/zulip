@@ -1464,6 +1464,17 @@ export function clear_thumbnail_polling(): void {
     pending_thumbnail_paths.clear();
 }
 
+// We use this module-level variable to suppress the preview spinner for
+// the next render cycle. We need this state because the preview update
+// is triggered via a global input event listener when we modify the textarea
+// (e.g. cancelling an upload). We cannot pass a "no spinner" argument
+// through the standard event chain because the event listener format is fixed.
+let prevent_next_spinner = false;
+
+export function set_prevent_next_spinner(value: boolean): void {
+    prevent_next_spinner = value;
+}
+
 export function render_and_show_preview(
     $preview_container: JQuery,
     $preview_spinner: JQuery,
@@ -1471,6 +1482,10 @@ export function render_and_show_preview(
     content: string,
     show_spinner = true,
 ): void {
+    if (prevent_next_spinner) {
+        show_spinner = false;
+    }
+
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
 

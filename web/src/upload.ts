@@ -298,7 +298,9 @@ export let upload_files = (
         );
         // eslint-disable-next-line @typescript-eslint/no-loop-func
         config.upload_banner_cancel_button(file_id).on("click", () => {
+            compose_ui.set_prevent_next_spinner(true);
             compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
+            compose_ui.set_prevent_next_spinner(false);
             compose_ui.autosize_textarea(config.textarea());
             config.textarea().trigger("focus");
 
