@@ -325,7 +325,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
         const options: dropdown_widget.Option[] = folders.map((folder) => ({
             name: folder.name,
             unique_id: folder.id,
-            has_delete_icon: true,
+            has_delete_icon: can_manage_folder,
             manage_folder_icon: can_manage_folder ? "folder-cog" : "preview",
             has_manage_folder_icon: true,
             delete_icon_label: $t({defaultMessage: "Delete folder"}),

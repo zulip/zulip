@@ -5,7 +5,7 @@
             <span class="dropdown-list-item-name">
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-text-selected">{{name}}</span>
-                    {{# if (or has_edit_icon has_delete_icon)}}
+                    {{#if (or has_edit_icon has_manage_folder_icon has_delete_icon)}}
                     <span class="dropdown-list-buttons">
                         {{#if has_edit_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=edit_icon_label }}
@@ -51,7 +51,7 @@
                     {{else}}
                         <span class="dropdown-list-text-neutral">{{name}}</span>
                     {{/if}}
-                    {{# if (or has_edit_icon has_delete_icon)}}
+                    {{#if (or has_edit_icon has_manage_folder_icon has_delete_icon)}}
                     <span class="dropdown-list-buttons">
                         {{#if has_edit_icon}}
                             {{> components/icon_button custom_classes="dropdown-list-edit dropdown-list-control-button" intent="neutral" icon="edit" aria-label=(t "Edit folder") }}
