@@ -21270,7 +21270,7 @@ paths:
                     {
                       "user_ids": [6, 8],
                       "group_ids": [24],
-                      "skip_if_alread_edited": false,
+                      "skip_if_already_edited": false,
                     }
                 full_name:
                   description: |
