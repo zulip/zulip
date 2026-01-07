@@ -42,6 +42,19 @@ function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
     $content_holder.empty().append($widget_elem);
 }
 
+function is_supported_widget_type(widget_type: string): boolean {
+    if (widgets.has(widget_type)) {
+        return true;
+    }
+
+    if (widget_type === "tictactoe") {
+        return false; // don't warn for deleted legacy widget
+    }
+
+    blueslip.warn("unknown widget_type", {widget_type});
+    return false;
+}
+
 export function activate(in_opts: WidgetOptions): void {
     const widget_type = in_opts.widget_type;
     const extra_data = in_opts.extra_data;
@@ -50,11 +63,8 @@ export function activate(in_opts: WidgetOptions): void {
     const message = in_opts.message;
     const post_to_server = in_opts.post_to_server;
 
-    if (!widgets.has(widget_type)) {
-        if (widget_type === "tictactoe") {
-            return; // don't warn for deleted legacy widget
-        }
-        blueslip.warn("unknown widget_type", {widget_type});
+    // the callee will log any appropriate warnings here
+    if (!is_supported_widget_type(widget_type)) {
         return;
     }
 
