@@ -2414,7 +2414,7 @@ class ZulipMarkdown(markdown.Markdown):
         treeprocessors.register(
             InlineInterestingLinkProcessor(self), "inline_interesting_links", 15
         )
-        if settings.CAMO_URI:
+        if settings.CAMO_URL:
             treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
             treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
         return treeprocessors

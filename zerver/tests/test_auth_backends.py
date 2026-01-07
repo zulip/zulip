@@ -5388,7 +5388,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
 
         with self.settings(
-            REALM_MOBILE_REMAP_URIS={"http://zulip.testserver": "http://zulip-mobile.testserver"}
+            REALM_MOBILE_REMAP_URLS={"http://zulip.testserver": "http://zulip-mobile.testserver"}
         ):
             result = self.social_auth_test(
                 account_data_dict,
