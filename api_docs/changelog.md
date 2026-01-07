@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 479**
+
+* [`GET /thumbnail/status/{realm_id_str}/{filename}`](/api/check-thumbnail-status): Added
+  a new endpoint to check whether thumbnails have been generated for an
+  uploaded image.
+
 **Feature level 478**
 
 * [`POST /realm/filters`](/api/add-linkifier),
@@ -3033,8 +3039,9 @@ No changes; feature level used for Zulip 7.0 release.
 
 **Feature level 160**
 
-* `POST /api/v1/jwt/fetch_api_key`: Added new endpoint to fetch API
-  keys using JSON Web Token (JWT) authentication.
+* [`POST /api/v1/jwt/fetch_api_key`](/api/jwt-fetch-api-key): Added
+  new endpoint to fetch API keys using JSON Web Token (JWT)
+  authentication.
 * `accounts/login/jwt/`: Adjusted format of requests to undocumented,
   optional endpoint for JWT authentication log in support.
 

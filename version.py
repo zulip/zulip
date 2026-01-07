@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "12.0-dev+git"
+ZULIP_VERSION = "12.0-beta1+git"
 
 # Add information on number of commits and commit hash to version, if available
 ZULIP_VERSION_WITHOUT_COMMIT = ZULIP_VERSION
@@ -33,7 +33,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # https://zulip.readthedocs.io/en/latest/documentation/api.html#step-by-step-guide
 # Also available at docs/documentation/api.md.
 
-API_FEATURE_LEVEL = 478
+API_FEATURE_LEVEL = 479
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
