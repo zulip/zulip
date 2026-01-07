@@ -13,7 +13,7 @@ import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import type {Event} from "./poll_widget.ts";
+import type {Event} from "./widget_data.ts";
 
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.

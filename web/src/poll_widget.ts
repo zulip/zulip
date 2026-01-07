@@ -10,11 +10,10 @@ import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
-import type {InboundData, PollWidgetOutboundData} from "./poll_data.ts";
+import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {PollData, poll_widget_extra_data_schema} from "./poll_data.ts";
+import type {Event} from "./widget_data.ts";
 import type {WidgetExtraData} from "./widgetize.ts";
-
-export type Event = {sender_id: number; data: InboundData};
 
 export function activate({
     $elem,
