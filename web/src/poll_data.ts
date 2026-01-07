@@ -66,6 +66,18 @@ const inbound_vote_schema = z.object({
     vote: z.number(),
 });
 
+export const poll_widget_extra_data_schema = z.object({
+    question: z.optional(z.string()),
+    options: z.optional(z.array(z.string())),
+});
+
+export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
+
+export type PollWidgetOutboundData =
+    | NewOptionOutboundData
+    | QuestionOutboundData
+    | VoteOutboundData;
+
 // Any single user should send add a finite number of options
 // to a poll. We arbitrarily pick this value.
 const MAX_IDX = 1000;
