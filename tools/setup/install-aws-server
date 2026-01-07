@@ -128,6 +128,15 @@ if [ "$EXISTING_RECORDS" != "0" ]; then
     exit 1
 fi
 
+DEVICES+=(
+    "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
+)
+if [[ "$ROLES" == *"frontend"* ]]; then
+    DEVICES+=(
+        "DeviceName=/dev/sdf,Ebs={VolumeSize=100,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true,DeleteOnTermination=True}"
+    )
+fi
+
 # https://docs.aws.amazon.com/cli/latest/reference/ec2/run-instances.html
 EXTRA_ARGS+=(
     --iam-instance-profile "Name=\"$IAM_PROFILE\""
@@ -136,7 +145,7 @@ EXTRA_ARGS+=(
     --security-group-ids "${SECURITY_GROUPS[@]}"
     --monitoring Enabled=true
     --placement "AvailabilityZone=$AZ"
-    --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
+    --block-device-mappings "${DEVICES[@]}"
     --metadata-options "InstanceMetadataTags=enabled"
 )
 
@@ -199,8 +208,25 @@ EOF
 $AWS route53 change-resource-record-sets --hosted-zone-id "$AWS_ZONE_ID" --change-batch "file://$ROUTE53_CHANGES"
 rm "$ROUTE53_CHANGES"
 
-VOLUME_ID=$(echo "$INSTANCE_DATA" | jq -r .Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId)
+# Add the name to the root volume
+VOLUME_ID=$(
+    echo "$INSTANCE_DATA" | jq -r \
+        '.Reservations[0].Instances[0].BlockDeviceMappings[]
+         | select(.DeviceName == "/dev/sda1")
+         | .Ebs.VolumeId'
+)
 $AWS ec2 create-tags --resources "$VOLUME_ID" --tags "Key=Name,Value=$SERVER root"
+
+# Add volume name to tmp volume
+if [[ "$ROLES" == *"frontend"* ]]; then
+    VOLUME_ID=$(
+        echo "$INSTANCE_DATA" | jq -r \
+            '.Reservations[0].Instances[0].BlockDeviceMappings[]
+             | select(.DeviceName == "/dev/sdf")
+             | .Ebs.VolumeId'
+    )
+    $AWS ec2 create-tags --resources "$VOLUME_ID" --tags "Key=Name,Value=$SERVER tmp"
+fi
 
 set +x
 echo
