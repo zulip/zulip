@@ -1,4 +1,5 @@
 class kandra::app_frontend {
+  include zulip::snakeoil
   include zulip::app_frontend_base
   include zulip::profile::memcached
   include zulip::profile::rabbitmq
