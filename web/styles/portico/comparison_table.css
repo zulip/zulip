@@ -161,6 +161,12 @@
     }
 
     &.education-features-comparison {
+        --zulip-cell-background-color: hsl(217deg 71% 78%);
+        --zulip-cell-foreground-color: hsl(210deg 4% 10%);
+        --zulip-column-border-width: 8px;
+        --zulip-column-border-negative-offset: calc(
+            var(--zulip-column-border-width) * -1
+        );
         padding-bottom: 48px;
 
         .comparison-table {
@@ -174,8 +180,48 @@
             width: 30%;
         }
 
-        td.competitor-cell {
-            opacity: 0.5;
+        th.zulip-cell {
+            padding: 0;
+        }
+
+        th.zulip-cell .label-zulip {
+            display: block;
+            /* We make the border larger by 1px to avoid an
+               occasional rendering bug in Chrome that lets
+               daylight in between the border here and the
+               top of the table row. */
+            border-top: calc(var(--zulip-column-border-width) + 1px) solid
+                var(--zulip-cell-background-color);
+            margin: var(--zulip-column-border-negative-offset)
+                var(--zulip-column-border-negative-offset) 0;
+            /* The hard-coded numeric values here keep the Zulip
+               label aligned with other labels in the table-header
+               row. */
+            padding: calc(var(--zulip-column-border-width) + 7px)
+                calc(var(--zulip-column-border-width) + 2px)
+                calc(var(--zulip-column-border-width) + 5px);
+        }
+
+        .zulip-cell {
+            color: var(--zulip-cell-foreground-color);
+            background: var(--zulip-cell-background-color);
+            border-left: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            border-right: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            /* Don't display stripes in the Zulip column. */
+            border-top-color: var(--zulip-cell-background-color);
+        }
+
+        .zulip-cell .bottom-border {
+            display: block;
+            width: 100%;
+            padding: 0 var(--zulip-column-border-width);
+            border-bottom: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            position: absolute;
+            bottom: var(--zulip-column-border-negative-offset);
+            left: var(--zulip-column-border-negative-offset);
         }
     }
 
