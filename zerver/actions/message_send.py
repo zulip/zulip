@@ -127,6 +127,28 @@ from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_c
 from zerver.tornado.django_api import send_event_on_commit
 
 
+def can_use_pretty_stream_url(
+    sender: UserProfile,
+    stream: Stream,
+    is_sender_subscribed: bool,
+) -> bool:
+    """
+    Determines if we can include stream name in the message URL without
+    triggering database queries. Returns False for uncertain cases, which
+    is always safe since the ID-only URL format works for all users.
+    """
+    if is_sender_subscribed:
+        return True
+
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return True
+
+    if stream.is_public() and sender.role != UserProfile.ROLE_GUEST:
+        return True
+
+    return False
+
+
 def compute_irc_user_fullname(email: str) -> str:
     return Address(addr_spec=email).username + " (IRC)"
 
@@ -1094,25 +1116,9 @@ def do_send_messages(
                         visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
                     )
 
-        wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
-
-        # Compute URL of the message.
-        if send_request.stream:
-            # We manually construct the URL using only the stream ID (ignoring the
-            # stream name) to prevent leaking private stream names to bots that
-            # might have write-only access.
-            encoded_topic = encode_hash_component(send_request.message.topic_name())
-            relative_url = f"#narrow/channel/{send_request.stream.id}/topic/{encoded_topic}/near/{send_request.message.id}"
-
-            send_request.message_url = f"{send_request.realm.url}/{relative_url}"
-            send_request.message_link = send_request.message_url
-        else:
-            # For DMs, there is no stream name to leak, so standard helpers are safe.
-            send_request.message_url = message_link_url(send_request.realm, wide_message_dict)
-            send_request.message_link = send_request.message_url
-
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
+        wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
         user_flags = user_message_flags.get(send_request.message.id, {})
 
         """
@@ -1318,6 +1324,41 @@ def do_send_messages(
                         "user_profile_id": event["user_profile_id"],
                     },
                 )
+
+        # Compute URL of the message.
+        if send_request.stream is not None:
+            # STREAM MESSAGES
+            is_subscribed = send_request.sender_muted_stream is not None
+
+            use_pretty_url = can_use_pretty_stream_url(
+                send_request.message.sender,
+                send_request.stream,
+                is_subscribed,
+            )
+
+            if use_pretty_url:
+                # Human-friendly URL including the stream name.
+                send_request.message_url = message_link_url(
+                    send_request.realm,
+                    wide_message_dict,
+                )
+            else:
+                # Use ID-only URL to avoid leaking private stream names.
+                encoded_topic = encode_hash_component(send_request.message.topic_name())
+                relative_url = (
+                    f"#narrow/channel/{send_request.stream.id}/topic/"
+                    f"{encoded_topic}/near/{send_request.message.id}"
+                )
+                send_request.message_url = f"{send_request.realm.url}/{relative_url}"
+
+            send_request.message_link = send_request.message_url
+        else:
+            # DIRECT MESSAGES
+            send_request.message_url = message_link_url(
+                send_request.realm,
+                wide_message_dict,
+            )
+            send_request.message_link = send_request.message_url
 
     sent_message_results = []
     for send_request in send_message_requests:
