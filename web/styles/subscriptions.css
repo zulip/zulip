@@ -458,18 +458,18 @@ h4.user_group_setting_subsection_title {
 
         .stream-info-title,
         .user-group-info-title {
-            display: none;
+            display: block;
             font-size: 1.5em; /* 21px at 14px/em */
             line-height: 1.25;
             font-weight: 600;
             overflow-wrap: break-word;
-            line-clamp: 2;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
             overflow: hidden;
 
-            &.showing-info-title {
+            &.new-channel-members-title {
+                line-clamp: 2;
                 display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
             }
 
             .large-icon {

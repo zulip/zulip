@@ -41,18 +41,18 @@ export function set_right_panel_title(sub: StreamSubscription): void {
     }
 
     const preview_url = hash_util.channel_url_by_user_setting(sub.stream_id);
-    $("#subscription_overlay .stream-info-title").html(
-        render_selected_stream_title({sub, title_icon_color, preview_url}),
-    );
+    $("#subscription_overlay .stream-info-title")
+        .html(render_selected_stream_title({sub, title_icon_color, preview_url}))
+        .toggleClass("new-channel-members-title", false);
 }
 
 export const show_subs_pane = {
     nothing_selected(): void {
         $(".settings, #stream-creation").hide();
         $(".nothing-selected").show();
-        $("#subscription_overlay .stream-info-title").text(
-            $t({defaultMessage: "Channel settings"}),
-        );
+        $("#subscription_overlay .stream-info-title")
+            .text($t({defaultMessage: "Channel settings"}))
+            .toggleClass("new-channel-members-title", false);
         resize.resize_settings_overlay($("#channels_overlay_container"));
     },
     settings(sub: StreamSubscription): void {
@@ -71,19 +71,21 @@ export const show_subs_pane = {
     ): void {
         $(".stream_creation_container").hide();
         if (container_name === "configure_channel_settings") {
-            $("#subscription_overlay .stream-info-title").text(
-                $t({defaultMessage: "Configure new channel settings"}),
-            );
+            $("#subscription_overlay .stream-info-title")
+                .text($t({defaultMessage: "Configure new channel settings"}))
+                .toggleClass("new-channel-members-title", false);
         } else {
-            $("#subscription_overlay .stream-info-title").html(
-                render_selected_stream_title({
-                    sub: sub ?? {
-                        name: "",
-                        invite_only: false,
-                        is_web_public: false,
-                    },
-                }),
-            );
+            $("#subscription_overlay .stream-info-title")
+                .html(
+                    render_selected_stream_title({
+                        sub: sub ?? {
+                            name: "",
+                            invite_only: false,
+                            is_web_public: false,
+                        },
+                    }),
+                )
+                .toggleClass("new-channel-members-title", true);
         }
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();

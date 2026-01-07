@@ -1548,9 +1548,9 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title")
-                .text(user_groups.get_display_group_name(group.name))
-                .addClass("showing-info-title");
+            $("#groups_overlay .user-group-info-title").text(
+                user_groups.get_display_group_name(group.name),
+            );
         }
 
         if (changed_group_settings.length > 0) {
@@ -1973,9 +1973,6 @@ export function setup_page(callback: () => void): void {
 
         set_up_click_handlers();
         user_group_create.set_up_handlers();
-
-        // show the "User group settings" header by default.
-        $(".display-type #user_group_settings_title").show();
 
         if (callback) {
             callback();

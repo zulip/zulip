@@ -1062,9 +1062,6 @@ function setup_page(callback: () => void): void {
             toggler.disable_tab("all-streams");
             toggler.disable_tab("available");
         }
-
-        // show the "Stream settings" header by default.
-        $(".display-type #stream_settings_title").addClass("showing-info-title");
     }
 
     function populate_and_fill(): void {
