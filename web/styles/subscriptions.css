@@ -482,12 +482,26 @@ h4.user_group_setting_subsection_title {
             }
         }
 
+        .selected-stream-title,
+        .user-group-info-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .selected-stream-title {
+            display: block;
+            margin: auto;
+        }
+
         .user-group-info-title {
             margin-left: 5px;
         }
 
         .deactivated-user-group-icon-right {
             margin-right: 5px;
+            margin-left: 3px;
+            opacity: 0.6;
         }
     }
 }
@@ -726,11 +740,6 @@ h4.user_group_setting_subsection_title {
 .left .group-name-wrapper .fa-ban,
 .right .group-name .fa-ban {
     font-size: 0.8em;
-    opacity: 0.6;
-}
-
-.deactivated-user-group-icon-right {
-    margin-left: 3px;
     opacity: 0.6;
 }
 
@@ -1524,18 +1533,6 @@ h4.user_group_setting_subsection_title {
             white-space: nowrap;
         }
     }
-}
-
-.selected-stream-title,
-.user-group-info-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.selected-stream-title {
-    display: block;
-    margin: auto;
 }
 
 #stream_members_list,
