@@ -121,6 +121,7 @@ class NarrowParameter(BaseModel):
             "sender",
             "group-pm-with",
             "dm-including",
+            "dm-with",
             "mentions",
             "with",
         ]
@@ -302,7 +303,8 @@ class NarrowBuilder:
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
-            "dm-including": self.by_dm_including,
+            "dm-including": self.by_dm_with,
+            "dm-with": self.by_dm_with,
             "mentions": self.by_mention,
             # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,
@@ -635,7 +637,7 @@ class NarrowBuilder:
 
         return set(self_recipient_ids) & set(narrow_recipient_ids)
 
-    def by_dm_including(
+    def by_dm_with(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.

@@ -11,9 +11,9 @@ export function canonicalize_operator(operator: NarrowTerm["operator"]): NarrowC
         return "dm";
     }
 
-    if (operator === "group-pm-with") {
-        // "group-pm-with:" was replaced with "dm-including:"
-        return "dm-including";
+    if (operator === "group-pm-with" || operator === "dm-including") {
+        // "group-pm-with" and "dm-including" were replaced with "dm-with"
+        return "dm-with";
     }
 
     if (operator === "from") {
