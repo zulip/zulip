@@ -4,8 +4,8 @@ import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import type {PollWidgetExtraData, PollWidgetOutboundData} from "./poll_data.ts";
-import type {Event} from "./poll_widget.ts";
 import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
+import type {Event} from "./widget_data.ts";
 import type {ZFormExtraData} from "./zform.ts";
 
 export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
