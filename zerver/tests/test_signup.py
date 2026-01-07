@@ -2589,7 +2589,6 @@ class UserSignUpTest(ZulipTestCase):
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
             ),
             self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs,
-            self.assertLogs(level="WARNING") as root_logs,
         ):
             # Click confirmation link
             result = self.submit_reg_form_for_user(
@@ -2622,14 +2621,9 @@ class UserSignUpTest(ZulipTestCase):
                 result["Location"], "/accounts/login/?email=no_such_user_in_ldap%40example.com"
             )
             self.assertEqual(
-                root_logs.output,
-                [
-                    "WARNING:root:New account email no_such_user_in_ldap@example.com could not be found in LDAP",
-                ],
-            )
-            self.assertEqual(
                 ldap_logs.output,
                 [
+                    "WARNING:zulip.ldap:New account email no_such_user_in_ldap@example.com could not be found in LDAP",
                     "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email no_such_user_in_ldap@example.com does not match LDAP domain zulip.com.",
                 ],
             )
@@ -3005,7 +2999,7 @@ class UserSignUpTest(ZulipTestCase):
             LDAP_APPEND_DOMAIN="example.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            with self.assertLogs(level="WARNING") as m:
+            with self.assertLogs("zulip.ldap", level="WARNING") as m:
                 result = self.submit_reg_form_for_user(
                     email,
                     password,
@@ -3016,7 +3010,9 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(result.status_code, 200)
             self.assertEqual(
                 m.output,
-                ["WARNING:root:New account email newuser@zulip.com could not be found in LDAP"],
+                [
+                    "WARNING:zulip.ldap:New account email newuser@zulip.com could not be found in LDAP"
+                ],
             )
             with self.assertLogs("zulip.ldap", "DEBUG") as debug_log:
                 result = self.submit_reg_form_for_user(
@@ -3112,7 +3108,7 @@ class UserSignUpTest(ZulipTestCase):
             LDAP_EMAIL_ATTR="mail",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            with self.assertLogs(level="WARNING") as m:
+            with self.assertLogs("zulip.ldap", level="WARNING") as m:
                 result = self.submit_reg_form_for_user(
                     email,
                     password,
@@ -3124,7 +3120,7 @@ class UserSignUpTest(ZulipTestCase):
                 self.assertEqual(
                     m.output,
                     [
-                        "WARNING:root:New account email nonexistent@zulip.com could not be found in LDAP"
+                        "WARNING:zulip.ldap:New account email nonexistent@zulip.com could not be found in LDAP"
                     ],
                 )
 
