@@ -1433,7 +1433,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.client_post("/accounts/home/", {"email": email})
 
         self.assertEqual(result.status_code, 500)
@@ -1441,7 +1445,8 @@ class UserSignUpTest(ZulipTestCase):
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
         )
         self.assertTrue(
-            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+            "ERROR:zulip.registration:Failed to deliver email during user registration"
+            in registration_logs.output[0]
         )
 
     @override_settings(CORPORATE_ENABLED=True)
@@ -1456,7 +1461,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.client_post("/accounts/home/", {"email": email})
 
         self.assertEqual(result.status_code, 500)
@@ -1465,7 +1474,8 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue(
-            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+            "ERROR:zulip.registration:Failed to deliver email during user registration"
+            in registration_logs.output[0]
         )
 
     @override_settings(CORPORATE_ENABLED=False)
@@ -1480,7 +1490,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
@@ -1489,7 +1503,10 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
         )
-        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
+        self.assertTrue(
+            "ERROR:zulip.registration:Failed to deliver email during realm creation"
+            in registration_logs.output[0]
+        )
 
     @override_settings(CORPORATE_ENABLED=True)
     def test_bad_email_configuration_for_corporate_create_realm(self) -> None:
@@ -1503,7 +1520,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
@@ -1513,7 +1534,10 @@ class UserSignUpTest(ZulipTestCase):
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
         self.assert_in_response("Something went wrong. Sorry about that!", result)
-        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
+        self.assertTrue(
+            "ERROR:zulip.registration:Failed to deliver email during realm creation"
+            in registration_logs.output[0]
+        )
 
     def test_user_default_language_and_timezone(self) -> None:
         """
@@ -2167,7 +2191,7 @@ class UserSignUpTest(ZulipTestCase):
 
         with (
             patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain),
-            self.assertLogs(level="ERROR") as m,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
         ):
             result = self.client_post(
                 "/accounts/register/",
@@ -2179,8 +2203,10 @@ class UserSignUpTest(ZulipTestCase):
                 },
             )
             self.assertEqual(
-                m.output,
-                ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
+                registration_logs.output,
+                [
+                    "ERROR:zulip.registration:Subdomain mismatch in registration zulip: newuser@zulip.com"
+                ],
             )
         self.assertEqual(result.status_code, 302)
 
