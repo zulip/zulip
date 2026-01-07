@@ -411,6 +411,17 @@ class ChangeSettingsTest(ZulipTestCase):
         self.do_test_change_user_setting("timezone")
 
     def test_invalid_setting_value(self) -> None:
+        mocked_language_list = [
+            {"code": "de", "locale": "de", "name": "Deutsch", "percent_translated": 97},
+            {"code": "en", "locale": "en", "name": "English"},
+            {
+                "code": "pt-br",
+                "locale": "pt_BR",
+                "name": "Português Brasileiro",
+                "percent_translated": 0,
+            },
+        ]
+
         invalid_values: list[dict[str, Any]] = [
             {
                 "setting_name": "default_language",
@@ -494,7 +505,8 @@ class ChangeSettingsTest(ZulipTestCase):
                 invalid_value["value"] = orjson.dumps(invalid_value["value"]).decode()
 
             req = {invalid_value["setting_name"]: invalid_value["value"]}
-            result = self.client_patch("/json/settings", req)
+            with mock.patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+                result = self.client_patch("/json/settings", req)
 
             self.assert_json_error(result, invalid_value["error_msg"])
             hamlet = self.example_user("hamlet")
