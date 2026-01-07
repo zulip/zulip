@@ -15,7 +15,7 @@ import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {RawLocalMessage} from "./echo.ts";
-import type {Filter} from "./filter.ts";
+import {Filter} from "./filter.ts";
 import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
@@ -560,7 +560,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 ["change_later", "change_all"].includes(event.propagate_mode);
 
             const compose_stream_id = compose_state.stream_id();
-            const current_filter = narrow_state.filter();
+            let current_filter = narrow_state.filter();
             const current_selected_id = message_lists.current?.selected_id();
             const selection_changed_topic =
                 message_lists.current !== undefined &&
@@ -734,9 +734,60 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     // TODO: Update the cache instead of discarding it.
                     message_list_data_cache.remove(new_filter);
                     const terms = new_filter.terms();
-                    // If all the message in the topic were moved, we don't need to
-                    // keep the current hash in the history.
-                    const remove_current_hash_from_history = event.propagate_mode === "change_all";
+                    const old_topic_messages = message_lists.current!.all_messages();
+                    const old_topic_message_ids = old_topic_messages
+                        .map((msg) => msg.id)
+                        .filter((id) => !event.message_ids.includes(id));
+                    const is_old_topic_empty_locally = old_topic_message_ids.length === 0;
+                    const is_old_topic_empty_in_server =
+                        is_old_topic_empty_locally &&
+                        message_lists.current!.data.fetch_status.has_found_oldest() &&
+                        message_lists.current!.data.fetch_status.has_found_newest();
+                    let remove_current_hash_from_history = false;
+                    if (event.propagate_mode === "change_all" || is_old_topic_empty_in_server) {
+                        // If all the message in the topic were moved, we don't need to
+                        // keep the current hash in the history.
+                        remove_current_hash_from_history = true;
+                    } else if (current_filter.has_operator("with")) {
+                        // We don't know if all the messages from old topic were moved,
+                        // so we just update the `with` term in URL to avoid us navigating
+                        // back to the new narrow when user presses back button.
+                        //
+                        // If the `with` message was moved, we need to update the URL to
+                        // use a message from the old topic.
+                        const message_id = Number.parseInt(
+                            current_filter.terms_with_operator("with")[0]!.operand,
+                            10,
+                        );
+                        if (event.message_ids.includes(message_id)) {
+                            // At this point, we know that the `with` message was moved.
+                            if (!is_old_topic_empty_locally) {
+                                const old_topic_last_message_id = Math.max(
+                                    ...old_topic_message_ids,
+                                );
+                                current_filter = current_filter.filter_with_new_params({
+                                    operator: "with",
+                                    operand: old_topic_last_message_id.toString(),
+                                });
+                                message_view.update_hash_to_match_filter(
+                                    current_filter,
+                                    "stream/topic change",
+                                    true,
+                                );
+                            } else {
+                                // We don't have a local message for the current narrow,
+                                // so remove the `with` term from the hash to avoid back button bug.
+                                const terms_without_with_operator = terms.filter(
+                                    (term) => term.operator !== "with",
+                                );
+                                message_view.update_hash_to_match_filter(
+                                    new Filter(terms_without_with_operator),
+                                    "stream/topic change",
+                                    true,
+                                );
+                            }
+                        }
+                    }
                     const opts = {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
