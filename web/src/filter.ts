@@ -206,7 +206,7 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
             };
         }
 
-        case "dm-including": {
+        case "dm-with": {
             const operand_ids = people.sorted_other_user_ids(term.operand);
             return (message) => {
                 const user_ids = people.all_user_ids_in_pm(message);
@@ -238,6 +238,7 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
 }
 
 const USER_OPERATORS = new Set([
+    "dm-with",
     "dm-including",
     "dm",
     "mentions",
@@ -345,7 +346,7 @@ export class Filter {
             case "sender":
             case "mentions":
             case "dm":
-            case "dm-including":
+            case "dm-with":
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -560,8 +561,8 @@ export class Filter {
             const canonical_operator = filter_util.canonicalize_operator(suggestion.operator);
             switch (canonical_operator) {
                 case "dm":
-                case "dm-including": {
-                    // An empty operand is invalid for dm and dm-including.
+                case "dm-with": {
+                    // An empty operand is invalid for dm and dm-with.
                     if (suggestion.operand === "") {
                         return undefined;
                     }
@@ -673,7 +674,7 @@ export class Filter {
             case "mentions":
                 return people.is_valid_user_id(term.operand);
             case "dm":
-            case "dm-including":
+            case "dm-with":
                 return people.is_valid_user_ids(term.operand);
             case "search":
             case "":
@@ -746,7 +747,7 @@ export class Filter {
             "channel",
             "topic",
             "dm",
-            "dm-including",
+            "dm-with",
             "with",
             "sender",
             "mentions",
@@ -819,8 +820,8 @@ export class Filter {
             case "dm":
                 return verb + "direct messages with";
 
-            case "dm-including":
-                return verb + "direct messages including";
+            case "dm-with":
+                return verb + "direct messages with";
 
             case "mentions":
                 return verb + "messages mentioning";
@@ -1204,9 +1205,7 @@ export class Filter {
 
     is_search_for_specific_group_or_user(): boolean {
         return (
-            this.has_operator("dm") ||
-            this.has_operator("dm-including") ||
-            this.has_operator("sender")
+            this.has_operator("dm") || this.has_operator("dm-with") || this.has_operator("sender")
         );
     }
 
@@ -1226,8 +1225,8 @@ export class Filter {
             "topic",
             "not-topic",
             "dm",
-            "dm-including",
-            "not-dm-including",
+            "dm-with",
+            "not-dm-with",
             "is-dm",
             "not-is-dm",
             "is-resolved",
@@ -1728,7 +1727,7 @@ export class Filter {
         return (
             (this.has_operator("is") && this.terms_with_operator("is")[0]!.operand === "dm") ||
             this.has_operator("dm") ||
-            this.has_operator("dm-including")
+            this.has_operator("dm-with")
         );
     }
 
