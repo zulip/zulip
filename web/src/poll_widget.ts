@@ -1,5 +1,4 @@
 import $ from "jquery";
-import * as z from "zod/mini";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
@@ -11,28 +10,11 @@ import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
-import type {
-    InboundData,
-    NewOptionOutboundData,
-    QuestionOutboundData,
-    VoteOutboundData,
-} from "./poll_data.ts";
-import {PollData} from "./poll_data.ts";
+import type {InboundData, PollWidgetOutboundData} from "./poll_data.ts";
+import {PollData, poll_widget_extra_data_schema} from "./poll_data.ts";
 import type {WidgetExtraData} from "./widgetize.ts";
 
 export type Event = {sender_id: number; data: InboundData};
-
-export const poll_widget_extra_data_schema = z.object({
-    question: z.optional(z.string()),
-    options: z.optional(z.array(z.string())),
-});
-
-export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
-
-export type PollWidgetOutboundData =
-    | NewOptionOutboundData
-    | QuestionOutboundData
-    | VoteOutboundData;
 
 export function activate({
     $elem,

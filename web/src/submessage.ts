@@ -5,7 +5,8 @@ import * as channel from "./channel.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
-import type {PollWidgetOutboundData} from "./poll_widget.ts";
+import {poll_widget_extra_data_schema} from "./poll_data.ts";
+import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {todo_widget_extra_data_schema} from "./todo_widget.ts";
 import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as widgetize from "./widgetize.ts";
@@ -26,13 +27,6 @@ export const zform_widget_extra_data_schema = z.object({
     heading: z.string(),
     type: z.literal("choices"),
 });
-
-const poll_widget_extra_data_schema = z.nullable(
-    z.object({
-        question: z.optional(z.string()),
-        options: z.optional(z.array(z.string())),
-    }),
-);
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
