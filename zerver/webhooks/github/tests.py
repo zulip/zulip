@@ -654,7 +654,7 @@ A temporary team so that I can get some webhook fixtures!
         self.assertTrue(stack_info)
 
     def test_discussion_answered(self) -> None:
-        expected_message = "Niloth-p marked [comment #11460065](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460065) as the answer:\n\n~~~ quote\nIf you're looking for a detailed explanation of the project structure, I'd recommend checking out our CONTRIBUTING.md file. It includes a breakdown of the different directories and files, as well as some guidelines for contributing to the project.\n~~~"
+        expected_message = ":green_circle: Niloth-p marked [comment #11460065](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460065) as the answer:\n\n~~~ quote\nIf you're looking for a detailed explanation of the project structure, I'd recommend checking out our CONTRIBUTING.md file. It includes a breakdown of the different directories and files, as well as some guidelines for contributing to the project.\n~~~"
         self.check_webhook("discussion__answered", TOPIC_DISCUSSION_ANSWERS, expected_message)
 
     def test_discussion_category_changed(self) -> None:
@@ -672,7 +672,7 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion__created", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_closed(self) -> None:
-        expected_message = "Cordelia closed [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) as resolved."
+        expected_message = ":red_circle: Cordelia closed [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) as resolved."
         self.check_webhook("discussion__closed", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_deleted(self) -> None:
@@ -701,7 +701,7 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion__pinned", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_reopened(self) -> None:
-        expected_message = "Niloth-p reopened [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        expected_message = ":yellow_circle: Niloth-p reopened [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
         self.check_webhook("discussion__reopened", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_transferred(self) -> None:
@@ -721,7 +721,7 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion__unpinned", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_unanswered(self) -> None:
-        expected_message = "Cordelia marked [comment #11460059](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460059) as not the answer."
+        expected_message = ":yellow_circle: Cordelia marked [comment #11460059](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460059) as not the answer."
         self.check_webhook("discussion__unanswered", TOPIC_DISCUSSION_ANSWERS, expected_message)
 
     def test_discussion_comment_msg(self) -> None:

@@ -91,6 +91,14 @@ PR_CLOSE_ACTION_EMOJI = {
     "closed without merge": ":white_circle:",
 }
 
+# Mapping of GitHub discussion status actions to emojis
+DISCUSSION_STATUS_EMOJI = {
+    "answered": ":green_circle:",
+    "closed": ":red_circle:",
+    "reopened": ":yellow_circle:",
+    "unanswered": ":yellow_circle:",
+}
+
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
@@ -445,7 +453,12 @@ def get_discussion_body(helper: Helper) -> str:
     action = get_discussion_action(payload)
     DISCUSSION_TEMPLATE = DISCUSSION_TEMPLATES[action]
     context = LazyContext(payload, helper.include_title)
-    return DISCUSSION_TEMPLATE.format_map(context)
+    message = DISCUSSION_TEMPLATE.format_map(context)
+
+    # Add emoji prefix for status-indicating actions
+    original_action = payload["action"].tame(check_string)
+    emoji = DISCUSSION_STATUS_EMOJI.get(original_action, "")
+    return f"{emoji} {message}" if emoji else message
 
 
 def get_discussion_action(payload: WildValue) -> str:
