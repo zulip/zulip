@@ -47,6 +47,7 @@ from zerver.views.auth import (
 )
 from zerver.views.bot_commands import (
     delete_bot_command,
+    get_command_autocomplete,
     list_bot_commands,
     register_bot_command,
 )
@@ -477,6 +478,7 @@ v1_api_and_json_patterns = [
     # bot_commands -> zerver.views.bot_commands
     rest_path("bot_commands", GET=list_bot_commands, POST=register_bot_command),
     rest_path("bot_commands/<int:command_id>", DELETE=delete_bot_command),
+    rest_path("bot_commands/<int:bot_id>/autocomplete", GET=get_command_autocomplete),
     # Endpoint used by mobile devices to register their push
     # notification credentials
     rest_path(

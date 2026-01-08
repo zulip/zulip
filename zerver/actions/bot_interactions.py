@@ -20,18 +20,24 @@ def do_handle_bot_interaction(
     interaction_type: str,
     custom_id: str,
     interaction_data: dict[str, Any],
+    *,
+    interaction_id: str,
 ) -> None:
     """
     Process a user interaction with a bot widget and route it to the bot.
 
     This creates a submessage record for tracking and then queues an event
     for the bot to process.
+
+    The interaction_id is a unique identifier for this interaction that can
+    be used for acknowledgement tracking on the frontend.
     """
     bot = message.sender
 
     # Build the interaction content
     content = {
         "type": "interaction",
+        "interaction_id": interaction_id,
         "interaction_type": interaction_type,
         "custom_id": custom_id,
         "data": interaction_data,
@@ -71,6 +77,7 @@ def do_handle_bot_interaction(
         interaction_type=interaction_type,
         custom_id=custom_id,
         interaction_data=interaction_data,
+        interaction_id=interaction_id,
     )
 
 
@@ -81,6 +88,8 @@ def queue_bot_interaction_event(
     interaction_type: str,
     custom_id: str,
     interaction_data: dict[str, Any],
+    *,
+    interaction_id: str,
 ) -> None:
     """
     Queue an interaction event for a bot to process.
@@ -101,6 +110,7 @@ def queue_bot_interaction_event(
         "bot_user_id": bot.id,
         "user_profile_id": user.id,
         "message_id": message.id,
+        "interaction_id": interaction_id,
         "interaction_type": interaction_type,
         "custom_id": custom_id,
         "data": interaction_data,

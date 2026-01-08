@@ -76,21 +76,32 @@ export const interactive_extra_data_schema = z.object({
 // Types inferred from schemas - exported for external use if needed
 export type InteractiveExtraDataType = z.infer<typeof interactive_extra_data_schema>;
 
-function post_interaction(
+type InteractionResponse = {
+    interaction_id: string;
+};
+
+async function post_interaction(
     message_id: number,
     interaction_type: string,
     custom_id: string,
     data: Record<string, unknown> = {},
-): void {
-    void channel.post({
-        url: "/json/bot_interactions",
-        data: {
-            message_id: JSON.stringify(message_id),
-            interaction_type,
-            custom_id,
-            data: JSON.stringify(data),
-        },
-    });
+): Promise<string | null> {
+    try {
+        const response = await channel.post({
+            url: "/json/bot_interactions",
+            data: {
+                message_id: JSON.stringify(message_id),
+                interaction_type,
+                custom_id,
+                data: JSON.stringify(data),
+            },
+        });
+        // Extract interaction_id from response
+        const typed_response = response as InteractionResponse;
+        return typed_response.interaction_id ?? null;
+    } catch {
+        return null;
+    }
 }
 
 export function activate({
@@ -117,6 +128,9 @@ export function activate({
 
     // Store button modal data by custom_id for lookup on click
     const button_modals = new Map<string, z.infer<typeof button_modal_schema>>();
+
+    // Track pending interactions for acknowledgement
+    const pending_interactions = new Set<string>();
 
     function render(): void {
         button_modals.clear();
@@ -166,9 +180,21 @@ export function activate({
                     // Show modal instead of posting interaction directly
                     bot_modal.show_bot_modal(message.id, modal_data);
                 } else {
-                    // Custom button - post interaction
+                    // Custom button - post interaction with pending state
+                    $button.addClass("widget-button-pending");
                     $button.prop("disabled", true);
-                    post_interaction(message.id, "button_click", custom_id);
+
+                    void post_interaction(message.id, "button_click", custom_id).then(
+                        (interaction_id) => {
+                            if (interaction_id) {
+                                pending_interactions.add(interaction_id);
+                            } else {
+                                // Request failed, clear pending state
+                                $button.removeClass("widget-button-pending");
+                                $button.prop("disabled", false);
+                            }
+                        },
+                    );
                 }
             }
         });
@@ -200,6 +226,17 @@ export function activate({
                 "type" in event_data &&
                 typeof event_data.type === "string"
             ) {
+                // Check for interaction_id to clear pending state
+                if ("interaction_id" in event_data && typeof event_data.interaction_id === "string") {
+                    const interaction_id = event_data.interaction_id;
+                    if (pending_interactions.has(interaction_id)) {
+                        pending_interactions.delete(interaction_id);
+                        // Clear pending state from all buttons
+                        $elem.find(".widget-button-pending").removeClass("widget-button-pending");
+                        $elem.find(".widget-button:disabled").prop("disabled", false);
+                    }
+                }
+
                 if (event_data.type === "update") {
                     // Re-render with new data if the bot sends an update
                     // For now, we just re-render the existing data

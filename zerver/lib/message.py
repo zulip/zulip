@@ -312,6 +312,16 @@ def messages_for_ids(
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
         flags = user_message_flags[message_id]
+
+        # Filter submessages by visibility for the requesting user
+        if "submessages" in msg_dict and user_profile is not None:
+            user_id = user_profile.id
+            msg_dict["submessages"] = [
+                sm
+                for sm in msg_dict["submessages"]
+                if sm.get("visible_to") is None or user_id in sm.get("visible_to", [])
+            ]
+
         # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
         # the `stream_wildcard_mentioned` and `topic_wildcard_mentioned` flags.  The
         # `wildcard_mentioned` flag exists for backwards-compatibility with older

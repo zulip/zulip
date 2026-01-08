@@ -76,6 +76,7 @@ class BotInteractionWorker(QueueProcessingWorker):
                 "bot_email": bot_profile.email,
                 "bot_full_name": bot_profile.full_name,
                 # Interaction-specific fields
+                "interaction_id": event.get("interaction_id"),
                 "interaction_type": event["interaction_type"],
                 "custom_id": event["custom_id"],
                 "data": event["data"],
@@ -143,6 +144,7 @@ class BotInteractionWorker(QueueProcessingWorker):
                 if hasattr(bot_handler, "handle_interaction"):
                     bot_handler.handle_interaction(
                         interaction={
+                            "interaction_id": event.get("interaction_id"),
                             "type": event["interaction_type"],
                             "custom_id": event["custom_id"],
                             "data": event["data"],
@@ -180,11 +182,14 @@ class BotInteractionWorker(QueueProcessingWorker):
         Bots can respond to interactions with:
         - A message update (modify the widget that was interacted with)
         - A new message (reply to the interaction)
+        - An ephemeral response (visible only to the interacting user)
+        - A private response (visible to a subset of users)
         - No response (just acknowledge)
         """
         import json
 
         from zerver.actions.message_send import check_send_message
+        from zerver.actions.submessage import do_add_submessage
         from zerver.models.clients import get_client
 
         try:
@@ -195,7 +200,43 @@ class BotInteractionWorker(QueueProcessingWorker):
             if not isinstance(response_json, dict):
                 return
 
-            # Check if bot wants to send a reply message
+            # Determine visibility for the response
+            visible_user_ids: list[int] | None = None
+            if response_json.get("ephemeral"):
+                # Ephemeral response - only visible to interacting user
+                visible_user_ids = [event["user"]["id"]]
+            elif response_json.get("visible_user_ids"):
+                # Private response - visible to specified users
+                visible_user_ids = response_json["visible_user_ids"]
+
+            # If response is ephemeral/private, create a submessage instead of a new message
+            # This allows visibility filtering to work correctly
+            if visible_user_ids is not None and "content" in response_json:
+                message_info = event["message"]
+                message_id = message_info["id"]
+
+                # Create submessage with visibility constraint
+                submessage_content = json.dumps({
+                    "type": "bot_response",
+                    "interaction_id": event.get("interaction_id"),
+                    "content": response_json["content"],
+                    "widget_content": response_json.get("widget_content"),
+                })
+
+                do_add_submessage(
+                    realm=bot_profile.realm,
+                    sender_id=bot_profile.id,
+                    message_id=message_id,
+                    msg_type="widget",
+                    content=submessage_content,
+                    visible_user_ids=visible_user_ids,
+                )
+                logger.info(
+                    "Created ephemeral/private submessage for interaction response"
+                )
+                return
+
+            # Check if bot wants to send a public reply message
             if "content" in response_json:
                 message_info = event["message"]
                 client = get_client("BotInteractionResponse")

@@ -336,6 +336,10 @@ class AbstractSubMessage(models.Model):
     msg_type = models.TextField()
     content = models.TextField()
 
+    # If set, this submessage is only visible to users with IDs in this list.
+    # If null, the submessage is visible to all users who can see the parent message.
+    visible_to = models.JSONField(null=True, default=None)
+
     class Meta:
         abstract = True
 
@@ -345,7 +349,7 @@ class SubMessage(AbstractSubMessage):
 
     @staticmethod
     def get_raw_db_rows(needed_ids: list[int]) -> list[dict[str, Any]]:
-        fields = ["id", "message_id", "sender_id", "msg_type", "content"]
+        fields = ["id", "message_id", "sender_id", "msg_type", "content", "visible_to"]
         query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
         query = query.order_by("message_id", "id")
         return list(query)

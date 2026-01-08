@@ -489,11 +489,39 @@ input {
         border-radius: 4px;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 0.15s, border-color 0.15s;
+        transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+        position: relative;
 
         &:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+    }
+
+    /* Pending state for buttons - shown while waiting for bot response */
+    .widget-button-pending {
+        opacity: 0.7;
+        pointer-events: none;
+
+        /* Spinner overlay */
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            width: 14px;
+            height: 14px;
+            margin-top: -7px;
+            border: 2px solid currentcolor;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: widget-button-spin 0.8s linear infinite;
+        }
+    }
+
+    @keyframes widget-button-spin {
+        to {
+            transform: rotate(360deg);
         }
     }
 

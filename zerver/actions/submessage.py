@@ -43,16 +43,22 @@ def do_add_submessage(
     message_id: int,
     msg_type: str,
     content: str,
+    *,
+    visible_user_ids: list[int] | None = None,
 ) -> None:
     """Should be called while holding a SELECT FOR UPDATE lock
     (e.g. via access_message(..., lock_message=True)) on the
     Message row, to prevent race conditions.
+
+    If visible_user_ids is provided, the submessage will only be
+    visible to those specific users (ephemeral/private responses).
     """
     submessage = SubMessage(
         sender_id=sender_id,
         message_id=message_id,
         msg_type=msg_type,
         content=content,
+        visible_to=visible_user_ids,
     )
     submessage.save()
 
@@ -91,8 +97,16 @@ def do_add_submessage(
         sender_id=sender_id,
         content=content,
     )
-    target_user_ids = event_recipient_ids_for_action_on_messages(
+
+    # Determine target users for the event
+    all_recipient_ids = event_recipient_ids_for_action_on_messages(
         [submessage.message.id], submessage.message.is_channel_message
     )
+
+    if visible_user_ids is not None:
+        # Filter to only users who can see the message AND are in the visibility list
+        target_user_ids = list(set(all_recipient_ids) & set(visible_user_ids))
+    else:
+        target_user_ids = all_recipient_ids
 
     send_event_on_commit(realm, event, target_user_ids)

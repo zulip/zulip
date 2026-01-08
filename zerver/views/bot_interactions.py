@@ -6,8 +6,9 @@ select menu selections, modal submissions) from users interacting with bot-creat
 widgets.
 """
 
+import uuid
+
 import orjson
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -43,7 +44,13 @@ def handle_bot_interaction(
     - interaction_type: The type of interaction (button_click, select_menu, modal_submit)
     - custom_id: The custom identifier set by the bot for this interactive element
     - data: JSON-encoded additional data about the interaction
+
+    Returns:
+    - interaction_id: A unique identifier for this interaction, used for acknowledgement tracking
     """
+    # Generate a unique interaction ID for tracking/acknowledgement
+    interaction_id = str(uuid.uuid4())
+
     # Access the message and verify the user can interact with it
     message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
@@ -70,6 +77,7 @@ def handle_bot_interaction(
         interaction_type=interaction_type,
         custom_id=custom_id,
         interaction_data=interaction_data,
+        interaction_id=interaction_id,
     )
 
-    return json_success(request)
+    return json_success(request, data={"interaction_id": interaction_id})
