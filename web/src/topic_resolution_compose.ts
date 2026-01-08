@@ -146,9 +146,6 @@ export function resolve_without_message(): void {
     const pending = topic_resolution_state.get_pending_resolution()!;
     const {message_id, topic} = pending;
 
-    // Close compose first
-    compose_actions.cancel();
-
     // Resolve the topic via the topic-move API (no message)
     const new_topic_name = resolved_topic.resolve_name(topic);
     void channel.patch({
@@ -160,6 +157,8 @@ export function resolve_without_message(): void {
             send_notification_to_new_thread: true,
         },
         success() {
+            // Close compose only after API success to avoid losing state on failure
+            compose_actions.cancel();
             topic_resolution_state.clear_pending_resolution_state();
         },
     });

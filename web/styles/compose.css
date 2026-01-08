@@ -1013,6 +1013,12 @@
     .secondary-button {
         margin-left: 10px;
     }
+
+    /* Extra margins for resolution banner cancel button */
+    .resolution-banner-cancel {
+        margin-left: 8px;
+        margin-right: 10px;
+    }
 }
 
 .upload_banner {
