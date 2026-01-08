@@ -9863,6 +9863,13 @@ paths:
                   example: true
                 content:
                   $ref: "#/components/schemas/OptionalContent"
+                resolution_message:
+                  description: |
+                    The optional message to send when resolving a topic.
+
+                    **Changes**: New in Zulip 10.0 (feature level 470).
+                  type: string
+                  example: "Resolved!"
                 prev_content_sha256:
                   description: |
                     An optional SHA-256 hash of the previous raw content of the message
@@ -18971,6 +18978,22 @@ paths:
 
                           Whether this organization has been configured to enable
                           [previews of linked websites](/help/image-video-and-website-previews).
+                      realm_topic_resolution_message_requirement:
+                        type: string
+                        enum:
+                          - not_requested
+                          - optional
+                          - required
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for whether a message is required when resolving a topic.
+
+                          - `not_requested`: No message requested
+                          - `optional`: A message is optional
+                          - `required`: A message is required
+
+                          **Changes**: New in Zulip 10.0 (feature level 470).
                       realm_topics_policy:
                         type: string
                         enum:
