@@ -24,6 +24,7 @@ type SendMessageData = {
     | {
           type: "stream";
           topic: string;
+          then_resolve_topic?: boolean;
       }
     | {
           type: "private";

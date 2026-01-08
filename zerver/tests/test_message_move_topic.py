@@ -3087,3 +3087,43 @@ class MessageMoveTopicTest(ZulipTestCase):
         # Verify topic was not resolved
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(msg.topic_name(), topic_name)
+
+    def test_send_message_with_then_resolve_topic(self) -> None:
+        """Test sending a message with then_resolve_topic=True resolves the topic."""
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        stream = self.make_stream("test stream")
+        self.subscribe(admin_user, stream.name)
+
+        topic_name = "test topic"
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps(stream.name).decode(),
+                "topic": topic_name,
+                "content": "Resolving this topic!",
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        response = self.assert_json_success(result)
+
+        # Verify the topic was resolved
+        msg = Message.objects.get(id=response["id"])
+        self.assertEqual(msg.topic_name(), RESOLVED_TOPIC_PREFIX + topic_name)
+
+    def test_then_resolve_topic_error_for_dm(self) -> None:
+        """Test that then_resolve_topic fails for direct messages."""
+        self.login("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "direct",
+                "to": orjson.dumps([cordelia.email]).decode(),
+                "content": "Test message",
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(result, "then_resolve_topic is only supported for channel messages")

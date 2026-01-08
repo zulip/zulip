@@ -1179,6 +1179,13 @@ textarea.new_message_textarea {
         border-color: transparent;
         max-width: fit-content;
     }
+
+    /* Faded appearance for resolution mode - visible but not editable */
+    &.resolution-locked {
+        opacity: 0.6;
+        pointer-events: none;
+        cursor: not-allowed;
+    }
 }
 
 #compose_select_recipient_widget {
@@ -1209,6 +1216,13 @@ textarea.new_message_textarea {
     .dropdown_widget_value {
         text-overflow: ellipsis;
         overflow: hidden;
+    }
+
+    /* Faded appearance for resolution mode */
+    &.resolution-locked {
+        opacity: 0.6;
+        pointer-events: none;
+        cursor: not-allowed;
     }
 }
 
