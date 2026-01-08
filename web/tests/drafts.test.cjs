@@ -239,20 +239,53 @@ test("draft_model edit", ({override_rewire}) => {
     assert.deepEqual(draft_model.getDraft(id), draft_2);
 });
 
-test("draft_model delete", ({override_rewire}) => {
+test("draft_model delete", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-    assert.equal(ls.get("draft"), undefined);
+    const data = {
+        id1: {
+            topic: "topic",
+            type: "stream",
+            content: "Test stream message",
+            stream_id: 30,
+            updatedAt: 1549958107000,
+            is_sending_saving: false,
+        },
+        id2: {
+            private_message_recipient_ids: [5],
+            reply_to: "aaron@zulip.com",
+            type: "private",
+            content: "Test direct message",
+            updatedAt: 1549958107000,
+            is_sending_saving: false,
+        },
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
+        id3: {
+            topic: "outbox",
+            type: "stream",
+            content: "Outbox message",
+            stream_id: 31,
+            updatedAt: 1549958107000,
+            is_sending_saving: true, 
+        },
+    };
+    ls.set("drafts", data);
+    assert.deepEqual(draft_model.get(), data);
 
-    const id = draft_model.addDraft(draft_1);
-    assert.deepEqual(draft_model.getDraft(id), draft_1);
+    draft_model.deleteDraft("id1");
+    const expected_data_1 = {
+        id2: data.id2,
+        id3: data.id3,
+    };
+    assert.deepEqual(draft_model.get(), expected_data_1);
+    assert.deepEqual(ls.get("drafts"), expected_data_1);
 
-    draft_model.deleteDrafts([id]);
-    assert.deepEqual(draft_model.getDraft(id), false);
+    draft_model.deleteDraft("id3");
+    const expected_data_2 = {
+        id2: data.id2,
+    };
+    assert.deepEqual(draft_model.get(), expected_data_2);
+    assert.deepEqual(ls.get("drafts"), expected_data_2);
 });
 
 test("snapshot_message", ({override}) => {
