@@ -1,0 +1,65 @@
+<div class="widget-rich-embed" {{#if color_css}}style="border-left-color: {{color_css}}"{{/if}}>
+    {{#if author}}
+    <div class="embed-author">
+        {{#if author.icon_url}}
+        <img class="embed-author-icon" src="{{author.icon_url}}" alt="" />
+        {{/if}}
+        {{#if author.url}}
+        <a class="embed-author-name" href="{{author.url}}" target="_blank" rel="noopener noreferrer">{{author.name}}</a>
+        {{else}}
+        <span class="embed-author-name">{{author.name}}</span>
+        {{/if}}
+    </div>
+    {{/if}}
+
+    {{#if title}}
+    <div class="embed-title">
+        {{#if url}}
+        <a href="{{url}}" target="_blank" rel="noopener noreferrer">{{title}}</a>
+        {{else}}
+        {{title}}
+        {{/if}}
+    </div>
+    {{/if}}
+
+    {{#if description}}
+    <div class="embed-description">{{description}}</div>
+    {{/if}}
+
+    {{#if has_fields}}
+    <div class="embed-fields">
+        {{#each fields}}
+        <div class="embed-field {{#if inline}}embed-field-inline{{/if}}">
+            <div class="embed-field-name">{{name}}</div>
+            <div class="embed-field-value">{{value}}</div>
+        </div>
+        {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if image}}
+    <div class="embed-image">
+        <img src="{{image.url}}" alt="" />
+    </div>
+    {{/if}}
+
+    {{#if thumbnail}}
+    <img class="embed-thumbnail" src="{{thumbnail.url}}" alt="" />
+    {{/if}}
+
+    {{#if footer}}
+    <div class="embed-footer">
+        {{#if footer.icon_url}}
+        <img class="embed-footer-icon" src="{{footer.icon_url}}" alt="" />
+        {{/if}}
+        <span class="embed-footer-text">{{footer.text}}</span>
+        {{#if formatted_timestamp}}
+        <span class="embed-timestamp"> • {{formatted_timestamp}}</span>
+        {{/if}}
+    </div>
+    {{else if formatted_timestamp}}
+    <div class="embed-footer">
+        <span class="embed-timestamp">{{formatted_timestamp}}</span>
+    </div>
+    {{/if}}
+</div>

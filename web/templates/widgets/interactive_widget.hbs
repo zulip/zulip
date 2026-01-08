@@ -1,0 +1,44 @@
+<div class="widget-interactive">
+    {{#if content}}
+    <div class="widget-content-text">{{content}}</div>
+    {{/if}}
+
+    {{#each action_rows}}
+    <div class="widget-action-row">
+        {{#each components}}
+            {{#if is_button}}
+            <button
+                class="widget-button widget-button-{{style}}"
+                data-custom-id="{{custom_id}}"
+                {{#if url}}data-url="{{url}}"{{/if}}
+                {{#if disabled}}disabled{{/if}}
+            >
+                {{label}}
+            </button>
+            {{/if}}
+
+            {{#if is_select}}
+            <select
+                class="widget-select"
+                data-custom-id="{{custom_id}}"
+                {{#if disabled}}disabled{{/if}}
+                {{#if (gt max_values 1)}}multiple{{/if}}
+            >
+                {{#if placeholder}}
+                <option value="" disabled selected>{{placeholder}}</option>
+                {{/if}}
+                {{#each options}}
+                <option
+                    value="{{value}}"
+                    {{#if default}}selected{{/if}}
+                    {{#if description}}title="{{description}}"{{/if}}
+                >
+                    {{label}}
+                </option>
+                {{/each}}
+            </select>
+            {{/if}}
+        {{/each}}
+    </div>
+    {{/each}}
+</div>

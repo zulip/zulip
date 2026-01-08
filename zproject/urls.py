@@ -45,6 +45,7 @@ from zerver.views.auth import (
     start_social_login,
     start_social_signup,
 )
+from zerver.views.bot_interactions import handle_bot_interaction
 from zerver.views.channel_folders import (
     create_channel_folder,
     get_channel_folders,
@@ -441,6 +442,8 @@ v1_api_and_json_patterns = [
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
     rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
     rest_path("submessage", POST=process_submessage),
+    # Bot interactions endpoint for widget callbacks
+    rest_path("bot_interactions", POST=handle_bot_interaction),
     # New endpoint for handling reactions.
     # reactions -> zerver.view.reactions
     # POST adds a reaction to a message

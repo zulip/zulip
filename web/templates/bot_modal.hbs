@@ -1,0 +1,36 @@
+<form id="bot-modal-form" class="bot-modal-form">
+    {{#each components}}
+    <div class="bot-modal-action-row">
+        {{#each components}}
+        {{#if is_text_input}}
+        <div class="input-group bot-modal-text-input-container">
+            <label for="bot-modal-input-{{custom_id}}">{{label}}{{#if required}} *{{/if}}</label>
+            {{#if is_paragraph}}
+            <textarea
+                id="bot-modal-input-{{custom_id}}"
+                name="{{custom_id}}"
+                class="modal_text_input bot-modal-input"
+                placeholder="{{placeholder}}"
+                {{#if min_length}}minlength="{{min_length}}"{{/if}}
+                {{#if max_length}}maxlength="{{max_length}}"{{/if}}
+                {{#if required}}required{{/if}}
+            >{{value}}</textarea>
+            {{else}}
+            <input
+                type="text"
+                id="bot-modal-input-{{custom_id}}"
+                name="{{custom_id}}"
+                class="modal_text_input bot-modal-input"
+                placeholder="{{placeholder}}"
+                value="{{value}}"
+                {{#if min_length}}minlength="{{min_length}}"{{/if}}
+                {{#if max_length}}maxlength="{{max_length}}"{{/if}}
+                {{#if required}}required{{/if}}
+            />
+            {{/if}}
+        </div>
+        {{/if}}
+        {{/each}}
+    </div>
+    {{/each}}
+</form>

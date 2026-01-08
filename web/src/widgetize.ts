@@ -3,14 +3,25 @@ import $ from "jquery";
 import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
-import type {PollWidgetExtraData, PollWidgetOutboundData} from "./poll_data.ts";
-import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
+import type {PollWidgetExtraData} from "./poll_data.ts";
+import type {TodoWidgetExtraData} from "./todo_widget.ts";
 import type {Event} from "./widget_data.ts";
+import type {WidgetOutboundData} from "./widget_schema.ts";
 import type {ZFormExtraData} from "./zform_data.ts";
 
-export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
+// Bot widget extra data types - more permissive for bot-generated content
+export type RichEmbedExtraData = Record<string, unknown>;
+export type InteractiveExtraData = Record<string, unknown>;
+export type FreeformExtraData = Record<string, unknown>;
 
-type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
+export type WidgetExtraData =
+    | PollWidgetExtraData
+    | TodoWidgetExtraData
+    | ZFormExtraData
+    | RichEmbedExtraData
+    | InteractiveExtraData
+    | FreeformExtraData
+    | null;
 
 type WidgetOptions = {
     widget_type: string;
