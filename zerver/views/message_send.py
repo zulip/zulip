@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.message_send import (
     check_send_message,
     compute_irc_user_fullname,
@@ -20,6 +21,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.typed_endpoint import (
     DOCUMENTATION_PENDING,
     ApiParamConfig,
@@ -125,6 +127,7 @@ def send_message_backend(
     widget_content: Annotated[
         str | None, ApiParamConfig("widget_content", documentation_status=DOCUMENTATION_PENDING)
     ] = None,
+    then_resolve_topic: Json[bool] = False,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -240,6 +243,33 @@ def send_message_backend(
         data["automatic_new_visibility_policy"] = (
             sent_message_result.automatic_new_visibility_policy
         )
+
+    # If then_resolve_topic is True, resolve the topic after sending the message
+    if then_resolve_topic:
+        if recipient_type_name != "stream":
+            raise JsonableError(_("then_resolve_topic is only supported for channel messages"))
+        if topic_name is None:
+            raise JsonableError(_("then_resolve_topic requires a topic"))
+
+        # Build the resolved topic name
+        resolved_topic = RESOLVED_TOPIC_PREFIX + topic_name
+
+        # Use check_update_message to resolve the topic - this handles
+        # permissions, sends Notification Bot message, etc.
+        # Use resolution_message_already_sent flag to bypass the "required" mode
+        # validation without triggering the quoting logic - the user's message
+        # was already sent above as a normal message.
+        check_update_message(
+            user_profile=user_profile,
+            message_id=sent_message_result.message_id,
+            topic_name=resolved_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=True,
+            resolution_message_already_sent=True,
+        )
+        data["topic_resolved"] = True
+
     return json_success(request, data=data)
 
 

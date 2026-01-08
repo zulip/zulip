@@ -37,7 +37,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
-from zerver.models.realms import RealmTopicsPolicyEnum
+from zerver.models.realms import RealmTopicsPolicyEnum, TopicResolutionMessageRequirementEnum
 from zerver.models.streams import Stream, StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 
@@ -3042,3 +3042,48 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_json_success(result)
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(msg.topic_name(), original_topic_name)
+
+    def test_resolve_topic_blocked_in_required_mode(self) -> None:
+        """Test that resolving via move-topic API is blocked when setting is required.
+
+        When topic_resolution_message_requirement is 'required', users must use
+        the compose-based resolution flow (send message with then_resolve_topic=true)
+        rather than the move-topic API.
+        """
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(admin_user, stream.name)
+
+        # Set realm to require resolution message
+        do_set_realm_property(
+            admin_user.realm,
+            "topic_resolution_message_requirement",
+            TopicResolutionMessageRequirementEnum.required,
+            acting_user=admin_user,
+        )
+
+        topic_name = "test topic"
+        msg_id = self.send_stream_message(
+            admin_user, stream.name, topic_name=topic_name, content="First"
+        )
+
+        resolved_topic = RESOLVED_TOPIC_PREFIX + topic_name
+
+        # Try to resolve via move-topic API (should be blocked in required mode)
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "topic": resolved_topic,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(
+            result,
+            "Your organization requires a message when resolving topics. "
+            "Please use the resolve topic button instead.",
+        )
+
+        # Verify topic was not resolved
+        msg = Message.objects.get(id=msg_id)
+        self.assertEqual(msg.topic_name(), topic_name)
