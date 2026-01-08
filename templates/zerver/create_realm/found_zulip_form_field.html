@@ -5,7 +5,7 @@
         <i class="fa fa-question-circle-o" aria-hidden="true" data-tippy-content="{% trans %}This value is used only if you sign up for a plan, in which case it will be sent to the Zulip team.{% endtrans %}"></i>
         {% endif %}
     </label>
-    <select name="how_realm_creator_found_zulip" class="required" required>
+    <select id="how_realm_creator_found_zulip" name="how_realm_creator_found_zulip" class="required" required>
         <option value="" selected disabled>{{ _('Select an option') }}</option>
         {% for option_id, option_name in how_realm_creator_found_zulip_options %}
         <option value="{{ option_id }}">{{ option_name }}</option>
