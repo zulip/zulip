@@ -39,6 +39,7 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
     switch (term.operator) {
         case "dm-including":
         case "dm":
+        case "mentions":
             slug = people.user_ids_to_slug(term.operand);
             break;
         case "sender":
@@ -72,7 +73,7 @@ export function decode_operand(
         }
     }
 
-    if (operator === "dm-including" || operator === "dm") {
+    if (operator === "dm-including" || operator === "dm" || operator === "mentions") {
         const user_ids = people.slug_to_user_ids(operand);
         if (user_ids) {
             return user_ids;

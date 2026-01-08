@@ -13,6 +13,7 @@ import type {Message} from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {process_user_mention} from "./postprocess_content.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import {current_user, narrow_canonical_term_schema, narrow_operator_schema} from "./state_data.ts";
 import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
@@ -196,6 +197,12 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             }
             return operand_ids.every((operand_id) => user_ids.includes(operand_id));
         }
+
+        case "mentions": {
+            const operand_ids = people.sorted_other_user_ids(term.operand);
+
+            return process_user_mention(message.content, operand_ids);
+        }
     }
 
     // We will never get here since operator type validation would fail.
@@ -210,6 +217,7 @@ const USER_OPERATORS = new Set([
     "from",
     "pm-with",
     "group-pm-with",
+    "mentions",
 ]);
 
 export class Filter {
@@ -265,6 +273,7 @@ export class Filter {
             case "sender":
             case "dm":
             case "dm-including":
+            case "mentions":
                 break;
             case "search":
                 // The mac app automatically substitutes regular quotes with curly
@@ -473,7 +482,8 @@ export class Filter {
             const canonical_operator = filter_util.canonicalize_operator(suggestion.operator);
             switch (canonical_operator) {
                 case "dm":
-                case "dm-including": {
+                case "dm-including":
+                case "mentions": {
                     let operand: number[];
                     if (suggestion.operand.toLowerCase() === "me") {
                         operand = [people.my_current_user_id()];
@@ -562,6 +572,7 @@ export class Filter {
                 return people.is_valid_user_id(term.operand);
             case "dm":
             case "dm-including":
+            case "mentions":
                 return people.is_valid_user_ids(term.operand);
             case "search":
             case "":
@@ -650,6 +661,7 @@ export class Filter {
             "has-image",
             "has-attachment",
             "search",
+            "mentions",
         ];
 
         const level = (term_type: string): number => {
@@ -706,6 +718,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "mentions":
+                return verb + "messages mentions";
 
             case "in":
                 return verb + "messages in";
