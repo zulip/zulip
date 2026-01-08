@@ -12,25 +12,39 @@ export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormE
 
 type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
 
-type WidgetOptions = {
+type PostToServerFunction = (data: {msg_type: string; data: WidgetOutboundData}) => void;
+type HandleInboundEventsFunction = (events: Event[]) => void;
+
+// These are the arguments that get passed in to us from the
+// submessage system, which is essentially the transport layer
+// that lets multiple users interact with the same widget and
+// broadcasts submessages among the users. The widgets themselves
+// don't really need to know the nitty-gritty of the server details,
+// but the server basically just stores submessages in the database
+// and then sends events to active users when new submessages arrive
+// via the standard Zulip events mechanism.
+type ActivateArguments = {
     widget_type: string;
     extra_data: WidgetExtraData;
     events: Event[];
     $row: JQuery;
     message: Message;
-    post_to_server: (data: {msg_type: string; data: WidgetOutboundData}) => void;
+    post_to_server: PostToServerFunction;
 };
 
-export type WidgetValue = Record<string, unknown> & {
+// These are poll, todo, and zform implementations.
+// They are currently injected into us from another module
+// for historical reasons. (as of January 2026)
+type WidgetImplementation = Record<string, unknown> & {
     activate: (data: {
         $elem: JQuery;
         callback: (data: WidgetOutboundData) => void;
         message: Message;
         extra_data: WidgetExtraData;
-    }) => (events: Event[]) => void;
+    }) => HandleInboundEventsFunction;
 };
 
-export const widgets = new Map<string, WidgetValue>();
+export const widgets = new Map<string, WidgetImplementation>();
 export const widget_event_handlers = new Map<number, (events: Event[]) => void>();
 
 export function clear_for_testing(): void {
@@ -55,7 +69,45 @@ function is_supported_widget_type(widget_type: string): boolean {
     return false;
 }
 
-export function activate(in_opts: WidgetOptions): void {
+function create_widget_instance(info: {
+    widget_type: string;
+    post_to_server: PostToServerFunction;
+    $widget_elem: JQuery;
+    message: Message;
+    extra_data: WidgetExtraData;
+}): HandleInboundEventsFunction {
+    const {widget_type, post_to_server, $widget_elem, message, extra_data} = info;
+
+    // For historical reasons, we don't directly import the
+    // modules that handle poll, todo, and zform.
+    const widget_implementation = widgets.get(widget_type)!;
+
+    // We pass this is into the widgets to provide them a black-box
+    // service that sends any events **outbound** to the other active
+    // users. For example, if I vote on a poll, the widget from my
+    // client will send data to the server using this callback, and
+    // then the server will broadcast my poll vote to other users.
+    function post_to_server_callback(data: WidgetOutboundData): void {
+        post_to_server({
+            msg_type: "widget",
+            data,
+        });
+    }
+
+    const event_handler = widget_implementation.activate({
+        $elem: $widget_elem,
+        callback: post_to_server_callback,
+        message,
+        extra_data,
+    });
+
+    // Our widget objects are not yet built from JS/TS classes.
+    // They look to the outside world as a simple event handler
+    // function. This should change soon.
+    return event_handler;
+}
+
+export function activate(in_opts: ActivateArguments): void {
     const widget_type = in_opts.widget_type;
     const extra_data = in_opts.extra_data;
     const events = in_opts.events;
@@ -68,13 +120,6 @@ export function activate(in_opts: WidgetOptions): void {
         return;
     }
 
-    const callback = function (data: WidgetOutboundData): void {
-        post_to_server({
-            msg_type: "widget",
-            data,
-        });
-    };
-
     const is_message_preview = $row.parent()?.attr("id") === "report-message-preview-container";
 
     if (
@@ -86,13 +131,14 @@ export function activate(in_opts: WidgetOptions): void {
         return;
     }
 
-    // We depend on our widgets to use templates to build
-    // the HTML that will eventually go in this div.
+    // We depend on our widget implementations to build the
+    // DOM and event handlers that eventually go in this div.
     const $widget_elem = $("<div>").addClass("widget-content");
 
-    const event_handler = widgets.get(widget_type)!.activate({
-        $elem: $widget_elem,
-        callback,
+    const event_handler = create_widget_instance({
+        widget_type,
+        post_to_server,
+        $widget_elem,
         message,
         extra_data,
     });
@@ -106,8 +152,13 @@ export function activate(in_opts: WidgetOptions): void {
     set_widget_in_message($row, $widget_elem);
 
     // Replay any events that already happened.  (This is common
-    // when you narrow to a message after other users have already
-    // interacted with it.)
+    // when the user opens a conversation with a poll that
+    // other users have already interacted with.)
+    //
+    // If there are no events to replay, don't annoy the widget
+    // by making it handle the degenerate case. In most cases
+    // it would just lead to an extra re-render or something
+    // harmless, but there's still no point.
     if (events.length > 0) {
         event_handler(events);
     }
