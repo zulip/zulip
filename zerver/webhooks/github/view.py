@@ -57,9 +57,6 @@ DEPLOYMENT_STATUS_EMOJI = {
     "success": ":green_circle:",
     "failure": ":red_circle:",
     "error": ":red_circle:",
-    "inactive": ":white_circle:",
-    "in_progress": ":orange_circle:",
-    "queued": ":white_circle:",
     "pending": ":yellow_circle:",
 }
 
