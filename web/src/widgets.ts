@@ -1,10 +1,10 @@
+import * as generic_widget from "./generic_widget.ts";
 import * as poll_widget from "./poll_widget.ts";
 import * as todo_widget from "./todo_widget.ts";
-import * as widgetize from "./widgetize.ts";
 import * as zform from "./zform.ts";
 
 export function initialize(): void {
-    widgetize.widgets.set("poll", poll_widget);
-    widgetize.widgets.set("todo", todo_widget);
-    widgetize.widgets.set("zform", zform);
+    generic_widget.widgets.set("poll", poll_widget);
+    generic_widget.widgets.set("todo", todo_widget);
+    generic_widget.widgets.set("zform", zform);
 }
