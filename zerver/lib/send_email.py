@@ -99,6 +99,8 @@ def build_email(
     date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
+    in_reply_to: str | None = None,
+    references: str | None = None,
 ) -> EmailMultiAlternatives:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
@@ -140,6 +142,12 @@ def build_email(
         # but we can use its utility for formatting the List-Id header, as it follows the same format,
         # except having just a domain instead of an email address.
         extra_headers["List-Id"] = formataddr((realm.name, realm.host))
+
+    if in_reply_to is not None:
+        extra_headers["In-Reply-To"] = in_reply_to
+
+    if references is not None:
+        extra_headers["References"] = references
 
     assert settings.STATIC_URL is not None
     context = {
@@ -272,6 +280,8 @@ def send_immediate_email(
     connection: BaseEmailBackend | None = None,
     dry_run: bool = False,
     request: HttpRequest | None = None,
+    in_reply_to: str | None = None,
+    references: str | None = None,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -284,6 +294,8 @@ def send_immediate_email(
         date=date,
         context=context,
         realm=realm,
+        in_reply_to=in_reply_to,
+        references=references,
     )
     template = template_prefix.split("/")[-1]
 
