@@ -53,7 +53,7 @@ export function insert_demo_organization_warning(): void {
         label: $t(
             {
                 defaultMessage:
-                    "This demo organization will be automatically deleted in {days_remaining} days, unless it's converted into a permanent organization.",
+                    "This demo organization will be automatically deactivated in {days_remaining} days, unless it's converted into a permanent organization.",
             },
             {
                 days_remaining,
