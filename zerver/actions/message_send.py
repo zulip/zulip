@@ -1883,6 +1883,12 @@ def check_message(
                 )
             )
 
+        # Freeform widgets can execute arbitrary JS in client browsers,
+        # so they require a trusted bot.
+        if widget_content_dict.get("widget_type") == "freeform":
+            if not sender.is_bot or not sender.is_trusted_bot:
+                raise JsonableError(_("Freeform widgets require a trusted bot"))
+
     message_send_dict = build_message_send_dict(
         message=message,
         stream=stream,

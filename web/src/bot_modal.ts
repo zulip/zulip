@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_bot_modal from "../templates/bot_modal.hbs";
 
@@ -12,12 +12,12 @@ const text_input_schema = z.object({
     type: z.literal("text_input"),
     custom_id: z.string(),
     label: z.string(),
-    style: z.enum(["short", "paragraph"]).optional(),
-    placeholder: z.string().optional(),
-    value: z.string().optional(),
-    min_length: z.number().optional(),
-    max_length: z.number().optional(),
-    required: z.boolean().optional(),
+    style: z.optional(z.enum(["short", "paragraph"])),
+    placeholder: z.optional(z.string()),
+    value: z.optional(z.string()),
+    min_length: z.optional(z.number()),
+    max_length: z.optional(z.number()),
+    required: z.optional(z.boolean()),
 });
 
 // Component is just text_input for now, can be extended
@@ -103,8 +103,8 @@ export function show_bot_modal(message_id: number, modal_data: BotModalData): vo
         },
         validate_input() {
             const $form = $("#bot-modal-form");
-            const form = $form[0] as HTMLFormElement | undefined;
-            if (form && !form.checkValidity()) {
+            const form = $form[0];
+            if (form instanceof HTMLFormElement && !form.checkValidity()) {
                 form.reportValidity();
                 return false;
             }

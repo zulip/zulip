@@ -541,6 +541,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
     bot_owner = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)
+    # Trusted bots can send freeform widgets with arbitrary HTML/JS/CSS.
+    # Only realm admins can mark bots as trusted.
+    is_trusted_bot = models.BooleanField(default=False)
 
     # Each role has a superset of the permissions of the next higher
     # numbered role.  When adding new roles, leave enough space for

@@ -45,6 +45,11 @@ from zerver.views.auth import (
     start_social_login,
     start_social_signup,
 )
+from zerver.views.bot_commands import (
+    delete_bot_command,
+    list_bot_commands,
+    register_bot_command,
+)
 from zerver.views.bot_interactions import handle_bot_interaction
 from zerver.views.channel_folders import (
     create_channel_folder,
@@ -469,6 +474,9 @@ v1_api_and_json_patterns = [
     ),
     # bot_storage -> zerver.views.storage
     rest_path("bot_storage", PUT=update_storage, GET=get_storage, DELETE=remove_storage),
+    # bot_commands -> zerver.views.bot_commands
+    rest_path("bot_commands", GET=list_bot_commands, POST=register_bot_command),
+    rest_path("bot_commands/<int:command_id>", DELETE=delete_bot_command),
     # Endpoint used by mobile devices to register their push
     # notification credentials
     rest_path(

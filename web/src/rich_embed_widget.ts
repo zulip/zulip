@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_rich_embed_widget from "../templates/widgets/rich_embed_widget.hbs";
 
@@ -10,12 +10,12 @@ import type {WidgetExtraData} from "./widgetize.ts";
 const rich_embed_field_schema = z.object({
     name: z.string(),
     value: z.string(),
-    inline: z.boolean().optional(),
+    inline: z.optional(z.boolean()),
 });
 
 const rich_embed_footer_schema = z.object({
     text: z.string(),
-    icon_url: z.string().optional(),
+    icon_url: z.optional(z.string()),
 });
 
 const rich_embed_media_schema = z.object({
@@ -24,21 +24,21 @@ const rich_embed_media_schema = z.object({
 
 const rich_embed_author_schema = z.object({
     name: z.string(),
-    url: z.string().optional(),
-    icon_url: z.string().optional(),
+    url: z.optional(z.string()),
+    icon_url: z.optional(z.string()),
 });
 
 export const rich_embed_extra_data_schema = z.object({
-    title: z.string().optional(),
-    description: z.string().optional(),
-    url: z.string().optional(),
-    color: z.number().optional(),
-    timestamp: z.string().optional(),
-    footer: rich_embed_footer_schema.optional(),
-    thumbnail: rich_embed_media_schema.optional(),
-    image: rich_embed_media_schema.optional(),
-    author: rich_embed_author_schema.optional(),
-    fields: z.array(rich_embed_field_schema).optional(),
+    title: z.optional(z.string()),
+    description: z.optional(z.string()),
+    url: z.optional(z.string()),
+    color: z.optional(z.number()),
+    timestamp: z.optional(z.string()),
+    footer: z.optional(rich_embed_footer_schema),
+    thumbnail: z.optional(rich_embed_media_schema),
+    image: z.optional(rich_embed_media_schema),
+    author: z.optional(rich_embed_author_schema),
+    fields: z.optional(z.array(rich_embed_field_schema)),
 });
 
 type RichEmbedExtraData = z.infer<typeof rich_embed_extra_data_schema>;

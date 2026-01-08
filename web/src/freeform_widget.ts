@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -9,22 +9,22 @@ import type {WidgetExtraData} from "./widgetize.ts";
 
 export const freeform_extra_data_schema = z.object({
     html: z.string(),
-    css: z.string().optional(),
-    js: z.string().optional(),
+    css: z.optional(z.string()),
+    js: z.optional(z.string()),
 });
 
-interface WidgetContext {
+type WidgetContext = {
     message_id: number;
     post_interaction: (data: Record<string, unknown>) => void;
     on: (event: string, selector: string, handler: (e: JQuery.Event) => void) => void;
     update_html: (html: string) => void;
-}
+};
 
 function scope_css(css: string, message_id: number): string {
     // Scope CSS rules to this specific widget
     const scope = `.widget-freeform-${message_id}`;
     // Simple CSS scoping - prepend scope to each rule
-    return css.replace(/([^{}]+)\{/g, (_full_match, selector: string) => {
+    return css.replaceAll(/([^{}]+)\{/g, (_full_match, selector: string) => {
         const scoped_selectors = selector
             .split(",")
             .map((s: string) => `${scope} ${s.trim()}`)
@@ -77,7 +77,8 @@ export function activate({
             $container.append($style);
         }
 
-        // Add HTML content
+        // Add HTML content - freeform widgets are from trusted bots
+        // eslint-disable-next-line no-jquery/no-append-html
         $container.append(data.html);
 
         $elem.html("");
@@ -95,17 +96,20 @@ export function activate({
                     // Preserve style element when updating HTML
                     const $style = $container.find("style");
                     $container.html("");
-                    if ($style.length) {
+                    if ($style.length > 0) {
                         $container.append($style);
                     }
+                    // eslint-disable-next-line no-jquery/no-append-html -- Freeform widgets are trusted bot content
                     $container.append(html);
                 },
             };
 
             try {
                 // Execute the JS with the context
-                // eslint-disable-next-line @typescript-eslint/no-implied-eval
+                // Freeform widgets allow trusted bots to execute arbitrary JavaScript
+                // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
                 const fn = new Function("ctx", "container", data.js);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 fn(ctx, $container[0]);
             } catch (error) {
                 blueslip.error("Error executing freeform widget JS", {error});
@@ -118,21 +122,25 @@ export function activate({
     // Handle events - could be used for bot-initiated updates
     return (events: Event[]): void => {
         for (const event of events) {
-            if (event.data && typeof event.data === "object" && "type" in event.data) {
-                const event_data = event.data as {type: string; html?: string; css?: string; js?: string};
-                if (event_data.type === "update") {
-                    // Update the widget content
-                    if (event_data.html !== undefined) {
-                        data.html = event_data.html;
-                    }
-                    if (event_data.css !== undefined) {
-                        data.css = event_data.css;
-                    }
-                    if (event_data.js !== undefined) {
-                        data.js = event_data.js;
-                    }
-                    render();
+            const event_data = event.data;
+            if (
+                event_data &&
+                typeof event_data === "object" &&
+                "type" in event_data &&
+                typeof event_data.type === "string" &&
+                event_data.type === "update"
+            ) {
+                // Update the widget content
+                if ("html" in event_data && typeof event_data.html === "string") {
+                    data.html = event_data.html;
                 }
+                if ("css" in event_data && typeof event_data.css === "string") {
+                    data.css = event_data.css;
+                }
+                if ("js" in event_data && typeof event_data.js === "string") {
+                    data.js = event_data.js;
+                }
+                render();
             }
         }
     };

@@ -338,6 +338,21 @@ def fetch_initial_state_data(
             [] if user_profile is None else get_undelivered_scheduled_messages(user_profile)
         )
 
+    if want("bot_commands"):
+        from zerver.models.bots import get_bot_commands_for_realm
+
+        state["bot_commands"] = [
+            {
+                "id": cmd.id,
+                "name": cmd.name,
+                "description": cmd.description,
+                "options": cmd.options_schema,
+                "bot_id": cmd.bot_profile_id,
+                "bot_name": cmd.bot_profile.full_name,
+            }
+            for cmd in get_bot_commands_for_realm(realm.id)
+        ]
+
     if want("reminders"):
         state["reminders"] = [] if user_profile is None else get_undelivered_reminders(user_profile)
 

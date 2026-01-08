@@ -6,6 +6,7 @@ import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as bot_command_store from "./bot_command_store.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
@@ -74,7 +75,7 @@ type SlashCommand = {
     text: string;
     name: string;
     info: string;
-    aliases: NamedCurve;
+    aliases: string;
     placeholder?: string;
 };
 export type SlashCommandSuggestion = SlashCommand & {type: "slash"};
@@ -972,8 +973,19 @@ export function get_candidates(
     }
 
     function get_slash_commands_data(): SlashCommand[] {
-        const commands = page_params.development_environment ? all_slash_commands : slash_commands;
-        return commands;
+        const built_in_commands = page_params.development_environment
+            ? all_slash_commands
+            : slash_commands;
+
+        // Convert bot commands to SlashCommand format
+        const bot_commands: SlashCommand[] = bot_command_store.get_commands().map((cmd) => ({
+            text: `/${cmd.name}`,
+            name: cmd.name,
+            info: `${cmd.description} (${cmd.bot_name})`,
+            aliases: "",
+        }));
+
+        return [...built_in_commands, ...bot_commands];
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.slash && current_token.startsWith("/")) {
