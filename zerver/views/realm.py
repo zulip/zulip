@@ -63,6 +63,7 @@ from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
     RealmTopicsPolicyEnum,
+    TopicResolutionMessageRequirementEnum,
 )
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.user_settings import check_settings_values
@@ -197,6 +198,16 @@ def update_realm(
                 val,
                 "topics_policy",
                 RealmTopicsPolicyEnum,
+            )
+        ),
+    ] = None,
+    topic_resolution_message_requirement: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "topic_resolution_message_requirement",
+                TopicResolutionMessageRequirementEnum,
             )
         ),
     ] = None,

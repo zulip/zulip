@@ -2217,6 +2217,7 @@ class RealmAPITest(ZulipTestCase):
             message_content_edit_limit_seconds=[1000, 1100, 1200],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
+            topic_resolution_message_requirement=Realm.TOPIC_RESOLUTION_MESSAGE_REQUIREMENT_TYPES,
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
         )
 
@@ -2615,6 +2616,13 @@ class RealmAPITest(ZulipTestCase):
             {"topics_policy": "invalid"},
         )
         self.assert_json_error(result, "Invalid topics_policy")
+
+    def test_invalid_topic_resolution_message_requirement(self) -> None:
+        result = self.client_patch(
+            "/json/realm",
+            {"topic_resolution_message_requirement": "invalid"},
+        )
+        self.assert_json_error(result, "Invalid topic_resolution_message_requirement")
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):
