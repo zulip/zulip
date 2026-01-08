@@ -21,6 +21,7 @@ const stream_data = zrequire("stream_data");
 const stream_color = zrequire("stream_color");
 const {initialize_user_settings} = zrequire("user_settings");
 const {set_current_user, set_realm} = zrequire("state_data");
+
 class Clipboard {
     on() {}
 }
@@ -309,6 +310,9 @@ test("initialize", ({override_rewire}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    // Stub $('body').off to allow chaining without error.
+    $("body").off = () => $("body");
+
     drafts.initialize();
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
@@ -365,7 +369,7 @@ test("update_draft", ({override, override_rewire}) => {
 
     override(Date, "now", () => 8);
 
-    compose_state.message_content("dummy content edited a second time");
+    // message contents not edited
     tippy_show_called = false;
     tippy_destroy_called = false;
     draft_id = drafts.update_draft({no_notify: true});
@@ -616,8 +620,6 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         },
     ];
 
-    $("#drafts_table").append = noop;
-
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {
@@ -645,12 +647,11 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
 
-    mock_template("draft_table_body.hbs", false, (data) => {
+    mock_template("drafts_list.hbs", false, (data) => {
         // Tests formatting and time-sorting of drafts
-        assert.deepEqual(data.context.narrow_drafts, []);
-        assert.deepEqual(data.context.other_drafts, expected);
-        assert.ok(data);
-        return "<draft table stub>";
+        assert.deepEqual(data.narrow_drafts, []);
+        assert.deepEqual(data.other_drafts, expected);
+        return "<drafts list stub>";
     });
 
     override(messages_overlay_ui, "set_initial_element", noop);
@@ -658,10 +659,90 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
-    $(".draft-selection-checkbox").filter = () => [];
-    $("#outbox_view_section .outbox-list").remove = noop;
+    const $rendered_drafts = $("<rendered-drafts-stub>");
+    const $overlay_message_row = $("<overlay-message-row-stub>");
+    const $no_drafts = $("<no-drafts-stub>");
+
+    // Make $rendered_drafts.each work (it needs to iterate over nothing)
+    $rendered_drafts.each = () => {};
+
+    // Set up length properties
+    $overlay_message_row.length = 0;
+    $no_drafts.show = noop;
+    $no_drafts.hide = noop;
+
+    // Create drafts_table stub BEFORE it's accessed
+    const $drafts_table = $("#drafts_table");
+    const $drafts_list = $(".drafts-list");
+
+    // Add empty method to drafts_table
+    $drafts_table.empty = () => $drafts_table;
+
+    // Add replaceWith method to $drafts_list
+    $drafts_list.replaceWith = () => $drafts_list;
+
+    // Stub the combined selector that's used in render_tabs
+    const $tab_switcher_container = $(".drafts-container .tab-switcher-container");
+    $tab_switcher_container.remove = () => $tab_switcher_container;
+
+    // Set up all the find results on drafts_table BEFORE launch is called
+    $drafts_table.set_find_results(".drafts-list", $drafts_list);
+    $drafts_table.set_find_results("tbody", $drafts_list);
+    $drafts_table.set_find_results(".message_content.rendered_markdown", $rendered_drafts);
+    $drafts_table.set_find_results(".overlay-message-row", $overlay_message_row);
+    $drafts_table.set_find_results(".no-drafts", $no_drafts);
+
+    const $draft_overlay = $("#draft_overlay");
+    $draft_overlay.set_find_results(".drafts-list", $drafts_list);
+    $draft_overlay.set_find_results("#drafts_table", $drafts_table);
+
+    // Set up draft-selection-checkbox stubs for update_bulk_delete_ui
+    const $draft_checkbox = $(".draft-selection-checkbox");
+    const $checked_checkboxes = $("<checked-checkboxes-stub>");
+    const $unchecked_checkboxes = $("<unchecked-checkboxes-stub>");
+    const $delete_btn = $(".delete-selected-drafts-button");
+    const $select_btn = $(".select-drafts-button");
+    const $checkbox_parent = $("<checkbox-parent-stub>");
+
+    $checked_checkboxes.length = 0;
+    $unchecked_checkboxes.length = 0;
+
+    // Set up parent for all checkboxes
+    $checkbox_parent.attr = noop;
+    $draft_checkbox.parent = () => $checkbox_parent;
+    $checked_checkboxes.parent = () => $checkbox_parent;
+    $unchecked_checkboxes.parent = () => $checkbox_parent;
+
+    // Set up checkbox methods for all checkbox-like elements
+    $draft_checkbox.removeClass = () => $draft_checkbox;
+    $draft_checkbox.addClass = () => $draft_checkbox;
+    $draft_checkbox.hasClass = () => false;
+
+    $checked_checkboxes.removeClass = () => $checked_checkboxes;
+    $checked_checkboxes.addClass = () => $checked_checkboxes;
+    $checked_checkboxes.hasClass = () => false;
+
+    $unchecked_checkboxes.removeClass = () => $unchecked_checkboxes;
+    $unchecked_checkboxes.addClass = () => $unchecked_checkboxes;
+    $unchecked_checkboxes.hasClass = () => false;
+
+    $draft_checkbox.not = () => $unchecked_checkboxes;
+    $draft_checkbox.filter = () => $checked_checkboxes;
+
+    $delete_btn.text = noop;
+    $delete_btn.prop = noop;
+    $delete_btn.hide = noop;
+    $select_btn.hide = noop;
+
+    // CRITICAL: Stub the combined selector that update_bulk_delete_ui uses
+    const $state_indicator = $(".select-drafts-button .select-state-indicator");
+    $state_indicator.parent = () => $checkbox_parent;
+    $state_indicator.removeClass = () => $state_indicator;
+    $state_indicator.addClass = () => $state_indicator;
+    $state_indicator.hasClass = () => false;
+
+    $("body").off = () => $("body");
+
     drafts_overlay_ui.launch();
 });
 
@@ -782,8 +863,6 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         },
     ];
 
-    $("#drafts_table").append = noop;
-
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {
@@ -801,11 +880,11 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         stub_render_now(time, new Date(1549958107000)),
     );
 
-    mock_template("draft_table_body.hbs", false, (data) => {
+    mock_template("drafts_list.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
-        assert.deepEqual(data.context.narrow_drafts, expected_pm_drafts);
-        assert.deepEqual(data.context.other_drafts, expected_other_drafts);
-        return "<draft table stub>";
+        assert.deepEqual(data.narrow_drafts, expected_pm_drafts);
+        assert.deepEqual(data.other_drafts, expected_other_drafts);
+        return "<drafts list stub>";
     });
 
     override(messages_overlay_ui, "set_initial_element", noop);
@@ -816,9 +895,89 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
 
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
-    $(".draft-selection-checkbox").filter = () => [];
-    $("#outbox_view_section .outbox-list").remove = noop;
+    const $rendered_drafts = $("<rendered-drafts-stub>");
+    const $overlay_message_row = $("<overlay-message-row-stub>");
+    const $no_drafts = $("<no-drafts-stub>");
+
+    // Make $rendered_drafts.each work (it needs to iterate over nothing)
+    $rendered_drafts.each = () => {};
+
+    // Set up length properties
+    $overlay_message_row.length = 0;
+    $no_drafts.show = noop;
+    $no_drafts.hide = noop;
+
+    // Create drafts_table stub BEFORE it's accessed
+    const $drafts_table = $("#drafts_table");
+    const $drafts_list = $(".drafts-list");
+
+    // Add empty method to drafts_table
+    $drafts_table.empty = () => $drafts_table;
+
+    // Add replaceWith method to $drafts_list
+    $drafts_list.replaceWith = () => $drafts_list;
+
+    // Stub the combined selector that's used in render_tabs
+    const $tab_switcher_container = $(".drafts-container .tab-switcher-container");
+    $tab_switcher_container.remove = () => $tab_switcher_container;
+
+    // Set up all the find results on drafts_table BEFORE launch is called
+    $drafts_table.set_find_results(".drafts-list", $drafts_list);
+    $drafts_table.set_find_results("tbody", $drafts_list);
+    $drafts_table.set_find_results(".message_content.rendered_markdown", $rendered_drafts);
+    $drafts_table.set_find_results(".overlay-message-row", $overlay_message_row);
+    $drafts_table.set_find_results(".no-drafts", $no_drafts);
+
+    const $draft_overlay = $("#draft_overlay");
+    $draft_overlay.set_find_results(".drafts-list", $drafts_list);
+    $draft_overlay.set_find_results("#drafts_table", $drafts_table);
+
+    // Set up draft-selection-checkbox stubs for update_bulk_delete_ui
+    const $draft_checkbox = $(".draft-selection-checkbox");
+    const $checked_checkboxes = $("<checked-checkboxes-stub>");
+    const $unchecked_checkboxes = $("<unchecked-checkboxes-stub>");
+    const $delete_btn = $(".delete-selected-drafts-button");
+    const $select_btn = $(".select-drafts-button");
+    const $checkbox_parent = $("<checkbox-parent-stub>");
+
+    $checked_checkboxes.length = 0;
+    $unchecked_checkboxes.length = 0;
+
+    // Set up parent for all checkboxes
+    $checkbox_parent.attr = noop;
+    $draft_checkbox.parent = () => $checkbox_parent;
+    $checked_checkboxes.parent = () => $checkbox_parent;
+    $unchecked_checkboxes.parent = () => $checkbox_parent;
+
+    // Set up checkbox methods for all checkbox-like elements
+    $draft_checkbox.removeClass = () => $draft_checkbox;
+    $draft_checkbox.addClass = () => $draft_checkbox;
+    $draft_checkbox.hasClass = () => false;
+
+    $checked_checkboxes.removeClass = () => $checked_checkboxes;
+    $checked_checkboxes.addClass = () => $checked_checkboxes;
+    $checked_checkboxes.hasClass = () => false;
+
+    $unchecked_checkboxes.removeClass = () => $unchecked_checkboxes;
+    $unchecked_checkboxes.addClass = () => $unchecked_checkboxes;
+    $unchecked_checkboxes.hasClass = () => false;
+
+    $draft_checkbox.not = () => $unchecked_checkboxes;
+    $draft_checkbox.filter = () => $checked_checkboxes;
+
+    $delete_btn.text = noop;
+    $delete_btn.prop = noop;
+    $delete_btn.hide = noop;
+    $select_btn.hide = noop;
+
+    // CRITICAL: Stub the combined selector that update_bulk_delete_ui uses
+    const $state_indicator = $(".select-drafts-button .select-state-indicator");
+    $state_indicator.parent = () => $checkbox_parent;
+    $state_indicator.removeClass = () => $state_indicator;
+    $state_indicator.addClass = () => $state_indicator;
+    $state_indicator.hasClass = () => false;
+
+    $("body").off = () => $("body");
+
     drafts_overlay_ui.launch();
 });
