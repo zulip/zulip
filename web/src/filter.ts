@@ -13,6 +13,7 @@ import type {Message} from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {process_user_mention} from "./postprocess_content.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import {current_user, narrow_canonical_term_schema, narrow_operator_schema} from "./state_data.ts";
 import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
@@ -205,6 +206,16 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             }
             return operand_ids.every((operand_id) => user_ids.includes(operand_id));
         }
+
+        case "mentions": {
+            const operand_user = people.get_by_email(term.operand);
+
+            if (!operand_user) {
+                return false;
+            }
+
+            return process_user_mention(message.content, operand_user.user_id);
+        }
     }
 
     // We will never get here since operator type validation would fail.
@@ -219,6 +230,7 @@ const USER_OPERATORS = new Set([
     "from",
     "pm-with",
     "group-pm-with",
+    "mentions",
 ]);
 
 export class Filter {
@@ -276,6 +288,9 @@ export class Filter {
                 }
                 break;
             case "dm-including":
+                narrow_term.operand = narrow_term.operand.toLowerCase();
+                break;
+            case "mentions":
                 narrow_term.operand = narrow_term.operand.toLowerCase();
                 break;
             case "search":
@@ -520,6 +535,7 @@ export class Filter {
             case "sender":
             case "dm":
             case "dm-including":
+            case "mentions":
                 return term.operand
                     .split(",")
                     .every((email) => people.get_by_email(email) !== undefined);
@@ -611,6 +627,7 @@ export class Filter {
             "has-image",
             "has-attachment",
             "search",
+            "mentions",
         ];
 
         const level = (term_type: string): number => {
@@ -667,6 +684,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "mentions":
+                return verb + "messages mentions";
 
             case "in":
                 return verb + "messages in";

@@ -40,7 +40,8 @@ export function encode_operand(operator: string, operand: string): string {
         operator === "dm-including" ||
         operator === "dm" ||
         operator === "sender" ||
-        operator === "pm-with"
+        operator === "pm-with" ||
+        operator === "mentions"
     ) {
         const slug = people.emails_to_slug(operand);
         if (slug) {
@@ -68,7 +69,12 @@ export function decode_operand(
     operator: NarrowCanonicalTerm["operator"],
     operand: NarrowCanonicalTerm["operand"],
 ): string {
-    if (operator === "dm-including" || operator === "dm" || operator === "sender") {
+    if (
+        operator === "dm-including" ||
+        operator === "dm" ||
+        operator === "sender" ||
+        operator === "mentions"
+    ) {
         const emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;

@@ -262,7 +262,13 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     // We use the canonical operator when checking these sets, so legacy
     // operators, such as "pm-with" and "stream", are not included here.
     const operators_supporting_ids = new Set(["dm"]);
-    const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
+    const operators_supporting_id = new Set([
+        "id",
+        "channel",
+        "sender",
+        "dm-including",
+        "mentions",
+    ]);
     const raw_narrow_term_array_schema = z.array(
         z.object({
             negated: z.optional(z.boolean()),

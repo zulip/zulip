@@ -641,6 +641,20 @@ test("basics", () => {
     filter = new Filter(terms);
     assert.ok(filter.is_channel_view());
 
+    terms = [{operator: "mentions", operand: "joe@example.com", negated: false}];
+    filter = new Filter(terms);
+
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.has_negated_operand("mentions", "joe@example.com"));
+    assert.ok(!filter.contains_no_partial_conversations());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.is_channel_view());
+
     // Throw error on invalid operator.
     assert.throws(() => get_predicate([["bogus", "33"]]), {
         name: "$ZodError",
@@ -1051,6 +1065,10 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "has", operand: "reactions"});
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "reaction");
+
+    term = Filter.canonicalize_term({operator: "mentions", operand: "joe@example.com"});
+    assert.equal(term.operator, "mentions");
+    assert.equal(term.operand, "joe@example.com");
 });
 
 test("ensure_channel_topic_terms", () => {
@@ -1355,6 +1373,26 @@ test("predicate_basics", ({override}) => {
         }),
     );
     assert.ok(!predicate({type: stream_message}));
+
+    predicate = get_predicate([["mentions", "joe@example.com"]]);
+    assert.ok(
+        predicate({
+            content: '<span class="user-mention" data-user-id="' + joe.user_id + '">@Joe</span>',
+        }),
+    );
+    assert.ok(
+        !predicate({
+            content:
+                '<span class="user-mention" data-user-id="' + steve.user_id + '">@Steve</span>',
+        }),
+    );
+
+    predicate = get_predicate([["mentions", "nobody@example.com"]]);
+    assert.ok(
+        !predicate({
+            content: 'Hi <span class="user-mention" data-user-id="42">@Joe</span>',
+        }),
+    );
 
     const img_msg = {
         // Even though the HTML class `message_inline_image` is modified
@@ -1900,6 +1938,10 @@ test("describe", ({mock_template, override}) => {
     terms = [{operator: "dm-including", operand: ""}];
     string = "direct messages including";
     assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "mentions", operand: ""}];
+    string = "messages mentions";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
 });
 
 test("can_bucket_by", () => {
@@ -2115,6 +2157,7 @@ test("convert_suggestion_to_term", () => {
         ["sender:me", true],
         ["dm:alice@example.com,ghost@example.com", false],
         ["dm:alice@example.com,joe@example.com", true],
+        ["mentions:alice@example.com", true],
     ];
     for (const [search_term_string, expected_is_valid] of test_data) {
         assert.equal(
@@ -2926,6 +2969,9 @@ run_test("is_spectator_compatible", () => {
     // "group-pm-with:" was replaced with "dm-including:"
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
+    );
+    assert.ok(
+        !Filter.is_spectator_compatible([{operator: "mentions", operand: "hamlet@zulip.com"}]),
     );
 });
 
