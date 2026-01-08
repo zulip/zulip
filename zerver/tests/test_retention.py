@@ -648,6 +648,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         with self.assertRaises(Message.DoesNotExist):
             move_messages_to_archive(message_ids=msg_ids, realm=self.sender.realm)
 
+    def test_archiving_noop(self) -> None:
+        move_messages_to_archive(message_ids=[], realm=get_realm("zulip"))
+
     def test_archiving_messages_with_attachment(self) -> None:
         self._create_attachments()
         realm = get_realm("zulip")
