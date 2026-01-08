@@ -7,7 +7,7 @@ const {run_test} = require("./lib/test.cjs");
 
 const thumbnail = mock_esm("../src/thumbnail");
 
-const {postprocess_content} = zrequire("postprocess_content");
+const {postprocess_content, process_user_mention} = zrequire("postprocess_content");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const user_settings = {web_font_size_px: 16};
@@ -459,4 +459,40 @@ run_test("inline_images", ({override}) => {
         ),
         "",
     );
+});
+
+run_test("user_mention", () => {
+    assert.equal(
+        process_user_mention(
+            `<p>Hi <span class="user-mention" data-user-id="42">@Joe</span></p>`,
+            42,
+        ),
+        true,
+    );
+
+    assert.equal(
+        process_user_mention(
+            `<p>Hi <span data-user-id="42" class="user-mention" >@Joe</span></p>`,
+            42,
+        ),
+        true,
+    );
+
+    assert.equal(
+        process_user_mention(
+            `<p>Hi <span class="user-mention" data-user-id="42">@Joe</span></p>`,
+            30,
+        ),
+        false,
+    );
+
+    // To check silent mention
+    assert.equal(
+        process_user_mention(
+            `<p>Hi <span class="user-mention silent" data-user-id="42">Joe</span></p>`,
+            42,
+        ),
+        false,
+    );
+    assert.equal(process_user_mention(`<p>Hi Everyone</p>`, 42), false);
 });
