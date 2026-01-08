@@ -1,12 +1,16 @@
+from enum import Enum
+
 from django.conf import settings
 from django.utils.translation import gettext as _
 
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import truncate_content
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import get_message_link_syntax
+from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.url_encoding import message_link_url
 from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
@@ -25,6 +29,12 @@ def normalize_note_text(body: str) -> str:
         )
 
     return body
+
+
+class ReminderRecipientType(Enum):
+    CHANNEL = "channel"
+    PRIVATE = "private"
+    NOTE_TO_SELF = "note to self"
 
 
 def get_reminder_formatted_content(
@@ -64,6 +74,8 @@ def get_reminder_formatted_content(
             content = _("You requested a reminder for {message_pretty_link}.").format(
                 message_pretty_link=message_pretty_link,
             )
+
+        format_recipient_type_key = ReminderRecipientType.CHANNEL
     else:
         if note:
             content = _(
@@ -73,23 +85,43 @@ def get_reminder_formatted_content(
             )
         else:
             content = _("You requested a reminder for the following direct message.")
+        recipients: list[UserProfile | UserDisplayRecipient] = [
+            user
+            for user in get_display_recipient(message.recipient)
+            if user["id"] is not message.sender.id
+        ]
+
+        if not recipients:
+            format_recipient_type_key = ReminderRecipientType.NOTE_TO_SELF
+        else:
+            format_recipient_type_key = ReminderRecipientType.PRIVATE
 
     # Format the message content as a quote.
     content += "\n\n"
 
     REMINDER_FORMAT = {
-        "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
-        "text": _("{user_silent_mention} [said]({conversation_url}):"),
+        ReminderRecipientType.CHANNEL: {
+            "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
+            "text": _("{user_silent_mention} [said]({conversation_url}):"),
+        },
+        ReminderRecipientType.PRIVATE: {
+            "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
+            "text": _("{user_silent_mention} [said]({conversation_url}):"),
+        },
+        ReminderRecipientType.NOTE_TO_SELF: {
+            "widget": _("You [sent]({conversation_url}) yourself a {widget}."),
+            "text": _("You [sent]({conversation_url}) a note to yourself:"),
+        },
     }
 
     if message.content.startswith("/poll"):
         context.update(widget="poll")
-        content += REMINDER_FORMAT["widget"].format_map(context)
+        content += REMINDER_FORMAT[format_recipient_type_key]["widget"].format_map(context)
     elif message.content.startswith("/todo"):
         context.update(widget="todo list")
-        content += REMINDER_FORMAT["widget"].format_map(context)
+        content += REMINDER_FORMAT[format_recipient_type_key]["widget"].format_map(context)
     else:
-        content += REMINDER_FORMAT["text"].format_map(context)
+        content += REMINDER_FORMAT[format_recipient_type_key]["text"].format_map(context)
         content += "\n"
         fence = get_unused_fence(content)
         quoted_message = "{fence}quote\n{msg_content}\n{fence}"
