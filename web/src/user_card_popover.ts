@@ -6,6 +6,7 @@ import * as tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
+import render_user_card_popover_for_deleted_user from "../templates/popovers/user_card/user_card_popover_for_deleted_user.hbs";
 import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -234,6 +235,7 @@ type UserCardPopoverData = {
     can_mute: boolean;
     can_unmute: boolean;
     can_manage_user: boolean;
+    is_deleted: boolean;
     is_system_bot?: boolean;
     bot_owner?: User;
 };
@@ -380,6 +382,7 @@ function get_user_card_popover_data(
         can_mute,
         can_unmute,
         can_manage_user,
+        is_deleted: user.is_deleted ?? false,
     };
 
     if (user.is_bot) {
@@ -417,6 +420,14 @@ function show_user_card_popover(
             user_avatar,
         };
         popover_html = render_user_card_popover_for_unknown_user(args);
+    } else if (user.is_deleted) {
+        args = get_user_card_popover_data(
+            user,
+            has_message_context,
+            is_sender_popover,
+            private_msg_class,
+        );
+        popover_html = render_user_card_popover_for_deleted_user(args);
     } else {
         args = get_user_card_popover_data(
             user,

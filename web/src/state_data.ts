@@ -198,6 +198,7 @@ export const user_schema = z.intersection(
         name_with_diacritics_removed: z.optional(z.string()),
         date_joined: z.string(),
         is_active: z.optional(z.boolean()),
+        is_deleted: z.optional(z.boolean()),
         is_owner: z.boolean(),
         is_admin: z.boolean(),
         is_guest: z.boolean(),

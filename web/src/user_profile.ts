@@ -1189,6 +1189,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
         is_active,
+        is_deleted: person.is_deleted,
         hide_deactivate_button,
         user_is_only_organization_owner,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,

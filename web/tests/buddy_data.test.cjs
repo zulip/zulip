@@ -317,6 +317,21 @@ test("muted users excluded from search", () => {
     assert.ok(buddy_data.matches_filter("selm", selma.user_id));
 });
 
+test("deleted users excluded from search", () => {
+    const deleted_user = {...selma, is_deleted: true};
+    people._add_user(deleted_user);
+
+    let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+    assert.equal(user_ids.includes(selma.user_id), false);
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
+    assert.deepEqual(user_ids, []);
+    assert.ok(!buddy_data.matches_filter("selm", selma.user_id));
+
+    people.add_active_user(selma);
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
+    assert.deepEqual(user_ids, [selma.user_id]);
+});
+
 test("bulk_data_hacks", ({override_rewire}) => {
     // sanity check
     assert.equal(mark.user_id, 1005);
