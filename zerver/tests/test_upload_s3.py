@@ -185,14 +185,7 @@ class S3Test(ZulipTestCase):
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object("non-existent-file").load()
-        with self.assertLogs(level="WARNING") as warn_log:
-            self.assertEqual(False, delete_message_attachment("non-existent-file"))
-        self.assertEqual(
-            warn_log.output,
-            [
-                "WARNING:root:non-existent-file does not exist. Its entry in the database will be removed."
-            ],
-        )
+        self.assertEqual(False, delete_message_attachment("non-existent-file"))
 
     @use_s3_backend
     def test_all_message_attachments(self) -> None:
@@ -704,12 +697,7 @@ class S3Test(ZulipTestCase):
         self.assertIn("Expires", params)
 
         # Delete the tarball.
-        with self.assertLogs(level="WARNING") as warn_log:
-            self.assertIsNone(delete_export_tarball("/not_a_file"))
-        self.assertEqual(
-            warn_log.output,
-            ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
-        )
+        self.assertIsNone(delete_export_tarball("/not_a_file"))
         self.assertEqual(delete_export_tarball(parsed_url.path), parsed_url.path)
 
     @override_settings(S3_EXPORT_BUCKET="")

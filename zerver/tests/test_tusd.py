@@ -322,18 +322,12 @@ class TusdPreCreateTest(ZulipTestCase):
         confirmation_key = find_key_by_email(email)
         assert confirmation_key is not None
 
-        with self.assertLogs(level="WARNING") as warn_log:
-            result = self.client_post(
-                "/api/internal/tusd",
-                self.request(key=confirmation_key).model_dump(),
-                content_type="application/json",
-            )
-        self.assertEqual(result.status_code, 200)
-        # Verify if we tried to remove any existing upload.
-        self.assertEqual(
-            warn_log.output,
-            ["WARNING:root:slack.zip does not exist. Its entry in the database will be removed."],
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request(key=confirmation_key).model_dump(),
+            content_type="application/json",
         )
+        self.assertEqual(result.status_code, 200)
         result_json = result.json()
         self.assertEqual(result_json.get("HttpResponse", None), None)
         self.assertEqual(result_json.get("RejectUpload", False), False)

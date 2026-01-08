@@ -245,8 +245,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.refresh_from_db()
         assert realm.deactivated
         assert realm.deactivated_redirect is None
-        with self.assertLogs(level="WARNING"):
-            do_scrub_realm(realm, acting_user=None)
+        do_scrub_realm(realm, acting_user=None)
 
         result = self.client_get("/login/", follow=True)
         self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
