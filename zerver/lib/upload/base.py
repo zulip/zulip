@@ -133,5 +133,5 @@ class ZulipUploadBackend:
     ) -> str:
         raise NotImplementedError
 
-    def delete_export_tarball(self, export_path: str) -> str | None:
+    def delete_export_tarball(self, export_path: str) -> None:
         raise NotImplementedError
