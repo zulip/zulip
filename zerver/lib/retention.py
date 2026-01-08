@@ -552,7 +552,7 @@ def move_messages_to_archive(
             messages__isnull=True, scheduled_messages__isnull=True, id__in=archived_attachments
         ).delete()
 
-    if count == 0:
+    if message_ids and count == 0:
         raise Message.DoesNotExist
 
 
