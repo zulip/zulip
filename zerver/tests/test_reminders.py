@@ -543,12 +543,45 @@ class RemindersTest(ZulipTestCase):
         result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
         self.assert_json_success(result)
         scheduled_message = self.last_scheduled_reminder()
-        hamlet_mention = get_user_mentions_for_display([hamlet])
 
         self.assertEqual(
             scheduled_message.content,
             (
                 "You requested a reminder for the following direct message.\n\n"
-                f"{hamlet_mention} [said](http://zulip.testserver/#narrow/dm/10/near/{message_id}) to {hamlet_mention}:\n```quote\n{content}\n```"
+                f"You [sent](http://zulip.testserver/#narrow/dm/10/near/{message_id}) a note to yourself:\n```quote\n{content}\n```"
+            ),
+        )
+
+        content = "/todo Test todo list"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_personal_message(hamlet, hamlet, content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+
+        self.assertEqual(
+            scheduled_message.content,
+            (
+                "You requested a reminder for the following direct message.\n\n"
+                f"You [sent](http://zulip.testserver/#narrow/dm/10/near/{message_id}) yourself a todo list."
+            ),
+        )
+
+        content = "/poll Test poll"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_personal_message(hamlet, hamlet, content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+
+        self.assertEqual(
+            scheduled_message.content,
+            (
+                "You requested a reminder for the following direct message.\n\n"
+                f"You [sent](http://zulip.testserver/#narrow/dm/10/near/{message_id}) yourself a poll."
             ),
         )

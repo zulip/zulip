@@ -34,6 +34,7 @@ def normalize_note_text(body: str) -> str:
 class ReminderRecipientType(Enum):
     CHANNEL = "channel"
     PRIVATE = "private"
+    NOTE_TO_SELF = "note to self"
 
 
 def get_reminder_formatted_content(
@@ -89,14 +90,19 @@ def get_reminder_formatted_content(
             for user in get_display_recipient(message.recipient)
             if user["id"] is not message.sender.id
         ]
+
         if not recipients:
-            recipients = [message.sender]
-        recipient_users = get_user_mentions_for_display(recipients)
-        context = dict(
-            user_silent_mention=user_silent_mention,
-            conversation_url=conversation_url,
-            recipient_users=recipient_users,
-        )
+            format_recipient_type_key = ReminderRecipientType.NOTE_TO_SELF
+            context = dict(
+                conversation_url=conversation_url,
+            )
+        else:
+            recipient_users = get_user_mentions_for_display(recipients)
+            context = dict(
+                user_silent_mention=user_silent_mention,
+                conversation_url=conversation_url,
+                recipient_users=recipient_users,
+            )
 
     # Format the message content as a quote.
     content += "\n\n"
@@ -113,6 +119,10 @@ def get_reminder_formatted_content(
                 "{user_silent_mention} [sent]({conversation_url}) a {widget} to {recipient_users}."
             ),
             "text": _("{user_silent_mention} [said]({conversation_url}) to {recipient_users}:"),
+        },
+        ReminderRecipientType.NOTE_TO_SELF: {
+            "widget": _("You [sent]({conversation_url}) yourself a {widget}."),
+            "text": _("You [sent]({conversation_url}) a note to yourself:"),
         },
     }
 
