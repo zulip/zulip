@@ -110,14 +110,14 @@ test("activate", ({override}) => {
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    assert.ok(!widgetize.widget_event_handlers.has(opts.message.id));
+    assert.deepEqual(widgetize.get_message_ids(), []);
 
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
     assert.ok(is_widget_activated);
     assert.ok(is_event_handled);
-    assert.equal(widgetize.widget_event_handlers.get(opts.message.id), handle_events);
+    assert.deepEqual(widgetize.get_message_ids(), [opts.message.id]);
 
     message_lists.current = undefined;
     is_widget_elem_inserted = false;
@@ -149,7 +149,7 @@ test("activate", ({override}) => {
     assert.ok(!is_widget_activated);
     assert.ok(!is_event_handled);
 
-    /* Testing widgetize.handle_events */
+    /* Testing widgetize.GenericWidget */
     message_lists.current = {id: 2};
     const post_activate_event = {
         data: {
@@ -159,11 +159,11 @@ test("activate", ({override}) => {
         message_id: 2001,
         sender_id: 102,
     };
-    handle_events = (e) => {
+    const handle_events = (e) => {
         is_event_handled = true;
         assert.deepEqual(e, [post_activate_event]);
     };
-    widgetize.widget_event_handlers.set(2001, handle_events);
+    widgetize.set_widget_for_tests(2001, new widgetize.GenericWidget(handle_events));
     override(message_lists.current, "get_row", (idx) => {
         assert.equal(idx, 2001);
         return $row;

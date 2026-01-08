@@ -45,10 +45,18 @@ type WidgetImplementation = Record<string, unknown> & {
 };
 
 export const widgets = new Map<string, WidgetImplementation>();
-export const widget_event_handlers = new Map<number, (events: Event[]) => void>();
+const generic_widget_map = new Map<number, GenericWidget>();
 
 export function clear_for_testing(): void {
-    widget_event_handlers.clear();
+    generic_widget_map.clear();
+}
+
+export function set_widget_for_tests(message_id: number, widget: GenericWidget): void {
+    generic_widget_map.set(message_id, widget);
+}
+
+export function get_message_ids(): number[] {
+    return [...generic_widget_map.keys()];
 }
 
 function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
@@ -69,13 +77,28 @@ function is_supported_widget_type(widget_type: string): boolean {
     return false;
 }
 
+export class GenericWidget {
+    // Eventually we will have concrete classes for PollWidget,
+    // TodoWidget, and ZformWidget, but for now we need this
+    // wrapper class.
+    inbound_events_handler: HandleInboundEventsFunction;
+
+    constructor(inbound_events_handler: HandleInboundEventsFunction) {
+        this.inbound_events_handler = inbound_events_handler;
+    }
+
+    handle_inbound_events(events: Event[]): void {
+        this.inbound_events_handler(events);
+    }
+}
+
 function create_widget_instance(info: {
     widget_type: string;
     post_to_server: PostToServerFunction;
     $widget_elem: JQuery;
     message: Message;
     extra_data: WidgetExtraData;
-}): HandleInboundEventsFunction {
+}): GenericWidget {
     const {widget_type, post_to_server, $widget_elem, message, extra_data} = info;
 
     // For historical reasons, we don't directly import the
@@ -94,17 +117,14 @@ function create_widget_instance(info: {
         });
     }
 
-    const event_handler = widget_implementation.activate({
+    const inbound_events_handler = widget_implementation.activate({
         $elem: $widget_elem,
         callback: post_to_server_callback,
         message,
         extra_data,
     });
 
-    // Our widget objects are not yet built from JS/TS classes.
-    // They look to the outside world as a simple event handler
-    // function. This should change soon.
-    return event_handler;
+    return new GenericWidget(inbound_events_handler);
 }
 
 export function activate(in_opts: ActivateArguments): void {
@@ -135,7 +155,7 @@ export function activate(in_opts: ActivateArguments): void {
     // DOM and event handlers that eventually go in this div.
     const $widget_elem = $("<div>").addClass("widget-content");
 
-    const event_handler = create_widget_instance({
+    const generic_widget = create_widget_instance({
         widget_type,
         post_to_server,
         $widget_elem,
@@ -146,7 +166,7 @@ export function activate(in_opts: ActivateArguments): void {
     if (!is_message_preview) {
         // Don't re-register the original message's widget event
         // handler.
-        widget_event_handlers.set(message.id, event_handler);
+        generic_widget_map.set(message.id, generic_widget);
     }
 
     set_widget_in_message($row, $widget_elem);
@@ -160,14 +180,14 @@ export function activate(in_opts: ActivateArguments): void {
     // it would just lead to an extra re-render or something
     // harmless, but there's still no point.
     if (events.length > 0) {
-        event_handler(events);
+        generic_widget.handle_inbound_events(events);
     }
 }
 
 export function handle_event(widget_event: Event & {message_id: number}): void {
-    const event_handler = widget_event_handlers.get(widget_event.message_id);
+    const generic_widget = generic_widget_map.get(widget_event.message_id);
 
-    if (!event_handler || message_lists.current?.get_row(widget_event.message_id).length === 0) {
+    if (!generic_widget || message_lists.current?.get_row(widget_event.message_id).length === 0) {
         // It is common for submessage events to arrive on
         // messages that we don't yet have in view. We
         // just ignore them completely here.
@@ -176,5 +196,5 @@ export function handle_event(widget_event: Event & {message_id: number}): void {
 
     const events = [widget_event];
 
-    event_handler(events);
+    generic_widget.handle_inbound_events(events);
 }
