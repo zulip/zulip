@@ -96,6 +96,9 @@ FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[fixtureless_integrations.Screensh
 @dataclass
 class WebhookScreenshotConfig:
     fixture_name: str
+    fixtures: list[str] = field(default_factory=list)
+    is_thread: bool = False
+    topic: str | None = None
     image_name: str = "001.png"
     image_dir: str | None = None
     bot_name: str | None = None
@@ -638,7 +641,15 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "github",
         ["version-control", "continuous-integration", "project-management"],
-        [WebhookScreenshotConfig("push__1_commit.json", channel="commits")],
+        [
+            WebhookScreenshotConfig(
+                fixture_name="push__1_commit.json",
+                fixtures=["push__1_commit.json", "pull_request__opened.json"],
+                topic="public-repo",
+                is_thread=True,
+                channel="commits",
+            ),
+        ],
         display_name="GitHub",
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),

@@ -47,7 +47,6 @@ from zerver.lib.integrations import (
     IncomingWebhookIntegration,
     Integration,
     WebhookScreenshotConfig,
-    get_fixture_path,
     get_image_path,
     split_fixture_path,
 )
@@ -155,8 +154,6 @@ def send_bot_payload_message(
     fixture_path: str,
     config: WebhookScreenshotConfig,
 ) -> bool:
-    # Delete all messages, so new message is the only one it's message group
-    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
     data, json_fixture, multipart_fixture, fixture_name = get_fixture_info(fixture_path)
 
     headers = get_requests_headers(integration.dir_name, fixture_name)
@@ -227,15 +224,34 @@ def send_bot_mock_message(bot: UserProfile, channel: str, topic: str, message: s
     client.send_message(request)
 
 
-def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
+def capture_last_message_screenshot(bot: UserProfile, image_path: str, config: Any) -> None:
     message = Message.objects.filter(realm_id=bot.realm_id, sender=bot).last()
     realm = get_realm("zulip")
     if message is None:
         print(f"No message found for {bot.full_name}")
         return
     message_id = str(message.id)
-    screenshot_script = os.path.join(SCREENSHOTS_DIR, "message-screenshot.ts")
-    subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.url])
+
+    # CHECK: Should we take a thread screenshot or a single message?
+    if getattr(config, "is_thread", False):
+        screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.ts")
+        channel_name = config.channel or "general"
+        # We point to the channel view to ensure all messages in the thread are visible
+        narrow_uri = f"{realm.url}/#narrow/stream/{channel_name}"
+        args = [
+            "node",
+            screenshot_script,
+            narrow_uri,
+            config.topic,
+            message_id,
+            image_path,
+            realm.url,
+        ]
+    else:
+        screenshot_script = os.path.join(SCREENSHOTS_DIR, "message-screenshot.ts")
+        args = ["node", screenshot_script, message_id, image_path, realm.url]
+
+    subprocess.check_call(args)
 
 
 def generate_screenshots_for_integration(integration: Integration) -> None:
@@ -253,10 +269,22 @@ def generate_screenshot_from_config(
     create_integration_channel(channel_name, bot)
     image_path = get_image_path(integration, screenshot_config)
 
+    # Clear messages ONCE before we start sending the thread
+    Message.objects.filter(realm_id=bot.realm_id, sender=bot).delete()
+
     if isinstance(integration, IncomingWebhookIntegration):
         assert isinstance(screenshot_config, WebhookScreenshotConfig)
-        fixture_path = get_fixture_path(integration, screenshot_config)
-        message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
+
+        fixtures_to_send = getattr(screenshot_config, "fixtures", [screenshot_config.fixture_name])
+
+        message_sent = False
+        for fixture in fixtures_to_send:
+            fixture_path = os.path.join(
+                ROOT_DIR, "zerver/webhooks", integration.name, "fixtures", fixture
+            )
+            message_sent = send_bot_payload_message(
+                bot, integration, fixture_path, screenshot_config
+            )
     else:
         assert isinstance(screenshot_config, FixturelessScreenshotConfig)
         send_bot_mock_message(
@@ -268,8 +296,7 @@ def generate_screenshot_from_config(
         message_sent = True
 
     if message_sent:
-        capture_last_message_screenshot(bot, image_path)
-        print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")
+        capture_last_message_screenshot(bot, image_path, screenshot_config)
 
 
 parser = argparse.ArgumentParser()
