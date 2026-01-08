@@ -553,7 +553,7 @@ def check_widget_content(widget_content: object) -> dict[str, Any]:
             ],
         )
 
-        def check_component(var_name: str, val: object) -> None:
+        def check_component(var_name: str, val: object) -> object:
             if not isinstance(val, dict):
                 raise ValidationError(f"{var_name} is not a dict")
             comp_type = val.get("type")
@@ -563,6 +563,7 @@ def check_widget_content(widget_content: object) -> dict[str, Any]:
                 check_select_menu(var_name, val)
             else:
                 raise ValidationError(f"Unknown component type: {comp_type}")
+            return val
 
         check_action_row = check_dict(
             [

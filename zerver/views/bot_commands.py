@@ -4,17 +4,17 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
-from zerver.decorator import require_member_status
+from zerver.decorator import require_organization_member
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.models import BotCommand, UserProfile
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
-@require_member_status
-@typed_endpoint
+@require_organization_member
+@typed_endpoint_without_parameters
 def list_bot_commands(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -84,12 +84,11 @@ def register_bot_command(
     )
 
 
-@typed_endpoint
+@typed_endpoint_without_parameters
 def delete_bot_command(
     request: HttpRequest,
     user_profile: UserProfile,
-    *,
-    command_id: Annotated[Json[int], "ID of the command to delete"],
+    command_id: int,
 ) -> HttpResponse:
     """Delete a bot command. Only the owning bot or realm admins can delete."""
     try:
