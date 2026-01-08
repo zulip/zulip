@@ -355,10 +355,12 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_operator_and_not_the_same_user_as_operand_with_no_direct_message_group(
         self,
     ) -> None:
+        # During migration (PREFER_DIRECT_MESSAGE_GROUP=True), even without a DM group,
+        # we query PERSONAL recipients since messages might exist with them
         term = NarrowParameter(operator="dm", operand=self.othello_email)
         self._do_add_term_test(
             term,
-            "WHERE false",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
     def test_add_term_using_dm_operator_and_not_the_same_user_as_operand(self) -> None:
@@ -370,9 +372,10 @@ class NarrowBuilderTest(ZulipTestCase):
             ]
         )
         term = NarrowParameter(operator="dm", operand=self.othello_email)
+        # During migration, query includes both PERSONAL and DM group recipients
         self._do_add_term_test(
             term,
-            "WHERE recipient_id = %(recipient_id_1)s",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s) OR recipient_id = %(recipient_id_3)s",
         )
 
     def test_negated_is_dm_with_dm_operator(self) -> None:
@@ -421,10 +424,11 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_no_direct_message_group_and_negated(
         self,
     ) -> None:  # NEGATED
+        # During migration, query PERSONAL recipients (negated)
         term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
-            "WHERE true",
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
@@ -438,18 +442,20 @@ class NarrowBuilderTest(ZulipTestCase):
             ]
         )
         term = NarrowParameter(operator="dm", operand=self.othello_email, negated=True)
+        # During migration, query includes both PERSONAL and DM group recipients (negated)
         self._do_add_term_test(
             term,
-            "WHERE recipient_id != %(recipient_id_1)s",
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s) OR recipient_id = %(recipient_id_3)s)",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_no_direct_message_group(
         self,
     ) -> None:
+        # During migration, query PERSONAL recipients for self-DM
         term = NarrowParameter(operator="dm", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
-            "WHERE false",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
@@ -460,18 +466,20 @@ class NarrowBuilderTest(ZulipTestCase):
             ]
         )
         term = NarrowParameter(operator="dm", operand=self.hamlet_email)
+        # During migration, query includes both PERSONAL and DM group recipients for self-DM
         self._do_add_term_test(
             term,
-            "WHERE recipient_id = %(recipient_id_1)s",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR recipient_id = %(recipient_id_2)s",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_no_direct_message_group_and_negated(
         self,
     ) -> None:  # NEGATED
+        # During migration, query PERSONAL recipients for self-DM (negated)
         term = NarrowParameter(operator="dm", operand=self.hamlet_email, negated=True)
         self._do_add_term_test(
             term,
-            "WHERE true",
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
         )
 
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
@@ -484,9 +492,10 @@ class NarrowBuilderTest(ZulipTestCase):
             ]
         )
         term = NarrowParameter(operator="dm", operand=self.hamlet_email, negated=True)
+        # During migration, query includes both PERSONAL and DM group recipients (negated)
         self._do_add_term_test(
             term,
-            "WHERE recipient_id != %(recipient_id_1)s",
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR recipient_id = %(recipient_id_2)s)",
         )
 
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_no_direct_message_group(
@@ -513,9 +522,10 @@ class NarrowBuilderTest(ZulipTestCase):
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
         term = NarrowParameter(operator="dm", operand=myself_and_other)
+        # During migration, query includes both PERSONAL and DM group recipients
         self._do_add_term_test(
             term,
-            "WHERE recipient_id = %(recipient_id_1)s",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s) OR recipient_id = %(recipient_id_3)s",
         )
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group(
@@ -537,7 +547,11 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others)
-        self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
+        # During migration with 3+ person group, query includes both PERSONAL and DM group recipients
+        self._do_add_term_test(
+            term,
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s) OR recipient_id = %(recipient_id_3)s",
+        )
 
     def test_add_term_using_dm_operator_self_and_user_as_operand_no_group_direct_message_and_negated(
         self,
@@ -565,9 +579,10 @@ class NarrowBuilderTest(ZulipTestCase):
             f"{self.example_user('hamlet').email},{self.example_user('othello').email}"
         )
         term = NarrowParameter(operator="dm", operand=myself_and_other, negated=True)
+        # During migration, query includes both PERSONAL and DM group recipients (negated)
         self._do_add_term_test(
             term,
-            "WHERE recipient_id != %(recipient_id_1)s",
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s) OR recipient_id = %(recipient_id_3)s)",
         )
 
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_no_direct_message_group_and_negated(
@@ -591,7 +606,11 @@ class NarrowBuilderTest(ZulipTestCase):
         )
         two_others = f"{self.example_user('cordelia').email},{self.example_user('othello').email}"
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
-        self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
+        # During migration with 3+ person group (negated)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s) OR recipient_id = %(recipient_id_3)s)",
+        )
 
     def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
         term = NarrowParameter(operator="dm", operand=" ,,, ,,, ,")
@@ -800,10 +819,11 @@ class NarrowBuilderTest(ZulipTestCase):
 
     # Test that "pm-with" (legacy alias for "dm") works.
     def test_add_term_using_pm_with_operator_no_direct_message_group(self) -> None:
+        # During migration, query PERSONAL recipients for self-DM even without DM group
         term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
         self._do_add_term_test(
             term,
-            "WHERE false",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     # Test that "pm-with" (legacy alias for "dm") works.
@@ -811,9 +831,10 @@ class NarrowBuilderTest(ZulipTestCase):
         # Create a direct message group with the user
         get_or_create_direct_message_group([self.user_profile.id])
         term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
+        # During migration, query includes both PERSONAL and DM group recipients for self-DM
         self._do_add_term_test(
             term,
-            "WHERE recipient_id = %(recipient_id_1)s",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR recipient_id = %(recipient_id_2)s",
         )
 
     # Test that the underscore version of "pm-with" works.
@@ -821,9 +842,10 @@ class NarrowBuilderTest(ZulipTestCase):
         # Create a direct message group with the user
         get_or_create_direct_message_group([self.user_profile.id])
         term = NarrowParameter(operator="pm_with", operand=self.hamlet_email)
+        # During migration, query includes both PERSONAL and DM group recipients for self-DM
         self._do_add_term_test(
             term,
-            "WHERE recipient_id = %(recipient_id_1)s",
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR recipient_id = %(recipient_id_2)s",
         )
 
     # Test that "pm-with" (legacy alias for "dm") works.
@@ -2710,6 +2732,80 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], message_ids)
             self.assertEqual(message["sender_id"], me.id)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
+
+    def test_dm_narrow_with_mixed_personal_and_dm_group_messages(self) -> None:
+        """
+        Test that fetching DMs between two users shows all messages,
+        regardless of whether they were sent using personal recipients
+        (legacy) or DirectMessageGroup recipients (new).
+
+        This is important for the migration from personal recipients to
+        DirectMessageGroup recipients for 1:1 DMs. Users should be able to
+        see their complete message history after the migration.
+        """
+        me = self.example_user("hamlet")
+        other_user = self.example_user("iago")
+        self.login_user(me)
+        user_ids = [me.id, other_user.id]
+        narrow = [dict(operator="dm", operand=[other_user.id], negated=False)]
+        modified_params: dict[str, str | int] = {
+            "narrow": orjson.dumps(narrow).decode(),
+            "num_before": 100,
+            "num_after": 100,
+        }
+
+        # Step 1: Send messages using personal recipients (legacy behavior)
+        # With PREFER_DIRECT_MESSAGE_GROUP=False, messages use PERSONAL recipients
+        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=False):
+            personal_message_ids = [
+                self.send_personal_message(me, other_user),
+                self.send_personal_message(other_user, me),
+            ]
+
+        # Verify messages use PERSONAL recipient type
+        for msg_id in personal_message_ids:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
+
+        # Verify personal messages are visible in the conversation
+        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=False):
+            result = self.get_and_check_messages(modified_params)
+            result_ids = [m["id"] for m in result["messages"]]
+            for msg_id in personal_message_ids:
+                self.assertIn(msg_id, result_ids)
+
+        # Step 2: Enable PREFER_DIRECT_MESSAGE_GROUP and send new messages
+        # This simulates what happens after the migration is enabled
+        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=True):
+            dm_group_message_ids = [
+                self.send_personal_message(me, other_user),
+                self.send_personal_message(other_user, me),
+            ]
+
+        # Verify new messages use DIRECT_MESSAGE_GROUP recipient type
+        direct_message_group = get_or_create_direct_message_group(user_ids)
+        for msg_id in dm_group_message_ids:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+            self.assertEqual(msg.recipient_id, direct_message_group.recipient_id)
+
+        # Step 3: Fetch messages with dm narrow (with PREFER_DIRECT_MESSAGE_GROUP=True)
+        # This is the key test: can users see BOTH old and new messages?
+        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=True):
+            result = self.get_and_check_messages(modified_params)
+            result_ids = [m["id"] for m in result["messages"]]
+
+        # IMPORTANT: This verifies backward compatibility during the migration.
+        # All messages should be visible - both old (personal) and new (DM group)
+        all_message_ids = personal_message_ids + dm_group_message_ids
+        for msg_id in all_message_ids:
+            self.assertIn(
+                msg_id,
+                result_ids,
+                f"Message {msg_id} not found in dm narrow results. "
+                f"This indicates a potential issue with the migration - "
+                f"old messages may not be visible after enabling PREFER_DIRECT_MESSAGE_GROUP.",
+            )
 
     def test_get_visible_messages_with_narrow_dm(self) -> None:
         me = self.example_user("hamlet")
@@ -5306,6 +5402,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         )
 
     def test_get_messages_with_narrow_queries_using_direct_message_group(self) -> None:
+        # During migration, the query includes both PERSONAL and DM group recipients
         query_ids = self.get_query_ids()
         hamlet_email = self.example_user("hamlet").email
         othello_email = self.example_user("othello").email
@@ -5318,7 +5415,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_and_othello_recipient} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND ((flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_personal_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_personal_recipient}) OR recipient_id = {hamlet_and_othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
@@ -5339,7 +5436,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_and_othello_recipient} AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND ((flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_personal_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_personal_recipient}) OR recipient_id = {hamlet_and_othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
@@ -5360,7 +5457,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_and_othello_recipient} ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND ((flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_personal_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_personal_recipient}) OR recipient_id = {hamlet_and_othello_recipient}) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -5495,6 +5592,7 @@ WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = 
         )
 
         # Narrow to direct messages with yourself
+        # During migration, query includes both PERSONAL and DM group recipients for self-DM
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
@@ -5503,7 +5601,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND ((flags & 2048) != 0 AND realm_id = {realm_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_personal_recipient} OR recipient_id = {hamlet_recipient}) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
