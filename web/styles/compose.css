@@ -1020,6 +1020,12 @@
     .secondary-button {
         margin-left: 10px;
     }
+
+    /* Extra margins for resolution banner cancel button */
+    .resolution-banner-cancel {
+        margin-left: 8px;
+        margin-right: 10px;
+    }
 }
 
 .upload_banner {
@@ -1187,13 +1193,6 @@ textarea.new_message_textarea {
         border-color: transparent;
         max-width: fit-content;
     }
-
-    /* Faded appearance for resolution mode - visible but not editable */
-    &.resolution-locked {
-        opacity: 0.6;
-        pointer-events: none;
-        cursor: not-allowed;
-    }
 }
 
 #compose_select_recipient_widget {
@@ -1224,13 +1223,6 @@ textarea.new_message_textarea {
     .dropdown_widget_value {
         text-overflow: ellipsis;
         overflow: hidden;
-    }
-
-    /* Faded appearance for resolution mode */
-    &.resolution-locked {
-        opacity: 0.6;
-        pointer-events: none;
-        cursor: not-allowed;
     }
 }
 
@@ -1575,6 +1567,14 @@ textarea.new_message_textarea {
     }
 }
 
+/* When locked in topic resolution mode, the entire recipient row is
+   non-interactive: no clicks, no hover highlights, no cursor changes. */
+#compose-recipient[inert],
+#compose-recipient[inert] * {
+    pointer-events: none;
+    cursor: default;
+}
+
 #compose-recipient {
     /* Set a line-height equal to the font-size to
        make a compact, predictably tall recipient row. */
@@ -1866,7 +1866,7 @@ textarea.new_message_textarea {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
+    width: 40px;
     /* Allow to grow but not shrink */
     flex: 1 0 auto;
     height: var(--compose-formatting-buttons-row-height);
@@ -1877,7 +1877,7 @@ textarea.new_message_textarea {
        margin is handled on the vdots icon
        below, so as to make for a maximum
        clickable vdots area. */
-    margin-left: -2px;
+    margin-left: -4px;
     border-radius: 0 4px 4px 0;
     /* Flex items respect z-index values;
        this is needed to keep the vdots
@@ -1911,7 +1911,7 @@ textarea.new_message_textarea {
     }
 
     .zulip-icon {
-        padding: 5px 0 5px 2px;
+        padding: 5px 0 5px 4px;
         /* 17px at 14px/1em */
         font-size: 1.2143em;
         flex-grow: 1;

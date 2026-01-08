@@ -5,14 +5,18 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 // Mock dependencies
-mock_esm("../src/channel", {
+const channel = mock_esm("../src/channel", {
     patch(opts) {
         // Mock API call - invoke the success callback to simulate server response
         if (opts.success) {
             opts.success();
         }
+    },
+    xhr_error_message(message, _xhr) {
+        return message;
     },
 });
 
@@ -26,8 +30,12 @@ mock_esm("../src/compose_banner", {
     clear_topic_resolution_banners() {},
 });
 
-mock_esm("../src/compose_validate", {
+const compose_validate = mock_esm("../src/compose_validate", {
     validate_and_update_send_button_status() {},
+});
+
+mock_esm("../src/ui_report", {
+    generic_embed_error() {},
 });
 
 // Unused mocks removed to fix coverage
@@ -107,32 +115,6 @@ run_test("pending_resolution_state", () => {
     assert.equal(topic_resolution_compose.has_pending_resolution(), false);
 });
 
-run_test("meets_minimum_length", () => {
-    // Empty message should not meet minimum
-    compose_state.message_content("");
-    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
-
-    // Short message should not meet minimum (< 10 chars)
-    compose_state.message_content("short");
-    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
-
-    // Exactly 10 chars should meet minimum
-    compose_state.message_content("ten chars!");
-    assert.equal(topic_resolution_compose.meets_minimum_length(), true);
-
-    // Longer message should meet minimum
-    compose_state.message_content("This is a longer message explaining the resolution");
-    assert.equal(topic_resolution_compose.meets_minimum_length(), true);
-
-    // Whitespace-only should not meet minimum (after trim)
-    compose_state.message_content("          ");
-    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
-});
-
-run_test("MIN_RESOLUTION_MESSAGE_LENGTH_constant", () => {
-    assert.equal(topic_resolution_compose.MIN_RESOLUTION_MESSAGE_LENGTH, 10);
-});
-
 run_test("resolve_without_message_in_optional_mode", ({override}) => {
     // Set to optional mode
     override(realm, "realm_topic_resolution_message_requirement", "optional");
@@ -146,6 +128,46 @@ run_test("resolve_without_message_in_optional_mode", ({override}) => {
 
     // State should be cleared
     assert.equal(topic_resolution_compose.has_pending_resolution(), false);
+});
+
+run_test("resolve_without_message_handles_api_error", ({override}) => {
+    // Set to optional mode
+    override(realm, "realm_topic_resolution_message_requirement", "optional");
+
+    const $recipient_row = $("#compose-recipient");
+
+    // Setup pending resolution (this calls disable_recipient_area → sets inert)
+    topic_resolution_compose.start_resolution_compose(123, 456, "test topic", false);
+    assert.equal(topic_resolution_compose.has_pending_resolution(), true);
+
+    // Verify recipient row was made inert
+    assert.ok($recipient_row.prop("inert"));
+
+    // Mock channel.patch to trigger error
+    let error_triggered = false;
+    override(channel, "patch", (opts) => {
+        opts.error({});
+        error_triggered = true;
+    });
+
+    let send_button_status_updated = false;
+    override(compose_validate, "validate_and_update_send_button_status", () => {
+        send_button_status_updated = true;
+    });
+
+    // Resolve without message (triggers error callback)
+    topic_resolution_compose.resolve_without_message();
+
+    // Verify error was triggered
+    assert.ok(error_triggered);
+
+    // Verify UI recovery: enable_recipient_area should have been called (inert removed)
+    assert.ok(!$recipient_row.prop("inert"));
+
+    assert.ok(send_button_status_updated);
+
+    // Clean up pending resolution
+    topic_resolution_compose.clear_pending_resolution();
 });
 
 run_test("resolve_without_message_blocked_in_required_mode", ({override}) => {
@@ -164,6 +186,60 @@ run_test("resolve_without_message_blocked_in_required_mode", ({override}) => {
 
     // Cleanup
     topic_resolution_compose.clear_pending_resolution();
+});
+
+run_test("MIN_RESOLUTION_MESSAGE_LENGTH_constant", () => {
+    assert.equal(topic_resolution_compose.MIN_RESOLUTION_MESSAGE_LENGTH, 5);
+});
+
+run_test("meets_minimum_length", () => {
+    // Empty content
+    compose_state.message_content("");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
+
+    // 4 chars - below minimum
+    compose_state.message_content("1234");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
+
+    // Exactly 5 chars - at minimum
+    compose_state.message_content("12345");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), true);
+
+    // Longer content
+    compose_state.message_content("This is a long enough message.");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), true);
+
+    // Content with whitespace - trimmed to under 5
+    compose_state.message_content("  hi  ");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
+
+    compose_state.message_content("  hello world  ");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), true);
+
+    // Markdown stripping cases
+    // Code fences should be stripped
+    compose_state.message_content("```\n123\n```");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
+
+    // Quote prefixes should be stripped - "12 6" is 4 chars after stripping
+    compose_state.message_content("> 12\n> 6");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
+
+    compose_state.message_content("> Fixed it!\n");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), true);
+
+    // Mixed markdown - code fence content does not get stripped
+    compose_state.message_content("```quote\nI fixed it!\n```");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), true); // "I fixed it!" is 11 chars
+
+    // Emoji count as 1 code point each (not 2 UTF-16 units)
+    // Single emoji = 1 code point, below minimum of 5
+    compose_state.message_content("😊");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), false);
+
+    // 5 emoji = 5 code points, meets minimum exactly
+    compose_state.message_content("😊😊😊😊😊");
+    assert.equal(topic_resolution_compose.meets_minimum_length(), true);
 });
 
 run_test("resolve_without_message_early_return_when_no_pending", ({override}) => {

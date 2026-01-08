@@ -1327,6 +1327,7 @@ def do_send_messages(
                 is_topic_edited=True,
                 target_topic_name=new_topic_name,
                 is_stream_edited=False,
+                is_nontrivial_move=False,
                 topic_resolved=True,
                 topic_unresolved=False,
                 orig_content=message.content,
@@ -1883,11 +1884,11 @@ def check_message(
                 # Collapse whitespace and trim
                 stripped_content = WHITESPACE_RE.sub(" ", stripped_content).strip()
 
-                if len(stripped_content) < 10:
+                if len(stripped_content) < 5:
                     raise JsonableError(
                         _(
                             "Topic resolution messages must be at least {min_length} characters."
-                        ).format(min_length=10)
+                        ).format(min_length=5)
                     )
 
         check_for_can_create_topic_group_violation(

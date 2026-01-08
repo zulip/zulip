@@ -38,6 +38,7 @@
                 </label>
             </div>
         </li>
+        {{#unless in_resolution_mode}}
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="open_send_later_modal popover-menu-link" tabindex="0">
@@ -59,6 +60,7 @@
                 <span class="popover-menu-label">{{t "View scheduled messages" }}</span>
             </a>
         </li>
+        {{/unless}}
         <li role="separator" class="popover-menu-separator drafts-item-in-popover"></li>
         <li role="none" class="link-item popover-menu-list-item drafts-item-in-popover">
             <a href="#drafts" role="menuitem" class="view_contextual_drafts popover-menu-link" tabindex="0">

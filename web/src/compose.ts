@@ -245,7 +245,13 @@ export let send_message = (): void => {
 
     let local_id: string;
 
-    const message = echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+    // Skip local echo for topic resolutions to avoid a visual glitch where
+    // the unresolved topic is bumped briefly before the resolution event arrives.
+    const message =
+        message_data.type === "stream" && message_data.then_resolve_topic
+            ? undefined
+            : echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+
     const locally_echoed = Boolean(message);
     if (message) {
         // We are rendering this message locally with an id

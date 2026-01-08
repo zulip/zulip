@@ -253,12 +253,12 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "channel",
                 "to": orjson.dumps("Verona").decode(),
-                "content": "> short\n```\n123\n```",  # Strips to "short" (5 chars)
+                "content": "test",  # 4 chars
                 "topic": topic_name,
                 "then_resolve_topic": orjson.dumps(True).decode(),
             },
         )
-        self.assert_json_error(result, "Topic resolution messages must be at least 10 characters.")
+        self.assert_json_error(result, "Topic resolution messages must be at least 5 characters.")
 
     def test_send_message_and_resolve_already_resolved_topic(self) -> None:
         user = self.example_user("hamlet")
