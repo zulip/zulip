@@ -1,5 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
+import base64
 import logging
 import os
 import re
@@ -405,6 +406,39 @@ def include_realm_name_in_missedmessage_emails_subject(user_profile: UserProfile
     )
 
 
+def prepare_synthetic_root_message_id(
+    recipient_type: int,
+    recipient_id: int,
+    *,
+    dm_sender_id: int | None = None,
+    topic_name: str | None = None,
+) -> str:
+    """
+    To help email clients thread messages from the same conversation together,
+    we treat all messages as replies to a synthetic root message. This root
+    message's `Message-ID` header is derived from the recipient_id (and sender_id or topic),
+    ensuring consistency across all emails in the thread.
+    """
+    if recipient_type == Recipient.PERSONAL:
+        assert dm_sender_id is not None
+        id_left = f"{recipient_id}.{dm_sender_id}"
+    elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
+        id_left = f"{recipient_id}"
+    else:
+        assert topic_name is not None
+        # Base64-encode the topic name b/c as per RFC 5322, <id_left> needs to be a dot-atom-text.
+        # dot-atom-text = 1*atext *("." 1*atext)
+        # atext = ALPHA / DIGIT / "!" / "#" / "$" / "%" /  "&" / "'" / "*" / "+" / "-" / "/" /
+        #         "=" / "?" / "^" / "_" / "`" / "{" / "|" / "}" / "~"
+        # ref:
+        # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.6.4
+        # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.2.3
+        topic_name_base64 = base64.b64encode(topic_name.encode("utf-8")).decode("utf-8")
+        id_left = f"{recipient_id}.{topic_name_base64}"
+
+    return f"<{id_left}@{settings.EXTERNAL_HOST_WITHOUT_PORT}>"
+
+
 def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: list[dict[str, Any]], message_count: int
 ) -> None:
@@ -528,6 +562,9 @@ def do_send_missedmessage_events_reply_in_zulip(
                 ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
             context.update(group_pm=True, direct_message_group_display_name=group_display_name)
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.DIRECT_MESSAGE_GROUP, message.recipient_id
+        )
     elif message.recipient.type == Recipient.PERSONAL:
         narrow_url = personal_narrow_url(
             realm=user_profile.realm,
@@ -535,6 +572,9 @@ def do_send_missedmessage_events_reply_in_zulip(
             sender_full_name=message.sender.full_name,
         )
         context.update(narrow_url=narrow_url, private_message=True)
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.PERSONAL, message.recipient_id, dm_sender_id=message.sender.id
+        )
     elif (
         context["mention"]
         or context["stream_email_notify"]
@@ -568,6 +608,9 @@ def do_send_missedmessage_events_reply_in_zulip(
             channel_name=stream.name,
             topic_name=display_topic_name,
             topic_resolved=topic_resolved,
+        )
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.STREAM, message.recipient_id, topic_name=display_topic_name.lower()
         )
     else:
         raise AssertionError("Invalid messages!")
@@ -617,6 +660,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         "context": context,
         "date": email_format_datetime(local_time),
+        "in_reply_to": synthetic_root_message_id,
+        "references": synthetic_root_message_id,
     }
     queue_event_on_commit("email_senders", email_dict)
 
