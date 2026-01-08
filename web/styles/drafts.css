@@ -75,14 +75,15 @@
            the checkbox icon) will work. */
         width: 15px;
     }
-   .no-drafts-action {
-    pointer-events: auto;
-}
+
+    .no-drafts-action {
+        pointer-events: auto;
+    }
 }
 .no-drafts-action a {
-    font-size: 16px;          
-    font-weight: 400;         
-    color: #5c7aff;          
+    font-size: 16px;
+    font-weight: 400;
+    
 }
 .no-drafts-action a:hover {
     text-decoration: underline;
