@@ -33,6 +33,13 @@ def get_reminder_formatted_content(
     if note:
         note = normalize_note_text(note)
 
+    user_silent_mention = silent_mention_syntax_for_user(message.sender)
+    conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
+    context = dict(
+        user_silent_mention=user_silent_mention,
+        conversation_url=conversation_url,
+    )
+
     if message.is_channel_message:
         # We don't need to check access here since we already have the message
         # whose access has already been checked by the caller.
@@ -68,24 +75,21 @@ def get_reminder_formatted_content(
             content = _("You requested a reminder for the following direct message.")
 
     # Format the message content as a quote.
-    user_silent_mention = silent_mention_syntax_for_user(message.sender)
-    conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
     content += "\n\n"
+
+    REMINDER_FORMAT = {
+        "widget": _("{user_silent_mention} [sent]({conversation_url}) a {widget}."),
+        "text": _("{user_silent_mention} [said]({conversation_url}):"),
+    }
+
     if message.content.startswith("/poll"):
-        content += _("{user_silent_mention} [sent]({conversation_url}) a poll.").format(
-            user_silent_mention=user_silent_mention,
-            conversation_url=conversation_url,
-        )
+        context.update(widget="poll")
+        content += REMINDER_FORMAT["widget"].format_map(context)
     elif message.content.startswith("/todo"):
-        content += _("{user_silent_mention} [sent]({conversation_url}) a todo list.").format(
-            user_silent_mention=user_silent_mention,
-            conversation_url=conversation_url,
-        )
+        context.update(widget="todo list")
+        content += REMINDER_FORMAT["widget"].format_map(context)
     else:
-        content += _("{user_silent_mention} [said]({conversation_url}):").format(
-            user_silent_mention=user_silent_mention,
-            conversation_url=conversation_url,
-        )
+        content += REMINDER_FORMAT["text"].format_map(context)
         content += "\n"
         fence = get_unused_fence(content)
         quoted_message = "{fence}quote\n{msg_content}\n{fence}"
