@@ -697,8 +697,10 @@ class S3Test(ZulipTestCase):
         self.assertIn("Expires", params)
 
         # Delete the tarball.
-        self.assertIsNone(delete_export_tarball("/not_a_file"))
-        self.assertEqual(delete_export_tarball(parsed_url.path), parsed_url.path)
+        bucket.Object(parsed_url.path.removeprefix("/")).load()
+        delete_export_tarball(parsed_url.path)
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(parsed_url.path.removeprefix("/")).load()
 
     @override_settings(S3_EXPORT_BUCKET="")
     @use_s3_backend
@@ -713,6 +715,7 @@ class S3Test(ZulipTestCase):
             f.write("dummy")
 
         url = upload_export_tarball(user_profile.realm, tarball_path)
+        parsed_url = urlsplit(url)
         result = re.search(re.compile(r"/([0-9a-fA-F]{32})/"), url)
         if result is not None:
             hex_value = result.group(1)
@@ -720,8 +723,10 @@ class S3Test(ZulipTestCase):
         self.assertEqual(url, expected_url)
 
         # Delete the tarball.
-        path_id = urlsplit(url).path
-        self.assertEqual(delete_export_tarball(path_id), path_id)
+        bucket.Object(parsed_url.path.removeprefix("/")).load()
+        delete_export_tarball(parsed_url.path)
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(parsed_url.path.removeprefix("/")).load()
 
     @mock_aws
     def test_tarball_upload_avatar_bucket_download_export_bucket(self) -> None:
