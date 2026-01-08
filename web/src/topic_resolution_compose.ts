@@ -19,19 +19,34 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as resolved_topic from "./resolved_topic.ts";
-import * as topic_resolution_state from "./topic_resolution_state.ts";
+import {realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
 
-// Re-export state functions for consumers
-export const MIN_RESOLUTION_MESSAGE_LENGTH = topic_resolution_state.MIN_RESOLUTION_MESSAGE_LENGTH;
-export const has_pending_resolution = topic_resolution_state.has_pending_resolution;
-export const get_pending_resolution = topic_resolution_state.get_pending_resolution;
-export const is_message_requirement_enabled = topic_resolution_state.is_message_requirement_enabled;
-export const is_message_required = topic_resolution_state.is_message_required;
-export const is_message_optional = topic_resolution_state.is_message_optional;
-export const is_resolve_via_move_allowed = topic_resolution_state.is_resolve_via_move_allowed;
+export const has_pending_resolution = compose_state.has_pending_resolution;
+export const get_pending_resolution = compose_state.get_pending_resolution;
+
+export const MIN_RESOLUTION_MESSAGE_LENGTH = compose_state.MIN_RESOLUTION_MESSAGE_LENGTH;
+export const meets_minimum_length = compose_state.meets_minimum_resolution_length;
+
+export function is_message_requirement_enabled(): boolean {
+    const setting = realm.realm_topic_resolution_message_requirement;
+    return setting === "required" || setting === "optional";
+}
+
+export function is_message_required(): boolean {
+    return realm.realm_topic_resolution_message_requirement === "required";
+}
+
+export function is_message_optional(): boolean {
+    return realm.realm_topic_resolution_message_requirement === "optional";
+}
+
+export function is_resolve_via_move_allowed(): boolean {
+    return realm.realm_topic_resolution_message_requirement !== "required";
+}
 
 export function clear_pending_resolution(): void {
-    topic_resolution_state.clear_pending_resolution_state();
+    compose_state.clear_pending_resolution_state();
     // Remove the resolution banner if present
     compose_banner.clear_topic_resolution_banners();
     // Re-enable recipient area
@@ -50,7 +65,7 @@ export function start_resolution_compose(
     report_errors_in_global_banner: boolean,
 ): void {
     // Store the pending resolution state
-    topic_resolution_state.set_pending_resolution({
+    compose_state.set_pending_resolution({
         message_id,
         stream_id,
         topic,
@@ -77,28 +92,25 @@ export function start_resolution_compose(
 }
 
 /**
- * Fade the compose recipient area and prevent changes (stream and topic fields).
- * Used in resolution mode - user can see recipient but cannot change it.
+ * Lock the compose recipient area in resolution mode.
+ *
+ * Uses the HTML `inert` attribute on the entire recipient box so that
+ * all children (topic input, stream widget, clear-topic button, etc.)
+ * become completely non-interactive — no clicks, no focus, no typeahead.
+ * The area still looks normal (no opacity change) so it reads as
+ * informational rather than disabled.
  */
 function disable_recipient_area(): void {
-    // Make topic input readonly (faded but not fully disabled)
-    $("input#stream_message_recipient_topic").prop("readonly", true);
-    // Add faded class to the stream dropdown
-    $("#compose_select_recipient_widget").addClass("resolution-locked");
-    // Add faded class to the whole recipient box
-    $("#compose_recipient_box").addClass("resolution-locked");
+    // `inert` makes the entire subtree non-interactive: no focus, no events,
+    // no typeahead. It is the standard HTML mechanism for this purpose.
+    $("#compose-recipient").prop("inert", true);
 }
 
 /**
- * Re-enable the compose recipient area.
+ * Re-enable the compose recipient area after resolution mode ends.
  */
 function enable_recipient_area(): void {
-    // Remove readonly from topic input
-    $("input#stream_message_recipient_topic").prop("readonly", false);
-    // Remove faded class from stream dropdown
-    $("#compose_select_recipient_widget").removeClass("resolution-locked");
-    // Remove faded class from recipient box
-    $("#compose_recipient_box").removeClass("resolution-locked");
+    $("#compose-recipient").prop("inert", false);
 }
 
 function show_resolution_banner(): void {
@@ -118,22 +130,13 @@ export function cancel_resolution(): void {
     if (!has_pending_resolution()) {
         return;
     }
-    topic_resolution_state.clear_pending_resolution_state();
+    compose_state.clear_pending_resolution_state();
     compose_banner.clear_topic_resolution_banners();
     // Re-enable recipient area (don't close compose)
     enable_recipient_area();
     // Re-validate send button (may now allow scheduling, etc.)
     compose_validate.validate_and_update_send_button_status();
 }
-
-/**
- * Check if the current message content meets the minimum length requirement.
- */
-export function meets_minimum_length(): boolean {
-    const content = compose_state.message_content().trim();
-    return content.length >= MIN_RESOLUTION_MESSAGE_LENGTH;
-}
-
 /**
  * Resolve the topic without a message (only allowed in "optional" mode).
  * Uses the topic-move API directly since there's no message to send.
@@ -143,11 +146,8 @@ export function resolve_without_message(): void {
         return;
     }
 
-    const pending = topic_resolution_state.get_pending_resolution()!;
+    const pending = compose_state.get_pending_resolution()!;
     const {message_id, topic} = pending;
-
-    // Close compose first
-    compose_actions.cancel();
 
     // Resolve the topic via the topic-move API (no message)
     const new_topic_name = resolved_topic.resolve_name(topic);
@@ -160,7 +160,19 @@ export function resolve_without_message(): void {
             send_notification_to_new_thread: true,
         },
         success() {
-            topic_resolution_state.clear_pending_resolution_state();
+            // Close compose only after API success to avoid losing state on failure
+            clear_pending_resolution();
+            compose_actions.cancel();
+        },
+        error(xhr) {
+            // Un-lock recipient area if the API call fails so user can recover
+            enable_recipient_area();
+            compose_validate.validate_and_update_send_button_status();
+            const error_msg = channel.xhr_error_message(
+                $t({defaultMessage: "Failed to resolve topic"}),
+                xhr,
+            );
+            ui_report.generic_embed_error(error_msg, 3500);
         },
     });
 }

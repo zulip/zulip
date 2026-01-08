@@ -960,98 +960,61 @@ export function toggle_resolve_topic(
     $row?: JQuery,
     stream_id?: number,
 ): void {
-    let new_topic_name;
     const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
-    if (topic_is_resolved) {
-        new_topic_name = resolved_topic.unresolve_name(old_topic_name);
-    } else {
-        new_topic_name = resolved_topic.resolve_name(old_topic_name);
+
+    function execute_with_onboarding(action: () => void): void {
+        if (
+            !topic_is_resolved &&
+            onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_resolve_topic")
+        ) {
+            show_intro_resolve_topic_modal(old_topic_name, action);
+
+            onboarding_steps.post_onboarding_step_as_read("intro_resolve_topic");
+        } else {
+            action();
+        }
     }
 
-    // For resolving (not unresolving), check if a message is required/optional
+    // Resolving a topic (not unresolving) with message requirement
     if (!topic_is_resolved && topic_resolution_compose.is_message_requirement_enabled()) {
-        // Get stream_id if not provided
         const resolved_stream_id = stream_id ?? get_stream_id_for_message(message_id);
-        if (resolved_stream_id !== undefined) {
-            // Check if user can post messages to this stream
-            const sub = sub_store.get(resolved_stream_id);
-            const can_post = sub !== undefined && stream_data.can_post_messages_in_stream(sub);
+        const sub =
+            resolved_stream_id !== undefined ? sub_store.get(resolved_stream_id) : undefined;
+        const can_post = sub !== undefined && stream_data.can_post_messages_in_stream(sub);
 
-            // If resolution message is optional and user can't post, resolve immediately
-            // without opening compose (skip the message)
-            if (topic_resolution_compose.is_message_optional() && !can_post) {
-                // Show onboarding modal first if needed
-                if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_resolve_topic")) {
-                    show_intro_resolve_topic_modal(old_topic_name, () => {
-                        do_toggle_resolve_topic(
-                            message_id,
-                            new_topic_name,
-                            topic_is_resolved,
-                            report_errors_in_global_banner,
-                            $row,
-                        );
-                    });
-                    onboarding_steps.post_onboarding_step_as_read("intro_resolve_topic");
-                } else {
-                    do_toggle_resolve_topic(
-                        message_id,
-                        new_topic_name,
-                        topic_is_resolved,
-                        report_errors_in_global_banner,
-                        $row,
-                    );
-                }
-                return;
-            }
-
-            // User can post, so open compose for resolution message
-            // Show onboarding modal first if needed
-            if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_resolve_topic")) {
-                show_intro_resolve_topic_modal(old_topic_name, () => {
-                    topic_resolution_compose.start_resolution_compose(
-                        message_id,
-                        resolved_stream_id,
-                        old_topic_name,
-                        report_errors_in_global_banner,
-                    );
-                });
-                onboarding_steps.post_onboarding_step_as_read("intro_resolve_topic");
-            } else {
+        if (
+            resolved_stream_id !== undefined &&
+            (can_post || !topic_resolution_compose.is_message_optional())
+        ) {
+            // User can post OR message is required (which forces compose)
+            execute_with_onboarding(() => {
                 topic_resolution_compose.start_resolution_compose(
                     message_id,
                     resolved_stream_id,
                     old_topic_name,
                     report_errors_in_global_banner,
                 );
-            }
+            });
+
             return;
         }
+
+        // Fallthrough if no post permission AND message is optional -> Resolve immediately
     }
 
-    if (
-        !topic_is_resolved &&
-        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_resolve_topic")
-    ) {
-        show_intro_resolve_topic_modal(old_topic_name, () => {
-            do_toggle_resolve_topic(
-                message_id,
-                new_topic_name,
-                topic_is_resolved,
-                report_errors_in_global_banner,
-                $row,
-            );
-        });
-        onboarding_steps.post_onboarding_step_as_read("intro_resolve_topic");
-        return;
-    }
+    const new_topic_name = topic_is_resolved
+        ? resolved_topic.unresolve_name(old_topic_name)
+        : resolved_topic.resolve_name(old_topic_name);
 
-    do_toggle_resolve_topic(
-        message_id,
-        new_topic_name,
-        topic_is_resolved,
-        report_errors_in_global_banner,
-        $row,
-    );
+    execute_with_onboarding(() => {
+        do_toggle_resolve_topic(
+            message_id,
+            new_topic_name,
+            topic_is_resolved,
+            report_errors_in_global_banner,
+            $row,
+        );
+    });
 }
 
 function get_stream_id_for_message(message_id: number): number | undefined {

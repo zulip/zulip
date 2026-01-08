@@ -258,7 +258,7 @@
                 <select name="realm_topic_resolution_message_requirement"
                   id="id_realm_topic_resolution_message_requirement"
                   class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
-                    {{> dropdown_options_widget option_values=topic_resolution_message_requirement_values}}
+                    {{> dropdown_options_widget option_values=(object_values topic_resolution_message_requirement_values)}}
                 </select>
             </div>
         </div>

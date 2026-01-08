@@ -1020,6 +1020,12 @@
     .secondary-button {
         margin-left: 10px;
     }
+
+    /* Extra margins for resolution banner cancel button */
+    .resolution-banner-cancel {
+        margin-left: 8px;
+        margin-right: 10px;
+    }
 }
 
 .upload_banner {
@@ -1187,13 +1193,6 @@ textarea.new_message_textarea {
         border-color: transparent;
         max-width: fit-content;
     }
-
-    /* Faded appearance for resolution mode - visible but not editable */
-    &.resolution-locked {
-        opacity: 0.6;
-        pointer-events: none;
-        cursor: not-allowed;
-    }
 }
 
 #compose_select_recipient_widget {
@@ -1224,13 +1223,6 @@ textarea.new_message_textarea {
     .dropdown_widget_value {
         text-overflow: ellipsis;
         overflow: hidden;
-    }
-
-    /* Faded appearance for resolution mode */
-    &.resolution-locked {
-        opacity: 0.6;
-        pointer-events: none;
-        cursor: not-allowed;
     }
 }
 
@@ -1573,6 +1565,14 @@ textarea.new_message_textarea {
     .unread_count {
         margin: 1px 0 0 6px;
     }
+}
+
+/* When locked in topic resolution mode, the entire recipient row is
+   non-interactive due to the `inert` attribute; we set the cursor
+   explicitly to keep visual feedback consistent. */
+#compose-recipient[inert],
+#compose-recipient[inert] * {
+    cursor: default;
 }
 
 #compose-recipient {

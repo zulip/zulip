@@ -248,7 +248,13 @@ export function initialize(): void {
                         );
                     }
                 } else {
-                    message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                    message_edit.toggle_resolve_topic(
+                        message_id,
+                        topic_name,
+                        true,
+                        undefined,
+                        stream_id,
+                    );
                 }
                 compose_validate.clear_topic_resolved_warning();
             });
