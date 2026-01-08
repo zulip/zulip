@@ -737,13 +737,16 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     # more secure against bugs that may cause Message.realm to be incorrect for some
     # cross-realm messages to also determine the actual Recipients - to prevent
     # deletion of excessive messages.
-    all_recipient_ids_in_realm = [
-        *Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True),
-        *UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
-        *Subscription.objects.filter(
-            recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
-        ).values_list("recipient_id", flat=True),
-    ]
+    all_recipient_ids_in_realm = (
+        Stream.objects.filter(realm=realm)
+        .values_list("recipient_id", flat=True)
+        .union(
+            UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
+            Subscription.objects.filter(
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
+            ).values_list("recipient_id", flat=True),
+        )
+    )
     cross_realm_bot_message_ids = list(
         Message.objects.filter(
             # Filtering by both message.recipient and message.realm is
