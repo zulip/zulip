@@ -539,6 +539,26 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         is_sending_saving: false,
         drafts_version: 1,
     };
+    // NEW: Draft acting as an Outbox item (sending state)
+    const draft_8 = {
+        topic: "outbox-topic",
+        type: "stream",
+        stream_id: 30,
+        content: "Test outbox stream message",
+        updatedAt: date(-3),
+        is_sending_saving: true, // This triggers outbox/sending logic
+        drafts_version: 1,
+    };
+    // NEW: Private draft in Outbox state
+    const draft_9 = {
+        private_message_recipient_ids: [aaron.user_id],
+        reply_to: "aaron@zulip.com",
+        type: "private",
+        content: "Test outbox direct message",
+        updatedAt: date(-4),
+        is_sending_saving: true,
+        drafts_version: 1,
+    };
 
     const expected = [
         {
@@ -572,6 +592,29 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             has_recipient_data: true,
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
+        },
+        {
+            draft_id: "id8", // Expected output for the new Stream Outbox item
+            is_stream: true,
+            stream_name: stream_1.name,
+            stream_id: 30,
+            recipient_bar_color: stream_color.get_recipient_bar_color(stream_1.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(stream_1.color),
+            topic_display_name: "outbox-topic",
+            is_empty_string_topic: false,
+            raw_content: "Test outbox stream message",
+            time_stamp: "Jan 28",
+            invite_only: stream_1.invite_only,
+            is_web_public: stream_1.is_web_public,
+        },
+        {
+            draft_id: "id9", // Expected output for the new Private Outbox item
+            is_dm_with_self: true,
+            is_stream: false,
+            has_recipient_data: true,
+            recipients: "Aaron",
+            raw_content: "Test outbox direct message",
+            time_stamp: "Jan 27",
         },
         {
             draft_id: "id4",
@@ -630,13 +673,19 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         id5: draft_5,
         id6: draft_6,
         id7: draft_7,
+        // Register new drafts
+        id8: draft_8,
+        id9: draft_9,
     };
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
     override(realm, "realm_topics_policy", "disable_empty_topic");
-    expected[5].topic_display_name = "translated: No topic entered";
-    expected[5].is_empty_string_topic = true;
+    // Adjust index for expected[7] because we inserted items before it (originally expected[5])
+    // The new array order is: id1, id2, id5, id8, id9, id4, id3, id6, id7
+    // id6 is now at index 7
+    expected[7].topic_display_name = "translated: No topic entered";
+    expected[7].is_empty_string_topic = true;
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
