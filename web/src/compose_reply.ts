@@ -327,14 +327,18 @@ export function quote_message(opts: {
             const data = z.object({raw_content: z.string()}).parse(raw_data);
             replace_content(message, data.raw_content);
         },
+        // We set a timeout here to trigger usage of the fallback markdown via the
+        // error callback below, which is much better UX than waiting for 10 seconds and
+        // feeling that the quoting mechanism is broken.
+        timeout: 1000,
         error() {
-            compose_ui.replace_syntax(
-                quoting_placeholder,
-                $t({defaultMessage: "[Error fetching message content.]"}),
-                $textarea,
-                opts.forward_message,
-            );
-            compose_ui.autosize_textarea($textarea);
+            // We fall back to using the available message content and pass it
+            // through the `paste_handler_converter` to generate the replacement
+            // markdown, in case the request timed out or failed for another reason,
+            // such as the client being offline.
+            const message_html = message.content;
+            const md = compose_paste.paste_handler_converter(message_html);
+            replace_content(message, md);
         },
     });
 }
