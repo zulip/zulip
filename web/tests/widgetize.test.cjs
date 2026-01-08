@@ -59,6 +59,7 @@ mock_esm("../src/poll_widget", fake_poll_widget);
 
 set_global("document", "document-stub");
 
+const {GenericWidget} = zrequire("generic_widget");
 const widgetize = zrequire("widgetize");
 const widgets = zrequire("widgets");
 
@@ -149,7 +150,7 @@ test("activate", ({override}) => {
     assert.ok(!is_widget_activated);
     assert.ok(!is_event_handled);
 
-    /* Testing widgetize.GenericWidget */
+    /* Testing GenericWidget */
     message_lists.current = {id: 2};
     const post_activate_event = {
         data: {
@@ -163,7 +164,7 @@ test("activate", ({override}) => {
         is_event_handled = true;
         assert.deepEqual(e, [post_activate_event]);
     };
-    widgetize.set_widget_for_tests(2001, new widgetize.GenericWidget(handle_events));
+    widgetize.set_widget_for_tests(2001, new GenericWidget(handle_events));
     override(message_lists.current, "get_row", (idx) => {
         assert.equal(idx, 2001);
         return $row;

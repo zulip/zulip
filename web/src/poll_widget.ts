@@ -6,6 +6,7 @@ import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import type {WidgetExtraData} from "./generic_widget.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
@@ -20,7 +21,6 @@ import {
     vote_schema,
 } from "./poll_data.ts";
 import type {Event} from "./widget_data.ts";
-import type {WidgetExtraData} from "./widgetize.ts";
 
 export function activate({
     $elem,
