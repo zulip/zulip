@@ -1,4 +1,3 @@
-import logging
 import os
 import secrets
 from collections.abc import Callable, Iterator
@@ -176,11 +175,8 @@ class S3UploadBackend(ZulipUploadBackend):
         try:
             key.load()
         except botocore.exceptions.ClientError:
-            file_name = path_id.split("/")[-1]
-            logging.warning(
-                "%s does not exist. Its entry in the database will be removed.", file_name
-            )
             return False
+
         key.delete()
         return True
 

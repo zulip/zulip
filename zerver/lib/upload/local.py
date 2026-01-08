@@ -1,4 +1,3 @@
-import logging
 import os
 import random
 import secrets
@@ -53,21 +52,20 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     assert_is_local_storage_path(type, file_path)
 
-    if os.path.isfile(file_path):
-        os.remove(file_path)
+    if not os.path.isfile(file_path):
+        return False
 
-        # Remove as many directories up the tree as are now empty
-        directory = os.path.dirname(file_path)
-        while directory != settings.LOCAL_UPLOADS_DIR:
-            try:
-                os.rmdir(directory)
-                directory = os.path.dirname(directory)
-            except OSError:
-                break
-        return True
-    file_name = path.split("/")[-1]
-    logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
-    return False
+    os.remove(file_path)
+
+    # Remove as many directories up the tree as are now empty
+    directory = os.path.dirname(file_path)
+    while directory != settings.LOCAL_UPLOADS_DIR:
+        try:
+            os.rmdir(directory)
+            directory = os.path.dirname(directory)
+        except OSError:
+            break
+    return True
 
 
 class LocalUploadBackend(ZulipUploadBackend):
