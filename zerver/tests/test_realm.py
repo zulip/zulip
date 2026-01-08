@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import random
@@ -43,12 +44,17 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import activate_push_notification_service
-from zerver.lib.upload import delete_message_attachments, upload_message_attachment
+from zerver.lib.test_helpers import activate_push_notification_service, get_test_image_file
+from zerver.lib.upload import (
+    delete_message_attachments,
+    upload_avatar_image,
+    upload_message_attachment,
+)
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -2977,6 +2983,19 @@ class ScrubRealmTest(ZulipTestCase):
             self.assertTrue(os.path.isfile(file_path))
             file_paths.append(file_path)
 
+        for i in range(1, 5):
+            if i == 3:
+                do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=iago)
+                continue
+            with get_test_image_file("img.png") as img_file:
+                upload_avatar_image(img_file, iago)
+                do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_USER, acting_user=iago)
+        avatar_files = [
+            *glob.glob(f"{settings.LOCAL_AVATARS_DIR}/{zulip.id}/*.original"),
+            *glob.glob(f"{settings.LOCAL_AVATARS_DIR}/{zulip.id}/*.png"),
+        ]
+        self.assert_length(avatar_files, 3 * 3)  # i=(1,2,4) * (original, medium, large)
+
         CustomProfileField.objects.create(realm=lear)
 
         self.assertEqual(
@@ -3035,6 +3054,9 @@ class ScrubRealmTest(ZulipTestCase):
         self.assertFalse(os.path.isfile(file_paths[2]))
         self.assertTrue(os.path.isfile(file_paths[3]))
         self.assertTrue(os.path.isfile(file_paths[4]))
+
+        for avatar_file in avatar_files:
+            self.assertFalse(os.path.isfile(avatar_file))
 
         self.assertEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
         self.assertNotEqual(CustomProfileField.objects.filter(realm=lear).count(), 0)
