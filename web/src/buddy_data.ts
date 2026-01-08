@@ -17,12 +17,10 @@ import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
 
 /*
-
    This is the main model code for building the buddy list.
    We also rely on presence.js to compute the actual presence
    for users.  We glue in other "people" data and do
    filtering/sorting of the data that we'll send into the view.
-
 */
 
 export let max_size_before_shrinking = 600;
@@ -67,7 +65,6 @@ export function get_user_circle_class(user_id: number, use_deactivated_circle = 
 }
 
 export function level(user_id: number): number {
-    // Put current user at the top, unless we're in a user search view.
     if (people.is_my_user_id(user_id) && !is_searching_users) {
         return 0;
     }
@@ -89,10 +86,6 @@ export let user_matches_narrow_using_loaded_data = (
     pm_ids: Set<number>,
     stream_id: number | undefined,
 ): boolean => {
-    // All users we're checking should be subscribed, because we show all users
-    // for small channels but fetch all users for small channels, and we only
-    // show recently active users for large channels and we always fetch
-    // recently active users.
     if (stream_id) {
         return stream_data.is_user_loaded_and_subscribed(stream_id, user_id);
     }
@@ -108,6 +101,10 @@ export function rewire_user_matches_narrow_using_loaded_data(
     user_matches_narrow_using_loaded_data = value;
 }
 
+function get_num_unread(user_id: number): number {
+    return unread.num_unread_for_user_ids_string(user_id.toString());
+}
+
 export function compare_function(
     a: number,
     b: number,
@@ -115,6 +112,17 @@ export function compare_function(
     pm_ids: Set<number>,
     conversation_participants: Set<number>,
 ): number {
+    // 1. Unread messages priority (Highest)
+    const a_unread = get_num_unread(a);
+    const b_unread = get_num_unread(b);
+    if (a_unread > 0 && b_unread === 0) {
+        return -1;
+    }
+    if (a_unread === 0 && b_unread > 0) {
+        return 1;
+    }
+
+    // 2. Conversation participants priority
     const a_is_participant = conversation_participants.has(a);
     const b_is_participant = conversation_participants.has(b);
     if (a_is_participant && !b_is_participant) {
@@ -124,15 +132,17 @@ export function compare_function(
         return 1;
     }
 
-    const a_would_receive_message = user_matches_narrow_using_loaded_data(a, pm_ids, stream_id);
-    const b_would_receive_message = user_matches_narrow_using_loaded_data(b, pm_ids, stream_id);
-    if (a_would_receive_message && !b_would_receive_message) {
+    // 3. Relevance to view (Matches narrow)
+    const a_matches = user_matches_narrow_using_loaded_data(a, pm_ids, stream_id);
+    const b_matches = user_matches_narrow_using_loaded_data(b, pm_ids, stream_id);
+    if (a_matches && !b_matches) {
         return -1;
     }
-    if (!a_would_receive_message && b_would_receive_message) {
+    if (!a_matches && b_matches) {
         return 1;
     }
 
+    // 4. Presence Level (Active > Idle > Offline)
     const level_a = level(a);
     const level_b = level(b);
     const diff = level_a - level_b;
@@ -140,28 +150,19 @@ export function compare_function(
         return diff;
     }
 
-    // Sort equivalent direct message names alphabetically
+    // 5. Alphabetical Fallback (Ensures stability and satisfies TypeScript)
     const person_a = people.maybe_get_user_by_id(a);
     const person_b = people.maybe_get_user_by_id(b);
-
-    const full_name_a = person_a ? person_a.full_name : "";
-    const full_name_b = person_b ? person_b.full_name : "";
-
-    return util.strcmp(full_name_a, full_name_b);
+    return util.strcmp(person_a?.full_name ?? "", person_b?.full_name ?? "");
 }
 
 export function sort_users(user_ids: number[], conversation_participants: Set<number>): number[] {
-    // TODO sort by unread count first, once we support that
     const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const pm_ids_set = narrow_state.pm_ids_set();
     user_ids.sort((a, b) =>
         compare_function(a, b, stream_id, pm_ids_set, conversation_participants),
     );
     return user_ids;
-}
-
-function get_num_unread(user_id: number): number {
-    return unread.num_unread_for_user_ids_string(user_id.toString());
 }
 
 export function user_last_seen_time_status(
@@ -174,17 +175,11 @@ export function user_last_seen_time_status(
     }
 
     if (status === "idle") {
-        // When we complete our presence API rewrite to have the data
-        // plumbed, we may want to change this to also mention when
-        // they were last active.
         return $t({defaultMessage: "Idle"});
     }
 
     const last_active_date = presence.last_active_date(user_id);
     if (last_active_date === undefined) {
-        // There are situations where the client has incomplete presence
-        // history on a user. This can happen when users are deactivated,
-        // or when the user's last activity is older than what we fetch.
         assert(page_params.presence_history_limit_days_for_web_app === 365);
 
         if (missing_data_callback !== undefined) {
@@ -262,7 +257,6 @@ export function get_title_data(
     should_show_status: boolean,
 ): TitleData {
     if (is_group) {
-        // For groups, just return a string with recipient names.
         return {
             first_line: people.format_recipients(user_ids_string, "long"),
             second_line: "",
@@ -270,7 +264,6 @@ export function get_title_data(
         };
     }
 
-    // Since it's not a group, user_ids_string is a single user ID.
     const user_id = Number.parseInt(user_ids_string, 10);
     const person = people.get_by_user_id(user_id);
     const is_deactivated = !people.is_person_active(user_id);
@@ -294,7 +287,6 @@ export function get_title_data(
             };
         }
 
-        // Bot does not have an owner.
         return {
             first_line: person.full_name,
             second_line: "",
@@ -302,8 +294,6 @@ export function get_title_data(
         };
     }
 
-    // For buddy list and individual direct messages.
-    // Since is_group=False, it's a single, human user.
     const last_seen = user_last_seen_time_status(user_id);
     const is_my_user = people.is_my_user_id(user_id);
 
@@ -317,7 +307,6 @@ export function get_title_data(
         };
     }
 
-    // Users has a status.
     if (user_status.get_status_text(user_id)) {
         return {
             first_line: person.full_name,
@@ -327,7 +316,6 @@ export function get_title_data(
         };
     }
 
-    // Users does not have a status.
     return {
         first_line: person.full_name,
         second_line: last_seen,
@@ -338,12 +326,10 @@ export function get_title_data(
 
 export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     const direct_message_recipients = narrow_state.pm_ids_set();
-    const user_info = user_ids.map((user_id) => info_for(user_id, direct_message_recipients));
-    return user_info;
+    return user_ids.map((user_id) => info_for(user_id, direct_message_recipients));
 }
 
 function user_is_recently_active(user_id: number): boolean {
-    // return true if the user has a green/orange circle
     return level(user_id) <= 2;
 }
 
@@ -357,23 +343,16 @@ function maybe_shrink_list(
     }
 
     if (user_filter_text) {
-        // If the user types something, we want to show all
-        // users matching the text, even if they have not been
-        // online recently.
-        // For super common letters like "s", we may
-        // eventually want to filter down to only users that
-        // are in presence.get_user_ids().
         return user_ids;
     }
 
-    // We want to always show PM recipients even if they're inactive.
     const pm_ids_set = narrow_state.pm_ids_set();
     const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const filter_by_stream_id =
         stream_id &&
         peer_data.get_subscriber_count(stream_id) <= max_channel_size_to_show_all_subscribers;
 
-    user_ids = user_ids.filter(
+    return user_ids.filter(
         (user_id) =>
             user_is_recently_active(user_id) ||
             user_matches_narrow_using_loaded_data(
@@ -383,38 +362,27 @@ function maybe_shrink_list(
             ) ||
             conversation_participants.has(user_id),
     );
-
-    return user_ids;
 }
 
 function filter_user_ids(user_filter_text: string, user_ids: number[]): number[] {
-    // This first filter is for whether the user is eligible to be
-    // displayed in the right sidebar at all.
     const direct_message_recipients = narrow_state.pm_ids_set();
     user_ids = user_ids.filter((user_id) => {
         const person = people.maybe_get_user_by_id(user_id, true);
 
         if (!person) {
-            // See the comments in presence.set_info for details, but this is an expected race.
-            // User IDs for whom we have presence but no user metadata should be skipped.
             return false;
         }
 
         if (person.is_bot) {
-            // Bots should never appear in the right sidebar.  This
-            // case should never happen, since bots cannot have
-            // presence data.
             return false;
         }
 
         const is_dm = direct_message_recipients.has(user_id);
         if (!people.is_person_active(user_id) && !is_dm) {
-            // Deactivated users are hidden in the buddy list except in DM narrows.
             return false;
         }
 
         if (muted_users.is_user_muted(user_id)) {
-            // Muted users are hidden from the right sidebar entirely.
             return false;
         }
 
@@ -425,7 +393,6 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
         return user_ids;
     }
 
-    // If a query is present in "Filter users", we return matches.
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }
@@ -437,37 +404,25 @@ function get_filtered_user_id_list(
     let base_user_id_list = [];
 
     if (user_filter_text) {
-        // If there's a filter, select from all users, not just those
-        // recently active.
         base_user_id_list = people.get_active_user_ids();
     } else {
-        // From large realms, the user_ids in presence may exclude
-        // users who have been idle more than three weeks.  When the
-        // filter text is blank, we show only those recently active users.
         base_user_id_list = presence.get_user_ids();
 
-        // Always include ourselves, even if we're "unavailable".
         const my_user_id = people.my_current_user_id();
         if (!base_user_id_list.includes(my_user_id)) {
             base_user_id_list = [my_user_id, ...base_user_id_list];
         }
 
-        // We want to always show PM recipients even if they're inactive.
         const pm_ids_set = narrow_state.pm_ids_set();
         if (pm_ids_set.size > 0) {
             const base_user_id_set = new Set([...base_user_id_list, ...pm_ids_set]);
             base_user_id_list = [...base_user_id_set];
         }
 
-        // We want to show subscribers even if they're inactive, if there are few
-        // enough subscribers in the channel.
         const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         if (stream_id) {
             const subscriber_count = peer_data.get_subscriber_count(stream_id);
             if (subscriber_count <= max_channel_size_to_show_all_subscribers) {
-                // We can know these are all loaded because we fetch all subscribers
-                // for small channels, and max_channel_size_to_show_all_subscribers
-                // is less than MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE.
                 const subscribers = peer_data.get_subscriber_ids_assert_loaded(stream_id);
                 const base_user_id_set = new Set([...base_user_id_list, ...subscribers]);
                 base_user_id_list = [...base_user_id_set];
@@ -475,11 +430,10 @@ function get_filtered_user_id_list(
         }
     }
 
-    // Make sure all the participants are in the list, even if they're inactive.
     const user_ids_set = new Set([...base_user_id_list, ...conversation_participants]);
     return filter_user_ids(user_filter_text, [...user_ids_set]);
 }
-// get participants of the current viewed conversation.
+
 export function get_conversation_participants_callback(): () => Set<number> {
     return () => {
         if (
@@ -494,15 +448,12 @@ export function get_conversation_participants_callback(): () => Set<number> {
 }
 
 export function get_filtered_and_sorted_user_ids(user_filter_text: string): number[] {
-    let user_ids;
     const conversation_participants = get_conversation_participants_callback()();
-    user_ids = get_filtered_user_id_list(user_filter_text, conversation_participants);
+    let user_ids = get_filtered_user_id_list(user_filter_text, conversation_participants);
     user_ids = maybe_shrink_list(user_ids, user_filter_text, conversation_participants);
     return sort_users(user_ids, conversation_participants);
 }
 
 export function matches_filter(user_filter_text: string, user_id: number): boolean {
-    // This is a roundabout way of checking a user if you look
-    // too hard at it, but it should be fine for now.
     return filter_user_ids(user_filter_text, [user_id]).length === 1;
 }
