@@ -18960,7 +18960,7 @@ paths:
                           - `optional`: A message is optional
                           - `required`: A message is required
 
-                          **Changes**: New in Zulip 10.0 (feature level 470).
+                          **Changes**: New in Zulip 12.0 (feature level 449).
                       realm_topics_policy:
                         type: string
                         enum:

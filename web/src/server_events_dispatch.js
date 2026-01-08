@@ -91,6 +91,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
+import * as topic_resolution_compose from "./topic_resolution_compose.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -345,6 +346,14 @@ export function dispatch_normal_event(event) {
             };
             switch (event.op) {
                 case "update":
+                    // Special handling for topic_resolution_message_requirement:
+                    // Update realm and call handler, but skip sync_realm_settings
+                    // which fails for this property due to UI element handling issues.
+                    if (event.property === "topic_resolution_message_requirement") {
+                        realm["realm_" + event.property] = event.value;
+                        topic_resolution_compose.update_banner_if_needed();
+                        break;
+                    }
                     if (Object.hasOwn(realm_settings, event.property)) {
                         realm["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
