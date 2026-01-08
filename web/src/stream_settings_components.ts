@@ -3,6 +3,7 @@ import * as z from "zod/mini";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_new_channel_members_title from "../templates/stream_settings/new_channel_members_title.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -77,7 +78,7 @@ export const show_subs_pane = {
         } else {
             $("#subscription_overlay .stream-info-title")
                 .html(
-                    render_selected_stream_title({
+                    render_new_channel_members_title({
                         sub: sub ?? {
                             name: "",
                             invite_only: false,
