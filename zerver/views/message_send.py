@@ -127,7 +127,9 @@ def send_message_backend(
     widget_content: Annotated[
         str | None, ApiParamConfig("widget_content", documentation_status=DOCUMENTATION_PENDING)
     ] = None,
-    then_resolve_topic: Json[bool] = False,
+    then_resolve_topic: Annotated[
+        Json[bool], ApiParamConfig(documentation_status=DOCUMENTATION_PENDING)
+    ] = False,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -248,8 +250,9 @@ def send_message_backend(
     if then_resolve_topic:
         if recipient_type_name != "stream":
             raise JsonableError(_("then_resolve_topic is only supported for channel messages"))
-        if topic_name is None:
-            raise JsonableError(_("then_resolve_topic requires a topic"))
+        # topic_name is guaranteed to be set here because check_send_message
+        # validates it before we reach this point
+        assert topic_name is not None
 
         # Build the resolved topic name
         resolved_topic = RESOLVED_TOPIC_PREFIX + topic_name
@@ -268,7 +271,6 @@ def send_message_backend(
             send_notification_to_new_thread=True,
             resolution_message_already_sent=True,
         )
-        data["topic_resolved"] = True
 
     return json_success(request, data=data)
 
