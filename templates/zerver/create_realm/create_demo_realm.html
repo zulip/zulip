@@ -7,9 +7,13 @@
 {% block portico_content %}
 <div class="register-account flex full-page">
     <div class="center-block new-style" id="demo-realm-creation">
-        <div class="pitch">
-            <h1>{{ _("Try Zulip in a demo organization") }}</h1>
-            <p>{{ _("No email required.") }}</p>
+        <div class="registration-lead-section">
+            <h1 class="registration-lead-title">{{ _("Try Zulip in a demo organization") }}</h1>
+            <p class="registration-lead-subtitle">
+                {% trans %}
+                No email required. Or <a class="registration-lead-subtitle-link" href="{{ root_domain_url }}/new/">create a permanent organization</a>.
+                {% endtrans %}
+            </p>
         </div>
         <form class="white-box" id="create_demo_realm" action="{{ current_url() }}" method="post">
             {{ csrf_input }}
