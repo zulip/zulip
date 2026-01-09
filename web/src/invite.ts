@@ -338,6 +338,8 @@ function generate_multiuse_invite(): void {
 }
 
 function valid_to(): string {
+    const $custom_expiration_time_elm = $<HTMLInputElement>("input#custom-expiration-time-input");
+    $custom_expiration_time_elm.removeClass("invalid-input");
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const time_input_value = $expires_in.val()!;
 
@@ -348,7 +350,8 @@ function valid_to(): string {
     let time_in_minutes: number;
     if (time_input_value === "custom") {
         if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
-            return $t({defaultMessage: "Invalid custom time"});
+            $custom_expiration_time_elm.addClass("invalid-input");
+            return "";
         }
         time_in_minutes = util.get_custom_time_in_minutes(
             custom_expiration_time_unit,
