@@ -19,6 +19,7 @@ REDIRECTED_TO_HELP_DOCUMENTATION: list[URLRedirect] = [
     ),
     URLRedirect("/api/interactive-bots-api", "/help/interactive-bots-api"),
     URLRedirect("/api/writing-bots", "/help/writing-bots"),
+    URLRedirect("/api/non-webhook-integrations", "/help/non-webhook-integrations"),
 ]
 
 API_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
