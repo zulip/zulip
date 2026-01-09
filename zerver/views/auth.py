@@ -599,12 +599,7 @@ def get_email_and_realm_from_jwt_authentication_request(
         raise JsonableError(_("JWT authentication is not enabled for this organization"))
 
     if "jwks_url" in domain_auth_keys:
-        try:
-            jwks_client = jwt.PyJWKClient(domain_auth_keys["jwks_url"])
-        except jwt.PyJWKClientConnectionError:
-            raise JsonableError(_("Failed to fetch JSON web key set"))
-        except jwt.PyJWKClientError:
-            raise JsonableError(_("JSON web key set decode failed"))
+        jwks_client = jwt.PyJWKClient(domain_auth_keys["jwks_url"])
         if not json_web_token:
             raise JsonableError(_("No JSON web token passed in request"))
         try:
@@ -614,13 +609,15 @@ def get_email_and_realm_from_jwt_authentication_request(
         algorithms = [key.algorithm_name]
         if "aud" in domain_auth_keys:
             aud = domain_auth_keys["aud"]
-            options = {"verify_signature": True, "verify_aud": True, "audience": aud}
+            options = {"verify_signature": True, "verify_aud": True}
         else:
+            aud = None
             options = {"verify_signature": True, "verify_aud": False}
     else:
         try:
             key = domain_auth_keys["key"]
             algorithms = domain_auth_keys["algorithms"]
+            aud = None
         except KeyError:
             raise JsonableError(_("JWT authentication is not enabled for this organization"))
         if not json_web_token:
@@ -628,7 +625,12 @@ def get_email_and_realm_from_jwt_authentication_request(
         options = {"verify_signature": True}
 
     try:
-        payload = jwt.decode(json_web_token, key, algorithms=algorithms, options=options)
+        if aud:
+            payload = jwt.decode(
+                json_web_token, key, algorithms=algorithms, options=options, audience=aud
+            )
+        else:
+            payload = jwt.decode(json_web_token, key, algorithms=algorithms, options=options)
     except jwt.InvalidTokenError:
         raise JsonableError(_("Bad JSON web token"))
 
