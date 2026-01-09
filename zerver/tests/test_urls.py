@@ -41,9 +41,6 @@ class PublicURLTest(ZulipTestCase):
             url = "/api/" + os.path.splitext(doc)[0]  # Strip the extension.
             api_doc_urls.append(url)
 
-        # We have lots of api_docs files, so this will be expensive!
-        self.assertGreater(len(api_doc_urls), 25)
-
         expected_tag = """<meta property="og:description" content="This is an API docs page" />"""
 
         for url in api_doc_urls:

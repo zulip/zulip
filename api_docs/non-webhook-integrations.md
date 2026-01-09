@@ -53,7 +53,7 @@ examples of ideal UAs are:
 
 ## Related articles
 
-* [Running bots](/api/running-bots)
+* [Running bots](/help/running-bots)
 * [Deploying bots](/help/deploying-bots)
 * [Writing bots](/api/writing-bots)
 
