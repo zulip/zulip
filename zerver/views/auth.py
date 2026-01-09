@@ -107,7 +107,7 @@ from zproject.backends import (
     sync_groups_for_prereg_user,
     validate_otp_params,
 )
-from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict
+from zproject.settings_types import JwksAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -599,16 +599,17 @@ def get_email_and_realm_from_jwt_authentication_request(
         raise JsonableError(_("JWT authentication is not enabled for this organization"))
 
     if "jwks_url" in domain_auth_keys:
-        jwks_client = jwt.PyJWKClient(domain_auth_keys["jwks_url"])
+        jwks_domain_auth_keys = cast(JwksAuthKey, domain_auth_keys)
+        jwks_client = jwt.PyJWKClient(jwks_domain_auth_keys["jwks_url"])
         if not json_web_token:
             raise JsonableError(_("No JSON web token passed in request"))
         try:
-            key = jwks_client.get_signing_key_from_jwt(json_web_token)
+            key: jwt.PyJWK | str = jwks_client.get_signing_key_from_jwt(json_web_token)
         except jwt.PyJWKClientError:
             raise JsonableError(_("Bad JSON web token"))
-        algorithms = [key.algorithm_name]
-        if "aud" in domain_auth_keys:
-            aud = domain_auth_keys["aud"]
+        algorithms = [cast(jwt.PyJWK, key).algorithm_name]
+        if "aud" in jwks_domain_auth_keys:
+            aud = jwks_domain_auth_keys["aud"]
             options = {"verify_signature": True, "verify_aud": True}
         else:
             aud = None
