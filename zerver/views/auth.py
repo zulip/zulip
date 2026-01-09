@@ -594,22 +594,44 @@ def get_email_and_realm_from_jwt_authentication_request(
         raise InvalidSubdomainError
 
     try:
-        key = settings.JWT_AUTH_KEYS[realm.subdomain]["key"]
-        algorithms = settings.JWT_AUTH_KEYS[realm.subdomain]["algorithms"]
+        domain_auth_keys = settings.JWT_AUTH_KEYS[realm.subdomain]
     except KeyError:
         raise JsonableError(_("JWT authentication is not enabled for this organization"))
 
-    if not json_web_token:
-        raise JsonableError(_("No JSON web token passed in request"))
+    if "jwks_url" in domain_auth_keys:
+        try:
+            jwks_client = jwt.PyJWKClient(domain_auth_keys["jwks_url"])
+        except jwt.PyJWKClientConnectionError:
+            raise JsonableError(_("Failed to fetch JSON web key set"))
+        except jwt.PyJWKClientError:
+            raise JsonableError(_("JSON web key set decode failed"))
+        if not json_web_token:
+            raise JsonableError(_("No JSON web token passed in request"))
+        try:
+            key = jwks_client.get_signing_key_from_jwt(json_web_token)
+        except jwt.PyJWKClientError:
+            raise JsonableError(_("Bad JSON web token"))
+        algorithms = [key.algorithm_name]
+        if "aud" in domain_auth_keys:
+            aud = domain_auth_keys["aud"]
+            options = {"verify_signature": True, "verify_aud": True, "audience": aud}
+        else:
+            options = {"verify_signature": True, "verify_aud": False}
+    else:
+        try:
+            key = domain_auth_keys["key"]
+            algorithms = domain_auth_keys["algorithms"]
+        except KeyError:
+            raise JsonableError(_("JWT authentication is not enabled for this organization"))
+        if not json_web_token:
+            raise JsonableError(_("No JSON web token passed in request"))
+        options = {"verify_signature": True}
 
     try:
-        payload = jwt.decode(
-            json_web_token, key, algorithms=algorithms, options={"verify_signature": True}
-        )
+        payload = jwt.decode(json_web_token, key, algorithms=algorithms, options=options)
     except jwt.InvalidTokenError:
         raise JsonableError(_("Bad JSON web token"))
 
-    remote_email = payload.get("email", None)
     if remote_email is None:
         raise JsonableError(_("No email specified in JSON web token claims"))
 
