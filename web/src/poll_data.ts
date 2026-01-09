@@ -64,23 +64,6 @@ type Vote = {type: string; key: string; vote: number};
 
 /* ---------------------- */
 
-export type InboundData = unknown;
-
-type PollHandle = {
-    new_option: {
-        outbound: (option: string) => NewOption;
-        inbound: (sender_id: number | string, data: InboundData) => void;
-    };
-    question: {
-        outbound: (question: string) => Question | undefined;
-        inbound: (sender_id: number, data: InboundData) => void;
-    };
-    vote: {
-        outbound: (key: string) => Vote;
-        inbound: (sender_id: number, data: InboundData) => void;
-    };
-};
-
 export const poll_widget_extra_data_schema = z.object({
     question: z.optional(z.string()),
     options: z.optional(z.array(z.string())),
@@ -109,7 +92,6 @@ export class PollData {
     input_mode: boolean;
     comma_separated_names: (user_ids: number[]) => string;
     report_error_function: (error_message: string) => void;
-    handle: PollHandle;
 
     constructor({
         message_sender_id,
@@ -132,34 +114,8 @@ export class PollData {
             this.set_question(question);
         }
 
-        this.handle = {
-            new_option: {
-                outbound: (option): NewOption => this.new_option_event(option),
-
-                inbound: (sender_id, data) => {
-                    this.handle_new_option_event(sender_id, data);
-                },
-            },
-
-            question: {
-                outbound: (question: string): Question | undefined => this.question_event(question),
-
-                inbound: (sender_id, data) => {
-                    this.handle_question_event(sender_id, data);
-                },
-            },
-
-            vote: {
-                outbound: (key: string): Vote => this.vote_event(key),
-
-                inbound: (sender_id, data) => {
-                    this.handle_vote_event(sender_id, data);
-                },
-            },
-        };
-
         for (const [i, option] of options.entries()) {
-            this.handle.new_option.inbound("canned", {
+            this.handle_new_option_event("canned", {
                 idx: i,
                 option,
                 type: "new_option",
@@ -328,7 +284,7 @@ export class PollData {
         return widget_data;
     }
 
-    handle_event(sender_id: number, data: InboundData): void {
+    handle_event(sender_id: number, data: unknown): void {
         assert(
             typeof data === "object" &&
                 data !== null &&
@@ -336,10 +292,22 @@ export class PollData {
                 typeof data.type === "string",
         );
         const type = data.type;
-        if (type === "new_option" || type === "question" || type === "vote") {
-            this.handle[type].inbound(sender_id, data);
-        } else {
-            this.report_error_function(`poll widget: unknown inbound type: ${type}`);
+        switch (type) {
+            case "new_option": {
+                this.handle_new_option_event(sender_id, data);
+                break;
+            }
+            case "question": {
+                this.handle_question_event(sender_id, data);
+                break;
+            }
+            case "vote": {
+                this.handle_vote_event(sender_id, data);
+                break;
+            }
+            default: {
+                this.report_error_function(`poll widget: unknown inbound type: ${type}`);
+            }
         }
     }
 
