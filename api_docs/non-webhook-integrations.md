@@ -20,7 +20,7 @@ them. Zulip supports several other types of integrations.
     documentation for the third party software in order to learn how to
     write the integration.
 
-* **Interactive bots**. See [Writing bots](/api/writing-bots).
+* **Interactive bots**. See [Writing bots](/help/writing-bots).
 
 A few notes on how to do these:
 
@@ -55,7 +55,7 @@ examples of ideal UAs are:
 
 * [Running bots](/help/running-bots)
 * [Deploying bots](/help/deploying-bots)
-* [Writing bots](/api/writing-bots)
+* [Writing bots](/help/writing-bots)
 
 [incoming-webhooks-overview]: https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html
 [webhooks-general-advice]: https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html#general-advice
