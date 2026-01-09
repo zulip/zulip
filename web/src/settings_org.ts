@@ -775,7 +775,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
         case "notification_sound":
             assert(typeof property_value === "string");
             audible_notifications.update_notification_sound_source(
-                $("audio#realm-default-notification-sound-audio"),
+                "realm-default-notification-sound-audio",
                 {
                     notification_sound: property_value,
                 },
