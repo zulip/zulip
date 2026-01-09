@@ -22,6 +22,7 @@ import responses
 import time_machine
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -6952,6 +6953,91 @@ class TestJWTLogin(ZulipTestCase):
             result = self.client_post("/accounts/login/jwt/", data)
             self.assertEqual(result.status_code, 302)
             user_profile = self.example_user("hamlet")
+            self.assert_logged_in_user_id(user_profile.id)
+
+    def test_login_success_with_jwks_url(self) -> None:
+        payload = {"sub": "dummy", "email": "hamlet@zulip.com"}
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        public_key = private_key.public_key()
+        public_e = public_key.public_numbers().e
+        public_n = public_key.public_numbers().n
+        jwks_dict = {
+            "keys": [
+                {
+                    "kty": "RSA",
+                    "use": "sig",
+                    "kid": "testkey1",
+                    "alg": "RS256",
+                    "e": base64.urlsafe_b64encode(
+                        public_e.to_bytes((public_e.bit_length() + 7) // 8, byteorder="big")
+                    ).decode(),
+                    "n": base64.urlsafe_b64encode(
+                        public_n.to_bytes((public_n.bit_length() + 7) // 8, byteorder="big")
+                    ).decode(),
+                }
+            ]
+        }
+        with self.settings(
+            JWT_AUTH_KEYS={
+                "zulip": {
+                    "jwks_url": "data:application/json;base64,"
+                    + base64.b64encode(json.dumps(jwks_dict).encode()).decode(),
+                }
+            }
+        ):
+            email = self.example_email("hamlet")
+            realm = get_realm("zulip")
+            web_token = jwt.encode(
+                payload, private_key, algorithm="RS256", headers={"kid": "testkey1"}
+            )
+
+            user_profile = get_user_by_delivery_email(email, realm)
+            data = {"token": web_token}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assertEqual(result.status_code, 302)
+            self.assert_logged_in_user_id(user_profile.id)
+
+    def test_login_success_with_jwks_url_with_audience(self) -> None:
+        payload = {"sub": "dummy", "email": "hamlet@zulip.com", "aud": "zulip_audience"}
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        public_key = private_key.public_key()
+        public_e = public_key.public_numbers().e
+        public_n = public_key.public_numbers().n
+        jwks_dict = {
+            "keys": [
+                {
+                    "kty": "RSA",
+                    "use": "sig",
+                    "kid": "testkey1",
+                    "alg": "RS256",
+                    "e": base64.urlsafe_b64encode(
+                        public_e.to_bytes((public_e.bit_length() + 7) // 8, byteorder="big")
+                    ).decode(),
+                    "n": base64.urlsafe_b64encode(
+                        public_n.to_bytes((public_n.bit_length() + 7) // 8, byteorder="big")
+                    ).decode(),
+                }
+            ]
+        }
+        with self.settings(
+            JWT_AUTH_KEYS={
+                "zulip": {
+                    "jwks_url": "data:application/json;base64,"
+                    + base64.b64encode(json.dumps(jwks_dict).encode()).decode(),
+                    "aud": "zulip_audience",
+                }
+            }
+        ):
+            email = self.example_email("hamlet")
+            realm = get_realm("zulip")
+            web_token = jwt.encode(
+                payload, private_key, algorithm="RS256", headers={"kid": "testkey1"}
+            )
+
+            user_profile = get_user_by_delivery_email(email, realm)
+            data = {"token": web_token}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
 
 
