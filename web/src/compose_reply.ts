@@ -1,7 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
@@ -16,7 +15,7 @@ import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
-import type {Message} from "./message_store.ts";
+import {type Message, single_message_content_schema} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
@@ -321,10 +320,11 @@ export function quote_message(opts: {
 
     void channel.get({
         url: "/json/messages/" + message_id,
-        data: {allow_empty_topic_name: true},
+        data: {allow_empty_topic_name: true, apply_markdown: false},
         success(raw_data) {
-            const data = z.object({raw_content: z.string()}).parse(raw_data);
-            replace_content(message, data.raw_content);
+            const data = single_message_content_schema.parse(raw_data);
+            assert(data.message.content_type === "text/x-markdown");
+            replace_content(message, data.message.content);
         },
         error() {
             compose_ui.replace_syntax(
