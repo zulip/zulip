@@ -1580,5 +1580,12 @@ export function initialize(): void {
         });
     });
 
+    new ClipboardJS(".copy-external-account-field").on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
+    });
+
     bot_helper.initialize_clipboard_handlers();
 }

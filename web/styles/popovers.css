@@ -203,7 +203,8 @@
     }
 }
 
-.custom-user-url-field {
+.custom-user-url-field,
+.external-account-text-field {
     display: flex;
     align-items: center;
     /* Maintain space between URL and copy icon. */
@@ -216,7 +217,8 @@
         text-overflow: ellipsis;
     }
 
-    .copy-custom-field-url {
+    .copy-custom-field-url,
+    .copy-external-account-field {
         height: 1em;
     }
 }
