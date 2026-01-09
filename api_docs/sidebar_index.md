@@ -3,7 +3,7 @@
 * [Overview](/api/integrations-overview)
 * [Incoming webhook integrations](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html)
 * [Hello world walkthrough](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-walkthrough.html)
-* [Non-webhook integrations](/api/non-webhook-integrations)
+* [Non-webhook integrations](/help/non-webhook-integrations)
 
 ## Interactive bots
 
