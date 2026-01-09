@@ -12,6 +12,7 @@ class URLRedirect:
 # even if it was originally in the API or policies documentation.
 REDIRECTED_TO_HELP_DOCUMENTATION: list[URLRedirect] = [
     URLRedirect("/api/outgoing-webhooks", "/help/outgoing-webhooks"),
+    URLRedirect("/api/deploying-bots", "/help/deploying-bots"),
 ]
 
 API_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [

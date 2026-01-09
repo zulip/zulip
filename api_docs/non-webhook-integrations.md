@@ -54,7 +54,7 @@ examples of ideal UAs are:
 ## Related articles
 
 * [Running bots](/api/running-bots)
-* [Deploying bots](/api/deploying-bots)
+* [Deploying bots](/help/deploying-bots)
 * [Writing bots](/api/writing-bots)
 
 [incoming-webhooks-overview]: https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html

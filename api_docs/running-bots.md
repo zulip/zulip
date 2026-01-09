@@ -56,11 +56,11 @@ You'll need:
 
 You can now play around with the bot and get it configured the way you
 like.  Eventually, you'll probably want to run it in a production
-environment where it'll stay up, by [deploying](/api/deploying-bots) it on a
+environment where it'll stay up, by [deploying](/help/deploying-bots) it on a
 server using the Zulip Botserver.
 
 ## Related articles
 
 * [Non-webhook integrations](/api/non-webhook-integrations)
-* [Deploying bots](/api/deploying-bots)
+* [Deploying bots](/help/deploying-bots)
 * [Writing bots](/api/writing-bots)

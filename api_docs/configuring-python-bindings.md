@@ -165,4 +165,4 @@ can be found in the following table:
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
 * [Running bots](/api/running-bots)
-* [Deploying bots](/api/deploying-bots)
+* [Deploying bots](/help/deploying-bots)
