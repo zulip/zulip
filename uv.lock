@@ -4967,6 +4967,18 @@ wheels = [
 ]
 
 [[package]]
+name = "sphinx-copybutton"
+version = "0.5.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "sphinx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fc/2b/a964715e7f5295f77509e59309959f4125122d648f86b4fe7d70ca1d882c/sphinx-copybutton-0.5.2.tar.gz", hash = "sha256:4cf17c82fb9646d1bc9ca92ac280813a3b605d8c421225fd9913154103ee1fbd", size = 23039, upload-time = "2023-04-14T08:10:22.998Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9e/48/1ea60e74949eecb12cdd6ac43987f9fd331156388dcc2319b45e2ebb81bf/sphinx_copybutton-0.5.2-py3-none-any.whl", hash = "sha256:fb543fd386d917746c9a2c50360c7905b605726b9355cd26e9974857afeae06e", size = 13343, upload-time = "2023-04-14T08:10:20.844Z" },
+]
+
+[[package]]
 name = "sphinx-design"
 version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -6359,6 +6371,7 @@ dev = [
     { name = "social-auth-app-django" },
     { name = "social-auth-core", extra = ["azuread", "saml"] },
     { name = "sphinx" },
+    { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-rtd-theme" },
     { name = "sqlalchemy", extra = ["mypy"] },
@@ -6403,6 +6416,7 @@ dev = [
 docs = [
     { name = "myst-parser" },
     { name = "sphinx" },
+    { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-rtd-theme" },
 ]
@@ -6596,6 +6610,7 @@ dev = [
     { name = "social-auth-app-django" },
     { name = "social-auth-core", extras = ["azuread", "saml"] },
     { name = "sphinx", specifier = "<8.2" },
+    { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-rtd-theme" },
     { name = "sqlalchemy", specifier = "==1.4.*" },
@@ -6641,6 +6656,7 @@ dev = [
 docs = [
     { name = "myst-parser" },
     { name = "sphinx", specifier = "<8.2" },
+    { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
     { name = "sphinx-rtd-theme" },
 ]
