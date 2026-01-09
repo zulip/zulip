@@ -929,6 +929,8 @@ export function deactivate_organization(e: JQuery.Event): void {
     }
 
     function delete_data_in_text(): string {
+        const $custom_deletion_time_input = $<HTMLInputElement>("input#custom-deletion-time-input");
+        $custom_deletion_time_input.removeClass("invalid-input");
         const $delete_in = $<HTMLSelectOneElement>("select:not([multiple])#delete-realm-data-in");
         const delete_data_value = $delete_in.val()!;
 
@@ -939,14 +941,16 @@ export function deactivate_organization(e: JQuery.Event): void {
         let time_in_minutes: number;
         if (delete_data_value === "custom") {
             if (!util.validate_custom_time_input(custom_deletion_time_input)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                $custom_deletion_time_input.addClass("invalid-input");
+                return "";
             }
             time_in_minutes = util.get_custom_time_in_minutes(
                 custom_deletion_time_unit,
                 custom_deletion_time_input,
             );
             if (!is_valid_time_period(time_in_minutes)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                $custom_deletion_time_input.addClass("invalid-input");
+                return "";
             }
         } else {
             // These options were already filtered for is_valid_time_period.
