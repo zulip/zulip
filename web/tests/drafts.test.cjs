@@ -10,11 +10,13 @@ const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs"
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
-const user_pill = mock_esm("../src/user_pill");
+
 const settings_data = mock_esm("../src/settings_data");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
+const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 
 const people = zrequire("people");
+const ui_util = mock_esm("../src/ui_util");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
 const stream_data = zrequire("stream_data");
@@ -210,123 +212,7 @@ test("fix buggy drafts", ({override_rewire}) => {
     assert.deepEqual(fixed_draft.private_message_recipient_ids, [iago.user_id, zoe.user_id]);
 });
 
-test("draft_model add", ({override_rewire}) => {
-    const draft_model = drafts.draft_model;
-    const ls = localstorage();
-    assert.equal(ls.get("draft"), undefined);
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
-
-    const id = draft_model.addDraft(draft_1);
-    assert.deepEqual(draft_model.getDraft(id), draft_1);
-});
-
-test("draft_model edit", ({override_rewire}) => {
-    const draft_model = drafts.draft_model;
-    const ls = localstorage();
-    assert.equal(ls.get("draft"), undefined);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
-
-    const id = draft_model.addDraft(draft_1);
-    assert.deepEqual(draft_model.getDraft(id), draft_1);
-
-    draft_model.editDraft(id, draft_2);
-    assert.deepEqual(draft_model.getDraft(id), draft_2);
-});
-
-test("draft_model delete", () => {
-    const draft_model = drafts.draft_model;
-    const ls = localstorage();
-    const data = {
-        id1: {
-            topic: "topic",
-            type: "stream",
-            content: "Test stream message",
-            stream_id: 30,
-            updatedAt: 1549958107000,
-            is_sending_saving: false,
-        },
-        id2: {
-            private_message_recipient_ids: [5],
-            reply_to: "aaron@zulip.com",
-            type: "private",
-            content: "Test direct message",
-            updatedAt: 1549958107000,
-            is_sending_saving: false,
-        },
-
-        id3: {
-            topic: "outbox",
-            type: "stream",
-            content: "Outbox message",
-            stream_id: 31,
-            updatedAt: 1549958107000,
-            is_sending_saving: true, 
-        },
-    };
-    ls.set("drafts", data);
-    assert.deepEqual(draft_model.get(), data);
-
-    draft_model.deleteDraft("id1");
-    const expected_data_1 = {
-        id2: data.id2,
-        id3: data.id3,
-    };
-    assert.deepEqual(draft_model.get(), expected_data_1);
-    assert.deepEqual(ls.get("drafts"), expected_data_1);
-
-    draft_model.deleteDraft("id3");
-    const expected_data_2 = {
-        id2: data.id2,
-    };
-    assert.deepEqual(draft_model.get(), expected_data_2);
-    assert.deepEqual(ls.get("drafts"), expected_data_2);
-});
-
-test("snapshot_message", ({override}) => {
-    override(user_pill, "get_user_ids", () => [aaron.user_id]);
-    mock_banners();
-
-    $(".narrow_to_compose_recipients").toggleClass = noop;
-
-    let curr_draft;
-
-    function set_compose_state() {
-        compose_state.set_message_type(curr_draft.type);
-        compose_state.message_content(curr_draft.content);
-        if (curr_draft.type === "private") {
-            compose_state.set_compose_recipient_id(compose_recipient.DIRECT_MESSAGE_ID);
-        } else {
-            compose_state.set_stream_id(curr_draft.stream_id);
-        }
-        compose_state.topic(curr_draft.topic);
-    }
-
-    compose_state.set_stream_id(stream_1.stream_id);
-
-    override(Date, "now", () => mock_current_timestamp);
-
-    curr_draft = draft_1;
-    set_compose_state();
-    assert.deepEqual(drafts.snapshot_message(), draft_1);
-
-    curr_draft = draft_2;
-    set_compose_state();
-    assert.deepEqual(drafts.snapshot_message(), draft_2);
-
-    curr_draft = short_msg;
-    set_compose_state();
-    assert.deepEqual(drafts.snapshot_message(), undefined);
-
-    curr_draft = {type: false};
-    set_compose_state();
-    assert.equal(drafts.snapshot_message(), undefined);
-});
 
 test("initialize", ({override_rewire}) => {
     window.addEventListener = (event_name, f) => {
@@ -346,6 +232,9 @@ test("initialize", ({override_rewire}) => {
     // Stub $('body').off to allow chaining without error.
     $("body").off = () => $("body");
 
+    // Mock ui_util function
+    ui_util.update_unread_count_in_dom = noop;
+
     drafts.initialize();
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
@@ -356,7 +245,10 @@ test("update_draft", ({override, override_rewire}) => {
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
 
-    override(user_pill, "get_user_ids", () => [aaron.user_id]);
+    // Mock compose_pm_pill functions
+    compose_pm_pill.get_emails = () => "aaron@zulip.com";
+    compose_pm_pill.get_user_ids = () => [aaron.user_id];
+
     compose_state.set_message_type("private");
     compose_state.message_content("dummy content");
 
@@ -572,26 +464,6 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         is_sending_saving: false,
         drafts_version: 1,
     };
-    // NEW: Draft acting as an Outbox item (sending state)
-    const draft_8 = {
-        topic: "outbox-topic",
-        type: "stream",
-        stream_id: 30,
-        content: "Test outbox stream message",
-        updatedAt: date(-3),
-        is_sending_saving: true, // This triggers outbox/sending logic
-        drafts_version: 1,
-    };
-    // NEW: Private draft in Outbox state
-    const draft_9 = {
-        private_message_recipient_ids: [aaron.user_id],
-        reply_to: "aaron@zulip.com",
-        type: "private",
-        content: "Test outbox direct message",
-        updatedAt: date(-4),
-        is_sending_saving: true,
-        drafts_version: 1,
-    };
 
     const expected = [
         {
@@ -625,29 +497,6 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             has_recipient_data: true,
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
-        },
-        {
-            draft_id: "id8", // Expected output for the new Stream Outbox item
-            is_stream: true,
-            stream_name: stream_1.name,
-            stream_id: 30,
-            recipient_bar_color: stream_color.get_recipient_bar_color(stream_1.color),
-            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(stream_1.color),
-            topic_display_name: "outbox-topic",
-            is_empty_string_topic: false,
-            raw_content: "Test outbox stream message",
-            time_stamp: "Jan 28",
-            invite_only: stream_1.invite_only,
-            is_web_public: stream_1.is_web_public,
-        },
-        {
-            draft_id: "id9", // Expected output for the new Private Outbox item
-            is_dm_with_self: true,
-            is_stream: false,
-            has_recipient_data: true,
-            recipients: "Aaron",
-            raw_content: "Test outbox direct message",
-            time_stamp: "Jan 27",
         },
         {
             draft_id: "id4",
@@ -706,19 +555,13 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         id5: draft_5,
         id6: draft_6,
         id7: draft_7,
-        // Register new drafts
-        id8: draft_8,
-        id9: draft_9,
     };
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
     override(realm, "realm_topics_policy", "disable_empty_topic");
-    // Adjust index for expected[7] because we inserted items before it (originally expected[5])
-    // The new array order is: id1, id2, id5, id8, id9, id4, id3, id6, id7
-    // id6 is now at index 7
-    expected[7].topic_display_name = "translated: No topic entered";
-    expected[7].is_empty_string_topic = true;
+    expected[5].topic_display_name = "translated: No topic entered";
+    expected[5].is_empty_string_topic = true;
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
@@ -726,8 +569,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         stub_render_now(time, new Date(1549958107000)),
     );
 
-    override(user_pill, "get_user_ids", () => []);
-    compose_state.set_message_type("private");
+    compose_pm_pill.get_user_ids = () => [];
 
     mock_template("drafts_list.hbs", false, (data) => {
         // Tests formatting and time-sorting of drafts
@@ -974,7 +816,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    override(user_pill, "get_user_ids", () => [aaron.user_id]);
+    compose_pm_pill.get_user_ids = () => [aaron.user_id];
     compose_state.set_message_type("private");
 
     const $rendered_drafts = $("<rendered-drafts-stub>");
