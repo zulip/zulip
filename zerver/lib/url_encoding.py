@@ -119,6 +119,13 @@ def direct_message_group_narrow_url(
     # For group DMs with more than 2 users, we use other user IDs to create a slug.
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     direct_message_slug = encode_user_ids(other_user_ids)
+
+    # `encode_user_ids` adds the decoration tag "-group" if length
+    # of the user_ids passed to it is 3 or more. `other_user_ids`
+    # has 1 less user ID, so we manually add the tag here.
+    if len(other_user_ids) == 2:
+        direct_message_slug += "-group"
+
     base_url = f"{realm.url}/#narrow/dm/"
     return base_url + direct_message_slug
 
