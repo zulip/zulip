@@ -6939,6 +6939,18 @@ class TestJWTLogin(ZulipTestCase):
             self.assert_json_error_contains(result, "Invalid subdomain", 404)
             self.assert_logged_in_user_id(None)
 
+    def test_login_failure_when_misuconfigured(self) -> None:
+        payload = {"email": "nonexisting@zulip.com"}
+        with self.settings(JWT_AUTH_KEYS={"zulip": {}}):
+            key = "key"
+            algorithm = "HS256"
+            web_token = jwt.encode(payload, key, algorithm)
+            data = {"token": web_token}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assert_json_error_contains(
+                result, "JWT authentication is not enabled for this organization", 400
+            )
+
     def test_login_success_under_subdomains(self) -> None:
         payload = {"email": "hamlet@zulip.com"}
         with (
@@ -7039,6 +7051,57 @@ class TestJWTLogin(ZulipTestCase):
             result = self.client_post("/accounts/login/jwt/", data)
             self.assertEqual(result.status_code, 302)
             self.assert_logged_in_user_id(user_profile.id)
+
+    def test_login_failure_when_jwks_url_is_misconfigured(self) -> None:
+        payload = {"sub": "dummy", "email": "hamlet@zulip.com", "aud": "zulip_audience"}
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        with self.settings(
+            JWT_AUTH_KEYS={
+                "zulip": {
+                    "jwks_url": "https://host.invalid/.well-known/jwks.json",
+                }
+            }
+        ):
+            web_token = jwt.encode(
+                payload, private_key, algorithm="RS256", headers={"kid": "testkey1"}
+            )
+
+            data = {"token": web_token}
+            result = self.client_post("/accounts/login/jwt/", data)
+            self.assert_json_error_contains(result, "Bad JSON web token", 400)
+
+    def test_login_failure_when_jwks_jwt_is_missing_kid(self) -> None:
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        public_key = private_key.public_key()
+        public_e = public_key.public_numbers().e
+        public_n = public_key.public_numbers().n
+        jwks_dict = {
+            "keys": [
+                {
+                    "kty": "RSA",
+                    "use": "sig",
+                    "kid": "testkey1",
+                    "alg": "RS256",
+                    "e": base64.urlsafe_b64encode(
+                        public_e.to_bytes((public_e.bit_length() + 7) // 8, byteorder="big")
+                    ).decode(),
+                    "n": base64.urlsafe_b64encode(
+                        public_n.to_bytes((public_n.bit_length() + 7) // 8, byteorder="big")
+                    ).decode(),
+                }
+            ]
+        }
+        with self.settings(
+            JWT_AUTH_KEYS={
+                "zulip": {
+                    "jwks_url": "data:application/json;base64,"
+                    + base64.b64encode(json.dumps(jwks_dict).encode()).decode(),
+                    "aud": "zulip_audience",
+                }
+            }
+        ):
+            result = self.client_post("/accounts/login/jwt/")
+            self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
 
 
 class DjangoToLDAPUsernameTests(ZulipTestCase):
