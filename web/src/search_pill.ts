@@ -161,7 +161,7 @@ function maybe_generate_combined_channel_topic_pill(
 }
 
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
-    const search_terms = Filter.parse(suggestion.search_string);
+    const search_terms = Filter.parse(suggestion);
 
     // This is used to track the index of the channel pill data
     // for a channel that is combined with the subsequent topic pill

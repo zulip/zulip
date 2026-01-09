@@ -172,13 +172,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         search_typeahead.lookup(false);
     });
 
-    // Data storage for the typeahead.
-    // TODO: This map has become very redundant now. We needed this earlier to
-    // to associate search string to its respective "description_html". This currently
-    // now just maps search string to "search_string". We should just remove this when
-    // we change Suggestion object to simple strings.
-    let search_map = new Map<string, search_suggestion.Suggestion>();
-
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $search_query_box,
         type: "contenteditable",
@@ -197,9 +190,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 Filter.parse(query),
                 add_current_filter,
             );
-            // Update our global search_map hash
-            search_map = suggestions.lookup_table;
-            return suggestions.strings;
+            return suggestions;
         },
         non_tippy_parent_element: "#searchbox_form",
         items: search_suggestion.max_num_of_search_results,
@@ -207,9 +198,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         stopAdvance: true,
         requireHighlight: false,
         item_html(item: string, query: string): string {
-            const obj = search_map.get(item);
-            assert(obj !== undefined);
-            return search_pill.generate_pills_html(obj, query);
+            return search_pill.generate_pills_html(item, query);
         },
         // When the user starts typing new search operands,
         // we want to highlight the first typeahead row by default
