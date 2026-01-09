@@ -25,7 +25,7 @@ async function test_empty_drafts(page: Page): Promise<void> {
 
     await wait_for_drafts_to_appear(page);
     await page.waitForSelector(drafts_overlay, {visible: true});
-    assert.strictEqual(await common.get_text_from_selector(page, ".drafts-list"), "No drafts.");
+    assert.strictEqual(await common.get_text_from_selector(page, ".drafts-list"), "No drafts.\nClick here to go to inbox",);
 
     await page.click(`${drafts_overlay} .exit`);
     await wait_for_drafts_to_disappear(page);
