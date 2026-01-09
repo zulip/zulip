@@ -17,6 +17,7 @@ REDIRECTED_TO_HELP_DOCUMENTATION: list[URLRedirect] = [
     URLRedirect(
         "/api/writing-tests-for-interactive-bots", "/help/writing-tests-for-interactive-bots"
     ),
+    URLRedirect("/api/interactive-bots-api", "/help/interactive-bots-api"),
 ]
 
 API_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
