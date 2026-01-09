@@ -507,6 +507,15 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         success_function = opts.success;
     });
 
+    function run_success_callback() {
+        success_function({
+            message: {
+                content: "Testing.",
+                content_type: "text/x-markdown",
+            },
+        });
+    }
+
     override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
         assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(mode, "block");
@@ -532,9 +541,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     quote_message(opts);
 
-    success_function({
-        raw_content: "Testing.",
-    });
+    run_success_callback();
     assert.ok(replaced);
 
     opts = {
@@ -548,9 +555,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     quote_message(opts);
 
-    success_function({
-        raw_content: "Testing.",
-    });
+    run_success_callback();
     assert.ok(replaced);
 
     opts = {
