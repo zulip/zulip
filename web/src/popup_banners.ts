@@ -39,7 +39,7 @@ const connection_error_popup_banner = (retry_seconds: number): Banner => ({
     label: get_connection_error_label(retry_seconds),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Try now"}),
             custom_classes: "retry-connection",
         },
@@ -81,7 +81,7 @@ const FOUND_MISSING_UNREADS_IN_CURRENT_NARROW: Banner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Jump"}),
             custom_classes: "found-missing-unreads-jump-to-first-unread",
         },

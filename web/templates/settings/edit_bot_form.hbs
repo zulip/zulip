@@ -52,13 +52,13 @@
             </div>
             {{> ../components/action_button
               label=(t "Change avatar")
-              attention="quiet"
+              variant="subtle"
               intent="neutral"
               custom_classes="edit_bot_avatar_upload_button"
               }}
             {{> ../components/action_button
               label=(t "Clear profile picture")
-              attention="quiet"
+              variant="subtle"
               intent="danger"
               custom_classes="edit_bot_avatar_clear_button"
               hidden=true
@@ -70,7 +70,7 @@
     <div class="input-group">
         {{> ../components/action_button
           label=(t "Generate URL for an integration")
-          attention="quiet"
+          variant="subtle"
           intent="neutral"
           custom_classes="generate_url_for_integration"
           }}
@@ -131,7 +131,7 @@
         {{#if is_active}}
         {{> ../components/action_button
           label=(t "Deactivate bot")
-          attention="quiet"
+          variant="subtle"
           intent="danger"
           custom_classes="deactivate-bot-button"
           }}
@@ -139,7 +139,7 @@
         <span>
             {{> ../components/action_button
               label=(t "Reactivate bot")
-              attention="quiet"
+              variant="subtle"
               intent="success"
               custom_classes="reactivate-user-button"
               }}

@@ -649,12 +649,12 @@ export function change_save_button_state($element: JQuery, state: string): void 
         $textEl.text(button_text);
         if (state === "succeeded") {
             buttons.modify_action_button_style($save_button, {
-                attention: "borderless",
+                variant: "text",
                 intent: "success",
             });
         } else {
             buttons.modify_action_button_style($save_button, {
-                attention: "primary",
+                variant: "solid",
                 intent: "brand",
             });
         }

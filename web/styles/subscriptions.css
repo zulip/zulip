@@ -1377,7 +1377,7 @@ h4.user_group_setting_subsection_title {
     gap: 10px;
     overflow: hidden;
 
-    &.action-button-quiet-neutral {
+    &.action-button-subtle-neutral {
         box-shadow: none;
     }
 }

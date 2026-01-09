@@ -186,17 +186,17 @@ const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "primary",
+            variant: "solid",
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "request-desktop-notifications",
         },
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Customize notifications"}),
             custom_classes: "customize-desktop-notifications",
         },
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Never ask on this computer"}),
             custom_classes: "reject-desktop-notifications",
         },
@@ -214,7 +214,7 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Configuration instructions"}),
             custom_classes: "configure-outgoing-mail-instructions",
         },
@@ -232,7 +232,7 @@ const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Download the latest version"}),
             custom_classes: "download-latest-zulip-version",
         },
@@ -247,7 +247,7 @@ const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
     label: $t({defaultMessage: "Your profile is missing required fields."}),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Edit your profile"}),
             custom_classes: "edit-profile-required-fields",
         },
@@ -265,7 +265,7 @@ const ORGANIZATION_PROFILE_INCOMPLETE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({
                 defaultMessage: "Edit profile",
             }),
@@ -284,12 +284,12 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "server-upgrade-learn-more",
         },
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Dismiss for a week"}),
             custom_classes: "server-upgrade-nag-dismiss",
         },
@@ -329,12 +329,12 @@ const bankruptcy_banner = (): AlertBanner => {
         label,
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-bankruptcy",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 label: $t({defaultMessage: "No, I'll catch up."}),
                 custom_classes: "banner-close-action",
             },
@@ -348,7 +348,7 @@ const demo_organization_deadline_banner = (): AlertBanner => {
     const days_remaining = demo_organizations_ui.get_demo_organization_deadline_days_remaining();
     let buttons: ActionButton[] = [
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "demo-organizations-help",
         },
@@ -357,7 +357,7 @@ const demo_organization_deadline_banner = (): AlertBanner => {
         buttons = [
             ...buttons,
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Convert"}),
                 custom_classes: "convert-demo-organization",
             },
@@ -397,12 +397,12 @@ const time_zone_update_offer_banner = (): AlertBanner => {
         ),
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-update-time-zone",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 label: $t({defaultMessage: "No, don't ask again."}),
                 custom_classes: "decline-time-zone-update",
             },

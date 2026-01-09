@@ -51,7 +51,7 @@ const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
         {
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "desktop-notifications-request",
-            attention: "primary",
+            variant: "solid",
         },
     ],
     close_button: true,
@@ -67,7 +67,7 @@ const MOBILE_PUSH_NOTIFICATION_BANNER: banners.Banner = {
         {
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "banner-external-link",
-            attention: "quiet",
+            variant: "subtle",
         },
     ],
     custom_classes: "mobile-push-notifications-banner",

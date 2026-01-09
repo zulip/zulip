@@ -412,7 +412,7 @@ function update_view_welcome_bot_custom_message_button_status(
 ): void {
     $("#view_welcome_bot_custom_message").remove();
     const args = {
-        attention: is_error ? "borderless" : "quiet",
+        variant: is_error ? "text" : "subtle",
         intent: is_error ? "danger" : "success",
         label: is_error
             ? $t({defaultMessage: "Error sending message"})
