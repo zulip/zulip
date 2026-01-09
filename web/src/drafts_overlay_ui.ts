@@ -338,13 +338,12 @@ function setup_event_handlers(): void {
         toggle_checkbox_icon_state($(e.target), !is_checked);
         update_bulk_delete_ui();
     });
-     $("#draft_overlay").on("click", ".start-new-message", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    $("#draft_overlay").on("click", ".start-new-message", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-    browser_history.go_to_location("inbox");
-});
-
+        browser_history.go_to_location("inbox");
+    });
 
     new ClipboardJS("#drafts_table .overlay_message_controls .copy-overlay-message", {
         text(trigger): string {
