@@ -42,20 +42,20 @@ export type WidgetData = {
     It's actually that simple.
 */
 
-const new_option_schema = z.object({
+export const new_option_schema = z.object({
     type: z.literal("new_option"),
     idx: z.number(),
     option: z.string(),
 });
 type NewOption = {type: string; idx: number; option: string};
 
-const question_schema = z.object({
+export const question_schema = z.object({
     type: z.literal("question"),
     question: z.string(),
 });
 type Question = {type: string; question: string};
 
-const vote_schema = z.object({
+export const vote_schema = z.object({
     type: z.literal("vote"),
     key: z.string(),
     vote: z.number(),
@@ -274,33 +274,6 @@ export class PollData {
         };
 
         return widget_data;
-    }
-
-    handle_event(sender_id: number, data: unknown): void {
-        assert(
-            typeof data === "object" &&
-                data !== null &&
-                "type" in data &&
-                typeof data.type === "string",
-        );
-        const type = data.type;
-        switch (type) {
-            case "new_option": {
-                this.handle_new_option_event(sender_id, new_option_schema.parse(data));
-                break;
-            }
-            case "question": {
-                this.handle_question_event(sender_id, question_schema.parse(data));
-                break;
-            }
-            case "vote": {
-                this.handle_vote_event(sender_id, vote_schema.parse(data));
-                break;
-            }
-            default: {
-                this.report_error_function(`poll widget: unknown inbound type: ${type}`);
-            }
-        }
     }
 
     // function to check whether option already exists

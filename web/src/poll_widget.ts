@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
@@ -11,7 +12,13 @@ import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
-import {PollData, poll_widget_extra_data_schema} from "./poll_data.ts";
+import {
+    PollData,
+    new_option_schema,
+    poll_widget_extra_data_schema,
+    question_schema,
+    vote_schema,
+} from "./poll_data.ts";
 import type {Event} from "./widget_data.ts";
 import type {WidgetExtraData} from "./widgetize.ts";
 
@@ -228,7 +235,34 @@ export function activate({
             });
     }
 
-    const handle_events = function (events: Event[]): void {
+    function update_state_from_event(sender_id: number, data: unknown): void {
+        assert(
+            typeof data === "object" &&
+                data !== null &&
+                "type" in data &&
+                typeof data.type === "string",
+        );
+        const type = data.type;
+        switch (type) {
+            case "new_option": {
+                poll_data.handle_new_option_event(sender_id, new_option_schema.parse(data));
+                break;
+            }
+            case "question": {
+                poll_data.handle_question_event(sender_id, question_schema.parse(data));
+                break;
+            }
+            case "vote": {
+                poll_data.handle_vote_event(sender_id, vote_schema.parse(data));
+                break;
+            }
+            default: {
+                blueslip.warn(`poll widget: unknown inbound type: ${type}`);
+            }
+        }
+    }
+
+    function handle_events(events: Event[]): void {
         // We don't have to handle events now since we go through
         // handle_event loop again when we unmute the message.
         if (message_container?.is_hidden) {
@@ -236,12 +270,12 @@ export function activate({
         }
 
         for (const event of events) {
-            poll_data.handle_event(event.sender_id, event.data);
+            update_state_from_event(event.sender_id, event.data);
         }
 
         render_question();
         render_results();
-    };
+    }
 
     if (message_container?.is_hidden) {
         const html = render_message_hidden_dialog();

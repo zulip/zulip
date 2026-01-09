@@ -61,7 +61,7 @@ run_test("PollData my question", () => {
         question: "best plan?",
     };
 
-    data_holder.handle_event(me.user_id, question_event);
+    data_holder.handle_question_event(me.user_id, question_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -75,7 +75,7 @@ run_test("PollData my question", () => {
         option: "release now",
     };
 
-    data_holder.handle_event(me.user_id, option_event);
+    data_holder.handle_new_option_event(me.user_id, option_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -97,7 +97,7 @@ run_test("PollData my question", () => {
         vote: 1,
     };
 
-    data_holder.handle_event(me.user_id, vote_event);
+    data_holder.handle_vote_event(me.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -119,7 +119,7 @@ run_test("PollData my question", () => {
         vote: 1,
     };
 
-    data_holder.handle_event(alice.user_id, vote_event);
+    data_holder.handle_vote_event(alice.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -142,7 +142,7 @@ run_test("PollData my question", () => {
     };
 
     blueslip.expect("warn", `unknown key for poll: ${invalid_vote_event.key}`);
-    data_holder.handle_event(me.user_id, invalid_vote_event);
+    data_holder.handle_vote_event(me.user_id, invalid_vote_event);
     data = data_holder.get_widget_data();
 
     const option_outbound_event = data_holder.new_option_event("new option");
@@ -168,7 +168,7 @@ run_test("PollData my question", () => {
         vote: -1,
     };
 
-    data_holder.handle_event(me.user_id, vote_event);
+    data_holder.handle_vote_event(me.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -206,7 +206,7 @@ run_test("wrong person editing question", () => {
 
     blueslip.expect("warn", "user 100 is not allowed to edit the question");
 
-    data_holder.handle_event(alice.user_id, question_event);
+    data_holder.handle_question_event(alice.user_id, question_event);
 
     assert.deepEqual(data_holder.get_widget_data(), {
         options: [],
