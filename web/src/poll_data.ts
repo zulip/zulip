@@ -30,41 +30,56 @@ export type WidgetData = {
     question: string;
 };
 
+/*
+    EVENT TYPES FOLLOW.
+
+    The inbound types have exactly the same shape as the
+    outbound types. It's a peer-to-peer protocol.
+
+    Alice send the NewOption message (outbound).
+    Bob receives the NewOption message (inbound).
+
+    It's actually that simple.
+*/
+
+const new_option_schema = z.object({
+    type: z.literal("new_option"),
+    idx: z.number(),
+    option: z.string(),
+});
+type NewOption = {type: string; idx: number; option: string};
+
+const question_schema = z.object({
+    type: z.literal("question"),
+    question: z.string(),
+});
+type Question = {type: string; question: string};
+
+const vote_schema = z.object({
+    type: z.literal("vote"),
+    key: z.string(),
+    vote: z.number(),
+});
+type Vote = {type: string; key: string; vote: number};
+
+/* ---------------------- */
+
 export type InboundData = unknown;
-export type NewOptionOutboundData = {type: string; idx: number; option: string};
-export type QuestionOutboundData = {type: string; question: string};
-export type VoteOutboundData = {type: string; key: string; vote: number};
-export type PollHandle = {
+
+type PollHandle = {
     new_option: {
-        outbound: (option: string) => NewOptionOutboundData;
+        outbound: (option: string) => NewOption;
         inbound: (sender_id: number | string, data: InboundData) => void;
     };
     question: {
-        outbound: (question: string) => QuestionOutboundData | undefined;
+        outbound: (question: string) => Question | undefined;
         inbound: (sender_id: number, data: InboundData) => void;
     };
     vote: {
-        outbound: (key: string) => VoteOutboundData;
+        outbound: (key: string) => Vote;
         inbound: (sender_id: number, data: InboundData) => void;
     };
 };
-
-const inbound_option_schema = z.object({
-    idx: z.number(),
-    option: z.string(),
-    type: z.literal("new_option"),
-});
-
-const inbound_question_schema = z.object({
-    question: z.string(),
-    type: z.literal("question"),
-});
-
-const inbound_vote_schema = z.object({
-    key: z.string(),
-    type: z.literal("vote"),
-    vote: z.number(),
-});
 
 export const poll_widget_extra_data_schema = z.object({
     question: z.optional(z.string()),
@@ -73,10 +88,7 @@ export const poll_widget_extra_data_schema = z.object({
 
 export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
 
-export type PollWidgetOutboundData =
-    | NewOptionOutboundData
-    | QuestionOutboundData
-    | VoteOutboundData;
+export type PollWidgetOutboundData = NewOption | Question | Vote;
 
 // Any single user should send add a finite number of options
 // to a poll. We arbitrarily pick this value.
@@ -122,7 +134,7 @@ export class PollData {
 
         this.handle = {
             new_option: {
-                outbound: (option) => {
+                outbound: (option: string): NewOption => {
                     const event = {
                         type: "new_option",
                         idx: this.my_idx,
@@ -135,7 +147,7 @@ export class PollData {
                 },
 
                 inbound: (sender_id, data) => {
-                    const safe_data = inbound_option_schema.parse(data);
+                    const safe_data = new_option_schema.parse(data);
 
                     // All message readers may add a new option to the poll.
                     const idx = safe_data.idx;
@@ -171,7 +183,7 @@ export class PollData {
             },
 
             question: {
-                outbound: (question) => {
+                outbound: (question: string): Question | undefined => {
                     const event = {
                         type: "question",
                         question,
@@ -183,7 +195,7 @@ export class PollData {
                 },
 
                 inbound: (sender_id, data) => {
-                    const safe_data = inbound_question_schema.parse(data);
+                    const safe_data = question_schema.parse(data);
 
                     // Only the message author can edit questions.
                     if (sender_id !== this.message_sender_id) {
@@ -198,7 +210,7 @@ export class PollData {
             },
 
             vote: {
-                outbound: (key) => {
+                outbound: (key: string): Vote => {
                     let vote = 1;
 
                     // toggle
@@ -217,7 +229,7 @@ export class PollData {
                 },
 
                 inbound: (sender_id, data) => {
-                    const safe_data = inbound_vote_schema.parse(data);
+                    const safe_data = vote_schema.parse(data);
 
                     // All message readers may vote on poll options.
                     const key = safe_data.key;
