@@ -13,6 +13,8 @@ import render_user_with_status_icon from "../templates/user_with_status_icon.hbs
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
+// add this line while migrating recent view to typescript
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -56,6 +58,8 @@ type Row = {
 };
 let topics_widget: ListWidget<ConversationData, Row> | undefined;
 let filters_dropdown_widget: dropdown_widget.DropdownWidget;
+// add this  line while migrating recent view to typescript
+let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget;
 export let is_backfill_in_progress = false;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
@@ -100,10 +104,12 @@ const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
 const ls_dropdown_key = "recent_topic_dropdown_filters";
+const ls_folder_filter_key = "recent_topic_folder_filter";
 const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+let selected_folder_id: number | null = null;
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
@@ -143,6 +149,7 @@ export function set_filters_for_tests(new_filters = [views_util.FILTERS.UNMUTED_
 export function save_filters(): void {
     ls.set(ls_key, [...filters]);
     ls.set(ls_dropdown_key, [...dropdown_filters]);
+    ls.set(ls_folder_filter_key, selected_folder_id);
 }
 
 export function is_in_focus(): boolean {
@@ -923,6 +930,14 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         return true;
     }
 
+    // Folder filter logic
+    if (selected_folder_id !== null && msg.type === "stream") {
+        const sub = sub_store.get(msg.stream_id);
+        if (sub === undefined || sub.folder_id !== selected_folder_id) {
+            return true;
+        }
+    }
+
     if (filters.has("include_private") && msg.type === "private") {
         const recipients = people.split_to_ints(msg.to_user_ids);
 
@@ -1123,6 +1138,65 @@ function get_recent_view_filters_params(): {
     };
 }
 
+function get_folder_filter_options(): dropdown_widget.Option[] {
+    const folders = channel_folders.get_channel_folders();
+    const options: dropdown_widget.Option[] = [
+        {
+            name: $t({defaultMessage: "All folders"}),
+            unique_id: "all_folders",
+            bold_current_selection: true,
+        },
+    ];
+    
+    for (const folder of folders) {
+        options.push({
+            name: folder.name,
+            unique_id: folder.id.toString(),
+            bold_current_selection: true,
+        });
+    }
+    
+    return options;
+}
+
+function folder_filter_click_handler(
+    event: JQuery.ClickEvent,
+    dropdown: DropdownWidget,
+    widget_elem: tippy.Instance,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    assert(filter_id !== undefined);
+    
+    if (filter_id === "all_folders") {
+        selected_folder_id = null;
+    } else {
+        selected_folder_id = Number.parseInt(filter_id, 10);
+    }
+    
+    save_filters();
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+    widget_elem.hide();
+}
+
+function setup_folder_filter_widget(): void {
+    const default_id = selected_folder_id === null ? "all_folders" : selected_folder_id.toString();
+    
+    folder_filter_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+        widget_name: "recent-view-folder-filter",
+        get_options: get_folder_filter_options,
+        item_click_callback: folder_filter_click_handler,
+        $events_container: $("#recent_view_filter_buttons"),
+        default_id,
+        unique_id_type: dropdown_widget.DataTypes.STRING,
+    });
+    folder_filter_dropdown_widget.setup();
+}
+
 function setup_dropdown_filters_widget(): void {
     const dropdown_filter = dropdown_filters.values().next();
     assert(dropdown_filter.done === false);
@@ -1141,6 +1215,7 @@ export function update_filters_view(): void {
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
     filters_dropdown_widget.render();
+    folder_filter_dropdown_widget.render();
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
 }
@@ -1386,6 +1461,7 @@ export function complete_rerender(coming_from_other_views = false): void {
         get_min_load_count,
     });
     setup_dropdown_filters_widget();
+    setup_folder_filter_widget();
 }
 
 export function update_recent_view_rendered_time(): void {
@@ -1841,6 +1917,12 @@ function load_filters(): void {
         filters = new Set(recent_topics);
         const filter_data = filter_schema.parse(ls.get(ls_dropdown_key));
         dropdown_filters = new Set(filter_data);
+        
+        // Load saved folder filter
+        const saved_folder_filter = ls.get(ls_folder_filter_key);
+        if (saved_folder_filter !== undefined && saved_folder_filter !== null) {
+            selected_folder_id = saved_folder_filter;
+        }
     }
     // Verify that the dropdown_filters are valid.
     const valid_filters = new Set(Object.values(views_util.FILTERS));
