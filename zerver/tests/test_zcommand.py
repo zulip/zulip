@@ -32,6 +32,7 @@ class ZcommandTest(ZulipTestCase):
         response_dict = self.assert_json_success(result)
         self.assertIn("Changed to dark theme", response_dict["msg"])
 
+        self.login("hamlet")
         result = self.client_post("/json/zcommand", payload)
         response_dict = self.assert_json_success(result)
         self.assertIn("still in dark theme", response_dict["msg"])
@@ -47,6 +48,7 @@ class ZcommandTest(ZulipTestCase):
         response_dict = self.assert_json_success(result)
         self.assertIn("Changed to light theme", response_dict["msg"])
 
+        self.login("hamlet")
         result = self.client_post("/json/zcommand", payload)
         response_dict = self.assert_json_success(result)
         self.assertIn("still in light theme", response_dict["msg"])
@@ -62,6 +64,7 @@ class ZcommandTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_in_response("Changed to fluid-width mode!", result)
 
+        self.login("hamlet")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
         self.assert_in_response("You are still in fluid width mode", result)
@@ -77,7 +80,7 @@ class ZcommandTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assert_in_response("Changed to fixed-width mode!", result)
 
+        self.login("hamlet")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
         self.assert_in_response("You are still in fixed width mode", result)
-
