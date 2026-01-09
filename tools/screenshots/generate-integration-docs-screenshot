@@ -37,12 +37,14 @@ import requests
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
 from zerver.actions.create_user import do_create_user, notify_created_bot
+from zerver.actions.message_send import do_send_messages, internal_prep_stream_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS,
     INCOMING_WEBHOOK_INTEGRATIONS,
     INTEGRATIONS,
+    BotIntegration,
     FixturelessScreenshotConfig,
     IncomingWebhookIntegration,
     Integration,
@@ -52,12 +54,14 @@ from zerver.lib.integrations import (
     split_fixture_path,
 )
 from zerver.lib.storage import static_path
-from zerver.lib.streams import create_stream_if_needed
+from zerver.lib.streams import create_stream_if_needed, ensure_stream
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.url_encoding import topic_narrow_url
 from zerver.lib.webhooks.common import call_fixture_to_headers, parse_multipart_string
 from zerver.models import Message, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models.realms import Realm, get_realm
 from zerver.models.users import get_user_by_delivery_email
+from zerver.webhooks.fixtureless_integrations import MessageThread
 
 
 def create_integration_bot(integration: Integration, bot_name: str | None = None) -> UserProfile:
@@ -70,7 +74,10 @@ def create_integration_bot(integration: Integration, bot_name: str | None = None
     )
     bot_email = f"{email_prefix}-bot@example.com"
     if bot_name is None:
-        bot_name = f"{integration.display_name} Bot"
+        if isinstance(integration, BotIntegration):
+            bot_name = integration.display_name
+        else:
+            bot_name = f"{integration.display_name} Bot"
     try:
         bot = UserProfile.objects.get(email=bot_email)
     except UserProfile.DoesNotExist:
@@ -102,6 +109,20 @@ def create_integration_channel(channel_name: str, bot: UserProfile) -> None:
     realm = bot.bot_owner.realm
     channel, _created = create_stream_if_needed(realm, channel_name)
     bulk_add_subscriptions(realm, [channel], [bot, bot.bot_owner], acting_user=bot)
+
+
+def create_user(realm: Realm, username: str, acting_user: UserProfile) -> UserProfile:
+    try:
+        return UserProfile.objects.get(realm=realm, full_name=username)
+    except UserProfile.DoesNotExist:
+        sender_email = f"{username.replace(' ', '').lower()}@example.com"
+        return do_create_user(
+            email=sender_email,
+            password="123",
+            realm=realm,
+            full_name=username,
+            acting_user=acting_user,
+        )
 
 
 def get_fixture_info(fixture_path: str) -> tuple[Any, bool, bool, str]:
@@ -238,6 +259,71 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.url])
 
 
+def send_thread_messages(
+    bot: UserProfile,
+    channel_name: str,
+    topic: str,
+    thread_messages_data: list[MessageThread],
+    integration: Integration,
+) -> list[int]:
+    realm = bot.realm
+    channel = ensure_stream(realm, channel_name, acting_user=bot.bot_owner)
+
+    Message.objects.filter(
+        realm=realm,
+        recipient=channel.recipient,
+        subject__iexact=topic,
+    ).delete()
+
+    assert bot.bot_owner is not None
+
+    user = create_user(realm=realm, username="Bo Williams", acting_user=bot.bot_owner)
+
+    message_requests = []
+    for messages in thread_messages_data:
+        sender_name = messages["sender"]
+        content = messages["message"]
+
+        if sender_name in {bot.full_name, integration.display_name, integration.name.title()}:
+            sender = bot
+        else:
+            sender = user
+
+        message_request = internal_prep_stream_message(
+            sender,
+            channel,
+            topic,
+            content,
+        )
+        message_requests.append(message_request)
+
+    bulk_add_subscriptions(realm, [channel], [user], acting_user=bot)
+
+    sent_message_results = do_send_messages(message_requests)
+    return [result.message_id for result in sent_message_results]
+
+
+def capture_thread_screenshot(
+    bot: UserProfile, channel_name: str, topic: str, message_ids: list[int], image_path: str
+) -> None:
+    assert bot.bot_owner is not None
+    stream = ensure_stream(bot.realm, channel_name, acting_user=bot.bot_owner)
+    narrow_uri = topic_narrow_url(realm=bot.realm, stream=stream, topic_name=topic)
+    narrow = f"{channel_name}/{topic}"
+    screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.ts")
+    subprocess.check_call(
+        [
+            "node",
+            screenshot_script,
+            narrow_uri,
+            narrow,
+            str(min(message_ids)),
+            image_path,
+            bot.realm.url,
+        ]
+    )
+
+
 def generate_screenshots_for_integration(integration: Integration) -> None:
     if integration.screenshot_configs is not None:
         for screenshot_config in integration.screenshot_configs:
@@ -252,23 +338,30 @@ def generate_screenshot_from_config(
     channel_name = screenshot_config.channel or integration.name
     create_integration_channel(channel_name, bot)
     image_path = get_image_path(integration, screenshot_config)
-
-    if isinstance(integration, IncomingWebhookIntegration):
-        assert isinstance(screenshot_config, WebhookScreenshotConfig)
-        fixture_path = get_fixture_path(integration, screenshot_config)
-        message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
-    else:
-        assert isinstance(screenshot_config, FixturelessScreenshotConfig)
-        send_bot_mock_message(
-            bot,
-            channel=channel_name,
-            topic=screenshot_config.topic,
-            message=screenshot_config.message,
-        )
-        message_sent = True
-
-    if message_sent:
-        capture_last_message_screenshot(bot, image_path)
+    match (integration, screenshot_config):
+        case (IncomingWebhookIntegration(), WebhookScreenshotConfig()):
+            fixture_path = get_fixture_path(integration, screenshot_config)
+            if send_bot_payload_message(bot, integration, fixture_path, screenshot_config):
+                capture_last_message_screenshot(bot, image_path)
+        case (_, FixturelessScreenshotConfig(message=messages)) if isinstance(messages, list):
+            message_ids = send_thread_messages(
+                bot, channel_name, screenshot_config.topic, messages, integration
+            )
+            if message_ids:
+                capture_thread_screenshot(
+                    bot, channel_name, screenshot_config.topic, message_ids, image_path
+                )
+        case (_, FixturelessScreenshotConfig(message=message)) if isinstance(message, str):
+            send_bot_mock_message(
+                bot,
+                channel=channel_name,
+                topic=screenshot_config.topic,
+                message=message,
+            )
+            capture_last_message_screenshot(bot, image_path)
+        case _:
+            raise ValueError(f"Invalid configuration for integration {integration.name}")
+    if os.path.exists(image_path):
         print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")
 
 
