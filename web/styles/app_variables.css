@@ -1820,6 +1820,7 @@
         #646671
     );
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    --color-user-circle-bot: light-dark(#7c3aed, #a78bfa);
     /* The gradient is also recreated inside the `user-circle-idle` SVG
        file. That is needed for the new help center since it does not
        do the SVG to font conversion that the web app does. We

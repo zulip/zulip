@@ -9,7 +9,7 @@
             {{#if is_button}}
             <button
                 class="widget-button widget-button-{{style}}"
-                data-custom-id="{{custom_id}}"
+                {{#if custom_id}}data-custom-id="{{custom_id}}"{{/if}}
                 {{#if url}}data-url="{{url}}"{{/if}}
                 {{#if disabled}}disabled{{/if}}
             >
@@ -22,7 +22,7 @@
                 class="widget-select"
                 data-custom-id="{{custom_id}}"
                 {{#if disabled}}disabled{{/if}}
-                {{#if (gt max_values 1)}}multiple{{/if}}
+                {{#if is_multiple}}multiple{{/if}}
             >
                 {{#if placeholder}}
                 <option value="" disabled selected>{{placeholder}}</option>

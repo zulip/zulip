@@ -1,20 +1,27 @@
+import json
 import logging
+import uuid
 from typing import Annotated, Any
 
 import requests
-from django.conf import settings
+from django.core.cache import cache
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
 from version import ZULIP_VERSION
+from zerver.actions.message_send import check_message, do_send_messages
 from zerver.decorator import require_organization_member
+from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
-from zerver.models import BotCommand, UserProfile
+from zerver.models import BotCommand, Stream, UserProfile
 from zerver.models.bots import get_bot_services
+from zerver.models.clients import get_client
 from zerver.models.users import active_user_ids, get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -300,3 +307,178 @@ def _normalize_choices(choices: list[Any]) -> list[dict[str, str]]:
         elif isinstance(choice, str):
             result.append({"value": choice, "label": choice})
     return result
+
+
+@transaction.atomic(durable=True)
+@require_organization_member
+@typed_endpoint
+def invoke_bot_command(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    command_name: str,
+    arguments: Annotated[Json[dict[str, str]], "Command arguments as {option_name: value}"] = {},
+    # For stream messages
+    stream_id: Json[int] | None = None,
+    topic: str | None = None,
+    # For direct messages
+    to: Annotated[Json[list[int]], "User IDs for direct message"] = [],
+    # Idempotency key to prevent duplicate submissions
+    idempotency_key: str | None = None,
+) -> HttpResponse:
+    """
+    Invoke a bot slash command.
+
+    This creates a message showing the command invocation and routes the
+    command to the bot for processing. The message displays like a Discord
+    slash command invocation, showing the user used a command.
+
+    Parameters:
+    - command_name: The name of the command to invoke (without leading /)
+    - arguments: Dict mapping option names to their values
+    - stream_id: Stream ID for channel messages
+    - topic: Topic name for channel messages
+    - to: User IDs for direct messages
+    - idempotency_key: Optional key to prevent duplicate submissions
+    """
+    # Check idempotency key to prevent duplicate submissions
+    if idempotency_key:
+        cache_key = f"cmd_idempotency:{user_profile.id}:{idempotency_key}"
+        if cache.get(cache_key):
+            raise JsonableError(_("Command already submitted"))
+        # Set the key with 5 minute TTL - will be confirmed after successful send
+        cache.set(cache_key, "pending", timeout=300)
+
+    # Look up the command
+    try:
+        command = BotCommand.objects.select_related("bot_profile").get(
+            realm=user_profile.realm,
+            name=command_name,
+        )
+    except BotCommand.DoesNotExist:
+        raise JsonableError(_("Command not found: /{command_name}").format(command_name=command_name))
+
+    bot = command.bot_profile
+
+    # Verify bot is active
+    if not bot.is_active:
+        raise JsonableError(_("The bot for this command is deactivated"))
+
+    # Generate interaction ID for tracking
+    interaction_id = str(uuid.uuid4())
+
+    # Build the message content - a user-friendly display of the command
+    # The actual content will be replaced by the widget display
+    content = _build_command_message_content(command_name, arguments, command.options_schema)
+
+    # Determine the addressee
+    if stream_id is not None:
+        if topic is None:
+            raise JsonableError(_("Topic is required for channel messages"))
+        try:
+            stream = Stream.objects.get(id=stream_id, realm=user_profile.realm)
+        except Stream.DoesNotExist:
+            raise JsonableError(_("Invalid channel"))
+        addressee = Addressee.for_stream(stream, topic)
+    elif to:
+        addressee = Addressee.for_user_ids(to, user_profile.realm)
+    else:
+        raise JsonableError(_("Must specify either stream_id and topic, or to"))
+
+    # Create the message with command invocation widget
+    widget_content = {
+        "widget_type": "command_invocation",
+        "extra_data": {
+            "command_name": command_name,
+            "arguments": arguments,
+            "bot_id": bot.id,
+            "bot_name": bot.full_name,
+            "interaction_id": interaction_id,
+        },
+    }
+
+    # Check and create the message
+    message_send_request = check_message(
+        sender=user_profile,
+        client=get_client("website"),
+        addressee=addressee,
+        message_content_raw=content,
+        widget_content=json.dumps(widget_content),
+    )
+
+    # Send the message
+    sent_message_results = do_send_messages([message_send_request])
+    message_id = sent_message_results[0].message_id
+
+    # Queue the command invocation for the bot
+    _queue_command_invocation(
+        bot=bot,
+        user=user_profile,
+        message_id=message_id,
+        command_name=command_name,
+        arguments=arguments,
+        interaction_id=interaction_id,
+        stream_id=stream_id,
+        topic=topic,
+    )
+
+    return json_success(
+        request,
+        data={
+            "message_id": message_id,
+            "interaction_id": interaction_id,
+        },
+    )
+
+
+def _build_command_message_content(
+    command_name: str,
+    arguments: dict[str, str],
+    options_schema: list[dict[str, Any]],
+) -> str:
+    """Build a human-readable message content for the command invocation."""
+    # Create a simple text representation
+    # The actual display will be handled by the widget
+    parts = [f"/{command_name}"]
+    for option in options_schema:
+        opt_name = option.get("name", "")
+        if opt_name in arguments:
+            parts.append(f"{opt_name}:{arguments[opt_name]}")
+    return " ".join(parts)
+
+
+def _queue_command_invocation(
+    bot: UserProfile,
+    user: UserProfile,
+    message_id: int,
+    command_name: str,
+    arguments: dict[str, str],
+    interaction_id: str,
+    stream_id: int | None,
+    topic: str | None,
+) -> None:
+    """Queue the command invocation for the bot to process."""
+    event = {
+        "type": "command_invocation",
+        "bot_user_id": bot.id,
+        "user_profile_id": user.id,
+        "message_id": message_id,
+        "interaction_id": interaction_id,
+        "command": command_name,
+        "arguments": arguments,
+        "context": {
+            "stream_id": stream_id,
+            "topic": topic,
+        },
+        "user": {
+            "id": user.id,
+            "email": user.delivery_email,
+            "full_name": user.full_name,
+        },
+    }
+
+    # Send event to bot via event queue
+    send_event_on_commit(bot.realm, event, [bot.id])
+
+    # Also queue for webhook delivery
+    queue_event_on_commit("bot_interactions", event)

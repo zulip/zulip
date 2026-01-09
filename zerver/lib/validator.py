@@ -585,11 +585,36 @@ def check_widget_content(widget_content: object) -> dict[str, Any]:
 
     if widget_type == "freeform":
         # Freeform HTML/JS/CSS widget (trusted bots only)
+        # Dependencies are external scripts/styles to load (shared across widgets)
+        dependency_checker = check_dict(
+            [
+                ("url", check_string),
+                ("type", check_string_in(["script", "style"])),
+            ],
+        )
         checker = check_dict(
             [("html", check_string)],
             [
                 ("css", check_string),
                 ("js", check_string),
+                ("dependencies", check_list(dependency_checker)),
+            ],
+        )
+        checker("extra_data", extra_data)
+        return widget_content
+
+    if widget_type == "command_invocation":
+        # Bot slash command invocation display
+        checker = check_dict(
+            [
+                ("command_name", check_string),
+                ("arguments", check_dict([], value_validator=check_string)),
+                ("bot_id", check_int),
+                ("bot_name", check_string),
+                ("interaction_id", check_string),
+            ],
+            [
+                ("status", check_string_in(["pending", "responding", "complete"])),
             ],
         )
         checker("extra_data", extra_data)

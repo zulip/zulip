@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import CASCADE
+from typing_extensions import override
 
 from zerver.models.users import UserProfile
 
@@ -94,6 +95,7 @@ class BotCommand(models.Model):
     class Meta:
         unique_together = ("realm", "name")
 
+    @override
     def __str__(self) -> str:
         return f"/{self.name} ({self.bot_profile.full_name})"
 

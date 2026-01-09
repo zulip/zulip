@@ -536,6 +536,7 @@ realm_user_dict_fields: list[str] = [
     "long_term_idle",
     "email_address_visibility",
     "is_imported_stub",
+    "color",
 ]
 
 

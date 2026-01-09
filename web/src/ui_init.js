@@ -460,7 +460,7 @@ export async function initialize_everything(state_data) {
     }
     thumbnail.initialize();
     widgets.initialize();
-    bot_command_store.initialize(state_data.bot_commands ?? []);
+    bot_command_store.initialize(state_data.bot_commands.bot_commands ?? []);
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();

@@ -2,7 +2,9 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import * as ephemeral_widget from "./ephemeral_widget.ts";
 import type {MessageList} from "./message_list.ts";
+import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import {widget_data_schema} from "./widget_schema.ts";
@@ -20,7 +22,8 @@ const inbound_data_event_schema = z.object({
     sender_id: z.number(),
     data: z.intersection(
         z.object({
-            type: z.string(),
+            // type is optional for backwards compatibility with older submessages
+            type: z.optional(z.string()),
         }),
         z.record(z.string(), z.unknown()),
     ),
@@ -78,6 +81,11 @@ export function do_process_submessages(in_opts: {$row: JQuery; message_id: numbe
         return;
     }
 
+    const $row = in_opts.$row;
+
+    // Render any ephemeral responses (these are separate from main widgets)
+    ephemeral_widget.render_ephemeral_responses($row, message);
+
     const events = get_message_events(message);
 
     if (!events) {
@@ -89,8 +97,6 @@ export function do_process_submessages(in_opts: {$row: JQuery; message_id: numbe
         blueslip.warn(`User ${widget_event.sender_id} tried to hijack message ${message.id}`);
         return;
     }
-
-    const $row = in_opts.$row;
 
     // Right now, our only use of submessages is widgets.
 
@@ -139,11 +145,42 @@ export function update_message(submsg: Submessage): void {
     message.submessages.push(submsg);
 }
 
+export function handle_remove_event(message_id: number, submessage_id: number): void {
+    const message = message_store.get(message_id);
+    if (!message) {
+        return;
+    }
+
+    // Remove the submessage from the message's submessages array
+    const index = message.submessages.findIndex((sm) => sm.id === submessage_id);
+    if (index !== -1) {
+        message.submessages.splice(index, 1);
+    }
+
+    // Re-render ephemeral responses for this message
+    const $row = message_lists.current?.get_row(message_id);
+    if ($row && $row.length > 0) {
+        ephemeral_widget.render_ephemeral_responses($row, message);
+    }
+}
+
 export function handle_event(submsg: Submessage): void {
     // Update message.submessages in case we haven't actually
     // activated the widget yet, so that when the message does
     // come in view, the data will be complete.
     update_message(submsg);
+
+    // Check if this is an ephemeral response - render it immediately
+    if (ephemeral_widget.is_ephemeral_submessage(submsg)) {
+        const message = message_store.get(submsg.message_id);
+        if (message) {
+            const $row = message_lists.current?.get_row(submsg.message_id);
+            if ($row && $row.length > 0) {
+                ephemeral_widget.render_ephemeral_responses($row, message);
+            }
+        }
+        return;
+    }
 
     // Right now, our only use of submessages is widgets.
     const msg_type = submsg.msg_type;

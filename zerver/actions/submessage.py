@@ -1,6 +1,7 @@
 from django.utils.translation import gettext as _
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import (
     event_recipient_ids_for_action_on_messages,
@@ -62,6 +63,9 @@ def do_add_submessage(
     )
     submessage.save()
 
+    # Invalidate the message cache since submessages are cached with the message
+    cache_delete(to_dict_cache_key_id(message_id))
+
     # Determine and set the visibility_policy depending on 'automatically_follow_topics_policy'
     # and 'automatically_unmute_topics_policy'.
     sender = submessage.sender
@@ -96,6 +100,8 @@ def do_add_submessage(
         submessage_id=submessage.id,
         sender_id=sender_id,
         content=content,
+        # Include visibility info so frontend can render ephemeral indicator
+        visible_to=visible_user_ids,
     )
 
     # Determine target users for the event
@@ -105,8 +111,52 @@ def do_add_submessage(
 
     if visible_user_ids is not None:
         # Filter to only users who can see the message AND are in the visibility list
-        target_user_ids = list(set(all_recipient_ids) & set(visible_user_ids))
+        target_user_ids = list(all_recipient_ids & set(visible_user_ids))
     else:
-        target_user_ids = all_recipient_ids
+        target_user_ids = list(all_recipient_ids)
 
     send_event_on_commit(realm, event, target_user_ids)
+
+
+def do_delete_submessage(
+    user_profile: UserProfile,
+    submessage_id: int,
+) -> None:
+    """Delete a submessage. Users can only delete submessages that are
+    visible only to them (ephemeral responses).
+    """
+    try:
+        submessage = SubMessage.objects.get(id=submessage_id)
+    except SubMessage.DoesNotExist:
+        raise JsonableError(_("Submessage not found."))
+
+    # Only allow deletion of ephemeral messages visible to the user
+    visible_to = submessage.visible_to
+    if visible_to is None:
+        raise JsonableError(_("Cannot delete this submessage."))
+
+    if user_profile.id not in visible_to:
+        raise JsonableError(_("Cannot delete this submessage."))
+
+    message_id = submessage.message_id
+
+    # If the user is the only one who can see it, delete it entirely
+    if len(visible_to) == 1:
+        submessage.delete()
+    else:
+        # Remove this user from the visibility list
+        visible_to.remove(user_profile.id)
+        submessage.visible_to = visible_to
+        submessage.save(update_fields=["visible_to"])
+
+    # Invalidate the message cache since submessages are cached with the message
+    cache_delete(to_dict_cache_key_id(message_id))
+
+    # Send event to notify the user
+    event = dict(
+        type="submessage",
+        op="remove",
+        message_id=message_id,
+        submessage_id=submessage_id,
+    )
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])

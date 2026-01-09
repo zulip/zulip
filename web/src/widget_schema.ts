@@ -26,6 +26,7 @@ export type WidgetOutboundData =
 const rich_embed_extra_data_schema = z.record(z.string(), z.unknown());
 const interactive_extra_data_schema = z.record(z.string(), z.unknown());
 const freeform_extra_data_schema = z.record(z.string(), z.unknown());
+const command_invocation_extra_data_schema = z.record(z.string(), z.unknown());
 
 export const widget_data_schema = z.discriminatedUnion("widget_type", [
     z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
@@ -49,5 +50,9 @@ export const widget_data_schema = z.discriminatedUnion("widget_type", [
     z.object({
         widget_type: z.literal("freeform"),
         extra_data: z.nullable(freeform_extra_data_schema),
+    }),
+    z.object({
+        widget_type: z.literal("command_invocation"),
+        extra_data: z.nullable(command_invocation_extra_data_schema),
     }),
 ]);

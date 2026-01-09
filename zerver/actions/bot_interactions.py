@@ -10,7 +10,7 @@ from typing import Any
 
 from zerver.lib.queue import queue_event_on_commit
 from zerver.models import Message, Realm, SubMessage, UserProfile
-from zerver.tornado.django_api import send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit as send_event
 
 
 def do_handle_bot_interaction(
@@ -67,7 +67,7 @@ def do_handle_bot_interaction(
     target_user_ids = event_recipient_ids_for_action_on_messages(
         [message.id], message.is_channel_message
     )
-    send_event_on_commit(realm, event, target_user_ids)
+    send_event(realm, event, target_user_ids)
 
     # Queue the interaction for the bot to process
     queue_bot_interaction_event(
@@ -94,17 +94,10 @@ def queue_bot_interaction_event(
     """
     Queue an interaction event for a bot to process.
 
-    For outgoing webhook bots, this queues an event that will POST to the bot's URL.
-    For embedded bots, this queues an event that will call the bot's handler.
+    All bot types receive interaction events via the event queue if they subscribe
+    to 'bot_interaction' events. Additionally, outgoing webhook bots get events
+    POSTed to their URL, and embedded bots get events routed to their handler.
     """
-    # Only queue for service bot types that can handle interactions
-    if bot.bot_type not in [
-        UserProfile.OUTGOING_WEBHOOK_BOT,
-        UserProfile.EMBEDDED_BOT,
-    ]:
-        # DEFAULT_BOT and INCOMING_WEBHOOK_BOT don't receive interaction events
-        return
-
     event = {
         "type": "bot_interaction",
         "bot_user_id": bot.id,
@@ -129,4 +122,9 @@ def queue_bot_interaction_event(
         },
     }
 
-    queue_event_on_commit("bot_interactions", event)
+    # Send event to bot via event queue (any bot type can subscribe to bot_interaction events)
+    send_event(bot.realm, event, [bot.id])
+
+    # Also queue for webhook/embedded bot delivery
+    if bot.bot_type in [UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT]:
+        queue_event_on_commit("bot_interactions", event)

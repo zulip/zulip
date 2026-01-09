@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
-from zerver.actions.submessage import do_add_submessage, verify_submessage_sender
+from zerver.actions.submessage import do_add_submessage, do_delete_submessage, verify_submessage_sender
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
 from zerver.lib.response import json_success
@@ -62,4 +62,18 @@ def process_submessage(
         msg_type=msg_type,
         content=content,
     )
+    return json_success(request)
+
+
+@typed_endpoint
+def delete_submessage(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    submessage_id: Json[int],
+) -> HttpResponse:
+    """Delete an ephemeral submessage. Only works for ephemeral messages
+    that are visible to the current user.
+    """
+    do_delete_submessage(user_profile, submessage_id)
     return json_success(request)

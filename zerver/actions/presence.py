@@ -66,6 +66,11 @@ def send_presence_changed(
     # API parameter when this becomes possible in the future.
     legacy_presence_dict = format_legacy_presence_dict(last_active_time, last_connected_time)
     modern_presence_dict = get_modern_user_presence_info(last_active_time, last_connected_time)
+
+    # Add is_bot flag for bots so frontend can differentiate
+    if user_profile.is_bot:
+        modern_presence_dict["is_bot"] = True
+
     event = dict(
         type="presence",
         email=user_profile.email,

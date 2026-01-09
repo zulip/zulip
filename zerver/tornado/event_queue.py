@@ -84,6 +84,7 @@ class ClientDescriptor:
         archived_channels: bool,
         empty_topic_name: bool,
         simplified_presence_events: bool,
+        is_bot: bool = False,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -118,6 +119,7 @@ class ClientDescriptor:
         self.archived_channels = archived_channels
         self.empty_topic_name = empty_topic_name
         self.simplified_presence_events = simplified_presence_events
+        self.is_bot = is_bot
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -151,6 +153,7 @@ class ClientDescriptor:
             archived_channels=self.archived_channels,
             empty_topic_name=self.empty_topic_name,
             simplified_presence_events=self.simplified_presence_events,
+            is_bot=self.is_bot,
         )
 
     @override
@@ -191,6 +194,7 @@ class ClientDescriptor:
             archived_channels=d.get("archived_channels", False),
             empty_topic_name=d.get("empty_topic_name", False),
             simplified_presence_events=d.get("simplified_presence_events", False),
+            is_bot=d.get("is_bot", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -524,6 +528,14 @@ def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> Clie
     client = ClientDescriptor.from_dict(new_queue_data)
     clients[queue_id] = client
     add_to_client_dicts(client)
+
+    # Update bot presence when a bot connects
+    is_bot = new_queue_data.get("is_bot", False)
+    if is_bot:
+        from zerver.tornado.bot_presence import bot_presence_connect_hook
+
+        bot_presence_connect_hook(client.user_profile_id, is_bot)
+
     return client
 
 
@@ -708,6 +720,11 @@ async def setup_event_queue(
     # Set up event queue garbage collection
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
     pc.start()
+
+    # Register bot presence GC hook
+    from zerver.tornado.bot_presence import get_gc_hook
+
+    add_client_gc_hook(get_gc_hook())
 
     send_restart_events()
     if send_reloads:

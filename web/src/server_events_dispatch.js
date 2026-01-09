@@ -232,7 +232,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "presence":
-            activity_ui.update_presence_info(event.presences);
+            activity_ui.update_presence_info({[event.user_id]: event.modern_presence});
             break;
 
         case "restart":
@@ -789,6 +789,11 @@ export function dispatch_normal_event(event) {
             break;
 
         case "submessage": {
+            if (event.op === "remove") {
+                // Handle ephemeral submessage removal
+                submessage.handle_remove_event(event.message_id, event.submessage_id);
+                break;
+            }
             // The fields in the event don't quite exactly
             // match the layout of a submessage, since there's
             // an event id.  We also want to be explicit here.
@@ -798,6 +803,7 @@ export function dispatch_normal_event(event) {
                 msg_type: event.msg_type,
                 message_id: event.message_id,
                 content: event.content,
+                visible_to: event.visible_to,
             };
             submessage.handle_event(submsg);
             break;

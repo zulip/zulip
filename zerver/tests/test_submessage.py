@@ -47,6 +47,7 @@ class TestBasics(ZulipTestCase):
                 sender_id=cordelia.id,
                 msg_type="whatever",
                 content="stuff1",
+                visible_to=None,
             ),
             dict(
                 id=sm2.id,
@@ -54,6 +55,7 @@ class TestBasics(ZulipTestCase):
                 sender_id=hamlet.id,
                 msg_type="whatever",
                 content="stuff2",
+                visible_to=None,
             ),
         ]
 
@@ -164,6 +166,7 @@ class TestBasics(ZulipTestCase):
             msg_type="whatever",
             sender_id=cordelia.id,
             type="submessage",
+            visible_to=None,
         )
 
         data = events[0]["event"]
@@ -182,6 +185,7 @@ class TestBasics(ZulipTestCase):
             content='{"name": "alice", "salary": 20}',
             msg_type="whatever",
             sender_id=cordelia.id,
+            visible_to=None,
         )
         self.assertEqual(row, expected_data)
 
@@ -230,5 +234,6 @@ class TestBasics(ZulipTestCase):
             content='{"name": "alice", "salary": 20}',
             msg_type="whatever",
             sender_id=cordelia.id,
+            visible_to=None,
         )
         self.assertEqual(submessage, expected_data)

@@ -1861,6 +1861,15 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the submessage.
+                                visible_to:
+                                  nullable: true
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    If set, the list of user IDs who can see this submessage.
+                                    If null, the submessage is visible to all users who can
+                                    see the parent message.
                               example:
                                 {
                                   "type": "submessage",
@@ -27157,6 +27166,15 @@ components:
                 type: integer
                 description: |
                   The ID of the submessage.
+              visible_to:
+                nullable: true
+                type: array
+                items:
+                  type: integer
+                description: |
+                  If set, the list of user IDs who can see this submessage.
+                  If null, the submessage is visible to all users who can
+                  see the parent message.
         timestamp:
           type: integer
           description: |

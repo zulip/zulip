@@ -259,6 +259,7 @@ def get_events_backend(
             archived_channels=archived_channels,
             empty_topic_name=empty_topic_name,
             simplified_presence_events=simplified_presence_events,
+            is_bot=user_profile.is_bot,
         )
 
     result = in_tornado_thread(fetch_events)(

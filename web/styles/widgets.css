@@ -648,3 +648,239 @@ input {
         }
     }
 }
+
+/* Command Invocation Widget - Discord-style slash command display */
+.widget-command-invocation {
+    display: inline-flex;
+    flex-direction: column;
+    background-color: var(--color-background-widget-input, hsl(225deg 25% 97%));
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.95em;
+
+    &.command-pending {
+        opacity: 0.7;
+    }
+
+    .command-header {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .command-label {
+        color: var(--color-text-default);
+        opacity: 0.7;
+    }
+
+    .command-name {
+        color: hsl(235deg 86% 65%);
+        font-weight: 600;
+        background-color: hsl(235deg 86% 65% / 10%);
+        padding: 2px 6px;
+        border-radius: 3px;
+    }
+
+    .command-with {
+        color: var(--color-text-default);
+        opacity: 0.7;
+    }
+
+    .command-bot-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-left: 2px;
+    }
+
+    .command-bot-name {
+        font-weight: 500;
+        color: var(--color-text-default);
+    }
+
+    .command-arguments {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid hsl(0deg 0% 0% / 8%);
+    }
+
+    .command-argument {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background-color: hsl(0deg 0% 0% / 5%);
+        padding: 2px 8px;
+        border-radius: 3px;
+    }
+
+    .argument-name {
+        color: var(--color-text-default);
+        opacity: 0.7;
+        font-size: 0.9em;
+
+        &::after {
+            content: ":";
+        }
+    }
+
+    .argument-value {
+        font-weight: 500;
+        color: var(--color-text-default);
+    }
+
+    /* Responding indicator - three animated dots */
+    .command-responding-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        margin-left: 8px;
+    }
+
+    .responding-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--color-text-default);
+        opacity: 0.4;
+        animation: responding-pulse 1.4s infinite ease-in-out;
+
+        &:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        &:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        &:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+    }
+
+    @keyframes responding-pulse {
+        0%,
+        80%,
+        100% {
+            opacity: 0.4;
+            transform: scale(1);
+        }
+
+        40% {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+    }
+
+    /* Error state */
+    &.command-error {
+        border-left: 3px solid hsl(0deg 70% 50%);
+    }
+
+    .command-error-indicator {
+        margin-left: 8px;
+        color: hsl(0deg 70% 50%);
+    }
+
+    .command-error-message {
+        margin-top: 6px;
+        padding: 4px 8px;
+        font-size: 0.85em;
+        color: hsl(0deg 70% 40%);
+        background-color: hsl(0deg 70% 95%);
+        border-radius: 3px;
+    }
+}
+
+/* Ephemeral/private response styling */
+.messagebox-content > .ephemeral-response-container {
+    /* Place in the ephemeral grid area, spanning the message column */
+    grid-area: ephemeral;
+    /* Explicit row/column as fallback if grid-area doesn't work */
+    grid-row: 6;
+    grid-column: 2;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* Ensure proper width - don't let it collapse */
+    min-width: 0;
+}
+
+.ephemeral-response {
+    position: relative;
+    background-color: var(--color-background-private-message-content);
+    border-left: 3px solid hsl(45deg 70% 50%);
+    border-radius: 4px;
+    padding: 8px 12px;
+    animation: ephemeral-fade-in 0.3s ease-out;
+}
+
+@keyframes ephemeral-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ephemeral-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 0.85em;
+    color: var(--color-text-default);
+    opacity: 0.7;
+}
+
+.ephemeral-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ephemeral-icon i {
+    font-size: 14px;
+    color: hsl(45deg 70% 50%);
+}
+
+.ephemeral-visibility {
+    flex: 1;
+    font-style: italic;
+}
+
+.ephemeral-dismiss {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    color: var(--color-text-default);
+    opacity: 0.5;
+    border-radius: 3px;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    & i {
+        font-size: 12px;
+    }
+}
+
+.ephemeral-content {
+    color: var(--color-text-default);
+
+    /* Ensure markdown renders properly */
+    & p:last-child {
+        margin-bottom: 0;
+    }
+}

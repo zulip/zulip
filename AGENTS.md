@@ -41,20 +41,32 @@ Access the dev server at: http://localhost:9991/devlogin
 
 ### Running Tests & Linting
 
-All commands run inside `vagrant ssh`:
+All commands run inside the Vagrant container. You can either SSH in or run from host:
 
+**Option 1: SSH into container first**
+```bash
+vagrant ssh
+cd /srv/zulip
+./tools/test-backend
+./tools/lint
+```
+
+**Option 2: Run from host using `vagrant ssh -c`**
 ```bash
 # Run backend tests
-./tools/test-backend
+vagrant ssh -c "cd /srv/zulip && ./tools/test-backend"
 
 # Run specific test
-./tools/test-backend zerver.tests.test_markdown
+vagrant ssh -c "cd /srv/zulip && ./tools/test-backend zerver.tests.test_markdown"
 
 # Run linter
-./tools/lint
+vagrant ssh -c "cd /srv/zulip && ./tools/lint"
 
 # Run type checker
-./tools/run-mypy
+vagrant ssh -c "cd /srv/zulip && ./tools/run-mypy"
+
+# Generate migrations
+vagrant ssh -c "cd /srv/zulip && ./manage.py makemigrations"
 ```
 
 ### Important Notes
@@ -101,3 +113,4 @@ Adding Discord-style interactive bot components. See `/Users/ember/.claude/plans
 - `zerver/views/bot_interactions.py` - API endpoint for widget interactions
 - `zerver/actions/bot_interactions.py` - Business logic for routing interactions to bots
 - `zerver/worker/bot_interactions.py` - Queue worker to deliver interactions to bots
+Always use vagrant ssh -c to run stuff inside the container when you need to run the code

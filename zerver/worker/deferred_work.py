@@ -239,6 +239,17 @@ class DeferredWorker(QueueProcessingWorker):
                 scrub_deactivated_realm(realm)
         elif event["type"] == "import_slack_data":
             import_slack_data(event)
+        elif event["type"] == "bot_presence_update":
+            from zerver.actions.bot_presence import do_update_bot_presence
+
+            user_profile = get_user_profile_by_id(event["user_profile_id"])
+            if user_profile.is_bot:
+                logger.info(
+                    "Updating bot presence for bot %s, is_connected=%s",
+                    user_profile.id,
+                    event["is_connected"],
+                )
+                do_update_bot_presence(user_profile, event["is_connected"])
 
         end = time.time()
         logger.info(

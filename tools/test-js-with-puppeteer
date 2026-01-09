@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 import argparse
+import http.server
 import os
 import shlex
+import socketserver
 import subprocess
 import sys
+import threading
+from contextlib import contextmanager
+from collections.abc import Iterator
 
 import requests
 
@@ -56,6 +61,11 @@ add_provision_check_override_param(parser)
 parser.add_argument("--firefox", action="store_true", help="Run tests with firefox.")
 parser.add_argument("--loop", nargs="?", type=int, default=1)
 parser.add_argument(
+    "--with-queue-worker",
+    action="store_true",
+    help="Run with queue workers enabled (for testing bot interactions)",
+)
+parser.add_argument(
     "tests", nargs=argparse.REMAINDER, help="Specific tests to run; by default, runs all tests"
 )
 
@@ -84,7 +94,28 @@ def run_single_test(test_file: str, test_number: int, total_tests: int) -> int:
     return ret
 
 
-def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
+@contextmanager
+def test_bot_server_running(port: int = 9877) -> Iterator[int]:
+    """Run a test bot server for e2e tests that need to test bot interactions."""
+    from tools.lib.test_bot_server import start_server
+
+    server = start_server(port=port, verbose=False)
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+
+    print(f"Test bot server running on http://localhost:{port}")
+
+    try:
+        yield port
+    finally:
+        server.shutdown()
+        print("Test bot server stopped")
+
+
+def run_tests(
+    files: Iterable[str], external_host: str, loop: int = 1, with_queue_worker: bool = False
+) -> None:
     test_dir = os.path.join(ZULIP_PATH, "web/e2e-tests")
     test_files = find_js_test_files(test_dir, files)
     total_tests = len(test_files)
@@ -98,7 +129,12 @@ def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
             current_test_num += 1
         return 0, -1
 
-    with test_server_running(options.skip_provision_check, external_host):
+    # Use streamlined=False when testing with queue workers to enable bot interactions
+    streamlined = not with_queue_worker
+
+    with test_server_running(
+        options.skip_provision_check, external_host, streamlined=streamlined
+    ):
         # Important: do this next call inside the `with` block, when Django
         #            will be pointing at the test database.
         subprocess.check_call("tools/setup/generate-test-credentials")
@@ -156,5 +192,13 @@ below to download and view the generated screenshots.
 external_host = "zulipdev.com:9981"
 assert_provisioning_status_ok(options.skip_provision_check)
 prepare_puppeteer_run(is_firefox=options.firefox)
-run_tests(options.tests, external_host, options.loop)
+
+if options.with_queue_worker:
+    # Start the test bot server and set environment variable for tests to use
+    with test_bot_server_running() as bot_port:
+        os.environ["TEST_BOT_SERVER_PORT"] = str(bot_port)
+        run_tests(options.tests, external_host, options.loop, with_queue_worker=True)
+else:
+    run_tests(options.tests, external_host, options.loop)
+
 sys.exit(0)

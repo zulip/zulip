@@ -155,6 +155,7 @@ export function activate({
                     return {
                         is_select: true,
                         ...comp,
+                        is_multiple: (comp.max_values ?? 1) > 1,
                     };
                 }),
             })),

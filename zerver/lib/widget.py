@@ -3,10 +3,19 @@ import re
 from typing import Any
 
 from zerver.lib.message import SendMessageRequest
+from zerver.lib.queue import queue_event_on_commit
 from zerver.models import Message, SubMessage
 
 
-def get_widget_data(content: str) -> tuple[str | None, Any]:
+def get_widget_data(content: str, realm_id: int | None = None) -> tuple[str | None, Any]:
+    """
+    Parse message content for built-in widget types (poll, todo).
+
+    Bot slash commands are NOT parsed from plain text messages - they require
+    the command composer UI which sends the command via /json/bot_commands/invoke.
+    This ensures users can type /something as regular text without accidentally
+    invoking a bot command.
+    """
     valid_widget_types = ["poll", "todo"]
     tokens = re.split(r"\s+|\n+", content)
 
@@ -17,6 +26,11 @@ def get_widget_data(content: str) -> tuple[str | None, Any]:
             remaining_content = content.replace(tokens[0], "", 1)
             extra_data = get_extra_data_from_widget_type(remaining_content, widget_type)
             return widget_type, extra_data
+
+        # NOTE: Bot commands are NOT parsed from plain text. Users must use the
+        # command composer UI (which uses /json/bot_commands/invoke) to invoke
+        # bot commands. This prevents accidental command invocation when typing
+        # /something as regular text.
 
     return None, None
 
@@ -86,11 +100,12 @@ def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
     message_content = send_request.message.content
     sender_id = send_request.message.sender_id
     message_id = send_request.message.id
+    realm_id = send_request.message.realm_id
 
     widget_type = None
     extra_data = None
 
-    widget_type, extra_data = get_widget_data(message_content)
+    widget_type, extra_data = get_widget_data(message_content, realm_id)
     widget_content = send_request.widget_content
     if widget_content is not None:
         # Note that we validate this data in check_message,
@@ -111,6 +126,65 @@ def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
         )
         submessage.save()
         send_request.submessages = SubMessage.get_raw_db_rows([message_id])
+
+        # For bot command invocations, queue a notification to the bot
+        if widget_type == "command_invocation" and extra_data:
+            queue_bot_command_notification(
+                send_request.message,
+                extra_data,
+            )
+
+
+def queue_bot_command_notification(
+    message: Message,
+    extra_data: dict[str, Any],
+) -> None:
+    """Queue a command invocation event for the bot to process."""
+    from zerver.models import Recipient, Stream, UserProfile
+
+    bot_id = extra_data.get("bot_id")
+    if not bot_id:
+        return
+
+    # Get sender info for user context
+    try:
+        sender = UserProfile.objects.get(id=message.sender_id)
+        user_data = {
+            "id": sender.id,
+            "email": sender.delivery_email,
+            "full_name": sender.full_name,
+        }
+    except UserProfile.DoesNotExist:
+        user_data = {}
+
+    # Build context with stream/topic info if applicable
+    context: dict[str, Any] = {
+        "realm_id": message.realm_id,
+    }
+
+    if message.recipient.type == Recipient.STREAM:
+        context["stream_id"] = message.recipient.type_id
+        context["topic"] = message.topic_name()
+        # Also try to get stream name
+        try:
+            stream = Stream.objects.get(id=message.recipient.type_id)
+            context["stream_name"] = stream.name
+        except Stream.DoesNotExist:
+            pass
+
+    event = {
+        "type": "command_invocation",
+        "bot_user_id": bot_id,
+        "user_profile_id": message.sender_id,
+        "message_id": message.id,
+        "command": extra_data.get("command_name", ""),
+        "arguments": extra_data.get("arguments", {}),
+        "context": context,
+        "user": user_data,
+    }
+
+    # Queue for webhook delivery to the bot
+    queue_event_on_commit("bot_interactions", event)
 
 
 def get_widget_type(*, message_id: int) -> str | None:
