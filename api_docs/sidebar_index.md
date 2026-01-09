@@ -7,7 +7,7 @@
 
 ## Interactive bots
 
-* [Writing bots](/api/writing-bots)
+* [Writing bots](/help/writing-bots)
 * [Interactive bots API](/help/interactive-bots-api)
 * [Writing tests for bots](/help/writing-tests-for-interactive-bots)
 * [Running bots](/help/running-bots)

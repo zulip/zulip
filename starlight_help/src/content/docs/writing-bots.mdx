@@ -1,52 +1,57 @@
-# Writing interactive bots
+---
+title: Writing interactive bots
+---
+
+import {Steps} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 
 Zulip's API has a powerful framework for interactive bots that react to messages
 in Zulip. This page will guide you through writing your own interactive bot.
 
-- [Installing a development version of the Zulip bots package](#installing-a-development-version-of-the-zulip-bots-package)
-- [Bot template](#bot-template)
-- [Testing a bot's output](#testing-a-bots-output)
-- [Troubleshooting](#troubleshooting)
+* [Installing a development version of the Zulip bots package](#installing-a-development-version-of-the-zulip-bots-package)
+* [Bot template](#bot-template)
+* [Testing a bot's output](#testing-a-bots-output)
+* [Troubleshooting](#troubleshooting)
 
 ## Installing a development version of the Zulip bots package
 
 This will provide convenient tooling for developing and testing your bot.
 
-{start_tabs}
+<FlattenedSteps>
+  1. Clone the [python-zulip-api](https://github.com/zulip/python-zulip-api)
+     repository:
 
-1. Clone the [python-zulip-api](https://github.com/zulip/python-zulip-api)
-   repository:
+     ```
+     git clone https://github.com/zulip/python-zulip-api.git
+     ```
 
-    ```
-    git clone https://github.com/zulip/python-zulip-api.git
-    ```
+  1. Navigate into your cloned repository:
 
-1. Navigate into your cloned repository:
+     ```
+     cd python-zulip-api
+     ```
 
-    ```
-    cd python-zulip-api
-    ```
+  1. Install all requirements in a Python virtualenv:
 
-1. Install all requirements in a Python virtualenv:
+     ```
+     python3 ./tools/provision
+     ```
 
-    ```
-    python3 ./tools/provision
-    ```
+  1. Run the command provided in the final output of the `provision` process to
+     enter the new virtualenv. The command will be of the form `source .../activate`.
 
-1. Run the command provided in the final output of the `provision` process to
-   enter the new virtualenv. The command will be of the form `source .../activate`.
+  1. You should now see the name of your virtualenv preceding your prompt (e.g.,
+     `(zulip-api-py3-venv)`).
+</FlattenedSteps>
 
-1. You should now see the name of your virtualenv preceding your prompt (e.g.,
-   `(zulip-api-py3-venv)`).
-
-!!! tip ""
-
-    `provision` installs the `zulip`, `zulip_bots`, and
-    `zulip_botserver` packages in developer mode. This enables you to
-    modify these packages and then run your modified code without
-    having to first re-install the packages or re-provision.
-
-{end_tabs}
+<ZulipNote>
+  `provision` installs the `zulip`, `zulip_bots`, and
+  `zulip_botserver` packages in developer mode. This enables you to
+  modify these packages and then run your modified code without
+  having to first re-install the packages or re-provision.
+</ZulipNote>
 
 ## Bot template
 
@@ -85,13 +90,11 @@ placed in the same directory as `<my-bot>.py`.
 You can see how a bot reacts to a message without setting it up on a server,
 using the `zulip-bot-shell` tool.
 
-{start_tabs}
-
-1. [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
-1.  Run `zulip-bot-shell` to test one of the bots in
-  [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
-
-{end_tabs}
+<Steps>
+  1. [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
+  1. Run `zulip-bot-shell` to test one of the bots in
+     [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
+</Steps>
 
 Example invocations:
 
@@ -110,15 +113,15 @@ Response: stream: followup topic: foo_sender@zulip.com
 ```
 
 Note that the `-b` (aka `--bot-config-file`) argument is for an optional third party
-config file (e.g., ~/giphy.conf), which only applies to certain types of bots.
+config file (e.g., \~/giphy.conf), which only applies to certain types of bots.
 
 ## Troubleshooting
 
-### I modified my bot's code, yet the changes don't seem to have an effect.
+### I modified my bot's code, yet the changes don't seem to have an effect
 
 Ensure that you restarted the `zulip-run-bot` script.
 
-### My bot won't start.
+### My bot won't start
 
 * Ensure that your API config file is correct (download the config file from the server).
 * Ensure that you bot script is located in `zulip_bots/bots/<my-bot>/`
