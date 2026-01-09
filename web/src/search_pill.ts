@@ -130,7 +130,7 @@ function on_pill_exit(
 }
 
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
-    const search_terms = Filter.parse(suggestion.search_string);
+    const search_terms = Filter.parse(suggestion);
 
     type PillRenderData =
         | ({type: "generic_operator"} & NarrowTermSuggestion & {
