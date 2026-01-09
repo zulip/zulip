@@ -115,7 +115,7 @@ Sales](mailto:sales@zulip.com).
 ### Sending and receiving content
 
 * To react to activity inside Zulip, look at Zulip's
-  [Python framework for interactive bots](/api/running-bots) or
+  [Python framework for interactive bots](/help/running-bots) or
   [Zulip's real-time events API](/api/get-events).
 * If what you want isn't covered by the above, check out the full
   [REST API](/api/rest). The web, mobile, desktop, and terminal apps are

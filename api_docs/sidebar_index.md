@@ -10,7 +10,7 @@
 * [Writing bots](/api/writing-bots)
 * [Interactive bots API](/api/interactive-bots-api)
 * [Writing tests for bots](/api/writing-tests-for-interactive-bots)
-* [Running bots](/api/running-bots)
+* [Running bots](/help/running-bots)
 * [Deploying bots](/help/deploying-bots)
 * [Outgoing webhooks](/help/outgoing-webhooks)
 

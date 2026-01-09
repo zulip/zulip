@@ -15,7 +15,7 @@ guide should help you find the API you need:
   or use [Zulip's API for sending messages](/api/send-message).
 * If you're building an interactive bot that reacts to activity inside
   Zulip, you'll want to look at Zulip's
-  [Python framework for interactive bots](/api/running-bots) or
+  [Python framework for interactive bots](/help/running-bots) or
   [Zulip's real-time events API](/api/get-events).
 
 And if you still need to build your own integration with Zulip, check out
