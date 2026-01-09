@@ -585,7 +585,7 @@ export function dispatch_normal_event(event) {
 
             if (event.property === "notification_sound") {
                 audible_notifications.update_notification_sound_source(
-                    $("audio#realm-default-notification-sound-audio"),
+                    "realm-default-notification-sound-audio",
                     realm_user_settings_defaults,
                 );
             }
@@ -887,7 +887,7 @@ export function dispatch_normal_event(event) {
                 if (notification_name === "notification_sound") {
                     // Change the sound source with the new page `notification_sound`.
                     audible_notifications.update_notification_sound_source(
-                        $("audio#user-notification-sound-audio"),
+                        "user-notification-sound-audio",
                         user_settings,
                     );
                 }
