@@ -129,7 +129,7 @@ class Migration(migrations.Migration):
     dependencies = [
         (
             "zerver",
-            "0755_usermessage_zerver_usermessage_message_active_mobile_push_notification_idx",
+            "0753_remove_google_blob_emojiset",
         ),
     ]
 

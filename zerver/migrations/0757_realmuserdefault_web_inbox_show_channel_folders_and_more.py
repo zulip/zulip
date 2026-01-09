@@ -5,7 +5,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0756_handle_same_anonymous_group_used_for_multiple_streams"),
+        (
+            "zerver",
+            "0755_usermessage_zerver_usermessage_message_active_mobile_push_notification_idx",
+        ),
     ]
 
     operations = [
