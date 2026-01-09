@@ -312,4 +312,4 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
 ## Related articles
 
 * [Writing bots](/api/writing-bots)
-* [Writing tests for bots](/api/writing-tests-for-interactive-bots)
+* [Writing tests for bots](/help/writing-tests-for-interactive-bots)

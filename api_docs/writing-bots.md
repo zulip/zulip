@@ -128,7 +128,7 @@ Ensure that you restarted the `zulip-run-bot` script.
 ## Related articles
 
 * [Interactive bots API](/api/interactive-bots-api)
-* [Writing tests for bots](/api/writing-tests-for-interactive-bots)
+* [Writing tests for bots](/help/writing-tests-for-interactive-bots)
 * [Running bots](/help/running-bots)
 * [Deploying bots](/help/deploying-bots)
 * [Configuring the Python bindings](/api/configuring-python-bindings)

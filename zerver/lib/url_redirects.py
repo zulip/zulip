@@ -14,6 +14,9 @@ REDIRECTED_TO_HELP_DOCUMENTATION: list[URLRedirect] = [
     URLRedirect("/api/outgoing-webhooks", "/help/outgoing-webhooks"),
     URLRedirect("/api/deploying-bots", "/help/deploying-bots"),
     URLRedirect("/api/running-bots", "/help/running-bots"),
+    URLRedirect(
+        "/api/writing-tests-for-interactive-bots", "/help/writing-tests-for-interactive-bots"
+    ),
 ]
 
 API_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
