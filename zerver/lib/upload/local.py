@@ -48,12 +48,12 @@ def read_local_file(type: Literal["avatars", "files"], path: str) -> Iterator[by
         yield from iter(lambda: f.read(4 * 1024 * 1024), b"")
 
 
-def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
+def delete_local_file(type: Literal["avatars", "files"], path: str) -> None:
     file_path = os.path.join(assert_is_not_none(settings.LOCAL_UPLOADS_DIR), type, path)
     assert_is_local_storage_path(type, file_path)
 
     if not os.path.isfile(file_path):
-        return False
+        return
 
     os.remove(file_path)
 
@@ -65,7 +65,6 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
             directory = os.path.dirname(directory)
         except OSError:
             break
-    return True
 
 
 class LocalUploadBackend(ZulipUploadBackend):
