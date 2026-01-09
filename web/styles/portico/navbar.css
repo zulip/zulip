@@ -448,6 +448,16 @@ details summary::-webkit-details-marker {
     background: hsl(0deg 0% 100% / 10%);
 }
 
+/* We display: block here instead of the default
+   display: list-item largely for the sake of Safari,
+   which as of early 2026 still ignores the ::marker
+   line below. Because we're overriding the default
+   markers on all browsers, this display mode doesn't
+   impact other browsers, either. */
+.top-menu-mobile-item-summary {
+    display: block;
+}
+
 .top-menu-mobile-item-summary::marker {
     content: "";
 }
