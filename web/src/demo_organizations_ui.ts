@@ -33,7 +33,7 @@ export function insert_demo_organization_warning(): void {
     const days_remaining = get_demo_organization_deadline_days_remaining();
     let buttons: ActionButton[] = [
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "demo-organizations-help",
         },
@@ -42,7 +42,7 @@ export function insert_demo_organization_warning(): void {
         buttons = [
             ...buttons,
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Convert"}),
                 custom_classes: "convert-demo-organization",
             },
@@ -74,7 +74,7 @@ export function show_configure_email_banner(): void {
             label: $t({defaultMessage: "Add your email to access this feature."}),
             buttons: [
                 {
-                    attention: "primary",
+                    variant: "solid",
                     label: $t({defaultMessage: "Add"}),
                     custom_classes: "demo-organization-add-email",
                 },

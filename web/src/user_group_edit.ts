@@ -95,7 +95,7 @@ const GROUP_INFO_BANNER: Banner = {
         {
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "banner-external-link",
-            attention: "quiet",
+            variant: "subtle",
         },
     ],
     close_button: false,
@@ -347,13 +347,13 @@ function update_group_membership_button(group_id: number): void {
     if (is_direct_member) {
         $group_settings_button
             .text($t({defaultMessage: "Leave group"}))
-            .removeClass("action-button-quiet-brand")
+            .removeClass("action-button-subtle-brand")
             .addClass("action-button-neutral");
     } else {
         $group_settings_button
             .text($t({defaultMessage: "Join group"}))
-            .removeClass("action-button-quiet-neutral")
-            .addClass("action-button-quiet-brand");
+            .removeClass("action-button-subtle-neutral")
+            .addClass("action-button-subtle-brand");
     }
 
     const can_join_group = settings_data.can_join_user_group(group_id);

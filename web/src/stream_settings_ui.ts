@@ -65,7 +65,7 @@ const STREAM_INFO_BANNER: Banner = {
         {
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "banner-external-link",
-            attention: "quiet",
+            variant: "subtle",
         },
     ],
     close_button: false,
