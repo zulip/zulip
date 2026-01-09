@@ -6,7 +6,7 @@ import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import {$t} from "./i18n.ts";
+import {$t} from "./fake_i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {Message} from "./message_store.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
@@ -17,7 +17,7 @@ import {
     question_schema,
     vote_schema,
 } from "./poll_data.ts";
-import {ZulipWidgetContext} from "./widget_context.ts";
+import {ZulipWidgetContext} from "./fake_widget_context.ts";
 import type {Event} from "./widget_data.ts";
 
 export function activate({
