@@ -80,11 +80,12 @@
         pointer-events: auto;
     }
 }
+
 .no-drafts-action a {
     font-size: 16px;
     font-weight: 400;
-    
 }
+
 .no-drafts-action a:hover {
     text-decoration: underline;
 }
