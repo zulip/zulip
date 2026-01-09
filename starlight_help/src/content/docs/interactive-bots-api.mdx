@@ -1,35 +1,37 @@
-## Interactive bots API
+---
+title: Interactive bots API
+---
 
 This page documents functions available to the bot, and the structure of the
 bot's config file.
 
-With this API, you *can*
+With this API, you can:
 
 * intercept, view, and process messages sent by users on Zulip.
 * send out new messages as replies to the processed messages.
 
-With this API, you *cannot*
+With this API, you cannot:
 
 * modify an intercepted message (you have to send a new message).
 * send messages on behalf of or impersonate other users.
 * intercept direct messages (except for direct messages with the bot as an
-explicit recipient).
+  explicit recipient).
 
 ## usage
 
-*usage(self)*
-
-is called to retrieve information about the bot.
+`usage(self)`: Retrieve information about the bot.
 
 ### Arguments
 
-* self - the instance the method is called on.
+* `self`: The instance the method is called on
 
 ### Return values
 
 * A string describing the bot's functionality
 
 ### Example implementation
+
+From `zulip_bots/bots/followup/followup.py`:
 
 ```python
 def usage(self):
@@ -42,23 +44,21 @@ def usage(self):
         '''
 ```
 
-## handle_message
+## handle\_message
 
-*handle_message(self, message, bot_handler)*
-
-handles user message.
+`handle_message(self, message, bot_handler)`: Handle a Zulip message.
 
 ### Arguments
 
-* self - the instance the method is called on.
+* `self`: The instance the method is called on
 
-* message - a dictionary describing a Zulip message
+* `message`: A dictionary describing a Zulip message
 
-* bot_handler - used to interact with the server, e.g., to send a message
+* `bot_handler`: Used to interact with the server, e.g., to send a message
 
 ### Return values
 
-None.
+* None
 
 ### Example implementation
 
@@ -76,17 +76,16 @@ None.
          content=new_content,
      ))
 ```
-## bot_handler.send_message
 
-*bot_handler.send_message(message)*
+## bot\_handler.send\_message
 
-will send a message as the bot user.  Generally, this is less
-convenient than *send_reply*, but it offers additional flexibility
-about where the message is sent to.
+`bot_handler.send_message(message)`: Send a message as the bot user.
+Generally, this is less convenient than `send_reply`, but it offers
+additional flexibility about where the message is sent to.
 
 ### Arguments
 
-* message - a dictionary describing the message to be sent by the bot
+* `message`: A dictionary describing the message to be sent by the bot
 
 ### Example implementation
 
@@ -99,30 +98,28 @@ bot_handler.send_message(dict(
 ))
 ```
 
-## bot_handler.send_reply
+## bot\_handler.send\_reply
 
-*bot_handler.send_reply(message, response)*
-
-will reply to the triggering message to the same place the original
-message was sent to, with the content of the reply being *response*.
-
-### Arguments
-
-* message - Dictionary containing information on message to respond to
- (provided by `handle_message`).
-* response - Response message from the bot (string).
-
-## bot_handler.update_message
-
-*bot_handler.update_message(message)*
-
-will edit the content of a previously sent message.
+`bot_handler.send_reply(message, response)`: Reply to a Zulip message,
+i.e., the response will be sent to the same place that the original
+Zulip message was sent to.
 
 ### Arguments
 
-* message - dictionary defining what message to edit and the new content
+* `message`: A dictionary containing information on the Zulip message
+  to respond to (provided by `handle_message`)
+* `response`: A string with the response message from the bot
 
-### Example
+## bot\_handler.update\_message
+
+`bot_handler.update_message(message)`: Edit the content of a message
+previously sent by the bot.
+
+### Arguments
+
+* `message`: A dictionary defining what message to edit and the new content
+
+### Example implementation
 
 From `zulip_bots/bots/incrementor/incrementor.py`:
 
@@ -133,7 +130,7 @@ bot_handler.update_message(dict(
 ))
 ```
 
-## bot_handler.storage
+## bot\_handler.storage
 
 A common problem when writing an interactive bot is that you want to
 be able to store a bit of persistent state for the bot (e.g., for an
@@ -150,29 +147,29 @@ an independent storage quota available to it.
 
 You can use `bot_handler.storage` in one of two ways:
 
-- **Direct access**: You can use bot_handler.storage directly, which
-will result in a round-trip to the server for each `get`, `put`, and
-`contains` call.
-- **Context manager**: Alternatively, you can use the `use_storage`
-context manager to minimize the number of round-trips to the server. We
-recommend writing bots with the context manager such that they
-automatically fetch data at the start of `handle_message` and submit the
-state to the server at the end.
+* **Direct access**: You can use bot\_handler.storage directly, which
+  will result in a round-trip to the server for each `get`, `put`, and
+  `contains` call.
+* **Context manager**: Alternatively, you can use the `use_storage`
+  context manager to minimize the number of round-trips to the server. We
+  recommend writing bots with the context manager such that they
+  automatically fetch data at the start of `handle_message` and submit the
+  state to the server at the end.
 
-### Context manager use_storage
+### Context manager use\_storage
 
-`use_storage(storage: BotStorage, keys: List[str])`
-
-The context manager fetches the data for the specified keys and stores
-them in a `CachedStorage` object with a `bot_handler.storage.get` call for
-each key, at the start. This object will not communicate with the server
-until manually calling flush or getting some values that are not previously
+`use_storage(storage: BotStorage, keys: List[str])` : Fetch the data for
+the specified keys via the context manager and store them in a
+`CachedStorage` object with a `bot_handler.storage.get` call for each key,
+at the start. This object will not communicate with the server until
+manually calling `flush` or getting some values that were not previously
 fetched. After the context manager block is exited, it will automatically
 flush any changes made to the `CachedStorage` object to the server.
 
 #### Arguments
-* storage - a BotStorage object, i.e., `bot_handler.storage`
-* keys - a list of keys to fetch
+
+* `storage`: A `BotStorage` object, i.e., `bot_handler.storage`
+* `keys`: A list of keys to fetch
 
 #### Example
 
@@ -183,61 +180,57 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
 # changes are automatically flushed to the server on exiting the block
 ```
 
-### bot_handler.storage methods
+### bot\_handler.storage methods
 
 When using the `use_storage` context manager, the `bot_handler.storage`
 methods on the yielded object will only operate on a cached version of the
 storage.
 
-### bot_handler.storage.put
+#### bot\_handler.storage.put
 
-*bot_handler.storage.put(key, value)*
+`bot_handler.storage.put(key, value)`: Store the value `value` in the
+entry `key`.
 
-will store the value `value` in the entry `key`.
+**Arguments**
 
-#### Arguments
+* `key`: A UTF-8 string
+* `value`: A UTF-8 string
 
-* key - a UTF-8 string
-* value - a UTF-8 string
-
-#### Example
+**Example**
 
 ```python
 bot_handler.storage.put("foo", "bar")  # set entry "foo" to "bar"
 ```
 
-### bot_handler.storage.get
+#### bot\_handler.storage.get
 
-*bot_handler.storage.get(key)*
+`bot_handler.storage.get(key)`: Retrieve the value for the entry
+`key`.
 
-will retrieve the value for the entry `key`.
+**Arguments**
 
-##### Arguments
+* `key`: A UTF-8 string
 
-* key - a UTF-8 string
-
-#### Example
+**Example**
 
 ```python
 bot_handler.storage.put("foo", "bar")
 print(bot_handler.storage.get("foo"))  # print "bar"
 ```
 
-### bot_handler.storage.contains
+#### bot\_handler.storage.contains
 
-*bot_handler.storage.contains(key)*
-
-will check if the entry `key` exists.
+`bot_handler.storage.contains(key)`: Check if the entry `key` exists.
 
 Note that this will only check the cache, so it would return `False` if no
 previous call to `bot_handler.storage.get()` or `bot_handler.storage.put()`
 was made for `key`, since the bot was restarted.
 
-#### Arguments
+**Arguments**
 
-* key - a UTF-8 string
+* `key`: A UTF-8 string
 
-#### Example
+**Example**
 
 ```python
 bot_handler.storage.contains("foo")  # False
@@ -245,7 +238,7 @@ bot_handler.storage.put("foo", "bar")
 bot_handler.storage.contains("foo")  # True
 ```
 
-### bot_handler.storage marshaling
+### bot\_handler.storage marshaling
 
 By default, `bot_handler.storage` accepts any object for keys and
 values, as long as it is JSON-able. Internally, the object then gets
@@ -259,13 +252,12 @@ every call to `put` and `get`, respectively.
 When using the `use_storage` context manager, you can manually flush
 changes made to the cache to the server, using the below methods.
 
-### cache.flush
+#### cache.flush
 
-`cache.flush()`
+`cache.flush()`: Flush all changes to the cache to the server.
 
-will flush all changes to the cache to the server.
+**Example**
 
-#### Example
 ```python
 with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
     cache.put("foo", "foo_value")  # update the value of "foo"
@@ -273,17 +265,17 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
     cache.flush()  # manually flush both the changes to the server
 ```
 
-### cache.flush_one
+#### cache.flush\_one
 
-`cache.flush_one(key)`
+`cache.flush_one(key)`: Flush the changes for the specified key
+to the server.
 
-will flush the changes for the specified key to the server.
+**Arguments**
 
-#### Arguments
+* `key`: A UTF-8 string
 
-- key - a UTF-8 string
+**Example**
 
-#### Example
 ```python
 with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
     cache.put("foo", "baz")  # update the value of "foo"
@@ -300,14 +292,11 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
  site=<dev-url>
 ```
 
-* key - the API key you created for the bot; this is how Zulip knows
-  the request is from an authorized user.
-
-* email - the email address of the bot, e.g., `some-bot@zulip.com`
-
-* site - your development environment URL; if you are working on a
-  development environment hosted on your computer, use
-  `localhost:9991`
+* **key**: The API key for the bot (this is how Zulip knows
+  the request is from an authorized user).
+* **email**: The email address of the bot, e.g., `some-bot@zulip.com`.
+* **site**: Your development environment URL. If you are working on a
+  development environment hosted on your computer, use `localhost:9991`.
 
 ## Related articles
 

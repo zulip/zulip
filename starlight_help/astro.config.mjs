@@ -667,6 +667,7 @@ export default defineConfig({
                         },
                         "view-your-bots",
                         "view-all-bots-in-your-organization",
+                        "interactive-bots-api",
                         "writing-tests-for-interactive-bots",
                         "running-bots",
                         "deploying-bots",

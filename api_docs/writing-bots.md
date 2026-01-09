@@ -75,7 +75,7 @@ class name.
 
 Every bot must implement the `usage(self)` and `handle_message(self, message,
 bot_handler)` functions. They are described in detail in the
-[interactive bots API documentation](/api/interactive-bots-api).
+[interactive bots API documentation](/help/interactive-bots-api).
 
 All the files associated with a bot (e.g., tests, documentation, etc.) should be
 placed in the same directory as `<my-bot>.py`.
@@ -127,7 +127,7 @@ Ensure that you restarted the `zulip-run-bot` script.
 
 ## Related articles
 
-* [Interactive bots API](/api/interactive-bots-api)
+* [Interactive bots API](/help/interactive-bots-api)
 * [Writing tests for bots](/help/writing-tests-for-interactive-bots)
 * [Running bots](/help/running-bots)
 * [Deploying bots](/help/deploying-bots)
