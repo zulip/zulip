@@ -134,126 +134,26 @@ export class PollData {
 
         this.handle = {
             new_option: {
-                outbound: (option: string): NewOption => {
-                    const event = {
-                        type: "new_option",
-                        idx: this.my_idx,
-                        option,
-                    };
-
-                    this.my_idx += 1;
-
-                    return event;
-                },
+                outbound: (option): NewOption => this.new_option_event(option),
 
                 inbound: (sender_id, data) => {
-                    const safe_data = new_option_schema.parse(data);
-
-                    // All message readers may add a new option to the poll.
-                    const idx = safe_data.idx;
-                    const option = safe_data.option;
-                    const options = this.get_widget_data().options;
-
-                    // While the UI doesn't allow adding duplicate options
-                    // to an existing poll, the /poll command syntax to create
-                    // them does not prevent duplicates, so we suppress them here.
-                    if (this.is_option_present(options, option)) {
-                        return;
-                    }
-
-                    if (idx < 0 || idx > MAX_IDX) {
-                        this.report_error_function("poll widget: idx out of bound");
-                        return;
-                    }
-
-                    const key = `${sender_id},${idx}`;
-                    const votes = new Map<number, number>();
-
-                    this.key_to_option.set(key, {
-                        option,
-                        user_id: sender_id,
-                        votes,
-                    });
-
-                    // I may have added a poll option from another device.
-                    if (sender_id === this.me && this.my_idx <= idx) {
-                        this.my_idx = idx + 1;
-                    }
+                    this.handle_new_option_event(sender_id, data);
                 },
             },
 
             question: {
-                outbound: (question: string): Question | undefined => {
-                    const event = {
-                        type: "question",
-                        question,
-                    };
-                    if (this.is_my_poll) {
-                        return event;
-                    }
-                    return undefined;
-                },
+                outbound: (question: string): Question | undefined => this.question_event(question),
 
                 inbound: (sender_id, data) => {
-                    const safe_data = question_schema.parse(data);
-
-                    // Only the message author can edit questions.
-                    if (sender_id !== this.message_sender_id) {
-                        this.report_error_function(
-                            `user ${sender_id} is not allowed to edit the question`,
-                        );
-                        return;
-                    }
-
-                    this.set_question(safe_data.question);
+                    this.handle_question_event(sender_id, data);
                 },
             },
 
             vote: {
-                outbound: (key: string): Vote => {
-                    let vote = 1;
-
-                    // toggle
-                    assert(this.key_to_option.has(key), `option key not found: ${key}`);
-                    if (this.key_to_option.get(key)!.votes.get(this.me)) {
-                        vote = -1;
-                    }
-
-                    const event = {
-                        type: "vote",
-                        key,
-                        vote,
-                    };
-
-                    return event;
-                },
+                outbound: (key: string): Vote => this.vote_event(key),
 
                 inbound: (sender_id, data) => {
-                    const safe_data = vote_schema.parse(data);
-
-                    // All message readers may vote on poll options.
-                    const key = safe_data.key;
-                    const vote = safe_data.vote;
-
-                    if (!(vote === 1 || vote === -1)) {
-                        this.report_error_function("poll widget: bad value for inbound vote count");
-                        return;
-                    }
-
-                    const option = this.key_to_option.get(key);
-
-                    if (option === undefined) {
-                        this.report_error_function("unknown key for poll: " + key);
-                        return;
-                    }
-
-                    const votes = option.votes;
-
-                    if (vote === 1) {
-                        votes.set(sender_id, 1);
-                    } else {
-                        votes.delete(sender_id);
-                    }
+                    this.handle_vote_event(sender_id, data);
                 },
             },
         };
@@ -264,6 +164,122 @@ export class PollData {
                 option,
                 type: "new_option",
             });
+        }
+    }
+
+    new_option_event(option: string): NewOption {
+        const event = {
+            type: "new_option",
+            idx: this.my_idx,
+            option,
+        };
+
+        this.my_idx += 1;
+
+        return event;
+    }
+
+    handle_new_option_event(sender_id: string | number, data: unknown): void {
+        const safe_data = new_option_schema.parse(data);
+
+        // All message readers may add a new option to the poll.
+        const idx = safe_data.idx;
+        const option = safe_data.option;
+        const options = this.get_widget_data().options;
+
+        // While the UI doesn't allow adding duplicate options
+        // to an existing poll, the /poll command syntax to create
+        // them does not prevent duplicates, so we suppress them here.
+        if (this.is_option_present(options, option)) {
+            return;
+        }
+
+        if (idx < 0 || idx > MAX_IDX) {
+            this.report_error_function("poll widget: idx out of bound");
+            return;
+        }
+
+        const key = `${sender_id},${idx}`;
+        const votes = new Map<number, number>();
+
+        this.key_to_option.set(key, {
+            option,
+            user_id: sender_id,
+            votes,
+        });
+
+        // I may have added a poll option from another device.
+        if (sender_id === this.me && this.my_idx <= idx) {
+            this.my_idx = idx + 1;
+        }
+    }
+
+    question_event(question: string): Question | undefined {
+        const event = {
+            type: "question",
+            question,
+        };
+        if (this.is_my_poll) {
+            return event;
+        }
+        return undefined;
+    }
+
+    handle_question_event(sender_id: number, data: unknown): void {
+        const safe_data = question_schema.parse(data);
+
+        // Only the message author can edit questions.
+        if (sender_id !== this.message_sender_id) {
+            this.report_error_function(`user ${sender_id} is not allowed to edit the question`);
+            return;
+        }
+
+        this.set_question(safe_data.question);
+    }
+
+    vote_event(key: string): Vote {
+        let vote = 1;
+
+        // toggle
+        assert(this.key_to_option.has(key), `option key not found: ${key}`);
+        if (this.key_to_option.get(key)!.votes.get(this.me)) {
+            vote = -1;
+        }
+
+        const event = {
+            type: "vote",
+            key,
+            vote,
+        };
+
+        return event;
+    }
+
+    handle_vote_event(sender_id: number, data: unknown): void {
+        const safe_data = vote_schema.parse(data);
+
+        // All message readers may vote on poll options.
+        const key = safe_data.key;
+        const vote = safe_data.vote;
+
+        if (!(vote === 1 || vote === -1)) {
+            this.report_error_function("poll widget: bad value for inbound vote count");
+            return;
+        }
+
+        const option = this.key_to_option.get(key);
+
+        if (option === undefined) {
+            this.report_error_function("unknown key for poll: " + key);
+            return;
+        }
+
+        const votes = option.votes;
+
+        if (vote === 1) {
+            votes.set(sender_id, 1);
+        } else {
+            votes.delete(sender_id);
         }
     }
 
