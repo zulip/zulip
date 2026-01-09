@@ -106,7 +106,7 @@ export function activate({
         }
 
         // Broadcast the new question to our peers.
-        const data = poll_data.handle.question.outbound(new_question);
+        const data = poll_data.question_event(new_question);
         if (data) {
             callback(data);
         }
@@ -127,12 +127,12 @@ export function activate({
 
         $poll_option_input.val("").trigger("focus");
 
-        const data = poll_data.handle.new_option.outbound(option);
+        const data = poll_data.new_option_event(option);
         callback(data);
     }
 
     function submit_vote(key: string): void {
-        const data = poll_data.handle.vote.outbound(key);
+        const data = poll_data.vote_event(key);
         callback(data);
     }
 

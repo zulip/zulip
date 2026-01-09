@@ -145,7 +145,7 @@ run_test("PollData my question", () => {
     data_holder.handle_event(me.user_id, invalid_vote_event);
     data = data_holder.get_widget_data();
 
-    const option_outbound_event = data_holder.handle.new_option.outbound("new option");
+    const option_outbound_event = data_holder.new_option_event("new option");
     assert.deepEqual(option_outbound_event, {
         type: "new_option",
         idx: 2,
@@ -153,13 +153,13 @@ run_test("PollData my question", () => {
     });
 
     const new_question = "Any new plan?";
-    const question_outbound_event = data_holder.handle.question.outbound(new_question);
+    const question_outbound_event = data_holder.question_event(new_question);
     assert.deepEqual(question_outbound_event, {
         type: "question",
         question: new_question,
     });
 
-    const vote_outbound_event = data_holder.handle.vote.outbound("99,1");
+    const vote_outbound_event = data_holder.vote_event("99,1");
     assert.deepEqual(vote_outbound_event, {type: "vote", key: "99,1", vote: -1});
 
     vote_event = {
