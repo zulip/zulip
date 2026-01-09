@@ -1309,6 +1309,26 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "DMs with Cordelia, Lear's daughter"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
+    def test_group_dm_link_in_missed_message(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+
+        msg_id = self.send_group_direct_message(
+            cordelia,
+            [hamlet, aaron, cordelia],
+            "Group DM link in email notifications",
+        )
+
+        other_users = sorted([aaron, cordelia], key=lambda user: user.id)
+        encoded_user_ids = ",".join([str(user.id) for user in other_users])
+        verify_body_include = [
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/dm/{encoded_user_ids}-group"
+        ]
+        group_display_name = " and ".join([user.full_name for user in other_users])
+        email_subject = "Group DMs with " + group_display_name
+        self._test_cases(msg_id, verify_body_include, email_subject)
+
     def test_sender_name_in_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
         msg_id_1 = self.send_stream_message(
