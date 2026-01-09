@@ -581,15 +581,15 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
                     })
                     .safeParse(xhr?.responseJSON);
 
-                const error_message = people.is_my_user_id(user_id)
-                    ? $t(
+                const error_message_html = people.is_my_user_id(user_id)
+                    ? $t_html(
                           {defaultMessage: "Error joining {group_name}: {error}"},
                           {
                               group_name: target_user_group.name,
                               error: parsed.success ? parsed.data.msg : "Unknown error",
                           },
                       )
-                    : $t(
+                    : $t_html(
                           {defaultMessage: "Error adding user to {group_name}: {error}"},
                           {
                               group_name: target_user_group.name,
@@ -597,7 +597,7 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
                           },
                       );
 
-                ui_report.client_error(error_message, $alert_box);
+                ui_report.client_error(error_message_html, $alert_box);
                 clear_successful_pills();
             },
         });
@@ -1334,20 +1334,20 @@ export function initialize(): void {
 
         function removal_failure(): void {
             assert(sub !== undefined);
-            let error_message;
+            let error_message_html;
             if (people.is_my_user_id(target_user_id)) {
-                error_message = $t(
+                error_message_html = $t_html(
                     {defaultMessage: "Error in unsubscribing from #{channel_name}"},
                     {channel_name: sub.name},
                 );
             } else {
-                error_message = $t(
+                error_message_html = $t_html(
                     {defaultMessage: "Error removing user from #{channel_name}"},
                     {channel_name: sub.name},
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            ui_report.client_error(error_message_html, $alert_box, 1200);
         }
         assert(sub !== undefined);
         if (
@@ -1378,21 +1378,21 @@ export function initialize(): void {
         }
 
         function removal_failure(): void {
-            let error_message;
+            let error_message_html;
             const group_name = user_groups.get_display_group_name(target_user_group.name);
             if (people.is_my_user_id(target_user_id)) {
-                error_message = $t(
+                error_message_html = $t_html(
                     {defaultMessage: "Error leaving group {group_name}"},
                     {group_name},
                 );
             } else {
-                error_message = $t(
+                error_message_html = $t_html(
                     {defaultMessage: "Error removing user from group {group_name}"},
                     {group_name},
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            ui_report.client_error(error_message_html, $alert_box, 1200);
         }
 
         user_group_edit_members.edit_user_group_membership({
