@@ -324,6 +324,7 @@ export const unread_direct_message_group_info_schema = z.object({
 export const presence_schema = z.object({
     active_timestamp: z.optional(z.number()),
     idle_timestamp: z.optional(z.number()),
+    is_bot: z.optional(z.boolean()),
 });
 
 export const realm_billing_schema = z.object({
@@ -619,6 +620,28 @@ export const split_state_data_schema = z.object({
     emoji: z.object({realm_emoji: realm_emoji_map_schema}),
     realm_billing: z.object({realm_billing: realm_billing_schema}),
     bot: z.object({realm_bots: z.array(server_add_bot_schema)}),
+    bot_commands: z.object({
+        bot_commands: z.array(
+            z.object({
+                id: z.number(),
+                name: z.string(),
+                description: z.string(),
+                options: z.array(
+                    z.object({
+                        name: z.string(),
+                        type: z.string(),
+                        description: z.optional(z.string()),
+                        required: z.optional(z.boolean()),
+                        choices: z.optional(
+                            z.array(z.object({name: z.string(), value: z.string()})),
+                        ),
+                    }),
+                ),
+                bot_id: z.number(),
+                bot_name: z.string(),
+            }),
+        ),
+    }),
     people: z.object({
         realm_users: z.array(user_schema),
         realm_non_active_users: z.array(user_schema),

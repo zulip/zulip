@@ -2071,3 +2071,254 @@ textarea.new_message_textarea {
         overflow: hidden !important;
     }
 }
+
+/* Command Compose Mode - Discord-style inline textual display */
+.command-compose-container {
+    min-height: 1.5em;
+    padding: 5px 5px 0;
+    background-color: var(--color-compose-message-content-background);
+    border-radius: 3px 3px 0 0;
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+}
+
+.command-compose-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0;
+}
+
+/* The invocation block containing /command and fields */
+.command-invocation-block {
+    display: inline-flex;
+    align-items: baseline;
+    background-color: hsl(235deg 86% 65% / 8%);
+    border-radius: 3px;
+    padding: 1px 4px;
+    margin-right: 4px;
+}
+
+.command-slash {
+    color: hsl(235deg 86% 65%);
+    font-weight: 600;
+}
+
+.command-name-text {
+    color: hsl(235deg 86% 65%);
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.command-name-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    font-weight: 600;
+    color: hsl(235deg 86% 65%);
+    min-width: 30px;
+    width: auto;
+
+    &::placeholder {
+        color: hsl(235deg 86% 65% / 50%);
+    }
+}
+
+/* Inline fields - subtle separators */
+.command-field-inline {
+    display: inline-flex;
+    align-items: baseline;
+    margin-left: 6px;
+    position: relative;
+
+    /* Subtle separator before each field */
+    &::before {
+        content: "";
+        position: absolute;
+        left: -4px;
+        top: 20%;
+        height: 60%;
+        width: 1px;
+        background-color: hsl(0deg 0% 70% / 40%);
+    }
+}
+
+.field-placeholder {
+    color: hsl(0deg 0% 55%);
+    font-style: italic;
+    cursor: pointer;
+    padding: 0 2px;
+    border-radius: 2px;
+
+    &:hover {
+        background-color: hsl(0deg 0% 0% / 5%);
+    }
+}
+
+.field-value-text {
+    color: var(--color-text-default);
+    cursor: pointer;
+    padding: 0 2px;
+    border-radius: 2px;
+
+    &:hover {
+        background-color: hsl(0deg 0% 0% / 5%);
+    }
+}
+
+.command-field-input-inline {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 0 2px;
+    font-size: inherit;
+    font-family: inherit;
+    color: var(--color-text-default);
+    min-width: 40px;
+    width: auto;
+    border-bottom: 1px solid hsl(235deg 86% 65% / 50%);
+
+    &::placeholder {
+        color: hsl(0deg 0% 55%);
+        font-style: italic;
+    }
+
+    &:focus {
+        border-bottom-color: hsl(235deg 86% 65%);
+    }
+}
+
+/* Select dropdown for options with choices */
+.command-field-select-inline {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 0 2px;
+    font-size: inherit;
+    font-family: inherit;
+    color: var(--color-text-default);
+    min-width: 80px;
+    border-bottom: 1px solid hsl(235deg 86% 65% / 50%);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    background-size: 10px;
+    padding-right: 14px;
+
+    &:focus {
+        border-bottom-color: hsl(235deg 86% 65%);
+    }
+
+    option {
+        background: var(--color-background-widget-input);
+        color: var(--color-text-default);
+    }
+}
+
+/* Trailing text area */
+.command-trailing-text {
+    color: var(--color-text-default);
+    cursor: pointer;
+    padding: 0 2px;
+
+    &:hover {
+        background-color: hsl(0deg 0% 0% / 5%);
+        border-radius: 2px;
+    }
+}
+
+.command-trailing-placeholder {
+    /* Invisible but clickable area to add trailing text */
+    flex: 1;
+    min-width: 100px;
+    min-height: 1em;
+    cursor: text;
+}
+
+.command-trailing-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 0 2px;
+    font-size: inherit;
+    font-family: inherit;
+    color: var(--color-text-default);
+    flex: 1;
+    min-width: 100px;
+
+    &::placeholder {
+        color: hsl(0deg 0% 60%);
+        font-style: italic;
+    }
+}
+
+/* Description footer for current field */
+.command-field-description {
+    margin-top: 4px;
+    padding: 2px 6px;
+    font-size: 0.85em;
+    color: hsl(0deg 0% 50%);
+    border-left: 2px solid hsl(235deg 86% 65% / 30%);
+}
+
+/* Validation error state */
+.command-field-inline.validation-error,
+.command-name-input.validation-error,
+.command-name-text.validation-error {
+    animation: command-shake 0.3s ease-in-out;
+}
+
+.command-field-inline.validation-error .command-field-input-inline,
+.command-field-inline.validation-error .command-field-select-inline,
+.command-field-inline.validation-error .field-placeholder {
+    border-bottom-color: hsl(0deg 70% 55%);
+    color: hsl(0deg 70% 55%);
+}
+
+@keyframes command-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-3px);
+    }
+
+    75% {
+        transform: translateX(3px);
+    }
+}
+
+/* Sending state - disable inputs and show visual feedback */
+.command-compose-container.sending {
+    opacity: 0.7;
+    pointer-events: none;
+
+    input,
+    select {
+        cursor: not-allowed;
+    }
+}
+
+/* Unfilled required field - persistent visual indicator */
+.command-field-inline.unfilled-required .field-placeholder {
+    color: hsl(0deg 70% 50%);
+    border-bottom-color: hsl(0deg 70% 50%);
+}
+
+.command-field-inline.unfilled-required .command-field-input-inline,
+.command-field-inline.unfilled-required .command-field-select-inline {
+    border-bottom-color: hsl(0deg 70% 50%);
+}

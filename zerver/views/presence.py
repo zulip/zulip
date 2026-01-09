@@ -219,3 +219,26 @@ def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> H
     # We're not interested in the last_update_id field in this context.
     data.pop("presence_last_update_id", None)
     return json_success(request, data=data)
+
+
+@typed_endpoint
+def update_bot_presence_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    is_connected: Json[bool],
+) -> HttpResponse:
+    """API endpoint for bots to update their presence status.
+
+    This is primarily for webhook bots or other bots that don't maintain
+    a persistent event queue connection. Bots with event queues have their
+    presence updated automatically.
+    """
+    from zerver.actions.bot_presence import do_update_bot_presence
+
+    if not user_profile.is_bot:
+        raise JsonableError(_("This endpoint is only for bots."))
+
+    do_update_bot_presence(user_profile, is_connected)
+
+    return json_success(request)

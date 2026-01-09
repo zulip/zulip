@@ -45,6 +45,14 @@ from zerver.views.auth import (
     start_social_login,
     start_social_signup,
 )
+from zerver.views.bot_commands import (
+    delete_bot_command,
+    get_command_autocomplete,
+    invoke_bot_command,
+    list_bot_commands,
+    register_bot_command,
+)
+from zerver.views.bot_interactions import handle_bot_interaction
 from zerver.views.channel_folders import (
     create_channel_folder,
     get_channel_folders,
@@ -105,6 +113,7 @@ from zerver.views.presence import (
     get_status_backend,
     get_statuses_for_realm,
     update_active_status_backend,
+    update_bot_presence_backend,
     update_user_status_admin,
     update_user_status_backend,
 )
@@ -211,7 +220,7 @@ from zerver.views.streams import (
     update_subscriptions_backend,
     update_subscriptions_property,
 )
-from zerver.views.submessage import process_submessage
+from zerver.views.submessage import delete_submessage, process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
 from zerver.views.tusd import handle_tusd_hook
 from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
@@ -440,7 +449,9 @@ v1_api_and_json_patterns = [
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
     rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
-    rest_path("submessage", POST=process_submessage),
+    rest_path("submessage", POST=process_submessage, DELETE=delete_submessage),
+    # Bot interactions endpoint for widget callbacks
+    rest_path("bot_interactions", POST=handle_bot_interaction),
     # New endpoint for handling reactions.
     # reactions -> zerver.view.reactions
     # POST adds a reaction to a message
@@ -466,6 +477,11 @@ v1_api_and_json_patterns = [
     ),
     # bot_storage -> zerver.views.storage
     rest_path("bot_storage", PUT=update_storage, GET=get_storage, DELETE=remove_storage),
+    # bot_commands -> zerver.views.bot_commands
+    rest_path("bot_commands", GET=list_bot_commands, POST=register_bot_command),
+    rest_path("bot_commands/<int:command_id>", DELETE=delete_bot_command),
+    rest_path("bot_commands/<int:bot_id>/autocomplete", GET=get_command_autocomplete),
+    rest_path("bot_commands/invoke", POST=invoke_bot_command),
     # Endpoint used by mobile devices to register their push
     # notification credentials
     rest_path(
@@ -484,6 +500,7 @@ v1_api_and_json_patterns = [
     # /users/me/presence endpoint.
     rest_path("users/<user_id_or_email>/presence", GET=get_presence_backend),
     rest_path("realm/presence", GET=get_statuses_for_realm),
+    rest_path("bots/me/presence", POST=update_bot_presence_backend),
     rest_path("users/me/status", POST=update_user_status_backend),
     rest_path("users/<int:user_id>/status", POST=update_user_status_admin, GET=get_status_backend),
     # user_groups -> zerver.views.user_groups

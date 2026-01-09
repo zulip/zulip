@@ -6,7 +6,11 @@ export {set_wildcard_mention_threshold, wildcard_mention_threshold} from "./comp
 export {private_message_recipient_emails} from "./compose_state.ts";
 export {current as current_msg_list} from "./message_lists.ts";
 export {get_stream_id, get_sub, get_subscriber_count} from "./stream_data.ts";
-export {get_by_user_id as get_person_by_user_id, get_user_id_from_name} from "./people.ts";
+export {
+    get_by_user_id as get_person_by_user_id,
+    get_user_id_from_name,
+    get_bot_ids,
+} from "./people.ts";
 export {last_visible as last_visible_row, id as row_id} from "./rows.ts";
 export {cancel as cancel_compose} from "./compose_actions.ts";
 export {page_params, page_params_parse_time} from "./base_page_params.ts";
@@ -15,3 +19,12 @@ export {page_load_time} from "./setup.ts";
 export {current_user, realm} from "./state_data.ts";
 export {add_user_id_to_new_stream} from "./stream_create_subscribers.ts";
 export {get as get_message} from "./message_store.ts";
+export {
+    is_bot_connected,
+    update_info_from_event as update_presence,
+    presence_info,
+} from "./presence.ts";
+export {redraw as redraw_buddy_list} from "./activity_ui.ts";
+export {get_user_circle_class} from "./buddy_data.ts";
+export {get_commands as get_bot_commands} from "./bot_command_store.ts";
+export {get as get_bot, get_all_bots_for_current_user} from "./bot_data.ts";

@@ -19,3 +19,7 @@
 .user-circle-deactivated {
     color: var(--color-user-circle-deactivated);
 }
+
+.user-circle-bot {
+    color: var(--color-user-circle-bot);
+}

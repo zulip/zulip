@@ -411,6 +411,11 @@ export function initialize_right_sidebar(): void {
         buddy_list.toggle_other_users_section();
     });
 
+    $("#buddy-list-bots-container").on("click", ".buddy-list-subsection-header", (e) => {
+        e.stopPropagation();
+        buddy_list.toggle_bots_section();
+    });
+
     function close_buddy_list_popover(): void {
         if (popover_menus.popover_instances.buddy_list !== null) {
             popover_menus.popover_instances.buddy_list.destroy();

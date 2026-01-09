@@ -6,6 +6,8 @@ import * as z from "zod/mini";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
+import * as channel from "./channel.ts";
+import * as command_compose from "./command_compose.ts";
 import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -45,6 +47,24 @@ import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 import * as widget_modal from "./widget_modal.ts";
 
+/**
+ * Generate a UUID v4 for idempotency keys.
+ * Uses crypto.randomUUID() if available, otherwise falls back to manual generation.
+ */
+function generate_uuid(): string {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // Fallback for environments without crypto.randomUUID
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    // Set version (4) and variant bits
+    bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+    bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+    const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 export function abort_xhr(): void {
     upload.compose_upload_cancel();
 }
@@ -61,6 +81,79 @@ function setup_compose_actions_hooks(): void {
 export function initialize(): void {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
+
+    // Set up command compose mode callback - when user sends a command,
+    // call the invoke_bot_command API with structured data
+    command_compose.on_send((command_name, args) => {
+        // Get the destination from compose state
+        const message_type = compose_state.get_message_type();
+
+        // Generate idempotency key to prevent duplicate submissions
+        // Use crypto.randomUUID if available, otherwise generate manually
+        const idempotency_key = generate_uuid();
+
+        // Build the API request data
+        const data: Record<string, string> = {
+            command_name,
+            arguments: JSON.stringify(args),
+            idempotency_key,
+        };
+
+        let has_destination = false;
+
+        if (message_type === "stream") {
+            const stream_id = compose_state.stream_id();
+            const topic = compose_state.topic();
+            // Empty topic is valid for "general chat" channels
+            if (stream_id !== undefined) {
+                data["stream_id"] = JSON.stringify(stream_id);
+                data["topic"] = topic;  // Can be empty string for general chat
+                has_destination = true;
+            }
+        } else if (message_type === "private") {
+            const recipient_ids = compose_state.private_message_recipient_ids();
+            if (recipient_ids.length > 0) {
+                data["to"] = JSON.stringify(recipient_ids);
+                has_destination = true;
+            }
+        }
+
+        if (!has_destination) {
+            compose_banner.show_error_message(
+                "Please select a channel and topic first",
+                compose_banner.CLASSNAMES.generic_compose_error,
+                $("#compose_banners"),
+                $("textarea#compose-textarea"),
+            );
+            return;
+        }
+
+        // Show spinner and disable inputs while sending
+        compose_ui.show_compose_spinner();
+        command_compose.set_sending(true);
+
+        void channel.post({
+            url: "/json/bot_commands/invoke",
+            data,
+            success(_response) {
+                // Command sent successfully - clear compose box
+                command_compose.set_sending(false);
+                compose.clear_compose_box();
+                compose_ui.hide_compose_spinner();
+            },
+            error(xhr) {
+                command_compose.set_sending(false);
+                compose_ui.hide_compose_spinner();
+                const response = channel.xhr_error_message("Error invoking command", xhr);
+                compose_banner.show_error_message(
+                    response,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $("#compose_banners"),
+                    $("textarea#compose-textarea"),
+                );
+            },
+        });
+    });
 
     $(".compose-control-buttons-container .video_link").toggle(
         compose_call.compute_show_video_chat_button(),

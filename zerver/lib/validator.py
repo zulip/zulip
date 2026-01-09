@@ -468,6 +468,158 @@ def check_widget_content(widget_content: object) -> dict[str, Any]:
 
         raise ValidationError("unknown zform type: " + extra_data["type"])
 
+    if widget_type == "rich_embed":
+        # Discord-style rich embed
+        # All fields are optional except we need at least one of title/description
+        check_embed_field = check_dict(
+            [
+                ("name", check_string),
+                ("value", check_string),
+            ],
+            [
+                ("inline", check_bool),
+            ],
+        )
+        check_embed_footer = check_dict(
+            [("text", check_string)],
+            [("icon_url", check_string)],
+        )
+        check_embed_media = check_dict(
+            [("url", check_string)],
+        )
+        check_embed_author = check_dict(
+            [("name", check_string)],
+            [("url", check_string), ("icon_url", check_string)],
+        )
+
+        checker = check_dict(
+            [],  # No required fields
+            [
+                ("title", check_string),
+                ("description", check_string),
+                ("url", check_string),
+                ("color", check_int),
+                ("timestamp", check_string),
+                ("footer", check_embed_footer),
+                ("thumbnail", check_embed_media),
+                ("image", check_embed_media),
+                ("author", check_embed_author),
+                ("fields", check_list(check_embed_field)),
+            ],
+        )
+        checker("extra_data", extra_data)
+
+        # Require at least title or description
+        if "title" not in extra_data and "description" not in extra_data:
+            raise ValidationError("rich_embed requires at least title or description")
+
+        return widget_content
+
+    if widget_type == "interactive":
+        # Interactive components (buttons, select menus)
+        check_button = check_dict(
+            [
+                ("type", equals("button")),
+                ("label", check_string),
+            ],
+            [
+                ("style", check_string_in(["primary", "secondary", "success", "danger", "link"])),
+                ("custom_id", check_string),
+                ("url", check_string),
+                ("disabled", check_bool),
+            ],
+        )
+        check_select_option = check_dict(
+            [
+                ("label", check_string),
+                ("value", check_string),
+            ],
+            [
+                ("description", check_string),
+                ("default", check_bool),
+            ],
+        )
+        check_select_menu = check_dict(
+            [
+                ("type", equals("select_menu")),
+                ("custom_id", check_string),
+                ("options", check_list(check_select_option)),
+            ],
+            [
+                ("placeholder", check_string),
+                ("min_values", check_int),
+                ("max_values", check_int),
+                ("disabled", check_bool),
+            ],
+        )
+
+        def check_component(var_name: str, val: object) -> object:
+            if not isinstance(val, dict):
+                raise ValidationError(f"{var_name} is not a dict")
+            comp_type = val.get("type")
+            if comp_type == "button":
+                check_button(var_name, val)
+            elif comp_type == "select_menu":
+                check_select_menu(var_name, val)
+            else:
+                raise ValidationError(f"Unknown component type: {comp_type}")
+            return val
+
+        check_action_row = check_dict(
+            [
+                ("type", equals("action_row")),
+                ("components", check_list(check_component)),
+            ],
+        )
+
+        checker = check_dict(
+            [
+                ("components", check_list(check_action_row)),
+            ],
+            [
+                ("content", check_string),
+            ],
+        )
+        checker("extra_data", extra_data)
+        return widget_content
+
+    if widget_type == "freeform":
+        # Freeform HTML/JS/CSS widget (trusted bots only)
+        # Dependencies are external scripts/styles to load (shared across widgets)
+        dependency_checker = check_dict(
+            [
+                ("url", check_string),
+                ("type", check_string_in(["script", "style"])),
+            ],
+        )
+        checker = check_dict(
+            [("html", check_string)],
+            [
+                ("css", check_string),
+                ("js", check_string),
+                ("dependencies", check_list(dependency_checker)),
+            ],
+        )
+        checker("extra_data", extra_data)
+        return widget_content
+
+    if widget_type == "command_invocation":
+        # Bot slash command invocation display
+        checker = check_dict(
+            [
+                ("command_name", check_string),
+                ("arguments", check_dict([], value_validator=check_string)),
+                ("bot_id", check_int),
+                ("bot_name", check_string),
+                ("interaction_id", check_string),
+            ],
+            [
+                ("status", check_string_in(["pending", "responding", "complete"])),
+            ],
+        )
+        checker("extra_data", extra_data)
+        return widget_content
+
     raise ValidationError("unknown widget type: " + widget_type)
 
 

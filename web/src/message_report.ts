@@ -75,6 +75,7 @@ function get_message_container_for_preview(message: Message): MessageContainer {
         sender_is_bot: people.sender_is_bot(message),
         sender_is_deactivated: people.sender_is_deactivated(message),
         sender_is_guest: people.sender_is_guest(message),
+        sender_color: people.get_by_user_id(message.sender_id)?.color ?? null,
         should_add_guest_indicator_for_sender: people.should_add_guest_user_indicator(
             message.sender_id,
         ),

@@ -18,6 +18,7 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
+import * as bot_command_store from "./bot_command_store.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
@@ -459,6 +460,7 @@ export async function initialize_everything(state_data) {
     }
     thumbnail.initialize();
     widgets.initialize();
+    bot_command_store.initialize(state_data.bot_commands.bot_commands ?? []);
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();

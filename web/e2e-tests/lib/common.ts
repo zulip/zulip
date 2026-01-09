@@ -72,7 +72,28 @@ export const window_size = {
     height: 1024,
 };
 
+function get_chromium_executable_path(): string | undefined {
+    // On ARM systems, Puppeteer's Chromium may not work, so use Playwright's Chromium
+    const arch = process.arch;
+    if (arch === "arm64") {
+        // Try Playwright's Chromium first (installed via pnpm playwright install chromium)
+        const playwright_chrome =
+            "/home/vagrant/.cache/ms-playwright/chromium-1200/chrome-linux/chrome";
+        if (fs.existsSync(playwright_chrome)) {
+            return playwright_chrome;
+        }
+        // Fall back to system chromium
+        const system_chromium = "/usr/bin/chromium-browser";
+        if (fs.existsSync(system_chromium)) {
+            return system_chromium;
+        }
+    }
+    // Use Puppeteer's default on other architectures
+    return undefined;
+}
+
 export async function ensure_browser(): Promise<Browser> {
+    const executablePath = get_chromium_executable_path();
     browser ??= await puppeteer.launch({
         args: [
             `--window-size=${window_size.width},${window_size.height}`,
@@ -83,6 +104,7 @@ export async function ensure_browser(): Promise<Browser> {
         // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
         defaultViewport: null,
         headless: true,
+        ...(executablePath ? {executablePath} : {}),
     });
     return browser;
 }

@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import CASCADE
+from typing_extensions import override
 
 from zerver.models.users import UserProfile
 
@@ -78,3 +79,27 @@ class BotConfigData(models.Model):
 
     class Meta:
         unique_together = ("bot_profile", "key")
+
+
+class BotCommand(models.Model):
+    """A slash command registered by a bot for autocomplete in the compose box."""
+
+    bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="bot_commands")
+    realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE, related_name="bot_commands")
+    name = models.CharField(max_length=32)  # e.g., "weather"
+    description = models.TextField(max_length=100)
+    # JSON schema for command options:
+    # [{"name": "location", "type": "string", "description": "...", "required": true, "choices": [...]}]
+    options_schema = models.JSONField(default=list)
+
+    class Meta:
+        unique_together = ("realm", "name")
+
+    @override
+    def __str__(self) -> str:
+        return f"/{self.name} ({self.bot_profile.full_name})"
+
+
+def get_bot_commands_for_realm(realm_id: int) -> list["BotCommand"]:
+    """Get all bot commands registered for a realm."""
+    return list(BotCommand.objects.filter(realm_id=realm_id).select_related("bot_profile"))

@@ -6,6 +6,7 @@ import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as bot_command_store from "./bot_command_store.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
@@ -74,10 +75,68 @@ type SlashCommand = {
     text: string;
     name: string;
     info: string;
-    aliases: NamedCurve;
+    aliases: string;
     placeholder?: string;
 };
-export type SlashCommandSuggestion = SlashCommand & {type: "slash"};
+export type SlashCommandSuggestion = SlashCommand & {type: "slash" | "slash_option"};
+
+// Helper type for parsing command options
+type CommandOptionContext = {
+    current_option: {
+        name: string;
+        type: string;
+        description?: string;
+        required?: boolean;
+        choices?: Array<{name: string; value: string}>;
+    };
+    partial_value: string;
+    completed_options: Record<string, string>;
+};
+
+/**
+ * Parse command arguments to determine which option we're currently typing.
+ *
+ * For example, with a command like `/look at sword armor`,
+ * if the command has options [target, secondary], this determines
+ * that we're typing the "secondary" option with value "armor".
+ */
+function parse_command_options(
+    command: bot_command_store.BotCommand,
+    args_text: string,
+): CommandOptionContext | null {
+    // Simple positional argument parsing
+    // Split by spaces, last non-empty segment is what we're typing
+    const parts = args_text.split(/\s+/);
+    const option_index = parts.length - 1;
+
+    // If we're past the number of options, no autocomplete
+    if (option_index >= command.options.length) {
+        return null;
+    }
+
+    const current_option = command.options[option_index];
+    if (!current_option) {
+        return null;
+    }
+
+    // The partial value is the last part (what user is currently typing)
+    const partial_value = parts[option_index] ?? "";
+
+    // Track completed options
+    const completed_options: Record<string, string> = {};
+    for (let i = 0; i < option_index; i++) {
+        const opt = command.options[i];
+        if (opt && parts[i]) {
+            completed_options[opt.name] = parts[i];
+        }
+    }
+
+    return {
+        current_option,
+        partial_value,
+        completed_options,
+    };
+}
 
 export type LanguageSuggestion = {
     language: string;
@@ -972,22 +1031,99 @@ export function get_candidates(
     }
 
     function get_slash_commands_data(): SlashCommand[] {
-        const commands = page_params.development_environment ? all_slash_commands : slash_commands;
-        return commands;
+        const built_in_commands = page_params.development_environment
+            ? all_slash_commands
+            : slash_commands;
+
+        // Convert bot commands to SlashCommand format
+        const bot_commands: SlashCommand[] = bot_command_store.get_commands().map((cmd) => ({
+            text: `/${cmd.name}`,
+            name: cmd.name,
+            info: `${cmd.description} (${cmd.bot_name})`,
+            aliases: "",
+        }));
+
+        return [...built_in_commands, ...bot_commands];
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.slash && current_token.startsWith("/")) {
         current_token = current_token.slice(1);
 
-        completing = "slash";
-        token = current_token;
-        const matcher = get_slash_matcher(token);
-        const matches = get_slash_commands_data().filter((item) => matcher(item));
-        const matches_list: SlashCommandSuggestion[] = matches.map((slash_command) => ({
-            ...slash_command,
-            type: "slash",
-        }));
-        return typeahead_helper.sort_slash_commands(matches_list, token);
+        // Check if we're typing command name or option values
+        const space_index = current_token.indexOf(" ");
+        if (space_index === -1) {
+            // Still typing command name - show command suggestions
+            completing = "slash";
+            token = current_token;
+            const matcher = get_slash_matcher(token);
+            const matches = get_slash_commands_data().filter((item) => matcher(item));
+            const matches_list: SlashCommandSuggestion[] = matches.map((slash_command) => ({
+                ...slash_command,
+                type: "slash",
+            }));
+            return typeahead_helper.sort_slash_commands(matches_list, token);
+        }
+
+        // We have a space - check if this is a bot command with options
+        const command_name = current_token.slice(0, space_index);
+        const bot_command = bot_command_store.get_command_by_name(command_name);
+
+        if (bot_command && bot_command.options.length > 0) {
+            // This is a bot command with options - try to provide option autocomplete
+            const args_text = current_token.slice(space_index + 1);
+            const option_context = parse_command_options(bot_command, args_text);
+
+            if (option_context && option_context.current_option) {
+                // We're typing an option value - get suggestions
+                completing = "slash_option";
+                token = option_context.partial_value;
+
+                // Get static choices from the option schema
+                const static_choices = option_context.current_option.choices ?? [];
+                const static_matches: SlashCommandSuggestion[] = static_choices
+                    .filter((c) => c.name.toLowerCase().includes(token.toLowerCase()))
+                    .map((choice) => ({
+                        text: choice.name,
+                        name: choice.value,
+                        info: "",
+                        aliases: "",
+                        type: "slash_option" as const,
+                    }));
+
+                // Fetch dynamic suggestions in background
+                const dynamic_choices = bot_command_store.get_option_suggestions_sync(
+                    bot_command.bot_id,
+                    command_name,
+                    option_context.current_option.name,
+                    token,
+                );
+
+                const dynamic_matches: SlashCommandSuggestion[] = dynamic_choices
+                    .filter((c) => c.label.toLowerCase().includes(token.toLowerCase()))
+                    .map((choice) => ({
+                        text: choice.label,
+                        name: choice.value,
+                        info: "",
+                        aliases: "",
+                        type: "slash_option" as const,
+                    }));
+
+                // Combine and dedupe by value
+                const seen = new Set<string>();
+                const combined: SlashCommandSuggestion[] = [];
+                for (const match of [...static_matches, ...dynamic_matches]) {
+                    if (!seen.has(match.name)) {
+                        seen.add(match.name);
+                        combined.push(match);
+                    }
+                }
+
+                return combined;
+            }
+        }
+
+        // No option autocomplete available - fall back to no suggestions
+        return [];
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.topic) {

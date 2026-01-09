@@ -36,6 +36,7 @@ def get_presence_dicts_for_rows(
 
     for presence_row in all_rows:
         user_key = get_user_key(presence_row)
+        is_bot = presence_row.get("user_profile__is_bot", False)
 
         last_active_time = user_presence_datetime_with_date_joined_default(
             presence_row["last_active_time"], presence_row["user_profile__date_joined"]
@@ -48,6 +49,8 @@ def get_presence_dicts_for_rows(
             last_active_time,
             last_connected_time,
         )
+        if is_bot:
+            info["is_bot"] = True
         user_statuses[user_key] = info
 
     return user_statuses
@@ -185,7 +188,6 @@ def get_presence_dict_by_realm(
         query = UserPresence.objects.filter(
             realm_id=realm.id,
             user_profile__is_active=True,
-            user_profile__is_bot=False,
             **kwargs,
         )
     else:
@@ -210,6 +212,7 @@ def get_presence_dict_by_realm(
             "user_profile_id",
             "user_profile__enable_offline_push_notifications",
             "user_profile__date_joined",
+            "user_profile__is_bot",
             "last_update_id",
         )
     )

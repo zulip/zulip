@@ -1,0 +1,14 @@
+<div class="ephemeral-response" data-submessage-id="{{submessage_id}}">
+    <div class="ephemeral-header">
+        <span class="ephemeral-icon">
+            <i class="zulip-icon zulip-icon-eye-off" aria-hidden="true"></i>
+        </span>
+        <span class="ephemeral-visibility">{{visibility_text}}</span>
+        <button type="button" class="ephemeral-dismiss" aria-label="{{t 'Dismiss' }}">
+            <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="ephemeral-content rendered_markdown">
+        {{{content}}}
+    </div>
+</div>

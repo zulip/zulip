@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
+import * as bot_data from "./bot_data.ts";
 import * as buddy_data from "./buddy_data.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as buddy_list_presence from "./buddy_list_presence.ts";
@@ -111,8 +112,9 @@ export let build_user_sidebar = (): number[] | undefined => {
     const filter_text = user_filter.text();
 
     const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
+    const all_bot_ids = buddy_data.get_filtered_bot_user_ids(filter_text);
 
-    buddy_list.populate({all_user_ids});
+    buddy_list.populate({all_user_ids, all_bot_ids});
 
     return all_user_ids; // for testing
 };
@@ -221,7 +223,12 @@ export function update_presence_info(info: PresenceInfoFromEvent): void {
     // disabled. We just ignore that event and return.
     const person = people.maybe_get_user_by_id(user_id, true);
     if (person === undefined || person.is_inaccessible_user) {
-        return;
+        // Check if this is a bot that's stored in bot_data instead of people
+        const bot = bot_data.get(user_id);
+        if (bot === undefined) {
+            return;
+        }
+        // Bot presence updates are valid - proceed with the update
     }
 
     presence.update_info_from_event(user_id, presence_info);

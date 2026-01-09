@@ -17,6 +17,7 @@ export function update_indicators(): void {
                 user-circle-active zulip-icon-user-circle-active
                 user-circle-idle zulip-icon-user-circle-idle
                 user-circle-offline zulip-icon-user-circle-offline
+                user-circle-bot zulip-icon-user-circle-bot
             `,
             )
             .addClass(user_circle_class_with_icon);

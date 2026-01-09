@@ -566,3 +566,416 @@ class WidgetContentTestCase(ZulipTestCase):
         submessage.content = '{"widget_type": "todo"}'
         submessage.save()
         self.assertEqual(get_widget_type(message_id=message.id), "todo")
+
+
+class FreeformWidgetValidationTestCase(ZulipTestCase):
+    """Tests for freeform widget validation, including dependencies."""
+
+    def test_freeform_widget_basic_validation(self) -> None:
+        """Test basic freeform widget structure."""
+        # Valid minimal freeform widget
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {"html": "<div>Hello</div>"},
+        }
+        check_widget_content(widget)
+
+        # With optional fields
+        widget_with_css_js = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div id='app'></div>",
+                "css": ".app { color: red; }",
+                "js": "console.log('hello');",
+            },
+        }
+        check_widget_content(widget_with_css_js)
+
+    def test_freeform_widget_missing_html(self) -> None:
+        """Test that html field is required for freeform widgets."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {"css": "body { }"},
+        }
+        with self.assertRaisesRegex(ValidationError, "html key is missing"):
+            check_widget_content(widget)
+
+    def test_freeform_widget_dependencies_valid(self) -> None:
+        """Test valid dependencies in freeform widgets."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div>App</div>",
+                "dependencies": [
+                    {"url": "https://cdn.example.com/lib.js", "type": "script"},
+                    {"url": "https://cdn.example.com/style.css", "type": "style"},
+                ],
+            },
+        }
+        check_widget_content(widget)
+
+    def test_freeform_widget_dependencies_empty_list(self) -> None:
+        """Test that empty dependencies list is valid."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div>App</div>",
+                "dependencies": [],
+            },
+        }
+        check_widget_content(widget)
+
+    def test_freeform_widget_dependencies_invalid_type(self) -> None:
+        """Test that dependency type must be 'script' or 'style'."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div>App</div>",
+                "dependencies": [
+                    {"url": "https://example.com/lib.js", "type": "invalid"},
+                ],
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "Invalid"):
+            check_widget_content(widget)
+
+    def test_freeform_widget_dependencies_missing_url(self) -> None:
+        """Test that url field is required in dependencies."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div>App</div>",
+                "dependencies": [
+                    {"type": "script"},
+                ],
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "url key is missing"):
+            check_widget_content(widget)
+
+    def test_freeform_widget_dependencies_missing_type(self) -> None:
+        """Test that type field is required in dependencies."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div>App</div>",
+                "dependencies": [
+                    {"url": "https://example.com/lib.js"},
+                ],
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "type key is missing"):
+            check_widget_content(widget)
+
+    def test_freeform_widget_dependencies_not_list(self) -> None:
+        """Test that dependencies must be a list."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div>App</div>",
+                "dependencies": {"url": "https://example.com/lib.js", "type": "script"},
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "is not a list"):
+            check_widget_content(widget)
+
+    def test_freeform_widget_dependencies_url_not_string(self) -> None:
+        """Test that dependency URL must be a string."""
+        widget = {
+            "widget_type": "freeform",
+            "extra_data": {
+                "html": "<div>App</div>",
+                "dependencies": [
+                    {"url": 12345, "type": "script"},
+                ],
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "is not a string"):
+            check_widget_content(widget)
+
+
+class InteractiveWidgetValidationTestCase(ZulipTestCase):
+    """Tests for interactive widget validation (buttons, select menus)."""
+
+    def test_interactive_widget_button(self) -> None:
+        """Test valid button component."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {"type": "button", "label": "Click me", "custom_id": "btn1"},
+                        ],
+                    }
+                ]
+            },
+        }
+        check_widget_content(widget)
+
+    def test_interactive_widget_button_with_all_options(self) -> None:
+        """Test button with all optional fields."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {
+                                "type": "button",
+                                "label": "Click me",
+                                "custom_id": "btn1",
+                                "style": "primary",
+                                "disabled": False,
+                            },
+                        ],
+                    }
+                ]
+            },
+        }
+        check_widget_content(widget)
+
+    def test_interactive_widget_button_invalid_style(self) -> None:
+        """Test that button style must be one of the allowed values."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {"type": "button", "label": "Click", "style": "invalid_style"},
+                        ],
+                    }
+                ]
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "Invalid"):
+            check_widget_content(widget)
+
+    def test_interactive_widget_select_menu(self) -> None:
+        """Test valid select menu component."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {
+                                "type": "select_menu",
+                                "custom_id": "select1",
+                                "options": [
+                                    {"label": "Option 1", "value": "opt1"},
+                                    {"label": "Option 2", "value": "opt2"},
+                                ],
+                            }
+                        ],
+                    }
+                ]
+            },
+        }
+        check_widget_content(widget)
+
+    def test_interactive_widget_select_menu_with_all_options(self) -> None:
+        """Test select menu with all optional fields."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {
+                                "type": "select_menu",
+                                "custom_id": "select1",
+                                "options": [
+                                    {
+                                        "label": "Option 1",
+                                        "value": "opt1",
+                                        "description": "First option",
+                                        "default": True,
+                                    },
+                                ],
+                                "placeholder": "Choose an option",
+                                "min_values": 1,
+                                "max_values": 1,
+                                "disabled": False,
+                            }
+                        ],
+                    }
+                ]
+            },
+        }
+        check_widget_content(widget)
+
+    def test_interactive_widget_missing_components(self) -> None:
+        """Test that components field is required."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {},
+        }
+        with self.assertRaisesRegex(ValidationError, "components key is missing"):
+            check_widget_content(widget)
+
+    def test_interactive_widget_unknown_component_type(self) -> None:
+        """Test that unknown component types are rejected."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {"type": "unknown_type", "label": "???"},
+                        ],
+                    }
+                ]
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "Unknown component type"):
+            check_widget_content(widget)
+
+    def test_interactive_widget_missing_button_label(self) -> None:
+        """Test that button label is required."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {"type": "button", "custom_id": "btn1"},
+                        ],
+                    }
+                ]
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "label key is missing"):
+            check_widget_content(widget)
+
+    def test_interactive_widget_missing_select_custom_id(self) -> None:
+        """Test that select menu custom_id is required."""
+        widget = {
+            "widget_type": "interactive",
+            "extra_data": {
+                "components": [
+                    {
+                        "type": "action_row",
+                        "components": [
+                            {
+                                "type": "select_menu",
+                                "options": [{"label": "A", "value": "a"}],
+                            }
+                        ],
+                    }
+                ]
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "custom_id key is missing"):
+            check_widget_content(widget)
+
+
+class RichEmbedWidgetValidationTestCase(ZulipTestCase):
+    """Tests for rich embed widget validation (Discord-style embeds)."""
+
+    def test_rich_embed_with_title(self) -> None:
+        """Test valid rich embed with title."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {"title": "My Embed"},
+        }
+        check_widget_content(widget)
+
+    def test_rich_embed_with_description(self) -> None:
+        """Test valid rich embed with description."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {"description": "Some description text"},
+        }
+        check_widget_content(widget)
+
+    def test_rich_embed_with_all_fields(self) -> None:
+        """Test rich embed with all optional fields."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {
+                "title": "My Embed",
+                "description": "Description here",
+                "url": "https://example.com",
+                "color": 0xFF5733,
+                "timestamp": "2024-01-15T10:30:00Z",
+                "footer": {"text": "Footer text", "icon_url": "https://example.com/icon.png"},
+                "thumbnail": {"url": "https://example.com/thumb.png"},
+                "image": {"url": "https://example.com/image.png"},
+                "author": {
+                    "name": "Author Name",
+                    "url": "https://author.example.com",
+                    "icon_url": "https://example.com/author.png",
+                },
+                "fields": [
+                    {"name": "Field 1", "value": "Value 1", "inline": True},
+                    {"name": "Field 2", "value": "Value 2"},
+                ],
+            },
+        }
+        check_widget_content(widget)
+
+    def test_rich_embed_requires_title_or_description(self) -> None:
+        """Test that rich embed requires at least title or description."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {"color": 0xFF5733},
+        }
+        with self.assertRaisesRegex(ValidationError, "requires at least title or description"):
+            check_widget_content(widget)
+
+    def test_rich_embed_field_missing_name(self) -> None:
+        """Test that embed fields require name."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {
+                "title": "Test",
+                "fields": [{"value": "Some value"}],
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "name key is missing"):
+            check_widget_content(widget)
+
+    def test_rich_embed_field_missing_value(self) -> None:
+        """Test that embed fields require value."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {
+                "title": "Test",
+                "fields": [{"name": "Field name"}],
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "value key is missing"):
+            check_widget_content(widget)
+
+    def test_rich_embed_footer_missing_text(self) -> None:
+        """Test that footer requires text."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {
+                "title": "Test",
+                "footer": {"icon_url": "https://example.com/icon.png"},
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "text key is missing"):
+            check_widget_content(widget)
+
+    def test_rich_embed_author_missing_name(self) -> None:
+        """Test that author requires name."""
+        widget = {
+            "widget_type": "rich_embed",
+            "extra_data": {
+                "title": "Test",
+                "author": {"url": "https://example.com"},
+            },
+        }
+        with self.assertRaisesRegex(ValidationError, "name key is missing"):
+            check_widget_content(widget)

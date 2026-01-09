@@ -58,7 +58,22 @@ def test_server_running(
     log_file: str | None = None,
     dots: bool = False,
     enable_help_center: bool = False,
+    streamlined: bool = True,
 ) -> Iterator[None]:
+    """
+    Context manager that starts the test server.
+
+    Args:
+        skip_provision_check: Skip the provision check
+        external_host: The external host to use
+        log_file: File to log server output to
+        dots: Show dots while waiting for server
+        enable_help_center: Enable the help center static build
+        streamlined: If True (default), run without queue workers for faster startup.
+                     Set to False to run the full server including queue workers,
+                     which is needed for testing queue-dependent features like
+                     outgoing webhooks and bot interactions.
+    """
     with ExitStack() as stack:
         log = sys.stdout
         if log_file:
@@ -73,7 +88,9 @@ def test_server_running(
         update_test_databases_if_required(rebuild_test_database=True)
 
         # Run this not through the shell, so that we have the actual PID.
-        run_dev_server_command = ["tools/run-dev", "--test", "--streamlined"]
+        run_dev_server_command = ["tools/run-dev", "--test"]
+        if streamlined:
+            run_dev_server_command.append("--streamlined")
         if skip_provision_check:
             run_dev_server_command.append("--skip-provision-check")
         if enable_help_center:

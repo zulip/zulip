@@ -35,6 +35,8 @@ const submessage_schema = z.array(
         message_id: z.number(),
         sender_id: z.number(),
         id: z.number(),
+        // If set, this submessage is only visible to users with IDs in this list (ephemeral/private)
+        visible_to: z.nullish(z.array(z.number())),
     }),
 );
 

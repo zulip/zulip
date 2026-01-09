@@ -6,6 +6,7 @@ import * as alert_words_ui from "./alert_words_ui.ts";
 import * as attachments_ui from "./attachments_ui.ts";
 import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";
+import * as bot_command_store from "./bot_command_store.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
@@ -231,7 +232,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "presence":
-            activity_ui.update_presence_info(event.presences);
+            activity_ui.update_presence_info({[event.user_id]: event.modern_presence});
             break;
 
         case "restart":
@@ -510,6 +511,20 @@ export function dispatch_normal_event(event) {
             }
             break;
 
+        case "bot_command":
+            switch (event.op) {
+                case "add":
+                    bot_command_store.add_command(event.command);
+                    break;
+                case "remove":
+                    bot_command_store.remove_command(event.command_id);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type bot_command/" + event.op);
+                    break;
+            }
+            break;
+
         case "realm_emoji":
             // The authoritative data source is here.
             emoji.update_emojis(event.realm_emoji);
@@ -774,6 +789,11 @@ export function dispatch_normal_event(event) {
             break;
 
         case "submessage": {
+            if (event.op === "remove") {
+                // Handle ephemeral submessage removal
+                submessage.handle_remove_event(event.message_id, event.submessage_id);
+                break;
+            }
             // The fields in the event don't quite exactly
             // match the layout of a submessage, since there's
             // an event id.  We also want to be explicit here.
@@ -783,6 +803,7 @@ export function dispatch_normal_event(event) {
                 msg_type: event.msg_type,
                 message_id: event.message_id,
                 content: event.content,
+                visible_to: event.visible_to,
             };
             submessage.handle_event(submsg);
             break;

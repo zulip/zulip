@@ -10,11 +10,13 @@ import {user_settings} from "./user_settings.ts";
 
 export type RawPresence = z.infer<typeof presence_schema> & {
     server_timestamp: number;
+    is_bot?: boolean;
 };
 
 export type PresenceStatus = {
     status: "active" | "idle" | "offline";
     last_active?: number | undefined;
+    is_bot?: boolean;
 };
 
 export const presence_info_from_event_schema = z.record(
@@ -92,6 +94,11 @@ export function get_active_or_idle_user_ids(): number[] {
         .map((entry) => entry[0]);
 }
 
+export function is_bot_connected(user_id: number): boolean {
+    const info = presence_info.get(user_id);
+    return info?.is_bot === true && info.status === "active";
+}
+
 export function status_from_raw(raw: RawPresence, user: User | undefined): PresenceStatus {
     /*
         Example of `raw`:
@@ -102,6 +109,18 @@ export function status_from_raw(raw: RawPresence, user: User | undefined): Prese
             server_timestamp: 1585745140
         }
     */
+
+    // Handle bots with 2-state model: connected (active) or disconnected (offline)
+    const is_bot = raw.is_bot ?? user?.is_bot ?? false;
+    if (is_bot) {
+        // For bots, active_timestamp being set means connected
+        const is_connected = raw.active_timestamp != null;
+        return {
+            status: is_connected ? "active" : "offline",
+            last_active: raw.idle_timestamp ?? raw.active_timestamp,
+            is_bot: true,
+        };
+    }
 
     /* Mark users as offline after this many seconds since their last check-in, */
     const offline_threshold_secs = realm.server_presence_offline_threshold_seconds;
@@ -199,6 +218,10 @@ export function update_info_from_event(
     if (info !== null) {
         raw.active_timestamp = info.active_timestamp;
         raw.idle_timestamp = info.idle_timestamp;
+        // Copy is_bot flag from event if present
+        if (info.is_bot !== undefined) {
+            raw.is_bot = info.is_bot;
+        }
     }
 
     raw_info.set(user_id, raw);
@@ -268,6 +291,7 @@ export function set_info(
             server_timestamp,
             active_timestamp: info.active_timestamp,
             idle_timestamp: info.idle_timestamp,
+            ...(info.is_bot !== undefined && {is_bot: info.is_bot}),
         };
 
         raw_info.set(user_id, raw);
