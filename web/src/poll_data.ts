@@ -135,12 +135,9 @@ export class PollData {
         return event;
     }
 
-    handle_new_option_event(sender_id: string | number, data: unknown): void {
-        const safe_data = new_option_schema.parse(data);
-
+    handle_new_option_event(sender_id: string | number, data: NewOption): void {
         // All message readers may add a new option to the poll.
-        const idx = safe_data.idx;
-        const option = safe_data.option;
+        const {idx, option} = data;
         const options = this.get_widget_data().options;
 
         // While the UI doesn't allow adding duplicate options
@@ -181,16 +178,14 @@ export class PollData {
         return undefined;
     }
 
-    handle_question_event(sender_id: number, data: unknown): void {
-        const safe_data = question_schema.parse(data);
-
+    handle_question_event(sender_id: number, data: Question): void {
         // Only the message author can edit questions.
         if (sender_id !== this.message_sender_id) {
             this.report_error_function(`user ${sender_id} is not allowed to edit the question`);
             return;
         }
 
-        this.set_question(safe_data.question);
+        this.set_question(data.question);
     }
 
     vote_event(key: string): Vote {
@@ -211,13 +206,10 @@ export class PollData {
         return event;
     }
 
-    handle_vote_event(sender_id: number, data: unknown): void {
-        const safe_data = vote_schema.parse(data);
+    handle_vote_event(sender_id: number, data: Vote): void {
+        const {key, vote} = data;
 
         // All message readers may vote on poll options.
-        const key = safe_data.key;
-        const vote = safe_data.vote;
-
         if (!(vote === 1 || vote === -1)) {
             this.report_error_function("poll widget: bad value for inbound vote count");
             return;
@@ -294,15 +286,15 @@ export class PollData {
         const type = data.type;
         switch (type) {
             case "new_option": {
-                this.handle_new_option_event(sender_id, data);
+                this.handle_new_option_event(sender_id, new_option_schema.parse(data));
                 break;
             }
             case "question": {
-                this.handle_question_event(sender_id, data);
+                this.handle_question_event(sender_id, question_schema.parse(data));
                 break;
             }
             case "vote": {
-                this.handle_vote_event(sender_id, data);
+                this.handle_vote_event(sender_id, vote_schema.parse(data));
                 break;
             }
             default: {
