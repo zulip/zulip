@@ -1132,6 +1132,10 @@ p {
 
 ul {
     font-weight: normal;
+    /* Unordered lists relied on this bit of Bootstrap
+       reset, so we re-introduce it here to avoid
+       indenting vanilla and other bulleted lists. */
+    padding-left: 0;
 }
 
 span a:hover,
