@@ -2,14 +2,12 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
-
 
 const settings_data = mock_esm("../src/settings_data");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
@@ -18,7 +16,6 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const people = zrequire("people");
 const ui_util = mock_esm("../src/ui_util");
 const compose_state = zrequire("compose_state");
-const compose_recipient = zrequire("compose_recipient");
 const stream_data = zrequire("stream_data");
 const stream_color = zrequire("stream_color");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -211,8 +208,6 @@ test("fix buggy drafts", ({override_rewire}) => {
     assert.equal(fixed_draft.private_message_recipient, undefined);
     assert.deepEqual(fixed_draft.private_message_recipient_ids, [iago.user_id, zoe.user_id]);
 });
-
-
 
 test("initialize", ({override_rewire}) => {
     window.addEventListener = (event_name, f) => {
