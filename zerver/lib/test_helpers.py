@@ -573,7 +573,12 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # by find_pattern above and therefore needs to be exempt.
             "self-hosted-billing/not-configured/",
             *(redirect.old_url.lstrip("/") for redirect in REDIRECTED_TO_HELP_DOCUMENTATION),
-            *(webhook.url for webhook in INCOMING_WEBHOOK_INTEGRATIONS if not include_webhooks),
+            *(
+                url
+                for webhook in INCOMING_WEBHOOK_INTEGRATIONS
+                for url in webhook.urls
+                if not include_webhooks
+            ),
         }
 
         untested_patterns -= exempt_patterns
