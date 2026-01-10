@@ -5,7 +5,6 @@ import * as z from "zod/mini";
 
 import render_confirm_mark_messages_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 import render_confirm_mark_as_unread_from_here from "../templates/confirm_dialog/confirm_mark_as_unread_from_here.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -32,7 +31,6 @@ import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
-import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
 let loading_indicator_displayed = false;
@@ -122,24 +120,12 @@ function handle_skipped_unsubscribed_streams(
         // Zulip has an invariant that all unread messages must be in streams
         // the user is subscribed to. Notify the user if messages from
         // unsubscribed streams are ignored by the server.
-        const stream_names_with_privacy_symbol_html = ignored_because_not_subscribed_channels.map(
-            (stream_id) => {
-                const stream = sub_store.get(stream_id);
-                const decorated_channel_name = render_inline_decorated_channel_name({stream});
-                return `<span class="white-space-nowrap">${decorated_channel_name}</span>`;
-            },
+        const streams = ignored_because_not_subscribed_channels.map((stream_id) =>
+            sub_store.get(stream_id),
         );
 
         const populate: (element: JQuery) => void = ($container) => {
-            const formatted_stream_list_text = util.format_array_as_list(
-                stream_names_with_privacy_symbol_html,
-                "long",
-                "conjunction",
-            );
-            const rendered_html = render_skipped_marking_unread({
-                streams_html: formatted_stream_list_text,
-            });
-            $container.html(rendered_html);
+            $container.html(render_skipped_marking_unread({streams}));
         };
 
         const title_text = $t({defaultMessage: "Skipped unsubscribed channels"});
