@@ -199,7 +199,7 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         "Verona > copy-paste-topic #1 | Today",
         "Desdemona:",
         // w/o partial selection: "copy paste test B",
-        "paste test B",
+        "...paste test B",
         "Verona > copy-paste-topic #2 | Today",
         "Desdemona:",
         "copy paste test C",
@@ -210,7 +210,7 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
         "Verona > copy-paste-topic #3 | Today",
         "Desdemona:",
         // w/o partial selection: "copy paste test F",
-        "copy paste",
+        "copy paste...",
     ];
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }

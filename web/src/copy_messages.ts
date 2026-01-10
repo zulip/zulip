@@ -78,7 +78,13 @@ function get_selected_message_content_elements(): NodeListOf<HTMLElement> | unde
 // Returns the the inner HTML of the `.message_content` element
 // at index `idx` from the currently selected `.message_content`s
 // in the present single-range selection.
-function get_selected_message_content_html_at(idx: number): string {
+// The caller is expected to only pass the first or last message
+// from a selection range, as the intermediate selected messages
+// anyways contain the entire `.message_content` HTML.
+function get_selected_message_content_html_at(
+    idx: number,
+    original_message_content_node: Node,
+): string {
     assert(window.getSelection()?.rangeCount === 1);
     const selected_message_content_elements = get_selected_message_content_elements();
     assert(selected_message_content_elements !== undefined);
@@ -102,6 +108,23 @@ function get_selected_message_content_html_at(idx: number): string {
     // when copy pasting multiple messages.
     if (target_message_content_element.classList.contains("status-message")) {
         return `<div>` + target_message_content_element.outerHTML + `</div>`;
+    }
+
+    // If the selected `.message_content` HTML is same as the complete `.message_content` HTML,
+    // we return early and don't append/prepend ellipsis text.
+    assert(original_message_content_node instanceof Element);
+    if (
+        target_message_content_element.innerHTML.trim() ===
+        original_message_content_node.innerHTML.trim()
+    ) {
+        return target_message_content_element.innerHTML;
+    }
+
+    const $ellipsis_span = $("<span>").text("...");
+    if (idx === 0) {
+        target_message_content_element.prepend(the($ellipsis_span));
+    } else {
+        target_message_content_element.append(the($ellipsis_span));
     }
     return target_message_content_element.innerHTML;
 }
@@ -182,7 +205,18 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         // we only use the content that is part of the selection.
         // This is only done on Chrome for now, because of the behavior of having
         // a single range for a multi-message selection.
-        $first_message_element = $(get_selected_message_content_html_at(0));
+        assert(copy_rows[0] && copy_rows.at(-1));
+        const first_selected_message_content_element = the(copy_rows[0]).querySelector(
+            ".message_content",
+        );
+        const last_selected_message_content_element = the(copy_rows.at(-1)!).querySelector(
+            ".message_content",
+        );
+        assert(first_selected_message_content_element && last_selected_message_content_element);
+
+        $first_message_element = $(
+            get_selected_message_content_html_at(0, first_selected_message_content_element),
+        );
 
         // We don't want to append the same content as the first message in the selection
         // if we are trying to get the `.message_content` HTML for the last
@@ -190,7 +224,9 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         const selected_message_content_elements = get_selected_message_content_elements();
         assert(selected_message_content_elements !== undefined);
         if (selected_message_content_elements.length > 1) {
-            $last_message_element = $(get_selected_message_content_html_at(-1));
+            $last_message_element = $(
+                get_selected_message_content_html_at(-1, last_selected_message_content_element),
+            );
         }
     }
 
