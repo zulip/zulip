@@ -83,6 +83,7 @@ function get_selected_message_content_elements(): NodeListOf<HTMLElement> | unde
 // anyways contain the entire `.message_content` HTML.
 function get_selected_message_content_html_at(
     idx: number,
+    original_message_content_node: Node,
     selected_message_content_elements: NodeListOf<HTMLElement> | undefined,
 ): string {
     assert(window.getSelection()?.rangeCount === 1);
@@ -107,6 +108,23 @@ function get_selected_message_content_html_at(
     // when copy pasting multiple messages.
     if (target_message_content_element.classList.contains("status-message")) {
         return `<div>` + target_message_content_element.outerHTML + `</div>`;
+    }
+
+    // If the selected `.message_content` HTML is same as the complete `.message_content` HTML,
+    // we return early and don't append/prepend ellipsis text.
+    assert(original_message_content_node instanceof Element);
+    if (
+        target_message_content_element.innerHTML.trim() ===
+        original_message_content_node.innerHTML.trim()
+    ) {
+        return target_message_content_element.innerHTML;
+    }
+
+    const $ellipsis_span = $("<span>").text("...");
+    if (idx === 0) {
+        target_message_content_element.prepend(the($ellipsis_span));
+    } else {
+        target_message_content_element.append(the($ellipsis_span));
     }
     return target_message_content_element.innerHTML;
 }
@@ -209,6 +227,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         $first_message_element = $(
             get_selected_message_content_html_at(
                 0,
+                first_selected_message_content_element,
                 selected_message_content_elements,
             ),
         );
@@ -220,6 +239,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
             $last_message_element = $(
                 get_selected_message_content_html_at(
                     -1,
+                    last_selected_message_content_element,
                     selected_message_content_elements,
                 ),
             );
