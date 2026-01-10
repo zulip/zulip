@@ -3,6 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import "../templates.ts";
+import render_contributor_count from "../../templates/team/contributor_count.hbs";
 import render_contributors from "../../templates/team/contributors.hbs";
 import render_loading from "../../templates/team/loading.hbs";
 
@@ -138,7 +139,6 @@ function exclude_bot_contributors(contributor: Contributor): boolean {
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
 export default function render_tabs(contributors: Contributor[]): void {
-    const count_template = _.template($("#count-template").html());
     const total_count_template = _.template($("#total-count-template").html());
     const contributors_list = contributors
         ? contributors.filter((c) => exclude_bot_contributors(c))
@@ -220,15 +220,15 @@ export default function render_tabs(contributors: Contributor[]): void {
                     const commits = c.total_commits;
                     return commits >= 20;
                 }).length;
-                const repo_url_list = repo_list.map(
-                    (repo_name) => `https://github.com/zulip/${repo_name}`,
-                );
+                const repos = repo_list.map((name) => ({
+                    name,
+                    url: `https://github.com/zulip/${name}`,
+                }));
                 $(`#tab-${CSS.escape(tab_name)}`).prepend(
                     $(
-                        count_template({
+                        render_contributor_count({
                             contributor_count,
-                            repo_list,
-                            repo_url_list,
+                            repos,
                             twenty_plus_contributor_count,
                             hundred_plus_contributor_count,
                         }),
