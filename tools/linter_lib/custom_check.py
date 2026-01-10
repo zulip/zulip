@@ -707,7 +707,7 @@ html_rules: list["Rule"] = [
     {
         "pattern": "style ?=",
         "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
-        "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*""",
+        "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*|style=["'](narrow|long|short)["']""",
         "exclude": {
             # 5xx page doesn't have external CSS
             "web/html/5xx.html",

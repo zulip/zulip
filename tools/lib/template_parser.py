@@ -434,7 +434,7 @@ def validate(
                     # We are not completely rigorous about having a sensible
                     # order of if/elif/elif/else, but we catch obviously
                     # mismatching else tags.
-                    if start_tag not in ("if", "else", "unless"):
+                    if start_tag not in ("if", "else", "unless", "list_each"):
                         return f"Unexpected else/elif tag encountered after {start_tag} tag."
                 elif start_tag != end_tag:
                     return f"Mismatched tags: ({start_tag} != {end_tag})"

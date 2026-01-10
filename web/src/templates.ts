@@ -1,8 +1,11 @@
 import Handlebars from "handlebars/runtime.js";
+import assert from "minimalistic-assert";
+import {z} from "zod/mini";
 
 import * as common from "./common.ts";
 import {default_html_elements, intl} from "./i18n.ts";
 import {postprocess_content} from "./postprocess_content.ts";
+import {user_settings} from "./user_settings.ts";
 
 // Below, we register Zulip-specific extensions to the Handlebars API.
 //
@@ -173,3 +176,48 @@ Handlebars.registerHelper("popover_hotkey_hints", (...args) => {
         `<span class="popover-menu-hotkey-hints">${hotkey_hints}</span>`,
     );
 });
+
+const list_format_options_schema = z.object({
+    style: z.optional(z.enum(["narrow", "long", "short"])),
+    type: z.optional(z.enum(["conjunction", "disjunction", "unit"])),
+});
+
+Handlebars.registerHelper(
+    "list_each",
+    function (this: unknown, context: unknown, options: Handlebars.HelperOptions) {
+        const {fn, inverse} = options;
+        const items_html: string[] = [];
+        let empty = false;
+        assert("each" in Handlebars.helpers);
+        const ret: unknown = Handlebars.helpers["each"].call(this, context, {
+            ...options,
+            fn(item_context: unknown, item_options?: Handlebars.RuntimeOptions) {
+                items_html.push(fn(item_context, item_options));
+                return "";
+            },
+            inverse(item_context: unknown, item_options?: Handlebars.RuntimeOptions) {
+                empty = true;
+                return inverse(item_context, item_options);
+            },
+        });
+        if (empty) {
+            return ret;
+        }
+        assert.equal(ret, "");
+        /* istanbul ignore if */
+        if (Intl.ListFormat === undefined) {
+            return items_html.join(", ");
+        }
+        return new Intl.ListFormat(
+            user_settings.default_language,
+            list_format_options_schema.parse(options.hash),
+        )
+            .formatToParts(items_html)
+            .map((part) =>
+                part.type === "element"
+                    ? part.value
+                    : Handlebars.Utils.escapeExpression(part.value),
+            )
+            .join("");
+    },
+);

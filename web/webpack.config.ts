@@ -180,6 +180,7 @@ const config = (
                             "numberFormat",
                             "tooltip_hotkey_hints",
                             "popover_hotkey_hints",
+                            "list_each",
                         ],
                         precompileOptions: {
                             knownHelpersOnly: true,
