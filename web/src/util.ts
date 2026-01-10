@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import * as z from "zod/mini";
 
@@ -450,38 +449,6 @@ export function format_array_as_list_with_conjunction(
     join_strategy: "long" | "narrow",
 ): string {
     return format_array_as_list(array, join_strategy, "conjunction");
-}
-
-export function format_array_as_list_with_highlighted_elements(
-    array: string[],
-    style: Intl.ListFormatStyle,
-    type: Intl.ListFormatType,
-): string {
-    // If Intl.ListFormat is not supported
-    if (Intl.ListFormat === undefined) {
-        return array
-            .map(
-                (item) =>
-                    `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(item)}</b>`,
-            )
-            .join(", ");
-    }
-
-    // Use Intl.ListFormat to format the array as a Internationalized list.
-    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style, type});
-
-    const formatted_parts = list_formatter.formatToParts(array);
-    return formatted_parts
-        .map((part) => {
-            // There are two types of parts: elements (the actual
-            // items), and literals (commas, etc.). We need to
-            // HTML-escape the elements, but not the literals.
-            if (part.type === "element") {
-                return `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(part.value)}</b>`;
-            }
-            return part.value;
-        })
-        .join("");
 }
 
 // Returns the remaining time in milliseconds from the start_time and duration.
