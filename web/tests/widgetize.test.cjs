@@ -88,7 +88,10 @@ test("activate", ({override}) => {
 
     const opts = {
         events: [...events],
-        extra_data: "",
+        any_data: {
+            widget_type: "poll",
+            extra_data: "",
+        },
         message: {
             id: 2001,
         },
@@ -97,7 +100,6 @@ test("activate", ({override}) => {
             assert.equal(data.data, "test_data");
         },
         $row,
-        widget_type: "poll",
     };
 
     let is_widget_elem_inserted;
@@ -135,7 +137,7 @@ test("activate", ({override}) => {
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    opts.widget_type = "invalid_widget";
+    opts.any_data.widget_type = "invalid_widget";
 
     widgetize.activate(opts);
     assert.ok(!is_widget_elem_inserted);
@@ -143,7 +145,7 @@ test("activate", ({override}) => {
     assert.ok(!is_event_handled);
     assert.deepEqual(blueslip.get_test_logs("warn")[0].more_info, {widget_type: "invalid_widget"});
 
-    opts.widget_type = "tictactoe";
+    opts.any_data.widget_type = "tictactoe";
 
     widgetize.activate(opts);
     assert.ok(!is_widget_elem_inserted);

@@ -1,11 +1,9 @@
 import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
-import type {PollWidgetExtraData, PollWidgetOutboundData} from "./poll_data.ts";
-import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
+import type {PollWidgetOutboundData} from "./poll_data.ts";
+import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import type {Event} from "./widget_data.ts";
-import type {ZFormExtraData} from "./zform_data.ts";
-
-export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
+import type {AnyWidgetData} from "./widget_schema.ts";
 
 type HandleInboundEventsFunction = (events: Event[]) => void;
 
@@ -16,12 +14,12 @@ type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
 // These are poll, todo, and zform implementations.
 // They are currently injected into us from another module
 // for historical reasons. (as of January 2026)
-type WidgetImplementation = Record<string, unknown> & {
+type WidgetImplementation = {
     activate: (data: {
         $elem: JQuery;
         callback: (data: WidgetOutboundData) => void;
         message: Message;
-        extra_data: WidgetExtraData;
+        any_data: AnyWidgetData;
     }) => HandleInboundEventsFunction;
 };
 
@@ -56,17 +54,16 @@ export class GenericWidget {
 }
 
 export function create_widget_instance(info: {
-    widget_type: string;
     post_to_server: PostToServerFunction;
     $widget_elem: JQuery;
     message: Message;
-    extra_data: WidgetExtraData;
+    any_data: AnyWidgetData;
 }): GenericWidget {
-    const {widget_type, post_to_server, $widget_elem, message, extra_data} = info;
+    const {post_to_server, $widget_elem, message, any_data} = info;
 
     // For historical reasons, we don't directly import the
     // modules that handle poll, todo, and zform.
-    const widget_implementation = widgets.get(widget_type)!;
+    const widget_implementation = widgets.get(any_data.widget_type)!;
 
     // We pass this is into the widgets to provide them a black-box
     // service that sends any events **outbound** to the other active
@@ -84,7 +81,7 @@ export function create_widget_instance(info: {
         $elem: $widget_elem,
         callback: post_to_server_callback,
         message,
-        extra_data,
+        any_data,
     });
 
     return new GenericWidget(inbound_events_handler);

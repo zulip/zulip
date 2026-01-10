@@ -6,53 +6,40 @@ import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import type {WidgetExtraData} from "./generic_widget.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
-import {
-    PollData,
-    new_option_schema,
-    poll_widget_extra_data_schema,
-    question_schema,
-    vote_schema,
-} from "./poll_data.ts";
+import {PollData, new_option_schema, question_schema, vote_schema} from "./poll_data.ts";
 import {ZulipWidgetContext} from "./widget_context.ts";
 import type {Event} from "./widget_data.ts";
+import type {AnyWidgetData} from "./widget_schema.ts";
 
 export function activate({
     $elem,
     callback,
-    extra_data,
+    any_data,
     message,
 }: {
     $elem: JQuery;
     callback: (data: PollWidgetOutboundData) => void;
-    extra_data: WidgetExtraData;
+    any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
+    assert(any_data.widget_type === "poll");
+    const {extra_data} = any_data;
     const widget_context = new ZulipWidgetContext(message);
     const container_is_hidden = widget_context.is_container_hidden();
     const is_my_poll = widget_context.is_my_poll();
     const poll_owner_user_id = widget_context.owner_user_id();
 
-    const parse_result = poll_widget_extra_data_schema.safeParse(extra_data);
-    if (!parse_result.success) {
-        blueslip.error("invalid poll widget extra data", {issues: parse_result.error.issues});
-        return (_events: Event[]): void => {
-            /* noop */
-        };
-    }
-    const parsed_extra_data = parse_result.data;
-
     const poll_data = new PollData({
         message_sender_id: poll_owner_user_id,
         current_user_id: people.my_current_user_id(),
         is_my_poll,
-        question: parsed_extra_data.question ?? "",
-        options: parsed_extra_data.options ?? [],
+        question: extra_data.question ?? "",
+        options: extra_data.options ?? [],
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
