@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
+import render_status_message_example from "../templates/status_message_example.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
@@ -155,7 +156,7 @@ def f():
     {
         markdown: `/me ${$t({defaultMessage: "is busy working"})}`,
         // output_html required since /me rendering is not done in Markdown processor.
-        output_html: `<p><span class="sender_name">Iago</span> <span class="status-message">${$t({defaultMessage: "is busy working"})}</span></p>`,
+        output_html: render_status_message_example(),
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
