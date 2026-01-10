@@ -5,6 +5,10 @@
 {{else}}
     {{#tr}}
         You are a member of this group because you are a member of a subgroup (<z-subgroup-names></z-subgroup-names>).
-        {{#*inline "z-subgroup-names"}}{{{associated_subgroup_names_html}}}{{/inline}}
+        {{#*inline "z-subgroup-names" ~}}
+            {{~#list_each associated_subgroup_names type="unit" as |name| ~}}
+            <b class="highlighted-element">{{name}}</b>
+            {{~/list_each ~}}
+        {{~/inline}}
     {{/tr}}
 {{/if}}
