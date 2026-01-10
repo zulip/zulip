@@ -2,7 +2,7 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 export type PollDataConfig = {
-    message_sender_id: number;
+    poll_owner_user_id: number;
     current_user_id: number;
     is_my_poll: boolean;
     question: string;
@@ -85,7 +85,7 @@ export class PollData {
 
     key_to_option = new Map<string, PollOption>();
     my_idx = 1;
-    message_sender_id: number;
+    poll_owner_user_id: number;
     me: number;
     is_my_poll: boolean;
     poll_question: string;
@@ -94,7 +94,7 @@ export class PollData {
     report_error_function: (error_message: string) => void;
 
     constructor({
-        message_sender_id,
+        poll_owner_user_id,
         current_user_id,
         is_my_poll,
         question,
@@ -102,7 +102,7 @@ export class PollData {
         comma_separated_names,
         report_error_function,
     }: PollDataConfig) {
-        this.message_sender_id = message_sender_id;
+        this.poll_owner_user_id = poll_owner_user_id;
         this.me = current_user_id;
         this.is_my_poll = is_my_poll;
         this.poll_question = question;
@@ -180,7 +180,7 @@ export class PollData {
 
     handle_question_event(sender_id: number, data: Question): void {
         // Only the message author can edit questions.
-        if (sender_id !== this.message_sender_id) {
+        if (sender_id !== this.poll_owner_user_id) {
             this.report_error_function(`user ${sender_id} is not allowed to edit the question`);
             return;
         }
