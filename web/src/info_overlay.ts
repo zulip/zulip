@@ -184,35 +184,35 @@ ${$t({defaultMessage: "Last task"})}`,
             <ul class="todo-widget">
                 <li>
                     <label class="checkbox">
-                        <div>
+                        <span>
                             <input type="checkbox" class="task" checked="checked">
                             <span class="rendered-checkbox"></span>
-                        </div>
-                        <div>
+                        </span>
+                        <span>
                             <s><strong>${$t({defaultMessage: "Task 1"})}:</strong> ${$t({defaultMessage: "This is the first task."})}</s>
-                        </div>
+                        </span>
                     </label>
                 </li>
                 <li>
                     <label class="checkbox">
-                        <div>
+                        <span>
                             <input type="checkbox" class="task">
                             <span class="rendered-checkbox"></span>
-                        </div>
-                        <div>
+                        </span>
+                        <span>
                             <strong>${$t({defaultMessage: "Task 2"})}:</strong> ${$t({defaultMessage: "This is the second task."})}
-                        </div>
+                        </span>
                     </label>
                 </li>
                 <li>
                     <label class="checkbox">
-                        <div>
+                        <span>
                             <input type="checkbox" class="task">
                             <span class="rendered-checkbox"></span>
-                        </div>
-                        <div>
+                        </span>
+                        <span>
                             <strong>${$t({defaultMessage: "Last task"})}</strong>
-                        </div>
+                        </span>
                     </label>
                 </li>
             </ul>
