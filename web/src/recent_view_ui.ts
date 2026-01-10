@@ -1192,7 +1192,7 @@ function setup_folder_filter_widget(): void {
         item_click_callback: folder_filter_click_handler,
         $events_container: $("#recent_view_filter_buttons"),
         default_id,
-        unique_id_type: dropdown_widget.DataTypes.STRING,
+        unique_id_type: "string",
     });
     folder_filter_dropdown_widget.setup();
 }
