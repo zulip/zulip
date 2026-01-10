@@ -135,13 +135,11 @@ guideline will be closed without review.
 
 ### Using AI as a coding assistant
 
-1. Don't skip **becoming familiar with the part of the codebase**
-   you're working on. This will let you write better prompts and
-   validate their output if you use an LLM. Code assistants can be a
-   useful search engine/discovery tool in this process, but don't
-   trust claims they make about how Zulip works. LLMs are often wrong,
-   even about details that are clearly answered in the Zulip
-   documentation.
+1. Don't skip **becoming familiar with the part of the codebase** you're working on.
+   Doing so will help you write better prompts and validate their output if you use an LLM.
+   Code assistants can be a useful search or discovery tool in this process,
+   but you should not trust claims they make about how Zulip works.
+   LLMs are often wrong, even about details that are clearly answered in the Zulip documentation.
 1. Split up your changes into **[coherent
    commits](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html)**,
    even if an LLM generates them all in one go.
