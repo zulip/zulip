@@ -75,6 +75,8 @@ function get_selected_message_content_elements(): NodeListOf<HTMLElement> | unde
 // from a selection range, as the intermediate selected messages
 // anyways contain the entire `.message_content` HTML.
 function get_html_for_bookend_message_content(
+    type: RangeContainer,
+    original_message_content_element: Element,
     selected_message_content_element: Node | undefined,
 ): string {
     assert(window.getSelection()?.rangeCount === 1);
@@ -89,6 +91,38 @@ function get_html_for_bookend_message_content(
     // when copy pasting multiple messages.
     if (selected_message_content_element.classList.contains("status-message")) {
         return `<div>` + selected_message_content_element.outerHTML + `</div>`;
+    }
+
+    // If the selected `.message_content` HTML is same as the complete `.message_content` HTML,
+    // we return early and don't append/prepend ellipsis text.
+    if (
+        selected_message_content_element.innerHTML.trim() ===
+        original_message_content_element.innerHTML.trim()
+    ) {
+        return selected_message_content_element.innerHTML;
+    }
+
+    // The ellipsis marks where the partial selection was truncated, so it
+    // belongs within the text flow of the truncated paragraph. Inserting it
+    // inside the first/last paragraph (rather than as a sibling of it) keeps
+    // turndown from rendering it on its own line, separated from the text by
+    // a blank line.
+    const $ellipsis_span = $("<span>").text("...");
+    const $content_children = $(selected_message_content_element).children();
+    if (type === "start") {
+        const $first_child = $content_children.first();
+        if ($first_child.is("p")) {
+            the($first_child).prepend(the($ellipsis_span));
+        } else {
+            selected_message_content_element.prepend(the($ellipsis_span));
+        }
+    } else {
+        const $last_child = $content_children.last();
+        if ($last_child.is("p")) {
+            the($last_child).append(the($ellipsis_span));
+        } else {
+            selected_message_content_element.append(the($ellipsis_span));
+        }
     }
     return selected_message_content_element.innerHTML;
 }
@@ -199,7 +233,11 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         );
         assert(first_selected_message_content_element && last_selected_message_content_element);
         $first_message_element = $(
-            get_html_for_bookend_message_content(selected_message_content_elements[0]),
+            get_html_for_bookend_message_content(
+                "start",
+                first_selected_message_content_element,
+                selected_message_content_elements[0],
+            ),
         );
 
         // We don't want to append the same content as the first message in the selection
@@ -208,7 +246,11 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
         if (selected_message_content_elements.length > 1) {
             const len = selected_message_content_elements.length;
             $last_message_element = $(
-                get_html_for_bookend_message_content(selected_message_content_elements[len - 1]),
+                get_html_for_bookend_message_content(
+                    "end",
+                    last_selected_message_content_element,
+                    selected_message_content_elements[len - 1],
+                ),
             );
         }
     }
