@@ -229,7 +229,7 @@ $(() => {
         void $.get(url, (response) => {
             const {msg} = z.object({msg: z.string()}).parse(response);
             if (msg !== "available") {
-                $("#id_team_subdomain_error_client").html(msg);
+                $("#id_team_subdomain_error_client").text(msg);
                 $("#id_team_subdomain_error_client").show();
             }
         });
