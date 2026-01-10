@@ -6,6 +6,7 @@ import "../templates.ts";
 import render_contributor_count from "../../templates/team/contributor_count.hbs";
 import render_contributors from "../../templates/team/contributors.hbs";
 import render_loading from "../../templates/team/loading.hbs";
+import render_total_contributor_count from "../../templates/team/total_contributor_count.hbs";
 
 // The list of repository names is duplicated here in order to provide
 // a clear type for Contributor objects.
@@ -139,7 +140,6 @@ function exclude_bot_contributors(contributor: Contributor): boolean {
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
 export default function render_tabs(contributors: Contributor[]): void {
-    const total_count_template = _.template($("#total-count-template").html());
     const contributors_list = contributors
         ? contributors.filter((c) => exclude_bot_contributors(c))
         : [];
@@ -163,7 +163,7 @@ export default function render_tabs(contributors: Contributor[]): void {
     $("#tab-total .contributors-grid").html(total_tab_html);
     $("#tab-total").prepend(
         $(
-            total_count_template({
+            render_total_contributor_count({
                 contributor_count: contributors_list.length,
                 tab_name: "total",
                 twenty_plus_contributor_count: twenty_plus_total_contributors.length,
