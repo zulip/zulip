@@ -574,6 +574,28 @@ def check_string_or_int_list(var_name: str, val: object) -> str | list[int]:
     return check_list(check_int)(var_name, val)
 
 
+def check_string_or_int_or_int_list(var_name: str, val: object) -> str | int | list[int]:
+    """Validator for operands that accept string, single int, or list of ints.
+
+    Used for channel operator which can be:
+    - A channel name string (e.g., "Denmark")
+    - A single channel ID integer (e.g., 4)
+    - A list of channel ID integers for multi-channel search (e.g., [4, 5, 6])
+    """
+    if isinstance(val, str):
+        return val
+
+    if isinstance(val, int):
+        return val
+
+    if isinstance(val, list):
+        return check_list(check_int)(var_name, val)
+
+    raise ValidationError(
+        _("{var_name} is not a string, integer, or integer list").format(var_name=var_name)
+    )
+
+
 def check_string_or_int(var_name: str, val: object) -> str | int:
     if isinstance(val, str | int):
         return val

@@ -37,9 +37,11 @@ from zerver.lib.narrow import (
     NarrowBuilder,
     NarrowParameter,
     add_narrow_conditions,
+    can_narrow_define_conversation,
     exclude_muting_conditions,
     find_first_unread_anchor,
     get_base_query_for_search,
+    get_channel_from_narrow_access_unchecked,
     is_spectator_compatible,
     ok_to_include_history,
     post_process_limited_query,
@@ -142,6 +144,30 @@ class NarrowBuilderTest(ZulipTestCase):
         self,
     ) -> None:  # NEGATED
         term = NarrowParameter(operator="channel", operand="non-existing-channel")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channel_operator_with_list_operand(self) -> None:
+        """Test multi-channel narrow with list of channel IDs (covers narrow.py 476-491)."""
+        scotland = get_stream("Scotland", self.realm)
+        verona = get_stream("Verona", self.realm)
+        term = NarrowParameter(operator="channel", operand=[scotland.id, verona.id])
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_channel_operator_with_list_operand_unknown_channels(self) -> None:
+        """Test multi-channel narrow with all unknown channel IDs raises error."""
+        term = NarrowParameter(operator="channel", operand=[99999, 99998])
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channel_operator_with_comma_separated_operand(self) -> None:
+        """Test multi-channel narrow with comma-separated IDs (covers narrow.py 494-513)."""
+        scotland = get_stream("Scotland", self.realm)
+        verona = get_stream("Verona", self.realm)
+        term = NarrowParameter(operator="channel", operand=f"{scotland.id},{verona.id}")
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_channel_operator_with_comma_separated_unknown_channels(self) -> None:
+        """Test multi-channel narrow with all unknown comma-separated IDs raises error."""
+        term = NarrowParameter(operator="channel", operand="99999,99998")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_channels_operator_and_invalid_operand_should_raise_error(
@@ -710,6 +736,33 @@ class NarrowBuilderTest(ZulipTestCase):
 
         self.assertRaises(BadNarrowOperatorError, _build_query, term)
 
+    def test_add_term_multi_channel_list_with_non_web_public_in_web_public_query(self) -> None:
+        """Test multi-channel list with non-web-public channel in web public query (covers line 481)."""
+        non_web_public = self.make_stream("non-web-public", realm=self.realm)
+        web_public = self.make_stream(
+            "web-public-channel", realm=self.realm, is_web_public=True, invite_only=False
+        )
+        term = NarrowParameter(operator="channel", operand=[non_web_public.id, web_public.id])
+        builder = NarrowBuilder(self.user_profile, column("id", Integer), self.realm, True)
+        query = builder.add_term(self.raw_query, term)
+        # Only the web-public channel should be included
+        self.assertIn("recipient_id IN", get_sqlalchemy_sql(query))
+
+    def test_add_term_multi_channel_comma_separated_with_non_web_public_in_web_public_query(
+        self,
+    ) -> None:
+        """Test comma-separated IDs with non-web-public channel in web public query (covers line 503)."""
+        non_web_public = self.make_stream("non-web-public2", realm=self.realm)
+        web_public = self.make_stream(
+            "web-public-channel2", realm=self.realm, is_web_public=True, invite_only=False
+        )
+        operand = f"{non_web_public.id},{web_public.id}"
+        term = NarrowParameter(operator="channel", operand=operand)
+        builder = NarrowBuilder(self.user_profile, column("id", Integer), self.realm, True)
+        query = builder.add_term(self.raw_query, term)
+        # Only the web-public channel should be included
+        self.assertIn("recipient_id IN", get_sqlalchemy_sql(query))
+
     # Test "is:private" (legacy alias for "is:dm")
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = NarrowParameter(operator="is", operand="private")
@@ -1218,6 +1271,53 @@ class NarrowLibraryTest(ZulipTestCase):
         )
 
 
+class MultiChannelNarrowUtilityTest(ZulipTestCase):
+    def test_get_channel_from_narrow_with_multi_channel_list(self) -> None:
+        """Test get_channel_from_narrow_access_unchecked returns None for multi-channel list."""
+        realm = get_realm("zulip")
+        stream1 = get_stream("Denmark", realm)
+        stream2 = get_stream("Verona", realm)
+
+        # Multi-channel list operand should return None (covers narrow.py 932-933)
+        narrow = [NarrowParameter(operator="channel", operand=[stream1.id, stream2.id])]
+        self.assertIsNone(get_channel_from_narrow_access_unchecked(narrow, realm))
+
+        # Multi-channel comma-separated operand should return None (covers narrow.py 934-935)
+        narrow = [NarrowParameter(operator="channel", operand=f"{stream1.id},{stream2.id}")]
+        self.assertIsNone(get_channel_from_narrow_access_unchecked(narrow, realm))
+
+        # Single channel operand should return the stream
+        narrow = [NarrowParameter(operator="channel", operand=stream1.id)]
+        self.assertEqual(get_channel_from_narrow_access_unchecked(narrow, realm), stream1)
+
+    def test_can_narrow_define_conversation_with_multi_channel(self) -> None:
+        """Test can_narrow_define_conversation returns False for multi-channel."""
+        realm = get_realm("zulip")
+        stream1 = get_stream("Denmark", realm)
+        stream2 = get_stream("Verona", realm)
+
+        # Multi-channel list cannot define a single conversation (covers narrow.py 953-954)
+        narrow = [
+            NarrowParameter(operator="channel", operand=[stream1.id, stream2.id]),
+            NarrowParameter(operator="topic", operand="test-topic"),
+        ]
+        self.assertFalse(can_narrow_define_conversation(narrow))
+
+        # Multi-channel comma-separated cannot define a single conversation (covers narrow.py 955-956)
+        narrow = [
+            NarrowParameter(operator="channel", operand=f"{stream1.id},{stream2.id}"),
+            NarrowParameter(operator="topic", operand="test-topic"),
+        ]
+        self.assertFalse(can_narrow_define_conversation(narrow))
+
+        # Single channel + topic can define a conversation
+        narrow = [
+            NarrowParameter(operator="channel", operand=stream1.id),
+            NarrowParameter(operator="topic", operand="test-topic"),
+        ]
+        self.assertTrue(can_narrow_define_conversation(narrow))
+
+
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1374,6 +1474,20 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, guest_user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
+
+        # Multi-channel with list operand (covers narrow.py 900-905)
+        stream1 = get_stream("Denmark", user_profile.realm)
+        stream2 = get_stream("Verona", user_profile.realm)
+        narrow = [
+            NarrowParameter(operator="channel", operand=[stream1.id, stream2.id]),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        # Multi-channel with comma-separated operand (covers narrow.py 889-895)
+        narrow = [
+            NarrowParameter(operator="channel", operand=f"{stream1.id},{stream2.id}"),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
 
 class PostProcessTest(ZulipTestCase):
@@ -4090,8 +4204,8 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_invalid_narrow_operand_in_dict(self) -> None:
         self.login("hamlet")
 
-        # str or int is required for "id", "sender", "channel", "dm-including" and "group-pm-with"
-        # operators
+        # str or int is required for "id", "sender", "dm-including" and "group-pm-with"
+        # operators. Note: "channel" operator now also accepts list of ints for multi-channel search.
         invalid_operands: list[InvalidParam] = [
             InvalidParam(value=["1"], expected_error="operand is not a string or integer"),
             InvalidParam(value=["2"], expected_error="operand is not a string or integer"),
@@ -4100,7 +4214,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ),
         ]
 
-        for operand in ["id", "sender", "channel", "dm-including", "group-pm-with", "with"]:
+        for operand in ["id", "sender", "dm-including", "group-pm-with", "with"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands)
 
         # str or int list is required for "dm" and "pm-with" operator
